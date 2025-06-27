@@ -15,6 +15,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
@@ -35,7 +36,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
+        public string PowerToysVersion
+        {
+            get
+            {
+                return Helper.GetProductVersion();
+            }
+        }
+
         public bool UpdateAvailable { get; set; }
+
+        public UpdatingSettings UpdateSettingsConfig { get; set; }
 
         private ISettingsRepository<GeneralSettings> _settingsRepository;
         private GeneralSettings generalSettingsConfig;
@@ -58,8 +69,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GetShortcutModules();
 
-            UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();
-            UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
+            UpdateSettingsConfig = UpdatingSettings.LoadSettings();
+            UpdateAvailable = UpdateSettingsConfig != null && (UpdateSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || UpdateSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
         }
 
         private void AddDashboardListItem(ModuleType moduleType)

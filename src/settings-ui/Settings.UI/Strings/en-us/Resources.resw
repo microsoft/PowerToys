@@ -4925,7 +4925,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ShortDescription" xml:space="preserve">
     <value>A better quick launcher</value>
   </data>
-   <data name="CmdPal_ActivationDescription" xml:space="preserve">
+  <data name="CmdPal_ActivationDescription" xml:space="preserve">
     <value>Launch Command Palette</value>
   </data>
   <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
@@ -5093,5 +5093,19 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
+  <data name="YoureUpToDate.Text" xml:space="preserve">
+    <value>You're up to date</value>
+  </data>
+  <data name="GeneralVersion.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="LearnWhatsNew.Text" xml:space="preserve">
+    <value>Learn what's new</value>
+  </data>
+  <data name="ConfigureShortcut" xml:space="preserve">
+    <value>Configure shortcut</value>
+  </data>
+  <data name="ConfigureShortcutText.Text" xml:space="preserve">
+    <value>Configure shortcut</value>
   </data>
 </root>

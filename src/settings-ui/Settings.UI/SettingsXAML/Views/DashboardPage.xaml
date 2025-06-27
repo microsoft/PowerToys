@@ -42,18 +42,16 @@
                     ItemsSource="{x:Bind Shortcut, Mode=OneWay}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="2" />
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <controls:KeyVisual
-                                Padding="8,4,8,4"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Content="{Binding}"
                                 FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 IsTabStop="False" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -130,11 +128,11 @@
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         Orientation="Vertical">
-                        <TextBlock FontWeight="SemiBold" Text="Learn what's new" />
+                        <TextBlock x:Uid="LearnWhatsNew" FontWeight="SemiBold" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="Version 0.91" />
+                            Text="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" />
                     </StackPanel>
                 </Grid>
             </Button>
@@ -143,8 +141,8 @@
                 Grid.Column="1"
                 Orientation="Horizontal"
                 Spacing="16">
+                <!-- // TO DO: Shortcut conflicts
                 <Button Style="{StaticResource SubtleButtonStyle}">
-                    <!--  Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"  -->
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -163,28 +161,74 @@
                                 Text="2 conflicts found" />
                         </StackPanel>
                     </Grid>
-                </Button>
-                <Button Click="SWVersionButtonClicked" Style="{StaticResource SubtleButtonStyle}">
-                    <!--  Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"  -->
+                </Button>-->
+                <Button
+                    Click="SWVersionButtonClicked"
+                    Style="{StaticResource SubtleButtonStyle}"
+                    Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}">
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <FontIcon
-                            AutomationProperties.AccessibilityView="Raw"
-                            FontSize="20"
-                            Foreground="{ThemeResource AccentTextFillColorTertiaryBrush}"
-                            Glyph="&#xE895;" />
+                        <Border
+                            Width="20"
+                            Height="20"
+                            CornerRadius="10">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
+                                    <GradientStop Offset="0.0" Color="#239DE0" />
+                                    <GradientStop Offset="1.0" Color="#037CD6" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <FontIcon
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="11"
+                                Foreground="White"
+                                Glyph="&#xE895;" />
+                        </Border>
                         <StackPanel Grid.Column="1" Orientation="Vertical">
                             <TextBlock x:Uid="UpdateAvailable" FontWeight="SemiBold" />
-                            <TextBlock
-                                x:Uid="LearnMore"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Style="{StaticResource CaptionTextBlockStyle}" />
+                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
+                                <Run x:Uid="GeneralVersion" />
+                                <Run Text="{x:Bind ViewModel.UpdateSettingsConfig.NewVersion, Mode=OneWay}" />
+                            </TextBlock>
                         </StackPanel>
                     </Grid>
                 </Button>
+                <Grid
+                    Padding="0,0,4,0"
+                    VerticalAlignment="Center"
+                    ColumnSpacing="16"
+                    Visibility="{x:Bind ViewModel.UpdateAvailable, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border
+                        Width="20"
+                        Height="20"
+                        CornerRadius="10">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
+                                <GradientStop Offset="0.0" Color="#6FB538" />
+                                <GradientStop Offset="1.0" Color="#397A24" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <FontIcon
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="11"
+                            Foreground="White"
+                            Glyph="&#xE73E;" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Orientation="Vertical">
+                        <TextBlock x:Uid="YoureUpToDate" FontWeight="SemiBold" />
+                        <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
+                            <Run x:Uid="General_VersionLastChecked" />
+                            <Run Text="{x:Bind ViewModel.UpdateSettingsConfig.LastCheckedDateLocalized, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
             </StackPanel>
         </Grid>
 
@@ -302,9 +346,6 @@
                         Padding="0"
                         VerticalAlignment="Top"
                         DividerVisibility="Collapsed">
-                        <!--<controls:Card.TitleContent>
-                            <Button Content="Click" />
-                        </controls:Card.TitleContent>-->
                         <ItemsRepeater
                             x:Name="DashboardView"
                             Grid.Row="2"
@@ -372,8 +413,6 @@
                                             OffContent=" "
                                             OnContent=" " />
                                     </tkcontrols:SettingsCard>
-
-
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>
                         </ItemsRepeater>

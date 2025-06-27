@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 }
                 else
                 {
-                    _keyVisual._keyPresenter.Margin = new Thickness(0, 2, 0, 2);
+                    _keyVisual._keyPresenter.FontSize = _keyVisual.FontSize * 0.8;
                     _keyVisual._keyPresenter.FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets");
                     switch ((int)_keyVisual.Content)
                     {
@@ -120,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                             winIconContainer.HorizontalAlignment = HorizontalAlignment.Center;
                             winIconContainer.VerticalAlignment = VerticalAlignment.Center;
 
-                            double iconDimensions = _keyVisual.FontSize * 0.9; // Adjust the size of the icon based on the font size
+                            double iconDimensions = _keyVisual.FontSize * 0.8; // Adjust the size of the icon based on the font size
                             winIconContainer.Height = iconDimensions;
                             winIconContainer.Width = iconDimensions;
                             _keyVisual._keyPresenter.Content = winIconContainer;
