@@ -29,8 +29,30 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     [ObservableProperty]
     public partial bool IsDetailsVisible { get; set; }
 
-    [ObservableProperty]
-    public partial PageViewModel CurrentPage { get; set; } = new LoadingPageViewModel(null, _scheduler);
+    private PageViewModel _currentPage = new LoadingPageViewModel(null, _scheduler);
+
+    public PageViewModel CurrentPage
+    {
+        get => _currentPage;
+        set
+        {
+            var oldValue = _currentPage;
+            if (SetProperty(ref _currentPage, value))
+            {
+                if (oldValue is IDisposable disposable)
+                {
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex.ToString());
+                    }
+                }
+            }
+        }
+    }
 
     private MainListPage? _mainListPage;
 
