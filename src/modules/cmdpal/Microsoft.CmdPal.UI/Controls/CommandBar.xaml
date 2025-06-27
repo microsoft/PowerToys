@@ -33,13 +33,16 @@
                 Orientation="Vertical"
                 Spacing="4" />
 
-            <Style x:Name="ContextMenuFlyoutStyle" TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterStyle}">
+            <Style
+                x:Name="ContextMenuFlyoutStyle"
+                BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
+                TargetType="FlyoutPresenter">
                 <Style.Setters>
-                    <Setter Property="Margin" Value="0"/>
-                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Padding" Value="0" />
                 </Style.Setters>
             </Style>
-            
+
             <Flyout x:Name="ContextMenuFlyout" FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}">
                 <cpcontrols:ContextMenu />
             </Flyout>

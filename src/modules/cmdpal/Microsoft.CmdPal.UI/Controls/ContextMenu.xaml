@@ -90,10 +90,9 @@
             <!--  Template for context item separators  -->
             <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="viewmodels:SeparatorContextItemViewModel">
                 <Rectangle
-                    Fill="{ThemeResource MenuFlyoutSeparatorThemeBrush}"
                     Height="1"
-                    Margin="-16, -12, -12, -12"
-                    />
+                    Margin="-16,-12,-12,-12"
+                    Fill="{ThemeResource MenuFlyoutSeparatorThemeBrush}" />
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -117,7 +116,7 @@
                 <ListView.ItemContainerStyle>
                     <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                         <Setter Property="MinHeight" Value="0" />
-                        <Setter Property="Padding" Value="12, 8"/>
+                        <Setter Property="Padding" Value="12,8" />
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.ItemContainerTransitions>
@@ -128,8 +127,8 @@
         <TextBox
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
-            KeyDown="ContextFilterBox_KeyDown"
             Margin="4"
+            KeyDown="ContextFilterBox_KeyDown"
             PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
             TextChanged="ContextFilterBox_TextChanged" />
         <VisualStateManager.VisualStateGroups>
