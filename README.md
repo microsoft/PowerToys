@@ -93,28 +93,27 @@ For guidance on developing for PowerToys, please read the [developer docs](./doc
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.92 - July 2025 Update
+### 0.92 - June 2025 Update
 
 In this release, we focused on new features, stability, AOT, and automation.
 
 **✨Highlights**
 
+ - Added an option to hide or show the PowerToys system-tray icon. Thanks [@BLM16](https://github.com/BLM16)!  
  - Major upgrades to Command Palette, including Ahead-of-Time (AOT) readiness, new extension capabilities, and performance/stability fixes across the core UX and extensions.
- - Expanded automation coverage, with fuzz testing for FancyZones, thousands of new unit tests in CI, and over 370 UI tests now automated daily for end-to-end validation.
+ - Mouse button actions for Color Picker so you can choose what left, right, or middle click does. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Improved bug reporting experience, with progress indicators, faster packaging via updated compression, auto-clean up old trace log on machine, and inclusion of installer event logs for better diagnostics.
- - DPI scaling enhancements across key modules, including FancyZones, Workspaces, Color Picker, PowerAccent, and Crop & Lock—improving visual clarity on high-resolution displays.
  - File Explorer add-on fixes, resolving PDF preview issues, blank rendering, and text file crashes for a more stable preview experience.
- - Improved error-case user experience across modules, including suppressed crash dialogs in PowerToys Run, helpful guidance links in Hosts File Editor, codec download prompts in Peek, and safer save behavior in Registry Preview.
 
-### Bug Report Tool
+### Bug report tool
 
 - Improved Settings to show progress while a bug-report package is being generated.
-- Updated bug-report compression library (cziplib 0.3.3) for faster and more reliable package creation. Thanks @Chubercik!
+- Updated bug-report compression library (cziplib 0.3.3) for faster and more reliable package creation. Thanks [@Chubercik](https://github.com/Chubercik)!
 - Included App-Installer (“AppX Deployment Server”) event logs in bug reports for more thorough diagnostics.  
 
 ### Color Picker
 
- - Added per-mouse-button actions so you can choose what left, right, or middle click does. Thanks [@PesBandi](https://github.com/PesBandi)!  
+ - Added mouse button actions so you can choose what left, right, or middle click does. Thanks [@PesBandi](https://github.com/PesBandi)!  
 
 ### Crop & Lock
 
@@ -125,13 +124,13 @@ In this release, we focused on new features, stability, AOT, and automation.
 - Enhanced performance by resolving a regression in page loading.
 - Applied consistent hotkey handling across all Command Palette commands for a smoother user experience.
 - Improved graceful closing of Command Palette. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed consistency issue for extensions' alias with "Direct" setting, and enabled localization for "Direct" and "Indirect" for better user understanding. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Improved visual clarity by styling critical context items correctly (i.e. ThemeResource SystemFillColorCriticalBrush, typically, this is a shade of red)
+- Fixed consistency issue for extensions' alias with "Direct" setting and enabled localization for "Direct" and "Indirect" for better user understanding. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Improved visual clarity by styling critical context items correctly.
 - Automatically focused the field when only one is present on the content page.
 - Improved stability and efficiency when loading file icons in SDK ThumbnailHelper.cs by removing unnecessary operations. Thanks [@OldUser101](https://github.com/OldUser101)!
 - Enhanced details view with commands implementation. (See [Extension sample](./src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleListPageWithDetails.cs))
 
-### Command Palette Extensions
+### Command Palette extensions
 
 - Added "Copy Path" command to *App* search results for convenience. Thanks [@PesBandi](https://github.com/PesBandi)!
 - Improved *Calculator* input experience by ignoring leading equal signs. Thanks [@PesBandi](https://github.com/PesBandi)!
@@ -145,13 +144,14 @@ In this release, we focused on new features, stability, AOT, and automation.
 - Improved ordering of *Windows Settings* extension search results from alphabetical to relevance-based for quicker access.
 - Added "Restart Windows Explorer" command to the *Windows System Commands* provider for gracefully terminate and relaunch explorer.exe. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
-### Command Palette Ahead-of-Time (AOT) Readiness
+### Command Palette Ahead-of-Time (AOT) readiness
 
  - We’ve made foundational changes to prepare the Command Palette for future Ahead-of-Time (AOT) publishing. This includes replacing the calculator library with ExprTk, improving COM object handling, refining Win32 interop, and correcting trimming behavior—all to ensure compatibility, performance, and reliability under AOT constraints. All first-party extensions are now AOT-compatible. These improvements lay the groundwork for publishing Command Palette as an AOT application in the next release.
  - Special thanks to [@Sergio0694](https://github.com/Sergio0694) for guidance on making COM APIs AOT-compatible, [@jtschuster](https://github.com/jtschuster) for fixing COM object handling, [@ArashPartow](https://github.com/ArashPartow) from ExprTk for integration suggestions, and [@tian-lt](https://github.com/tian-lt) from the Windows Calculator team for valuable suggestion throughout the migration journey and review.
  - As part of the upcoming release, we’re also enabling AOT compatibility for key dependencies, including Markdown rendering, Adaptive Cards, internal logging and telemetry library, and the core Command Palette UX.
 
 ### FancyZones
+
 - Fixed DPI-scaling issues to ensure FancyZones Editor displays crisply on high-resolution monitors. Thanks [@HO-COOH](https://github.com/HO-COOH)! This inspired us a broader review across other PowerToys modules, leading to DPI display optimizations in Awake, Color Picker, PowerAccent, and more.
 
 ### File Explorer add-ons
@@ -208,13 +208,13 @@ In this release, we focused on new features, stability, AOT, and automation.
 - Generated portable PDBs so cross-platform debuggers can read symbol files, improving debugging experience in VSCode and other tools.
 - Simplified enabling *Developer Mode* by using [Microsoft.Windows.Settings](https://www.powershellgallery.com/packages/Microsoft.Windows.Settings) module in Winget DSC configuration. Thanks [@mdanish-kh](https://github.com/mdanish-kh)!  
 - Adjusted build scripts for the latest Az.Accounts module to keep CI green.
-- Streamlined release pipeline by removing hard-coded telemetry version numbers, and unified Command Palette versioning with Windows Terminal for consistent updates.
+- Streamlined release pipeline by removing hard-coded telemetry version numbers, and unified Command Palette versioning with Windows Terminal's versioning method for consistent updates.
 - Enhanced the build validation step to show detailed differences between NOTICE.md and actual package dependencies and versions.
 - Improved spell-checking accuracy across the repo. Thanks [@rovercoder](https://github.com/rovercoder)!  
 - Upgraded CI to TouchdownBuild v5 for faster pipelines.  
 - Added context comments to *Resources.resw* to help translators.
   
-### Test Automation
+### Test automation
 
 - Expanded fuzz testing coverage to include FancyZones.
 - Integrated all unit tests into the CI pipeline, increasing from ~3,000 to ~5,000 tests.
@@ -226,7 +226,7 @@ In this release, we focused on new features, stability, AOT, and automation.
 For [v0.93][github-next-release-work], we'll work on the items below:
 
  - Continued Command Palette polish
- - New UI Automation tests
+ - New UI automation tests
  - Working on installer upgrades
  - Working on shortcut conflict detection
  - Upgrading Keyboard Manager's editor UI
