@@ -156,7 +156,22 @@ public partial class InstallPackageListItem : ListItem
 
     private async void UpdatedInstalledStatus()
     {
-        var status = await _package.CheckInstalledStatusAsync();
+        try
+        {
+            var status = await _package.CheckInstalledStatusAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // DO NOTHING HERE
+            return;
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            ExtensionHost.LogMessage($"[WinGet] UpdatedInstalledStatus throw exception: {ex.Message}");
+            return;
+        }
+
         var isInstalled = _package.InstalledVersion != null;
 
         var installedState = isInstalled ?

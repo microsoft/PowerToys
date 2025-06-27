@@ -14,11 +14,22 @@
     <NoWarn>SA1313;</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <CsWinRTIncludes>AdaptiveCards.ObjectModel.WinUI3;AdaptiveCards.Rendering.WinUI3</CsWinRTIncludes>
+    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+  </PropertyGroup>
+	
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="AdaptiveCards.Templating" />
-    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Bot.AdaptiveExpressions.Core" />
+    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true">
+      <ExcludeAssets>compile</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" >
+      <ExcludeAssets>compile</ExcludeAssets>
+    </PackageReference>
 
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
@@ -28,7 +39,21 @@
     <PackageReference Include="WyHash" />
 
   </ItemGroup>
-
+	<!-- <AdaptiveCardsWorkaround> -->
+	<!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
+       Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
+	<PropertyGroup>
+		<AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
+	</PropertyGroup>
+	<ItemGroup>
+		<CsWinRTInputs Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\lib\uap10.0\AdaptiveCards.ObjectModel.WinUI3.winmd" />
+		<None Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+	<ItemGroup>
+		<CsWinRTInputs Include="$(PkgAdaptiveCards_Rendering_WinUI3)\lib\uap10.0\AdaptiveCards.Rendering.WinUI3.winmd" />
+		<Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />

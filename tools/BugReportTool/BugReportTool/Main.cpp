@@ -381,6 +381,9 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Write event viewer logs info to the temporary folder
     EventViewer::ReportEventViewerInfo(reportDir);
 
+    // Write AppXDeployment-Server event logs to the temporary folder
+    EventViewer::ReportAppXDeploymentLogs(reportDir);
+
     ReportInstallerLogs(tempDir, reportDir);
 
     ReportInstalledContextMenuPackages(reportDir);

@@ -1,4 +1,4 @@
-<Project Sdk="WixToolset.Sdk/6.0.1">
+<Project Sdk="WixToolset.Sdk/5.0.2">
   <Import Project="..\..\src\CmdPalVersion.props" Condition="Exists('..\..\src\CmdPalVersion.props')" />
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -55,31 +55,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
       call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
       call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\AdvancedPaste.wxs.bk ..\..\..\..\PowerToysSetup\AdvancedPaste.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Awake.wxs.bk ..\..\..\..\PowerToysSetup\Awake.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\BaseApplications.wxs.bk ..\..\..\..\PowerToysSetup\BaseApplications.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\ColorPicker.wxs.bk ..\..\..\..\PowerToysSetup\ColorPicker.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Core.wxs.bk ..\..\..\..\PowerToysSetup\Core.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\EnvironmentVariables.wxs.bk ..\..\..\..\PowerToysSetup\EnvironmentVariables.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\FileExplorerPreview.wxs.bk ..\..\..\..\PowerToysSetup\FileExplorerPreview.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\FileLocksmith.wxs.bk ..\..\..\..\PowerToysSetup\FileLocksmith.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Hosts.wxs.bk ..\..\..\..\PowerToysSetup\Hosts.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\ImageResizer.wxs.bk ..\..\..\..\PowerToysSetup\ImageResizer.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\KeyboardManager.wxs.bk ..\..\..\..\PowerToysSetup\KeyboardManager.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\MouseWithoutBorders.wxs.bk ..\..\..\..\PowerToysSetup\MouseWithoutBorders.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\NewPlus.wxs.bk ..\..\..\..\PowerToysSetup\NewPlus.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Peek.wxs.bk ..\..\..\..\PowerToysSetup\Peek.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\PowerRename.wxs.bk ..\..\..\..\PowerToysSetup\PowerRename.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Product.wxs.bk ..\..\..\..\PowerToysSetup\Product.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\RegistryPreview.wxs.bk ..\..\..\..\PowerToysSetup\RegistryPreview.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Resources.wxs.bk ..\..\..\..\PowerToysSetup\Resources.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Run.wxs.bk ..\..\..\..\PowerToysSetup\Run.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Settings.wxs.bk ..\..\..\..\PowerToysSetup\Settings.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\ShortcutGuide.wxs.bk ..\..\..\..\PowerToysSetup\ShortcutGuide.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Tools.wxs.bk ..\..\..\..\PowerToysSetup\Tools.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\WinAppSDK.wxs.bk ..\..\..\..\PowerToysSetup\WinAppSDK.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\WinUI3Applications.wxs.bk ..\..\..\..\PowerToysSetup\WinUI3Applications.wxs
-      call move /Y ..\..\..\..\PowerToysSetup\Workspaces.wxs.bk ..\..\..\..\PowerToysSetup\Workspaces.wxs
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
@@ -164,9 +139,9 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
      <PackageReference Include="WixToolset.Bal.wixext" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowerToysSetupCustomActions\PowerToysSetupCustomActions.vcxproj">
-      <Name>PowerToysSetupCustomActions</Name>
-      <Project>{32f3882b-f2d6-4586-b5ed-11e39e522bd3}</Project>
+    <ProjectReference Include="..\PowerToysSetupCustomActionsVNext\PowerToysSetupCustomActionsVNext.vcxproj">
+      <Name>PowerToysSetupCustomActionsVNext</Name>
+      <Project>{B3A354B0-1E54-4B55-A962-FB5AF9330C19}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>

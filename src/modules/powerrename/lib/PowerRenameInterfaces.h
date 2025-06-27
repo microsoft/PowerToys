@@ -18,7 +18,10 @@ enum PowerRenameFlags
     Lowercase = 0x400,
     Titlecase = 0x800,
     Capitalized = 0x1000,
-    RandomizeItems = 0x2000
+    RandomizeItems = 0x2000,
+    CreationTime = 0x4000,
+    ModificationTime = 0x8000,
+    AccessTime = 0x10000,
 };
 
 enum PowerRenameFilters
@@ -67,7 +70,7 @@ interface __declspec(uuid("C7F59201-4DE1-4855-A3A2-26FC3279C8A5")) IPowerRenameI
 public:
     IFACEMETHOD(PutPath)(_In_opt_ PCWSTR newPath) = 0;
     IFACEMETHOD(GetPath)(_Outptr_ PWSTR * path) = 0;
-    IFACEMETHOD(GetTime)(_Outptr_ SYSTEMTIME* time) = 0;
+    IFACEMETHOD(GetTime)(_In_ DWORD flags, _Outptr_ SYSTEMTIME * time) = 0;
     IFACEMETHOD(GetShellItem)(_Outptr_ IShellItem** ppsi) = 0;
     IFACEMETHOD(GetOriginalName)(_Outptr_ PWSTR * originalName) = 0;
     IFACEMETHOD(PutOriginalName)(_In_opt_ PCWSTR originalName) = 0;

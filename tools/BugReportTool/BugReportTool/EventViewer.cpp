@@ -23,7 +23,7 @@ namespace
         // Report last 30 days
         const long long PERIOD = 10 * 24 * 3600ll * 1000;
 
-        const std::wstring QUERY = L"<QueryList>" \
+        const std::wstring QUERY_BY_PROCESS = L"<QueryList>" \
             L"  <Query Id='0'>" \
             L"    <Select Path='Application'>" \
             L"        *[System[TimeCreated[timediff(@SystemTime)&lt;%I64u]]] " \
@@ -32,16 +32,46 @@ namespace
             L"  </Query>" \
             L"</QueryList>";
 
+        const std::wstring QUERY_BY_CHANNEL = L"<QueryList>" \
+            L"  <Query Id='0'>" \
+            L"    <Select Path='%s'>" \
+            L"        *[System[TimeCreated[timediff(@SystemTime)&lt;%I64u]]]" \
+            L"    </Select>" \
+            L"  </Query>" \
+            L"</QueryList>";
+
+
         std::wstring GetQuery(std::wstring processName)
         {
             wchar_t buff[1000];
             memset(buff, 0, sizeof(buff));
-            _snwprintf_s(buff, sizeof(buff), QUERY.c_str(), PERIOD, processName.c_str());
+            _snwprintf_s(buff, sizeof(buff), QUERY_BY_PROCESS.c_str(), PERIOD, processName.c_str());
+            return buff;
+        }
+
+        std::wstring GetQueryByChannel(std::wstring channelName)
+        {
+            wchar_t buff[1000];
+            memset(buff, 0, sizeof(buff));
+            _snwprintf_s(buff, sizeof(buff), QUERY_BY_CHANNEL.c_str(), channelName.c_str(), PERIOD);
             return buff;
         }
 
         std::wofstream report;
         EVT_HANDLE hResults;
+        bool isChannel;
+
+        bool ShouldIncludeEvent(const std::wstring& eventXml)
+        {
+            if (!isChannel)
+            {
+                return true;  // Include all events if no filtering
+            }
+
+            // Check if the event contains PowerToys or CommandPalette
+            return (eventXml.find(L"PowerToys") != std::wstring::npos ||
+                eventXml.find(L"CommandPalette") != std::wstring::npos);
+        }
 
         void PrintEvent(EVT_HANDLE hEvent)
         {
@@ -73,6 +103,17 @@ namespace
                     }
                     return;
                 }
+            }
+
+            // Apply filtering if needed
+            std::wstring eventContent(pRenderedContent);
+            if (!ShouldIncludeEvent(eventContent))
+            {
+                if (pRenderedContent)
+                {
+                    free(pRenderedContent);
+                }
+                return; // Skip this event
             }
 
             XmlDocumentEx doc;
@@ -130,17 +171,27 @@ namespace
         }
 
     public:
-        EventViewerReporter(const std::filesystem::path& tmpDir, std::wstring processName)
+        EventViewerReporter(const std::filesystem::path& tmpDir, std::wstring queryName, std::wstring fileName, bool isChannel)
+            :isChannel(isChannel)
         {
-            auto query = GetQuery(processName);
+            std::wstring query = L"";
+            if (isChannel)
+            {
+				query = GetQueryByChannel(queryName);
+			}
+			else
+			{
+				query = GetQuery(queryName);
+            }
+
             auto reportPath = tmpDir;
-            reportPath.append(L"EventViewer-" + processName + L".xml");
+            reportPath.append(L"EventViewer-" + fileName + L".xml");
             report = std::wofstream(reportPath);
 
-            hResults = EvtQuery(NULL, NULL, GetQuery(processName).c_str(), EvtQueryChannelPath);
+            hResults = EvtQuery(NULL, NULL, query.c_str(), EvtQueryChannelPath);
             if (NULL == hResults)
             {
-                report << "Failed to report info for " << processName << ". " << get_last_error_or_default(GetLastError()) << std::endl;
+                report << "Failed to report info for " << queryName << ". " << get_last_error_or_default(GetLastError()) << std::endl;
                 return;
             }
         }
@@ -175,6 +226,11 @@ void EventViewer::ReportEventViewerInfo(const std::filesystem::path& tmpDir)
 {
     for (auto& process : processes)
     {
-        EventViewerReporter(tmpDir, process).Report();
+        EventViewerReporter(tmpDir, process, process, false).Report();
     }
+}
+
+void EventViewer::ReportAppXDeploymentLogs(const std::filesystem::path& tmpDir)
+{
+    EventViewerReporter(tmpDir, L"Microsoft-Windows-AppXDeploymentServer/Operational", L"AppXDeploymentServerEventLog", true).Report();
 }
