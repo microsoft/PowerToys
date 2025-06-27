@@ -36,23 +36,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public List<object> Shortcut { get; set; }
     }
 
-    public partial class DashboardModuleKBMItem : DashboardModuleItem
+    public partial class DashboardModuleActivationItem : DashboardModuleItem
     {
-        private List<KeysDataModel> _remapKeys = new List<KeysDataModel>();
-
-        public List<KeysDataModel> RemapKeys
-        {
-            get => _remapKeys;
-            set => _remapKeys = value;
-        }
-
-        private List<AppSpecificKeysDataModel> _remapShortcuts = new List<AppSpecificKeysDataModel>();
-
-        public List<AppSpecificKeysDataModel> RemapShortcuts
-        {
-            get => _remapShortcuts;
-            set => _remapShortcuts = value;
-        }
+        public string Activation { get; set; }
     }
 
     public partial class DashboardModuleItem : INotifyPropertyChanged

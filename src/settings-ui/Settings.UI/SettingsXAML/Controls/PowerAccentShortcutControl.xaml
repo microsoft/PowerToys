@@ -31,8 +31,7 @@
                         VerticalAlignment="Center"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
-                        IsTabStop="False"
-                        VisualType="SmallOutline" />
+                        IsTabStop="False" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

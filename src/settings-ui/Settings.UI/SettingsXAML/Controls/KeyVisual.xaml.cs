@@ -5,6 +5,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -12,8 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     [TemplatePart(Name = KeyPresenter, Type = typeof(ContentPresenter))]
     [TemplateVisualState(Name = "Normal", GroupName = "CommonStates")]
     [TemplateVisualState(Name = "Disabled", GroupName = "CommonStates")]
-    [TemplateVisualState(Name = "Default", GroupName = "StateStates")]
-    [TemplateVisualState(Name = "Error", GroupName = "StateStates")]
+    [TemplateVisualState(Name = "Error", GroupName = "CommonStates")]
     public sealed partial class KeyVisual : Control
     {
         private const string KeyPresenter = "KeyPresenter";
@@ -26,28 +26,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(ContentProperty, value);
         }
 
-        public static readonly DependencyProperty ContentProperty = DependencyProperty.Register("Content", typeof(object), typeof(KeyVisual), new PropertyMetadata(default(string), OnContentChanged));
+        public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(nameof(Content), typeof(object), typeof(KeyVisual), new PropertyMetadata(default(string), OnContentChanged));
 
-        public VisualType VisualType
+        public bool IsInvalid
         {
-            get => (VisualType)GetValue(VisualTypeProperty);
-            set => SetValue(VisualTypeProperty, value);
+            get => (bool)GetValue(IsInvalidProperty);
+            set => SetValue(IsInvalidProperty, value);
         }
 
-        public static readonly DependencyProperty VisualTypeProperty = DependencyProperty.Register("VisualType", typeof(VisualType), typeof(KeyVisual), new PropertyMetadata(default(VisualType), OnSizeChanged));
-
-        public bool IsError
-        {
-            get => (bool)GetValue(IsErrorProperty);
-            set => SetValue(IsErrorProperty, value);
-        }
-
-        public static readonly DependencyProperty IsErrorProperty = DependencyProperty.Register("IsError", typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnIsErrorChanged));
+        public static readonly DependencyProperty IsInvalidProperty = DependencyProperty.Register(nameof(IsInvalid), typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnIsInvalidChanged));
 
         public KeyVisual()
         {
             this.DefaultStyleKey = typeof(KeyVisual);
-            this.Style = GetStyleSize("TextKeyVisualStyle");
         }
 
         protected override void OnApplyTemplate()
@@ -56,48 +47,55 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             _keyVisual = (KeyVisual)this;
             _keyPresenter = (ContentPresenter)_keyVisual.GetTemplateChild(KeyPresenter);
             Update();
-            SetEnabledState();
-            SetErrorState();
+            SetVisualStates();
             IsEnabledChanged += KeyVisual_IsEnabledChanged;
             base.OnApplyTemplate();
         }
 
         private static void OnContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((KeyVisual)d).Update();
+            ((KeyVisual)d).SetVisualStates();
         }
 
-        private static void OnSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnIsInvalidChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ((KeyVisual)d).Update();
+            ((KeyVisual)d).SetVisualStates();
         }
 
-        private static void OnIsErrorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private void SetVisualStates()
         {
-            ((KeyVisual)d).SetErrorState();
+            if (_keyVisual != null)
+            {
+                if (_keyVisual.IsInvalid)
+                {
+                    VisualStateManager.GoToState(_keyVisual, "Invalid", true);
+                }
+                else if (!_keyVisual.IsEnabled)
+                {
+                    VisualStateManager.GoToState(_keyVisual, "Disabled", true);
+                }
+                else
+                {
+                    VisualStateManager.GoToState(_keyVisual, "Normal", true);
+                }
+            }
         }
 
         private void Update()
         {
-            if (_keyVisual == null)
-            {
-                return;
-            }
-
-            if (_keyVisual.Content != null)
+            if (_keyVisual != null && _keyVisual.Content != null)
             {
                 if (_keyVisual.Content.GetType() == typeof(string))
                 {
-                    _keyVisual.Style = GetStyleSize("TextKeyVisualStyle");
                     _keyVisual._keyPresenter.Content = _keyVisual.Content;
+                    _keyVisual._keyPresenter.Margin = new Thickness(0, -1, 0, 0);
                 }
                 else
                 {
-                    _keyVisual.Style = GetStyleSize("IconKeyVisualStyle");
-
+                    _keyVisual._keyPresenter.FontSize = _keyVisual.FontSize * 0.8;
+                    _keyVisual._keyPresenter.FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets");
                     switch ((int)_keyVisual.Content)
                     {
-                        /* We can enable other glyphs in the future
                         case 13: // The Enter key or button.
                             _keyVisual._keyPresenter.Content = "\uE751"; break;
 
@@ -107,7 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         case 16: // The right Shift key or button.
                         case 160: // The left Shift key or button.
                         case 161: // The Shift key or button.
-                            _keyVisual._keyPresenter.Content = "\uE752"; break; */
+                            _keyVisual._keyPresenter.Content = "\uE752"; break;
 
                         case 38: _keyVisual._keyPresenter.Content = "\uE0E4"; break; // The Up Arrow key or button.
                         case 40: _keyVisual._keyPresenter.Content = "\uE0E5"; break; // The Down Arrow key or button.
@@ -116,13 +114,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                         case 91: // The left Windows key
                         case 92: // The right Windows key
-                            PathIcon winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M683 1229H0V546h683v683zm819 0H819V546h683v683zm-819 819H0v-683h683v683zm819 0H819v-683h683v683z"" />") as PathIcon;
+                            PathIcon winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M896 896H0V0h896v896zm1024 0h-896V0h896v896zM896 1920H0v-896h896v896zm1024 0h-896v-896h896v896z"" />") as PathIcon;
                             Viewbox winIconContainer = new Viewbox();
                             winIconContainer.Child = winIcon;
                             winIconContainer.HorizontalAlignment = HorizontalAlignment.Center;
                             winIconContainer.VerticalAlignment = VerticalAlignment.Center;
 
-                            double iconDimensions = GetIconSize();
+                            double iconDimensions = _keyVisual.FontSize * 0.8; // Adjust the size of the icon based on the font size
                             winIconContainer.Height = iconDimensions;
                             winIconContainer.Width = iconDimensions;
                             _keyVisual._keyPresenter.Content = winIconContainer;
@@ -133,59 +131,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
         }
 
-        public Style GetStyleSize(string styleName)
-        {
-            if (VisualType == VisualType.Small)
-            {
-                return (Style)App.Current.Resources["Small" + styleName];
-            }
-            else if (VisualType == VisualType.SmallOutline)
-            {
-                return (Style)App.Current.Resources["SmallOutline" + styleName];
-            }
-            else if (VisualType == VisualType.TextOnly)
-            {
-                return (Style)App.Current.Resources["Only" + styleName];
-            }
-            else
-            {
-                return (Style)App.Current.Resources["Default" + styleName];
-            }
-        }
-
-        public double GetIconSize()
-        {
-            if (VisualType == VisualType.Small || VisualType == VisualType.SmallOutline)
-            {
-                return (double)App.Current.Resources["SmallIconSize"];
-            }
-            else
-            {
-                return (double)App.Current.Resources["DefaultIconSize"];
-            }
-        }
-
         private void KeyVisual_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            SetEnabledState();
+            SetVisualStates();
         }
-
-        private void SetErrorState()
-        {
-            VisualStateManager.GoToState(this, IsError ? "Error" : "Default", true);
-        }
-
-        private void SetEnabledState()
-        {
-            VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
-        }
-    }
-
-    public enum VisualType
-    {
-        Small,
-        SmallOutline,
-        TextOnly,
-        Large,
     }
 }
