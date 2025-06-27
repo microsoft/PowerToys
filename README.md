@@ -135,7 +135,7 @@ In this release, we focused on new features, stability, AOT, and automation.
 
 - Added "Copy Path" command to *App* search results for convenience. Thanks [@PesBandi](https://github.com/PesBandi)!
 - Improved *Calculator* input experience by ignoring leading equal signs. Thanks [@PesBandi](https://github.com/PesBandi)!
-- Des not display errors when entering heading whitespaces only in *Calculator* extension.
+- Corrected input handling in the *Calculator* extension to avoid showing errors for input with only leading whitespace.
 - Added basic support for Windows App Actions (internal preview) on *File* search results, starting with images and documents, to better integrate into user workflows. Thanks [@azchohfi](https://github.com/azchohfi)! Also, thanks [@davidegiacometti](https://github.com/davidegiacometti) for fixing a regression in Peek caused by the csWin32 library upgrade as part of this change.
 - Improved *New Extension* wizard by validating names to prevent namespace errors.
 - Ensured consistent context items display for the *Run* extension between fallback and top-level results.
@@ -148,8 +148,8 @@ In this release, we focused on new features, stability, AOT, and automation.
 ### Command Palette Ahead-of-Time (AOT) Readiness
 
  - We’ve made foundational changes to prepare the Command Palette for future Ahead-of-Time (AOT) publishing. This includes replacing the calculator library with ExprTk, improving COM object handling, refining Win32 interop, and correcting trimming behavior—all to ensure compatibility, performance, and reliability under AOT constraints. All first-party extensions are now AOT-compatible. These improvements lay the groundwork for publishing Command Palette as an AOT application in the next release.
- Special thanks to [@Sergio0694](https://github.com/Sergio0694) for guidance on making COM APIs AOT-compatible, [@jtschuster](https://github.com/jtschuster) for fixing COM object handling, [@ArashPartow](https://github.com/ArashPartow) from ExprTk for integration suggestions, and [@tian-lt](https://github.com/tian-lt) from the Windows Calculator team for valuable suggestion throughout the migration journey and review.
- As part of the upcoming release, we’re also enabling AOT compatibility for key dependencies, including Markdown rendering, Adaptive Cards, internal logging and telemetry library, and the core Command Palette UX.
+ - Special thanks to [@Sergio0694](https://github.com/Sergio0694) for guidance on making COM APIs AOT-compatible, [@jtschuster](https://github.com/jtschuster) for fixing COM object handling, [@ArashPartow](https://github.com/ArashPartow) from ExprTk for integration suggestions, and [@tian-lt](https://github.com/tian-lt) from the Windows Calculator team for valuable suggestion throughout the migration journey and review.
+ - As part of the upcoming release, we’re also enabling AOT compatibility for key dependencies, including Markdown rendering, Adaptive Cards, internal logging and telemetry library, and the core Command Palette UX.
 
 ### FancyZones
 - Fixed DPI-scaling issues to ensure FancyZones Editor displays crisply on high-resolution monitors. Thanks [@HO-COOH](https://github.com/HO-COOH)! This inspired us a broader review across other PowerToys modules, leading to DPI display optimizations in Awake, Color Picker, PowerAccent, and more.
@@ -197,8 +197,7 @@ In this release, we focused on new features, stability, AOT, and automation.
 
 ### Documentation
 
- - Added SpeedTest and Dictionary Definition to the third-party plugins documentation for PowerToys Run. Thanks [@ruslanlap](https://github.com/ruslanlap)
-!
+ - Added SpeedTest and Dictionary Definition to the third-party plugins documentation for PowerToys Run. Thanks [@ruslanlap](https://github.com/ruslanlap)!
  - Corrected sample links and typo in Command Palette documentation. Thanks [@daverayment](https://github.com/daverayment) and [@roycewilliams](https://github.com/roycewilliams)!
 
 ### Development
