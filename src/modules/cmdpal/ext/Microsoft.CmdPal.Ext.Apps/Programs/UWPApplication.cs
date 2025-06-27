@@ -173,6 +173,25 @@ public class UWPApplication : IProgram
         return false;
     }
 
+    private static string TryLoadIndirectString(string source, Span<char> buffer, string errorContext)
+    {
+        try
+        {
+            PInvoke.SHLoadIndirectString(source, buffer).ThrowOnFailure();
+
+            var len = buffer.IndexOf('\0');
+            var loaded = len >= 0
+                ? buffer[..len].ToString()
+                : buffer.ToString();
+            return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Unable to load resource {source} : {errorContext} : {ex.Message}");
+            return string.Empty;
+        }
+    }
+
     internal unsafe string ResourceFromPri(string packageFullName, string resourceReference)
     {
         const string prefix = "ms-resource:";
@@ -218,39 +237,18 @@ public class UWPApplication : IProgram
                 return string.Empty;
             }
 
-            var capacity = 1024U;
-            PWSTR outBuffer = new PWSTR((char*)(void*)Marshal.AllocHGlobal((int)capacity * sizeof(char)));
+            Span<char> outBuffer = stackalloc char[1024];
             var source = $"@{{{packageFullName}? {parsed}}}";
 
-            try
-            {
-                PInvoke.SHLoadIndirectString(source, outBuffer.AsSpan()).ThrowOnFailure();
+            var loaded = TryLoadIndirectString(source, outBuffer, resourceReference);
 
-                var loaded = outBuffer.ToString();
-                return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
-            }
-            catch (Exception)
+            if (!string.IsNullOrEmpty(loaded))
             {
-                try
-                {
-                    var sourceFallback = $"@{{{packageFullName}?{parsedFallback}}}";
-                    PInvoke.SHLoadIndirectString(sourceFallback, outBuffer.AsSpan()).ThrowOnFailure();
-                    var loaded = outBuffer.ToString();
-                    return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
-                }
-                catch (Exception)
-                {
-                    // ProgramLogger.Exception($"Unable to load resource {resourceReference} from {packageFullName}", new InvalidOperationException(), GetType(), packageFullName);
-                    return string.Empty;
-                }
-                finally
-                {
-                }
+                return loaded;
             }
-            finally
-            {
-                Marshal.FreeHGlobal((IntPtr)outBuffer.Value);
-            }
+
+            var sourceFallback = $"@{{{packageFullName}?{parsedFallback}}}";
+            return TryLoadIndirectString(sourceFallback, outBuffer, $"{resourceReference} (fallback)");
         }
         else
         {
