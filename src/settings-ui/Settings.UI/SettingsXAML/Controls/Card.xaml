@@ -31,10 +31,10 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
-                Margin="20,0,0,0"
+                Margin="16,0,0,0"
                 VerticalAlignment="Center"
+                FontSize="16"
                 FontWeight="SemiBold"
-                Style="{StaticResource SubtitleTextBlockStyle}"
                 Text="{x:Bind Title, Mode=OneWay}" />
             <ContentPresenter
                 Grid.Column="2"

@@ -14,10 +14,6 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:IndexBitFieldToVisibilityConverter x:Key="IndexBitFieldToVisibilityConverter" />
-        <tkconverters:BoolToVisibilityConverter
-            x:Key="BoolToInvertedVisibilityConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -153,7 +149,7 @@
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Informational"
-                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToReverseVisibilityConverter}}">
                         <InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>

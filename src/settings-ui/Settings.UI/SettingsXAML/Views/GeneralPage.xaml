@@ -12,7 +12,6 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
         <converters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
     </Page.Resources>
 

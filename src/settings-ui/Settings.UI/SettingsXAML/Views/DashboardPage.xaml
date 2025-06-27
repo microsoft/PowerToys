@@ -19,15 +19,6 @@
             x:Key="ModuleItemTemplateSelector"
             ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
             ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}" />
-        <tkconverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
-        <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
-        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
-        <tkconverters:BoolToVisibilityConverter
-            x:Key="BoolToInvertedVisibilityConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
-
         <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
             <Grid MinHeight="36" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -52,6 +43,7 @@
                                 AutomationProperties.AccessibilityView="Raw"
                                 Content="{Binding}"
                                 FontSize="12"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 IsTabStop="False" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -114,14 +106,16 @@
                 Padding="0,0,8,0"
                 Click="WhatsNewButton_Click"
                 Style="{StaticResource SubtleButtonStyle}">
-                <!--  Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"  -->
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid CornerRadius="{StaticResource OverlayCornerRadius}">
-                        <Image Width="120" Source="ms-appx:///Assets/Settings/Modules/PT.png" />
+                        <Image
+                            Width="120"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Source="ms-appx:///Assets/Settings/Modules/PT.png" />
                         <Grid Background="{ThemeResource SmokeFillColorDefaultBrush}" />
                     </Grid>
                     <StackPanel
@@ -141,7 +135,8 @@
                 Grid.Column="1"
                 Orientation="Horizontal"
                 Spacing="16">
-                <!-- // TO DO: Shortcut conflicts
+
+                <!-- // TO DO: This can be used for the upcoming shortcut conflicts feature
                 <Button Style="{StaticResource SubtleButtonStyle}">
                     <Grid ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
@@ -162,6 +157,7 @@
                         </StackPanel>
                     </Grid>
                 </Button>-->
+
                 <Button
                     Click="SWVersionButtonClicked"
                     Style="{StaticResource SubtleButtonStyle}"
@@ -249,93 +245,114 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <controls:Card Title="Quick launch" VerticalAlignment="Top">
-                        <ItemsRepeater Margin="12,0,12,12" ItemsSource="{x:Bind ViewModel.ActionModules, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <tkcontrols:WrapLayout HorizontalSpacing="16" VerticalSpacing="24" />
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:DashboardListItem">
-                                    <Grid>
-                                        <ItemsControl
-                                            Grid.Column="1"
-                                            IsTabStop="False"
-                                            ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate x:DataType="viewmodels:DashboardModuleButtonItem">
-                                                    <controls:FlyoutMenuButton AutomationProperties.Name="{x:Bind ButtonTitle}" Click="{x:Bind ButtonClickHandler}">
-                                                        <controls:FlyoutMenuButton.Content>
-                                                            <TextBlock
-                                                                Style="{StaticResource CaptionTextBlockStyle}"
-                                                                Text="{x:Bind ButtonTitle}"
-                                                                TextAlignment="Center"
-                                                                TextWrapping="Wrap" />
-                                                        </controls:FlyoutMenuButton.Content>
-                                                        <controls:FlyoutMenuButton.Icon>
-                                                            <Image Width="24">
-                                                                <Image.Source>
-                                                                    <BitmapImage UriSource="{x:Bind ButtonGlyph}" />
-                                                                </Image.Source>
-                                                            </Image>
-                                                        </controls:FlyoutMenuButton.Icon>
-                                                        <ToolTipService.ToolTip>
-                                                            <ToolTip Content="{x:Bind ButtonDescription}" />
-                                                        </ToolTipService.ToolTip>
-                                                    </controls:FlyoutMenuButton>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Spacing="0" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                    <controls:Card x:Uid="QuickAccessTitle" VerticalAlignment="Top">
+                        <Grid>
+                            <ItemsRepeater
+                                Margin="8,0,12,12"
+                                ItemsSource="{x:Bind ViewModel.ActionModules, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.ActionModules.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}">
+                                <ItemsRepeater.Layout>
+                                    <tkcontrols:WrapLayout HorizontalSpacing="16" VerticalSpacing="24" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodels:DashboardListItem">
+                                        <Grid>
+                                            <ItemsControl
+                                                Grid.Column="1"
+                                                IsTabStop="False"
+                                                ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="viewmodels:DashboardModuleButtonItem">
+                                                        <controls:FlyoutMenuButton AutomationProperties.Name="{x:Bind ButtonTitle}" Click="{x:Bind ButtonClickHandler}">
+                                                            <controls:FlyoutMenuButton.Content>
+                                                                <TextBlock
+                                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                                    Text="{x:Bind ButtonTitle}"
+                                                                    TextAlignment="Center"
+                                                                    TextWrapping="Wrap" />
+                                                            </controls:FlyoutMenuButton.Content>
+                                                            <controls:FlyoutMenuButton.Icon>
+                                                                <Image Width="24">
+                                                                    <Image.Source>
+                                                                        <BitmapImage UriSource="{x:Bind ButtonGlyph}" />
+                                                                    </Image.Source>
+                                                                </Image>
+                                                            </controls:FlyoutMenuButton.Icon>
+                                                            <ToolTipService.ToolTip>
+                                                                <ToolTip Content="{x:Bind ButtonDescription}" />
+                                                            </ToolTipService.ToolTip>
+                                                        </controls:FlyoutMenuButton>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="0" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                            <TextBlock
+                                x:Uid="NoActionsToShow"
+                                Margin="12"
+                                HorizontalAlignment="Left"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Visibility="{x:Bind ViewModel.ActionModules.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+                        </Grid>
+
                     </controls:Card>
                     <controls:Card
-                        Title="Shortcuts"
+                        x:Uid="ShortcutsOverview"
                         Grid.Row="1"
                         VerticalAlignment="Top">
-                        <ItemsRepeater
-                            Grid.Row="2"
-                            Margin="12,0,0,0"
-                            ItemsSource="{x:Bind ViewModel.ShortcutModules, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Orientation="Vertical" Spacing="0" />
-                            </ItemsRepeater.Layout>
-                            <ItemsRepeater.ItemTemplate>
-                                <DataTemplate x:DataType="viewmodels:DashboardListItem">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="32" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <Image
-                                            Width="16"
-                                            Margin="0,10,0,0"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Top"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            Source="{x:Bind Icon, Mode=OneWay}"
-                                            ToolTipService.ToolTip="{x:Bind Label}" />
-                                        <ItemsControl
-                                            Grid.Column="1"
-                                            IsTabStop="False"
-                                            ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
-                                            ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <StackPanel Spacing="0" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
+                        <Grid>
+                            <ItemsRepeater
+                                Grid.Row="2"
+                                Margin="8,0,0,0"
+                                ItemsSource="{x:Bind ViewModel.ShortcutModules, Mode=OneWay}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Orientation="Vertical" Spacing="0" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodels:DashboardListItem">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="32" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Image
+                                                Width="16"
+                                                Margin="0,10,0,0"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Top"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                Source="{x:Bind Icon, Mode=OneWay}"
+                                                ToolTipService.ToolTip="{x:Bind Label}" />
+                                            <ItemsControl
+                                                Grid.Column="1"
+                                                IsTabStop="False"
+                                                ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
+                                                ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="0" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                            <TextBlock
+                                x:Uid="NoShortcutsToShow"
+                                Margin="12"
+                                HorizontalAlignment="Left"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Visibility="{x:Bind ViewModel.ShortcutModules.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+                        </Grid>
+
                     </controls:Card>
                     <controls:Card
                         x:Name="ModulesCard"
@@ -357,7 +374,7 @@
                                 <DataTemplate x:DataType="viewmodels:DashboardListItem">
                                     <tkcontrols:SettingsCard
                                         MinHeight="0"
-                                        Padding="16,4,16,4"
+                                        Padding="12,4,12,4"
                                         AutomationProperties.Name="{x:Bind Label}"
                                         Background="Transparent"
                                         BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
@@ -373,27 +390,17 @@
                                         <tkcontrols:SettingsCard.Header>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{x:Bind Label}" />
-                                                <StackPanel
-                                                    Grid.Column="1"
-                                                    VerticalAlignment="Center"
-                                                    Orientation="Horizontal">
-                                                    <TextBlock
-                                                        VerticalAlignment="Center"
-                                                        FontWeight="SemiBold"
-                                                        Text=""
-                                                        TextTrimming="CharacterEllipsis" />
-                                                    <InfoBadge
-                                                        Margin="4,0,0,0"
-                                                        Style="{StaticResource NewInfoBadge}"
-                                                        Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                                </StackPanel>
+                                                <InfoBadge
+                                                    Margin="4,0,0,0"
+                                                    Style="{StaticResource NewInfoBadge}"
+                                                    Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                 <FontIcon
                                                     Grid.Column="2"
                                                     Width="20"
                                                     Margin="0,0,-12,0"
                                                     FontSize="16"
                                                     Glyph="&#xE72E;"
-                                                    Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True}">
+                                                    Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}">
                                                     <ToolTipService.ToolTip>
                                                         <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
                                                     </ToolTipService.ToolTip>
