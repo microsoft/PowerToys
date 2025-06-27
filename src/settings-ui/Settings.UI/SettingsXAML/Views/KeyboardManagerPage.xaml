@@ -25,11 +25,18 @@
         </Style>
 
         <DataTemplate x:Key="OriginalKeyTemplate" x:DataType="x:String">
-            <controls:KeyVisual Content="{Binding}" />
+            <controls:KeyVisual
+                Padding="8"
+                Content="{Binding}"
+                CornerRadius="{StaticResource ControlCornerRadius}" />
         </DataTemplate>
 
         <DataTemplate x:Key="RemappedKeyTemplate" x:DataType="x:String">
-            <controls:KeyVisual Content="{Binding}" />
+            <controls:KeyVisual
+                Padding="8"
+                Content="{Binding}"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                Style="{StaticResource AccentKeyVisualStyle}" />
         </DataTemplate>
 
         <!--<DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
