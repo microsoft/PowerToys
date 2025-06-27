@@ -5081,5 +5081,16 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="NoShortcutsToShow.Text" xml:space="preserve">
     <value>No shortcuts to show..</value>
+  <data name="HighlightMode.Description" xml:space="preserve">
+    <value>Highlight the cursor or dim the screen to spotlight it</value>
+  </data>
+  <data name="HighlightMode.Header" xml:space="preserve">
+    <value>Highlight mode</value>
+  </data>
+  <data name="HighlightMode_Circle_Highlight_Mode.Content" xml:space="preserve">
+    <value>Circle highlight</value>
+  </data>
+  <data name="HighlightMode_Spotlight_Mode.Content" xml:space="preserve">
+    <value>Spotlight</value>
   </data>
 </root>
