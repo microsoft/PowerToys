@@ -4,6 +4,7 @@
 
 using System;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -17,6 +18,7 @@ internal sealed partial class OpenInTerminalCommand : InvokableCommand
     public OpenInTerminalCommand(string folder)
     {
         Name = Resources.bookmarks_open_in_terminal_name;
+        Icon = IconHelper.CommandIcon;
         _folder = folder;
     }
 
@@ -35,7 +37,7 @@ internal sealed partial class OpenInTerminalCommand : InvokableCommand
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex.Message);
+            ExtensionHost.LogMessage(new LogMessage() { Message = $"Error launching Windows Terminal: {ex.Message}" });
         }
 
         return CommandResult.Dismiss();
