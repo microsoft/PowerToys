@@ -19,10 +19,10 @@ namespace Microsoft.CmdPal.Ext.Indexer.Pages;
 
 internal sealed partial class ActionsListContextItem : CommandContextItem, IDisposable
 {
+    // private static ActionRuntime actionRuntime;
     private readonly string fullPath;
     private readonly List<CommandContextItem> actions = [];
     private static readonly Lock UpdateMoreCommandsLock = new();
-    private static ActionRuntime actionRuntime;
 
     public ActionsListContextItem(string fullPath)
         : base(new NoOpCommand())
@@ -43,6 +43,7 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
 
     private void UpdateMoreCommands()
     {
+        /*
         lock (UpdateMoreCommandsLock)
         {
             if (actionRuntime == null)
@@ -95,10 +96,12 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
         {
             Logger.LogError($"Error updating commands: {ex.Message}");
         }
+        */
     }
 
     public void Dispose()
     {
+        /*
         lock (UpdateMoreCommandsLock)
         {
             if (actionRuntime != null)
@@ -106,5 +109,6 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
                 actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
             }
         }
+        */
     }
 }

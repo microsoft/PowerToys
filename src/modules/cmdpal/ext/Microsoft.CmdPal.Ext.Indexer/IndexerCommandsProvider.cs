@@ -19,10 +19,13 @@ public partial class IndexerCommandsProvider : CommandProvider
         Id = "Files";
         DisplayName = Resources.IndexerCommandsProvider_DisplayName;
         Icon = Icons.FileExplorer;
+
+        /*
         if (ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {
             _ = ActionRuntimeManager.InstanceAsync;
         }
+        */
     }
 
     public override ICommandItem[] TopLevelCommands()

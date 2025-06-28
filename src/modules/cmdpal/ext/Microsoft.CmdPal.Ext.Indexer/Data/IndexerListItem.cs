@@ -44,7 +44,7 @@ internal sealed partial class IndexerListItem : ListItem
         IContextItem[] moreCommands = [
             ..context,
             new CommandContextItem(new OpenWithCommand(indexerItem))];
-
+        /*
         if (ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {
             var actionsListContextItem = new ActionsListContextItem(indexerItem.FullPath);
@@ -56,6 +56,7 @@ internal sealed partial class IndexerListItem : ListItem
                 ];
             }
         }
+        */
 
         MoreCommands = [
             .. moreCommands,
