@@ -18,6 +18,7 @@ struct MouseHighlighterSettings
     int fadeDelayMs = MOUSE_HIGHLIGHTER_DEFAULT_DELAY_MS;
     int fadeDurationMs = MOUSE_HIGHLIGHTER_DEFAULT_DURATION_MS;
     bool autoActivate = MOUSE_HIGHLIGHTER_DEFAULT_AUTO_ACTIVATE;
+    bool spotlightMode = false;
 };
 
 int MouseHighlighterMain(HINSTANCE hinst, MouseHighlighterSettings settings);
