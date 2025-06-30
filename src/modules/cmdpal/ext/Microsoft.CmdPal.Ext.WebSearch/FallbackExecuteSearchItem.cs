@@ -15,14 +15,15 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
 {
     private readonly SearchWebCommand _executeItem;
     private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
+    private static readonly CompositeFormat PluginSearch = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_search);
 
     public FallbackExecuteSearchItem(SettingsManager settings)
         : base(new SearchWebCommand(string.Empty, settings), Resources.command_item_title)
     {
         _executeItem = (SearchWebCommand)this.Command!;
-        Title = string.Empty;
+        Subtitle = string.Empty;
         _executeItem.Name = string.Empty;
-        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
+        Title = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
         Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
     }
 
@@ -30,6 +31,6 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
     {
         _executeItem.Arguments = query;
         _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Properties.Resources.open_in_default_browser;
-        Title = query;
+        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginSearch, query);
     }
 }
