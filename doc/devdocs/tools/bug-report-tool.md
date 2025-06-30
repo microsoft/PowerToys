@@ -17,6 +17,7 @@ The bug report includes the following files:
 * `context-menu-packages.txt` - Information about the packages that are registered for the new Windows 11 context menu.
 * `dotnet-installation-info.txt` - Information about the installed .NET versions.
 * `EventViewer-*.xml` - These files contain event logs from the Windows Event Viewer for the executable specified in the file name.
+* `EventViewer-Microsoft-Windows-AppXDeploymentServer/Operational.xml` - Contains event logs from the AppXDeployment-Server which are useful for diagnosing MSIX installation issues.
 * `gpo-configuration-info.txt` - Information about the configured [GPO](/doc/gpo/README.md).
 * `installationFolderStructure.txt` - Information about the folder structure of the installation. All lines with files have the following structure: `FileName Version MD5Hash`.
 * `last_version_run.json` - Information about the last version of PowerToys that was run.

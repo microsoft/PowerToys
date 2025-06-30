@@ -48,21 +48,21 @@ namespace Peek.UI.Extensions
 
         internal static HWND FindChildWindow(this HWND windowHandle, string className)
         {
-            return PInvoke.FindWindowEx(windowHandle, HWND.Null, className, null);
+            return PInvoke_PeekUI.FindWindowEx(windowHandle, HWND.Null, className, null);
         }
 
         internal static Size GetMonitorSize(this HWND hwnd)
         {
-            var monitor = PInvoke.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            var monitor = PInvoke_PeekUI.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
             MONITORINFO info = default(MONITORINFO);
             info.cbSize = 40;
-            PInvoke.GetMonitorInfo(monitor, ref info);
+            PInvoke_PeekUI.GetMonitorInfo(monitor, ref info);
             return new Size(info.rcMonitor.Size.Width, info.rcMonitor.Size.Height);
         }
 
         internal static double GetMonitorScale(this HWND hwnd)
         {
-            var dpi = PInvoke.GetDpiForWindow(hwnd);
+            var dpi = PInvoke_PeekUI.GetDpiForWindow(hwnd);
             var scalingFactor = dpi / 96d;
             return scalingFactor;
         }

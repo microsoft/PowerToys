@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Actions.
+        /// </summary>
+        internal static string Indexer_Command_Actions {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Actions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Browse.
         /// </summary>
         internal static string Indexer_Command_Browse {

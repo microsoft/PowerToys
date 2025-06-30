@@ -98,15 +98,6 @@ public static partial class NativeMethods
     [DllImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GetFirmwareType(ref FirmwareType FirmwareType);
-
-    [LibraryImport("ole32.dll")]
-    [return: MarshalAs(UnmanagedType.U4)]
-    public static partial uint CoCreateInstance(
-        ref Guid rclsid,
-        IntPtr pUnkOuter,
-        uint dwClsContext,
-        ref Guid riid,
-        out IntPtr rReturnedComObject);
 }
 
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "These are the names used by win32.")]
