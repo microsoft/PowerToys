@@ -4,6 +4,7 @@
 
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using WorkspacesEditor.Utils;
 
 namespace WorkspacesEditorUITest;
 
@@ -51,19 +52,23 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         AttachSnapshotWindow();
         var captureButton = Find<Button>("Capture");
         captureButton.Click();
-        Task.Delay(5000).Wait();
+        Task.Delay(3000).Wait();
 
-        // Verify captured windows appear
-        AttachWorkspacesEditor();
-        var appList = Find<Element>(By.AccessibilityId("CapturedAppList"));
+        // Verify captured windows by reading the temporary workspaces file as the ground truth.
+        var editorIO = new WorkspacesEditorIO();
+        var workspace = editorIO.ParseTempProject();
 
-        var calcText = appList.Find<Element>("Calculator");
-        Assert.IsNotNull(calcText, "Calculator should be captured");
+        Assert.IsNotNull(workspace, "Workspace data should be deserialized.");
+        Assert.IsNotNull(workspace.Applications, "Workspace should contain a list of apps.");
 
-        var settingItem = appList.Find<Element>(By.AccessibilityId("Settings"));
-        Assert.IsNotNull(settingItem, "Calculator should be captured");
+        bool isCalculatorFound = workspace.Applications.Any(app => app.AppPath.Contains("Calculator", StringComparison.OrdinalIgnoreCase));
+        bool isSettingsFound = workspace.Applications.Any(app => app.AppPath.Contains("Settings", StringComparison.OrdinalIgnoreCase));
+
+        Assert.IsTrue(isCalculatorFound, "Calculator should be captured in the workspace data.");
+        Assert.IsTrue(isSettingsFound, "Settings should be captured in the workspace data.");
 
         // Cancel to clean up
+        AttachWorkspacesEditor();
         Find<Button>("Cancel").Click();
         Task.Delay(1000).Wait();
 
