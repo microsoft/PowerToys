@@ -29,7 +29,9 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public IconInfoViewModel Icon { get; private set; }
 
-    private bool HasParameters { get; set; }
+    public bool HasParameters { get; set; }
+
+    public List<ParameterViewModel> Parameters { get; private set; } = [];
 
     public CommandViewModel(ICommand? command, WeakReference<IPageContext> pageContext)
         : base(pageContext)
@@ -53,17 +55,6 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
         Id = model.Id ?? string.Empty;
         Name = model.Name ?? string.Empty;
-
-        if (model is IInvokableCommandWithParameters)
-        {
-            HasParameters = true;
-        }
-
-        HasParameters = model switch
-        {
-            IInvokableCommandWithParameters withParams => true,
-            _ => false,
-        };
 
         IsFastInitialized = true;
     }
@@ -92,6 +83,21 @@ public partial class CommandViewModel : ExtensionObjectViewModel
             Icon = new(ico);
             Icon.InitializeProperties();
             UpdateProperty(nameof(Icon));
+        }
+
+        // TODO! we can probably make this a slow initialization
+        if (model is IInvokableCommandWithParameters withParams)
+        {
+            HasParameters = true;
+
+            if (withParams.Parameters is ICommandParameter[] parameters)
+            {
+                foreach (var p in parameters)
+                {
+                    var paramViewModel = new ParameterViewModel(p, PageContext);
+                    Parameters.Add(paramViewModel);
+                }
+            }
         }
 
         model.PropChanged += Model_PropChanged;

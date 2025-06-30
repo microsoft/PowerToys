@@ -60,6 +60,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
 
+    public bool HasParameters => Command.HasParameters;
+
+    public List<ParameterViewModel> Parameters => Command.Parameters;
+
     public List<CommandContextItemViewModel> AllCommands
     {
         get

@@ -2131,6 +2131,8 @@ interface ICommandParameter
     // TODO! values for enums?
     // TODO! dynamic values for enums? like GetValues(string query)
     // TODO! files might want to restrict types? but now we're a file picker and need that whole API
+    // TODO! parameters with more than one value? Like, 
+    //    SendMessage(People[] to, String message)
 };
 
 interface ICommandArgument

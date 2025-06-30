@@ -373,6 +373,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
                }
 
                TextToSuggest = item.TextToSuggest;
+
+               if (item.HasParameters)
+               {
+                   WeakReferenceMessenger.Default.Send<UpdateParametersMessage>(new(item.Parameters));
+               }
+               else
+               {
+                   WeakReferenceMessenger.Default.Send<UpdateParametersMessage>(null);
+               }
            });
 
         _lastSelectedItem = item;

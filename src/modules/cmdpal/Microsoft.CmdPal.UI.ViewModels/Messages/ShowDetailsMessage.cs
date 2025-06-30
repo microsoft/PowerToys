@@ -10,3 +10,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 public record ShowDetailsMessage(DetailsViewModel Details)
 {
 }
+
+public record UpdateParametersMessage(IEnumerable<ParameterViewModel>? Parameters)
+{
+}
