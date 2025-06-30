@@ -15,13 +15,13 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Commands;
 
-internal sealed partial class KillProcessCommand : InvokableCommand
+internal sealed partial class EndTaskCommand : InvokableCommand
 {
     private readonly Window _window;
 
-    public KillProcessCommand(Window window)
+    public EndTaskCommand(Window window)
     {
-        Icon = new IconInfo("\xE74D"); // Delete symbol
+        Icon = new IconInfo("\uF140");
         Name = $"{Resources.windowwalker_Kill}";
         _window = window;
     }
