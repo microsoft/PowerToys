@@ -50,9 +50,9 @@
                 MouseEnter="AppBorder_MouseEnter"
                 MouseLeave="AppBorder_MouseLeave">
                 <Expander
-                    AutomationProperties.Name="{Binding AppName}"
-                    AutomationProperties.AutomationId="{Binding AppName}"
                     Margin="0,0,20,0"
+                    AutomationProperties.AutomationId="{Binding AppName}"
+                    AutomationProperties.Name="{Binding AppName}"
                     FlowDirection="RightToLeft"
                     IsEnabled="{Binding IsIncluded, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     IsExpanded="{Binding IsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
