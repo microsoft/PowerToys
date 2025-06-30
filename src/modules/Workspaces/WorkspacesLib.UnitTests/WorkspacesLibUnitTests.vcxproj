@@ -59,7 +59,7 @@
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
     <ProjectReference Include="..\WorkspacesLib\WorkspacesLib.vcxproj">
-      <Project>{b31fcc55-b5a4-4ea7-b414-2dceae6af332}</Project> 
+      <Project>{b31fcc55-b5a4-4ea7-b414-2dceae6af332}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
