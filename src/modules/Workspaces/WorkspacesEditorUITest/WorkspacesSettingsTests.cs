@@ -65,7 +65,7 @@ public class WorkspacesSettingsTests : UITestBase
 
         // Toggle the state
         enableToggle.Click();
-        Thread.Sleep(500);
+        Task.Delay(500).Wait();
 
         // Verify state changed
         Assert.AreNotEqual(initialState, enableToggle.IsOn, "Toggle state should change");
@@ -100,7 +100,7 @@ public class WorkspacesSettingsTests : UITestBase
         Thread.Sleep(1000);
 
         // Default shortcut is Win+Ctrl+`
-        SendKeys(Key.Win, Key.Ctrl, Key.OemTilde);
+        SendKeys(Key.Win, Key.Ctrl, Key.W);
         Thread.Sleep(2000);
 
         // Verify editor opened
@@ -129,7 +129,7 @@ public class WorkspacesSettingsTests : UITestBase
         Thread.Sleep(1000);
 
         // Try to launch with shortcut
-        SendKeys(Key.Win, Key.Ctrl, Key.OemTilde);
+        SendKeys(Key.Win, Key.Ctrl, Key.W);
         Thread.Sleep(2000);
 
         // Verify editor did not open

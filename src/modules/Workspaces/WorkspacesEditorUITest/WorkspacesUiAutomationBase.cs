@@ -3,10 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Threading;
 using Microsoft.PowerToys.UITest;
-using OpenQA.Selenium.Interactions;
-using Windows.Media.Playback;
 
 namespace WorkspacesEditorUITest
 {
