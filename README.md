@@ -44,10 +44,10 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
  
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.92.0-x64.exe][ptUserX64] | 42EA4A3E8C79A5456476D19E72B3E2AB9393A89C4DC7442EB7EE5A1E3490D38A |
-| Per user - ARM64     | [PowerToysUserSetup-0.92.0-arm64.exe][ptUserArm64] | F3F433FE04049F9197411D792AADEBF34E3BE7FE16327BD8B73D2A046ED8BAF6 |
-| Machine wide - x64   | [PowerToysSetup-0.92.0-x64.exe][ptMachineX64] | EC4BC3A8625775866B0ED4577CCF83E6EC7B1A0AD267379DDBAF4FE49C7B5BDD |
-| Machine wide - ARM64 | [PowerToysSetup-0.92.0-arm64.exe][ptMachineArm64] | 9CB8911008420D0E446AE3D5CE365E447FA4DF9DCF9337F3A80F933C00FC3689 |
+| Per user - x64       | [PowerToysUserSetup-0.92.0-x64.exe][ptUserX64] | 8EE7778AF79A53013E8B09133495F748B54282A9016324741D7857091271D070 |
+| Per user - ARM64     | [PowerToysUserSetup-0.92.0-arm64.exe][ptUserArm64] | 65643E7A6E2C79CBCEBCDBB5E1FD7DFC0E1E62620BC47BC6566F6AE8CB8F41EF |
+| Machine wide - x64   | [PowerToysSetup-0.92.0-x64.exe][ptMachineX64] | DF82EE8684EC6D24682E1C6F7268BF665C5CFDCD19C0C8191A1C5803263C544E |
+| Machine wide - ARM64 | [PowerToysSetup-0.92.0-arm64.exe][ptMachineArm64] | 3975E47C41025452E37254E77BF155BF269FF16E45C2BCDA42B4824752E16DA9 |
 
 This is our preferred method.
 
@@ -95,21 +95,15 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.92 - June 2025 Update
 
-In this release, we focused on new features, stability, AOT, and automation.
+In this release, we focused on new features, stability, optimization improvements, and automation.
 
 **✨Highlights**
 
- - Added an option to hide or show the PowerToys system-tray icon. Thanks [@BLM16](https://github.com/BLM16)!  
- - Major upgrades to Command Palette, including Ahead-of-Time (AOT) readiness, new extension capabilities, and performance/stability fixes across the core UX and extensions.
- - Mouse button actions for Color Picker so you can choose what left, right, or middle click does. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Improved bug reporting experience, with progress indicators, faster packaging via updated compression, auto-clean up old trace log on machine, and inclusion of installer event logs for better diagnostics.
- - File Explorer add-on fixes, resolving PDF preview issues, blank rendering, and text file crashes for a more stable preview experience.
-
-### Bug report tool
-
-- Improved Settings to show progress while a bug-report package is being generated.
-- Updated bug-report compression library (cziplib 0.3.3) for faster and more reliable package creation. Thanks [@Chubercik](https://github.com/Chubercik)!
-- Included App-Installer (“AppX Deployment Server”) event logs in bug reports for more thorough diagnostics.  
+ - PowerToys Settings now has a toggle for the system-tray icon, giving users control over its visibility based on personal preference. Thanks [@BLM16](https://github.com/BLM16)!  
+ - Command Palette now has Ahead-of-Time ([AOT](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot)) compatibility for all first-party extensions, improved extensibility, and core UX fixes, resulting in better performance and stability across commands.
+ - Color Picker now has customizable mouse button actions, enabling more personalized workflows by assigning functions to left, right, and middle clicks. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Bug Report Tool now has a faster and clearer reporting process, with progress indicators, improved compression, auto-cleanup of old trace logs, and inclusion of msix installer logs for more efficient diagnostics.
+ - File Explorer add-ons now have improved rendering stability, resolving issues with PDF previews, blank thumbnails, and text file crashes during file browsing.
 
 ### Color Picker
 
@@ -117,32 +111,31 @@ In this release, we focused on new features, stability, AOT, and automation.
 
 ### Crop & Lock
 
-- Aligned window styling with current Windows theme for a cleaner look. Thanks [@sadirano](https://github.com/sadirano)!  
+ - Aligned window styling with current Windows theme for a cleaner look. Thanks [@sadirano](https://github.com/sadirano)!  
 
 ### Command Palette
 
-- Enhanced performance by resolving a regression in page loading.
-- Applied consistent hotkey handling across all Command Palette commands for a smoother user experience.
-- Improved graceful closing of Command Palette. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed consistency issue for extensions' alias with "Direct" setting and enabled localization for "Direct" and "Indirect" for better user understanding. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Improved visual clarity by styling critical context items correctly.
-- Automatically focused the field when only one is present on the content page.
-- Improved stability and efficiency when loading file icons in SDK ThumbnailHelper.cs by removing unnecessary operations. Thanks [@OldUser101](https://github.com/OldUser101)!
-- Enhanced details view with commands implementation. (See [Extension sample](./src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleListPageWithDetails.cs))
+ - Enhanced performance by resolving a regression in page loading.
+ - Applied consistent hotkey handling across all Command Palette commands for a smoother user experience.
+ - Improved graceful closing of Command Palette. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed consistency issue for extensions' alias with "Direct" setting and enabled localization for "Direct" and "Indirect" for better user understanding. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Improved visual clarity by styling critical context items correctly.
+ - Automatically focused the field when only one is present on the content page.
+ - Improved stability and efficiency when loading file icons in SDK ThumbnailHelper.cs by removing unnecessary operations. Thanks [@OldUser101](https://github.com/OldUser101)!
+ - Enhanced details view with commands implementation. (See [Extension sample](./src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleListPageWithDetails.cs))
 
 ### Command Palette extensions
 
-- Added "Copy Path" command to *App* search results for convenience. Thanks [@PesBandi](https://github.com/PesBandi)!
-- Improved *Calculator* input experience by ignoring leading equal signs. Thanks [@PesBandi](https://github.com/PesBandi)!
-- Corrected input handling in the *Calculator* extension to avoid showing errors for input with only leading whitespace.
-- Added basic support for Windows App Actions (internal preview) on *File* search results, starting with images and documents, to better integrate into user workflows. Thanks [@azchohfi](https://github.com/azchohfi)! Also, thanks [@davidegiacometti](https://github.com/davidegiacometti) for fixing a regression in Peek caused by the csWin32 library upgrade as part of this change.
-- Improved *New Extension* wizard by validating names to prevent namespace errors.
-- Ensured consistent context items display for the *Run* extension between fallback and top-level results.
-- Fixed missing *Time & Date* commands in fallback results. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Updated outdated results in the *Time & Date* extension. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Fixed an issue where *Web Search* always opened Microsoft Edge instead of the user's default browser on Windows 11 24H2 and later. Thanks [@RuggMatt](https://github.com/RuggMatt)!
-- Improved ordering of *Windows Settings* extension search results from alphabetical to relevance-based for quicker access.
-- Added "Restart Windows Explorer" command to the *Windows System Commands* provider for gracefully terminate and relaunch explorer.exe. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added "Copy Path" command to *App* search results for convenience. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Improved *Calculator* input experience by ignoring leading equal signs. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Corrected input handling in the *Calculator* extension to avoid showing errors for input with only leading whitespace.
+ - Improved *New Extension* wizard by validating names to prevent namespace errors.
+ - Ensured consistent context items display for the *Run* extension between fallback and top-level results.
+ - Fixed missing *Time & Date* commands in fallback results. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Fixed outdated results in the *Time & Date* extension. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Fixed an issue where *Web Search* always opened Microsoft Edge instead of the user's default browser on Windows 11 24H2 and later. Thanks [@RuggMatt](https://github.com/RuggMatt)!
+ - Improved ordering of *Windows Settings* extension search results from alphabetical to relevance-based for quicker access.
+ - Added "Restart Windows Explorer" command to the *Windows System Commands* provider for gracefully terminate and relaunch explorer.exe. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Command Palette Ahead-of-Time (AOT) readiness
 
@@ -152,27 +145,26 @@ In this release, we focused on new features, stability, AOT, and automation.
 
 ### FancyZones
 
-- Fixed DPI-scaling issues to ensure FancyZones Editor displays crisply on high-resolution monitors. Thanks [@HO-COOH](https://github.com/HO-COOH)! This inspired us a broader review across other PowerToys modules, leading to DPI display optimizations in Awake, Color Picker, PowerAccent, and more.
+ - Fixed DPI-scaling issues to ensure FancyZones Editor displays crisply on high-resolution monitors. Thanks [@HO-COOH](https://github.com/HO-COOH)! This inspired us a broader review across other PowerToys modules, leading to DPI display optimizations in Awake, Color Picker, PowerAccent, and more.
 
 ### File Explorer add-ons
 
-- Fixed PDF thumbnails in the preview pane so they render correctly. Thanks [@mohiuddin-khan-shiam](https://github.com/mohiuddin-khan-shiam)!  
-- Fixed PDF stream handling to prevent blank previews.  
-- Prevented Monaco Preview Handler crash when opening UTF-8-BOM text files.  
+ - Fixed potential failures in PDF previewer and thumbnail generation, improving reliability when browsing PDFs. Thanks [@mohiuddin-khan-shiam](https://github.com/mohiuddin-khan-shiam)!  
+ - Prevented Monaco Preview Handler crash when opening UTF-8-BOM text files.  
 
 ### Hosts File Editor
 
-- Added an in-app *“Learn more”* link to warning dialogs for quick guidance. Thanks [@PesBandi](https://github.com/PesBandi)!  
+ - Added an in-app *“Learn more”* link to warning dialogs for quick guidance. Thanks [@PesBandi](https://github.com/PesBandi)!  
 
 ### Mouse Without Borders
 
-- Fixed firewall rule so MWB now accepts connections from IPs outside your local subnet.
-- Cleaned legacy logs to reduce disk usage and noise.  
+ - Fixed firewall rule so MWB now accepts connections from IPs outside your local subnet.
+ - Cleaned legacy logs to reduce disk usage and noise.  
 
 ### Peek
 
-- Updated QOI reader so 3-channel QOI images preview correctly in Peek and File Explorer. Thanks [@mbartlett21](https://github.com/mbartlett21)!  
-- Added codec detection with a clear warning when a video can’t be previewed, along with a link to the Microsoft Store to download the required codec.
+ - Updated QOI reader so 3-channel QOI images preview correctly in Peek and File Explorer. Thanks [@mbartlett21](https://github.com/mbartlett21)!  
+ - Added codec detection with a clear warning when a video can’t be previewed, along with a link to the Microsoft Store to download the required codec.
 
 ### PowerRename
 
@@ -184,16 +176,17 @@ In this release, we focused on new features, stability, AOT, and automation.
 
 ### Registry Preview
 
-- Improved file-saving experience in Registry Preview by aligning with Notepad-like behavior, enhancing user prompts, error handling, and preventing crashes during unsaved or interrupted actions. Thanks [@htcfreek](https://github.com/htcfreek)!  
+ - Added "Extended data preview" via magnifier icon and context menu in the Data Grid, enabled easier inspection of complex registry types like REG_BINARY, REG_EXPAND_SZ, and REG_MULTI_SZ, etc. Thanks [@htcfreek](https://github.com/htcfreek)! 
+ - Improved file-saving experience in Registry Preview by aligning with Notepad-like behavior, enhancing user prompts, error handling, and preventing crashes during unsaved or interrupted actions. Thanks [@htcfreek](https://github.com/htcfreek)!  
 
 ### Settings
 
-- Added an option to hide or show the PowerToys system-tray icon. Thanks [@BLM16](https://github.com/BLM16)!  
+ - Added an option to hide or show the PowerToys system-tray icon. Thanks [@BLM16](https://github.com/BLM16)!  
 
 ### Workspaces
 
-- Stored Workspaces icons in user AppData to ensure profile portability and prevent loss during temporary folder cleanup.
-- Enabled capture and launch of PWAs on non-default Edge or Chrome profiles, ensuring consistent behavior during creation and execution.
+ - Stored Workspaces icons in user AppData to ensure profile portability and prevent loss during temporary folder cleanup.
+ - Enabled capture and launch of PWAs on non-default Edge or Chrome profiles, ensuring consistent behavior during creation and execution.
 
 ### Documentation
 
@@ -202,25 +195,29 @@ In this release, we focused on new features, stability, AOT, and automation.
 
 ### Development
 
-- Updated .NET libraries to 9.0.6 for performance and security. Thanks [@snickler](https://github.com/snickler)!  
-- Updated WinAppSDK to 1.7.2 for better stability and Windows support.  
-- Introduced a one-step local build script that generates a signed installer, enhancing developer productivity.
-- Generated portable PDBs so cross-platform debuggers can read symbol files, improving debugging experience in VSCode and other tools.
-- Simplified enabling *Developer Mode* by using [Microsoft.Windows.Settings](https://www.powershellgallery.com/packages/Microsoft.Windows.Settings) module in Winget DSC configuration. Thanks [@mdanish-kh](https://github.com/mdanish-kh)!  
-- Adjusted build scripts for the latest Az.Accounts module to keep CI green.
-- Streamlined release pipeline by removing hard-coded telemetry version numbers, and unified Command Palette versioning with Windows Terminal's versioning method for consistent updates.
-- Enhanced the build validation step to show detailed differences between NOTICE.md and actual package dependencies and versions.
-- Improved spell-checking accuracy across the repo. Thanks [@rovercoder](https://github.com/rovercoder)!  
-- Upgraded CI to TouchdownBuild v5 for faster pipelines.  
-- Added context comments to *Resources.resw* to help translators.
-  
-### Test automation
+ - Updated .NET libraries to 9.0.6 for performance and security. Thanks [@snickler](https://github.com/snickler)!  
+ - Updated WinAppSDK to 1.7.2 for better stability and Windows support.  
+ - Introduced a one-step local build script that generates a signed installer, enhancing developer productivity.
+ - Generated portable PDBs so cross-platform debuggers can read symbol files, improving debugging experience in VSCode and other tools.
+ - Simplified Winget config files by using the [Microsoft.Windows.Settings](https://www.powershellgallery.com/packages/Microsoft.Windows.Settings) module to enable Developer Mode. Thanks [@mdanish-kh](https://github.com/mdanish-kh)! 
+ - Adjusted build scripts for the latest Az.Accounts module to keep CI green.
+ - Streamlined release pipeline by removing hard-coded telemetry version numbers, and unified Command Palette versioning with Windows Terminal's versioning method for consistent updates.
+ - Enhanced the build validation step to show detailed differences between NOTICE.md and actual package dependencies and versions.
+ - Improved spell-checking accuracy across the repo. Thanks [@rovercoder](https://github.com/rovercoder)!  
+ - Upgraded CI to TouchdownBuild v5 for faster pipelines.  
+ - Added context comments to *Resources.resw* to help translators.
+ - Expanded fuzz testing coverage to include FancyZones.
+ - Integrated all unit tests into the CI pipeline, increasing from ~3,000 to ~5,000 tests.
+ - Enabled daily UI test automation on the main branch, now covering over 370 UI tests for end-to-end validation.
+ - Newly added unit tests for WorkspacesLib to improve reliability and maintainability.
 
-- Expanded fuzz testing coverage to include FancyZones.
-- Integrated all unit tests into the CI pipeline, increasing from ~3,000 to ~5,000 tests.
-- Enabled daily UI test automation on the main branch, now covering over 370 UI tests for end-to-end validation.
-- Newly added unit tests for WorkspacesLib to improve reliability and maintainability.
-   
+
+### Tool/General
+
+- Improved Settings to show progress while a bug-report package is being generated.
+- Updated bug-report compression library (cziplib 0.3.3) for faster and more reliable package creation. Thanks [@Chubercik](https://github.com/Chubercik)!
+- Included App-Installer (“AppX Deployment Server”) event logs in bug reports for more thorough diagnostics.  
+
 ### What is being planned for version 0.93
 
 For [v0.93][github-next-release-work], we'll work on the items below:
