@@ -39,6 +39,7 @@ MBs
 mkv
 msix
 nupkg
+PDFs
 petabyte
 resw
 resx
