@@ -5051,6 +5051,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
+  </data>
   <data name="HighlightMode.Description" xml:space="preserve">
     <value>Highlight the cursor or dim the screen to spotlight it</value>
   </data>
