@@ -19,7 +19,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class ApplyLayoutTests : UITestBase
     {
         public ApplyLayoutTests()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 
@@ -135,6 +135,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(Parameters));
 
@@ -195,12 +196,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
         }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
-        }
-
         [TestMethod]
         public void ApplyCustomLayout()
         {
@@ -234,7 +229,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(Parameters.Monitors[0].MonitorNumber, data.AppliedLayouts[0].Device.MonitorNumber);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.ApplyLayoutsOnEachMonitor")]
+        [TestCategory("FancyZones Editor #10")]
         public void ApplyLayoutsOnEachMonitor()
         {
             // apply the layout on the first monitor
@@ -261,7 +257,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(secondLayout.Uuid, data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 2).AppliedLayout.Uuid);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.ApplyTemplateWithDifferentParametersOnEachMonitor")]
+        [TestCategory("FancyZones Editor #10")]
         public void ApplyTemplateWithDifferentParametersOnEachMonitor()
         {
             var layoutType = LayoutType.Columns;
@@ -270,10 +267,10 @@ namespace Microsoft.FancyZonesEditor.UITests
             // apply the layout on the first monitor, set parameters
             Session.Find<Element>(layoutName).Click();
             Session.Find<Element>(layoutName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
+            var slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
-            slider.SendKeys(Keys.Right);
+            slider.SendKeys(Key.Right);
+            slider.SendKeys(Key.Right);
             var expectedFirstLayoutZoneCount = int.Parse(slider.Text!, CultureInfo.InvariantCulture);
             Session.Find<Button>(ElementName.Save).Click();
 
@@ -281,16 +278,16 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Element>(PowerToys.UITest.By.AccessibilityId("Monitors")).Find<Element>("Monitor 2").Click();
             Session.Find<Element>(layoutName).Click();
             Session.Find<Element>(layoutName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
-            slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
+            slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Left);
+            slider.SendKeys(Key.Left);
             var expectedSecondLayoutZoneCount = int.Parse(slider.Text!, CultureInfo.InvariantCulture);
             Session.Find<Button>(ElementName.Save).Click();
 
             // verify the layout on the first monitor wasn't changed
             Session.Find<Element>(PowerToys.UITest.By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Click();
             Session.Find<Element>(layoutName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
-            slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
+            slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
             Assert.IsNotNull(slider);
             Assert.AreEqual(expectedFirstLayoutZoneCount, int.Parse(slider.Text!, CultureInfo.InvariantCulture));
             Session.Find<Button>(ElementName.Cancel).Click();

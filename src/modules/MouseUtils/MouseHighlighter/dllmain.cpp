@@ -18,6 +18,7 @@ namespace
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DELAY_MS[] = L"highlight_fade_delay_ms";
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DURATION_MS[] = L"highlight_fade_duration_ms";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
+    const wchar_t JSON_KEY_SPOTLIGHT_MODE[] = L"spotlight_mode";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -366,6 +367,16 @@ public:
             catch (...)
             {
                 Logger::warn("Failed to initialize auto activate from settings. Will use default value");
+            }
+            try
+            {
+                // Parse spotlight mode
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_MODE);
+                highlightSettings.spotlightMode = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize spotlight mode settings. Will use default value");
             }
         }
         else

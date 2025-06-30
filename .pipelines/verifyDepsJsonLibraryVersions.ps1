@@ -92,4 +92,3 @@ if ($totalFailures -gt 0) {
 
 Write-Host -ForegroundColor Green "All " $referencedFileVersionsPerDll.keys.Count " libraries are mentioned with the same version across the dependencies.`r`n"
 exit 0
-

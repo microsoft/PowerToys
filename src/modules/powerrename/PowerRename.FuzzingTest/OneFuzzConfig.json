@@ -11,7 +11,7 @@
         // project, where bugs will be filed 
         "org": "microsoft",
         "project": "OS",
-        "AssignedTo": "leilzh@microsoft.com",
+        "AssignedTo": "PowerToys@microsoft.com",
         "AreaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\SALT",
         "IterationPath": "OS\\Future"
       },
