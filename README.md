@@ -149,7 +149,7 @@ In this release, we focused on new features, stability, optimization improvement
 
 ### File Explorer add-ons
 
- - Fixed potential failures in PDF previewer and thumbnail generation, improving reliability when browsing PDFs. Thanks [@mohiuddin-khan-shiam](https://github.com/mohiuddin-khan-shiam)!  
+ - Fixed potential failures in PDF previewer and thumbnail generation, improving reliability when browsing PDF files. Thanks [@mohiuddin-khan-shiam](https://github.com/mohiuddin-khan-shiam)!  
  - Prevented Monaco Preview Handler crash when opening UTF-8-BOM text files.  
 
 ### Hosts File Editor
