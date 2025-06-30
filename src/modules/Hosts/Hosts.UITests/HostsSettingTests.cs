@@ -94,14 +94,9 @@ namespace Hosts.UITests
 
         private bool IsHostsFileEditorClosed()
         {
-            try
+            if (this.Session.FindAll<Window>("Hosts File Editor").Count == 0 && this.Session.FindAll<Window>("Administrator: Hosts File Editor").Count == 0)
             {
-                this.Session.FindAll<Window>("Hosts File Editor");
-            }
-            catch (Exception ex)
-            {
-                // Validate if editor window closed by checking exception.Message
-                return ex.Message.Contains("Currently selected window has been closed");
+                return true;
             }
 
             return false;

@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.UITest
     /// <summary>
     /// Nested class for test initialization.
     /// </summary>
-    internal class SessionHelper
+    public class SessionHelper
     {
         // Default session path is PowerToys settings dashboard
         private readonly string sessionPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings);
@@ -24,11 +24,11 @@ namespace Microsoft.PowerToys.UITest
 
         private string? locationPath;
 
-        private WindowsDriver<WindowsElement> Root { get; set; }
+        private static WindowsDriver<WindowsElement>? root;
 
         private WindowsDriver<WindowsElement>? Driver { get; set; }
 
-        private Process? appDriver;
+        private static Process? appDriver;
         private Process? runner;
 
         private PowerToysModule scope;
@@ -40,14 +40,7 @@ namespace Microsoft.PowerToys.UITest
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            var winAppDriverProcessInfo = new ProcessStartInfo
-            {
-                FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
-                Verb = "runas",
-            };
-
-            this.ExitExe(winAppDriverProcessInfo.FileName);
-            this.appDriver = Process.Start(winAppDriverProcessInfo);
+            CheckWinAppDriverAndRoot();
 
             var runnerProcessInfo = new ProcessStartInfo
             {
@@ -60,10 +53,20 @@ namespace Microsoft.PowerToys.UITest
                 this.ExitExe(runnerProcessInfo.FileName);
                 this.runner = Process.Start(runnerProcessInfo);
             }
+        }
 
-            var desktopCapabilities = new AppiumOptions();
-            desktopCapabilities.AddAdditionalCapability("app", "Root");
-            this.Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
+        /// <summary>
+        /// Initializes WinAppDriver And Root.
+        /// </summary>
+        public void CheckWinAppDriverAndRoot()
+        {
+            if (SessionHelper.root == null || SessionHelper.appDriver?.SessionId == null || SessionHelper.appDriver == null || SessionHelper.appDriver.HasExited)
+            {
+                this.StartWindowsAppDriverApp();
+                var desktopCapabilities = new AppiumOptions();
+                desktopCapabilities.AddAdditionalCapability("app", "Root");
+                SessionHelper.root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
+            }
         }
 
         /// <summary>
@@ -88,8 +91,6 @@ namespace Microsoft.PowerToys.UITest
             ExitScopeExe();
             try
             {
-                appDriver?.Kill();
-                appDriver?.WaitForExit(); // Optional: Wait for the process to exit
                 if (this.scope == PowerToysModule.PowerToysSettings)
                 {
                     runner?.Kill();
@@ -135,30 +136,39 @@ namespace Microsoft.PowerToys.UITest
         {
             var opts = new AppiumOptions();
             opts.AddAdditionalCapability("app", appPath);
+            this.Driver = NewWindowsDriver(opts);
+        }
 
+        /// <summary>
+        /// Starts a new exe and takes control of it.
+        /// </summary>
+        /// <param name="info">The path to the application executable.</param>
+        private WindowsDriver<WindowsElement> NewWindowsDriver(AppiumOptions info)
+        {
             // Create driver with retry
             var timeout = TimeSpan.FromMinutes(2);
             var retryInterval = TimeSpan.FromSeconds(5);
             DateTime startTime = DateTime.Now;
 
             while (true)
-            {
+            {
                 try
                 {
-                    this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
-                    break;
+                    var res = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), info);
+                    return res;
                 }
-                catch (Exception)
-                {
-                    if (DateTime.Now - startTime > timeout)
-                    {
-                        throw;
-                    }
+                catch (Exception)
+                {
+                    if (DateTime.Now - startTime > timeout)
+                    {
+                        throw;
+                    }
 
-                    Task.Delay(retryInterval).Wait();
-                }
-            }
-        }
+                    Task.Delay(retryInterval).Wait();
+                    CheckWinAppDriverAndRoot();
+                }
+            }
+        }
 
         /// <summary>
         /// Exit now exe.
@@ -173,16 +183,31 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void RestartScopeExe()
         {
-            ExitExe(sessionPath);
+            ExitScopeExe();
             StartExe(locationPath + sessionPath);
         }
 
-        public WindowsDriver<WindowsElement> GetRoot() => this.Root;
+        public WindowsDriver<WindowsElement> GetRoot()
+        {
+            return SessionHelper.root!;
+        }
 
         public WindowsDriver<WindowsElement> GetDriver()
         {
             Assert.IsNotNull(this.Driver, $"Failed to get driver. Driver is null.");
             return this.Driver;
+        }
+
+        private void StartWindowsAppDriverApp()
+        {
+            var winAppDriverProcessInfo = new ProcessStartInfo
+            {
+                FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
+                Verb = "runas",
+            };
+
+            this.ExitExe(winAppDriverProcessInfo.FileName);
+            SessionHelper.appDriver = Process.Start(winAppDriverProcessInfo);
         }
     }
 }

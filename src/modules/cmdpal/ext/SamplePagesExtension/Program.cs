@@ -25,7 +25,7 @@ public class Program
             server.RegisterExtension(() => extensionInstance);
 
             // This will make the main thread wait until the event is signalled by the extension class.
-            // Since we have single instance of the extension object, we exit as soon as it is disposed.
+            // Since we have a single instance of the extension object, we exit as soon as it is disposed.
             extensionDisposedEvent.WaitOne();
         }
         else

@@ -46,11 +46,11 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public bool? IsElevated { get; private set; }
 
-        public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver, PowerToysModule scope, WindowSize size)
+        public Session(WindowsDriver<WindowsElement> pRoot, WindowsDriver<WindowsElement> pDriver, PowerToysModule scope, WindowSize size)
         {
             this.MainWindowHandler = IntPtr.Zero;
-            this.Root = root;
-            this.WindowsDriver = windowsDriver;
+            this.Root = pRoot;
+            this.WindowsDriver = pDriver;
             this.InitScope = scope;
 
             if (size != WindowSize.UnSpecified)
@@ -345,9 +345,9 @@ namespace Microsoft.PowerToys.UITest
         {
             PerformAction(
                 () =>
-            {
-                KeyboardHelper.SendKey(key);
-            },
+                {
+                    KeyboardHelper.SendKey(key);
+                },
                 msPreAction,
                 msPostAction);
         }
@@ -385,9 +385,9 @@ namespace Microsoft.PowerToys.UITest
         {
             PerformAction(
                 () =>
-         {
-             MouseHelper.MoveMouseTo(x, y);
-         },
+                {
+                    MouseHelper.MoveMouseTo(x, y);
+                },
                 msPreAction,
                 msPostAction);
         }
@@ -402,53 +402,52 @@ namespace Microsoft.PowerToys.UITest
         {
             PerformAction(
                 () =>
-            {
-                switch (action)
                 {
-                    case MouseActionType.LeftClick:
-                        MouseHelper.LeftClick();
-                        break;
-                    case MouseActionType.RightClick:
-                        MouseHelper.RightClick();
-                        break;
-                    case MouseActionType.MiddleClick:
-                        MouseHelper.MiddleClick();
-                        break;
-                    case MouseActionType.LeftDoubleClick:
-                        MouseHelper.LeftDoubleClick();
-                        break;
-                    case MouseActionType.RightDoubleClick:
-                        MouseHelper.RightDoubleClick();
-                        break;
-                    case MouseActionType.LeftDown:
-                        MouseHelper.LeftDown();
-                        break;
-                    case MouseActionType.LeftUp:
-                        MouseHelper.LeftUp();
-                        break;
-                    case MouseActionType.RightDown:
-                        MouseHelper.RightDown();
-                        break;
-                    case MouseActionType.RightUp:
-                        MouseHelper.RightUp();
-                        break;
-                    case MouseActionType.MiddleDown:
-                        MouseHelper.MiddleDown();
-                        break;
-                    case MouseActionType.MiddleUp:
-                        MouseHelper.MiddleUp();
-                        break;
-                    case MouseActionType.ScrollUp:
-                        MouseHelper.ScrollUp();
-                        break;
-                    case MouseActionType.ScrollDown:
-                        MouseHelper.ScrollDown();
-                        break;
-                    default:
-                        throw new ArgumentException("Unsupported mouse action.", nameof(action));
-                        throw new ArgumentException("Unsupported mouse action.", nameof(action));
-                }
-            },
+                    switch (action)
+                    {
+                        case MouseActionType.LeftClick:
+                            MouseHelper.LeftClick();
+                            break;
+                        case MouseActionType.RightClick:
+                            MouseHelper.RightClick();
+                            break;
+                        case MouseActionType.MiddleClick:
+                            MouseHelper.MiddleClick();
+                            break;
+                        case MouseActionType.LeftDoubleClick:
+                            MouseHelper.LeftDoubleClick();
+                            break;
+                        case MouseActionType.RightDoubleClick:
+                            MouseHelper.RightDoubleClick();
+                            break;
+                        case MouseActionType.LeftDown:
+                            MouseHelper.LeftDown();
+                            break;
+                        case MouseActionType.LeftUp:
+                            MouseHelper.LeftUp();
+                            break;
+                        case MouseActionType.RightDown:
+                            MouseHelper.RightDown();
+                            break;
+                        case MouseActionType.RightUp:
+                            MouseHelper.RightUp();
+                            break;
+                        case MouseActionType.MiddleDown:
+                            MouseHelper.MiddleDown();
+                            break;
+                        case MouseActionType.MiddleUp:
+                            MouseHelper.MiddleUp();
+                            break;
+                        case MouseActionType.ScrollUp:
+                            MouseHelper.ScrollUp();
+                            break;
+                        case MouseActionType.ScrollDown:
+                            MouseHelper.ScrollDown();
+                            break;
+                        default:
+                            throw new ArgumentException("Unsupported mouse action.", nameof(action));
+                    }
+                },
                 msPreAction,
                 msPostAction);
         }
@@ -488,20 +487,20 @@ namespace Microsoft.PowerToys.UITest
 
                 while (DateTime.Now - startTime < timeout)
                 {
-                    matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler(
-                        new[] { windowName, WindowHelper.AdministratorPrefix + windowName });
+                    matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler(
+                    new[] { windowName, WindowHelper.AdministratorPrefix + windowName });
 
-                    if (matchingWindows.Count > 0 && matchingWindows[0].HWnd != IntPtr.Zero)
-                    {
-                        break;
-                    }
+                    if (matchingWindows.Count > 0 && matchingWindows[0].HWnd != IntPtr.Zero)
+                    {
+                        break;
+                    }
 
-                    Thread.Sleep(retryInterval);
+                    Task.Delay(retryInterval).Wait();
                 }
 
                 if (matchingWindows == null || matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
                 {
-                    Assert.Fail($"Failed to attach. Window '{windowName}' not found after {timeout.TotalSeconds} seconds.");
+                    Assert.Fail($"Failed to attach. Window '{windowName}' not found after {timeout.TotalSeconds} seconds.");
                 }
 
                 // pick one from matching windows
@@ -580,9 +579,9 @@ namespace Microsoft.PowerToys.UITest
         {
             PerformAction(
                 () =>
-            {
-                StartExeInternal(executablePath, arguments);
-            },
+                {
+                    StartExeInternal(executablePath, arguments);
+                },
                 msPreAction,
                 msPostAction);
         }

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
@@ -20,7 +21,7 @@ internal sealed partial class FallbackReloadItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
-        _reloadCommand.Name = query.StartsWith('r') ? "Reload" : string.Empty;
+        _reloadCommand.Name = query.StartsWith("r", StringComparison.OrdinalIgnoreCase) ? "Reload" : string.Empty;
         Title = _reloadCommand.Name;
     }
 }

@@ -85,7 +85,6 @@ namespace Microsoft.PowerToys.UITest
         Down,
         Left,
         Right,
-        OemTilde,
         Other,
     }
 
@@ -278,8 +277,6 @@ namespace Microsoft.PowerToys.UITest
                     return "8";
                 case Key.Num9:
                     return "9";
-                case Key.OemTilde:
-                    return "~";
                 default:
                     return string.Empty;
             }
@@ -430,8 +427,6 @@ namespace Microsoft.PowerToys.UITest
                     return 0x2D;  // Insert Key - 0x2D in hex
                 case Key.Delete:
                     return 0x2E;  // Delete Key - 0x2E in hex
-                case Key.OemTilde:
-                    return 0xC0;  // Tilde Key - 0xC0 in hex
                 default:
                     throw new ArgumentException($"Key {key} is not supported, Please add your key at TranslateKeyHex for translation to hex.");
             }

@@ -14,6 +14,7 @@ AColumn
 acrt
 ACTIVATEAPP
 activationaction
+ACTIVATEOPTIONS
 ACVS
 adaptivecards
 ADate
@@ -68,6 +69,7 @@ appwiz
 APSTUDIO
 AQS
 ARandom
+Arash
 ARCHITEW
 ARemapped
 ARPINSTALLLOCATION
@@ -154,6 +156,7 @@ builttoroam
 BVal
 BValue
 byapp
+BYCOMMAND
 BYPOSITION
 CALCRECT
 CALG
@@ -201,6 +204,7 @@ CLIPSIBLINGS
 closesocket
 clp
 CLSCTX
+CLSCTXLOCALSERVER
 clsids
 Clusion
 cmder
@@ -329,7 +333,6 @@ DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
-DEFT
 deinitialization
 DELA
 DELETEDKEYIMAGE
@@ -475,6 +478,7 @@ EXPCMDFLAGS
 EXPCMDSTATE
 explr
 exppowertoys
+exprtk
 exptas
 exsb
 exstyle
@@ -678,7 +682,6 @@ IBeam
 icf
 ICONERROR
 ICONLOCATION
-idc
 IDCANCEL
 IDD
 idk
@@ -689,7 +692,6 @@ IDR
 IDXGI
 ietf
 IEXPLORE
-iextn
 IFACEMETHOD
 IFACEMETHODIMP
 IFile
@@ -728,7 +730,6 @@ INPUTMOUSE
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
-INSTALLDIR
 installdir
 INSTALLFOLDER
 INSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER
@@ -765,6 +766,7 @@ iwr
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JLO
 jobject
 jpe
 jpnime
@@ -798,6 +800,7 @@ LCIDTo
 Lclean
 Ldone
 Ldr
+LEFTALIGN
 LEFTSCROLLBAR
 LEFTTEXT
 LError
@@ -820,11 +823,11 @@ LMENU
 lnks
 LOADFROMFILE
 LOBYTE
-localappdata
 LOCALDISPLAY
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
+LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
@@ -920,6 +923,7 @@ metafile
 mfc
 Mgmt
 Microwaved
+middleclickaction
 midl
 mii
 mindaro
@@ -985,7 +989,6 @@ msrc
 msstore
 mst
 msvcp
-msvsmon
 MTND
 MULTIPLEUSE
 multizone
@@ -1163,6 +1166,7 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
+partow
 PATPAINT
 pbc
 pbi
@@ -1261,6 +1265,7 @@ prg
 prgh
 prgms
 pri
+primaryclickaction
 PRINTCLIENT
 printmanagement
 prm
@@ -1293,7 +1298,6 @@ pstm
 PStr
 pstream
 pstrm
-pswd
 PSYSTEM
 psz
 ptb
@@ -1438,6 +1442,7 @@ SDKDDK
 sdns
 searchterm
 SEARCHUI
+secondaryclickaction
 SECONDARYDISPLAY
 secpol
 securestring
@@ -1485,16 +1490,12 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-SHELLEXTENSION
 SHELLICONSIZE
-SHELLNEWVALUE
 SHFILEINFO
 SHFILEOPSTRUCT
 SHGDN
 SHGDNF
 SHGFI
-SHGFIICON
-SHGFILARGEICON
 SHIL
 shinfo
 shlwapi
@@ -1526,9 +1527,9 @@ SICHINT
 SIDs
 siex
 sigdn
+Signedness
 SIGNINGSCENARIO
 signtool
-Signtool
 SINGLEKEY
 sipolicy
 SIZEBOX
@@ -1600,6 +1601,7 @@ steamapps
 STGC
 STGM
 STGMEDIUM
+STGMREAD
 STICKYKEYS
 sticpl
 storelogo
@@ -1676,6 +1678,7 @@ TDefault
 TDevice
 telephon
 templatenamespace
+TESTONLY
 testprocess
 TEXCOORD
 TEXTBOXNEWLINE
@@ -1728,6 +1731,7 @@ trx
 tsa
 TSender
 TServer
+tskill
 tstoi
 TStr
 tweakme
@@ -1791,7 +1795,6 @@ uxtheme
 vabdq
 validmodulename
 valuegenerator
-VARENUM
 variantassignment
 vcamp
 VCENTER
@@ -1962,6 +1965,7 @@ Wwanpp
 XAxis
 xclip
 xcopy
+XDeployment
 XDocument
 XElement
 xfd
@@ -2009,3 +2013,10 @@ culori
 Evercoder
 LCh
 CIELCh
+CLSCTXINPROCALL
+IIDI
+irow
+lcid
+ppwsz
+rguid
+VARTYPE
