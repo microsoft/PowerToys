@@ -56,27 +56,6 @@ namespace Microsoft.PowerToys.UITest
             return new ReadOnlyCollection<TW>(new List<TW>());
         }
 
-        private static ReadOnlyCollection<TW> FindElementsWithRetry<TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, int timeoutMS)
-        {
-            int retryIntervalMS = 500;
-            timeoutMS = 1;
-            int elapsedTime = 0;
-
-            while (elapsedTime < timeoutMS)
-            {
-                var items = findElementsFunc();
-                if (items.Count > 0)
-                {
-                    return items;
-                }
-
-                Task.Delay(retryIntervalMS).Wait();
-                elapsedTime += retryIntervalMS;
-            }
-
-            return new ReadOnlyCollection<TW>(new List<TW>());
-        }
-
         public static T NewElement<T>(WindowsElement? element, WindowsDriver<WindowsElement>? driver, int timeoutMS)
              where T : Element, new()
         {
