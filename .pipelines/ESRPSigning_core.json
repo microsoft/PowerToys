@@ -121,11 +121,11 @@
             "WinUI3Apps\\PowerToys.EnvironmentVariables.dll",
             "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
-            "WinUI3Apps\\PowerToys.ImageResizer.exe",
-            "WinUI3Apps\\PowerToys.ImageResizer.dll",
-            "WinUI3Apps\\PowerToys.ImageResizerExt.dll",
-            "WinUI3Apps\\PowerToys.ImageResizerContextMenu.dll",
-            "WinUI3Apps\\ImageResizerContextMenuPackage.msix",
+            "PowerToys.ImageResizer.exe",
+            "PowerToys.ImageResizer.dll",
+            "PowerToys.ImageResizerExt.dll",
+            "PowerToys.ImageResizerContextMenu.dll",
+            "ImageResizerContextMenuPackage.msix",
 
             "PowerToys.KeyboardManager.dll",
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
