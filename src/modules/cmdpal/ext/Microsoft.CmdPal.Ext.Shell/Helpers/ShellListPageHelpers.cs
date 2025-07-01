@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -118,7 +119,7 @@ public class ShellListPageHelpers
         return FileExistInPath(filename, out var _);
     }
 
-    internal static bool FileExistInPath(string filename, out string fullPath)
+    internal static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
     {
         fullPath = string.Empty;
 
@@ -126,6 +127,7 @@ public class ShellListPageHelpers
         // Debug.WriteLine($"Run: filename={filename} -> expanded={expanded}");
         if (File.Exists(filename))
         {
+            token?.ThrowIfCancellationRequested();
             fullPath = Path.GetFullPath(filename);
             return true;
         }
@@ -143,12 +145,16 @@ public class ShellListPageHelpers
                         return true;
                     }
 
+                    token?.ThrowIfCancellationRequested();
+
                     var path2 = Path.Combine(path, filename + ".exe");
                     if (File.Exists(path2))
                     {
                         fullPath = Path.GetFullPath(path2);
                         return true;
                     }
+
+                    token?.ThrowIfCancellationRequested();
                 }
 
                 return false;
