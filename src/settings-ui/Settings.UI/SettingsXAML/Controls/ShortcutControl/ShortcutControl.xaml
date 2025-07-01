@@ -16,7 +16,7 @@
             Padding="0"
             Click="OpenDialogButton_Click"
             Style="{StaticResource SubtleButtonStyle}">
-            <Grid>
+            <StackPanel Orientation="Horizontal" Spacing="8">
                 <ItemsControl
                     x:Name="PreviewKeysControl"
                     Margin="2"
@@ -60,7 +60,14 @@
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
-            </Grid>
+                <FontIcon
+                    Margin="0,0,4,0"
+                    AutomationProperties.Name=""
+                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                    FontSize="14"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE70F;" />
+            </StackPanel>
         </Button>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="CommonStates">
