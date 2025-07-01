@@ -158,12 +158,57 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // Check for cancellation before file system operations
         cancellationToken.ThrowIfCancellationRequested();
 
-        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
+        // Reset the path resolution flag
+        var couldResolvePath = false;
 
-        // Also, liberally cancel ourselves between various filesystem actions
-        cancellationToken.ThrowIfCancellationRequested();
+        var exeExists = false;
+        var fullExePath = string.Empty;
+        var pathIsDir = false;
 
-        var pathIsDir = Directory.Exists(expanded);
+        try
+        {
+            // Create a timeout for file system operations (200ms)
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+            using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+            var timeoutToken = combinedCts.Token;
+
+            // Use Task.Run with timeout - this will actually timeout even if the sync operations don't respond to cancellation
+            var pathResolutionTask = Task.Run(
+                () =>
+            {
+                // Don't check cancellation token here - let the Task timeout handle it
+                exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
+                pathIsDir = Directory.Exists(expanded);
+                couldResolvePath = true;
+            },
+                CancellationToken.None); // Use None here since we're handling timeout differently
+
+            // Wait for either completion or timeout
+            await pathResolutionTask.WaitAsync(timeoutToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Main cancellation token was cancelled, re-throw
+            throw;
+        }
+        catch (TimeoutException)
+        {
+            // Timeout occurred
+            couldResolvePath = false;
+            Debug.WriteLine($"Run: Path resolution timed out after 200ms for '{expanded}'");
+        }
+        catch (OperationCanceledException)
+        {
+            // Timeout occurred (from WaitAsync)
+            couldResolvePath = false;
+            Debug.WriteLine($"Run: Path resolution timed out after 200ms for '{expanded}'");
+        }
+        catch (Exception ex)
+        {
+            // Handle any other exceptions that might bubble up
+            couldResolvePath = false;
+            Debug.WriteLine($"Run: Unexpected exception during path resolution: {ex.Message}");
+        }
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -174,7 +219,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // We want to show path items:
         // * If there's no args, AND (the path doesn't exist OR the path is a dir)
         if (string.IsNullOrEmpty(args)
-            && (!exeExists || pathIsDir))
+            && (!exeExists || pathIsDir)
+            && couldResolvePath)
         {
             await CreatePathItemsAsync(expanded, searchText, cancellationToken);
         }
@@ -182,7 +228,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // Check for cancellation before creating exe items
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (exeExists)
+        if (couldResolvePath && exeExists)
         {
             CreateAndAddExeItems(exe, args, fullExePath);
         }
