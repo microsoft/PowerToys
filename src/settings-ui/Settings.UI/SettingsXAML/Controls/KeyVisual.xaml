@@ -16,7 +16,8 @@
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="CornerRadius" Value="2" />
-        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
@@ -24,8 +25,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:KeyVisual">
-                    <Grid
-                        x:Name="ContentHolder"
+                    <ContentPresenter
+                        x:Name="KeyPresenter"
                         Width="{TemplateBinding Width}"
                         Height="{TemplateBinding Height}"
                         MinWidth="{TemplateBinding MinWidth}"
@@ -33,19 +34,20 @@
                         Padding="{TemplateBinding Padding}"
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                        <ContentPresenter
-                            x:Name="KeyPresenter"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Content="{TemplateBinding Content}"
-                            FontSize="{TemplateBinding FontSize}"
-                            FontWeight="{TemplateBinding FontWeight}"
-                            Foreground="{TemplateBinding Foreground}"
-                            TextLineBounds="Tight" />
+                        Content="{TemplateBinding Content}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        FontSize="{TemplateBinding FontSize}"
+                        FontWeight="{TemplateBinding FontWeight}"
+                        Foreground="{TemplateBinding Foreground}"
+                        TextLineBounds="Tight">
+                        <ContentPresenter.BackgroundTransition>
+                            <BrushTransition Duration="0:0:0.083" />
+                        </ContentPresenter.BackgroundTransition>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -66,12 +68,11 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                    </Grid>
+                    </ContentPresenter>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-
 
     <Style
         x:Key="SubtleKeyVisualStyle"
@@ -82,8 +83,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:KeyVisual">
-                    <Grid
-                        x:Name="ContentHolder"
+                    <ContentPresenter
+                        x:Name="KeyPresenter"
                         Width="{TemplateBinding Width}"
                         Height="{TemplateBinding Height}"
                         MinWidth="{TemplateBinding MinWidth}"
@@ -91,19 +92,20 @@
                         Padding="{TemplateBinding Padding}"
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                        <ContentPresenter
-                            x:Name="KeyPresenter"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Content="{TemplateBinding Content}"
-                            FontSize="{TemplateBinding FontSize}"
-                            FontWeight="{TemplateBinding FontWeight}"
-                            Foreground="{TemplateBinding Foreground}"
-                            TextLineBounds="Tight" />
+                        Content="{TemplateBinding Content}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        FontSize="{TemplateBinding FontSize}"
+                        FontWeight="{TemplateBinding FontWeight}"
+                        Foreground="{TemplateBinding Foreground}"
+                        TextLineBounds="Tight">
+                        <ContentPresenter.BackgroundTransition>
+                            <BrushTransition Duration="0:0:0.083" />
+                        </ContentPresenter.BackgroundTransition>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -119,7 +121,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                    </Grid>
+                    </ContentPresenter>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -129,14 +131,15 @@
         x:Key="AccentKeyVisualStyle"
         BasedOn="{StaticResource DefaultKeyVisualStyle}"
         TargetType="controls:KeyVisual">
-        <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}" />
-        <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+        <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource AccentControlElevationBorderBrush}" />
+        <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:KeyVisual">
-                    <Grid
-                        x:Name="ContentHolder"
+                    <ContentPresenter
+                        x:Name="KeyPresenter"
                         Width="{TemplateBinding Width}"
                         Height="{TemplateBinding Height}"
                         MinWidth="{TemplateBinding MinWidth}"
@@ -144,19 +147,20 @@
                         Padding="{TemplateBinding Padding}"
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                        <ContentPresenter
-                            x:Name="KeyPresenter"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Content="{TemplateBinding Content}"
-                            FontSize="{TemplateBinding FontSize}"
-                            FontWeight="{TemplateBinding FontWeight}"
-                            Foreground="{TemplateBinding Foreground}"
-                            TextLineBounds="Tight" />
+                        Content="{TemplateBinding Content}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        FontSize="{TemplateBinding FontSize}"
+                        FontWeight="{TemplateBinding FontWeight}"
+                        Foreground="{TemplateBinding Foreground}"
+                        TextLineBounds="Tight">
+                        <ContentPresenter.BackgroundTransition>
+                            <BrushTransition Duration="0:0:0.083" />
+                        </ContentPresenter.BackgroundTransition>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -177,7 +181,7 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                    </Grid>
+                    </ContentPresenter>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
