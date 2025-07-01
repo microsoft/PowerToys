@@ -23,6 +23,17 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
+    <PropertyGroup>
+	    <SelfContained>true</SelfContained>
+	    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	    <PublishTrimmed>true</PublishTrimmed>
+	    <PublishSingleFile>false</PublishSingleFile>
+	    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+	    <PublishAot>true</PublishAot>
+	    <EnableMsixTooling>true</EnableMsixTooling>
+    </PropertyGroup>	
+
+
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
@@ -71,7 +82,8 @@
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
+    <!--<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />-->
+	<PackageReference Include="MarkdownTextBlock" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />

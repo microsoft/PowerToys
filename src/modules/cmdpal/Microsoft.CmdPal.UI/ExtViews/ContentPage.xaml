@@ -14,6 +14,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -52,7 +53,6 @@
                         Text="{x:Bind Body, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
-
             <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
                 <Grid>
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />

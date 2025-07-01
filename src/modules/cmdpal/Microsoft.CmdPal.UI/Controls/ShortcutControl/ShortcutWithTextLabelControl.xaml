@@ -36,10 +36,5 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <tk7controls:MarkdownTextBlock
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            Background="Transparent"
-            Text="{x:Bind Text}" />
     </Grid>
 </UserControl>
