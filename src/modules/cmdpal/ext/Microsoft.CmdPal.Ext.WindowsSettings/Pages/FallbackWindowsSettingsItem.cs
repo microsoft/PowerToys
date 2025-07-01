@@ -18,8 +18,11 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
 {
     private readonly Classes.WindowsSettings _windowsSettings;
 
+    private readonly string _title = Resources.settings_fallback_title;
+    private readonly string _subtitle = Resources.settings_fallback_subtitle;
+
     public FallbackWindowsSettingsItem(Classes.WindowsSettings windowsSettings)
-        : base(new NoOpCommand(), "Windows Settings")
+        : base(new NoOpCommand(), Resources.settings_title)
     {
         Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
         _windowsSettings = windowsSettings;
@@ -76,9 +79,9 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
         // We found more than one result. Make our command take
         // us to the Windows Settings search page, prepopulated with this search.
         var settingsPage = new WindowsSettingsListPage(_windowsSettings, query);
-        Title = "Open Windows Settings";
+        Title = string.Format(CultureInfo.CurrentCulture, _title, query);
         Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
-        Subtitle = $"Navigate to specific Windows settings that include {query}";
+        Subtitle = _subtitle;
         Command = settingsPage;
 
         return;

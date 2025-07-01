@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
+using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -19,7 +20,7 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
     public WindowsSettingsListPage(Classes.WindowsSettings windowsSettings)
     {
         Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
-        Name = "Windows Settings";
+        Name = Resources.settings_title;
         Id = "com.microsoft.cmdpal.windowsSettings";
         _windowsSettings = windowsSettings;
     }

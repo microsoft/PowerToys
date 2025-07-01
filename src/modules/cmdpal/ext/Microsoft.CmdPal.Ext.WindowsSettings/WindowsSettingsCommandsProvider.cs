@@ -29,8 +29,8 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
         _windowsSettings = JsonSettingsListHelper.ReadAllPossibleSettings();
         _searchSettingsListItem = new CommandItem(new WindowsSettingsListPage(_windowsSettings))
         {
-            Title = "Windows Settings",
-            Subtitle = "Navigate to specific Windows settings",
+            Title = Resources.settings_title,
+            Subtitle = Resources.settings_subtitle,
         };
         _fallback = new(_windowsSettings);
 
