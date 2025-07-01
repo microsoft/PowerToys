@@ -37,6 +37,8 @@ public class WorkspacesSettingsTests : UITestBase
 
         Task.Delay(1000).Wait();
 
+        AttachWorkspacesEditor();
+
         // Send new key combination (Win+Ctrl+W)
         SendKeys(Key.Win, Key.Ctrl, Key.W);
 
@@ -184,5 +186,11 @@ public class WorkspacesSettingsTests : UITestBase
 
         var enableButton = this.Find<ToggleSwitch>("Enable Workspaces");
         Assert.IsNotNull(enableButton, "Enable Workspaces toggle should exist");
+    }
+
+    private void AttachWorkspacesEditor()
+    {
+        Task.Delay(200).Wait();
+        this.Session.Attach(PowerToysModule.Workspaces);
     }
 }
