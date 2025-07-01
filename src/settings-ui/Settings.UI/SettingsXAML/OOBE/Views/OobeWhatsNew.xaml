@@ -135,8 +135,6 @@
                     Header1FontSize="20"
                     Header1FontWeight="SemiBold"
                     Header1Margin="0,0,0,4"
-                    Header2FontSize="16"
-                    Header2FontWeight="SemiBold"
                     Header3FontSize="16"
                     Header3FontWeight="SemiBold"
                     Header4FontSize="16"
