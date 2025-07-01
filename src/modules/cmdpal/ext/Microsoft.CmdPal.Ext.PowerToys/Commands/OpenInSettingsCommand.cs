@@ -7,8 +7,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CommandPalette.Extensions;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.PowerToys.Commands;
-internal class OpenInSettingsCommand
+
+internal partial class PowerToysCommand : IInvokableCommand
 {
+    public IIconInfo Icon => throw new NotImplementedException();
+
+    public string Id => throw new NotImplementedException();
+
+    public string Name => throw new NotImplementedException();
+
+    public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged;
+
+    public ICommandResult Invoke(object sender) => throw new NotImplementedException();
 }

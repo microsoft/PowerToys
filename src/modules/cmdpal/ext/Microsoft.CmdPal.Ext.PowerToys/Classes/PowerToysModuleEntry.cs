@@ -12,4 +12,7 @@ namespace Microsoft.CmdPal.Ext.PowerToys.Classes;
 
 internal class PowerToysModuleEntry
 {
+    public required string ModuleName { get; set; }
+
+    
 }

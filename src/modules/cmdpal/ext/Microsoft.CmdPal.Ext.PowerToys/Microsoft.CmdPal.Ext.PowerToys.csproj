@@ -9,4 +9,8 @@
 		<InvariantGlobalization>true</InvariantGlobalization>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+		<ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+	</ItemGroup>
 </Project>
