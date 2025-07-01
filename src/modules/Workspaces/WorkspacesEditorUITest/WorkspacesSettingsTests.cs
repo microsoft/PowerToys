@@ -11,7 +11,7 @@ namespace WorkspacesEditorUITest;
 public class WorkspacesSettingsTests : UITestBase
 {
     public WorkspacesSettingsTests()
-        : base()
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
     {
     }
 

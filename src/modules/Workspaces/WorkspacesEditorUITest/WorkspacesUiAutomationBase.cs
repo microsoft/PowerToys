@@ -209,7 +209,7 @@ namespace WorkspacesEditorUITest
 
         protected void AttachSnapshotWindow()
         {
-            Task.Delay(200).Wait();
+            Task.Delay(2000).Wait();
             this.Session.Attach("Snapshot Creator");
         }
 
