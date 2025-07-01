@@ -20,9 +20,9 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 {
     private readonly ShellListPageHelpers _helper;
 
-    private readonly List<ListItem> _exeItems = [];
     private readonly List<ListItem> _topLevelItems = [];
     private readonly List<ListItem> _historyItems = [];
+    private RunExeItem? _exeItem;
     private List<ListItem> _pathItems = [];
     private ListItem? _uriItem;
 
@@ -78,7 +78,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         try
         {
             // Save the latest search task
-            _currentSearchTask = ProcessSearchAsync(newSearch, cancellationToken);
+            _currentSearchTask = BuildListItemsForSearchAsync(newSearch, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -105,7 +105,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             // Ensure this is still the latest task
             if (_currentSearchTask == searchTask)
             {
-                // The search results have already been updated in ProcessSearchAsync
+                // The search results have already been updated in BuildListItemsForSearchAsync
                 IsLoading = false;
                 RaiseItemsChanged();
             }
@@ -123,7 +123,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
     }
 
-    private async Task ProcessSearchAsync(string newSearch, CancellationToken cancellationToken)
+    private async Task BuildListItemsForSearchAsync(string newSearch, CancellationToken cancellationToken)
     {
         // Check for cancellation at the start
         cancellationToken.ThrowIfCancellationRequested();
@@ -148,7 +148,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             _pathItems.Clear();
-            _exeItems.Clear();
+            _exeItem = null;
+            _uriItem = null;
             return;
         }
 
@@ -234,7 +235,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
         else
         {
-            _exeItems.Clear();
+            _exeItem = null;
         }
 
         // Only create the URI item if we didn't make a file or exe item for it.
@@ -260,8 +261,9 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     {
         var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
         List<ListItem> uriItems = _uriItem != null ? [_uriItem] : [];
+        List<ListItem> exeItems = _exeItem != null ? [_exeItem] : [];
         return
-            _exeItems
+            exeItems
             .Concat(filteredTopLevel)
             .Concat(_historyItems)
             .Concat(_pathItems)
@@ -283,11 +285,19 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
     {
-        _exeItems.Clear();
+        // _exeItems.Clear();
+        // var exeItem = CreateExeItems(exe, args, fullExePath);
+        // _exeItems.Add(exeItem);
 
-        var exeItem = CreateExeItems(exe, args, fullExePath);
-
-        _exeItems.Add(exeItem);
+        // If we already have an exe item, and the exe is the same, we can just update it
+        if (_exeItem != null && _exeItem.FullExePath.Equals(fullExePath, StringComparison.OrdinalIgnoreCase))
+        {
+            _exeItem.UpdateArgs(args);
+        }
+        else
+        {
+            _exeItem = CreateExeItems(exe, args, fullExePath);
+        }
     }
 
     private async Task CreatePathItemsAsync(string searchPath, string originalPath, CancellationToken cancellationToken)

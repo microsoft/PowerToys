@@ -16,23 +16,23 @@ internal sealed partial class RunExeItem : ListItem
 
     public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
 
-    private readonly string _fullExePath;
-    private readonly string _exe;
-    private readonly string _args;
+    internal string FullExePath { get; private set; }
+
+    internal string Exe { get; private set; }
+
+    private string _args = string.Empty;
 
     public RunExeItem(string exe, string args, string fullExePath)
     {
-        _fullExePath = fullExePath;
-        _exe = exe;
-        _args = args;
+        FullExePath = fullExePath;
+        Exe = exe;
         var command = new AnonymousCommand(Run)
         {
             Name = "Run", // TODO:LOC
             Result = CommandResult.Dismiss(),
         };
         Command = command;
-        Title = string.IsNullOrEmpty(args) ? exe : exe + " " + args; // todo! you're smarter than this
-        Subtitle = _fullExePath;
+        Subtitle = FullExePath;
 
         _icon = new Lazy<IconInfo>(() =>
         {
@@ -40,6 +40,8 @@ internal sealed partial class RunExeItem : ListItem
             t.Wait();
             return t.Result;
         });
+
+        UpdateArgs(args);
 
         MoreCommands = [
             new CommandContextItem(
@@ -57,13 +59,19 @@ internal sealed partial class RunExeItem : ListItem
         ];
     }
 
+    internal void UpdateArgs(string args)
+    {
+        _args = args;
+        Title = string.IsNullOrEmpty(_args) ? Exe : Exe + " " + _args; // todo! you're smarter than this
+    }
+
     public async Task<IconInfo> FetchIcon()
     {
         IconInfo? icon = null;
 
         try
         {
-            var stream = await ThumbnailHelper.GetThumbnail(_fullExePath);
+            var stream = await ThumbnailHelper.GetThumbnail(FullExePath);
             if (stream != null)
             {
                 var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
@@ -75,22 +83,22 @@ internal sealed partial class RunExeItem : ListItem
         {
         }
 
-        icon = icon ?? new IconInfo(_fullExePath);
+        icon = icon ?? new IconInfo(FullExePath);
         return icon;
     }
 
     public void Run()
     {
-        ShellHelpers.OpenInShell(_fullExePath, _args);
+        ShellHelpers.OpenInShell(FullExePath, _args);
     }
 
     public void RunAsAdmin()
     {
-        ShellHelpers.OpenInShell(_fullExePath, _args, runAs: ShellHelpers.ShellRunAsType.Administrator);
+        ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.Administrator);
     }
 
     public void RunAsOther()
     {
-        ShellHelpers.OpenInShell(_fullExePath, _args, runAs: ShellHelpers.ShellRunAsType.OtherUser);
+        ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.OtherUser);
     }
 }
