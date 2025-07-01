@@ -4,17 +4,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Win32;
-using Windows.Win32.Storage.FileSystem;
 
 namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 
@@ -118,23 +114,22 @@ public class ShellListPageHelpers
         return history.ToList();
     }
 
-    internal static async Task<bool> FileExistInPathAsync(string filename, CancellationToken cancellationToken = default)
+    internal static bool FileExistInPath(string filename)
     {
-        var (exists, _) = await FileExistInPathGetPathAsync(filename, cancellationToken);
-        return exists;
+        return FileExistInPath(filename, out var _);
     }
 
-    internal static async Task<(bool Exists, string FullPath)> FileExistInPathGetPathAsync(string filename, CancellationToken cancellationToken = default)
+    internal static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
     {
-        var fullPath = string.Empty;
+        fullPath = string.Empty;
 
         // var expanded = Environment.ExpandEnvironmentVariables(filename);
         // Debug.WriteLine($"Run: filename={filename} -> expanded={expanded}");
-        if (await FileExistsFastAsync(filename, cancellationToken: cancellationToken))
+        if (File.Exists(filename))
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            token?.ThrowIfCancellationRequested();
             fullPath = Path.GetFullPath(filename);
-            return (true, fullPath);
+            return true;
         }
         else
         {
@@ -144,90 +139,30 @@ public class ShellListPageHelpers
                 foreach (var path in values.Split(';'))
                 {
                     var path1 = Path.Combine(path, filename);
-                    if (await FileExistsFastAsync(path1, cancellationToken: cancellationToken))
+                    if (File.Exists(path1))
                     {
                         fullPath = Path.GetFullPath(path1);
-                        return (true, fullPath);
+                        return true;
                     }
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    token?.ThrowIfCancellationRequested();
 
                     var path2 = Path.Combine(path, filename + ".exe");
-                    if (await FileExistsFastAsync(path2, cancellationToken: cancellationToken))
+                    if (File.Exists(path2))
                     {
                         fullPath = Path.GetFullPath(path2);
-                        return (true, fullPath);
+                        return true;
                     }
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    token?.ThrowIfCancellationRequested();
                 }
 
-                return (false, fullPath);
+                return false;
             }
             else
             {
-                return (false, fullPath);
+                return false;
             }
         }
-    }
-
-    internal static async Task<bool> FileExistsFastAsync(string path, int timeoutMs = 200, CancellationToken cancellationToken = default)
-    {
-        using var timeoutCts = new CancellationTokenSource(timeoutMs);
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken);
-
-        try
-        {
-            return await Task.Run(() => FileExistsInternal(path, linkedCts.Token), linkedCts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            if (timeoutCts.IsCancellationRequested && cancellationToken.IsCancellationRequested)
-            {
-                Debug.WriteLine("Cancelled: Both timeout and caller requested.");
-            }
-            else if (timeoutCts.IsCancellationRequested)
-            {
-                Debug.WriteLine("Cancelled: Timeout expired.");
-            }
-            else if (cancellationToken.IsCancellationRequested)
-            {
-                Debug.WriteLine("Cancelled: Caller token triggered.");
-            }
-            else
-            {
-                Debug.WriteLine("Cancelled: Unknown reason.");
-            }
-
-            return false;
-        }
-    }
-
-    private static bool FileExistsInternal(string path, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        using var handle = PInvoke.CreateFile(
-            path,
-            (uint)FILE_ACCESS_RIGHTS.FILE_READ_ATTRIBUTES,
-            FILE_SHARE_MODE.FILE_SHARE_READ,
-            null,
-            FILE_CREATION_DISPOSITION.OPEN_EXISTING,
-            FILE_FLAGS_AND_ATTRIBUTES.FILE_FLAG_BACKUP_SEMANTICS,
-            null);
-
-        return !handle.IsInvalid;
-    }
-
-    internal static bool FileExistInPath(string filename)
-    {
-        return FileExistInPathAsync(filename).GetAwaiter().GetResult();
-    }
-
-    internal static bool FileExistInPathBlocking(string filename, out string fullPath, CancellationToken? token = null)
-    {
-        var cancellationToken = token ?? CancellationToken.None;
-        var (exists, path) = FileExistInPathGetPathAsync(filename, cancellationToken).GetAwaiter().GetResult();
-        fullPath = path;
-        return exists;
     }
 }
