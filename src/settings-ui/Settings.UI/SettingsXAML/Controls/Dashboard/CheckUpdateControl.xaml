@@ -12,7 +12,7 @@
         <Button
             Click="SWVersionButtonClicked"
             Style="{StaticResource SubtleButtonStyle}"
-            Visibility="Visible">
+            Visibility="{x:Bind UpdateAvailable, Mode=OneWay}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
