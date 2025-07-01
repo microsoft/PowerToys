@@ -33,10 +33,13 @@
 	    <EnableMsixTooling>true</EnableMsixTooling>
     </PropertyGroup>	
 
-
-  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+  <!--<PropertyGroup Condition="'$(CIBuild)'=='true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
-  </PropertyGroup>
+  </PropertyGroup>-->
+
+<PropertyGroup>
+	<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+</PropertyGroup>
 
   <PropertyGroup>
     <!-- This lets us actually reference types from Microsoft.Terminal.UI -->
