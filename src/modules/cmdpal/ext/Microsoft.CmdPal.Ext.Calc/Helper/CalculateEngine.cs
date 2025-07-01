@@ -84,11 +84,7 @@ public static class CalculateEngine
 
         var decimalResult = Convert.ToDecimal(result, cultureInfo);
 
-        // Remove trailing zeros from the decimal string representation (e.g., "1.2300" -> "1.23")
-        // This is necessary because the value extracted from exprtk may contain unnecessary trailing zeros.
-        var formatted = decimalResult.ToString("G29", cultureInfo);
-        decimalResult = Convert.ToDecimal(formatted, cultureInfo);
-        var roundedResult = Round(decimalResult);
+        var roundedResult = FormatMax15Digits(decimalResult, cultureInfo);
 
         return new CalculateResult()
         {
@@ -100,5 +96,29 @@ public static class CalculateEngine
     public static decimal Round(decimal value)
     {
         return Math.Round(value, RoundingDigits, MidpointRounding.AwayFromZero);
+    }
+
+    /// <summary>
+    /// Format a decimal so that the output contains **at most 15 total digits**
+    /// (integer + fraction, not counting the decimal point or minus sign).
+    /// Any extra fractional digits are rounded using “away-from-zero” rounding.
+    /// Trailing zeros in the fractional part—and a dangling decimal point—are removed.
+    /// Examples
+    ///   1.9999999999      → "1.9999999999"
+    ///   100000.9999999999 → "100001"
+    ///   1234567890123.45  → "1234567890123.45"
+    /// </summary>
+    private static decimal FormatMax15Digits(decimal value, CultureInfo cultureInfo)
+    {
+        var absValue = Math.Abs(value);
+        var integerDigits = absValue >= 1 ? (int)Math.Floor(Math.Log10((double)absValue)) + 1 : 1;
+
+        var maxDecimalDigits = Math.Max(0, 15 - integerDigits);
+
+        var rounded = Math.Round(value, maxDecimalDigits, MidpointRounding.AwayFromZero);
+
+        var formatted = rounded.ToString("G29", cultureInfo);
+
+        return Convert.ToDecimal(formatted, cultureInfo);
     }
 }

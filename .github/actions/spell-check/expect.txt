@@ -156,6 +156,7 @@ builttoroam
 BVal
 BValue
 byapp
+BYCOMMAND
 BYPOSITION
 CALCRECT
 CALG
@@ -191,6 +192,7 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
+cleanmgr
 clickable
 clickonce
 CLIENTEDGE
@@ -202,6 +204,7 @@ CLIPSIBLINGS
 closesocket
 clp
 CLSCTX
+CLSCTXLOCALSERVER
 clsids
 Clusion
 cmder
@@ -275,6 +278,7 @@ currentculture
 CURRENTDIR
 CURSORINFO
 cursorpos
+CURSORSHOWING
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -342,7 +346,9 @@ DESELECTOTHERS
 DESIGNINFO
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
+DESKTOPHORZRES
 desktopshorcutinstalled
+DESKTOPVERTRES
 devblogs
 devdocs
 devmgmt
@@ -353,6 +359,7 @@ DFX
 DIALOGEX
 digicert
 dimm
+DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
 diskmgmt
@@ -396,6 +403,7 @@ DVASPECTINFO
 DVD
 dvr
 DVTARGETDEVICE
+dwflags
 dwl
 dwm
 dwmapi
@@ -484,6 +492,7 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
 fff
+FFFF
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
@@ -602,6 +611,7 @@ helptext
 HGFE
 hglobal
 hhk
+HHmmssfff
 hhx
 Hiber
 Hiberboot
@@ -610,6 +620,7 @@ hicon
 HIDEREADONLY
 HIDEWINDOW
 Hif
+hightlight
 HIMAGELIST
 himl
 hinst
@@ -744,6 +755,7 @@ isocpp
 iss
 issecret
 ISSEPARATOR
+istep
 ith
 ITHUMBNAIL
 IUI
@@ -815,6 +827,7 @@ LOCALDISPLAY
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
+LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
@@ -1274,6 +1287,7 @@ prvpane
 psapi
 pscid
 PSECURITY
+psexec
 psfgao
 psfi
 PSMODULEPATH
@@ -1531,6 +1545,7 @@ SLGP
 sln
 SMALLICON
 smartphone
+smileys
 SMTO
 SNAPPROCESS
 snk
@@ -1663,6 +1678,7 @@ TDefault
 TDevice
 telephon
 templatenamespace
+TESTONLY
 testprocess
 TEXCOORD
 TEXTBOXNEWLINE
@@ -1715,6 +1731,7 @@ trx
 tsa
 TSender
 TServer
+tskill
 tstoi
 TStr
 tweakme
@@ -1873,6 +1890,7 @@ WINDOWPOSCHANGING
 WINDOWSBUILDNUMBER
 windowssearch
 windowssettings
+windowsterminal
 WINDOWSTYLES
 WINDOWSTYLESICON
 winerror
@@ -1947,6 +1965,7 @@ Wwanpp
 XAxis
 xclip
 xcopy
+XDeployment
 XDocument
 XElement
 xfd
@@ -1982,6 +2001,7 @@ Zoneszonabletester
 Zoomin
 zoomit
 ZOOMITX
+Zorder
 ZXk
 ZXNs
 zzz

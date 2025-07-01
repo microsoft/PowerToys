@@ -3,18 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ManagedCommon;
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Data;
-using Microsoft.CmdPal.Ext.Indexer.Native;
+using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
-using static Microsoft.CmdPal.Ext.Indexer.Native.NativeMethods;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
@@ -29,16 +25,16 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
 
         try
         {
-            var info = new SHELLEXECUTEINFOW
+            var info = new Shell32.SHELLEXECUTEINFOW
             {
-                cbSize = (uint)sizeof(SHELLEXECUTEINFOW),
-                lpVerb = propertiesPtr,
-                lpFile = filenamePtr,
-                nShow = (int)SHOW_WINDOW_CMD.SW_SHOW,
-                fMask = NativeHelpers.SEEMASKINVOKEIDLIST,
+                CbSize = (uint)sizeof(Shell32.SHELLEXECUTEINFOW),
+                LpVerb = propertiesPtr,
+                LpFile = filenamePtr,
+                Show = (int)SHOW_WINDOW_CMD.SW_SHOW,
+                FMask = NativeHelpers.SEEMASKINVOKEIDLIST,
             };
 
-            return ShellExecuteEx(ref info);
+            return Shell32.ShellExecuteEx(ref info);
         }
         finally
         {

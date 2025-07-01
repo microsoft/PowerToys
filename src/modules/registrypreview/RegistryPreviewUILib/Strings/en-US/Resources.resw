@@ -258,11 +258,17 @@
   <data name="YesNoCancelDialogCloseButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="ReloadDialogCloseButtonText" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="YesNoCancelDialogContent" xml:space="preserve">
     <value>Save changes?</value>
   </data>
   <data name="YesNoCancelDialogPrimaryButtonText" xml:space="preserve">
     <value>Save</value>
+  </data>
+  <data name="ReloadDialogPrimaryButtonText" xml:space="preserve">
+    <value>Yes</value>
   </data>
   <data name="YesNoCancelDialogSecondaryButtonText" xml:space="preserve">
     <value>Don't save</value>
@@ -362,5 +368,8 @@
   </data>
   <data name="NewButton.Label" xml:space="preserve">
     <value>New</value>
+  </data>
+  <data name="ReloadDialogContent" xml:space="preserve">
+    <value>You lose any unsaved changes. Reload anyway?</value>
   </data>
 </root>

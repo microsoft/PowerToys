@@ -17,6 +17,17 @@
     <PropertyGroup>
       <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Hosts.UITests\</OutputPath>
     </PropertyGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestAddingEntry_arm64.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_EmptyView_arm64.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_NonEmptyView_arm64.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestAddingEntry_x64Win10.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_EmptyView_x64Win10.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_NonEmptyView_x64Win10.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestAddingEntry_x64Win11.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_EmptyView_x64Win11.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_NonEmptyView_x64Win11.png" />
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="MSTest" />
