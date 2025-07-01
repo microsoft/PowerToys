@@ -103,7 +103,15 @@ internal sealed partial class ShellListPage : DynamicListPage
             _exeItems.Clear();
         }
 
-        CreateUriItems(searchText);
+        // Only create the URI item if we didn't make a file or exe item for it.
+        if (!exeExists && !pathIsDir)
+        {
+            CreateUriItems(searchText);
+        }
+        else
+        {
+            _uriItem = null;
+        }
 
         RaiseItemsChanged();
     }
