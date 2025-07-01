@@ -15,6 +15,7 @@
                 <ResourceDictionary Source="/SettingsXAML/Styles/InfoBadge.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Generic.xaml" />
+
                 <!--  Other merged dictionaries here  -->
             </ResourceDictionary.MergedDictionaries>
 
