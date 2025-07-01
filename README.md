@@ -42,12 +42,12 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 [ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.92.0/PowerToysSetup-0.92.0-x64.exe 
 [ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.92.0/PowerToysSetup-0.92.0-arm64.exe
  
-|  Description   | Filename | sha256 hash |
-|----------------|----------|-------------|
-| Per user - x64       | [PowerToysUserSetup-0.92.0-x64.exe][ptUserX64] | 8EE7778AF79A53013E8B09133495F748B54282A9016324741D7857091271D070 |
-| Per user - ARM64     | [PowerToysUserSetup-0.92.0-arm64.exe][ptUserArm64] | 65643E7A6E2C79CBCEBCDBB5E1FD7DFC0E1E62620BC47BC6566F6AE8CB8F41EF |
-| Machine wide - x64   | [PowerToysSetup-0.92.0-x64.exe][ptMachineX64] | DF82EE8684EC6D24682E1C6F7268BF665C5CFDCD19C0C8191A1C5803263C544E |
-| Machine wide - ARM64 | [PowerToysSetup-0.92.0-arm64.exe][ptMachineArm64] | 3975E47C41025452E37254E77BF155BF269FF16E45C2BCDA42B4824752E16DA9 |
+|  Description   | Filename |
+|----------------|----------|
+| Per user - x64       | [PowerToysUserSetup-0.92.0-x64.exe][ptUserX64] |
+| Per user - ARM64     | [PowerToysUserSetup-0.92.0-arm64.exe][ptUserArm64] |
+| Machine wide - x64   | [PowerToysSetup-0.92.0-x64.exe][ptMachineX64] |
+| Machine wide - ARM64 | [PowerToysSetup-0.92.0-arm64.exe][ptMachineArm64] |
 
 This is our preferred method.
 
