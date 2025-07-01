@@ -6,6 +6,7 @@
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<DefineConstants>TESTONLY</DefineConstants>
 	</PropertyGroup>
 	
 	<PropertyGroup>

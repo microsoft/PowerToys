@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Properties;
@@ -15,16 +17,21 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell.Pages;
 
-internal sealed partial class ShellListPage : DynamicListPage
+internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 {
     private readonly ShellListPageHelpers _helper;
 
-    private readonly List<ListItem> _exeItems = [];
     private readonly List<ListItem> _topLevelItems = [];
     private readonly List<ListItem> _historyItems = [];
+
     private readonly IRunHistoryService _historyService;
+
+    private RunExeItem? _exeItem;
     private List<ListItem> _pathItems = [];
     private ListItem? _uriItem;
+
+    private CancellationTokenSource? _cancellationTokenSource;
+    private Task? _currentSearchTask;
 
     private bool _loadedInitialHistory;
 
@@ -53,7 +60,82 @@ internal sealed partial class ShellListPage : DynamicListPage
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        Debug.WriteLine($"Run: update search \"{oldSearch}\" -> \"{newSearch}\"");
+        if (newSearch == oldSearch)
+        {
+            return;
+        }
+
+        DoUpdateSearchText(newSearch);
+    }
+
+    private void DoUpdateSearchText(string newSearch)
+    {
+        // Cancel any ongoing search
+        if (_cancellationTokenSource != null)
+        {
+            Debug.WriteLine("Shell: Cancelling old search");
+            _cancellationTokenSource.Cancel();
+        }
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _cancellationTokenSource.Token;
+
+        IsLoading = true;
+
+        try
+        {
+            // Save the latest search task
+            _currentSearchTask = BuildListItemsForSearchAsync(newSearch, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // DO NOTHING HERE
+            return;
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            Debug.WriteLine($"Shell: DoUpdateSearchText threw exception: {ex.Message}");
+            return;
+        }
+
+        // Await the task to ensure only the latest one gets processed
+        _ = ProcessSearchResultsAsync(_currentSearchTask, newSearch);
+    }
+
+    private async Task ProcessSearchResultsAsync(Task searchTask, string newSearch)
+    {
+        try
+        {
+            await searchTask;
+
+            // Ensure this is still the latest task
+            if (_currentSearchTask == searchTask)
+            {
+                // The search results have already been updated in BuildListItemsForSearchAsync
+                IsLoading = false;
+                RaiseItemsChanged();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Handle cancellation gracefully
+            Debug.WriteLine($"Shell: Cancelled search for '{newSearch}'");
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            Debug.WriteLine($"Shell: ProcessSearchResultsAsync threw exception: {ex.Message}");
+            IsLoading = false;
+        }
+    }
+
+    private async Task BuildListItemsForSearchAsync(string newSearch, CancellationToken cancellationToken)
+    {
+        // Check for cancellation at the start
+        cancellationToken.ThrowIfCancellationRequested();
+
+        Debug.WriteLine($"Run: update search -> \"{newSearch}\"");
 
         // If the search text is the start of a path to a file (it might be a
         // UNC path), then we want to list all the files that start with that text:
@@ -65,12 +147,6 @@ internal sealed partial class ShellListPage : DynamicListPage
         var expanded = Environment.ExpandEnvironmentVariables(searchText);
         Debug.WriteLine($"Run: searchText={searchText} -> expanded={expanded}");
 
-        // _historyItems = _helper.Query(searchText);
-        // _historyItems.ForEach(i =>
-        // {
-        //    i.Icon = Icons.RunV2;
-        //    i.Subtitle = string.Empty;
-        // });
         var hist = _historyService.GetRunHistory();
         var filteredHist = string.IsNullOrEmpty(searchText) ?
             hist :
@@ -81,21 +157,79 @@ internal sealed partial class ShellListPage : DynamicListPage
             .Select(i => i!);
         ListHelpers.InPlaceUpdateList(_historyItems, histItems);
 
+        // Check for cancellation after environment expansion
+        cancellationToken.ThrowIfCancellationRequested();
+
         // TODO we can be smarter about only re-reading the filesystem if the
         // new search is just the oldSearch+some chars
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             _pathItems.Clear();
-            _exeItems.Clear();
-            RaiseItemsChanged();
+            _exeItem = null;
+            _uriItem = null;
             return;
         }
 
         ParseExecutableAndArgs(expanded, out var exe, out var args);
         Debug.WriteLine($"Run: expanded={expanded} -> exe,args='{exe}', '{args}'");
 
-        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
-        var pathIsDir = Directory.Exists(expanded);
+        // Check for cancellation before file system operations
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Reset the path resolution flag
+        var couldResolvePath = false;
+
+        var exeExists = false;
+        var fullExePath = string.Empty;
+        var pathIsDir = false;
+
+        try
+        {
+            // Create a timeout for file system operations (200ms)
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+            using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+            var timeoutToken = combinedCts.Token;
+
+            // Use Task.Run with timeout - this will actually timeout even if the sync operations don't respond to cancellation
+            var pathResolutionTask = Task.Run(
+                () =>
+            {
+                // Don't check cancellation token here - let the Task timeout handle it
+                exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
+                pathIsDir = Directory.Exists(expanded);
+                couldResolvePath = true;
+            },
+                CancellationToken.None); // Use None here since we're handling timeout differently
+
+            // Wait for either completion or timeout
+            await pathResolutionTask.WaitAsync(timeoutToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Main cancellation token was cancelled, re-throw
+            throw;
+        }
+        catch (TimeoutException)
+        {
+            // Timeout occurred
+            couldResolvePath = false;
+            Debug.WriteLine($"Run: Path resolution timed out after 200ms for '{expanded}'");
+        }
+        catch (OperationCanceledException)
+        {
+            // Timeout occurred (from WaitAsync)
+            couldResolvePath = false;
+            Debug.WriteLine($"Run: Path resolution timed out after 200ms for '{expanded}'");
+        }
+        catch (Exception ex)
+        {
+            // Handle any other exceptions that might bubble up
+            couldResolvePath = false;
+            Debug.WriteLine($"Run: Unexpected exception during path resolution: {ex.Message}");
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
         Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
 
         _pathItems.Clear();
@@ -103,42 +237,69 @@ internal sealed partial class ShellListPage : DynamicListPage
         // We want to show path items:
         // * If there's no args, AND (the path doesn't exist OR the path is a dir)
         if (string.IsNullOrEmpty(args)
-            && (!exeExists || pathIsDir))
+            && (!exeExists || pathIsDir)
+            && couldResolvePath)
         {
-            CreatePathItems(expanded, searchText);
+            await CreatePathItemsAsync(expanded, searchText, cancellationToken);
         }
 
-        if (exeExists)
+        // Check for cancellation before creating exe items
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (couldResolvePath && exeExists)
         {
             CreateAndAddExeItems(exe, args, fullExePath);
         }
         else
         {
-            _exeItems.Clear();
+            _exeItem = null;
         }
 
-        CreateUriItems(searchText);
+        // Only create the URI item if we didn't make a file or exe item for it.
+        if (!exeExists && !pathIsDir)
+        {
+            CreateUriItems(searchText);
+        }
+        else
+        {
+            _uriItem = null;
+        }
 
-        RaiseItemsChanged();
+        // Final cancellation check
+        cancellationToken.ThrowIfCancellationRequested();
     }
 
-    private static ListItem PathToListItem(string path, string originalPath)
+    private static ListItem PathToListItem(string path, string originalPath, string args = "")
     {
-        return new PathListItem(path, originalPath);
+        var pathItem = new PathListItem(path, originalPath);
+
+        // Is this path an executable? If so, then make a RunExeItem
+        if (IsExecutable(path))
+        {
+            var exeItem = new RunExeItem(Path.GetFileName(path), args, path);
+
+            exeItem.MoreCommands = [
+            .. exeItem.MoreCommands,
+            .. pathItem.MoreCommands];
+            return exeItem;
+        }
+
+        return pathItem;
     }
 
     public override IListItem[] GetItems()
     {
-        var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
-        List<ListItem> uriItems = _uriItem != null ? [_uriItem] : [];
-
         if (!_loadedInitialHistory)
         {
             LoadInitialHistory();
         }
 
+        var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
+        List<ListItem> uriItems = _uriItem != null ? [_uriItem] : [];
+        List<ListItem> exeItems = _exeItem != null ? [_exeItem] : [];
+
         return
-            _exeItems
+            exeItems
             .Concat(filteredTopLevel)
             .Concat(_historyItems)
             .Concat(_pathItems)
@@ -146,28 +307,36 @@ internal sealed partial class ShellListPage : DynamicListPage
             .ToArray();
     }
 
-    internal static RunExeItem CreateExeItems(string exe, string args, string fullExePath)
+    internal static RunExeItem CreateExeItem(string exe, string args, string fullExePath)
     {
-        var exeItem = new RunExeItem(exe, args, fullExePath);
-
-        var pathItem = PathToListItem(fullExePath, exe);
-        exeItem.MoreCommands = [
-            .. exeItem.MoreCommands,
-            .. pathItem.MoreCommands];
-
-        return exeItem;
+        // PathToListItem will return a RunExeItem if it can find a executable.
+        // It will ALSO add the file search commands to the RunExeItem.
+        return PathToListItem(fullExePath, exe, args) as RunExeItem ??
+               new RunExeItem(exe, args, fullExePath);
     }
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
     {
-        _exeItems.Clear();
-
-        var exeItem = CreateExeItems(exe, args, fullExePath);
-
-        _exeItems.Add(exeItem);
+        // If we already have an exe item, and the exe is the same, we can just update it
+        if (_exeItem != null && _exeItem.FullExePath.Equals(fullExePath, StringComparison.OrdinalIgnoreCase))
+        {
+            _exeItem.UpdateArgs(args);
+        }
+        else
+        {
+            _exeItem = CreateExeItem(exe, args, fullExePath);
+        }
     }
 
-    private void CreatePathItems(string searchPath, string originalPath)
+    private static bool IsExecutable(string path)
+    {
+        // Is this path an executable?
+        // check all the extensions in PATHEXT
+        var extensions = Environment.GetEnvironmentVariable("PATHEXT")?.Split(';') ?? Array.Empty<string>();
+        return extensions.Any(ext => string.Equals(Path.GetExtension(path), ext, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private async Task CreatePathItemsAsync(string searchPath, string originalPath, CancellationToken cancellationToken)
     {
         var directoryPath = string.Empty;
         var searchPattern = string.Empty;
@@ -207,6 +376,9 @@ internal sealed partial class ShellListPage : DynamicListPage
             searchPattern = $"*";
         }
 
+        // Check for cancellation before directory operations
+        cancellationToken.ThrowIfCancellationRequested();
+
         var dirExists = Directory.Exists(directoryPath);
         Debug.WriteLine($"Run: dirExists({directoryPath})={dirExists}");
 
@@ -224,8 +396,15 @@ internal sealed partial class ShellListPage : DynamicListPage
         // Check if the directory exists
         if (dirExists)
         {
+            // Check for cancellation before file system enumeration
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Get all the files in the directory that start with the search text
-            var files = Directory.GetFileSystemEntries(directoryPath, searchPattern);
+            // Run this on a background thread to avoid blocking
+            var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath, searchPattern), cancellationToken);
+
+            // Check for cancellation after file enumeration
+            cancellationToken.ThrowIfCancellationRequested();
 
             var searchPathTrailer = trimmed.Remove(0, Math.Min(directoryPath.Length, trimmed.Length));
             var originalBeginning = originalPath.Remove(originalPath.Length - searchPathTrailer.Length);
@@ -238,6 +417,9 @@ internal sealed partial class ShellListPage : DynamicListPage
 
             // Create a list of commands for each file
             var commands = files.Select(f => PathToListItem(f, originalBeginning)).ToList();
+
+            // Final cancellation check before updating results
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Add the commands to the list
             _pathItems = commands;
@@ -315,5 +497,11 @@ internal sealed partial class ShellListPage : DynamicListPage
                 .ToList());
 
         _loadedInitialHistory = true;
+    }
+
+    public void Dispose()
+    {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
     }
 }

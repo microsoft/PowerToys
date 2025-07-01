@@ -1507,17 +1507,38 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
     <value>Default color format</value>
   </data>
-  <data name="ColorPickerFirst.Content" xml:space="preserve">
-    <value>Pick a color and open editor</value>
-  </data>
-  <data name="EditorFirst.Content" xml:space="preserve">
-    <value>Open editor</value>
-  </data>
-  <data name="ColorPickerOnly.Content" xml:space="preserve">
-    <value>Only pick a color</value>
-  </data>
   <data name="ColorPicker_ActivationAction.Header" xml:space="preserve">
     <value>Activation behavior</value>
+  </data>
+  <data name="ColorPicker_OpenEditor.Content" xml:space="preserve">
+    <value>Open editor</value>
+  </data>
+  <data name="ColorPicker_PickColor.Content" xml:space="preserve">
+    <value>Pick a color first</value>
+  </data>
+  <data name="ColorPicker_MouseActions.Header" xml:space="preserve">
+    <value>Mouse actions</value>
+  </data>
+  <data name="ColorPicker_MouseActions.Description" xml:space="preserve">
+    <value>Choose what clicking individual buttons does</value>
+  </data>
+  <data name="ColorPicker_PrimaryClick.Header" xml:space="preserve">
+    <value>Primary click</value>
+  </data>
+  <data name="ColorPicker_MiddleClick.Header" xml:space="preserve">
+    <value>Middle click</value>
+  </data>
+  <data name="ColorPicker_SecondaryClick.Header" xml:space="preserve">
+    <value>Secondary click</value>
+  </data>
+  <data name="ColorPicker_PickColorThenEditor.Content" xml:space="preserve">
+    <value>Pick a color and open editor</value>
+  </data>
+  <data name="ColorPicker_PickColorAndClose.Content" xml:space="preserve">
+    <value>Pick a color and close</value>
+  </data>
+  <data name="ColorPicker_Close.Content" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="ColorFormats.Header" xml:space="preserve">
     <value>Picker behavior</value>
@@ -5046,5 +5067,17 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
+  </data>
+  <data name="HighlightMode.Description" xml:space="preserve">
+    <value>Highlight the cursor or dim the screen to spotlight it</value>
+  </data>
+  <data name="HighlightMode.Header" xml:space="preserve">
+    <value>Highlight mode</value>
+  </data>
+  <data name="HighlightMode_Circle_Highlight_Mode.Content" xml:space="preserve">
+    <value>Circle highlight</value>
+  </data>
+  <data name="HighlightMode_Spotlight_Mode.Content" xml:space="preserve">
+    <value>Spotlight</value>
   </data>
 </root>

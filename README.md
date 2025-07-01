@@ -53,10 +53,10 @@ This is our preferred method.
 
 ### Via Microsoft Store
 
-Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/) which is available for both Windows 11 and Windows 10.
+Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/), which is available for both Windows 11 and Windows 10.
 
 ### Via WinGet
-Download PowerToys from [WinGet][winget-link]. Updating PowerToys via winget will respect current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
+Download PowerToys from [WinGet][winget-link]. Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
 
 #### User scope installer [default]
 ```powershell
@@ -79,7 +79,7 @@ There is a collection of [third-party plugins](./doc/thirdPartyRunPlugins.md) cr
 
 ## Contributing
 
-This project welcomes contributions of all types.  Besides  coding features / bug fixes,  other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
+This project welcomes contributions of all types. Besides coding features / bug fixes, other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
 
 We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
 
@@ -99,7 +99,7 @@ In this release, we focused on new features, stability, and automation.
 
 **✨Highlights**
 
- - We focused on greatly improving Command Palette's performance and fixing a large amount of bugs. Some new features we've added are:
+ - We focused on greatly improving the Command Palette's performance and fixing a large number of bugs. Some new features we've added are:
  - Added the ability for Command Palette to search any file using a fallback command.
  - Added the ability to make the Command Palette global hotkey a low-level keyboard hook.
  - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette.
@@ -117,17 +117,17 @@ In this release, we focused on new features, stability, and automation.
 
 ### Command Not Found
 
- - Updated the WinGet Command Not Found script to only enable the experimental features if they actually exist.
+ - Updated the WinGet Command Not Found script to only enable the experimental features if they exist.
 
 ### Command Palette
 
  - Updated bug template to include Command Palette module.
  - Fixed an issue where the toast window was not scaled for DPI, causing layout issues under display scaling.
- - Fixed an issue where Up/Down keyboard navigation didn't move selection when caret was at position 0, and add continuous navigation like PT Run v1. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed an issue where Up/Down keyboard navigation didn't move selection when the caret was at position 0, and added continuous navigation like PT Run v1. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Updated the Time and Date extension code to simplify it and improve clarity.
  - Fixed an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.
- - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added setting to enable/disable system tray icon in CmdPal and align terminology with Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from the Command Palette. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added setting to enable/disable system tray icon in CmdPal and aligned terminology with Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Fixed an alias update issue by removing the old alias when a new one is set.
  - Resolved GitHub casing conflict by migrating Exts and exts into a new ext directory, ensuring consistent structure across platforms and preventing path fragmentation.
  - Fix an issue where the 'Create New Extension' command generated empty file names.
@@ -155,9 +155,9 @@ In this release, we focused on new features, stability, and automation.
  - Refactored CmdPal classes to improve JSON serialization and introduced new serialization contexts for better performance and maintainability.
  - Added support for ahead-of-time (AoT) compilation.
  - Added retry mechanism for CmdPal launch.
- - Removed some unused files from CmdPal.Common to simplify codebase and facilitate marking it as AoT-compatible.
+ - Removed some unused files from CmdPal.Common to simplify the codebase and facilitate marking it as AoT-compatible.
  - Fixed a bug where a race condition in the update of SearchText caused the cursor in the input box to automatically jump to the end of the line, ensuring SearchText is only updated after it has actually been changed.
- - Added support for searching any file in fallback command.
+ - Added support for searching any file in the fallback command.
  - Cleaned up AoT-related code to prevent duplicate operations during testing.
  - Reduced CmdPal load time by parallelizing extension startup and adding timeouts to prevent misbehaving extensions from blocking others.
  - Enhanced UI behavior by dismissing the details pane when the list gets emptied, avoiding inconsistent visual states.
@@ -179,7 +179,7 @@ In this release, we focused on new features, stability, and automation.
 
 ### Keyboard Manager
 
- - Fixed an issue where a modifier key, when set without specifying left or right, would get stuck due to incorrect key handling, by tracking the pressed keys and sending the correct key accordingly. Thanks [@mantaionut](https://github.com/mantaionut)!
+ - Fixed an issue where a modifier key, when set without specifying left or right, would get stuck due to incorrect key handling by tracking the pressed keys and sending the correct key accordingly. Thanks [@mantaionut](https://github.com/mantaionut)!
 
 ### PowerRename
 
@@ -187,7 +187,7 @@ In this release, we focused on new features, stability, and automation.
 
 ### PowerToys Run
 
- - Added support for custom formats in the "Time and Date" plugin and improves error messages for invalid input formats. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added support for custom formats in the "Time and Date" plugin and improved error messages for invalid input formats. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fix two crashes: one for WFT on very early dates and another for calculating the week of the month on very late dates (e.g., 31.12.9999), and reorder UI settings. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fix an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.
  - Added version details to plugin error messages for 'Loading error' and 'Init error'. Thanks [@htcfreek](https://github.com/htcfreek)!
@@ -254,7 +254,7 @@ For [v0.92][github-next-release-work], we'll work on the items below:
  - New UI Automation tests
  - Working on installer upgrades
  - Upgrading Keyboard Manager's editor UI
- - Stability / bug fixes
+ - Stability, bug fixes
 
 ## PowerToys Community
 
@@ -266,7 +266,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct][oss-conduct
 
 ## Privacy Statement
 
-The application logs basic diagnostic data (telemetry). For more information on privacy and what we collect, see our [PowerToys Data and Privacy documentation](https://aka.ms/powertoys-data-and-privacy-documentation).
+The application logs basic diagnostic data (telemetry). For more privacy information and what we collect, see our [PowerToys Data and Privacy documentation](https://aka.ms/powertoys-data-and-privacy-documentation).
 
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md

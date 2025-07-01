@@ -8,7 +8,6 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
-using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.Shell;
@@ -67,6 +66,7 @@ public partial class App : Application
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
                 EtwTrace?.Dispose();
+                AppWindow?.Close();
                 Environment.Exit(0);
             });
     }
@@ -107,7 +107,6 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider>(files);
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
 
-        services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
 

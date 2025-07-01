@@ -18,7 +18,7 @@ public sealed partial class ContentFormControl : UserControl
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
     // then the GC might clean it up sometime, even while the card is in the UI
-    // tree. If this gets GC'd, then it'll revoke our Action handler, and the
+    // tree. If this gets GC'ed, then it'll revoke our Action handler, and the
     // form will do seemingly nothing.
     private RenderedAdaptiveCard? _renderedCard;
 

@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -120,14 +121,13 @@ public class ShellListPageHelpers
         return FileExistInPath(filename, out var _);
     }
 
-    internal static bool FileExistInPath(string filename, out string fullPath)
+    internal static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
     {
         fullPath = string.Empty;
 
-        // var expanded = Environment.ExpandEnvironmentVariables(filename);
-        // Debug.WriteLine($"Run: filename={filename} -> expanded={expanded}");
         if (File.Exists(filename))
         {
+            token?.ThrowIfCancellationRequested();
             fullPath = Path.GetFullPath(filename);
             return true;
         }
@@ -145,12 +145,16 @@ public class ShellListPageHelpers
                         return true;
                     }
 
+                    token?.ThrowIfCancellationRequested();
+
                     var path2 = Path.Combine(path, filename + ".exe");
                     if (File.Exists(path2))
                     {
                         fullPath = Path.GetFullPath(path2);
                         return true;
                     }
+
+                    token?.ThrowIfCancellationRequested();
                 }
 
                 return false;
@@ -182,7 +186,7 @@ public class ShellListPageHelpers
         if (exeExists)
         {
             // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItems(exe, args, fullExePath);
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath);
             li.Command = exeItem.Command;
             li.Title = exeItem.Title;
             li.Subtitle = exeItem.Subtitle;

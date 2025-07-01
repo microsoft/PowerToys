@@ -21,7 +21,7 @@ Connor was the creator of Workspaces and helped create Command Palette (PowerToy
 ### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
 Damien has helped out by developing and contributing the Quick Accent utility.
 
-### [@daverayment ](https://github.com/daverayment) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
+### [@daverayment](https://github.com/daverayment) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
 Dave has helped improve the experience inside of Peek by adding in new features and fixing bugs.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
@@ -181,10 +181,8 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 ## PowerToys core team
 
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
-- [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
 - [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
-- [@zhiwei-ms](https://github.com/zhiwei-ms) - Zhiwei Yu - Product Manager
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
 - [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
 - [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev lead
@@ -205,6 +203,7 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
 - [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
 - [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
+- [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
 
 ## Former PowerToys core team members
@@ -213,6 +212,7 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
 - [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
 - [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
+- [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
 - [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
 - [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev

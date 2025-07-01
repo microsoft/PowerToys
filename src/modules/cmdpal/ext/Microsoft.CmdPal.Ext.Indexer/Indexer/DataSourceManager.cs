@@ -4,11 +4,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
-using Microsoft.CmdPal.Ext.Indexer.Native;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -29,34 +27,18 @@ internal static class DataSourceManager
     private static bool InitializeDataSource()
     {
         var riid = typeof(IDBInitialize).GUID;
-        var hr = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.CLSIDCollatorDataSource), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref riid, out var dataSourceObjPtr);
-        if (hr != 0)
+
+        try
         {
-            Logger.LogError("CoCreateInstance failed: " + hr);
-            return false;
+            _dataSource = ComHelper.CreateComInstance<IDBInitialize>(ref Unsafe.AsRef(in CLSID.CollatorDataSource), CLSCTX.InProcServer);
         }
-
-        if (dataSourceObjPtr == IntPtr.Zero)
+        catch (Exception e)
         {
-            Logger.LogError("CoCreateInstance failed: dataSourceObjPtr is null");
-            return false;
-        }
-
-        var comWrappers = new StrategyBasedComWrappers();
-        _dataSource = (IDBInitialize)comWrappers.GetOrCreateObjectForComInstance(dataSourceObjPtr, CreateObjectFlags.None);
-
-        if (_dataSource == null)
-        {
-            Logger.LogError("CoCreateInstance failed: dataSourceObj is null");
+            Logger.LogError($"Failed to create datasource. ex: {e.Message}");
             return false;
         }
 
         _dataSource.Initialize();
-
-        if (dataSourceObjPtr != IntPtr.Zero)
-        {
-            Marshal.Release(dataSourceObjPtr);
-        }
 
         return true;
     }
