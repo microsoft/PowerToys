@@ -252,9 +252,21 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         cancellationToken.ThrowIfCancellationRequested();
     }
 
-    private static ListItem PathToListItem(string path, string originalPath)
+    private static ListItem PathToListItem(string path, string originalPath, string args = "")
     {
-        return new PathListItem(path, originalPath);
+        var pathItem = new PathListItem(path, originalPath);
+
+        // Is this path an executable? If so, then make a RunExeItem
+        if (IsExecutable(path))
+        {
+            var exeItem = new RunExeItem(Path.GetFileName(path), args, path);
+            exeItem.MoreCommands = [
+            .. exeItem.MoreCommands,
+            .. pathItem.MoreCommands];
+            return exeItem;
+        }
+
+        return pathItem;
     }
 
     public override IListItem[] GetItems()
@@ -273,14 +285,16 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     internal static RunExeItem CreateExeItems(string exe, string args, string fullExePath)
     {
-        var exeItem = new RunExeItem(exe, args, fullExePath);
+        // var exeItem = new RunExeItem(exe, args, fullExePath);
 
-        var pathItem = PathToListItem(fullExePath, exe);
-        exeItem.MoreCommands = [
-            .. exeItem.MoreCommands,
-            .. pathItem.MoreCommands];
+        // var pathItem = PathToListItem(fullExePath, exe);
+        // exeItem.MoreCommands = [
+        //     .. exeItem.MoreCommands,
+        //     .. pathItem.MoreCommands];
 
-        return exeItem;
+        // return exeItem;
+        return PathToListItem(fullExePath, exe, args) as RunExeItem ??
+               new RunExeItem(exe, args, fullExePath);
     }
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
@@ -298,6 +312,14 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         {
             _exeItem = CreateExeItems(exe, args, fullExePath);
         }
+    }
+
+    private static bool IsExecutable(string path)
+    {
+        // Is this path an executable?
+        // check all the extensions in PATHEXT
+        var extensions = Environment.GetEnvironmentVariable("PATHEXT")?.Split(';') ?? Array.Empty<string>();
+        return extensions.Any(ext => string.Equals(Path.GetExtension(path), ext, StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task CreatePathItemsAsync(string searchPath, string originalPath, CancellationToken cancellationToken)
