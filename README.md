@@ -99,10 +99,10 @@ In this release, we focused on new features, stability, optimization improvement
 
 **✨Highlights**
 
- - PowerToys Settings now has a toggle for the system-tray icon, giving users control over its visibility based on personal preference. Thanks [@BLM16](https://github.com/BLM16)!  
+ - PowerToys settings now has a toggle for the system tray icon, giving users control over its visibility based on personal preference. Thanks [@BLM16](https://github.com/BLM16)!  
  - Command Palette now has Ahead-of-Time ([AOT](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot)) compatibility for all first-party extensions, improved extensibility, and core UX fixes, resulting in better performance and stability across commands.
  - Color Picker now has customizable mouse button actions, enabling more personalized workflows by assigning functions to left, right, and middle clicks. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Bug Report Tool now has a faster and clearer reporting process, with progress indicators, improved compression, auto-cleanup of old trace logs, and inclusion of msix installer logs for more efficient diagnostics.
+ - Bug Report Tool now has a faster and clearer reporting process, with progress indicators, improved compression, auto-cleanup of old trace logs, and inclusion of MSIX installer logs for more efficient diagnostics.
  - File Explorer add-ons now have improved rendering stability, resolving issues with PDF previews, blank thumbnails, and text file crashes during file browsing.
 
 ### Color Picker
@@ -141,7 +141,7 @@ In this release, we focused on new features, stability, optimization improvement
 
  - We’ve made foundational changes to prepare the Command Palette for future Ahead-of-Time (AOT) publishing. This includes replacing the calculator library with ExprTk, improving COM object handling, refining Win32 interop, and correcting trimming behavior—all to ensure compatibility, performance, and reliability under AOT constraints. All first-party extensions are now AOT-compatible. These improvements lay the groundwork for publishing Command Palette as an AOT application in the next release.
  - Special thanks to [@Sergio0694](https://github.com/Sergio0694) for guidance on making COM APIs AOT-compatible, [@jtschuster](https://github.com/jtschuster) for fixing COM object handling, [@ArashPartow](https://github.com/ArashPartow) from ExprTk for integration suggestions, and [@tian-lt](https://github.com/tian-lt) from the Windows Calculator team for valuable suggestion throughout the migration journey and review.
- - As part of the upcoming release, we’re also enabling AOT compatibility for key dependencies, including Markdown rendering, Adaptive Cards, internal logging and telemetry library, and the core Command Palette UX.
+ - As part of the upcoming release, we’re also enabling AOT compatibility for key dependencies, including markdown rendering, Adaptive Cards, internal logging and telemetry library, and the core Command Palette UX.
 
 ### FancyZones
 
@@ -181,7 +181,8 @@ In this release, we focused on new features, stability, optimization improvement
 
 ### Settings
 
- - Added an option to hide or show the PowerToys system-tray icon. Thanks [@BLM16](https://github.com/BLM16)!  
+ - Added an option to hide or show the PowerToys system tray icon. Thanks [@BLM16](https://github.com/BLM16)!
+ - Improved settings to show progress while a bug report package is being generated.
 
 ### Workspaces
 
@@ -199,7 +200,7 @@ In this release, we focused on new features, stability, optimization improvement
  - Updated WinAppSDK to 1.7.2 for better stability and Windows support.  
  - Introduced a one-step local build script that generates a signed installer, enhancing developer productivity.
  - Generated portable PDBs so cross-platform debuggers can read symbol files, improving debugging experience in VSCode and other tools.
- - Simplified Winget config files by using the [Microsoft.Windows.Settings](https://www.powershellgallery.com/packages/Microsoft.Windows.Settings) module to enable Developer Mode. Thanks [@mdanish-kh](https://github.com/mdanish-kh)! 
+ - Simplified WinGet configuration files by using the [Microsoft.Windows.Settings](https://www.powershellgallery.com/packages/Microsoft.Windows.Settings) module to enable Developer Mode. Thanks [@mdanish-kh](https://github.com/mdanish-kh)! 
  - Adjusted build scripts for the latest Az.Accounts module to keep CI green.
  - Streamlined release pipeline by removing hard-coded telemetry version numbers, and unified Command Palette versioning with Windows Terminal's versioning method for consistent updates.
  - Enhanced the build validation step to show detailed differences between NOTICE.md and actual package dependencies and versions.
@@ -211,12 +212,10 @@ In this release, we focused on new features, stability, optimization improvement
  - Enabled daily UI test automation on the main branch, now covering over 370 UI tests for end-to-end validation.
  - Newly added unit tests for WorkspacesLib to improve reliability and maintainability.
 
+### General
 
-### Tool/General
-
-- Improved Settings to show progress while a bug-report package is being generated.
-- Updated bug-report compression library (cziplib 0.3.3) for faster and more reliable package creation. Thanks [@Chubercik](https://github.com/Chubercik)!
-- Included App-Installer (“AppX Deployment Server”) event logs in bug reports for more thorough diagnostics.  
+- Updated bug report compression library (cziplib 0.3.3) for faster and more reliable package creation. Thanks [@Chubercik](https://github.com/Chubercik)!
+- Included App Installer (“AppX Deployment Server”) event logs in bug reports for more thorough diagnostics.  
 
 ### What is being planned for version 0.93
 
