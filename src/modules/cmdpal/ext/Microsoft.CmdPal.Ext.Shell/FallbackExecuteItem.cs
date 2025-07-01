@@ -34,7 +34,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
         }
 
         ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
-        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
+        var exeExists = ShellListPageHelpers.FileExistInPathBlocking(exe, out var fullExePath);
         var pathIsDir = Directory.Exists(exe);
         Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
 
@@ -80,7 +80,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
         }
 
         ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
-        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
+        var exeExists = ShellListPageHelpers.FileExistInPathBlocking(exe, out var fullExePath);
         var pathIsDir = Directory.Exists(exe);
 
         return exeExists || pathIsDir;

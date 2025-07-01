@@ -17,6 +17,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="Microsoft.Windows.CsWin32">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   
   <ItemGroup>

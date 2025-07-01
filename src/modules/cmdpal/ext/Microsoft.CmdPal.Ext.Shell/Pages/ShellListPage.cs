@@ -158,7 +158,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // Check for cancellation before file system operations
         cancellationToken.ThrowIfCancellationRequested();
 
-        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
+        var (exeExists, fullExePath) = await ShellListPageHelpers.FileExistInPathGetPathAsync(exe, cancellationToken);
 
         // Also, liberally cancel ourselves between various filesystem actions
         cancellationToken.ThrowIfCancellationRequested();
