@@ -31,7 +31,7 @@ This structure is similar to the Environment Variables for Windows module.
 - **Module Entry**: [Program.cs](/src/modules/Hosts/Program.cs) → [App.xaml.cs](/src/modules/Hosts/HostsXAML/App.xaml.cs)
 - **Settings UI**: 
   - Main Window: [MainWindow.xaml.cs](/src/modules/Hosts/Hosts/HostsXAML/MainWindow.xaml.cs)
-  - View: [HostsMainPage.xaml.cs](/src/modules/Hosts/HostsUILib/HostsMainPage.xaml.cs)
+  - View: [HostsMainPage.xaml](/src/modules/Hosts/HostsUILib/HostsMainPage.xaml)
   - ViewModel: [HostsMainPage.xaml.cs](/src/modules/Hosts/HostsUILib/HostsMainPage.xaml.cs)
 - **Runner Integration**: [HostsModuleInterface](/src/modules/Hosts/HostsModuleInterface)
 
