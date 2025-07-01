@@ -5,7 +5,7 @@
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">
@@ -36,5 +36,10 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <labToolkit:MarkdownTextBlock
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Background="Transparent"
+            Text="{x:Bind Text}" />
     </Grid>
 </UserControl>
