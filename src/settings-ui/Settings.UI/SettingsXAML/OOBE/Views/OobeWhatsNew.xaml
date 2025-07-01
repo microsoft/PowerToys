@@ -134,7 +134,6 @@
                     Background="Transparent"
                     Header1FontSize="20"
                     Header1FontWeight="SemiBold"
-                    Header1Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                     Header1Margin="0,0,0,4"
                     Header2FontSize="16"
                     Header2FontWeight="SemiBold"
@@ -144,7 +143,7 @@
                     Header4FontWeight="SemiBold"
                     HorizontalRuleMargin="24"
                     LinkClicked="ReleaseNotesMarkdown_LinkClicked"
-                    ListMargin="-22,4,0,12" ListBulletSpacing="4"
+                    ListMargin="-18,4,0,12"
                     ParagraphMargin="0,0,0,0"
                     TableMargin="24"
                     Visibility="Collapsed" />
