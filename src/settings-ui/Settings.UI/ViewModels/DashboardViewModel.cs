@@ -44,10 +44,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool UpdateAvailable { get; set; }
-
-        public UpdatingSettings UpdateSettingsConfig { get; set; }
-
         private ISettingsRepository<GeneralSettings> _settingsRepository;
         private GeneralSettings generalSettingsConfig;
         private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
@@ -68,9 +64,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             GetShortcutModules();
-
-            UpdateSettingsConfig = UpdatingSettings.LoadSettings();
-            UpdateAvailable = UpdateSettingsConfig != null && (UpdateSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || UpdateSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
         }
 
         private void AddDashboardListItem(ModuleType moduleType)
