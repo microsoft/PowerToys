@@ -56,6 +56,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public CommandItemViewModel EmptyContent { get; private set; }
 
+    public bool IsMainPage { get; init; }
+
     private bool _isDynamic;
 
     private Task? _initializeItemsTask;
@@ -158,10 +160,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             // Cancel any ongoing search
-            if (_cancellationTokenSource != null)
-            {
-                _cancellationTokenSource.Cancel();
-            }
+            _cancellationTokenSource?.Cancel();
 
             lock (_listLock)
             {

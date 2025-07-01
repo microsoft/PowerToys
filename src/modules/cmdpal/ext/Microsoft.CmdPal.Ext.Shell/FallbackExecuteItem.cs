@@ -5,6 +5,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.Shell.Properties;
@@ -12,8 +14,11 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell;
 
-internal sealed partial class FallbackExecuteItem : FallbackCommandItem
+internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDisposable
 {
+    private CancellationTokenSource? _cancellationTokenSource;
+    private Task? _currentUpdateTask;
+
     public FallbackExecuteItem(SettingsManager settings)
         : base(new NoOpCommand(), Resources.shell_command_display_title)
     {
@@ -23,6 +28,60 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
+        // Cancel any ongoing query processing
+        if (_cancellationTokenSource != null)
+        {
+            Debug.WriteLine("FallbackExecuteItem: Cancelling old query");
+            _cancellationTokenSource.Cancel();
+        }
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _cancellationTokenSource.Token;
+
+        try
+        {
+            // Save the latest update task
+            _currentUpdateTask = DoUpdateQueryAsync(query, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // DO NOTHING HERE
+            return;
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            Debug.WriteLine($"FallbackExecuteItem: UpdateQuery threw exception: {ex.Message}");
+            return;
+        }
+
+        // Await the task to ensure only the latest one gets processed
+        _ = ProcessUpdateResultsAsync(_currentUpdateTask);
+    }
+
+    private async Task ProcessUpdateResultsAsync(Task updateTask)
+    {
+        try
+        {
+            await updateTask;
+        }
+        catch (OperationCanceledException)
+        {
+            // Handle cancellation gracefully
+            Debug.WriteLine("FallbackExecuteItem: Cancelled query update");
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            Debug.WriteLine($"FallbackExecuteItem: ProcessUpdateResultsAsync threw exception: {ex.Message}");
+        }
+    }
+
+    private async Task DoUpdateQueryAsync(string query, CancellationToken cancellationToken)
+    {
+        // Check for cancellation at the start
+        cancellationToken.ThrowIfCancellationRequested();
+
         var searchText = query.Trim();
         var expanded = Environment.ExpandEnvironmentVariables(searchText);
         searchText = expanded;
@@ -34,14 +93,66 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
         }
 
         ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
-        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
-        var pathIsDir = Directory.Exists(exe);
+
+        // Check for cancellation before file system operations
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var exeExists = false;
+        var fullExePath = string.Empty;
+        var pathIsDir = false;
+
+        try
+        {
+            // Create a timeout for file system operations (200ms)
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+            using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+            var timeoutToken = combinedCts.Token;
+
+            // Use Task.Run with timeout for file system operations
+            var fileSystemTask = Task.Run(
+                () =>
+                {
+                    exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
+                    pathIsDir = Directory.Exists(exe);
+                },
+                CancellationToken.None);
+
+            // Wait for either completion or timeout
+            await fileSystemTask.WaitAsync(timeoutToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Main cancellation token was cancelled, re-throw
+            throw;
+        }
+        catch (TimeoutException)
+        {
+            // Timeout occurred - use defaults
+            Debug.WriteLine($"FallbackExecuteItem: File system check timed out after 200ms for '{exe}'");
+            return;
+        }
+        catch (OperationCanceledException)
+        {
+            // Timeout occurred (from WaitAsync) - use defaults
+            Debug.WriteLine($"FallbackExecuteItem: File system check timed out after 200ms for '{exe}'");
+            return;
+        }
+        catch (Exception ex)
+        {
+            // Handle any other exceptions that might bubble up
+            Debug.WriteLine($"FallbackExecuteItem: Unexpected exception during file system check: {ex.Message}");
+            return;
+        }
+
+        // Check for cancellation before updating UI properties
+        cancellationToken.ThrowIfCancellationRequested();
+
         Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
 
         if (exeExists)
         {
             // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItems(exe, args, fullExePath);
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath);
             Title = exeItem.Title;
             Subtitle = exeItem.Subtitle;
             Icon = exeItem.Icon;
@@ -67,6 +178,15 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
             Command = null;
             Title = string.Empty;
         }
+
+        // Final cancellation check
+        cancellationToken.ThrowIfCancellationRequested();
+    }
+
+    public void Dispose()
+    {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
     }
 
     internal static bool SuppressFileFallbackIf(string query)

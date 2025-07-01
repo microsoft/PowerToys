@@ -260,6 +260,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         if (IsExecutable(path))
         {
             var exeItem = new RunExeItem(Path.GetFileName(path), args, path);
+
             exeItem.MoreCommands = [
             .. exeItem.MoreCommands,
             .. pathItem.MoreCommands];
@@ -283,26 +284,16 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             .ToArray();
     }
 
-    internal static RunExeItem CreateExeItems(string exe, string args, string fullExePath)
+    internal static RunExeItem CreateExeItem(string exe, string args, string fullExePath)
     {
-        // var exeItem = new RunExeItem(exe, args, fullExePath);
-
-        // var pathItem = PathToListItem(fullExePath, exe);
-        // exeItem.MoreCommands = [
-        //     .. exeItem.MoreCommands,
-        //     .. pathItem.MoreCommands];
-
-        // return exeItem;
+        // PathToListItem will return a RunExeItem if it can find a executable.
+        // It will ALSO add the file search commands to the RunExeItem.
         return PathToListItem(fullExePath, exe, args) as RunExeItem ??
                new RunExeItem(exe, args, fullExePath);
     }
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
     {
-        // _exeItems.Clear();
-        // var exeItem = CreateExeItems(exe, args, fullExePath);
-        // _exeItems.Add(exeItem);
-
         // If we already have an exe item, and the exe is the same, we can just update it
         if (_exeItem != null && _exeItem.FullExePath.Equals(fullExePath, StringComparison.OrdinalIgnoreCase))
         {
@@ -310,7 +301,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
         else
         {
-            _exeItem = CreateExeItems(exe, args, fullExePath);
+            _exeItem = CreateExeItem(exe, args, fullExePath);
         }
     }
 
