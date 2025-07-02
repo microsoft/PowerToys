@@ -16,8 +16,10 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class CropAndLockViewModel : Observable
+    public partial class CropAndLockViewModel : PageViewModelBase
     {
+        protected override string ModuleName => CropAndLockSettings.ModuleName;
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -27,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         public CropAndLockViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<CropAndLockSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+            : base(ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -62,6 +65,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            // Register hotkey settings for conflict detection
+            RegisterHotkeySettings(ReparentActivationShortcut, ThumbnailActivationShortcut);
         }
 
         private void InitializeEnabledValue()

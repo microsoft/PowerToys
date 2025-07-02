@@ -30,8 +30,10 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class MouseWithoutBordersViewModel : Observable, IDisposable
+    public partial class MouseWithoutBordersViewModel : PageViewModelBase, IDisposable
     {
+        protected override string ModuleName => MouseWithoutBordersSettings.ModuleName;
+
         // These should be in the same order as the ComboBoxItems in MouseWithoutBordersPage.xaml switch machine shortcut options
         private readonly int[] _switchBetweenMachineShortcutOptions =
         {
@@ -423,6 +425,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private DispatcherQueue _uiDispatcherQueue;
 
         public MouseWithoutBordersViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, DispatcherQueue uiDispatcherQueue)
+            : base(ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -451,6 +454,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _cancellationTokenSource = new CancellationTokenSource();
 
             _machinePollingThreadTask = StartMachineStatusPollingThread(_machinePollingThreadTask, _cancellationTokenSource.Token);
+
+            // Register hotkey settings for conflict detection
+            RegisterHotkeySettings(ToggleEasyMouseShortcut, LockMachinesShortcut, ReconnectShortcut, HotKeySwitch2AllPC);
         }
 
         private Task StartMachineStatusPollingThread(Task previousThreadTask, CancellationToken token)
@@ -1242,9 +1248,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Clipboard.SetContent(data);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
-            GC.SuppressFinalize(this);
+            base.Dispose();
         }
 
         internal void UninstallService()
