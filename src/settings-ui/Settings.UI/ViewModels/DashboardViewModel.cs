@@ -23,10 +23,12 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class DashboardViewModel : Observable
+    public partial class DashboardViewModel : PageViewModelBase
     {
         private const string JsonFileType = ".json";
         private Dispatcher dispatcher;
+
+        protected override string ModuleName => "Dashboard";
 
         public Func<string, int> SendConfigMSG { get; }
 
@@ -49,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
         public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+            : base(ipcMSGCallBackFunc)
         {
             dispatcher = Dispatcher.CurrentDispatcher;
             _settingsRepository = settingsRepository;

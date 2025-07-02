@@ -20,8 +20,10 @@ using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PeekViewModel : Observable, IDisposable
+    public class PeekViewModel : PageViewModelBase, IDisposable
     {
+        protected override string ModuleName => PeekSettings.ModuleName;
+
         private bool _isEnabled;
 
         private bool _settingsUpdating;
@@ -46,6 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
             DispatcherQueue dispatcherQueue)
+            : base(ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
@@ -72,6 +75,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
 
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            // Register hotkey settings for conflict detection
+            RegisterHotkeySettings(ActivationShortcut);
         }
 
         /// <summary>
@@ -310,11 +316,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _watcher?.Dispose();
-
-            GC.SuppressFinalize(this);
+            base.Dispose();
         }
     }
 }

@@ -12,15 +12,17 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class ShortcutGuideViewModel : Observable
+    public partial class ShortcutGuideViewModel : PageViewModelBase
     {
+        protected override string ModuleName => ShortcutGuideSettings.ModuleName;
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private ShortcutGuideSettings Settings { get; set; }
 
-        private const string ModuleName = ShortcutGuideSettings.ModuleName;
+        private const string ModuleNameConst = ShortcutGuideSettings.ModuleName;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -28,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _disabledApps;
 
         public ShortcutGuideViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+            : base(ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -68,6 +71,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case "light": _themeIndex = 1; break;
                 case "system": _themeIndex = 2; break;
             }
+
+            RegisterHotkeySettings(OpenShortcutGuide);
         }
 
         private void InitializeEnabledValue()
@@ -261,7 +266,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string GetSettingsSubPath()
         {
-            return _settingsConfigFileFolder + "\\" + ModuleName;
+            return _settingsConfigFileFolder + "\\" + ModuleNameConst;
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
@@ -271,7 +276,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);
             SndModuleSettings<SndShortcutGuideSettings> ipcMessage = new SndModuleSettings<SndShortcutGuideSettings>(outsettings);
             SendConfigMSG(ipcMessage.ToJsonString());
-            SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
+            SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleNameConst);
         }
 
         public void RefreshEnabledState()

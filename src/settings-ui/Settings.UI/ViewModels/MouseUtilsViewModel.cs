@@ -14,8 +14,10 @@ using Microsoft.PowerToys.Settings.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class MouseUtilsViewModel : Observable
+    public partial class MouseUtilsViewModel : PageViewModelBase
     {
+        protected override string ModuleName => "MouseUtils";
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -27,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private MousePointerCrosshairsSettings MousePointerCrosshairsSettingsConfig { get; set; }
 
         public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+            : base(ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -132,6 +135,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+
+            // Register hotkey settings for conflict detection
+            RegisterHotkeySettings(
+                FindMyMouseActivationShortcut,
+                MouseHighlighterActivationShortcut,
+                MousePointerCrosshairsActivationShortcut,
+                MouseJumpActivationShortcut);
         }
 
         private void InitializeEnabledValues()

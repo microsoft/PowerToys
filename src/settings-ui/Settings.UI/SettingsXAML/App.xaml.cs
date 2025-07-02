@@ -297,6 +297,16 @@ namespace Microsoft.PowerToys.Settings.UI
             if (cmdArgs?.Length >= RequiredArgumentsLaunchedFromRunnerQty)
             {
                 OnLaunchedFromRunner(cmdArgs);
+
+                // Initialize GlobalHotkeyConflictManager after IPC manager is set up
+                if (ipcmanager != null)
+                {
+                    GlobalHotkeyConflictManager.Initialize(message =>
+                    {
+                        ipcmanager.Send(message);
+                        return 0; // Return success
+                    });
+                }
             }
             else if (cmdArgs?.Length == RequiredArgumentsSetSettingQty && cmdArgs[1] == "set")
             {
@@ -320,11 +330,20 @@ namespace Microsoft.PowerToys.Settings.UI
                 WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
+
+                // In DEBUG mode, we might not have IPC set up, so provide a dummy implementation
+                GlobalHotkeyConflictManager.Initialize(message =>
+                {
+                    // In debug mode, just log or do nothing
+                    System.Diagnostics.Debug.WriteLine($"IPC Message: {message}");
+                    return 0;
+                });
+
                 ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
 #else
-                /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
-                Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
-                Exit();
+        /* If we try to run Settings as a standalone app, it will start PowerToys.exe if not running and open Settings again through it in the Dashboard page. */
+        Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Dashboard, true);
+        Exit();
 #endif
             }
         }

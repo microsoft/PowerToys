@@ -101,7 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void Update()
         {
-            if (_keyVisual != null && _keyVisual.Content != null)
+            if (_keyVisual != null && _keyVisual.Content != null && _keyPresenter != null)
             {
                 FrameworkElement contentElement = null;
                 string accessibleName = string.Empty;
