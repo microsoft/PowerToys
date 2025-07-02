@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -396,52 +394,52 @@
     </DirectoryRef>
 
     <ComponentGroup Id="RunComponentGroup">
-      <Component Id="RemoveLauncherFolder" Guid="3FFDC0B6-82BC-4C57-AEB1-C710DB108C23" Directory="INSTALLFOLDER" >
+      <Component Id="RemoveLauncherFolder" Guid="3FFDC0B6-82BC-4C57-AEB1-C710DB108C23" Directory="INSTALLFOLDER">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="RemoveLauncherFolder" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="RemoveLauncherFolder" Value="" KeyPath="yes" />
         </RegistryKey>
-        <RemoveFolder Id="RemoveFolderLauncherImagesFolder" Directory="LauncherImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderLauncherPluginsFolder" Directory="LauncherPluginsFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderCalculatorPluginFolder" Directory="CalculatorPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderCalculatorImagesFolder" Directory="CalculatorImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderFolderPluginFolder" Directory="FolderPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderFolderPluginImagesFolder" Directory="FolderPluginImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderProgramPluginFolder" Directory="ProgramPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderProgramImagesFolder" Directory="ProgramImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderShellPluginFolder" Directory="ShellPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderShellImagesFolder" Directory="ShellImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderIndexerPluginFolder" Directory="IndexerPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderIndexerImagesFolder" Directory="IndexerImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderUnitConverterPluginFolder" Directory="UnitConverterPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderUnitConverterImagesFolder" Directory="UnitConverterImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderWebSearchPluginFolder" Directory="WebSearchPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderWebSearchImagesFolder" Directory="WebSearchImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderHistoryPluginFolder" Directory="HistoryPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderHistoryImagesFolder" Directory="HistoryImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderUriPluginFolder" Directory="UriPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderUriImagesFolder" Directory="UriImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderVSCodeWorkspacesPluginFolder" Directory="VSCodeWorkspacesPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderVSCodeWorkspaceImagesFolder" Directory="VSCodeWorkspaceImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderWindowWalkerPluginFolder" Directory="WindowWalkerPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderWindowWalkerImagesFolder" Directory="WindowWalkerImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderOneNotePluginFolder" Directory="OneNotePluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderOneNoteImagesFolder" Directory="OneNoteImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderRegistryPluginFolder" Directory="RegistryPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderRegistryImagesFolder" Directory="RegistryImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderServicePluginFolder" Directory="ServicePluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderServiceImagesFolder" Directory="ServiceImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderSystemPluginFolder" Directory="SystemPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderSystemImagesFolder" Directory="SystemImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderTimeDatePluginFolder" Directory="TimeDatePluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderTimeDateImagesFolder" Directory="TimeDateImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderWindowsSettingsPluginFolder" Directory="WindowsSettingsPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderWindowsSettingsImagesFolder" Directory="WindowsSettingsImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderWindowsTerminalPluginFolder" Directory="WindowsTerminalPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderWindowsTerminalImagesFolder" Directory="WindowsTerminalImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderPowerToysPluginFolder" Directory="PowerToysPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderPowerToysImagesFolder" Directory="PowerToysImagesFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderValueGeneratorPluginFolder" Directory="ValueGeneratorPluginFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderValueGeneratorImagesFolder" Directory="ValueGeneratorImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderLauncherImagesFolder" Directory="LauncherImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderLauncherPluginsFolder" Directory="LauncherPluginsFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderCalculatorPluginFolder" Directory="CalculatorPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderCalculatorImagesFolder" Directory="CalculatorImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderFolderPluginFolder" Directory="FolderPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderFolderPluginImagesFolder" Directory="FolderPluginImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderProgramPluginFolder" Directory="ProgramPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderProgramImagesFolder" Directory="ProgramImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderShellPluginFolder" Directory="ShellPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderShellImagesFolder" Directory="ShellImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderIndexerPluginFolder" Directory="IndexerPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderIndexerImagesFolder" Directory="IndexerImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderUnitConverterPluginFolder" Directory="UnitConverterPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderUnitConverterImagesFolder" Directory="UnitConverterImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderWebSearchPluginFolder" Directory="WebSearchPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderWebSearchImagesFolder" Directory="WebSearchImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderHistoryPluginFolder" Directory="HistoryPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderHistoryImagesFolder" Directory="HistoryImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderUriPluginFolder" Directory="UriPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderUriImagesFolder" Directory="UriImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderVSCodeWorkspacesPluginFolder" Directory="VSCodeWorkspacesPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderVSCodeWorkspaceImagesFolder" Directory="VSCodeWorkspaceImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderWindowWalkerPluginFolder" Directory="WindowWalkerPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderWindowWalkerImagesFolder" Directory="WindowWalkerImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderOneNotePluginFolder" Directory="OneNotePluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderOneNoteImagesFolder" Directory="OneNoteImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderRegistryPluginFolder" Directory="RegistryPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderRegistryImagesFolder" Directory="RegistryImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderServicePluginFolder" Directory="ServicePluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderServiceImagesFolder" Directory="ServiceImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderSystemPluginFolder" Directory="SystemPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderSystemImagesFolder" Directory="SystemImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderTimeDatePluginFolder" Directory="TimeDatePluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderTimeDateImagesFolder" Directory="TimeDateImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderWindowsSettingsPluginFolder" Directory="WindowsSettingsPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderWindowsSettingsImagesFolder" Directory="WindowsSettingsImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderWindowsTerminalPluginFolder" Directory="WindowsTerminalPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderWindowsTerminalImagesFolder" Directory="WindowsTerminalImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderPowerToysPluginFolder" Directory="PowerToysPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderPowerToysImagesFolder" Directory="PowerToysImagesFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderValueGeneratorPluginFolder" Directory="ValueGeneratorPluginFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderValueGeneratorImagesFolder" Directory="ValueGeneratorImagesFolder" On="uninstall" />
       </Component>
     </ComponentGroup>
   </Fragment>

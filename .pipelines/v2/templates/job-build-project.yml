@@ -227,10 +227,6 @@ jobs:
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
     displayName: Download and install WiX 3.14 development build
 
-  - pwsh: |-
-      & "$(build.sourcesdirectory)\.pipelines\installWiXVNext.ps1"
-    displayName: Download and install WiX 4/5 development build
-
   - ${{ parameters.beforeBuildSteps }}
 
   - task: VSBuild@1

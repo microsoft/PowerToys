@@ -4,6 +4,10 @@ Param(
     [string]$monacoWxsFile
 )
 
+$monacoBackupFile = Join-Path (Split-Path $monacoWxsFile) "MonacoBackup.wxs"
+$fileWxs = Get-Content $monacoBackupFile;
+Set-Content -Path $monacoWxsFile -Value $fileWxs
+
 $fileWxs = Get-Content $monacoWxsFile;
 
 $fileWxs = $fileWxs -replace " KeyPath=`"yes`" ", " "

@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -19,9 +17,9 @@
   <Fragment>
     <DirectoryRef Id="WinUI3AppsAssetsFolder">
       <Directory Id="SettingsV2AssetsInstallFolder" Name="Settings">
-        <Directory Id="SettingsAppAssetsScriptsFolder" Name="Scripts"/>
+        <Directory Id="SettingsAppAssetsScriptsFolder" Name="Scripts" />
         <Directory Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" Name="Icons" />
-        <Directory Id="SettingsV2AssetsModulesInstallFolder" Name="Modules" >
+        <Directory Id="SettingsV2AssetsModulesInstallFolder" Name="Modules">
           <Directory Id="SettingsV2OOBEAssetsModulesInstallFolder" Name="OOBE" />
         </Directory>
       </Directory>
@@ -48,9 +46,9 @@
     </DirectoryRef>
 
     <DirectoryRef Id="SettingsAppAssetsScriptsFolder" FileSource="$(var.SettingsV2AssetsFilesPath)\Scripts\">
-      <Component Id="CommandNotFound_Scripts" Win64="yes" Guid="898EFA1E-EDD3-4F4B-8C7F-4A14B0D05B02">
+      <Component Id="CommandNotFound_Scripts" Guid="898EFA1E-EDD3-4F4B-8C7F-4A14B0D05B02" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="CommandNotFound_Scripts" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="CommandNotFound_Scripts" Value="" KeyPath="yes" />
         </RegistryKey>
         <File Id="CommandNotFound_Scripts_EnableModule.ps1" Source="$(var.SettingsV2AssetsFilesPath)\Scripts\EnableModule.ps1" />
         <File Id="CommandNotFound_Scripts_UpgradeModule.ps1" Source="$(var.SettingsV2AssetsFilesPath)\Scripts\UpgradeModule.ps1" />
@@ -63,17 +61,17 @@
 
     <ComponentGroup Id="SettingsComponentGroup">
 
-      <Component Id="RemoveSettingsFolder" Guid="2D3AEF68-4E5A-4FF9-A5C0-9E53391AC754" Directory="SettingsV2AssetsInstallFolder" >
+      <Component Id="RemoveSettingsFolder" Guid="2D3AEF68-4E5A-4FF9-A5C0-9E53391AC754" Directory="SettingsV2AssetsInstallFolder">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="RemoveSettingsFolder" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="RemoveSettingsFolder" Value="" KeyPath="yes" />
         </RegistryKey>
-        <RemoveFolder Id="RemoveFolderSettingsV2AssetsInstallFolder" Directory="SettingsV2AssetsInstallFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderSettingsV2OOBEAssetsFluentIconsInstallFolder" Directory="SettingsV2OOBEAssetsFluentIconsInstallFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderSettingsV2AssetsModulesInstallFolder" Directory="SettingsV2AssetsModulesInstallFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderSettingsV2OOBEAssetsModulesInstallFolder" Directory="SettingsV2OOBEAssetsModulesInstallFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderSettingsAppAssetsScriptsFolder" Directory="SettingsAppAssetsScriptsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderSettingsV2AssetsInstallFolder" Directory="SettingsV2AssetsInstallFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderSettingsV2OOBEAssetsFluentIconsInstallFolder" Directory="SettingsV2OOBEAssetsFluentIconsInstallFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderSettingsV2AssetsModulesInstallFolder" Directory="SettingsV2AssetsModulesInstallFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderSettingsV2OOBEAssetsModulesInstallFolder" Directory="SettingsV2OOBEAssetsModulesInstallFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderSettingsAppAssetsScriptsFolder" Directory="SettingsAppAssetsScriptsFolder" On="uninstall" />
       </Component>
-      <ComponentRef Id="CommandNotFound_Scripts"/>
+      <ComponentRef Id="CommandNotFound_Scripts" />
     </ComponentGroup>
 
   </Fragment>

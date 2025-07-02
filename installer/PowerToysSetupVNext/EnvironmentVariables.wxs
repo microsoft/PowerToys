@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -17,11 +15,11 @@
     </DirectoryRef>
 
     <ComponentGroup Id="EnvironmentVariablesComponentGroup">
-      <Component Id="RemoveEnvironmentVariablesFolder" Guid="B62A779D-38BA-46B2-859D-9D242D9B0CC1" Directory="EnvironmentVariablesAssetsFolder" >
+      <Component Id="RemoveEnvironmentVariablesFolder" Guid="B62A779D-38BA-46B2-859D-9D242D9B0CC1" Directory="EnvironmentVariablesAssetsFolder">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="RemoveEnvironmentVariablesFolder" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="RemoveEnvironmentVariablesFolder" Value="" KeyPath="yes" />
         </RegistryKey>
-        <RemoveFolder Id="RemoveFolderEnvironmentVariablesAssetsFolder" Directory="EnvironmentVariablesAssetsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderEnvironmentVariablesAssetsFolder" Directory="EnvironmentVariablesAssetsFolder" On="uninstall" />
       </Component>
     </ComponentGroup>
 

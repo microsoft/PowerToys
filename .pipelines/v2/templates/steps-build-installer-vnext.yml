@@ -118,6 +118,7 @@ steps:
       solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
+        -restore
         /t:PowerToysBootstrapperVNext
         /p:PerUser=${{parameters.buildUserInstaller}};CIBuild=true
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-bootstrapper.binlog
