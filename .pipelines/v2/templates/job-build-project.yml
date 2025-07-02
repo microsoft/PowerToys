@@ -569,28 +569,6 @@ jobs:
       $machineHash | out-file -filepath $combinedMachinePath
     displayName: Calculate file hashes
 
-  # Output config for installer vnext
-  - pwsh: |-
-      $p = "$(JobOutputDirectory)\"
-      $userHash = ((Get-Item $p\PowerToysUserSetupVNext*.exe | Get-FileHash).Hash);
-      $machineHash = ((Get-Item $p\PowerToysSetupVNext*.exe | Get-FileHash).Hash);
-      $userPlat = "hash_user_$(BuildPlatform).txt";
-      $machinePlat = "hash_machine_$(BuildPlatform).txt";
-      $combinedUserPath = $p + $userPlat;
-      $combinedMachinePath = $p + $machinePlat;
-      
-      echo $p
-      echo $userPlat
-      echo $userHash
-      echo $combinedUserPath
-      echo $machinePlat
-      echo $machineHash
-      echo $combinedMachinePath
-      
-      $userHash | out-file -filepath $combinedUserPath
-      $machineHash | out-file -filepath $combinedMachinePath
-    displayName: Calculate file hashes
-
   # Publishing the GPO files
   - pwsh: |-
       New-Item "$(JobOutputDirectory)/gpo" -Type Directory
