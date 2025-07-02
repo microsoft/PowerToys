@@ -12,6 +12,7 @@ using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
 using Windows.Win32;
 using Windows.Win32.Storage.Packaging.Appx;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
@@ -77,7 +78,10 @@ public class UWPApplication : IProgram
         {
             commands.Add(
                 new CommandContextItem(
-                    new RunAsAdminCommand(UniqueIdentifier, string.Empty, true)));
+                    new RunAsAdminCommand(UniqueIdentifier, string.Empty, true))
+                {
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter),
+                });
 
             // We don't add context menu to 'run as different user', because UWP applications normally installed per user and not for all users.
         }
@@ -92,11 +96,17 @@ public class UWPApplication : IProgram
                 {
                     Name = Resources.open_containing_folder,
                     Icon = new("\ue838"),
-                }));
+                })
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E),
+            });
 
         commands.Add(
         new CommandContextItem(
-            new OpenInConsoleCommand(Package.Location)));
+            new OpenInConsoleCommand(Package.Location))
+        {
+            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
+        });
 
         return commands;
     }
