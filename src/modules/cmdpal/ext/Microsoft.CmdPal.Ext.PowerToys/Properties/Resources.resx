@@ -117,6 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="OpenInSettings_CommandName" xml:space="preserve">
+    <value>Open in Settings</value>
+  </data>
+  <data name="PowerToysPage_Title" xml:space="preserve">
+    <value>PowerToys Modules</value>
+  </data>
+  <data name="PowerToysPage_Subtitle" xml:space="preserve">
+    <value>Navigate through powertoys modules</value>
+  </data>
   <data name="PowerToysProvider_DisplayName" xml:space="preserve">
     <value>PowerToys</value>
   </data>

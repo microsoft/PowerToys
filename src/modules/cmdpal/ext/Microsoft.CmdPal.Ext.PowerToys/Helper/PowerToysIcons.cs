@@ -4,9 +4,9 @@
 
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.Ext.PowerToys.Commands;
+namespace Microsoft.CmdPal.Ext.PowerToys.Helper;
 
-internal sealed partial class OpenUICommand : InvokableCommand
+public static class PowerToysIcons
 {
-    // Some modules have its own UI, this command will open its UI
+    public static IconInfo ProviderIcon => IconHelpers.FromRelativePath("Assets\\PowerToys.png");
 }

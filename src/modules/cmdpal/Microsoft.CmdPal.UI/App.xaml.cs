@@ -9,6 +9,7 @@ using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.Indexer;
+using Microsoft.CmdPal.Ext.PowerToys;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.System;
@@ -126,6 +127,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
+        services.AddSingleton<ICommandProvider, PowerToysCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();

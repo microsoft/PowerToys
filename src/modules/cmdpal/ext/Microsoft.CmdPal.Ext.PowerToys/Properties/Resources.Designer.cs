@@ -61,6 +61,33 @@ namespace Microsoft.CmdPal.Ext.PowerToys.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open in Settings.
+        /// </summary>
+        internal static string OpenInSettings_CommandName {
+            get {
+                return ResourceManager.GetString("OpenInSettings_CommandName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Navigate through powertoys modules.
+        /// </summary>
+        internal static string PowerToysPage_Subtitle {
+            get {
+                return ResourceManager.GetString("PowerToysPage_Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Modules.
+        /// </summary>
+        internal static string PowerToysPage_Title {
+            get {
+                return ResourceManager.GetString("PowerToysPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PowerToys.
         /// </summary>
         internal static string PowerToysProvider_DisplayName {

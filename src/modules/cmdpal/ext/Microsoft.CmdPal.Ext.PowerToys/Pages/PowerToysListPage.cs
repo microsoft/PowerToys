@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.PowerToys.Pages;
 
-internal partial class PowerToysListPage : DynamicListPage
+internal sealed partial class PowerToysListPage : DynamicListPage
 {
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
