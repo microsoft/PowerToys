@@ -119,7 +119,6 @@
       <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
-      <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
       <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="InstallEmbeddedMSIXTask" After="InstallFinalize">
@@ -236,7 +235,6 @@
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
     <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />
     <util:CloseApplication CloseMessage="yes" Target="PowerToys.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
-    <util:CloseApplication CloseMessage="yes" Target="dllhost.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
   </Package>
 
   <Fragment>
