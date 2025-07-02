@@ -22,7 +22,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     private readonly ShellListPageHelpers _helper;
 
     private readonly List<ListItem> _topLevelItems = [];
-    private readonly List<ListItem> _historyItems = [];
+    private readonly Dictionary<string, ListItem> _historyItems = [];
+    private readonly List<ListItem> _currentHistoryItems = [];
 
     private readonly IRunHistoryService _historyService;
 
@@ -147,15 +148,24 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var expanded = Environment.ExpandEnvironmentVariables(searchText);
         Debug.WriteLine($"Run: searchText={searchText} -> expanded={expanded}");
 
-        var hist = _historyService.GetRunHistory();
-        var filteredHist = string.IsNullOrEmpty(searchText) ?
-            hist :
-            ListHelpers.FilterList(hist, searchText, (q, s) => StringMatcher.FuzzySearch(q, s).Score);
-        var histItems = filteredHist
-            .Select(h => ShellListPageHelpers.ListItemForCommandString(h))
-            .Where(i => i != null)
-            .Select(i => i!);
-        ListHelpers.InPlaceUpdateList(_historyItems, histItems);
+        // Filter the history items based on the search text
+        var filterHistory = (string query, KeyValuePair<string, ListItem> pair) =>
+        {
+            // Fuzzy search on the key (command string)
+            var score = StringMatcher.FuzzySearch(query, pair.Key).Score;
+            return score;
+        };
+
+        var filteredHistory = string.IsNullOrEmpty(searchText)
+            ? _historyItems.Values.ToList()
+            : ListHelpers.FilterList<KeyValuePair<string, ListItem>>(
+                _historyItems,
+                searchText,
+                filterHistory)
+             .Select(p => p.Value);
+
+        _currentHistoryItems.Clear();
+        _currentHistoryItems.AddRange(filteredHistory);
 
         // Check for cancellation after environment expansion
         cancellationToken.ThrowIfCancellationRequested();
@@ -301,7 +311,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         return
             exeItems
             .Concat(filteredTopLevel)
-            .Concat(_historyItems)
+            .Concat(_currentHistoryItems)
             .Concat(_pathItems)
             .Concat(uriItems)
             .ToArray();
@@ -489,11 +499,19 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     {
         var hist = _historyService.GetRunHistory();
         var histItems = hist
-                .Select(h => ShellListPageHelpers.ListItemForCommandString(h))
-                .Where(i => i != null)
-                .Select(i => i!)
-                .ToList();
-        _historyItems.AddRange(histItems);
+            .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h)))
+            .Where(tuple => tuple.Item2 != null)
+            .Select(tuple => (tuple.h, tuple.Item2!))
+            .ToList();
+
+        // Add all the history items to the _historyItems dictionary
+        foreach (var (h, item) in histItems)
+        {
+            _historyItems[h] = item;
+        }
+
+        _currentHistoryItems.Clear();
+        _currentHistoryItems.AddRange(histItems.Select(tuple => tuple.Item2));
 
         _loadedInitialHistory = true;
     }
