@@ -90,7 +90,7 @@ public class UWPApplication : IProgram
             new CommandContextItem(
                 new CopyPathCommand(Location))
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.P),
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
             });
 
         commands.Add(
@@ -108,7 +108,7 @@ public class UWPApplication : IProgram
         new CommandContextItem(
             new OpenInConsoleCommand(Package.Location))
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
+            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
         });
 
         return commands;

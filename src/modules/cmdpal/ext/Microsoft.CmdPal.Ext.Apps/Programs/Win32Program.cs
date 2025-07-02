@@ -208,7 +208,7 @@ public class Win32Program : IProgram
         commands.Add(new CommandContextItem(
                     new CopyPathCommand(FullPath))
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.P),
+            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
         });
 
         commands.Add(new CommandContextItem(
@@ -220,7 +220,7 @@ public class Win32Program : IProgram
         commands.Add(new CommandContextItem(
                     new OpenInConsoleCommand(ParentDirectory))
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
+            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
         });
 
         return commands;
