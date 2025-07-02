@@ -19,14 +19,14 @@ public class WorkspacesSettingsTests : UITestBase
     [TestCategory("Workspaces Settings UI")]
     public void TestLaunchEditorFromSettingsPage()
     {
-        GoToSettingsPage();
+        GoToSettingsPageAndEnable();
     }
 
     [TestMethod("WorkspacesSettings.ActivationShortcut")]
     [TestCategory("Workspaces Settings UI")]
     public void TestActivationShortcutCustomization()
     {
-        GoToSettingsPage();
+        GoToSettingsPageAndEnable();
 
         // Find the activation shortcut control
         var shortcutButton = Find<Button>("Activation shortcut");
@@ -36,8 +36,6 @@ public class WorkspacesSettingsTests : UITestBase
         shortcutButton.Click();
 
         Task.Delay(1000).Wait();
-
-        AttachWorkspacesEditor();
 
         // Send new key combination (Win+Ctrl+W)
         SendKeys(Key.Win, Key.Ctrl, Key.W);
@@ -56,32 +54,24 @@ public class WorkspacesSettingsTests : UITestBase
     [TestCategory("Workspaces Settings UI")]
     public void TestEnableDisableModule()
     {
-        GoToSettingsPage();
+        GoToSettingsPageAndEnable();
 
         // Find the enable toggle
         var enableToggle = Find<ToggleSwitch>("Enable Workspaces");
         Assert.IsNotNull(enableToggle, "Enable Workspaces toggle should exist");
 
-        // Store initial state
-        bool initialState = enableToggle.IsOn;
+        Assert.IsTrue(enableToggle.IsOn, "Enable Workspaces toggle should be in the 'on' state");
 
         // Toggle the state
         enableToggle.Click();
         Task.Delay(500).Wait();
 
         // Verify state changed
-        Assert.AreNotEqual(initialState, enableToggle.IsOn, "Toggle state should change");
+        Assert.IsFalse(enableToggle.IsOn, "Toggle state should change");
 
         // Verify related controls are enabled/disabled accordingly
         var launchButton = Find<Button>("Launch editor");
-        if (!enableToggle.IsOn)
-        {
-            Assert.IsFalse(launchButton.Enabled, "Launch editor button should be disabled when module is disabled");
-        }
-        else
-        {
-            Assert.IsTrue(launchButton.Enabled, "Launch editor button should be enabled when module is enabled");
-        }
+        Assert.IsFalse(launchButton.Enabled, "Launch editor button should be disabled when module is disabled");
     }
 
     [TestMethod("WorkspacesSettings.LaunchByActivationShortcut")]
@@ -175,7 +165,7 @@ public class WorkspacesSettingsTests : UITestBase
         Thread.Sleep(1000);
     }
 
-    private void GoToSettingsPage()
+    private void GoToSettingsPageAndEnable()
     {
         if (this.FindAll<NavigationViewItem>("Workspaces").Count == 0)
         {
@@ -186,6 +176,15 @@ public class WorkspacesSettingsTests : UITestBase
 
         var enableButton = this.Find<ToggleSwitch>("Enable Workspaces");
         Assert.IsNotNull(enableButton, "Enable Workspaces toggle should exist");
+
+        if (!enableButton.IsOn)
+        {
+            enableButton.Click();
+            Task.Delay(500).Wait(); // Wait for the toggle animation and state change
+        }
+
+        // Verify it's now enabled
+        Assert.IsTrue(enableButton.IsOn, "Enable Workspaces toggle should be in the 'on' state");
     }
 
     private void AttachWorkspacesEditor()

@@ -42,7 +42,7 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
     {
         OpenCalculator();
         OpenWindowsSettings();
-        Task.Delay(500).Wait();
+        Task.Delay(2000).Wait();
 
         AttachWorkspacesEditor();
         var createButton = Find<Button>("Create Workspace");
