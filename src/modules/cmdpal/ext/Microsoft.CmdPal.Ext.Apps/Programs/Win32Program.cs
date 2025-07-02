@@ -206,7 +206,10 @@ public class Win32Program : IProgram
         }
 
         commands.Add(new CommandContextItem(
-                    new CopyPathCommand(FullPath)));
+                    new CopyPathCommand(FullPath))
+        {
+            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.P),
+        });
 
         commands.Add(new CommandContextItem(
                     new OpenPathCommand(ParentDirectory))

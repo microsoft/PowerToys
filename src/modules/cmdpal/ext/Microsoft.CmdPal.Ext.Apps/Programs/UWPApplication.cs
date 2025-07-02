@@ -88,7 +88,10 @@ public class UWPApplication : IProgram
 
         commands.Add(
             new CommandContextItem(
-                new CopyPathCommand(Location)));
+                new CopyPathCommand(Location))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.P),
+            });
 
         commands.Add(
             new CommandContextItem(
