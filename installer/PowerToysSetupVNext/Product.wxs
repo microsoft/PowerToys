@@ -236,6 +236,7 @@
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
     <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />
     <util:CloseApplication CloseMessage="yes" Target="PowerToys.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
+    <util:CloseApplication CloseMessage="yes" Target="dllhost.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
   </Package>
 
   <Fragment>
