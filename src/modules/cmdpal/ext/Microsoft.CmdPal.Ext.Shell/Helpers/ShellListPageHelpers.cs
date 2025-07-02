@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -179,8 +180,34 @@ public class ShellListPageHelpers
         }
 
         ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
-        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
-        var pathIsDir = Directory.Exists(exe);
+
+        var exeExists = false;
+        var pathIsDir = false;
+        var fullExePath = string.Empty;
+
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+
+            // Use Task.Run with timeout - this will actually timeout even if the sync operations don't respond to cancellation
+            var pathResolutionTask = Task.Run(
+                () =>
+            {
+                // Don't check cancellation token here - let the Task timeout handle it
+                exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
+                pathIsDir = Directory.Exists(expanded);
+            },
+                CancellationToken.None); // Use None here since we're handling timeout differently
+
+            // Wait for either completion or timeout
+            // pathResolutionTask.WaitAsync(cts.Token).ConfigureAwait(false);
+            pathResolutionTask.Wait(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.WriteLine("Operation was canceled.");
+        }
+
         Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
 
         if (exeExists)

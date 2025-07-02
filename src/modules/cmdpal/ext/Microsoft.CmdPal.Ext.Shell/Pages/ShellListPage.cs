@@ -488,13 +488,12 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     private void LoadInitialHistory()
     {
         var hist = _historyService.GetRunHistory();
-
-        _historyItems.AddRange(
-            hist
+        var histItems = hist
                 .Select(h => ShellListPageHelpers.ListItemForCommandString(h))
                 .Where(i => i != null)
                 .Select(i => i!)
-                .ToList());
+                .ToList();
+        _historyItems.AddRange(histItems);
 
         _loadedInitialHistory = true;
     }
