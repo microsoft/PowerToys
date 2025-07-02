@@ -55,7 +55,7 @@ The `OneFuzzConfig.json` file provides critical information for deploying fuzzin
   ],
   "adoTemplate": [
     {
-      "AssignedTo": "PowerToys@microsoft.com",
+      "AssignedTo": "leilzh@microsoft.com",
       "jobNotificationEmail": "PowerToys@microsoft.com"
     }
   ],
