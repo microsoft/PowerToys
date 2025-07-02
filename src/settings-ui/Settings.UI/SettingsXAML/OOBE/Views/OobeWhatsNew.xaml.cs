@@ -254,7 +254,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void DataDiagnostics_OpenSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
-            Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview, true);
+            Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview);
         }
 
         private async void LoadReleaseNotes_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

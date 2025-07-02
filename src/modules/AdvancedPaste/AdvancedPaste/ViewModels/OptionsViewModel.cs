@@ -383,7 +383,7 @@ namespace AdvancedPaste.ViewModels
         [RelayCommand]
         public void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.AdvancedPaste, true);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.AdvancedPaste);
             GetMainWindow()?.Close();
         }
 
