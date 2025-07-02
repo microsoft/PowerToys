@@ -15,7 +15,7 @@ internal sealed partial class OpenInSettingsCommand : InvokableCommand
     public OpenInSettingsCommand(PowerToysModuleEntry entry)
     {
         _entry = entry;
-        Name = Resources.PowerToysProvider_DisplayName;
+        Name = Resources.OpenInSettings_CommandName;
     }
 
     public override CommandResult Invoke()

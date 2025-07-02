@@ -70,6 +70,15 @@ namespace Microsoft.CmdPal.Ext.PowerToys.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t find specific module.
+        /// </summary>
+        internal static string PowerToysPage_NotFoundModule {
+            get {
+                return ResourceManager.GetString("PowerToysPage_NotFoundModule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Navigate through powertoys modules.
         /// </summary>
         internal static string PowerToysPage_Subtitle {

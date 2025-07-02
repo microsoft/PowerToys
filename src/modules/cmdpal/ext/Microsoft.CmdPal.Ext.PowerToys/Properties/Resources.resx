@@ -129,4 +129,7 @@
   <data name="PowerToysProvider_DisplayName" xml:space="preserve">
     <value>PowerToys</value>
   </data>
+  <data name="PowerToysPage_NotFoundModule" xml:space="preserve">
+    <value>Can't find specific module</value>
+  </data>
 </root>

@@ -35,6 +35,13 @@ namespace Common.UI
             Workspaces,
             CmdPal,
             ZoomIt,
+            AlwaysOnTop,
+            FileLockSmith,
+            NewPlus,
+            Peek,
+            MouseWithoutBorders,
+            QuickAccent,
+            CommandNotFound,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -85,6 +92,14 @@ namespace Common.UI
                     return "CmdPal";
                 case SettingsWindow.ZoomIt:
                     return "ZoomIt";
+                case SettingsWindow.AlwaysOnTop:
+                    return "AlwaysOnTop";
+                case SettingsWindow.FileLockSmith:
+                    return "FileLockSmith";
+                case SettingsWindow.NewPlus:
+                    return "NewPlus";
+                case SettingsWindow.Peek:
+                    return "Peek";
                 default:
                     {
                         return string.Empty;
@@ -96,7 +111,10 @@ namespace Common.UI
         {
             try
             {
-                var exePath = PowerToysPathResolver.GetPowerToysInstallPath();
+                var exePath = Path.Combine(
+                    PowerToysPathResolver.GetPowerToysInstallPath(),
+                    "PowerToys.exe");
+
                 if (exePath == null || !File.Exists(exePath))
                 {
                     Logger.LogError($"Failed to find powertoys exe path, {exePath}");

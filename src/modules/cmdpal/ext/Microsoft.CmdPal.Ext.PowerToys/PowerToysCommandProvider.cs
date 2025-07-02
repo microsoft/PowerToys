@@ -16,7 +16,7 @@ public partial class PowerToysCommandsProvider : CommandProvider
     {
         Id = "Microsoft.PowerToys";
         DisplayName = Resources.PowerToysProvider_DisplayName;
-        Icon = PowerToysIcons.ProviderIcon;
+        Icon = PowerToysResourcesHelper.ProviderIcon();
     }
 
     public override ICommandItem[] TopLevelCommands()
