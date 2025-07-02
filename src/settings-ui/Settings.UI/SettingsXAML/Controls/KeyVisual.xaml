@@ -53,16 +53,16 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentHolder.Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
-                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultSolidBrush}" />
+                                        <Setter Target="KeyPresenter.Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
+                                        <Setter Target="KeyPresenter.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultSolidBrush}" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Invalid">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentHolder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
-                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
-                                        <Setter Target="ContentHolder.BorderThickness" Value="2" />
+                                        <Setter Target="KeyPresenter.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                                        <Setter Target="KeyPresenter.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                        <Setter Target="KeyPresenter.BorderThickness" Value="2" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -166,16 +166,16 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentHolder.Background" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
-                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
+                                        <Setter Target="KeyPresenter.Background" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
+                                        <Setter Target="KeyPresenter.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Invalid">
                                     <VisualState.Setters>
-                                        <Setter Target="ContentHolder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
-                                        <Setter Target="ContentHolder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
-                                        <Setter Target="ContentHolder.BorderThickness" Value="2" />
+                                        <Setter Target="KeyPresenter.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                                        <Setter Target="KeyPresenter.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                        <Setter Target="KeyPresenter.BorderThickness" Value="2" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>

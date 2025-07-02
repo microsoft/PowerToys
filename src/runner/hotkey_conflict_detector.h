@@ -6,6 +6,7 @@
 
 #include "../modules/interface/powertoy_module_interface.h"
 #include "centralized_hotkeys.h"
+#include "common/utils/json.h"
 
 namespace HotkeyConflictDetector
 {
@@ -53,6 +54,8 @@ namespace HotkeyConflictDetector
         void EnableHotkeyByModule(const std::wstring& moduleName);
         void DisableHotkeyByModule(const std::wstring& moduleName);
 
+        json::JsonObject GetHotkeyConflictsAsJson();
+
     private:
         static std::mutex instanceMutex;
         static HotkeyConflictManager* instance;
@@ -69,8 +72,6 @@ namespace HotkeyConflictDetector
 
         uint16_t GetHotkeyHandle(const Hotkey&);
         bool HasConflictWithSystemHotkey(const Hotkey&);
-
-        bool UpdateHotkeyConflictToFile();
 
         HotkeyConflictManager() = default;
     };

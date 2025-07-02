@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 #include "hotkey_conflict_detector.h"
-#include "common/utils/json.h"
 #include <common/SettingsAPI/settings_helpers.h>
 #include <windows.h>
 #include <unordered_map>
@@ -121,13 +120,17 @@ namespace HotkeyConflictDetector
             {
                 auto hotkeyFound = hotkeyMap.find(handle);
                 inAppConflictHotkeyMap[handle].insert({ _hotkey, _moduleName, _hotkeyName });
+
+                if (hotkeyFound != hotkeyMap.end())
+                {
+                    inAppConflictHotkeyMap[handle].insert(hotkeyFound->second);
+                    hotkeyMap.erase(hotkeyFound);
+                }
             }
             else
             {
                 sysConflictHotkeyMap[handle].insert({ _hotkey, _moduleName, _hotkeyName });
             }
-            
-            UpdateHotkeyConflictToFile();
             return false;
         }
 
@@ -137,7 +140,6 @@ namespace HotkeyConflictDetector
         hotkeyInfo.hotkey = _hotkey;
         hotkeyMap[handle] = hotkeyInfo;
 
-        UpdateHotkeyConflictToFile();
         return true;
     }
 
@@ -216,24 +218,13 @@ namespace HotkeyConflictDetector
             if (inAppConflicts.size() == 1)
             {
                 const auto& onlyConflict = *inAppConflicts.begin();
-                if (HasConflictWithSystemHotkey(onlyConflict.hotkey))
-                {
-                    sysConflictHotkeyMap[handle].insert(onlyConflict);
-                }
-                else
-                {
-                    hotkeyMap[handle] = onlyConflict;
-                }
-            }
-            if (inAppConflicts.empty())
-                {
+                hotkeyMap[handle] = onlyConflict;
                 inAppConflictHotkeyMap.erase(it_inApp);
             }
-        }
-
-        if (foundRecord)
-        {
-            UpdateHotkeyConflictToFile();
+            if (inAppConflicts.empty())
+            {
+                inAppConflictHotkeyMap.erase(it_inApp);
+            }
         }
 
         return foundRecord;
@@ -312,36 +303,19 @@ namespace HotkeyConflictDetector
                 it = hotkeyMap.erase(it);
                 foundRecord = true;
 
-                // Check if any conflicts can be promoted to main hotkey map
-                auto sysIt = sysConflictHotkeyMap.find(handle);
-                if (sysIt != sysConflictHotkeyMap.end() && sysIt->second.size() == 1)
+                auto inAppIt = inAppConflictHotkeyMap.find(handle);
+                if (inAppIt != inAppConflictHotkeyMap.end() && inAppIt->second.size() == 1)
                 {
-                    // Move the only system conflict to main map
-                    const auto& onlyConflict = *sysIt->second.begin();
+                    // Move the only in-app conflict to main map
+                    const auto& onlyConflict = *inAppIt->second.begin();
                     hotkeyMap[handle] = onlyConflict;
-                    sysConflictHotkeyMap.erase(sysIt);
-                }
-                else
-                {
-                    auto inAppIt = inAppConflictHotkeyMap.find(handle);
-                    if (inAppIt != inAppConflictHotkeyMap.end() && inAppIt->second.size() == 1)
-                    {
-                        // Move the only in-app conflict to main map
-                        const auto& onlyConflict = *inAppIt->second.begin();
-                        hotkeyMap[handle] = onlyConflict;
-                        inAppConflictHotkeyMap.erase(inAppIt);
-                    }
+                    inAppConflictHotkeyMap.erase(inAppIt);
                 }
             }
             else
             {
                 ++it;
             }
-        }
-
-        if (foundRecord)
-        {
-            UpdateHotkeyConflictToFile();
         }
 
         return removedHotkeys;
@@ -419,142 +393,83 @@ namespace HotkeyConflictDetector
         return false;
     }
 
-    bool HotkeyConflictManager::UpdateHotkeyConflictToFile()
+    json::JsonObject HotkeyConflictManager::GetHotkeyConflictsAsJson()
     {
-        static bool isDirty = true;
-        static bool writeScheduled = false;
-        isDirty = true;
+        std::lock_guard<std::mutex> lock(hotkeyMutex);
 
-        // If a write is already scheduled, don't schedule another one
-        if (writeScheduled)
-            return true;
+        using namespace json;
+        JsonObject root;
 
-        writeScheduled = true;
+        // Serialize hotkey to a unique string format for grouping
+        auto serializeHotkey = [](const Hotkey& hotkey) -> JsonObject {
+            JsonObject obj;
+            obj.Insert(L"win", value(hotkey.win));
+            obj.Insert(L"ctrl", value(hotkey.ctrl));
+            obj.Insert(L"shift", value(hotkey.shift));
+            obj.Insert(L"alt", value(hotkey.alt));
+            obj.Insert(L"key", value(static_cast<int>(hotkey.key)));
+            return obj;
+        };
 
-        // Schedule a write after a short delay to batch multiple changes
-        std::thread([this]() {
-            std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        // New format: Group conflicts by hotkey
+        JsonArray inAppConflictsArray;
+        JsonArray sysConflictsArray;
 
-            std::lock_guard<std::mutex> lock(hotkeyMutex);
-            if (isDirty)
+        // Process in-app conflicts - only include hotkeys that are actually in conflict
+        for (const auto& [handle, conflicts] : inAppConflictHotkeyMap)
+        {
+            if (!conflicts.empty())
             {
-                using namespace json;
-                JsonObject root;
+                JsonObject conflictGroup;
 
-                // Serialize hotkey to a unique string format for grouping
-                auto serializeHotkey = [](const Hotkey& hotkey) -> JsonObject {
-                    JsonObject obj;
-                    obj.Insert(L"win", value(hotkey.win));
-                    obj.Insert(L"ctrl", value(hotkey.ctrl));
-                    obj.Insert(L"shift", value(hotkey.shift));
-                    obj.Insert(L"alt", value(hotkey.alt));
-                    obj.Insert(L"key", value(static_cast<int>(hotkey.key)));
-                    return obj;
-                };
+                // All entries have the same hotkey, so use the first one for the key
+                conflictGroup.Insert(L"hotkey", serializeHotkey(conflicts.begin()->hotkey));
 
-                // New format: Group conflicts by hotkey
-                JsonArray inAppConflictsArray;
-                JsonArray sysConflictsArray;
-
-                // Process in-app conflicts
-                std::map<uint16_t, std::vector<HotkeyConflictInfo>> groupedInAppConflicts;
-                for (const auto& [handle, conflicts] : inAppConflictHotkeyMap)
+                // Create an array of module info without repeating the hotkey
+                JsonArray modules;
+                for (const auto& info : conflicts)
                 {
-                    if (hotkeyMap.find(handle) != hotkeyMap.end())
-                    {
-                        groupedInAppConflicts[handle].push_back(hotkeyMap[handle]);
-                    }
-                    for (const auto& info : conflicts)
-                    {
-                        groupedInAppConflicts[handle].push_back(info);
-                    }
+                    JsonObject moduleInfo;
+                    moduleInfo.Insert(L"moduleName", value(info.moduleName));
+                    moduleInfo.Insert(L"hotkeyName", value(info.hotkeyName));
+                    modules.Append(moduleInfo);
                 }
 
-                // Serialize grouped in-app conflicts
-                for (const auto& [handle, conflictInfos] : groupedInAppConflicts)
-                {
-                    if (!conflictInfos.empty())
-                    {
-                        JsonObject conflictGroup;
-
-                        // All entries have the same hotkey, so use the first one for the key
-                        conflictGroup.Insert(L"hotkey", serializeHotkey(conflictInfos[0].hotkey));
-
-                        // Create an array of module info without repeating the hotkey
-                        JsonArray modules;
-                        for (const auto& info : conflictInfos)
-                        {
-                            JsonObject moduleInfo;
-                            moduleInfo.Insert(L"moduleName", value(info.moduleName));
-                            moduleInfo.Insert(L"hotkeyName", value(info.hotkeyName));
-                            modules.Append(moduleInfo);
-                        }
-
-                        conflictGroup.Insert(L"modules", modules);
-                        inAppConflictsArray.Append(conflictGroup);
-                    }
-                }
-
-                // Process system conflicts
-                std::map<uint16_t, std::vector<HotkeyConflictInfo>> groupedSysConflicts;
-                for (const auto& [handle, conflicts] : sysConflictHotkeyMap)
-                {
-                    if (hotkeyMap.find(handle) != hotkeyMap.end())
-                    {
-                        groupedSysConflicts[handle].push_back(hotkeyMap[handle]);
-                    }
-                    for (const auto& info : conflicts)
-                    {
-                        groupedSysConflicts[handle].push_back(info);
-                    }
-                }
-
-                // Serialize grouped system conflicts
-                for (const auto& [handle, conflictInfos] : groupedSysConflicts)
-                {
-                    if (!conflictInfos.empty())
-                    {
-                        JsonObject conflictGroup;
-
-                        // All entries have the same hotkey, so use the first one for the key
-                        conflictGroup.Insert(L"hotkey", serializeHotkey(conflictInfos[0].hotkey));
-
-                        // Create an array of module info without repeating the hotkey
-                        JsonArray modules;
-                        for (const auto& info : conflictInfos)
-                        {
-                            JsonObject moduleInfo;
-                            moduleInfo.Insert(L"moduleName", value(info.moduleName));
-                            moduleInfo.Insert(L"hotkeyName", value(info.hotkeyName));
-                            modules.Append(moduleInfo);
-                        }
-
-                        conflictGroup.Insert(L"modules", modules);
-                        sysConflictsArray.Append(conflictGroup);
-                    }
-                }
-
-                // Add the grouped conflicts to the root object
-                root.Insert(L"inAppConflicts", inAppConflictsArray);
-                root.Insert(L"sysConflicts", sysConflictsArray);
-
-                try
-                {
-                    constexpr const wchar_t* hotkey_conflicts_filename = L"\\hotkey_conflicts.json";
-                    const std::wstring save_file_location = PTSettingsHelper::get_root_save_folder_location() + hotkey_conflicts_filename;
-                    to_file(save_file_location, root);
-                    isDirty = false;
-                }
-                catch (...)
-                {
-                    // Write failed, leave isDirty as true for next attempt
-                }
+                conflictGroup.Insert(L"modules", modules);
+                inAppConflictsArray.Append(conflictGroup);
             }
+        }
 
-            writeScheduled = false;
-        }).detach();
+        // Process system conflicts - only include hotkeys that are actually in conflict
+        for (const auto& [handle, conflicts] : sysConflictHotkeyMap)
+        {
+            if (!conflicts.empty())
+            {
+                JsonObject conflictGroup;
 
-        return true;
+                // All entries have the same hotkey, so use the first one for the key
+                conflictGroup.Insert(L"hotkey", serializeHotkey(conflicts.begin()->hotkey));
+
+                // Create an array of module info without repeating the hotkey
+                JsonArray modules;
+                for (const auto& info : conflicts)
+                {
+                    JsonObject moduleInfo;
+                    moduleInfo.Insert(L"moduleName", value(info.moduleName));
+                    moduleInfo.Insert(L"hotkeyName", value(info.hotkeyName));
+                    modules.Append(moduleInfo);
+                }
+
+                conflictGroup.Insert(L"modules", modules);
+                sysConflictsArray.Append(conflictGroup);
+            }
+        }
+
+        // Add the grouped conflicts to the root object
+        root.Insert(L"inAppConflicts", inAppConflictsArray);
+        root.Insert(L"sysConflicts", sysConflictsArray);
+
+        return root;
     }
 
     uint16_t HotkeyConflictManager::GetHotkeyHandle(const Hotkey& hotkey)

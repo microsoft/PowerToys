@@ -28,7 +28,7 @@ using Windows.Security.Credentials;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class AdvancedPasteViewModel : Observable, IDisposable
+    public partial class AdvancedPasteViewModel : PageViewModelBase, IDisposable
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
 
@@ -36,6 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
+
+        protected override string ModuleName => AdvancedPasteSettings.ModuleName;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -66,6 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<AdvancedPasteSettings> advancedPasteSettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
+            : base(ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
@@ -125,6 +128,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _customActions.CollectionChanged += OnCustomActionsCollectionChanged;
             UpdateCustomActionsCanMoveUpDown();
+
+            RegisterHotkeySettings(AdvancedPasteUIShortcut, PasteAsPlainTextShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut);
         }
 
         private void InitializeEnabledValue()
@@ -437,10 +442,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            base.Dispose();
         }
 
         internal void DisableAI()

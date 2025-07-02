@@ -22,8 +22,10 @@ using Windows.Devices.Enumeration;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ZoomItViewModel : Observable
+    public class ZoomItViewModel : PageViewModelBase
     {
+        protected override string ModuleName => ZoomItSettings.ModuleName;
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -70,6 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         };
 
         public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog, Func<LOGFONT, LOGFONT> pickFontDialog)
+            : base(ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -102,6 +105,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectTypeFontCommand = new ButtonClickCommand(SelectTypeFontAction);
 
             LoadMicrophoneList();
+
+            // Register hotkey settings for conflict detection
+            RegisterHotkeySettings(ZoomToggleKey, LiveZoomToggleKey, DrawToggleKey, RecordToggleKey, SnipToggleKey, BreakTimerKey, DemoTypeToggleKey);
         }
 
         private void InitializeEnabledValue()

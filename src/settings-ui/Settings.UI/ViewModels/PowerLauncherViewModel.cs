@@ -21,7 +21,7 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class PowerLauncherViewModel : Observable
+    public partial class PowerLauncherViewModel : PageViewModelBase, IDisposable
     {
         private int _themeIndex;
         private int _monitorPositionIndex;
@@ -37,6 +37,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public delegate void SendCallback(PowerLauncherSettings settings);
 
+        protected override string ModuleName => PowerLauncherSettings.ModuleName;
+
         private readonly SendCallback callback;
 
         private readonly Func<bool> isDark;
@@ -48,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
             Func<bool> isDark)
+            : base(ipcMSGCallBackFunc)
         {
             if (settings == null)
             {
@@ -111,6 +114,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             SearchPluginsCommand = new Library.ViewModels.Commands.RelayCommand(SearchPlugins);
+
+            RegisterHotkeySettings(OpenPowerLauncher, OpenFileLocation, CopyPathLocation);
         }
 
         private void InitializeEnabledValue()
@@ -128,6 +133,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public override void OnPageLoaded()
+        {
+            base.OnPageLoaded();
+        }
+
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
         {
             if (
@@ -142,14 +152,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(ShowAllPluginsDisabledWarning));
             OnPropertyChanged(nameof(ShowPluginsAreGpoManagedInfo));
             UpdateSettings();
-        }
-
-        public PowerLauncherViewModel(PowerLauncherSettings settings, SendCallback callback)
-        {
-            this.settings = settings;
-            this.callback = callback;
-
-            CheckAndUpdateHotkeyName();
         }
 
         private void UpdateSettings([CallerMemberName] string propertyName = null)
@@ -705,21 +707,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (settings.Properties.OpenPowerLauncher.HotkeyName == string.Empty)
             {
                 settings.Properties.OpenPowerLauncher.HotkeyName = "OpenPowerLauncher";
-                settings.Properties.OpenPowerLauncher.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                settings.Properties.OpenPowerLauncher.OwnerModuleName = PowerLauncherSettings.ModuleName;
                 hasChange = true;
             }
 
             if (settings.Properties.OpenFileLocation.HotkeyName == string.Empty)
             {
                 settings.Properties.OpenFileLocation.HotkeyName = "OpenFileLocation";
-                settings.Properties.OpenFileLocation.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                settings.Properties.OpenFileLocation.OwnerModuleName = PowerLauncherSettings.ModuleName;
                 hasChange = true;
             }
 
             if (settings.Properties.CopyPathLocation.HotkeyName == string.Empty)
             {
                 settings.Properties.CopyPathLocation.HotkeyName = "CopyPathLocation";
-                settings.Properties.CopyPathLocation.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                settings.Properties.CopyPathLocation.OwnerModuleName = PowerLauncherSettings.ModuleName;
                 hasChange = true;
             }
 
@@ -727,6 +729,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 UpdateSettings();
             }
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
         }
     }
 }
