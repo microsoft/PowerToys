@@ -4,7 +4,6 @@
   InitialTargets="EnsureNuGetPackageBuildImports"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
-  <Import Project="..\wixVNext.props" Condition="Exists('..\wixVNext.props')" />
 
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
@@ -66,14 +65,22 @@
     Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
   <Target Name="EnsureWixToolsetInstalled"
     Condition=" '$(WixTargetsImported)' != 'true' ">
+<<<<<<< HEAD
     <Error Text="The WiX Toolset vnext build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+=======
+    <Error Text="The WiX Toolset v3 build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+>>>>>>> b9534c126 (fix conflict)
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports"
     BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
+<<<<<<< HEAD
     <Error Condition="!Exists('..\wixVNext.props')"
+=======
+    <Error Condition="!Exists('..\wix.props')"
+>>>>>>> b9534c126 (fix conflict)
       Text="$([System.String]::Format('$(ErrorText)', '..\wixVNext.props'))" />
   </Target>
 
