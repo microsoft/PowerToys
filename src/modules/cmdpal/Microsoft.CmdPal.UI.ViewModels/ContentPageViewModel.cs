@@ -79,6 +79,9 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             throw;
         }
 
+        var oneContent = newContent.Count == 1;
+        newContent.ForEach(c => c.OnlyControlOnPage = oneContent);
+
         // Now, back to a UI thread to update the observable collection
         DoOnUiThread(
         () =>
@@ -167,7 +170,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
                     Commands.ForEach(contextItem =>
                     {
-                        contextItem.InitializeProperties();
+                        contextItem.SlowInitializeProperties();
                     });
                 }
                 else

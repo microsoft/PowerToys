@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
@@ -23,7 +24,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = settings?.Length;
 
             // Assert
-            Assert.AreEqual(6, result);
+            Assert.AreEqual(7, result);
         }
 
         [DataTestMethod]
@@ -33,6 +34,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("TimeWithSeconds")]
         [DataRow("DateWithWeekday")]
         [DataRow("HideNumberMessageOnGlobalQuery")]
+        [DataRow("CustomFormats")]
         public void DoesSettingExist(string name)
         {
             // Setup
@@ -77,6 +79,21 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Assert
             Assert.AreEqual(valueExpected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("CustomFormats")]
+        public void DefaultEmptyMultilineTextValues(string name)
+        {
+            // Setup
+            TimeDateSettings setting = TimeDateSettings.Instance;
+
+            // Act
+            PropertyInfo propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            List<string> result = (List<string>)propertyInfo?.GetValue(setting);
+
+            // Assert
+            Assert.AreEqual(0, result.Count);
         }
     }
 }

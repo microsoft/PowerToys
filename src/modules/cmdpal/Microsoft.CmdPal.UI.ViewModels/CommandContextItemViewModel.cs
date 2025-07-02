@@ -9,11 +9,15 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context) : CommandItemViewModel(new(contextItem), context)
 {
+    private readonly KeyChord nullKeyChord = new(0, 0, 0);
+
     public new ExtensionObject<ICommandContextItem> Model { get; } = new(contextItem);
 
     public bool IsCritical { get; private set; }
 
     public KeyChord? RequestedShortcut { get; private set; }
+
+    public bool HasRequestedShortcut => RequestedShortcut != null && (RequestedShortcut.Value != nullKeyChord);
 
     public override void InitializeProperties()
     {
@@ -31,6 +35,9 @@ public partial class CommandContextItemViewModel(ICommandContextItem contextItem
         }
 
         IsCritical = contextItem.IsCritical;
+
+        // I actually don't think this will ever actually be null, because
+        // KeyChord is a struct, which isn't nullable in WinRT
         if (contextItem.RequestedShortcut != null)
         {
             RequestedShortcut = new(

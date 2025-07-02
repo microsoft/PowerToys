@@ -7,6 +7,6 @@
     <CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
 
     <!-- Suppress DynamicallyAccessedMemberTypes.PublicParameterlessConstructor in fallback code path of Windows SDK projection -->
-    <WarningsNotAsErrors>IL2081</WarningsNotAsErrors>
+    <WarningsNotAsErrors>IL2081;CsWinRT1028;$(WarningsNotAsErrors)</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>

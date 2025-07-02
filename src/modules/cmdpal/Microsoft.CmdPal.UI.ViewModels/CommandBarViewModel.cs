@@ -4,9 +4,9 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -25,6 +25,8 @@ public partial class CommandBarViewModel : ObservableObject,
 
             field = value;
             SetSelectedItem(value);
+
+            OnPropertyChanged(nameof(SelectedItem));
         }
     }
 
@@ -47,7 +49,9 @@ public partial class CommandBarViewModel : ObservableObject,
     public partial PageViewModel? CurrentPage { get; set; }
 
     [ObservableProperty]
-    public partial ObservableCollection<CommandContextItemViewModel> ContextCommands { get; set; } = [];
+    public partial ObservableCollection<ContextMenuStackViewModel> ContextMenuStack { get; set; } = [];
+
+    public ContextMenuStackViewModel? ContextMenu => ContextMenuStack.LastOrDefault();
 
     public CommandBarViewModel()
     {
@@ -100,35 +104,98 @@ public partial class CommandBarViewModel : ObservableObject,
         if (SelectedItem.MoreCommands.Count() > 1)
         {
             ShouldShowContextMenu = true;
-            ContextCommands = [.. SelectedItem.AllCommands];
+
+            ContextMenuStack.Clear();
+            ContextMenuStack.Add(new ContextMenuStackViewModel(SelectedItem));
+            OnPropertyChanged(nameof(ContextMenu));
         }
         else
         {
             ShouldShowContextMenu = false;
         }
+
+        OnPropertyChanged(nameof(HasSecondaryCommand));
+        OnPropertyChanged(nameof(SecondaryCommand));
+        OnPropertyChanged(nameof(ShouldShowContextMenu));
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
     // this comes in when an item in the list is tapped
-    [RelayCommand]
-    private void InvokeItem(CommandContextItemViewModel item) =>
-       WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
+    // [RelayCommand]
+    public ContextKeybindingResult InvokeItem(CommandContextItemViewModel item) =>
+        PerformCommand(item);
 
     // this comes in when the primary button is tapped
     public void InvokePrimaryCommand()
     {
-        if (PrimaryCommand != null)
-        {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand.Command.Model, PrimaryCommand.Model));
-        }
+        PerformCommand(PrimaryCommand);
     }
 
     // this comes in when the secondary button is tapped
     public void InvokeSecondaryCommand()
     {
-        if (SecondaryCommand != null)
+        PerformCommand(SecondaryCommand);
+    }
+
+    public ContextKeybindingResult CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
+    {
+        var matchedItem = ContextMenu?.CheckKeybinding(ctrl, alt, shift, win, key);
+        return matchedItem != null ? PerformCommand(matchedItem) : ContextKeybindingResult.Unhandled;
+    }
+
+    private ContextKeybindingResult PerformCommand(CommandItemViewModel? command)
+    {
+        if (command == null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
+            return ContextKeybindingResult.Unhandled;
+        }
+
+        if (command.HasMoreCommands)
+        {
+            ContextMenuStack.Add(new ContextMenuStackViewModel(command));
+            OnPropertyChanging(nameof(ContextMenu));
+            OnPropertyChanged(nameof(ContextMenu));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+            return ContextKeybindingResult.KeepOpen;
+        }
+        else
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+            return ContextKeybindingResult.Hide;
         }
     }
+
+    public bool CanPopContextStack()
+    {
+        return ContextMenuStack.Count > 1;
+    }
+
+    public void PopContextStack()
+    {
+        if (ContextMenuStack.Count > 1)
+        {
+            ContextMenuStack.RemoveAt(ContextMenuStack.Count - 1);
+        }
+
+        OnPropertyChanging(nameof(ContextMenu));
+        OnPropertyChanged(nameof(ContextMenu));
+    }
+
+    public void ClearContextStack()
+    {
+        while (ContextMenuStack.Count > 1)
+        {
+            ContextMenuStack.RemoveAt(ContextMenuStack.Count - 1);
+        }
+
+        OnPropertyChanging(nameof(ContextMenu));
+        OnPropertyChanged(nameof(ContextMenu));
+    }
+}
+
+public enum ContextKeybindingResult
+{
+    Unhandled,
+    Hide,
+    KeepOpen,
 }

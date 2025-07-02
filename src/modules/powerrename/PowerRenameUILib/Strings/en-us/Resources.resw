@@ -219,11 +219,23 @@
   <data name="DateTimeCheatSheet_DayDigit" xml:space="preserve">
     <value>Day of the month as digits without leading zeros for single-digit days.</value>
   </data>
-  <data name="DateTimeCheatSheet_HoursLZero" xml:space="preserve">
-    <value>Hours with leading zeros for single-digit hours.</value>
+  <data name="DateTimeCheatSheet_Hours12LZero" xml:space="preserve">
+    <value>Hours in 12-hour format (01-12) with leading zero.</value>
   </data>
-  <data name="DateTimeCheatSheet_Hours" xml:space="preserve">
-    <value>Hours without leading zeros for single-digit hours.</value>
+  <data name="DateTimeCheatSheet_Hours12" xml:space="preserve">
+    <value>Hours in 12-hour format (1-12) without leading zero.</value>
+  </data>
+  <data name="DateTimeCheatSheet_AMPMUpperCase" xml:space="preserve">
+    <value>AM/PM indicator in uppercase (AM or PM).</value>
+  </data>
+  <data name="DateTimeCheatSheet_AMPMLowerCase" xml:space="preserve">
+    <value>AM/PM indicator in lowercase (am or pm).</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours24LZero" xml:space="preserve">
+    <value>Hours in 24-hour format (00-23) with leading zero.</value>
+  </data>
+  <data name="DateTimeCheatSheet_Hours24" xml:space="preserve">
+    <value>Hours in 24-hour format (0-23) without leading zero.</value>
   </data>
   <data name="DateTimeCheatSheet_MinutesLZero" xml:space="preserve">
     <value>Minutes with leading zeros for single-digit minutes.</value>
@@ -398,5 +410,17 @@
   </data>
   <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Random string features</value>
+  </data>
+  <data name="TextBlock_FileTime.Text" xml:space="preserve">
+    <value>Time used for replacement</value>
+  </data>
+  <data name="FileTimeParts_CreationTime.Content" xml:space="preserve">
+    <value>Creation Time</value>
+  </data>
+  <data name="FileTimeParts_ModificationTime.Content" xml:space="preserve">
+    <value>Modification Time</value>
+  </data>
+  <data name="FileTimeParts_AccessTime.Content" xml:space="preserve">
+    <value>Access Time</value>
   </data>
 </root>

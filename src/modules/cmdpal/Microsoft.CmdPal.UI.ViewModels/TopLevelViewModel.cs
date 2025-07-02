@@ -102,6 +102,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             }
 
             HandleChangeAlias();
+            OnPropertyChanged(nameof(AliasText));
+            OnPropertyChanged(nameof(IsDirectAlias));
         }
     }
 
@@ -116,6 +118,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             }
 
             HandleChangeAlias();
+            OnPropertyChanged(nameof(IsDirectAlias));
         }
     }
 
@@ -152,7 +155,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             {
                 GenerateId();
 
-                UpdateAlias();
+                FetchAliasFromAliasManager();
                 UpdateHotkey();
                 UpdateTags();
             }
@@ -163,24 +166,31 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void HandleChangeAlias()
     {
-        SetAlias(Alias);
+        SetAlias();
         Save();
     }
 
-    public void SetAlias(CommandAlias? newAlias)
+    public void SetAlias()
     {
-        _serviceProvider.GetService<AliasManager>()!.UpdateAlias(Id, newAlias);
-        UpdateAlias();
+        var commandAlias = Alias is null
+                ? null
+                : new CommandAlias(Alias.Alias, Alias.CommandId, Alias.IsDirect);
+
+        _serviceProvider.GetService<AliasManager>()!.UpdateAlias(Id, commandAlias);
         UpdateTags();
     }
 
-    private void UpdateAlias()
+    private void FetchAliasFromAliasManager()
     {
-        // Add tags for the alias, if we have one.
-        var aliases = _serviceProvider.GetService<AliasManager>();
-        if (aliases != null)
+        var am = _serviceProvider.GetService<AliasManager>();
+        if (am != null)
         {
-            Alias = aliases.AliasFromId(Id);
+            var commandAlias = am.AliasFromId(Id);
+            if (commandAlias is not null)
+            {
+                // Decouple from the alias manager alias object
+                Alias = new CommandAlias(commandAlias.Alias, commandAlias.CommandId, commandAlias.IsDirect);
+            }
         }
     }
 

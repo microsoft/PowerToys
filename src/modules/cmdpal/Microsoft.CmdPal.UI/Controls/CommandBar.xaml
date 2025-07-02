@@ -34,9 +34,14 @@
                 Orientation="Vertical"
                 Spacing="4" />
 
-            <!--  Template for actions in the mode actions dropdown button  -->
-            <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
-                <Grid>
+            <cmdpalUI:ContextItemTemplateSelector
+                x:Key="ContextItemTemplateSelector"
+                Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
+                Default="{StaticResource DefaultContextMenuViewModelTemplate}" />
+
+            <!--  Template for context items in the context item menu  -->
+            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
+                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
@@ -53,37 +58,48 @@
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         Text="{x:Bind Title, Mode=OneWay}" />
-                    <!--<TextBlock
+                    <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />-->
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
 
-            <animations:ImplicitAnimationSet x:Name="ShowAnimations">
-                <animations:OpacityAnimation
-                    From="0"
-                    To="1.0"
-                    Duration="0:0:0.340" />
-                <animations:ScaleAnimation
-                    From="0.85"
-                    To="1"
-                    Duration="0:0:0.350" />
-            </animations:ImplicitAnimationSet>
-            <animations:ImplicitAnimationSet x:Name="HideAnimations">
-                <animations:OpacityAnimation
-                    From="1.0"
-                    To="0"
-                    Duration="0:0:0.240" />
-                <animations:ScaleAnimation
-                    From="1"
-                    To="0.85"
-                    Duration="0:0:0.350" />
-            </animations:ImplicitAnimationSet>
+            <!--  Template for context items flagged as critical  -->
+            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
+                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Height="16"
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Left"
+                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
+                        Text="{x:Bind Title, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="16,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                </Grid>
+            </DataTemplate>
+
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -93,8 +109,8 @@
         ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <Grid
@@ -135,9 +151,6 @@
         <Button
             x:Name="SettingsIconButton"
             x:Uid="SettingsButton"
-            animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
-            animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
-            ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
             Style="{StaticResource SubtleButtonStyle}"
             Tapped="SettingsIcon_Tapped"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
@@ -157,6 +170,8 @@
             VerticalAlignment="Center"
             Style="{StaticResource CaptionTextBlockStyle}"
             Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
+            TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}" />
         <StackPanel
             Grid.Column="2"
@@ -167,10 +182,8 @@
             <Button
                 x:Name="PrimaryButton"
                 Padding="6,4,4,4"
-                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
-                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
-                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.Name="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
                 Background="Transparent"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="PrimaryButton_Tapped"
@@ -198,10 +211,8 @@
             <Button
                 x:Name="SecondaryButton"
                 Padding="6,4,4,4"
-                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
-                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
-                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.Name="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="SecondaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
@@ -245,35 +256,48 @@
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
                 Padding="4"
-                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
-                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
-                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 Content="{ui:FontIcon Glyph=&#xE712;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
-                ToolTipService.ToolTip="Ctrl+k"
+                ToolTipService.ToolTip="Ctrl+K"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <Button.Flyout>
-                    <Flyout Placement="TopEdgeAlignedRight">
-                        <ListView
-                            x:Name="CommandsDropdown"
-                            MinWidth="248"
-                            Margin="-16,-12,-16,-12"
-                            IsItemClickEnabled="True"
-                            ItemClick="CommandsDropdown_ItemClick"
-                            ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
-                            ItemsSource="{x:Bind ViewModel.ContextCommands, Mode=OneWay}"
-                            SelectionMode="None">
-                            <ListView.ItemContainerStyle>
-                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                                    <Setter Property="MinHeight" Value="0" />
-                                    <Setter Property="Padding" Value="12,7,12,7" />
-                                </Style>
-                            </ListView.ItemContainerStyle>
-                            <ListView.ItemContainerTransitions>
-                                <TransitionCollection />
-                            </ListView.ItemContainerTransitions>
-                        </ListView>
+                    <Flyout
+                        Closing="Flyout_Closing"
+                        Opened="Flyout_Opened"
+                        Placement="TopEdgeAlignedRight">
+                        <StackPanel>
+
+                            <ListView
+                                x:Name="CommandsDropdown"
+                                MinWidth="248"
+                                Margin="-16,-12,-16,-12"
+                                IsItemClickEnabled="True"
+                                ItemClick="CommandsDropdown_ItemClick"
+                                ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
+                                ItemsSource="{x:Bind ViewModel.ContextMenu.FilteredItems, Mode=OneWay}"
+                                KeyDown="CommandsDropdown_KeyDown"
+                                SelectionMode="Single">
+                                <ListView.ItemContainerStyle>
+                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                        <Setter Property="MinHeight" Value="0" />
+                                        <Setter Property="Padding" Value="12,7,12,7" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemContainerTransitions>
+                                    <TransitionCollection />
+                                </ListView.ItemContainerTransitions>
+                            </ListView>
+
+                            <TextBox
+                                x:Name="ContextFilterBox"
+                                x:Uid="ContextFilterBox"
+                                Margin="-12,12,-12,-12"
+                                KeyDown="ContextFilterBox_KeyDown"
+                                PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
+                                TextChanged="ContextFilterBox_TextChanged" />
+
+                        </StackPanel>
                     </Flyout>
                 </Button.Flyout>
             </Button>

@@ -105,19 +105,10 @@ public sealed partial class SearchBar : UserControl,
 
         var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
         var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        if (e.Key == VirtualKey.Down)
-        {
-            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
-
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Up)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
-
-            e.Handled = true;
-        }
-        else if (ctrlPressed && e.Key == VirtualKey.Enter)
+        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+        if (ctrlPressed && e.Key == VirtualKey.Enter)
         {
             // ctrl+enter
             WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
@@ -175,6 +166,16 @@ public sealed partial class SearchBar : UserControl,
         {
             WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
         }
+
+        if (!e.Handled)
+        {
+            // The CommandBar is responsible for handling all the item keybindings,
+            // since the bound context item may need to then show another
+            // context menu
+            TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+            WeakReferenceMessenger.Default.Send(msg);
+            e.Handled = msg.Handled;
+        }
     }
 
     private void FilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -196,6 +197,18 @@ public sealed partial class SearchBar : UserControl,
                 // Mark backspace as held to handle continuous deletion
                 _isBackspaceHeld = true;
             }
+        }
+        else if (e.Key == VirtualKey.Up)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
+
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.Down)
+        {
+            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
+
+            e.Handled = true;
         }
     }
 
@@ -249,23 +262,36 @@ public sealed partial class SearchBar : UserControl,
     private void Page_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var property = e.PropertyName;
-        if (CurrentPageViewModel is ListViewModel list &&
-            property == nameof(ListViewModel.SearchText))
-        {
-            // Only if the text actually changed...
-            // (sometimes this triggers on a round-trip of the SearchText)
-            if (FilterBox.Text != list.SearchText)
-            {
-                // ... Update our displayed text, and...
-                FilterBox.Text = list.SearchText;
 
-                // ... Move the cursor to the end of the input
-                FilterBox.Select(FilterBox.Text.Length, 0);
+        if (CurrentPageViewModel is ListViewModel list)
+        {
+            if (property == nameof(ListViewModel.SearchText))
+            {
+                // Only if the text actually changed...
+                // (sometimes this triggers on a round-trip of the SearchText)
+                if (FilterBox.Text != list.SearchText)
+                {
+                    // ... Update our displayed text, and...
+                    FilterBox.Text = list.SearchText;
+
+                    // ... Move the cursor to the end of the input
+                    FilterBox.Select(FilterBox.Text.Length, 0);
+                }
+            }
+            else if (property == nameof(ListViewModel.InitialSearchText))
+            {
+                // GH #38712:
+                // The ListPage will notify us of the `InitialSearchText` when
+                // we first load the viewmodel. We can use that as an
+                // opportunity to immediately select the search text. That lets
+                // the user start typing a new search without manually
+                // selecting the old one.
+                SelectSearch();
             }
         }
     }
 
     public void Receive(GoHomeMessage message) => ClearSearch();
 
-    public void Receive(FocusSearchBoxMessage message) => this.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+    public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 }

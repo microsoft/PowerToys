@@ -156,10 +156,13 @@
     <value>Era abbreviation</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
-    <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time</value>
+    <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time, 'oa' for OLE Automation date, 'exc' for Excel's 1900 date value, 'exf' for Excel's 1904 date value</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
-    <value>Error: Invalid number input</value>
+    <value>Error: Invalid input</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_ErrorResultValue" xml:space="preserve">
+    <value>Error: Invalid number</value>
   </data>
   <data name="Microsoft_plugin_timedate_Hour" xml:space="preserve">
     <value>Hour</value>
@@ -243,8 +246,24 @@
     <value>Date and time; Time and Date</value>
     <comment>Don't change order</comment>
   </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustom" xml:space="preserve">
+    <value>Date and time; Time and Date; Custom format</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustomUtc" xml:space="preserve">
+    <value>Date and time UTC; Time UTC and Date; Custom UTC format</value>
+    <comment>Don't change order</comment>
+  </data>
   <data name="Microsoft_plugin_timedate_SearchTagFormatNow" xml:space="preserve">
     <value>Current date and time; Current time and date; Now</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustomNow" xml:space="preserve">
+    <value>Current date and time; Current time and date; Now; Custom format</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustomUtcNow" xml:space="preserve">
+    <value>Current date and time UTC; Current time UTC and date; Now UTC; Custom UTC format</value>
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagTime" xml:space="preserve">
@@ -261,6 +280,9 @@
   </data>
   <data name="Microsoft_plugin_timedate_Second" xml:space="preserve">
     <value>Second</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidCustomFormat" xml:space="preserve">
+    <value>Invalid custom format:</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingDateWithWeekday" xml:space="preserve">
     <value>Show date with weekday and name of month</value>
@@ -359,5 +381,43 @@
   </data>
   <data name="Microsoft_plugin_timedate_Setting_UseSystemSetting" xml:space="preserve">
     <value>Use system setting</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Setting_CustomFormats" xml:space="preserve">
+    <value>Custom formats</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Setting_CustomFormatsDescription" xml:space="preserve">
+    <value>Use date and time string format syntax and {0} (Day of Week), {1} (Days in Month), {2} (Week of Month), {3} (Week of the year), {4} (Era abbreviation), {5} (Windows File Time), {6} (Unix Time), {7} (Unix Time in milliseconds), {8} (OLE Automation date), {9} (Excel's 1900 based date value), {10} (Excel's 1904 based date value). If the format starts with {11}, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.)</value>
+    <comment>The {n} parts are place holders and get replaced in the code.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_ErrorConvertCustomFormat" xml:space="preserve">
+    <value>Failed to convert into custom format:</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_ErrorConvertWft" xml:space="preserve">
+    <value>Not a valid Windows file time</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_SupportedRange" xml:space="preserve">
+    <value>Your input for {0} is outside the range from {1} to {2}.</value>
+    <comment>The placeholder will be replace in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_OADate" xml:space="preserve">
+    <value>OLE Automation Date</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Excel1900" xml:space="preserve">
+    <value>Excel's 1900 date value</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_FakeExcel1900" xml:space="preserve">
+    <value>Cannot parse the input as Excel's 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn't exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Excel1904" xml:space="preserve">
+    <value>Excel's 1904 date value</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_LeapYear" xml:space="preserve">
+    <value>Leap year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_NoLeapYear" xml:space="preserve">
+    <value>Not a leap year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DaysInMonth" xml:space="preserve">
+    <value>Days in month</value>
   </data>
 </root>

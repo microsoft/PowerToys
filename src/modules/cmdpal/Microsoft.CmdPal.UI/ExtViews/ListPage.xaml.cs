@@ -124,14 +124,12 @@ public sealed partial class ListPage : Page,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (ItemsList.SelectedItem is ListItemViewModel item)
+        var vm = ViewModel;
+        var li = ItemsList.SelectedItem as ListItemViewModel;
+        _ = Task.Run(() =>
         {
-            var vm = ViewModel;
-            _ = Task.Run(() =>
-            {
-                vm?.UpdateSelectedItemCommand.Execute(item);
-            });
-        }
+            vm?.UpdateSelectedItemCommand.Execute(li);
+        });
 
         // There's mysterious behavior here, where the selection seemingly
         // changes to _nothing_ when we're backspacing to a single character.
@@ -187,6 +185,10 @@ public sealed partial class ListPage : Page,
         {
             ItemsList.SelectedIndex++;
         }
+        else
+        {
+            ItemsList.SelectedIndex = 0;
+        }
     }
 
     public void Receive(NavigatePreviousCommand message)
@@ -194,6 +196,10 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedIndex > 0)
         {
             ItemsList.SelectedIndex--;
+        }
+        else
+        {
+            ItemsList.SelectedIndex = ItemsList.Items.Count - 1;
         }
     }
 

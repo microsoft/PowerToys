@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -25,11 +26,19 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.Win32;
+using Windows.System.Profile;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class GeneralViewModel : Observable
     {
+        public enum InstallScope
+        {
+            PerMachine = 0,
+            PerUser,
+        }
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private UpdatingSettings UpdatingSettingsConfig { get; set; }
@@ -71,6 +80,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<Task<string>> PickSingleFolderDialog { get; }
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
+
+        private const string InstallScopeRegKey = @"Software\Classes\powertoys\";
 
         public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = null)
         {
@@ -135,6 +146,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _startup = GeneralSettingsConfig.Startup;
             }
 
+            _showSysTrayIcon = GeneralSettingsConfig.ShowSysTrayIcon;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
@@ -217,6 +229,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static bool _isDevBuild;
         private bool _startup;
+        private bool _showSysTrayIcon;
         private GpoRuleConfigured _runAtStartupGpoRuleConfiguration;
         private bool _runAtStartupIsGPOConfigured;
         private bool _isElevated;
@@ -247,6 +260,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isNewVersionDownloading;
         private bool _isNewVersionChecked;
         private bool _isNoNetwork;
+        private bool _isBugReportRunning;
 
         private bool _settingsBackupRestoreMessageVisible;
         private string _settingsBackupMessage;
@@ -255,6 +269,73 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _languagesIndex;
         private int _initLanguagesIndex;
         private bool _languageChanged;
+
+        private string reportBugLink;
+
+        // Gets or sets a value indicating whether run powertoys on start-up.
+        public string ReportBugLink
+        {
+            get => reportBugLink;
+            set
+            {
+                reportBugLink = value;
+                OnPropertyChanged(nameof(ReportBugLink));
+            }
+        }
+
+        public void InitializeReportBugLink()
+        {
+            var version = GetPowerToysVersion();
+
+            string isElevatedString = "PowerToys is running " + (IsElevated ? "as admin (elevated)" : "as user (non-elevated)");
+
+            string installScope = GetCurrentInstallScope() == InstallScope.PerMachine ? "per machine (system)" : "per user";
+
+            var info = $"OS Version: {GetOSVersion()} \n.NET Version: {GetDotNetVersion()}\n{isElevatedString}\nInstall scope: {installScope}\nOperating System Language: {CultureInfo.InstalledUICulture.DisplayName}\nSystem locale: {CultureInfo.InstalledUICulture.Name}";
+
+            var gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?template=bug_report.yml&labels=Issue-Bug%2CTriage-Needed" +
+                "&version=" + version + "&additionalInfo=" + System.Web.HttpUtility.UrlEncode(info);
+
+            ReportBugLink = gitHubURL;
+        }
+
+        private string GetPowerToysVersion()
+        {
+            return Helper.GetProductVersion().TrimStart('v');
+        }
+
+        private string GetOSVersion()
+        {
+            return Environment.OSVersion.VersionString;
+        }
+
+        public static string GetDotNetVersion()
+        {
+            return $".NET {Environment.Version}";
+        }
+
+        public static InstallScope GetCurrentInstallScope()
+        {
+            // Check HKLM first
+            if (Registry.LocalMachine.OpenSubKey(InstallScopeRegKey) != null)
+            {
+                return InstallScope.PerMachine;
+            }
+
+            // If not found, check HKCU
+            var userKey = Registry.CurrentUser.OpenSubKey(InstallScopeRegKey);
+            if (userKey != null)
+            {
+                var installScope = userKey.GetValue("InstallScope") as string;
+                userKey.Close();
+                if (!string.IsNullOrEmpty(installScope) && installScope.Contains("perUser"))
+                {
+                    return InstallScope.PerUser;
+                }
+            }
+
+            return InstallScope.PerMachine; // Default if no specific registry key found
+        }
 
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
@@ -276,6 +357,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _startup = value;
                     GeneralSettingsConfig.Startup = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        // Gets or sets a value indicating whether the PowerToys icon should be shown in the system tray.
+        public bool ShowSysTrayIcon
+        {
+            get
+            {
+                return _showSysTrayIcon;
+            }
+
+            set
+            {
+                if (_showSysTrayIcon != value)
+                {
+                    _showSysTrayIcon = value;
+                    GeneralSettingsConfig.ShowSysTrayIcon = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -850,6 +950,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return _isNoNetwork;
+            }
+        }
+
+        public bool IsBugReportRunning
+        {
+            get
+            {
+                return _isBugReportRunning;
+            }
+
+            set
+            {
+                if (value != _isBugReportRunning)
+                {
+                    _isBugReportRunning = value;
+                    NotifyPropertyChanged();
+                }
             }
         }
 

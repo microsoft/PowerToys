@@ -24,6 +24,12 @@ public partial class SettingsForm : FormContent
             return CommandResult.KeepOpen();
         }
 
+        // Re-render the current value of the settings to a card. The
+        // SettingsContentPage will raise an ItemsChanged in its own
+        // SettingsChange handler, so we need to be prepared to return the
+        // current settings value.
+        TemplateJson = _settings.ToFormJson();
+
         _settings.Update(inputs);
         _settings.RaiseSettingsChanged();
 

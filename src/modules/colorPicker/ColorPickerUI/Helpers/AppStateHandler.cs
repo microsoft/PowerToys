@@ -107,21 +107,14 @@ namespace ColorPicker.Helpers
             }
         }
 
-        public void OnColorPickerMouseDown()
+        public void OpenColorEditor()
         {
-            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenColorPickerAndThenEditor || _userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+            lock (_colorPickerVisibilityLock)
             {
-                lock (_colorPickerVisibilityLock)
-                {
-                    HideColorPicker();
-                }
+                HideColorPicker();
+            }
 
-                ShowColorPickerEditor();
-            }
-            else
-            {
-                EndUserSession();
-            }
+            ShowColorPickerEditor();
         }
 
         public static void SetTopMost()
@@ -222,7 +215,7 @@ namespace ColorPicker.Helpers
 
         public bool HandleEnterPressed()
         {
-            if (!IsColorPickerVisible())
+            if (!_colorPickerShown)
             {
                 return false;
             }
@@ -233,14 +226,13 @@ namespace ColorPicker.Helpers
 
         public bool HandleEscPressed()
         {
-            if (!BlockEscapeKeyClosingColorPickerEditor)
+            if (!BlockEscapeKeyClosingColorPickerEditor
+                && (_colorPickerShown || (_colorEditorWindow != null && _colorEditorWindow.IsActive)))
             {
                 return EndUserSession();
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         internal void MoveCursor(int xOffset, int yOffset)

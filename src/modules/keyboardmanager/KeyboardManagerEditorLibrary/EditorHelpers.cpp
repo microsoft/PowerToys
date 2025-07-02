@@ -117,15 +117,15 @@ namespace EditorHelpers
         }
         if (shortcut.ctrlKey != ModifierKey::Disabled)
         {
-            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetCtrlKey()).c_str()));
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetCtrlKey(ModifierKey::Both)).c_str()));
         }
         if (shortcut.altKey != ModifierKey::Disabled)
         {
-            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetAltKey()).c_str()));
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetAltKey(ModifierKey::Both)).c_str()));
         }
         if (shortcut.shiftKey != ModifierKey::Disabled)
         {
-            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetShiftKey()).c_str()));
+            keys.push_back(winrt::to_hstring(keyboardMap.GetKeyName(shortcut.GetShiftKey(ModifierKey::Both)).c_str()));
         }
         if (shortcut.actionKey != NULL)
         {

@@ -266,6 +266,10 @@
                     <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp" IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard x:Uid="ShowSystemTrayIcon">
+                        <ToggleSwitch x:Uid="ShowSystemTrayIcon_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
                         BorderThickness="0"
@@ -402,10 +406,11 @@
                     </InfoBar>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="General_DiagnosticsAndFeedback" Visibility="Visible">
-                    <StackPanel>
+                    <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
                         <HyperlinkButton
                             x:Uid="GeneralPage_DiagnosticsAndFeedback_Link"
-                            Margin="-8,0,0,0"
+                            Margin="0,0,0,8"
+                            Padding="0"
                             NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
                         <tkcontrols:SettingsCard
                             x:Uid="GeneralPage_EnableDataDiagnostics"
@@ -449,7 +454,26 @@
                                 <Button x:Uid="GeneralPage_ViewDiagnosticDataViewerInfoButton" Click="Click_ViewDiagnosticDataViewerRestart" />
                             </InfoBar.ActionButton>
                         </InfoBar>
-
+                        <tkcontrols:SettingsCard
+                            x:Uid="GeneralPage_ReportBugPackage"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}"
+                            Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}">
+                            <Button
+                                x:Uid="GeneralPageReportBugPackage"
+                                HorizontalAlignment="Right"
+                                Click="BugReportToolClicked"
+                                IsEnabled="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard
+                            x:Uid="GeneralPage_ReportBugPackage"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}"
+                            Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                            <ProgressRing
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center" />
+                        </tkcontrols:SettingsCard>
                     </StackPanel>
                 </controls:SettingsGroup>
             </StackPanel>
@@ -458,7 +482,7 @@
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview" />
             <controls:PageLink x:Uid="General_Repository" Link="https://aka.ms/powertoys" />
-            <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="https://aka.ms/powerToysReportBug" />
+            <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="{x:Bind ViewModel.ReportBugLink, Mode=OneWay}" />
             <controls:PageLink x:Uid="GeneralPage_RequestAFeature_URL" Link="https://aka.ms/powerToysRequestFeature" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>

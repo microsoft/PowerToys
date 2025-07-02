@@ -1507,17 +1507,38 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
     <value>Default color format</value>
   </data>
-  <data name="ColorPickerFirst.Content" xml:space="preserve">
-    <value>Pick a color and open editor</value>
-  </data>
-  <data name="EditorFirst.Content" xml:space="preserve">
-    <value>Open editor</value>
-  </data>
-  <data name="ColorPickerOnly.Content" xml:space="preserve">
-    <value>Only pick a color</value>
-  </data>
   <data name="ColorPicker_ActivationAction.Header" xml:space="preserve">
     <value>Activation behavior</value>
+  </data>
+  <data name="ColorPicker_OpenEditor.Content" xml:space="preserve">
+    <value>Open editor</value>
+  </data>
+  <data name="ColorPicker_PickColor.Content" xml:space="preserve">
+    <value>Pick a color first</value>
+  </data>
+  <data name="ColorPicker_MouseActions.Header" xml:space="preserve">
+    <value>Mouse actions</value>
+  </data>
+  <data name="ColorPicker_MouseActions.Description" xml:space="preserve">
+    <value>Choose what clicking individual buttons does</value>
+  </data>
+  <data name="ColorPicker_PrimaryClick.Header" xml:space="preserve">
+    <value>Primary click</value>
+  </data>
+  <data name="ColorPicker_MiddleClick.Header" xml:space="preserve">
+    <value>Middle click</value>
+  </data>
+  <data name="ColorPicker_SecondaryClick.Header" xml:space="preserve">
+    <value>Secondary click</value>
+  </data>
+  <data name="ColorPicker_PickColorThenEditor.Content" xml:space="preserve">
+    <value>Pick a color and open editor</value>
+  </data>
+  <data name="ColorPicker_PickColorAndClose.Content" xml:space="preserve">
+    <value>Pick a color and close</value>
+  </data>
+  <data name="ColorPicker_Close.Content" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="ColorFormats.Header" xml:space="preserve">
     <value>Picker behavior</value>
@@ -1660,11 +1681,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_blackness" xml:space="preserve">
     <value>blackness</value>
   </data>
-  <data name="Help_chromaticityA" xml:space="preserve">
-    <value>chromaticityA</value>
+  <data name="Help_chromaticityACIE" xml:space="preserve">
+    <value>chromaticity A (CIE Lab)</value>
   </data>
-  <data name="Help_chromaticityB" xml:space="preserve">
-    <value>chromaticityB</value>
+  <data name="Help_chromaticityBCIE" xml:space="preserve">
+    <value>chromaticity B (CIE Lab)</value>
   </data>
   <data name="Help_X_value" xml:space="preserve">
     <value>X value</value>
@@ -4299,6 +4320,12 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GeneralPage_ShowWhatsNewAfterUpdates.Content" xml:space="preserve">
     <value>Show the release notes after an update</value>
   </data>
+  <data name="ShowSystemTrayIcon.Description" xml:space="preserve">
+    <value>This settings page is accessible by running the PowerToys executable again</value>
+  </data>
+  <data name="ShowSystemTrayIcon.Header" xml:space="preserve">
+    <value>Show system tray icon</value>
+  </data>
   <data name="QuickAccent_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
     <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
@@ -4460,7 +4487,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="NewPlus_Behaviour_Replace_Variables_Info_Card_Title.Text" xml:space="preserve">
     <value>Commonly used variables</value>
     <comment>New+ commonly used variables header in the flyout info card</comment>
-  </data>   
+  </data>
   <data name="NewPlus_Year_YYYY_Variable_Description.Text" xml:space="preserve">
     <value>Year, represented by a full four or five digits, depending on the calendar used.</value>
     <comment>New+ description of the year $YYYY variable - casing of $YYYY is important</comment>
@@ -4996,7 +5023,61 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="CmdPal_ActivationShortcut.Description" xml:space="preserve">
-    <value>Go to Command Palette settings to customize the activation shortcut.</value>
+  <data name="CmdPal_DeeplinkContent.Content" xml:space="preserve">
+    <value>Open Command Palette settings to customize the activation shortcut</value>
+  </data>
+  <data name="Help_chromaCIE" xml:space="preserve">
+    <value>chroma (CIE LCh)</value>
+  </data>
+  <data name="Help_hueCIE" xml:space="preserve">
+    <value>hue (CIE LCh)</value>
+  </data>
+  <data name="Help_lightnessOklab" xml:space="preserve">
+    <value>lightness (Oklab/Oklch)</value>
+  </data>
+  <data name="Help_chromaticityAOklab" xml:space="preserve">
+    <value>chromaticity A (Oklab)</value>
+  </data>
+  <data name="Help_chromaticityBOklab" xml:space="preserve">
+    <value>chromaticity B (Oklab)</value>
+  </data>
+  <data name="Help_chromaOklch" xml:space="preserve">
+    <value>chroma (Oklch)</value>
+  </data>
+  <data name="Help_hueOklch" xml:space="preserve">
+    <value>hue (Oklch)</value>
+  </data>
+  <data name="ExitPT_NavViewItem.Content" xml:space="preserve">
+    <value>Exit PowerToys</value>
+  </data>
+  <data name="General_System.Header" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="GeneralPage_ReportBugPackage.Header" xml:space="preserve">
+    <value>Generate bug report package</value>
+  </data>
+  <data name="GeneralPage_ReportBugPackage.Description" xml:space="preserve">
+    <value>Create zip folder with logs on the Desktop</value>
+  </data>
+  <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
+    <value>Generate package</value>
+  </data>
+  <data name="AppTitleBarShutDown_Tooltip.Text" xml:space="preserve">
+    <value>Shut down</value>
+  </data>
+  <data name="BugReportUnderConstruction" xml:space="preserve">
+    <value>Bug report package is being created</value>
+  </data>
+  <data name="HighlightMode.Description" xml:space="preserve">
+    <value>Highlight the cursor or dim the screen to spotlight it</value>
+  </data>
+  <data name="HighlightMode.Header" xml:space="preserve">
+    <value>Highlight mode</value>
+  </data>
+  <data name="HighlightMode_Circle_Highlight_Mode.Content" xml:space="preserve">
+    <value>Circle highlight</value>
+  </data>
+  <data name="HighlightMode_Spotlight_Mode.Content" xml:space="preserve">
+    <value>Spotlight</value>
   </data>
 </root>

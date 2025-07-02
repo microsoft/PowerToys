@@ -20,9 +20,22 @@
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" />
     <PackageReference Include="MSTest" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Private.Uri" />
+    <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Properties\" />
+    <ProjectReference Include="..\editor\FancyZonesEditor\FancyZonesEditor.csproj" />
+    <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+    <ProjectReference Include="..\UITests-FancyZonesEditor\UITests-FancyZonesEditor.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\editor\FancyZonesEditor\FancyZonesEditor.csproj" />
+	<ProjectReference Include="..\UITests-FancyZonesEditor\UITests-FancyZonesEditor.csproj" />
+	<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+  </ItemGroup>
+
 </Project>

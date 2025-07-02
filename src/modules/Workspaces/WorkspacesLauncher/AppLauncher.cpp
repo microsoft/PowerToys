@@ -25,6 +25,7 @@ namespace AppLauncher
         const std::wstring ChromeFilename = L"chrome.exe";
         const std::wstring ChromePwaFilename = L"chrome_proxy.exe";
         const std::wstring PwaCommandLineAddition = L"--profile-directory=Default --app-id=";
+        const std::wstring SteamProtocolPrefix = L"steam:";
     }
 
     Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
@@ -122,8 +123,23 @@ namespace AppLauncher
         // usage example: elevated Terminal
         if (!launched && !app.appUserModelId.empty() && !app.packageFullName.empty())
         {
-            Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
+            Logger::trace(L"Launching {} as {} - {app.packageFullName}", app.name, app.appUserModelId, app.packageFullName);
             auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+            if (res.isOk())
+            {
+                launched = true;
+            }
+            else
+            {
+                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+            }
+        }
+
+        // protocol launch for steam
+        if (!launched && !app.appUserModelId.empty() && app.appUserModelId.contains(NonLocalizable::SteamProtocolPrefix))
+        {
+            Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
+            auto res = LaunchApp(app.appUserModelId, app.commandLineArgs, app.isElevated);
             if (res.isOk())
             {
                 launched = true;
@@ -149,16 +165,52 @@ namespace AppLauncher
 
         if (!launched && !app.pwaAppId.empty())
         {
-            std::filesystem::path appPath(app.path);
-            if (appPath.filename() == NonLocalizable::EdgeFilename)
+            int version = 0;
+
+            if (app.version != L"")
             {
-                appPathFinal = appPath.parent_path() / NonLocalizable::EdgePwaFilename;
-                commandLineArgsFinal = NonLocalizable::PwaCommandLineAddition + app.pwaAppId + L" " + app.commandLineArgs;
+                try
+                {
+                    version = std::stoi(app.version);
+                }
+                catch (const std::invalid_argument&)
+                {
+                    Logger::error(L"Invalid version format: {}", app.version);
+                    version = 0;
+                }
+                catch (const std::out_of_range&)
+                {
+                    Logger::error(L"Version out of range: {}", app.version);
+                    version = 0;
+                }
             }
-            if (appPath.filename() == NonLocalizable::ChromeFilename)
+
+            if (version >= 1)
             {
-                appPathFinal = appPath.parent_path() / NonLocalizable::ChromePwaFilename;
-                commandLineArgsFinal = NonLocalizable::PwaCommandLineAddition + app.pwaAppId + L" " + app.commandLineArgs;
+                auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+                if (res.isOk())
+                {
+                    launched = true;
+                }
+                else
+                {
+                    launchErrors.push_back({ app.appUserModelId, res.error() });
+                }
+            }
+
+            if (!launched)
+            {
+                std::filesystem::path appPath(app.path);
+                if (appPath.filename() == NonLocalizable::EdgeFilename)
+                {
+                    appPathFinal = appPath.parent_path() / NonLocalizable::EdgePwaFilename;
+                    commandLineArgsFinal = NonLocalizable::PwaCommandLineAddition + app.pwaAppId + L" " + app.commandLineArgs;
+                }
+                if (appPath.filename() == NonLocalizable::ChromeFilename)
+                {
+                    appPathFinal = appPath.parent_path() / NonLocalizable::ChromePwaFilename;
+                    commandLineArgsFinal = NonLocalizable::PwaCommandLineAddition + app.pwaAppId + L" " + app.commandLineArgs;
+                }
             }
         }
 

@@ -82,7 +82,7 @@ namespace Microsoft.Plugin.Program.Programs
         public ApplicationType AppType { get; set; }
 
         // Wrappers for File Operations
-        public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
+        public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new Wox.Infrastructure.FileSystemHelper.FileVersionInfoWrapper();
 
         public static IFile FileWrapper { get; set; } = new FileSystem().File;
 

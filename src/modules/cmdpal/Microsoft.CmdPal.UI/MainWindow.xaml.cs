@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
@@ -18,21 +19,24 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
+using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
-using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
+using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
-public sealed partial class MainWindow : Window,
+public sealed partial class MainWindow : WindowEx,
     IRecipient<DismissMessage>,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
@@ -42,20 +46,8 @@ public sealed partial class MainWindow : Window,
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
-
-    // Stylistically, window messages are WM_*
-#pragma warning disable SA1310 // Field names should not contain underscore
-#pragma warning disable SA1306 // Field names should begin with lower-case letter
-    private const uint MY_NOTIFY_ID = 1000;
-    private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
-    private readonly uint WM_TASKBAR_RESTART;
-#pragma warning restore SA1306 // Field names should begin with lower-case letter
-#pragma warning restore SA1310 // Field names should not contain underscore
-
-    // Notification Area ("Tray") icon data
-    private NOTIFYICONDATAW? _trayIconData;
-    private bool _createdIcon;
-    private DestroyIconSafeHandle? _largeIcon;
+    private readonly KeyboardListener _keyboardListener;
+    private bool _ignoreHotKeyWhenFullScreen = true;
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -65,16 +57,19 @@ public sealed partial class MainWindow : Window,
         InitializeComponent();
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
-        CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
 
-        // TaskbarCreated is the message that's broadcast when explorer.exe
-        // restarts. We need to know when that happens to be able to bring our
-        // notification area icon back
-        WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
+        unsafe
+        {
+            CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
+        }
+
+        _keyboardListener = new KeyboardListener();
+        _keyboardListener.Start();
+
+        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        AppWindow.Resize(new SizeInt32 { Width = 1000, Height = 620 });
         PositionCentered();
         SetAcrylic();
 
@@ -99,7 +94,6 @@ public sealed partial class MainWindow : Window,
         _hotkeyWndProc = HotKeyPrc;
         var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
         _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
-        AddNotificationIcon();
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
@@ -149,6 +143,9 @@ public sealed partial class MainWindow : Window,
         var settings = App.Current.Services.GetService<SettingsModel>()!;
 
         SetupHotkey(settings);
+        App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
+
+        _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
 
         // This will prevent our window from appearing in alt+tab or the taskbar.
         // You'll _need_ to use the hotkey to summon it.
@@ -206,7 +203,7 @@ public sealed partial class MainWindow : Window,
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
     {
-        var hwnd = new HWND(hwndValue);
+        var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
         // Remember, IsIconic == "minimized", which is entirely different state
         // from "show/hide"
@@ -222,6 +219,16 @@ public sealed partial class MainWindow : Window,
         PositionCentered(display);
 
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
+
+        // instead of showing the window, uncloak it from DWM
+        // This will make it visible to the user, without the animation or frames for
+        // loading XAML with composition
+        unsafe
+        {
+            BOOL value = false;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+        }
+
         PInvoke.SetForegroundWindow(hwnd);
         PInvoke.SetActiveWindow(hwnd);
     }
@@ -279,19 +286,29 @@ public sealed partial class MainWindow : Window,
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
-    public void Receive(HideWindowMessage message)
-    {
-        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-    }
+    public void Receive(HideWindowMessage message) => HideWindow();
 
-    public void Receive(QuitMessage message)
-    {
+    public void Receive(QuitMessage message) =>
+
         // This might come in on a background thread
         DispatcherQueue.TryEnqueue(() => Close());
-    }
 
     public void Receive(DismissMessage message) =>
-        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+        HideWindow();
+
+    private void HideWindow()
+    {
+        // Hide our window
+
+        // Instead of hiding the window, cloak it from DWM
+        // This will make it invisible to the user, such that we can show it again
+        // by uncloaking it, which avoids an unnecessary "flicker in" that XAML does
+        unsafe
+        {
+            BOOL value = true;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+        }
+    }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
@@ -299,12 +316,15 @@ public sealed partial class MainWindow : Window,
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
         extensionService.SignalStopExtensionsAsync();
 
-        RemoveNotificationIcon();
+        App.Current.Services.GetService<TrayIconService>()!.Destroy();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
         DisposeAcrylic();
+
+        _keyboardListener.Stop();
+        Environment.Exit(0);
     }
 
     private void DisposeAcrylic()
@@ -369,12 +389,19 @@ public sealed partial class MainWindow : Window,
                 // ... then don't hide the window when it loses focus.
                 return;
             }
-            else
-            {
-                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
-                PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
+            // Are we disabled? If we are, then we don't want to dismiss on focus lost.
+            // This can happen if an extension wanted to show a modal dialog on top of our
+            // window i.e. in the case of an MSAL auth window.
+            if (PInvoke.IsWindowEnabled(_hwnd) == 0)
+            {
+                return;
             }
+
+            // This will DWM cloak our window:
+            HideWindow();
+
+            PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
 
         if (_configurationSource != null)
@@ -383,22 +410,52 @@ public sealed partial class MainWindow : Window,
         }
     }
 
-    public void Summon(string commandId)
+    public void HandleLaunch(AppActivationArguments? activatedEventArgs)
     {
+        if (activatedEventArgs == null)
+        {
+            Summon(string.Empty);
+            return;
+        }
+
+        if (activatedEventArgs.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.Protocol)
+        {
+            if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+            {
+                if (protocolArgs.Uri.ToString() is string uri)
+                {
+                    // was the URI "x-cmdpal://background" ?
+                    if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // we're running, we don't want to activate our window. bail
+                        return;
+                    }
+                    else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
+                    {
+                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                        return;
+                    }
+                }
+
+                return;
+            }
+        }
+
+        Activate();
+    }
+
+    public void Summon(string commandId) =>
+
         // The actual showing and hiding of the window will be done by the
         // ShellPage. This is because we don't want to show the window if the
         // user bound a hotkey to just an invokable command, which we can't
         // know till the message is being handled.
         WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(commandId, _hwnd));
-    }
-
-#pragma warning disable SA1310 // Field names should not contain underscore
-    private const uint DOT_KEY = 0xBE;
-    private const uint WM_HOTKEY = 0x0312;
-#pragma warning restore SA1310 // Field names should not contain underscore
 
     private void UnregisterHotkeys()
     {
+        _keyboardListener.ClearHotkeys();
+
         while (_hotkeys.Count > 0)
         {
             PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
@@ -413,18 +470,27 @@ public sealed partial class MainWindow : Window,
         var globalHotkey = settings.Hotkey;
         if (globalHotkey != null)
         {
-            var vk = globalHotkey.Code;
-            var modifiers =
-                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                ;
-
-            var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-            if (success)
+            if (settings.UseLowLevelGlobalHotkey)
             {
+                _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
+
                 _hotkeys.Add(new(globalHotkey, string.Empty));
+            }
+            else
+            {
+                var vk = globalHotkey.Code;
+                var modifiers =
+                                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+                                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+                                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+                                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
+                                ;
+
+                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                if (success)
+                {
+                    _hotkeys.Add(new(globalHotkey, string.Empty));
+                }
             }
         }
 
@@ -434,20 +500,72 @@ public sealed partial class MainWindow : Window,
 
             if (key != null)
             {
-                var vk = key.Code;
-                var modifiers =
-                    (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                    (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                    (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                    (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                    ;
-
-                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                if (success)
+                if (settings.UseLowLevelGlobalHotkey)
                 {
-                    _hotkeys.Add(commandHotkey);
+                    _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandHotkey.CommandId);
+
+                    _hotkeys.Add(new(globalHotkey, string.Empty));
+                }
+                else
+                {
+                    var vk = key.Code;
+                    var modifiers =
+                        (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+                        (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+                        (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+                        (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
+                        ;
+
+                    var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                    if (success)
+                    {
+                        _hotkeys.Add(commandHotkey);
+                    }
                 }
             }
+        }
+    }
+
+    private void HandleSummon(string commandId)
+    {
+        var isRootHotkey = string.IsNullOrEmpty(commandId);
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
+
+        var isVisible = this.Visible;
+        unsafe
+        {
+            // We need to check if our window is cloaked or not. A cloaked window is still
+            // technically visible, because SHOW/HIDE != iconic (minimized) != cloaked
+            // (these are all separate states)
+            long attr = 0;
+            PInvoke.DwmGetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAKED, &attr, sizeof(long));
+            if (attr == 1 /* DWM_CLOAKED_APP */)
+            {
+                isVisible = false;
+            }
+        }
+
+        // Note to future us: the wParam will have the index of the hotkey we registered.
+        // We can use that in the future to differentiate the hotkeys we've pressed
+        // so that we can bind hotkeys to individual commands
+        if (!isVisible || !isRootHotkey)
+        {
+            Activate();
+
+            Summon(commandId);
+        }
+        else if (isRootHotkey)
+        {
+            // If there's a debugger attached...
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                // ... then manually hide our window. When debugged, we won't get the cool cloaking,
+                // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
+                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                return;
+            }
+
+            HideWindow();
         }
     }
 
@@ -459,121 +577,31 @@ public sealed partial class MainWindow : Window,
     {
         switch (uMsg)
         {
-            case WM_HOTKEY:
+            // Prevent the window from maximizing when double-clicking the title bar area
+            case PInvoke.WM_NCLBUTTONDBLCLK:
+                return (LRESULT)IntPtr.Zero;
+            case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
                     if (hotkeyIndex < _hotkeys.Count)
                     {
+                        if (_ignoreHotKeyWhenFullScreen)
+                        {
+                            // If we're in full screen mode, ignore the hotkey
+                            if (WindowHelper.IsWindowFullscreen())
+                            {
+                                return (LRESULT)IntPtr.Zero;
+                            }
+                        }
+
                         var hotkey = _hotkeys[hotkeyIndex];
-                        var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
-                        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
-
-                        // Note to future us: the wParam will have the index of the hotkey we registered.
-                        // We can use that in the future to differentiate the hotkeys we've pressed
-                        // so that we can bind hotkeys to individual commands
-                        if (!this.Visible || !isRootHotkey)
-                        {
-                            Activate();
-
-                            Summon(hotkey.CommandId);
-                        }
-                        else if (isRootHotkey)
-                        {
-                            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-                        }
+                        HandleSummon(hotkey.CommandId);
                     }
 
                     return (LRESULT)IntPtr.Zero;
                 }
-
-            // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
-            // We'll also never receive WM_TASKBAR_RESTART message if the first call to Shell_NotifyIcon failed, so we use
-            // WM_WINDOWPOSCHANGING which is always received on explorer startup sequence.
-            case PInvoke.WM_WINDOWPOSCHANGING:
-                {
-                    if (!_createdIcon)
-                    {
-                        AddNotificationIcon();
-                    }
-                }
-
-                break;
-            default:
-                // WM_TASKBAR_RESTART isn't a compile-time constant, so we can't
-                // use it in a case label
-                if (uMsg == WM_TASKBAR_RESTART)
-                {
-                    // Handle the case where explorer.exe restarts.
-                    // Even if we created it before, do it again
-                    AddNotificationIcon();
-                }
-                else if (uMsg == WM_TRAY_ICON)
-                {
-                    switch ((uint)lParam.Value)
-                    {
-                        case PInvoke.WM_RBUTTONUP:
-                        case PInvoke.WM_LBUTTONUP:
-                        case PInvoke.WM_LBUTTONDBLCLK:
-                            Summon(string.Empty);
-                            break;
-                    }
-                }
-
-                break;
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
-    }
-
-    private void AddNotificationIcon()
-    {
-        // We only need to build the tray data once.
-        if (_trayIconData == null)
-        {
-            // We need to stash this handle, so it doesn't clean itself up. If
-            // explorer restarts, we'll come back through here, and we don't
-            // really need to re-load the icon in that case. We can just use
-            // the handle from the first time.
-            _largeIcon = GetAppIconHandle();
-            _trayIconData = new NOTIFYICONDATAW()
-            {
-                cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATAW)),
-                hWnd = _hwnd,
-                uID = MY_NOTIFY_ID,
-                uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
-                uCallbackMessage = WM_TRAY_ICON,
-                hIcon = (HICON)_largeIcon.DangerousGetHandle(),
-                szTip = RS_.GetString("AppStoreName"),
-            };
-        }
-
-        var d = (NOTIFYICONDATAW)_trayIconData;
-
-        // Add the notification icon
-        if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d))
-        {
-            _createdIcon = true;
-        }
-    }
-
-    private void RemoveNotificationIcon()
-    {
-        if (_trayIconData != null && _createdIcon)
-        {
-            var d = (NOTIFYICONDATAW)_trayIconData;
-            if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
-            {
-                _createdIcon = false;
-            }
-        }
-    }
-
-    private DestroyIconSafeHandle GetAppIconHandle()
-    {
-        var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        DestroyIconSafeHandle largeIcon;
-        DestroyIconSafeHandle smallIcon;
-        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out smallIcon, 1);
-        return largeIcon;
     }
 }
