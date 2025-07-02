@@ -2,10 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
@@ -15,7 +17,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Pages;
 
-internal sealed partial class ActionsListContextItem : CommandContextItem
+internal sealed partial class ActionsListContextItem : CommandContextItem, IDisposable
 {
     private readonly string fullPath;
     private readonly List<CommandContextItem> actions = [];
@@ -41,20 +43,24 @@ internal sealed partial class ActionsListContextItem : CommandContextItem
 
     private void UpdateMoreCommands()
     {
-        try
+        lock (UpdateMoreCommandsLock)
         {
-            lock (UpdateMoreCommandsLock)
+            if (actionRuntime == null)
             {
-                if (actionRuntime == null)
-                {
-                    actionRuntime = ActionRuntimeFactory.CreateActionRuntime();
-                    Task.Delay(500).Wait();
-                }
-
-                actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
-                actionRuntime.ActionCatalog.Changed += ActionCatalog_Changed;
+                actionRuntime = ActionRuntimeManager.InstanceAsync.GetAwaiter().GetResult();
             }
 
+            if (actionRuntime == null)
+            {
+                return;
+            }
+
+            actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
+            actionRuntime.ActionCatalog.Changed += ActionCatalog_Changed;
+        }
+
+        try
+        {
             var extension = System.IO.Path.GetExtension(fullPath).ToLower(CultureInfo.InvariantCulture);
             ActionEntity entity = null;
             if (extension != null)
@@ -85,9 +91,20 @@ internal sealed partial class ActionsListContextItem : CommandContextItem
                 MoreCommands = [.. actions];
             }
         }
-        catch
+        catch (Exception ex)
         {
-            actionRuntime = null;
+            Logger.LogError($"Error updating commands: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (UpdateMoreCommandsLock)
+        {
+            if (actionRuntime != null)
+            {
+                actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
+            }
         }
     }
 }
