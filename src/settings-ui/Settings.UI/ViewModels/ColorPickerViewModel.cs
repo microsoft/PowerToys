@@ -20,8 +20,10 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class ColorPickerViewModel : Observable, IDisposable
+    public partial class ColorPickerViewModel : PageViewModelBase, IDisposable
     {
+        protected override string ModuleName => ColorPickerSettings.ModuleName;
+
         private bool disposedValue;
 
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it; otherwise, we schedule saving it after this interval
@@ -49,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<ColorPickerSettings> colorPickerSettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
+            : base(ipcMSGCallBackFunc)
         {
             // Obtain the general PowerToy settings configurations
             ArgumentNullException.ThrowIfNull(settingsRepository);
@@ -77,6 +80,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.AutoReset = false;
 
             InitializeColorFormats();
+
+            // Register hotkey settings for conflict detection
+            RegisterHotkeySettings(ActivationShortcut);
         }
 
         private void InitializeEnabledValue()
@@ -429,10 +435,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            base.Dispose();
         }
 
         internal ColorFormatModel GetNewColorFormatModel()
