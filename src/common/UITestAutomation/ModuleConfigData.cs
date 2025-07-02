@@ -29,6 +29,7 @@ namespace Microsoft.PowerToys.UITest
         PowerToysSettings,
         FancyZone,
         Hosts,
+        CommandPalette,
     }
 
     internal class ModuleConfigData
@@ -52,6 +53,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.PowerToysSettings] = "PowerToys Settings",
                 [PowerToysModule.FancyZone] = "FancyZones Layout",
                 [PowerToysModule.Hosts] = "Hosts File Editor",
+                [PowerToysModule.CommandPalette] = "PowerToys Command Palette",
             };
 
             // Exe start path for the module if it exists.
@@ -60,6 +62,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.PowerToysSettings] = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe",
                 [PowerToysModule.FancyZone] = @"\..\..\..\PowerToys.FancyZonesEditor.exe",
                 [PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe",
+                [PowerToysModule.CommandPalette] = @"\..\..\..\WinUI3Apps\CmdPal\Microsoft.CmdPal.UI.exe",
             };
         }
 
