@@ -444,9 +444,11 @@ PowerToys/doc/releases/tests-checklist-template.md at releaseChecklist · micros
 - ### First Run FancyZones error
 ![Debug Step Image](../images/fancyzones/16.png)
 
-If you encounter this situation, you need to launch the FancyZones Editor once in the powertoys settings UI (Refer to the image below). The reason is that running the Editor directly within the project will not initialize various configuration files.
+If you encounter this situation, you need to launch the FancyZones Editor once in the powertoys settings UI:
 
 ![Debug Step Image](../images/fancyzones/17.png)
+
+The reason is that running the Editor directly within the project will not initialize various configuration files.
 
 - ### How are layouts stored and loaded? Is there a central configuration handler?
 
