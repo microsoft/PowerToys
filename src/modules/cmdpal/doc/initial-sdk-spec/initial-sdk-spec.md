@@ -392,7 +392,7 @@ command), we need to quickly load that app and get the command for it.
    1. If the cached command had an `id`, try to look up the command with
       `ICommandProvider.GetCommand(id)`, passing the `id`. If that returns an
       item, we can move on to the next stem
-   2. Otherwise (the command wasn't assigned an ID, or `GetCommand` returned
+   2. Otherwise, (the command wasn't assigned an ID, or `GetCommand` returned
       null): all `TopLevelItems` on that `CommandProvider`.
       * Search through all the returned commands with the same `id` or
         `icon/title/subtitle/name`, and return that one.

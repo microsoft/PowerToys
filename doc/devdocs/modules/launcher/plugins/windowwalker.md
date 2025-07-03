@@ -17,7 +17,7 @@ The user can switch to the found windows, close them or kill their process.
 - Windows of UWP apps don't know their process, until they are searched in non-minimized state.
 
 ### File Explorer setting
-- To kill the Process of an Explorer window, each window has to run in a separate process. Otherwise the process is the same one as the shell process and killing the shell process will crash the shell (Windows ui).
+- To kill the Process of an Explorer window, each window has to run in a separate process. Otherwise, the process is the same one as the shell process and killing the shell process will crash the shell (Windows ui).
 - To enable this behavior the setting `Launch folder windows in a separate process` under `Folder Options > View` has to be enabled. 
 - From PowerToys Run you can open the `Folder options` dialog by clicking the information message in the search results. The information message is only shown when searching with action keyword for explorer windows and can be hidden in the plugin settings.
 - Note: The folder option/process is evaluated in real time. After changing the setting it is enough to search again for the windows.
