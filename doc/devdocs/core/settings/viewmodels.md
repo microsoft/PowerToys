@@ -4,7 +4,7 @@ The viewmodels are located within the [`Settings.UI.Library`](/src/settings-ui/S
 ## Components
 - Each viewmodel takes in the general `settingsRepository`, the `moduleSettingsRepository` if it exists and the delegates for IPC communication.
 - The general `settingsRepository` contains the general configurations of all powertoys whereas the `moduleSettingsRepository` is specific to the module. This is to ensure that the configuration details are shared amongst the viewmodels without having to re-open the `settings.json` file.
-- Whenever there is a change in the UI, the `OnPropertyChanged` event is invoked and the viewmodel sends a corresponding IPC message to the runner which would perform the designated action such as dispatching the change to the modules or enabling/disabling the powertoy etc.
+- Whenever there is a change in the UI, the `OnPropertyChanged` event is invoked and the viewmodel sends a corresponding IPC message to the runner which would perform the designated action such as dispatching the change to the modules or enabling/disabling the powertoy, etc.
 
 #### Difference between viewmodels
 - The [`GeneralViewModel`](/src/settings-ui/Settings.UI.Library/ViewModels/GeneralViewModel.cs) is different from the rest of the view models with regard to the IPC communication wherein it sends special IPC messages to the runner to check for updates and to restart as admin.

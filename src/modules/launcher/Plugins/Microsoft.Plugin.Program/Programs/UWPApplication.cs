@@ -596,7 +596,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                // for C:\Windows\MiracastView etc
+                // for C:\Windows\MiracastView, etc.
                 path = Path.Combine(Package.Location, "Assets", uri);
             }
 

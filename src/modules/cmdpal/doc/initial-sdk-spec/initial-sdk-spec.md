@@ -266,7 +266,7 @@ As some examples:
   that once, we don't need to `CreateProcess` just to find that command title.
   This is a **frozen** extension.
 * Similarly for something like the GitHub extension - it's got multiple
-  top-level commands (My issues, Issue search, Repo search, etc), but these
+  top-level commands (My issues, Issue search, Repo search, etc.), but these
   top-level commands never change. This is a **frozen** extension.
 * The "Quick Links" extension has a dynamic list of top-level commands.
   This is a **fresh** extension.[^3]
@@ -959,7 +959,7 @@ as the user navigates the list.
 
 Consider the Windows Registry command. When the page is initially loaded, it
 displays only the top-level registry keys (`HKEY_CURRENT_USER`,
-`HKEY_LOCAL_MACHINE`, etc). If the user types `HKC`, the command will filter the
+`HKEY_LOCAL_MACHINE`, etc.). If the user types `HKC`, the command will filter the
 results down to just `HKEY_CURRENT_USER`, `HKEY_CLASSES_ROOT` and
 `HKEY_CURRENT_CONFIG`. However, if the user at this point taps the right-arrow
 key, DevPall will use the `TextToSuggest` from the `HKEY_CURRENT_USER`
@@ -1375,7 +1375,7 @@ app's icon.
 
 ![](https://miro.medium.com/v2/resize:fit:720/format:webp/1*Nd5fvJM8LUQ1w3DAWN-pvA.gif)
 
-(However, the buttons in the gif for "Open", "Uninstall", etc, are not part of
+(However, the buttons in the gif for "Open", "Uninstall", etc., are not part of
 the `Details`, they are part of the "more commands" dropdown. **It's a mockup**)
 
 <!-- This block needs to appear in the idl _before_ IListItem, but from a doc
