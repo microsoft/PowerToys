@@ -5012,8 +5012,10 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
   </data>
-  <data name="TitleBarShutDownBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Shut down</value>
+  <data name="TitleBarQuitBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Quit PowerToys</value>
+    <comment>Quit as a verb, as in Quit the application</comment>
+  </data>
   <data name="HighlightMode.Description" xml:space="preserve">
     <value>Highlight the cursor or dim the screen to spotlight it</value>
   </data>

@@ -72,13 +72,13 @@
                     Visibility="Collapsed" />
             </StackPanel>
             <Button
-                x:Uid="TitleBarShutDownBtn"
+                x:Uid="TitleBarQuitBtn"
                 Grid.Column="1"
                 Width="36"
                 Height="36"
                 Margin="0,0,148,0"
                 Padding="0"
-                Click="TitleBarShutDownBtn_Click"
+                Click="TitleBarQuitBtn_Click"
                 Content="{ui:FontIcon Glyph=&#xE7E8;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}" />
