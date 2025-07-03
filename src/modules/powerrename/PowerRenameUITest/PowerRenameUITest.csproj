@@ -21,7 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="Settings.UITests.cs" />
+	  <None Include="BasicRenameTests.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -30,5 +30,16 @@
 		<PackageReference Include="System.Private.Uri" />
 		<PackageReference Include="System.Text.RegularExpressions" />
 		<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Copy testItems folder and all contents to output directory -->
+		<Content Include="testItems\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="testItems\folder2\" />
 	</ItemGroup>
 </Project>

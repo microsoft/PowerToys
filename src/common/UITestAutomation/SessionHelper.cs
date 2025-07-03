@@ -208,7 +208,7 @@ namespace Microsoft.PowerToys.UITest
         public void RestartScopeExe()
         {
             ExitScopeExe();
-            StartExe(locationPath + sessionPath);
+            StartExe(locationPath + sessionPath, this.commandLineArgs);
         }
 
         public WindowsDriver<WindowsElement> GetRoot()
