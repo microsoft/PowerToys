@@ -18,7 +18,7 @@ The viewmodels are located within the [`Settings.UI.Library`](/src/settings-ui/S
 ### Settings viewmodel anomalies
 - The reason behind using the `SettingsRepository` is to ensure that the settings process does not try to access the `settings.json` files directly but rather does it through this class which encapsulates all the file operations from the viewmodels.
 - However, this could not be expanded to all the viewmodels directly for the following reasons. Some refactoring must be done to unify these cases and to bring them under the same model:
-    - The PowerRename viewmodel does not save the settings configurations in the same format as the rest of the powertoys, ie. {name, version, properties}. However, it only stores the properties directly.
+    - The PowerRename viewmodel does not save the settings configurations in the same format as the rest of the powertoys, i.e. {name, version, properties}. However, it only stores the properties directly.
     - Some viewmodels expect the runner to create the file instead of creating the file themselves, like in keyboard manager.
     - The colorpicker powertoy creates the `settings.json` within the module. This must be taken care of when encapsulated within the settingsRepository.
 - Currently, all modules use the `SettingsRepository` to access the General Settings config. 
