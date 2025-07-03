@@ -35,7 +35,7 @@ This should install PowerToys and make `PowerToysConfigure` resource available. 
 PowerToys.Settings.exe set <ModuleName>.<SettingName> <SettingValue>
 ```
 
-So for the example the config above should perform 3 following invocations:
+So for example the config above should perform 3 following invocations:
 ```
 PowerToys.Settings.exe set ShortcutGuide.Enabled false
 PowerToys.Settings.exe set FancyZones.Enabled true
