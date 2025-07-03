@@ -56,6 +56,7 @@ namespace Hosts
                 {
                     // Core Services
                     services.AddSingleton<IFileSystem, FileSystem>();
+                    services.AddSingleton<IBackupManager, BackupManager>();
                     services.AddSingleton<IHostsService, HostsService>();
                     services.AddSingleton<IUserSettings, Hosts.Settings.UserSettings>();
                     services.AddSingleton<IElevationHelper, ElevationHelper>();
@@ -74,7 +75,7 @@ namespace Hosts
                 }).
                 Build();
 
-            var cleanupBackupThread = new Thread(() =>
+            var deleteBackupThread = new Thread(() =>
             {
                 // Delete old backups only if running elevated
                 if (!Host.GetService<IElevationHelper>().IsElevated)
@@ -84,7 +85,7 @@ namespace Hosts
 
                 try
                 {
-                    Host.GetService<IHostsService>().CleanupBackup();
+                    Host.GetService<IBackupManager>().Delete();
                 }
                 catch (Exception ex)
                 {
@@ -92,8 +93,8 @@ namespace Hosts
                 }
             });
 
-            cleanupBackupThread.IsBackground = true;
-            cleanupBackupThread.Start();
+            deleteBackupThread.IsBackground = true;
+            deleteBackupThread.Start();
 
             UnhandledException += App_UnhandledException;
 
