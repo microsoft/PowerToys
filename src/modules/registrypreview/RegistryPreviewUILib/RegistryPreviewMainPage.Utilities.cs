@@ -119,7 +119,7 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// Method that re-opens and processes the filename the app already knows about; expected to not be a first time open
+        /// Method that re-opens and processes the filename that the app already knows about; expected to not be a first time open
         /// </summary>
         private void RefreshRegistryFile()
         {

@@ -427,7 +427,7 @@ void SuperSonar<D>::DetectShake()
         return;
     }
 
-    // Size of the rectangle the pointer moved in.
+    // Size of the rectangle that the pointer moved in.
     double rectangleWidth =  static_cast<double>(maxX) - minX;
     double rectangleHeight =  static_cast<double>(maxY) - minY;
 

@@ -752,7 +752,7 @@ which the user can quickly filter and search through.
 
 Lists can be either "static" or "dynamic":
 * A **static** list leaves devpal in charge of filtering the list of items,
-  based on the query the user typed.
+  based on the query that the user typed.
   * These are implementations of the default `IListPage`.
   * In this case, DevPal will use a fuzzy string match over the `Name` of the
     action, the `Subtitle`, and any `Text` on the `Tag`s.
@@ -1509,7 +1509,7 @@ settings for your extension being lost.
 
 Providers may also specify a set of `FallbackCommands`[^2]. These are special
 top-level items which allow extensions to have dynamic top-level items which
-respond to the text the user types on the main list page.
+respond to the text that the user types on the main list page.
 
 These are implemented with a special `IFallbackHandler` interface. This is an
 object that will be informed whenever the query changes in List page hosting it.
