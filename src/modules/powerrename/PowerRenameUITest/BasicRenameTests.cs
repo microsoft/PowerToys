@@ -174,8 +174,20 @@ public class BasicRenameTests : UITestBase
         }
     }
 
+    private void SetSearchBoxText(string text)
+    {
+        Assert.IsTrue(this.Find<TextBox>("Search for").SetText(text, true).Text == text);
+    }
+
+    private void SetReplaceBoxText(string text)
+    {
+        Assert.IsTrue(this.Find<TextBox>("Replace with").SetText(text, true).Text == text);
+    }
+
     [TestMethod]
     public void TestMatchFileName()
     {
+        this.SetSearchBoxText("search");
+        this.SetReplaceBoxText("replace");
     }
 }
