@@ -279,14 +279,14 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         cancellationToken.ThrowIfCancellationRequested();
     }
 
-    private static ListItem PathToListItem(string path, string originalPath, string args = "")
+    private static ListItem PathToListItem(string path, string originalPath, string args = "", Action<string>? addToHistory = null)
     {
-        var pathItem = new PathListItem(path, originalPath);
+        var pathItem = new PathListItem(path, originalPath, addToHistory);
 
         // Is this path an executable? If so, then make a RunExeItem
         if (IsExecutable(path))
         {
-            var exeItem = new RunExeItem(Path.GetFileName(path), args, path);
+            var exeItem = new RunExeItem(Path.GetFileName(path), args, path, addToHistory);
 
             exeItem.MoreCommands = [
             .. exeItem.MoreCommands,
@@ -317,12 +317,12 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             .ToArray();
     }
 
-    internal static RunExeItem CreateExeItem(string exe, string args, string fullExePath)
+    internal static RunExeItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
     {
         // PathToListItem will return a RunExeItem if it can find a executable.
         // It will ALSO add the file search commands to the RunExeItem.
-        return PathToListItem(fullExePath, exe, args) as RunExeItem ??
-               new RunExeItem(exe, args, fullExePath);
+        return PathToListItem(fullExePath, exe, args, addToHistory) as RunExeItem ??
+               new RunExeItem(exe, args, fullExePath, addToHistory);
     }
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
@@ -334,7 +334,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
         else
         {
-            _exeItem = CreateExeItem(exe, args, fullExePath);
+            _exeItem = CreateExeItem(exe, args, fullExePath, AddToHistory);
         }
     }
 
@@ -499,7 +499,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     {
         var hist = _historyService.GetRunHistory();
         var histItems = hist
-            .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h)))
+            .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h, AddToHistory)))
             .Where(tuple => tuple.Item2 != null)
             .Select(tuple => (tuple.h, tuple.Item2!))
             .ToList();
@@ -514,6 +514,18 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         _currentHistoryItems.AddRange(histItems.Select(tuple => tuple.Item2));
 
         _loadedInitialHistory = true;
+    }
+
+    internal void AddToHistory(string commandString)
+    {
+        if (string.IsNullOrWhiteSpace(commandString))
+        {
+            return; // Do not add empty or whitespace items
+        }
+
+        _historyService.AddRunHistoryItem(commandString);
+
+        LoadInitialHistory();
     }
 
     public void Dispose()

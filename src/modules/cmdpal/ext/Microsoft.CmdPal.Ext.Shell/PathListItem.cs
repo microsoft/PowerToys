@@ -67,23 +67,3 @@ internal sealed partial class PathListItem : ListItem
         });
     }
 }
-
-internal sealed partial class OpenUrlWithHistoryCommand : OpenUrlCommand
-{
-    private readonly Action<string>? _addToHistory;
-    private readonly string _url;
-
-    public OpenUrlWithHistoryCommand(string url, Action<string>? addToHistory = null)
-        : base(url)
-    {
-        _addToHistory = addToHistory;
-        _url = url;
-    }
-
-    public override CommandResult Invoke()
-    {
-        _addToHistory?.Invoke(_url);
-        var result = base.Invoke();
-        return result;
-    }
-}

@@ -29,9 +29,9 @@ public partial class ShellCommandsProvider : CommandProvider
         Icon = Icons.RunV2;
         Settings = _settingsManager.Settings;
 
-        _fallbackItem = new FallbackExecuteItem(_settingsManager);
-
         _shellListPage = new ShellListPage(_settingsManager, _historyService);
+
+        _fallbackItem = new FallbackExecuteItem(_settingsManager, _shellListPage.AddToHistory);
 
         _shellPageItem = new CommandItem(_shellListPage)
         {

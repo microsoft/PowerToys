@@ -36,7 +36,17 @@ internal sealed class RunHistoryService : IRunHistoryService
 
     public void AddRunHistoryItem(string item)
     {
-        _appStateModel.RunHistory.Add(item);
+        // insert at the beginning of the list
+        if (string.IsNullOrWhiteSpace(item))
+        {
+            return; // Do not add empty or whitespace items
+        }
+
+        _appStateModel.RunHistory.Remove(item);
+
+        // Add the item to the front of the history
+        _appStateModel.RunHistory.Insert(0, item);
+
         AppStateModel.SaveState(_appStateModel);
     }
 }

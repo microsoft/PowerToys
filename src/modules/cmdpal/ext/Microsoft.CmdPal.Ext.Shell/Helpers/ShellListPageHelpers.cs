@@ -167,7 +167,7 @@ public class ShellListPageHelpers
         }
     }
 
-    internal static ListItem? ListItemForCommandString(string query)
+    internal static ListItem? ListItemForCommandString(string query, Action<string>? addToHistory)
     {
         var li = new ListItem();
 
@@ -213,7 +213,7 @@ public class ShellListPageHelpers
         if (exeExists)
         {
             // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath);
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, addToHistory);
             li.Command = exeItem.Command;
             li.Title = exeItem.Title;
             li.Subtitle = exeItem.Subtitle;
@@ -222,7 +222,7 @@ public class ShellListPageHelpers
         }
         else if (pathIsDir)
         {
-            var pathItem = new PathListItem(exe, query);
+            var pathItem = new PathListItem(exe, query, addToHistory);
             li.Command = pathItem.Command;
             li.Title = pathItem.Title;
             li.Subtitle = pathItem.Subtitle;
@@ -231,7 +231,7 @@ public class ShellListPageHelpers
         }
         else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
         {
-            li.Command = new OpenUrlCommand(searchText) { Result = CommandResult.Dismiss() };
+            li.Command = new OpenUrlWithHistoryCommand(searchText) { Result = CommandResult.Dismiss() };
             li.Title = searchText;
         }
         else
