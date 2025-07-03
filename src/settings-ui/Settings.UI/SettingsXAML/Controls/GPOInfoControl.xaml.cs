@@ -15,13 +15,13 @@ using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls;
 
-public sealed partial class GPOInfoBarControl : ContentControl
+public sealed partial class GPOInfoControl : ContentControl
 {
     public static readonly DependencyProperty ShowWarningProperty =
       DependencyProperty.Register(
           nameof(ShowWarning),
           typeof(bool),
-          typeof(GPOInfoBarControl),
+          typeof(GPOInfoControl),
           new PropertyMetadata(false));
 
     public bool ShowWarning
@@ -30,8 +30,8 @@ public sealed partial class GPOInfoBarControl : ContentControl
         set => SetValue(ShowWarningProperty, value);
     }
 
-    public GPOInfoBarControl()
+    public GPOInfoControl()
     {
-        DefaultStyleKey = typeof(GPOInfoBarControl);
+        DefaultStyleKey = typeof(GPOInfoControl);
     }
 }

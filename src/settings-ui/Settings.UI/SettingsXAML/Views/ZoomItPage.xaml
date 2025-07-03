@@ -29,14 +29,14 @@
                     IsOpen="True"
                     IsTabStop="True"
                     Severity="Warning" />
-                <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="ZoomIt_EnableToggleControl_HeaderText"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}"
                         IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </controls:GPOInfoBarControl>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="ZoomIt_BehaviorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Toggle_ShowTrayIcon">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />

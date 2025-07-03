@@ -54,7 +54,7 @@
     <controls:SettingsPageControl x:Uid="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_EnableToggle"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}"
@@ -66,7 +66,7 @@
                             </HyperlinkButton>
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
-                </controls:GPOInfoBarControl>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"

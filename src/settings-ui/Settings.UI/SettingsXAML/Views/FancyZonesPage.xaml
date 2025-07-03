@@ -13,14 +13,14 @@
     <controls:SettingsPageControl x:Uid="FancyZones" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FancyZones.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="FancyZones_EnableToggleControl_HeaderText"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}"
                         IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </controls:GPOInfoBarControl>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="FancyZones_LaunchEditorButtonControl"

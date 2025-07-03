@@ -21,7 +21,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
-                    <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
                             x:Uid="MouseWithoutBorders_Toggle_Enable"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
@@ -31,7 +31,7 @@
                                 IsEnabled="{x:Bind ViewModel.CanBeEnabled, Mode=OneWay}"
                                 IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
-                    </controls:GPOInfoBarControl>
+                    </controls:GPOInfoControl>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_KeySettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
@@ -174,11 +174,11 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_ServiceSettings" IsEnabled="{x:Bind ViewModel.CanToggleUseService, Mode=OneWay}">
-                    <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.ShowPolicyConfiguredInfoForServiceSettings, Mode=OneWay}">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.ShowPolicyConfiguredInfoForServiceSettings, Mode=OneWay}">
                         <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_UseService" IsEnabled="{x:Bind ViewModel.UseServiceSettingIsEnabled, Mode=OneWay}">
                             <ToggleSwitch x:Uid="MouseWithoutBorders_UseService_ToggleSwitch" IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
-                    </controls:GPOInfoBarControl>
+                    </controls:GPOInfoControl>
                     <StackPanel Orientation="Vertical">
                         <InfoBar
                             x:Uid="MouseWithoutBorders_RunAsAdminText"
@@ -379,11 +379,11 @@
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.AddFirewallRuleEventHandler}"
                         IsClickEnabled="True" />
-                    <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.ShowPolicyConfiguredInfoForOriginalUiSetting, Mode=OneWay}">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.ShowPolicyConfiguredInfoForOriginalUiSetting, Mode=OneWay}">
                         <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ShowOriginalUI" IsEnabled="{x:Bind ViewModel.CardForOriginalUiSettingIsEnabled, Mode=OneWay}">
                             <ToggleSwitch x:Uid="MouseWithoutBorders_ShowOriginalUI_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowOriginalUI, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
-                    </controls:GPOInfoBarControl>
+                    </controls:GPOInfoControl>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

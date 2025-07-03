@@ -17,14 +17,14 @@
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical"
                 Spacing="2">
-                <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="NewPlus_Enable_Toggle"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
                         IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </controls:GPOInfoBarControl>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="NewPlus_Templates_Location"
@@ -56,11 +56,11 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
                             <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
-                    </controls:GPOInfoBarControl>
+                    </controls:GPOInfoControl>
                     <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
                         <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
@@ -70,7 +70,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle" IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
                             <StackPanel Orientation="Horizontal" Spacing="4">
                                 <ToggleSwitch x:Uid="ReplaceVariablesToggle" IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
@@ -172,7 +172,7 @@
                                 </StackPanel>
                             </tkcontrols:SettingsCard.Description>
                         </tkcontrols:SettingsCard>
-                    </controls:GPOInfoBarControl>
+                    </controls:GPOInfoControl>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

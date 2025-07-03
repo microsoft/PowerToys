@@ -30,14 +30,14 @@
     <controls:SettingsPageControl x:Uid="ImageResizer" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
-                <controls:GPOInfoBarControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="ImageResizer_EnableToggle"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ImageResizer.png}"
                         IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </controls:GPOInfoBarControl>
+                </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
