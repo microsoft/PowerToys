@@ -18,8 +18,7 @@
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="Workspaces_EnableToggleControl_HeaderText"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"
-                        IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>

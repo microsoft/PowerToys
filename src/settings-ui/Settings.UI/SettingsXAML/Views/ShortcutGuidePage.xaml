@@ -16,8 +16,7 @@
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="ShortcutGuide_Enable"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}"
-                        IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>

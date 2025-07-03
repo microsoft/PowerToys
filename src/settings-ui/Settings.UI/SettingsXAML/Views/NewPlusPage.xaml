@@ -54,7 +54,7 @@
 
                 <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle">
+                        <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
                             <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
