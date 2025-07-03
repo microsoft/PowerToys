@@ -38,7 +38,7 @@ The Value Generator plugin is used to generate hashes for strings, to calculate 
   - [`UuidCreateSequential`](https://learn.microsoft.com/en-us/windows/win32/api/rpcdce/nf-rpcdce-uuidcreatesequential) for version 1 
   - `System.Guid.NewGuid()` for version 4
   - `System.Guid.CreateVersion7()` for version 7
-- Versions 3 and 5 take two parameters, a namespace and a name
+- Versions 3 and 5 take two parameters: a namespace and a name
 - The namespace must be a valid GUID or one of the [predefined ones](https://datatracker.ietf.org/doc/html/rfc4122#appendix-C)
 - The `PredefinedNamespaces` dictionary contains aliases for the predefined namespaces
 - The name can be any string
