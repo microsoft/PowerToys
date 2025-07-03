@@ -49,7 +49,7 @@ _You **can** combine them_
 
 ### Lists
 
-**Inordered:**
+**Unordered:**
 
     * Milk
     * Bread
