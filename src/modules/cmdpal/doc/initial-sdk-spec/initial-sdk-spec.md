@@ -457,7 +457,7 @@ it be cheap from an engineering standpoint.
 
 ### From winget
 
-Winget on the other hand, does allow packages to specify arbitrary tags, and let
+WinGet on the other hand, does allow packages to specify arbitrary tags, and let
 apps query them easily. We can use that as a system to load a list of packages
 available via winget directly in DevPal. We'll specify a well-known tag that
 developers can use in their winget package manifest to specify that their

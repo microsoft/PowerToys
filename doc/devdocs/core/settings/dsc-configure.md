@@ -1,6 +1,6 @@
 # What is it
 
-We would like to enable our users to use [`winget configure`](https://learn.microsoft.com/en-us/windows/package-manager/winget/configure) command to install PowerToys and configure its settings with a [Winget  configuration file](https://learn.microsoft.com/en-us/windows/package-manager/configuration/create). For example:
+We would like to enable our users to use [`winget configure`](https://learn.microsoft.com/en-us/windows/package-manager/winget/configure) command to install PowerToys and configure its settings with a [WinGet configuration file](https://learn.microsoft.com/en-us/windows/package-manager/configuration/create). For example:
 
 ```yaml
 properties:
