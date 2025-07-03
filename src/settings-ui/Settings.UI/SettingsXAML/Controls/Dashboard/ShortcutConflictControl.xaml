@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Unloaded="UserControl_Unloaded"
     mc:Ignorable="d">
 
     <Grid>
@@ -16,16 +17,16 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <FontIcon
-                    AutomationProperties.AccessibilityView="Raw"
-                    FontSize="20"
-                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                    Glyph="&#xE814;" />
+                AutomationProperties.AccessibilityView="Raw"
+                FontSize="20"
+                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                Glyph="&#xE814;" />
                 <StackPanel Grid.Column="1" Orientation="Vertical">
                     <TextBlock FontWeight="SemiBold" Text="Shortcut conflicts" />
                     <TextBlock
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="2 conflicts found" />
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="[num] conflicts found" />
                 </StackPanel>
             </Grid>
         </Button>
