@@ -384,7 +384,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
-        /// Method <c>GetSettingsBackupAndRestoreDir</c> returns the path the backup and restore location.
+        /// Method <c>GetSettingsBackupAndRestoreDir</c> returns the path of the backup and restore location.
         /// </summary>
         /// <remarks>
         /// This will return a default location based on user documents if non is set.
