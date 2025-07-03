@@ -22,7 +22,6 @@
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-
                     <tkcontrols:SettingsExpander
                         x:Uid="AlwaysOnTop_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
