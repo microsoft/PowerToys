@@ -77,16 +77,6 @@ namespace Microsoft.PowerToys.UITest
 
             this.sessionHelper = new SessionHelper(scope).Init();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
-
-            if (this.scope == PowerToysModule.PowerToysSettings)
-            {
-                // close Debug warning dialog if any
-                // Such debug warning dialog seems only appear in PowerToys Settings
-                if (this.FindAll("DEBUG").Count > 0)
-                {
-                    this.Find("DEBUG").Find<Button>("Close").Click();
-                }
-            }
         }
 
         /// <summary>

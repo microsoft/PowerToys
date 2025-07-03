@@ -9,6 +9,7 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using static Microsoft.PowerToys.UITest.WindowHelper;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -42,16 +43,17 @@ namespace Microsoft.PowerToys.UITest
 
             CheckWinAppDriverAndRoot();
 
-            var runnerProcessInfo = new ProcessStartInfo
-            {
-                FileName = locationPath + this.runnerPath,
-                Verb = "runas",
-            };
-
             if (scope == PowerToysModule.PowerToysSettings)
             {
+                var runnerProcessInfo = new ProcessStartInfo
+                {
+                    FileName = locationPath + this.runnerPath,
+                    Verb = "runas",
+                    Arguments = "--open-settings",
+                };
                 this.ExitExe(runnerProcessInfo.FileName);
                 this.runner = Process.Start(runnerProcessInfo);
+                Thread.Sleep(3000);
             }
         }
 
@@ -75,7 +77,11 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="scope">The PowerToys module to start.</param>
         public SessionHelper Init()
         {
-            this.ExitExe(this.locationPath + this.sessionPath);
+            if (scope != PowerToysModule.PowerToysSettings)
+            {
+                this.ExitExe(this.locationPath + this.sessionPath);
+            }
+
             this.StartExe(this.locationPath + this.sessionPath);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
@@ -135,7 +141,23 @@ namespace Microsoft.PowerToys.UITest
         public void StartExe(string appPath)
         {
             var opts = new AppiumOptions();
-            opts.AddAdditionalCapability("app", appPath);
+            if (scope == PowerToysModule.PowerToysSettings)
+            {
+                CheckWinAppDriverAndRoot();
+
+                if (root != null)
+                {
+                    var windowName = "PowerToys Settings";
+                    var settingsWindow = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
+                    var hexHwnd = settingsWindow[0].HWnd.ToString("x");
+                    opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
+                }
+            }
+            else
+            {
+                opts.AddAdditionalCapability("app", appPath);
+            }
+
             this.Driver = NewWindowsDriver(opts);
         }
 
