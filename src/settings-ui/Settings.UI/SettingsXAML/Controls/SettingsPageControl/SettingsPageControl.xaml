@@ -51,7 +51,7 @@
                         MaxWidth="160"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top"
-                        CornerRadius="4">
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
                         <Image AutomationProperties.AccessibilityView="Raw">
                             <Image.Source>
                                 <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
