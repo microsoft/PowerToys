@@ -611,7 +611,7 @@ This will create a single command in DevPal that, when selected, will open
 Hacker News in the user's default web browser.
 
 Commands can also be `Page`s, which represent additional "nested" pages within
-DevPal. When the user selects an command that implements `IPage`, DevPal will
+DevPal. When the user selects a command that implements `IPage`, DevPal will
 navigate to a page for that command, rather than calling `Invoke` on it. Skip
 ahead to [Pages](#Pages) for more information on the different types of pages.
 
