@@ -90,13 +90,13 @@ public class ShellListPageHelpers
 
     public List<CommandContextItem> LoadContextMenus(ListItem listItem)
     {
-        var resultlist = new List<CommandContextItem>
+        var resultList = new List<CommandContextItem>
             {
                 new(new ExecuteItem(listItem.Title, _settings, RunAsType.Administrator)),
                 new(new ExecuteItem(listItem.Title, _settings, RunAsType.OtherUser )),
             };
 
-        return resultlist;
+        return resultList;
     }
 
     private List<ListItem> ResultsFromHistory()

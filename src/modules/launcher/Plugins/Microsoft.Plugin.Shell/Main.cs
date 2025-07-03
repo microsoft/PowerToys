@@ -446,7 +446,7 @@ namespace Microsoft.Plugin.Shell
 
         public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            var resultlist = new List<ContextMenuResult>
+            var resultList = new List<ContextMenuResult>
             {
                 new ContextMenuResult
                 {
@@ -478,7 +478,7 @@ namespace Microsoft.Plugin.Shell
                 },
             };
 
-            return resultlist;
+            return resultList;
         }
 
         public void UpdateSettings(PowerLauncherPluginSettings settings)
