@@ -16,8 +16,8 @@
     }
 #define ExitWithLastError(x, s, ...)       \
     {                                      \
-        DWORD Dutil_er = ::GetLastError(); \
-        x = HRESULT_FROM_WIN32(Dutil_er);  \
+        DWORD util_err = ::GetLastError(); \
+        x = HRESULT_FROM_WIN32(util_err);  \
         if (!FAILED(x))                    \
         {                                  \
             x = E_FAIL;                    \
