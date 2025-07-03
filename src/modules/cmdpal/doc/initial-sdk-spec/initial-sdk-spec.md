@@ -656,7 +656,7 @@ Use cases for each `CommandResultKind`:
 * `Dismiss` - Close DevPal after the action is executed. All current state
   is dismissed as well. On the next launch, DevPal will start from the main
   page with a blank query.
-  * Ex: An action that opens an application. The Puser doesn't need DevPal
+  * Ex: An action that opens an application. The user doesn't need DevPal
     open after the application is opened, nor do they need the query they used
     to find the action.
 * `GoHome` - Navigate back to the main page of DevPal, but keep it open.
