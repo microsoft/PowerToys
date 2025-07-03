@@ -471,7 +471,7 @@ When the Editor starts, it will load the config data, and when FancyZones starts
 
 About monitor detection you can find "FancyZones::MoveSizeUpdate" function. 
 
-I believe that in the case without DPI scaling, FancyZones retrieves the window's position and does not need to know what the mouse's DPI scaling is like. If you are referring to window scaling, it is called through the system interface, and you can see the detailed code in "WindowMouseSnap::MoveSizeEnd()" fucntion.
+I believe that in the case without DPI scaling, FancyZones retrieves the window's position and does not need to know what the mouse's DPI scaling is like. If you are referring to window scaling, it is called through the system interface, and you can see the detailed code in "WindowMouseSnap::MoveSizeEnd()" function.
 
 - ### How does FancyZones track which windows belong to which zones?
 
