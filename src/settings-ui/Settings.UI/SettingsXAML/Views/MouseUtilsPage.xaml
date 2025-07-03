@@ -24,10 +24,7 @@
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}">
-                        <tkcontrols:SettingsCard
-                            x:Uid="MouseUtils_Enable_FindMyMouse"
-                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FindMyMouse.png}"
-                            IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_Enable_FindMyMouse" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FindMyMouse.png}">
                             <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
@@ -174,10 +171,7 @@
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}">
-                        <tkcontrols:SettingsCard
-                            x:Uid="MouseUtils_Enable_MouseHighlighter"
-                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseHighlighter.png}"
-                            IsEnabled="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_Enable_MouseHighlighter" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseHighlighter.png}">
                             <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
@@ -242,10 +236,7 @@
 
                 <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}">
-                        <tkcontrols:SettingsCard
-                            x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
-                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrosshairs.png}"
-                            IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <tkcontrols:SettingsCard x:Uid="MouseUtils_Enable_MousePointerCrosshairs" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrosshairs.png}">
                             <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>

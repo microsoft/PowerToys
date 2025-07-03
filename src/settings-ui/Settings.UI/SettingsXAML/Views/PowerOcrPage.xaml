@@ -25,10 +25,7 @@
                     Severity="Informational" />
 
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="TextExtractor_EnableToggleControl_HeaderText"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
-                        IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <tkcontrols:SettingsCard x:Uid="TextExtractor_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>

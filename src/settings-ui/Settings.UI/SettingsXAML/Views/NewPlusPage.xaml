@@ -18,10 +18,7 @@
                 Orientation="Vertical"
                 Spacing="2">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="NewPlus_Enable_Toggle"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
-                        IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Enable_Toggle" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
@@ -57,7 +54,7 @@
 
                 <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle">
                             <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -22,12 +23,23 @@ public sealed partial class GPOInfoControl : ContentControl
           nameof(ShowWarning),
           typeof(bool),
           typeof(GPOInfoControl),
-          new PropertyMetadata(false));
+          new PropertyMetadata(false, OnShowWarningPropertyChanged));
 
     public bool ShowWarning
     {
         get => (bool)GetValue(ShowWarningProperty);
         set => SetValue(ShowWarningProperty, value);
+    }
+
+    private static void OnShowWarningPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is GPOInfoControl gpoInfoControl)
+        {
+            if (gpoInfoControl.ShowWarning)
+            {
+                gpoInfoControl.IsEnabled = false;
+            }
+        }
     }
 
     public GPOInfoControl()

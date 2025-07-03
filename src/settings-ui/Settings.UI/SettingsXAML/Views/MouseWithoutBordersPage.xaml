@@ -22,10 +22,7 @@
             <StackPanel Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                        <tkcontrols:SettingsCard
-                            x:Uid="MouseWithoutBorders_Toggle_Enable"
-                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
-                            IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_Toggle_Enable" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}">
                             <ToggleSwitch
                                 x:Uid="ToggleSwitch"
                                 IsEnabled="{x:Bind ViewModel.CanBeEnabled, Mode=OneWay}"

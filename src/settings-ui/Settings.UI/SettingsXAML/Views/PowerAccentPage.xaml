@@ -27,10 +27,7 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="QuickAccent_EnableQuickAccent"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}"
-                        IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_EnableQuickAccent" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>

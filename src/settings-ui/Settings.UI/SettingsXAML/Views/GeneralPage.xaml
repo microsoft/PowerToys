@@ -379,7 +379,7 @@
                     Severity="{x:Bind ViewModel.BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
                 <controls:SettingsGroup x:Uid="General_Experimentation" Visibility="Visible">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableExperimentation" IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableExperimentation">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <PathIcon Data="M1859 1758q14 23 21 47t7 51q0 40-15 75t-41 61-61 41-75 15H354q-40 0-75-15t-61-41-41-61-15-75q0-27 6-51t21-47l569-992q10-14 10-34V128H640V0h768v128h-128v604q0 19 10 35l569 991zM896 732q0 53-27 99l-331 577h972l-331-577q-27-46-27-99V128H896v604zm799 1188q26 0 44-19t19-45q0-10-2-17t-8-16l-164-287H464l-165 287q-9 15-9 33 0 26 18 45t46 19h1341z" />
                             </tkcontrols:SettingsCard.HeaderIcon>
@@ -395,10 +395,7 @@
                             Padding="0"
                             NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
                         <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}">
-                            <tkcontrols:SettingsCard
-                                x:Uid="GeneralPage_EnableDataDiagnostics"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
-                                IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableDataDiagnostics" HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}">
                                 <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </controls:GPOInfoControl>

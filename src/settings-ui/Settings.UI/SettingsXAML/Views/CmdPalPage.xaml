@@ -14,14 +14,10 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="CmdPal_Enable_CmdPal"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}"
-                        IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <tkcontrols:SettingsCard x:Uid="CmdPal_Enable_CmdPal" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
-
                 <controls:SettingsGroup x:Uid="CmdPal_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="CmdPal_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
