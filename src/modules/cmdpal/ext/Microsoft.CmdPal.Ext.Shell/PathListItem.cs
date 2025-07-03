@@ -16,8 +16,8 @@ internal sealed partial class PathListItem : ListItem
 
     public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
 
-    public PathListItem(string path, string originalDir)
-        : base(new OpenUrlCommand(path))
+    public PathListItem(string path, string originalDir, Action<string>? addToHistory)
+        : base(new OpenUrlWithHistoryCommand(path, addToHistory))
     {
         var fileName = Path.GetFileName(path);
         _isDirectory = Directory.Exists(path);
@@ -29,29 +29,6 @@ internal sealed partial class PathListItem : ListItem
 
         Title = fileName;
         Subtitle = path;
-
-        // NOTE ME:
-        // If there are spaces on originalDir, trim them off, BEFORE combining originalDir and fileName.
-        // THEN add quotes at the end
-        // var hasSpace = path.Contains(' ');
-
-        // // var originalDir = Path.GetDirectoryName(originalSearch) ?? path;
-        // var originalPath = Path.Combine(originalDir, fileName);
-        // var suggestion = originalPath;
-        // if (hasSpace)
-        // {
-        //     var startsWithQuote = originalDir.StartsWith("\"", StringComparison.CurrentCultureIgnoreCase);
-        //     var endsWithQuote = originalDir.EndsWith("\"", StringComparison.CurrentCultureIgnoreCase);
-        //     if (!startsWithQuote)
-        //     {
-        //         suggestion = string.Concat("\"", suggestion);
-        //     }
-        //
-        //     if (!endsWithQuote)
-        //     {
-        //         suggestion = string.Concat(suggestion, "\"");
-        //     }
-        // }
 
         // NOTE ME:
         // If there are spaces on originalDir, trim them off, BEFORE combining originalDir and fileName.
@@ -73,6 +50,7 @@ internal sealed partial class PathListItem : ListItem
             new CommandContextItem(new CopyTextCommand(path) { Name = "Copy path" }) { } // TODO:LOC
         ];
 
+        // TODO: Follow-up during 0.4. Add the indexer commands here.
         // MoreCommands = [
         //    new CommandContextItem(new OpenWithCommand(indexerItem)),
         //    new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath) { Name = Resources.Indexer_Command_ShowInFolder }),
@@ -87,5 +65,25 @@ internal sealed partial class PathListItem : ListItem
              _isDirectory ? Icons.Folder : Icons.RunV2;
             return icon;
         });
+    }
+}
+
+internal sealed partial class OpenUrlWithHistoryCommand : OpenUrlCommand
+{
+    private readonly Action<string>? _addToHistory;
+    private readonly string _url;
+
+    public OpenUrlWithHistoryCommand(string url, Action<string>? addToHistory = null)
+        : base(url)
+    {
+        _addToHistory = addToHistory;
+        _url = url;
+    }
+
+    public override CommandResult Invoke()
+    {
+        _addToHistory?.Invoke(_url);
+        var result = base.Invoke();
+        return result;
     }
 }
