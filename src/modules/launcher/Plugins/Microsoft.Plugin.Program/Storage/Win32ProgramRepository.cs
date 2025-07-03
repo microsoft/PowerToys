@@ -100,7 +100,7 @@ namespace Microsoft.Plugin.Program.Storage
 
             // fix for https://github.com/microsoft/PowerToys/issues/34391
             // the msi installer creates a shortcut, which is detected by the PT Run and ends up in calling this OnAppRenamed method
-            // the thread needs to be halted for a short time to avoid locking the new shortcut file as we read it, otherwise the lock causes
+            // the thread needs to be halted for a short time to avoid locking the new shortcut file as we read it; otherwise, the lock causes
             // in the issue scenario that a warning is popping up during the msi install process.
             await Task.Delay(OnRenamedEventWaitTime).ConfigureAwait(false);
 
