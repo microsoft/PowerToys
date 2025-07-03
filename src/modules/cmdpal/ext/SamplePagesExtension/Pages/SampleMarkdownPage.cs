@@ -53,14 +53,14 @@ _You **can** combine them_
 
     * Milk
     * Bread
-        * Wholegrain
+        * Whole grain
     * Butter
 
 Result:
 
 * Milk
 * Bread
-    * Wholegrain
+    * Whole grain
 * Butter
 
 **Ordered:**
