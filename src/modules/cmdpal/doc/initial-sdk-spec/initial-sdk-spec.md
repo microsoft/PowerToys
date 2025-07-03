@@ -628,7 +628,7 @@ different types depending on where the command is being used:
 * `IListPage.GetItems`
   * Sender is the `IListItem` for the list item selected for that command
 * `ICommandItem.MoreCommands` (context menus)
-  * Sender is the `IListItem` which the command was attached to for a list page, or
+  * Sender is the `IListItem` which the command was attached to a list page, or
   * the `ICommandItem` of the top-level command (if this is a context item on a top level command)
 * `IContentPage.Commands`
   * Sender is the `IContentPage` itself
