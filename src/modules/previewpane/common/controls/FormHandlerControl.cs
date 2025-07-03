@@ -17,7 +17,7 @@ namespace Common
     public abstract class FormHandlerControl : Form, IPreviewHandlerControl
     {
         /// <summary>
-        /// Needed to make the form a child window.
+        /// Needed to make the form into a child window.
         /// </summary>
         private static int gwlStyle = -16;
         private static int wsChild = 0x40000000;
