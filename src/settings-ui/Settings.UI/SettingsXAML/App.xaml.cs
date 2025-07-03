@@ -232,6 +232,12 @@ namespace Microsoft.PowerToys.Settings.UI
             });
             ipcmanager.Start();
 
+            GlobalHotkeyConflictManager.Initialize(message =>
+            {
+                ipcmanager.Send(message);
+                return 0;
+            });
+
             if (!ShowOobe && !ShowScoobe && !ShowFlyout)
             {
                 settingsWindow = new MainWindow();
@@ -297,16 +303,6 @@ namespace Microsoft.PowerToys.Settings.UI
             if (cmdArgs?.Length >= RequiredArgumentsLaunchedFromRunnerQty)
             {
                 OnLaunchedFromRunner(cmdArgs);
-
-                // Initialize GlobalHotkeyConflictManager after IPC manager is set up
-                if (ipcmanager != null)
-                {
-                    GlobalHotkeyConflictManager.Initialize(message =>
-                    {
-                        ipcmanager.Send(message);
-                        return 0; // Return success
-                    });
-                }
             }
             else if (cmdArgs?.Length == RequiredArgumentsSetSettingQty && cmdArgs[1] == "set")
             {
