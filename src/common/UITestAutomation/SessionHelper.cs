@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.UITest
                 };
                 this.ExitExe(runnerProcessInfo.FileName);
                 this.runner = Process.Start(runnerProcessInfo);
-                Thread.Sleep(3000);
+                Thread.Sleep(5000);
             }
         }
 
@@ -149,8 +149,11 @@ namespace Microsoft.PowerToys.UITest
                 {
                     var windowName = "PowerToys Settings";
                     var settingsWindow = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
-                    var hexHwnd = settingsWindow[0].HWnd.ToString("x");
-                    opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
+                    if (settingsWindow.Count > 0)
+                    {
+                        var hexHwnd = settingsWindow[0].HWnd.ToString("x");
+                        opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
+                    }
                 }
             }
             else
