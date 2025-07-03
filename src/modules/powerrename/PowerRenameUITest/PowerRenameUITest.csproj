@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+	<PropertyGroup>
+		<RootNamespace>PowerRename.UITests</RootNamespace>
+		<AssemblyName>PowerRename.UITests</AssemblyName>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<Nullable>enable</Nullable>
+		<OutputType>Library</OutputType>
+		<!-- This is a UI test, so don't run as part of MSBuild -->
+		<RunVSTest>false</RunVSTest>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\PowerRename.UITests\</OutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Settings.UITests.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MSTest" />
+		<PackageReference Include="System.Net.Http" />
+		<PackageReference Include="System.Private.Uri" />
+		<PackageReference Include="System.Text.RegularExpressions" />
+		<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+	</ItemGroup>
+</Project>
