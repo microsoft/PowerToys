@@ -5547,7 +5547,7 @@ LRESULT APIENTRY MainWndProc(
                 }
                 prevPt = currentPt;
 
-                // In liveDraw we an miss the mouse up
+                // In liveDraw we miss the mouse up
                 if( GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
 
                     if((GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {
