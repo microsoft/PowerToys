@@ -97,7 +97,7 @@ namespace Microsoft.Plugin.Shell
             string cmd = query.Search;
             if (string.IsNullOrEmpty(cmd))
             {
-                return ResultsFromlHistory();
+                return ResultsFromHistory();
             }
             else
             {
@@ -169,7 +169,7 @@ namespace Microsoft.Plugin.Shell
             return result;
         }
 
-        private List<Result> ResultsFromlHistory()
+        private List<Result> ResultsFromHistory()
         {
             IEnumerable<Result> history = _settings.Count.OrderByDescending(o => o.Value)
                 .Select(m => new Result

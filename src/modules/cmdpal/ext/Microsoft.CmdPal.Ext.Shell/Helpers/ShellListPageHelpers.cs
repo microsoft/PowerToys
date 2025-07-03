@@ -70,7 +70,7 @@ public class ShellListPageHelpers
         var cmd = query;
         if (string.IsNullOrEmpty(cmd))
         {
-            results = ResultsFromlHistory();
+            results = ResultsFromHistory();
         }
         else
         {
@@ -99,7 +99,7 @@ public class ShellListPageHelpers
         return resultlist;
     }
 
-    private List<ListItem> ResultsFromlHistory()
+    private List<ListItem> ResultsFromHistory()
     {
         IEnumerable<ListItem> history = _settings.Count.OrderByDescending(o => o.Value)
             .Select(m => new ListItem(new ExecuteItem(m.Key, _settings))
