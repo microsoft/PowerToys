@@ -87,8 +87,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <!-- 1026 - warning: file ID is too long -->
     <SuppressIces>ICE91</SuppressIces>
     <SuppressSpecificWarnings>1026;1076</SuppressSpecificWarnings>
-    <BaseIntermediateOutputPath>obj\Installer\</BaseIntermediateOutputPath>
-    <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
   </PropertyGroup>
   <PropertyGroup>
     <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
