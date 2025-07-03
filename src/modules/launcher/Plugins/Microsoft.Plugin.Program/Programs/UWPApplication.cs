@@ -115,7 +115,7 @@ namespace Microsoft.Plugin.Program.Programs
                 },
             };
 
-            // To set the title to always be the displayname of the packaged application
+            // To set the title to always be the display name of the packaged application
             result.Title = DisplayName;
             result.TitleHighlightData = StringMatcher.FuzzySearch(query, Name).MatchData;
 
