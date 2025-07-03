@@ -42,19 +42,6 @@ namespace Microsoft.PowerToys.UITest
             this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             CheckWinAppDriverAndRoot();
-
-            if (scope == PowerToysModule.PowerToysSettings)
-            {
-                var runnerProcessInfo = new ProcessStartInfo
-                {
-                    FileName = locationPath + this.runnerPath,
-                    Verb = "runas",
-                    Arguments = "--open-settings",
-                };
-                this.ExitExe(runnerProcessInfo.FileName);
-                this.runner = Process.Start(runnerProcessInfo);
-                Thread.Sleep(5000);
-            }
         }
 
         /// <summary>
@@ -77,10 +64,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="scope">The PowerToys module to start.</param>
         public SessionHelper Init()
         {
-            if (scope != PowerToysModule.PowerToysSettings)
-            {
-                this.ExitExe(this.locationPath + this.sessionPath);
-            }
+            this.ExitExe(this.locationPath + this.sessionPath);
 
             this.StartExe(this.locationPath + this.sessionPath);
 
@@ -95,19 +79,6 @@ namespace Microsoft.PowerToys.UITest
         public void Cleanup()
         {
             ExitScopeExe();
-            try
-            {
-                if (this.scope == PowerToysModule.PowerToysSettings)
-                {
-                    runner?.Kill();
-                    runner?.WaitForExit(); // Optional: Wait for the process to exit
-                }
-            }
-            catch (Exception ex)
-            {
-                // Handle exceptions if needed
-                Debug.WriteLine($"Exception during Cleanup: {ex.Message}");
-            }
         }
 
         /// <summary>
@@ -141,20 +112,11 @@ namespace Microsoft.PowerToys.UITest
         public void StartExe(string appPath)
         {
             var opts = new AppiumOptions();
+
+            // if we want to start settings, we need to use the runner exe to open settings
             if (scope == PowerToysModule.PowerToysSettings)
             {
-                CheckWinAppDriverAndRoot();
-
-                if (root != null)
-                {
-                    var windowName = "PowerToys Settings";
-                    var settingsWindow = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
-                    if (settingsWindow.Count > 0)
-                    {
-                        var hexHwnd = settingsWindow[0].HWnd.ToString("x");
-                        opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
-                    }
-                }
+                TryLaunchPowerToysSettings(opts);
             }
             else
             {
@@ -162,6 +124,51 @@ namespace Microsoft.PowerToys.UITest
             }
 
             this.Driver = NewWindowsDriver(opts);
+        }
+
+        private void TryLaunchPowerToysSettings(AppiumOptions opts)
+        {
+            CheckWinAppDriverAndRoot();
+
+            var runnerProcessInfo = new ProcessStartInfo
+            {
+                FileName = locationPath + this.runnerPath,
+                Verb = "runas",
+                Arguments = "--open-settings",
+            };
+
+            this.ExitExe(runnerProcessInfo.FileName);
+            this.runner = Process.Start(runnerProcessInfo);
+            Thread.Sleep(5000);
+
+            if (root != null)
+            {
+                const int maxRetries = 3;
+                const int delayMs = 5000;
+                var windowName = "PowerToys Settings";
+
+                for (int attempt = 1; attempt <= maxRetries; attempt++)
+                {
+                    var settingsWindow = ApiHelper.FindDesktopWindowHandler(
+                        new[] { windowName, AdministratorPrefix + windowName });
+
+                    if (settingsWindow.Count > 0)
+                    {
+                        var hexHwnd = settingsWindow[0].HWnd.ToString("x");
+                        opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
+                        return;
+                    }
+
+                    if (attempt < maxRetries)
+                    {
+                        Thread.Sleep(delayMs);
+                    }
+                    else
+                    {
+                        throw new TimeoutException("Failed to find PowerToys Settings window after multiple attempts.");
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -201,6 +208,19 @@ namespace Microsoft.PowerToys.UITest
         public void ExitScopeExe()
         {
             ExitExe(sessionPath);
+            try
+            {
+                if (this.scope == PowerToysModule.PowerToysSettings)
+                {
+                    runner?.Kill();
+                    runner?.WaitForExit(); // Optional: Wait for the process to exit
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions if needed
+                Debug.WriteLine($"Exception during Cleanup: {ex.Message}");
+            }
         }
 
         /// <summary>
