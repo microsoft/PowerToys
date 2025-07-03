@@ -133,7 +133,7 @@
                 Grid.Column="1"
                 Orientation="Horizontal"
                 Spacing="16">
-                <!--<controls:ShortcutConflictControl/>-->
+                <controls:ShortcutConflictControl/>
                 <controls:CheckUpdateControl />
             </StackPanel>
         </Grid>
