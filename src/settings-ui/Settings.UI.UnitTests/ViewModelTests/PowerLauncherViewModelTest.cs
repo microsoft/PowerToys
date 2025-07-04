@@ -13,7 +13,7 @@ using Moq;
 namespace ViewModelTests
 {
     [TestClass]
-    public class PowerLauncherViewModelTest
+    public class PowerLauncherViewModelTest : IDisposable
     {
         private sealed class SendCallbackMock
         {
@@ -39,7 +39,20 @@ namespace ViewModelTests
             sendCallbackMock = new SendCallbackMock();
             viewModel = new PowerLauncherViewModel(
                 mockSettings,
-                new PowerLauncherViewModel.SendCallback(sendCallbackMock.OnSend));
+                SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils()),
+                msg => 0, // IPC callback
+                () => false); // isDark callback
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            viewModel?.Dispose();
+        }
+
+        public void Dispose()
+        {
+            Cleanup();
         }
 
         /// <summary>
