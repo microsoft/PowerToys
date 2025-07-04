@@ -17,4 +17,19 @@ public static class WindowExtensions
         AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
         appWindow.SetIcon(@"Assets\icon.ico");
     }
+
+    public static void SetVisibilityInSwitchers(this Window window, bool showInSwitchers)
+    {
+        try
+        {
+            // IsShownInSwitchers needs to change the value to apply the effect, but its state might be out-of-sync with
+            // the actual state of the switchers, so we need to toggle it.
+            window.AppWindow.IsShownInSwitchers = !showInSwitchers;
+            window.AppWindow.IsShownInSwitchers = showInSwitchers;
+        }
+        catch (NotImplementedException)
+        {
+            // SetShownInSwitchers failed. This can happen if the Explorer is not running.
+        }
+    }
 }
