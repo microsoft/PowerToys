@@ -18,176 +18,70 @@ namespace PowerRename.UITests;
 /// </summary>
 /// <param name="testFilePaths">Array of file/folder paths to test with</param>
 [TestClass]
-public class BasicRenameTests : UITestBase
+public class BasicRenameTests : PowerRenameUITestBase
 {
-    private static readonly string[] OriginalTestFilePaths = new string[]
-    {
-        Path.Combine("testItems", "folder1"), // Test folder
-        Path.Combine("testItems", "folder2"), // Test folder
-        Path.Combine("testItems", "testCase1.txt"), // Test file
-    };
-
-    private static readonly string BaseTestFileFolderPath = Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "test", typeof(BasicRenameTests).Name);
-
-    private static List<string> TestFilesAndFoldersArray { get; } = InitCleanTestEnvironment();
-
-    private static List<string> InitCleanTestEnvironment()
-    {
-        var testFilesAndFolders = new List<string>
-        {
-        };
-
-        foreach (var files in OriginalTestFilePaths)
-        {
-            var targetFolder = Path.Combine(BaseTestFileFolderPath, files);
-            testFilesAndFolders.Add(targetFolder);
-        }
-
-        return testFilesAndFolders;
-    }
-
-    [TestInitialize]
-    public void InitTestCase()
-    {
-        // Clean up any existing test directories for this test class
-        CleanupTestDirectories();
-
-        // copy files and folders from OriginalTestFilePaths to testFilesAndFoldersArray
-        CopyTestFilesToDestination();
-
-        RestartScopeExe();
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="BasicRenameTests"/> class.
     /// Initialize PowerRename UITest with default test files
     /// </summary>
     public BasicRenameTests()
-        : base(PowerToysModule.PowerRename, WindowSize.UnSpecified, TestFilesAndFoldersArray.ToArray())
+        : base()
     {
-    }
-
-    /// <summary>
-    /// Clean up any existing test directories for the specified test class
-    /// </summary>
-    private static void CleanupTestDirectories()
-    {
-        try
-        {
-            if (Directory.Exists(BaseTestFileFolderPath))
-            {
-                Directory.Delete(BaseTestFileFolderPath, true);
-                Console.WriteLine($"Cleaned up old test directory: {BaseTestFileFolderPath}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Warning: Error during cleanup: {ex.Message}");
-        }
-
-        try
-        {
-            Directory.CreateDirectory(BaseTestFileFolderPath);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Warning: Error during cleanup create folder: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Copy test files and folders from source paths to destination paths
-    /// </summary>
-    private static void CopyTestFilesToDestination()
-    {
-        try
-        {
-            for (int i = 0; i < OriginalTestFilePaths.Length && i < TestFilesAndFoldersArray.Count; i++)
-            {
-                var sourcePath = Path.GetFullPath(OriginalTestFilePaths[i]);
-                var destinationPath = TestFilesAndFoldersArray[i];
-
-                var destinationDir = Path.GetDirectoryName(destinationPath);
-                if (destinationDir != null && !Directory.Exists(destinationDir))
-                {
-                    Directory.CreateDirectory(destinationDir);
-                }
-
-                if (Directory.Exists(sourcePath))
-                {
-                    CopyDirectory(sourcePath, destinationPath);
-                    Console.WriteLine($"Copied directory from {sourcePath} to {destinationPath}");
-                }
-                else if (File.Exists(sourcePath))
-                {
-                    File.Copy(sourcePath, destinationPath, true);
-                    Console.WriteLine($"Copied file from {sourcePath} to {destinationPath}");
-                }
-                else
-                {
-                    Console.WriteLine($"Warning: Source path does not exist: {sourcePath}");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error during file copy operation: {ex.Message}");
-            throw;
-        }
-    }
-
-    /// <summary>
-    /// Recursively copy a directory and its contents
-    /// </summary>
-    /// <param name="sourceDir">Source directory path</param>
-    /// <param name="destDir">Destination directory path</param>
-    private static void CopyDirectory(string sourceDir, string destDir)
-    {
-        try
-        {
-            // Create target directory
-            if (!Directory.Exists(destDir))
-            {
-                Directory.CreateDirectory(destDir);
-            }
-
-            // Copy all files
-            foreach (var file in Directory.GetFiles(sourceDir))
-            {
-                var fileName = Path.GetFileName(file);
-                var destFile = Path.Combine(destDir, fileName);
-                File.Copy(file, destFile, true);
-            }
-
-            // Recursively copy all subdirectories
-            foreach (var dir in Directory.GetDirectories(sourceDir))
-            {
-                var dirName = Path.GetFileName(dir);
-                var destSubDir = Path.Combine(destDir, dirName);
-                CopyDirectory(dir, destSubDir);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error copying directory from {sourceDir} to {destDir}: {ex.Message}");
-            throw;
-        }
-    }
-
-    private void SetSearchBoxText(string text)
-    {
-        Assert.IsTrue(this.Find<TextBox>("Search for").SetText(text, true).Text == text);
-    }
-
-    private void SetReplaceBoxText(string text)
-    {
-        Assert.IsTrue(this.Find<TextBox>("Replace with").SetText(text, true).Text == text);
     }
 
     [TestMethod]
-    public void TestMatchFileName()
+    public void BasicInput()
     {
         this.SetSearchBoxText("search");
         this.SetReplaceBoxText("replace");
+    }
+
+    [TestMethod]
+    public void BasicMatchFileName()
+    {
+        this.SetSearchBoxText("testCase1");
+        this.SetReplaceBoxText("replaced");
+
+        Assert.IsTrue(this.Find<TextBlock>("replaced.txt").Text == "replaced.txt");
+    }
+
+    [TestMethod]
+    public void BasicRegularMatch()
+    {
+        this.SetSearchBoxText("^test.*\\.txt$");
+        this.SetReplaceBoxText("matched.txt");
+
+        CheckOriginalOrRenamedCount(0);
+
+        this.SetRegularExpressionCheckbox(true);
+
+        CheckOriginalOrRenamedCount(2);
+
+        Assert.IsTrue(this.Find<TextBlock>("matched.txt").Text == "matched.txt");
+    }
+
+    [TestMethod]
+    public void BasicMatchAllOccurrences()
+    {
+        this.SetSearchBoxText("t");
+        this.SetReplaceBoxText("f");
+
+        this.SetMatchAllOccurrencesCheckbox(true);
+
+        Assert.IsTrue(this.Find<TextBlock>("fesfCase2.fxf").Text == "fesfCase2.fxf");
+        Assert.IsTrue(this.Find<TextBlock>("fesfCase1.fxf").Text == "fesfCase1.fxf");
+    }
+
+    [TestMethod]
+    public void BasicCaseSensitive()
+    {
+        this.SetSearchBoxText("testcase1");
+        this.SetReplaceBoxText("match1");
+
+        CheckOriginalOrRenamedCount(1);
+        Assert.IsTrue(this.Find<TextBlock>("match1.txt").Text == "match1.txt");
+
+        this.SetCaseSensitiveCheckbox(true);
+        CheckOriginalOrRenamedCount(0);
     }
 }
