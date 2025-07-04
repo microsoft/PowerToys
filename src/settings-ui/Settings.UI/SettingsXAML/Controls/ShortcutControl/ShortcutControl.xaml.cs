@@ -33,8 +33,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("Enabled", typeof(bool), typeof(ShortcutControl), null);
         public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(ShortcutControl), null);
-
         public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
+
+        // New dependency properties for conflict status and tooltip
+        public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnHasConflictChanged));
+        public static readonly DependencyProperty TooltipProperty = DependencyProperty.Register("Tooltip", typeof(string), typeof(ShortcutControl), new PropertyMetadata(null, OnTooltipChanged));
 
         private static ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
@@ -58,6 +61,28 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             description.Text = text;
         }
 
+        private static void OnHasConflictChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = d as ShortcutControl;
+            if (control == null)
+            {
+                return;
+            }
+
+            control.UpdateKeyVisualStyles();
+        }
+
+        private static void OnTooltipChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = d as ShortcutControl;
+            if (control == null)
+            {
+                return;
+            }
+
+            control.UpdateTooltip();
+        }
+
         private ShortcutDialogContentControl c = new ShortcutDialogContentControl();
         private ContentDialog shortcutDialog;
 
@@ -65,6 +90,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get => (bool)GetValue(AllowDisableProperty);
             set => SetValue(AllowDisableProperty, value);
+        }
+
+        public bool HasConflict
+        {
+            get => (bool)GetValue(HasConflictProperty);
+            set => SetValue(HasConflictProperty, value);
+        }
+
+        public string Tooltip
+        {
+            get => (string)GetValue(TooltipProperty);
+            set => SetValue(TooltipProperty, value);
         }
 
         public bool Enabled
@@ -136,6 +173,29 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             OnAllowDisableChanged(this, null);
         }
 
+        private void UpdateKeyVisualStyles()
+        {
+            if (PreviewKeysControl?.ItemsSource != null)
+            {
+                // Force refresh of the ItemsControl to update KeyVisual styles
+                var items = PreviewKeysControl.ItemsSource;
+                PreviewKeysControl.ItemsSource = null;
+                PreviewKeysControl.ItemsSource = items;
+            }
+        }
+
+        private void UpdateTooltip()
+        {
+            if (!string.IsNullOrEmpty(Tooltip))
+            {
+                ToolTipService.SetToolTip(EditButton, Tooltip);
+            }
+            else
+            {
+                ToolTipService.SetToolTip(EditButton, null);
+            }
+        }
+
         private void ShortcutControl_Unloaded(object sender, RoutedEventArgs e)
         {
             shortcutDialog.PrimaryButtonClick -= ShortcutDialog_PrimaryButtonClick;
@@ -168,6 +228,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 App.GetSettingsWindow().Activated += ShortcutDialog_SettingsWindow_Activated;
             }
+
+            // Initialize tooltip when loaded
+            UpdateTooltip();
         }
 
         private void KeyEventHandler(int key, bool matchValue, int matchValueCode)

@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             WriteIndented = true,
         };
 
-        private void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        protected virtual void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
             try
             {
@@ -93,7 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private ModuleConflictsData GetModuleRelatedConflicts(AllHotkeyConflictsData allConflicts)
+        protected ModuleConflictsData GetModuleRelatedConflicts(AllHotkeyConflictsData allConflicts)
         {
             var moduleConflicts = new ModuleConflictsData();
 
