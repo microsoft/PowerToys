@@ -15,14 +15,18 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using System.Timers;
 using AllExperiments;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.Win32;
 using Windows.Security.Credentials;
 
@@ -31,6 +35,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class AdvancedPasteViewModel : PageViewModelBase, IDisposable
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
+        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
+
+        // Private backing fields for conflict properties
+        private bool _advancedPasteUIShortcutHasConflict;
+        private string _advancedPasteUIShortcutTooltip;
+        private bool _pasteAsPlainTextShortcutHasConflict;
+        private string _pasteAsPlainTextShortcutTooltip;
+        private bool _pasteAsMarkdownShortcutHasConflict;
+        private string _pasteAsMarkdownShortcutTooltip;
+        private bool _pasteAsJsonShortcutHasConflict;
+        private string _pasteAsJsonShortcutTooltip;
 
         private bool disposedValue;
 
@@ -130,6 +146,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             UpdateCustomActionsCanMoveUpDown();
 
             RegisterHotkeySettings(AdvancedPasteUIShortcut, PasteAsPlainTextShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut);
+
+            InitializeConflictPropertiesDefaults();
+        }
+
+        private void InitializeConflictPropertiesDefaults()
+        {
+            AdvancedPasteUIShortcutHasConflict = false;
+            AdvancedPasteUIShortcutTooltip = null;
+            PasteAsPlainTextShortcutHasConflict = false;
+            PasteAsPlainTextShortcutTooltip = null;
+            PasteAsMarkdownShortcutHasConflict = false;
+            PasteAsMarkdownShortcutTooltip = null;
+            PasteAsJsonShortcutHasConflict = false;
+            PasteAsJsonShortcutTooltip = null;
         }
 
         private void InitializeEnabledValue()
@@ -154,6 +184,198 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // disable AI if it was enabled
                 DisableAI();
             }
+        }
+
+        // Conflict status properties for main shortcuts with getter/setter pattern
+        public bool AdvancedPasteUIShortcutHasConflict
+        {
+            get => _advancedPasteUIShortcutHasConflict;
+            set
+            {
+                if (_advancedPasteUIShortcutHasConflict != value)
+                {
+                    _advancedPasteUIShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(AdvancedPasteUIShortcutHasConflict));
+                }
+            }
+        }
+
+        public string AdvancedPasteUIShortcutTooltip
+        {
+            get => _advancedPasteUIShortcutTooltip;
+            set
+            {
+                if (_advancedPasteUIShortcutTooltip != value)
+                {
+                    _advancedPasteUIShortcutTooltip = value;
+                    OnPropertyChanged(nameof(AdvancedPasteUIShortcutTooltip));
+                }
+            }
+        }
+
+        public bool PasteAsPlainTextShortcutHasConflict
+        {
+            get => _pasteAsPlainTextShortcutHasConflict;
+            set
+            {
+                if (_pasteAsPlainTextShortcutHasConflict != value)
+                {
+                    _pasteAsPlainTextShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(PasteAsPlainTextShortcutHasConflict));
+                }
+            }
+        }
+
+        public string PasteAsPlainTextShortcutTooltip
+        {
+            get => _pasteAsPlainTextShortcutTooltip;
+            set
+            {
+                if (_pasteAsPlainTextShortcutTooltip != value)
+                {
+                    _pasteAsPlainTextShortcutTooltip = value;
+                    OnPropertyChanged(nameof(PasteAsPlainTextShortcutTooltip));
+                }
+            }
+        }
+
+        public bool PasteAsMarkdownShortcutHasConflict
+        {
+            get => _pasteAsMarkdownShortcutHasConflict;
+            set
+            {
+                if (_pasteAsMarkdownShortcutHasConflict != value)
+                {
+                    _pasteAsMarkdownShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(PasteAsMarkdownShortcutHasConflict));
+                }
+            }
+        }
+
+        public string PasteAsMarkdownShortcutTooltip
+        {
+            get => _pasteAsMarkdownShortcutTooltip;
+            set
+            {
+                if (_pasteAsMarkdownShortcutTooltip != value)
+                {
+                    _pasteAsMarkdownShortcutTooltip = value;
+                    OnPropertyChanged(nameof(PasteAsMarkdownShortcutTooltip));
+                }
+            }
+        }
+
+        public bool PasteAsJsonShortcutHasConflict
+        {
+            get => _pasteAsJsonShortcutHasConflict;
+            set
+            {
+                if (_pasteAsJsonShortcutHasConflict != value)
+                {
+                    _pasteAsJsonShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(PasteAsJsonShortcutHasConflict));
+                }
+            }
+        }
+
+        public string PasteAsJsonShortcutTooltip
+        {
+            get => _pasteAsJsonShortcutTooltip;
+            set
+            {
+                if (_pasteAsJsonShortcutTooltip != value)
+                {
+                    _pasteAsJsonShortcutTooltip = value;
+                    OnPropertyChanged(nameof(PasteAsJsonShortcutTooltip));
+                }
+            }
+        }
+
+        private bool GetHotkeyConflictStatus(string hotkeyName)
+        {
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+        }
+
+        private string GetHotkeyConflictTooltip(string hotkeyName)
+        {
+            return _hotkeyConflictTooltips.TryGetValue(hotkeyName, out string value) ? value : null;
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                AdvancedPasteUIShortcutHasConflict = GetHotkeyConflictStatus("AdvancedPasteUIShortcut");
+                AdvancedPasteUIShortcutTooltip = GetHotkeyConflictTooltip("AdvancedPasteUIShortcut");
+
+                PasteAsPlainTextShortcutHasConflict = GetHotkeyConflictStatus("PasteAsPlainTextShortcut");
+                PasteAsPlainTextShortcutTooltip = GetHotkeyConflictTooltip("PasteAsPlainTextShortcut");
+
+                PasteAsMarkdownShortcutHasConflict = GetHotkeyConflictStatus("PasteAsMarkdownShortcut");
+                PasteAsMarkdownShortcutTooltip = GetHotkeyConflictTooltip("PasteAsMarkdownShortcut");
+
+                PasteAsJsonShortcutHasConflict = GetHotkeyConflictStatus("PasteAsJsonShortcut");
+                PasteAsJsonShortcutTooltip = GetHotkeyConflictTooltip("PasteAsJsonShortcut");
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData allConflicts)
+        {
+            _hotkeyConflictStatus.Clear();
+            _hotkeyConflictTooltips.Clear();
+
+            var moduleRelatedConflicts = GetModuleRelatedConflicts(allConflicts);
+
+            if (moduleRelatedConflicts.HasConflicts)
+            {
+                var conflictData = moduleRelatedConflicts.InAppConflicts
+                    .Concat(moduleRelatedConflicts.SystemConflicts)
+                    .Where(conflict => conflict.Modules != null)
+                    .SelectMany(conflict => conflict.Modules.Select(module => new { Conflict = conflict, Module = module }))
+                    .Where(item => string.Equals(item.Module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    .GroupBy(item => item.Module.HotkeyName)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                foreach (var conflictGroup in conflictData)
+                {
+                    var hotkeyName = conflictGroup.Key;
+                    var conflictItem = conflictGroup.Value;
+
+                    _hotkeyConflictStatus[hotkeyName] = true;
+
+                    // TODO: Generate tooltip text based on conflict type
+                    var tooltip = GenerateConflictTooltip();
+                    _hotkeyConflictTooltips[hotkeyName] = tooltip;
+                }
+            }
+        }
+
+        private string GenerateConflictTooltip()
+        {
+            return "TODO: implement the tooltip.";
         }
 
         public bool IsEnabled

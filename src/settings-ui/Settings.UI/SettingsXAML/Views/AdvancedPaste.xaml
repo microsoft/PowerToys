@@ -142,22 +142,34 @@
                                 Style="{ThemeResource AccentButtonStyle}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPasteUI_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                HasConflict="{x:Bind ViewModel.AdvancedPasteUIShortcutHasConflict, Mode=OneWay}"
+                                HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}"
+                                Tooltip="{x:Bind ViewModel.AdvancedPasteUIShortcutTooltip, Mode=OneWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="PasteAsPlainText_Shortcut">
-                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                HasConflict="{x:Bind ViewModel.PasteAsPlainTextShortcutHasConflict, Mode=OneWay}"
+                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}"
+                                Tooltip="{x:Bind ViewModel.PasteAsPlainTextShortcutTooltip, Mode=OneWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="PasteAsMarkdown_Shortcut">
                             <controls:ShortcutControl
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 AllowDisable="True"
-                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsMarkdownShortcut, Mode=TwoWay}" />
+                                HasConflict="{x:Bind ViewModel.PasteAsMarkdownShortcutHasConflict, Mode=OneWay}"
+                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsMarkdownShortcut, Mode=TwoWay}"
+                                Tooltip="{x:Bind ViewModel.PasteAsMarkdownShortcutTooltip, Mode=OneWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="PasteAsJson_Shortcut">
                             <controls:ShortcutControl
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 AllowDisable="True"
-                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsJsonShortcut, Mode=TwoWay}" />
+                                HasConflict="{x:Bind ViewModel.PasteAsJsonShortcutHasConflict, Mode=OneWay}"
+                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsJsonShortcut, Mode=TwoWay}"
+                                Tooltip="{x:Bind ViewModel.PasteAsJsonShortcutTooltip, Mode=OneWay}" />
                         </tkcontrols:SettingsCard>
 
                         <ItemsControl
