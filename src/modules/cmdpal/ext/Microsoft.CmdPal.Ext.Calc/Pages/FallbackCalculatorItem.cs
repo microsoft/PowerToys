@@ -39,7 +39,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
         }
 
         _copyCommand.Text = result.Title;
-        _copyCommand.Name = string.IsNullOrWhiteSpace(query) ? string.Empty : Resources.calculator_copy_command_name + "tabc";
+        _copyCommand.Name = string.IsNullOrWhiteSpace(query) ? string.Empty : Resources.calculator_copy_command_name;
         Title = result.Title;
 
         // we have to make the subtitle the equation,
