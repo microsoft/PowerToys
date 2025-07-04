@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
+using Microsoft.CmdPal.Ext.WindowsSettings.Pages;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -17,6 +18,8 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
     private readonly WindowsSettings.Classes.WindowsSettings? _windowsSettings;
 #pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 
+    private readonly FallbackWindowsSettingsItem _fallback;
+
     public WindowsSettingsCommandsProvider()
     {
         Id = "Windows.Settings";
@@ -26,9 +29,10 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
         _windowsSettings = JsonSettingsListHelper.ReadAllPossibleSettings();
         _searchSettingsListItem = new CommandItem(new WindowsSettingsListPage(_windowsSettings))
         {
-            Title = "Windows Settings",
-            Subtitle = "Navigate to specific Windows settings",
+            Title = Resources.settings_title,
+            Subtitle = Resources.settings_subtitle,
         };
+        _fallback = new(_windowsSettings);
 
         UnsupportedSettingsHelper.FilterByBuild(_windowsSettings);
 
@@ -42,4 +46,6 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
             _searchSettingsListItem
         ];
     }
+
+    public override IFallbackCommandItem[] FallbackCommands() => [_fallback];
 }

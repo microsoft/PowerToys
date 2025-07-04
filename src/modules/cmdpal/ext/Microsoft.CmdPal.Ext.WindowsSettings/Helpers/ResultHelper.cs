@@ -22,8 +22,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings;
 internal static class ResultHelper
 {
     internal static List<ListItem> GetResultList(
-        in IEnumerable<Classes.WindowsSetting> list,
-        string query)
+        in IEnumerable<Classes.WindowsSetting> list)
     {
         var resultList = new List<ListItem>(list.Count());
 
