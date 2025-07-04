@@ -8,11 +8,13 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Windows.Globalization;
@@ -23,6 +25,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class PowerOcrViewModel : PageViewModelBase, IDisposable
     {
         protected override string ModuleName => PowerOcrSettings.ModuleName;
+
+        // Conflict tracking dictionaries
+        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
+
+        private bool _activationShortcutHasConflict;
+        private string _activationShortcutTooltip;
 
         private bool disposedValue;
 
@@ -123,6 +132,109 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.PowerOcr;
+            }
+        }
+
+        private bool GetHotkeyConflictStatus(string hotkeyName)
+        {
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+        }
+
+        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData conflicts)
+        {
+            var moduleRelatedConflicts = GetModuleRelatedConflicts(conflicts);
+
+            // Clear existing status
+            _hotkeyConflictStatus.Clear();
+            _hotkeyConflictTooltips.Clear();
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+            // Process in-app conflicts
+            foreach (var conflict in moduleRelatedConflicts.InAppConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build conflict description
+                    }
+                }
+            }
+
+            // Process system conflicts
+            foreach (var conflict in moduleRelatedConflicts.SystemConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build Sys conflict description.
+                    }
+                }
+            }
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                ActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
+
+                // HotkeyTooltip = GetHotkeyConflictTooltip("AdvancedPasteUIShortcut");
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        public bool ActivationShortcutHasConflict
+        {
+            get => _activationShortcutHasConflict;
+            set
+            {
+                if (_activationShortcutHasConflict != value)
+                {
+                    _activationShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(ActivationShortcutHasConflict));
+                }
+            }
+        }
+
+        public string ActivationShortcutTooltip
+        {
+            get => _activationShortcutTooltip;
+            set
+            {
+                if (_activationShortcutTooltip != value)
+                {
+                    _activationShortcutTooltip = value;
+                    OnPropertyChanged(nameof(ActivationShortcutTooltip));
+                }
             }
         }
 

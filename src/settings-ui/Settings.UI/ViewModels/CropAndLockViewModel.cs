@@ -3,13 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-
+using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -19,6 +21,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class CropAndLockViewModel : PageViewModelBase
     {
         protected override string ModuleName => CropAndLockSettings.ModuleName;
+
+        // Conflict tracking dictionaries
+        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
+
+        private bool _thumbnailHotkeyHasConflict;
+        private string _thumbnailHotkeyTooltip;
+        private bool _reparentHotkeyHasConflict;
+        private string _reparentHotkeyTooltip;
 
         private ISettingsUtils SettingsUtils { get; set; }
 
@@ -82,6 +93,136 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.CropAndLock;
+            }
+        }
+
+        private bool GetHotkeyConflictStatus(string hotkeyName)
+        {
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+        }
+
+        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData conflicts)
+        {
+            var moduleRelatedConflicts = GetModuleRelatedConflicts(conflicts);
+
+            // Clear existing status
+            _hotkeyConflictStatus.Clear();
+            _hotkeyConflictTooltips.Clear();
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+            // Process in-app conflicts
+            foreach (var conflict in moduleRelatedConflicts.InAppConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build conflict description
+                    }
+                }
+            }
+
+            // Process system conflicts
+            foreach (var conflict in moduleRelatedConflicts.SystemConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build Sys conflict description.
+                    }
+                }
+            }
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                ThumbnailHotkeyHasConflict = GetHotkeyConflictStatus(CropAndLockProperties.DefaultThumbnailHotkeyValue.HotkeyName);
+                ReparentHotkeyHasConflict = GetHotkeyConflictStatus(CropAndLockProperties.DefaultReparentHotkeyValue.HotkeyName);
+
+                // TODO implement HotkeyTooltip
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        public bool ThumbnailHotkeyHasConflict
+        {
+            get => _thumbnailHotkeyHasConflict;
+            set
+            {
+                if (_thumbnailHotkeyHasConflict != value)
+                {
+                    _thumbnailHotkeyHasConflict = value;
+                    OnPropertyChanged(nameof(ThumbnailHotkeyHasConflict));
+                }
+            }
+        }
+
+        public string ThumbnailHotkeyTooltip
+        {
+            get => _thumbnailHotkeyTooltip;
+            set
+            {
+                if (_thumbnailHotkeyTooltip != value)
+                {
+                    _thumbnailHotkeyTooltip = value;
+                    OnPropertyChanged(nameof(ThumbnailHotkeyTooltip));
+                }
+            }
+        }
+
+        public bool ReparentHotkeyHasConflict
+        {
+            get => _reparentHotkeyHasConflict;
+            set
+            {
+                if (_reparentHotkeyHasConflict != value)
+                {
+                    _reparentHotkeyHasConflict = value;
+                    OnPropertyChanged(nameof(ReparentHotkeyHasConflict));
+                }
+            }
+        }
+
+        public string ReparentHotkeyTooltip
+        {
+            get => _reparentHotkeyTooltip;
+            set
+            {
+                if (_reparentHotkeyTooltip != value)
+                {
+                    _reparentHotkeyTooltip = value;
+                    OnPropertyChanged(nameof(ReparentHotkeyTooltip));
+                }
             }
         }
 
