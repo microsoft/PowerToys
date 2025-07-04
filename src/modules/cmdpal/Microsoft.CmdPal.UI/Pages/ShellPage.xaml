@@ -380,19 +380,19 @@
                             To="24,0,0"
                             Duration="0:0:0.187" />
                     </animations:Implicit.HideAnimations>
-                    <Grid Margin="12">
+                    <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
                         <cpcontrols:IconBox
                             x:Name="HeroImageBorder"
                             Width="64"
-                            Margin="16,8,16,16"
-                            HorizontalAlignment="Center"
+                            Margin="0,0,16,16"
+                            HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
@@ -400,17 +400,15 @@
 
                         <TextBlock
                             Grid.Row="1"
-                            HorizontalAlignment="Center"
                             FontSize="18"
                             FontWeight="SemiBold"
                             Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
-                            TextAlignment="Center"
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
                         <toolkit:MarkdownTextBlock
                             Grid.Row="2"
-                            Margin="0,12,0,24"
+                            Margin="0,4,0,24"
                             Background="Transparent"
                             Header3FontSize="12"
                             Header3FontWeight="Normal"
