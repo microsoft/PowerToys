@@ -3566,6 +3566,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Turkish" xml:space="preserve">
     <value>Turkish</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Vietnamese" xml:space="preserve">
+    <value>Vietnamese</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Icelandic" xml:space="preserve">
     <value>Icelandic</value>
   </data>
