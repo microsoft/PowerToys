@@ -16,7 +16,6 @@ namespace Microsoft.CmdPal.Ext.WebSearch;
 internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
 {
     private readonly OpenURLCommand _executeItem;
-    private static readonly CompositeFormat PluginOpenURL = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url);
     private static readonly CompositeFormat PluginOpenUrlInBrowser = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url_in_browser);
 
     public FallbackOpenURLItem(SettingsManager settings)
@@ -40,7 +39,7 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
 
         var success = Uri.TryCreate(query, UriKind.Absolute, out var uri);
 
-        // if url not contain schema, add http:// by default.
+        // if url not contain schema, add https:// by default.
         if (!success)
         {
             query = "https://" + query;
@@ -49,8 +48,8 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
         _executeItem.Url = query;
         _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Properties.Resources.open_in_default_browser;
 
-        Title = string.Format(CultureInfo.CurrentCulture, PluginOpenURL, query);
-        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
+        Title = query;
+        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, query, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
     }
 
     public static bool IsValidUrl(string url)
