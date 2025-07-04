@@ -130,7 +130,7 @@ public partial class SettingsModel : ObservableObject
                 {
                     foreach (var item in newSettings)
                     {
-                        savedSettings[item.Key] = item.Value != null ? item.Value.DeepClone() : null;
+                        savedSettings[item.Key] = item.Value?.DeepClone();
                     }
 
                     var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.Options);
@@ -188,6 +188,8 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(HistoryItem))]
 [JsonSerializable(typeof(SettingsModel))]
 [JsonSerializable(typeof(AppStateModel))]
+[JsonSerializable(typeof(RecentCommandsManager))]
+[JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
 [JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
