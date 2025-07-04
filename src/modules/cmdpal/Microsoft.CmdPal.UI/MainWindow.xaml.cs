@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
@@ -42,6 +43,9 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
+    private readonly uint WM_TASKBAR_RESTART;
     private readonly HWND _hwnd;
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
@@ -86,6 +90,8 @@ public sealed partial class MainWindow : WindowEx,
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
         RootShellPage.Loaded += RootShellPage_Loaded;
+
+        WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
         // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
         // member (and instead like, use a local), then the pointer we marshal
@@ -147,9 +153,7 @@ public sealed partial class MainWindow : WindowEx,
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
 
-        // This will prevent our window from appearing in alt+tab or the taskbar.
-        // You'll _need_ to use the hotkey to summon it.
-        AppWindow.IsShownInSwitchers = System.Diagnostics.Debugger.IsAttached;
+        this.SetVisibilityInSwitchers(Debugger.IsAttached);
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -600,6 +604,14 @@ public sealed partial class MainWindow : WindowEx,
 
                     return (LRESULT)IntPtr.Zero;
                 }
+
+            default:
+                if (uMsg == WM_TASKBAR_RESTART)
+                {
+                    HotReloadSettings();
+                }
+
+                break;
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
