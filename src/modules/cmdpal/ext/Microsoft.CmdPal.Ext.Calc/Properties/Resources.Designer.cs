@@ -196,7 +196,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Closes Command Palette when Enter is pressed.
+        ///   Looks up a localized string similar to Makes Copy and close the primary command.
         /// </summary>
         public static string calculator_settings_close_on_enter_description {
             get {
