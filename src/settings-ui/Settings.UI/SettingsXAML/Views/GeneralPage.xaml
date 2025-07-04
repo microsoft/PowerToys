@@ -13,17 +13,8 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
         <converters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
-        <converters:ConditionalStringConverter x:Key="ConditionalStringConverter" />
-        <Style x:Key="NoHighlightListViewStyle" TargetType="ListViewItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Margin" Value="0,0,0,4" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="IsHitTestVisible" Value="False" />
-        </Style>
     </Page.Resources>
 
     <controls:SettingsPageControl x:Uid="General" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
@@ -217,136 +208,6 @@
                         </InfoBar>
                     </StackPanel>
                 </controls:SettingsGroup>
-
-                <controls:SettingsGroup x:Uid="Hotkey_Conflicts" Margin="0,8,0,0">
-                    <!--  When there are hotkey conflicts  -->
-                    <StackPanel Visibility="{x:Bind ViewModel.HasHotkeyConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <!--  Conflicts Warning Header  -->
-                        <StackPanel
-                            Margin="0,0,0,12"
-                            Orientation="Horizontal"
-                            Spacing="12">
-                            <FontIcon
-                                FontSize="20"
-                                Glyph="&#xEDA7;" />
-                            <TextBlock
-                                FontSize="16"
-                                FontWeight="SemiBold"
-                                Text="Keyboard Shortcut Conflicts" />
-                        </StackPanel>
-
-                        <!--  Warning Text  -->
-                        <TextBlock
-                            Margin="0,0,0,12"
-                            FontWeight="SemiBold"
-                            Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}"
-                            Text="{x:Bind ViewModel.HotkeyConflictsWarningText, Mode=OneWay}" />
-
-                        <!--  InfoBar  -->
-                        <InfoBar
-                            Title="Hotkey Conflicts"
-                            Margin="0,0,0,12"
-                            IsClosable="False"
-                            IsOpen="True"
-                            Message="Conflicting keyboard shortcuts may prevent some PowerToys features from working correctly."
-                            Severity="Warning" />
-
-                        <!--  In-App Conflicts Section  -->
-                        <TextBlock
-                            x:Uid="Hotkey_InApp_Conflicts_Header"
-                            Margin="0,0,0,8"
-                            FontWeight="SemiBold"
-                            Text="PowerToys Conflicts" />
-
-                        <!--  In-App Conflicts List - Safe implementation  -->
-                        <Border
-                            Margin="0,0,0,16"
-                            Padding="0"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <ItemsControl ItemsSource="{x:Bind ViewModel.HotkeyConflicts, Mode=OneWay}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="local:HotkeyConflictGroup">
-                                        <!--  Null check and visibility combined for safety  -->
-                                        <Grid Visibility="{x:Bind IsSystemConflict, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
-                                            <StackPanel Padding="12,8">
-                                                <TextBlock FontWeight="SemiBold" Text="{x:Bind Hotkey.ToString()}" />
-                                                <StackPanel Margin="16,4,0,0" Spacing="4">
-                                                    <ItemsRepeater ItemsSource="{x:Bind Modules}">
-                                                        <ItemsRepeater.Layout>
-                                                            <StackLayout Orientation="Vertical" Spacing="2" />
-                                                        </ItemsRepeater.Layout>
-                                                        <ItemsRepeater.ItemTemplate>
-                                                            <DataTemplate x:DataType="local:ModuleHotkeyInfo">
-                                                                <TextBlock>
-                                                                    <Run FontWeight="Medium" Text="{x:Bind ModuleName}" />
-                                                                    <Run Text=": " />
-                                                                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind HotkeyName}" />
-                                                                </TextBlock>
-                                                            </DataTemplate>
-                                                        </ItemsRepeater.ItemTemplate>
-                                                    </ItemsRepeater>
-                                                </StackPanel>
-                                            </StackPanel>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Border>
-
-                        <!--  System Conflicts Section  -->
-                        <TextBlock
-                            x:Uid="Hotkey_System_Conflicts_Header"
-                            Margin="0,0,0,8"
-                            FontWeight="SemiBold"
-                            Text="System Conflicts" />
-
-                        <!--  System Conflicts List - Safe implementation  -->
-                        <Border
-                            Padding="0"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <ItemsControl ItemsSource="{x:Bind ViewModel.HotkeyConflicts, Mode=OneWay}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="local:HotkeyConflictGroup">
-                                        <!--  Null check and visibility combined for safety  -->
-                                        <Grid Visibility="{x:Bind IsSystemConflict, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <StackPanel Padding="12,8">
-                                                <TextBlock FontWeight="SemiBold" Text="{x:Bind Hotkey.ToString()}" />
-                                                <StackPanel Margin="16,4,0,0" Spacing="4">
-                                                    <ItemsRepeater ItemsSource="{x:Bind Modules}">
-                                                        <ItemsRepeater.Layout>
-                                                            <StackLayout Orientation="Vertical" Spacing="2" />
-                                                        </ItemsRepeater.Layout>
-                                                        <ItemsRepeater.ItemTemplate>
-                                                            <DataTemplate x:DataType="local:ModuleHotkeyInfo">
-                                                                <TextBlock>
-                                                                    <Run FontWeight="Medium" Text="{x:Bind ModuleName}" />
-                                                                    <Run Text=": " />
-                                                                    <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind HotkeyName}" />
-                                                                </TextBlock>
-                                                            </DataTemplate>
-                                                        </ItemsRepeater.ItemTemplate>
-                                                    </ItemsRepeater>
-                                                </StackPanel>
-                                            </StackPanel>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Border>
-                    </StackPanel>
-
-                    <!--  When there are no conflicts  -->
-                    <InfoBar
-                        x:Uid="No_Hotkey_Conflicts"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.HasHotkeyConflicts, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                        Severity="Success" />
-                </controls:SettingsGroup>
-
 
                 <controls:SettingsGroup x:Uid="Admin_Mode">
                     <tkcontrols:SettingsExpander
