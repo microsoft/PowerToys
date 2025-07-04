@@ -51,6 +51,8 @@
                 MouseLeave="AppBorder_MouseLeave">
                 <Expander
                     Margin="0,0,20,0"
+                    AutomationProperties.AutomationId="{Binding AppName}"
+                    AutomationProperties.Name="{Binding AppName}"
                     FlowDirection="RightToLeft"
                     IsEnabled="{Binding IsIncluded, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                     IsExpanded="{Binding IsExpanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
@@ -399,7 +401,11 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <ItemsControl ItemTemplateSelector="{StaticResource AppListDataTemplateSelector}" ItemsSource="{Binding ApplicationsListed, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <ItemsControl
+                        x:Name="CapturedAppList"
+                        AutomationProperties.Name="Captured Application List"
+                        ItemTemplateSelector="{StaticResource AppListDataTemplateSelector}"
+                        ItemsSource="{Binding ApplicationsListed, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                 </Grid>
             </StackPanel>
         </ScrollViewer>
