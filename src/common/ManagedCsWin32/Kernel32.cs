@@ -21,7 +21,7 @@ public static partial class Kernel32
         out int pBytesReturned,
         IntPtr lpOverlapped);
 
-    [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16, EntryPoint = "CreateFilesW")]
+    [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16, EntryPoint = "CreateFileW")]
     public static partial int CreateFile(
         string lpFileName,
         FileAccessType dwDesiredAccess,
