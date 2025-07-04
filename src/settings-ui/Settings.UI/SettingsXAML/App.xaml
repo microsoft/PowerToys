@@ -36,19 +36,16 @@
                 x:Key="ReverseBoolToComboBoxIndexConverter"
                 FalseValue="1"
                 TrueValue="0" />
-
             <tkconverters:DoubleToVisibilityConverter
                 x:Name="DoubleToVisibilityConverter"
                 FalseValue="Collapsed"
                 GreaterThan="0"
                 TrueValue="Visible" />
-
             <tkconverters:DoubleToVisibilityConverter
                 x:Name="DoubleToInvertedVisibilityConverter"
                 FalseValue="Visible"
                 GreaterThan="0"
                 TrueValue="Collapsed" />
-
             <tkconverters:StringFormatConverter x:Key="StringFormatConverter" />
             <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
             <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
