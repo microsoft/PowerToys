@@ -29,7 +29,9 @@
                     <controls:ShortcutControl
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         AllowDisable="True"
-                        HotkeySettings="{x:Bind Shortcut, Mode=TwoWay}" />
+                        HasConflict="{x:Bind HasConflict, Mode=OneWay}"
+                        HotkeySettings="{x:Bind Shortcut, Mode=TwoWay}"
+                        Tooltip="{x:Bind Tooltip, Mode=OneWay}" />
                     <ToggleSwitch
                         IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         OffContent=""
@@ -195,7 +197,9 @@
                                             <controls:ShortcutControl
                                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                 AllowDisable="True"
-                                                HotkeySettings="{x:Bind Path=Shortcut, Mode=TwoWay}" />
+                                                HasConflict="{x:Bind HasConflict, Mode=OneWay}"
+                                                HotkeySettings="{x:Bind Path=Shortcut, Mode=TwoWay}"
+                                                Tooltip="{x:Bind Tooltip, Mode=OneWay}" />
                                             <ToggleSwitch
                                                 x:Uid="Enable_CustomAction"
                                                 AutomationProperties.HelpText="{x:Bind Name, Mode=OneWay}"

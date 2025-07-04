@@ -20,6 +20,8 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
     private bool _canMoveUp;
     private bool _canMoveDown;
     private bool _isValid;
+    private bool _hasConflict;
+    private string _tooltip;
 
     [JsonPropertyName("id")]
     public int Id
@@ -101,6 +103,20 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
     }
 
     [JsonIgnore]
+    public bool HasConflict
+    {
+        get => _hasConflict;
+        set => Set(ref _hasConflict, value);
+    }
+
+    [JsonIgnore]
+    public string Tooltip
+    {
+        get => _tooltip;
+        set => Set(ref _tooltip, value);
+    }
+
+    [JsonIgnore]
     public IEnumerable<IAdvancedPasteAction> SubActions => [];
 
     public object Clone()
@@ -119,6 +135,8 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
         IsShown = other.IsShown;
         CanMoveUp = other.CanMoveUp;
         CanMoveDown = other.CanMoveDown;
+        HasConflict = other.HasConflict;
+        Tooltip = other.Tooltip;
     }
 
     private HotkeySettings GetShortcutClone()
@@ -129,8 +147,10 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
             _ = HotkeySettings.TryParseFromCmd(shortcutString, out shortcut);
         }
 
-        // TODO: How to set hotkey name for custom actions?
-        return (shortcut as HotkeySettings) ?? new HotkeySettings();
+        var result = (shortcut as HotkeySettings) ?? new HotkeySettings();
+        result.HotkeyName = $"CustomAction_{this.Id}";
+        result.OwnerModuleName = AdvancedPasteSettings.ModuleName;
+        return result;
     }
 
     private void UpdateIsValid()

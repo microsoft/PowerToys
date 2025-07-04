@@ -319,6 +319,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 PasteAsJsonShortcutHasConflict = GetHotkeyConflictStatus("PasteAsJsonShortcut");
                 PasteAsJsonShortcutTooltip = GetHotkeyConflictTooltip("PasteAsJsonShortcut");
+
+                foreach (var customAction in _customActions)
+                {
+                    var hotkeyName = $"CustomAction_{customAction.Id}";
+                    customAction.HasConflict = GetHotkeyConflictStatus(hotkeyName);
+                    customAction.Tooltip = GetHotkeyConflictTooltip(hotkeyName);
+                }
+
+                UpdateAdditionalActionsConflicts();
             }
 
             _ = Task.Run(() =>
@@ -340,6 +349,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     UpdateConflictProperties();
                 }
             });
+        }
+
+        private void UpdateAdditionalActionsConflicts()
+        {
+            var actionToHotkeyMap = new Dictionary<IAdvancedPasteAction, string>
+            {
+                { _additionalActions.ImageToText, "ImageToTextShortcut" },
+                { _additionalActions.PasteAsFile.PasteAsTxtFile, "PasteAsTxtFileShortcut" },
+                { _additionalActions.PasteAsFile.PasteAsPngFile, "PasteAsPngFileShortcut" },
+                { _additionalActions.PasteAsFile.PasteAsHtmlFile, "PasteAsHtmlFileShortcut" },
+                { _additionalActions.Transcode.TranscodeToMp3, "TranscodeToMp3Shortcut" },
+                { _additionalActions.Transcode.TranscodeToMp4, "TranscodeToMp4Shortcut" },
+            };
+
+            foreach (var kvp in actionToHotkeyMap)
+            {
+                if (kvp.Key is AdvancedPasteAdditionalAction additionalAction)
+                {
+                    additionalAction.HasConflict = GetHotkeyConflictStatus(kvp.Value);
+                    additionalAction.Tooltip = GetHotkeyConflictTooltip(kvp.Value);
+                }
+            }
         }
 
         private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData allConflicts)
