@@ -13,7 +13,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
-internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
+public sealed partial class FallbackTimeDateItem : FallbackCommandItem
 {
     private readonly HashSet<string> _validOptions;
     private SettingsManager _settingsManager;
