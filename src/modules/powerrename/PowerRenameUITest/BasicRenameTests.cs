@@ -42,7 +42,7 @@ public class BasicRenameTests : PowerRenameUITestBase
         this.SetSearchBoxText("testCase1");
         this.SetReplaceBoxText("replaced");
 
-        Assert.IsTrue(this.Find<TextBlock>("replaced.txt").Text == "replaced.txt");
+        Assert.AreEqual("replaced.txt", this.Find<TextBlock>("replaced.txt").Text);
     }
 
     [TestMethod]
