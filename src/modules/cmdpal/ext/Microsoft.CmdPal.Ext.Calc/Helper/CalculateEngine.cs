@@ -82,7 +82,7 @@ public static class CalculateEngine
             return default;
         }
 
-        var decimalResult = Convert.ToDecimal(result, cultureInfo);
+        var decimalResult = Convert.ToDecimal(result, new CultureInfo("en-US"));
 
         var roundedResult = FormatMax15Digits(decimalResult, cultureInfo);
 

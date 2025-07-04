@@ -1,4 +1,42 @@
-# Dev Documentation
+# PowerToys Developer Documentation
+
+Welcome to the PowerToys developer documentation. This documentation provides information for developers who want to contribute to PowerToys or understand how it works.
+
+## Core Architecture
+
+- [Architecture Overview](core/architecture.md) - Overview of the PowerToys architecture and module interface
+- [Runner and System tray](core/runner.md) - Details about the PowerToys Runner process
+- [Settings](core/settings/readme.md) - Documentation on the settings system
+- [Installer](core/installer.md) - Information about the PowerToys installer
+- [Modules](modules/readme.md) - Documentation for individual PowerToys modules
+
+## Common Components
+
+- [Context Menu Handlers](common/context-menus.md) - How PowerToys implements and registers Explorer context menu handlers
+- [Monaco Editor](common/monaco-editor.md) - How PowerToys uses the Monaco code editor component across modules
+- [Logging and Telemetry](development/logging.md) - How to use logging and telemetry
+- [Localization](development/localization.md) - How to support multiple languages
+
+## Development Guidelines
+
+- [Coding Guidelines](development/guidelines.md) - Development guidelines and best practices
+- [Coding Style](development/style.md) - Code formatting and style conventions
+- [UI Testing](development/ui-tests.md) - How to write UI tests for PowerToys
+- [Debugging](development/debugging.md) - Techniques for debugging PowerToys
+
+## Tools
+
+- [Tools Overview](tools/readme.md) - Overview of tools in PowerToys
+- [Build Tools](tools/build-tools.md) - Tools that help building PowerToys
+- [Bug Report Tool](tools/bug-report-tool.md) - Tool for collecting logs and system information
+- [Debugging Tools](tools/debugging-tools.md) - Specialized tools for debugging
+- [Fuzzing Testing](tools/fuzzingtesting.md) - How to implement and run fuzz testing for PowerToys modules
+
+## Processes
+
+- [Release Process](processes/release-process.md) - How PowerToys releases are prepared and published
+- [Update Process](processes/update-process.md) - How PowerToys updates work
+- [GPO Implementation](processes/gpo.md) - Group Policy Objects implementation details
 
 ## Fork, Clone, Branch and Create your PR
 
@@ -14,7 +52,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 ## Rules
 
 - **Follow the pattern of what you already see in the code.**
-- [Coding style](style.md).
+- [Coding style](development/style.md).
 - Try to package new functionality/components into libraries that have nicely defined interfaces.
 - Package new functionality into classes or refactor existing functionality into a class as you extend the code.
 - When adding new classes/methods/changing existing code, add new unit tests or update the existing tests.
@@ -76,89 +114,9 @@ The installer can only be compiled in `Release` mode; steps 1 and 2 must be perf
 1. Compile `StylesReportTool.sln` tool. Path from root: `tools\StylesReportTool\StylesReportTool.sln` (details listed below)
 1. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
 
-### Prerequisites for building the MSI installer
-
-1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
-1. Install the [WiX Toolset build tools](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm). (installer [direct link](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe))
-1. Download [WiX binaries](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
-
-### Building prerequisite projects
-
-#### From the command line
-
-1. From the start menu, open a `Developer Command Prompt for VS 2022`
-1. Ensure `nuget.exe` is in your `%path%`
-1. In the repo root, run these commands:
-  
-```
-nuget restore .\tools\BugReportTool\BugReportTool.sln
-msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
-
-nuget restore .\tools\StylesReportTool\StylesReportTool.sln
-msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\StylesReportTool.sln
-```
-
-#### From Visual Studio
-
-If you prefer, you can alternatively build prerequisite projects for the installer using the Visual Studio UI.
-
-1. Open `tools\BugReportTool\BugReportTool.sln`
-1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
-1. From the `Build` menu, choose `Build Solution`.
-1. Open `tools\StylesReportTool\StylesReportTool.sln`
-1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
-1. From the `Build` menu, choose `Build Solution`.
-
-### Locally compiling the installer
-
-1. Open `installer\PowerToysSetup.sln`
-1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
-1. From the `Build` menu choose `Build Solution`.
-
-The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
-
-#### Supported arguments for the .EXE Bootstrapper installer
-
-Head over to the wiki to see the [full list of supported installer arguments][installerArgWiki].
-
-## Debugging
-
-To debug the PowerToys application in Visual Studio, set the `runner` project as your start-up project, then start the debugger.
-
-Some PowerToys modules must be run with the highest permission level if the current user is a member of the Administrators group. The highest permission level is required to be able to perform some actions when an elevated application (e.g. Task Manager) is in the foreground or is the target of an action. Without elevated privileges some PowerToys modules will still work but with some limitations:
-
-- The `FancyZones` module will not be able to move an elevated window to a zone.
-- The `Shortcut Guide` module will not appear if the foreground window belongs to an elevated application.
-
-Therefore, it is recommended to run Visual Studio with elevated privileges when debugging these scenarios. If you want to avoid running Visual Studio with elevated privileges and don't mind the limitations described above, you can do the following: open the `runner` project properties and navigate to the `Linker -> Manifest File` settings, edit the `UAC Execution Level` property and change it from `highestAvailable (level='highestAvailable')` to `asInvoker (/level='asInvoker').
+See [Installer](core/installer.md) for more details on building and debugging the installer.
 
 ## How to create new PowerToys
 
 See the instructions on [how to install the PowerToys Module project template](/tools/project_template). <br />
-Specifications for the [PowerToys settings API](settingsv2/readme.md).
-
-## Implementation details
-
-### [`Runner`](runner.md)
-
-The PowerToys Runner contains the project for the PowerToys.exe executable.
-It's responsible for:
-
-- Loading the individual PowerToys modules.
-- Passing registered events to the PowerToys.
-- Showing a system tray icon to manage the PowerToys.
-- Bridging between the PowerToys modules and the Settings editor.
-
-![Image of the tray icon](/doc/images/runner/tray.png)
-
-### [`Interface`](modules/interface.md)
-
-The definition of the interface used by the [`runner`](/src/runner) to manage the PowerToys. All PowerToys must implement this interface.
-
-### [`Common`](common.md)
-
-The common lib, as the name suggests, contains code shared by multiple PowerToys components and modules, e.g. [json parsing](/src/common/utils/json.h) and [IPC primitives](/src/common/interop/two_way_pipe_message_ipc.h).
-
-### [`Settings`](settingsv2/)
-
-Settings v2 is our current settings implementation.  Please head over to the dev docs that describe the current settings system.
+Specifications for the [PowerToys settings API](core/settings/readme.md).
