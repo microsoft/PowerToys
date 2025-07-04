@@ -31,6 +31,7 @@ namespace Microsoft.PowerToys.UITest
         Hosts,
         Runner,
         Workspaces,
+        PowerRename,
     }
 
     /// <summary>
@@ -97,6 +98,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.Hosts] = "Hosts File Editor",
                 [PowerToysModule.Runner] = "PowerToys",
                 [PowerToysModule.Workspaces] = "Workspaces Editor",
+                [PowerToysModule.PowerRename] = "PowerRename",
             };
 
             // Exe start path for the module if it exists.
@@ -107,6 +109,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe",
                 [PowerToysModule.Runner] = @"\..\..\..\PowerToys.exe",
                 [PowerToysModule.Workspaces] = @"\..\..\..\PowerToys.WorkspacesEditor.exe",
+                [PowerToysModule.PowerRename] = @"\..\..\..\WinUI3Apps\PowerToys.PowerRename.exe",
             };
         }
 
