@@ -9,12 +9,12 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Timers;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
@@ -34,6 +34,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly ISettingsUtils _settingsUtils;
         private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
+        // Conflict tracking dictionaries
+        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
+
         private readonly ColorPickerSettings _colorPickerSettings;
         private Timer _delayedTimer;
 
@@ -41,6 +45,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private int _colorFormatPreviewIndex;
+
+        // Conflict detection properties
+        private bool _activationShortcutHasConflict;
+        private string _activationShortcutTooltip;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -83,6 +91,123 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Register hotkey settings for conflict detection
             RegisterHotkeySettings(ActivationShortcut);
+
+            // Initialize conflict properties
+            InitializeConflictPropertiesDefaults();
+        }
+
+        private void InitializeConflictPropertiesDefaults()
+        {
+            ActivationShortcutHasConflict = false;
+            ActivationShortcutTooltip = null;
+        }
+
+        // Conflict detection properties
+        public bool ActivationShortcutHasConflict
+        {
+            get => _activationShortcutHasConflict;
+            set
+            {
+                if (_activationShortcutHasConflict != value)
+                {
+                    _activationShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(ActivationShortcutHasConflict));
+                }
+            }
+        }
+
+        public string ActivationShortcutTooltip
+        {
+            get => _activationShortcutTooltip;
+            set
+            {
+                if (_activationShortcutTooltip != value)
+                {
+                    _activationShortcutTooltip = value;
+                    OnPropertyChanged(nameof(ActivationShortcutTooltip));
+                }
+            }
+        }
+
+        private bool GetHotkeyConflictStatus(string hotkeyName)
+        {
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+        }
+
+        private string GetHotkeyConflictTooltip(string hotkeyName)
+        {
+            return _hotkeyConflictTooltips.TryGetValue(hotkeyName, out string value) ? value : null;
+        }
+
+        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData conflicts)
+        {
+            var moduleRelatedConflicts = GetModuleRelatedConflicts(conflicts);
+
+            // Clear existing status
+            _hotkeyConflictStatus.Clear();
+            _hotkeyConflictTooltips.Clear();
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+            // Process in-app conflicts
+            foreach (var conflict in moduleRelatedConflicts.InAppConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build conflict description
+                    }
+                }
+            }
+
+            // Process system conflicts
+            foreach (var conflict in moduleRelatedConflicts.SystemConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build Sys conflict description.
+                    }
+                }
+            }
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                ActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
+                ActivationShortcutTooltip = GetHotkeyConflictTooltip("ActivationShortcut");
+            }
+
+            _ = System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
         }
 
         private void InitializeEnabledValue()
