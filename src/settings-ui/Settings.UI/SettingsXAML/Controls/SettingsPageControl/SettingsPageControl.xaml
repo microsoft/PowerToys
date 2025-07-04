@@ -9,6 +9,10 @@
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <x:Double x:Key="PageMaxWidth">1000</x:Double>
+        <x:Double x:Key="PageHeaderMaxWidth">1020</x:Double>
+    </UserControl.Resources>
     <Grid Padding="20,0,0,0" RowSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -16,7 +20,7 @@
         </Grid.RowDefinitions>
         <TextBlock
             x:Name="Header"
-            MaxWidth="{StaticResource PageMaxWidth}"
+            MaxWidth="{StaticResource PageHeaderMaxWidth}"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             AutomationProperties.HeadingLevel="1"
