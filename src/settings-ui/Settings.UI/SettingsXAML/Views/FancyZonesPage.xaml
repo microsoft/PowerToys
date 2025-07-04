@@ -39,7 +39,11 @@
                         IsClickEnabled="True" />
 
                     <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl 
+                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
+                            HasConflict="{x:Bind Path=ViewModel.EditorHotkeyHasConflict, Mode=TwoWay}"
+                            Tooltip="{x:Bind Path=ViewModel.EditorHotkeyTooltip, Mode=TwoWay}"
+                            HotkeySettings="{x:Bind Path=ViewModel.EditorHotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="FancyZones_UseCursorPosEditorStartupScreen" HeaderIcon="{ui:FontIcon Glyph=&#xe7b5;}">
@@ -171,10 +175,18 @@
                             <!--  HACK: For some weird reason, a Shortcut Control is not working correctly if it's the first item in the expander, so we add an invisible card as the first one.  -->
                             <tkcontrols:SettingsCard Visibility="Collapsed" />
                             <tkcontrols:SettingsCard x:Uid="FancyZones_HotkeyNextTabControl" IsEnabled="{x:Bind ViewModel.WindowSwitchingCategoryEnabled, Mode=OneWay}">
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
+                                <controls:ShortcutControl 
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    HasConflict="{x:Bind Path=ViewModel.NextTabHotkeyHasConflict, Mode=TwoWay}"
+                                    Tooltip="{x:Bind Path=ViewModel.NextTabHotkeyTooltip, Mode=TwoWay}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.NextTabHotkey, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="FancyZones_HotkeyPrevTabControl" IsEnabled="{x:Bind ViewModel.WindowSwitchingCategoryEnabled, Mode=OneWay}">
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}" />
+                                <controls:ShortcutControl 
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}" 
+                                    HasConflict="{x:Bind Path=ViewModel.PrevTabHotkeyHasConflict, Mode=TwoWay}"
+                                    Tooltip="{x:Bind Path=ViewModel.PrevTabHotkeyTooltip, Mode=TwoWay}"
+                                    HotkeySettings="{x:Bind Path=ViewModel.PrevTabHotkey, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

@@ -281,6 +281,8 @@
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
+                            HasConflict="{x:Bind Path=ViewModel.ToggleEasyMouseShortcutHasConflict, Mode=OneWay}"
+                            Tooltip="{x:Bind Path=ViewModel.ToggleEasyMouseShortcutTooltip, Mode=OneWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.ToggleEasyMouseShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
@@ -288,6 +290,8 @@
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
+                            HasConflict="{x:Bind Path=ViewModel.LockMachinesShortcutHasConflict, Mode=OneWay}"
+                            Tooltip="{x:Bind Path=ViewModel.LockMachinesShortcutTooltip, Mode=OneWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.LockMachinesShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
@@ -295,6 +299,8 @@
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
+                            HasConflict="{x:Bind Path=ViewModel.HotKeySwitch2AllPCHasConflict, Mode=OneWay}"
+                            Tooltip="{x:Bind Path=ViewModel.HotKeySwitch2AllPCTooltip, Mode=OneWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.HotKeySwitch2AllPC, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
@@ -302,6 +308,8 @@
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
+                            HasConflict="{x:Bind Path=ViewModel.ReconnectShortcutHasConflict, Mode=OneWay}"
+                            Tooltip="{x:Bind Path=ViewModel.ReconnectShortcutTooltip, Mode=OneWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.ReconnectShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
