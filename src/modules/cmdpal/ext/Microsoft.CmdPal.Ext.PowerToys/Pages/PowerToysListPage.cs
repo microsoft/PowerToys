@@ -34,5 +34,5 @@ internal sealed partial class PowerToysListPage : DynamicListPage
         return;
     }
 
-    public override IListItem[] GetItems() => [.. ModuleItemsHelper.AllItems()];
+    public override IListItem[] GetItems() => ModuleItemsHelper.FilteredItems(SearchText);
 }

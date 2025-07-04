@@ -44,13 +44,6 @@ namespace Common.UI
             NewPlus,
             CmdPal,
             ZoomIt,
-            AlwaysOnTop,
-            FileLockSmith,
-            NewPlus,
-            Peek,
-            MouseWithoutBorders,
-            QuickAccent,
-            CommandNotFound,
         }
 
         private static string SettingsWindowNameToString(SettingsWindow value)
@@ -119,14 +112,6 @@ namespace Common.UI
                     return "CmdPal";
                 case SettingsWindow.ZoomIt:
                     return "ZoomIt";
-                case SettingsWindow.AlwaysOnTop:
-                    return "AlwaysOnTop";
-                case SettingsWindow.FileLockSmith:
-                    return "FileLockSmith";
-                case SettingsWindow.NewPlus:
-                    return "NewPlus";
-                case SettingsWindow.Peek:
-                    return "Peek";
                 default:
                     {
                         return string.Empty;
@@ -134,6 +119,7 @@ namespace Common.UI
             }
         }
 
+        // What about debug build? Should also consider debug build, maybe tray window message?
         public static void OpenSettings(SettingsWindow window)
         {
             try

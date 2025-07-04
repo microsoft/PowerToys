@@ -132,4 +132,7 @@
   <data name="PowerToysPage_NotFoundModule" xml:space="preserve">
     <value>Can't find specific module</value>
   </data>
+  <data name="Launch_CommandName" xml:space="preserve">
+    <value>Launch</value>
+  </data>
 </root>

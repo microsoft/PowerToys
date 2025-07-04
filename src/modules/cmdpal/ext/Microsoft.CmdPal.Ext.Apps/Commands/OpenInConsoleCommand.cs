@@ -48,8 +48,6 @@ internal sealed partial class OpenInConsoleCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        _ = LaunchTarget(_target).ConfigureAwait(false);
-
         return CommandResult.Dismiss();
     }
 }

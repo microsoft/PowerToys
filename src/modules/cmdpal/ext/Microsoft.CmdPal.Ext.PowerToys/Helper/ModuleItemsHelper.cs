@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.Ext.PowerToys.Classes;
 using Microsoft.CmdPal.Ext.PowerToys.Commands;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using static Common.UI.SettingsDeepLink;
 
@@ -13,6 +13,8 @@ namespace Microsoft.CmdPal.Ext.PowerToys.Helper;
 // A helper class for module items.
 internal static class ModuleItemsHelper
 {
+    private static List<ListItem>? _allItemsCache;
+
     public static ListItem? CreateCommandItem(this SettingsWindow module)
     {
         switch (module)
@@ -25,14 +27,6 @@ internal static class ModuleItemsHelper
             case SettingsWindow.EnvironmentVariables:
             case SettingsWindow.RegistryPreview:
             case SettingsWindow.ShortcutGuide:
-                return new ListItem(new OpenInSettingsCommand(new PowerToysModuleEntry
-                {
-                    Module = module,
-                }))
-                {
-                    Icon = module.ModuleIcon(),
-                    Title = module.ModuleName(),
-                };
             case SettingsWindow.Awake:
             case SettingsWindow.ColorPicker:
             case SettingsWindow.Run:
@@ -47,22 +41,30 @@ internal static class ModuleItemsHelper
             case SettingsWindow.CmdPal:
             case SettingsWindow.ZoomIt:
             case SettingsWindow.AlwaysOnTop:
-            case SettingsWindow.FileLockSmith:
+            case SettingsWindow.FileLocksmith:
             case SettingsWindow.NewPlus:
             case SettingsWindow.Peek:
-            case SettingsWindow.CommandNotFound:
+            case SettingsWindow.CmdNotFound:
             case SettingsWindow.MouseWithoutBorders:
-            case SettingsWindow.QuickAccent:
-                return new ListItem(new OpenInSettingsCommand(new PowerToysModuleEntry
+            case SettingsWindow.PowerAccent:
+            case SettingsWindow.PowerLauncher:
                 {
-                    Module = module,
-                }))
-                {
-                    Icon = module.ModuleIcon(),
-                    Title = module.ModuleName(),
-                };
+                    var entry = new PowerToysModuleEntry
+                    {
+                        Module = module,
+                    };
+                    return new ListItem(new OpenInSettingsCommand(entry))
+                    {
+                        Icon = module.ModuleIcon(),
+                        Title = module.ModuleName(),
+                        MoreCommands = [.. entry.GetCommands()],
+                    };
+                }
+
             case SettingsWindow.Overview:
             case SettingsWindow.Dashboard:
+            // duplicated with file explorer add on.
+            case SettingsWindow.PowerPreview:
                 return null;
             default:
                 throw new NotImplementedException();
@@ -71,6 +73,11 @@ internal static class ModuleItemsHelper
 
     public static List<ListItem> AllItems()
     {
+        if (_allItemsCache is not null)
+        {
+            return _allItemsCache;
+        }
+
         var items = new List<ListItem>();
         foreach (var module in Enum.GetValues<SettingsWindow>())
         {
@@ -81,6 +88,31 @@ internal static class ModuleItemsHelper
             }
         }
 
+        _allItemsCache = items;
         return items;
+    }
+
+    public static IListItem[] FilteredItems(string query)
+    {
+        var allItems = AllItems();
+
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return [.. allItems];
+        }
+
+        var matched = new List<Tuple<int, ListItem>>();
+
+        foreach (var item in allItems)
+        {
+            var matchResult = StringMatcher.FuzzySearch(query, item.Title);
+            if (matchResult.Success)
+            {
+                matched.Add(new Tuple<int, ListItem>(matchResult.Score, item));
+            }
+        }
+
+        matched.Sort((x, y) => y.Item1.CompareTo(x.Item1));
+        return [.. matched.Select(x => x.Item2)];
     }
 }

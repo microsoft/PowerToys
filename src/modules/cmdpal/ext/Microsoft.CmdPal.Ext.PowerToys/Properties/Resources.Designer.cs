@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.Ext.PowerToys.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Launch.
+        /// </summary>
+        internal static string Launch_CommandName {
+            get {
+                return ResourceManager.GetString("Launch_CommandName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open in Settings.
         /// </summary>
         internal static string OpenInSettings_CommandName {
