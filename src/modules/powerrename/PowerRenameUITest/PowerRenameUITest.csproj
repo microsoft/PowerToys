@@ -38,8 +38,4 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="testItems\folder2\" />
-	</ItemGroup>
 </Project>
