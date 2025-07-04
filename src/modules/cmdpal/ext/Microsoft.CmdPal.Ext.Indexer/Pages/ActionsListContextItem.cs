@@ -21,6 +21,7 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
 {
     private readonly string fullPath;
     private readonly List<CommandContextItem> actions = [];
+    private bool _isDisposed;
     private static readonly Lock UpdateMoreCommandsLock = new();
     private static ActionRuntime actionRuntime;
 
@@ -97,14 +98,24 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
         }
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        lock (UpdateMoreCommandsLock)
+        if (!_isDisposed)
         {
-            if (actionRuntime != null)
+            _isDisposed = true;
+            if (disposing)
             {
-                actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
+                lock (UpdateMoreCommandsLock)
+                {
+                    if (actionRuntime != null)
+                    {
+                        actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
+                        actionRuntime = null;
+                    }
+                }
             }
         }
+
+        base.Dispose(disposing);
     }
 }

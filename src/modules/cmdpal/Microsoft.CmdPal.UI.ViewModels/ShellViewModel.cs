@@ -18,7 +18,7 @@ using WinRT;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskScheduler _scheduler) : ObservableObject
+public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskScheduler _scheduler) : ObservableObject, IDisposable
 {
     [ObservableProperty]
     public partial bool IsLoaded { get; set; } = false;
@@ -30,6 +30,8 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     public partial bool IsDetailsVisible { get; set; }
 
     private PageViewModel _currentPage = new LoadingPageViewModel(null, _scheduler);
+
+    private bool _isDisposed;
 
     public PageViewModel CurrentPage
     {
@@ -199,6 +201,48 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     public void GoHome()
     {
         SetActiveExtension(null);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_isDisposed)
+        {
+            _isDisposed = true;
+            if (disposing)
+            {
+                // Dispose managed resources
+                if (_mainListPage is IDisposable disposable)
+                {
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                if (_currentPage is IDisposable disposablePage)
+                {
+                    try
+                    {
+                        disposablePage.Dispose();
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                _mainListPage = null;
+                _activeExtension = null;
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     // You may ask yourself, why aren't we using CsWin32 for this?

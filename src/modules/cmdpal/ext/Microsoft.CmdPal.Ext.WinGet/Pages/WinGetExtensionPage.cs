@@ -191,7 +191,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             return [];
         }
 
-        string searchDebugText = $"{query}{(HasTag ? "+" : string.Empty)}{_tag}";
+        var searchDebugText = $"{query}{(HasTag ? "+" : string.Empty)}{_tag}";
         Logger.LogDebug($"Starting search for '{searchDebugText}'");
         HashSet<CatalogPackage> results = new(new PackageIdCompare());
 
