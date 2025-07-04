@@ -6,7 +6,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class ListPage : Page, IListPage
+public partial class ListPage : Page, IListPage, IDisposable
 {
     private string _placeholderText = string.Empty;
     private string _searchText = string.Empty;
@@ -15,6 +15,7 @@ public partial class ListPage : Page, IListPage
     private IFilters? _filters;
     private IGridProperties? _gridProperties;
     private ICommandItem? _emptyContent;
+    private bool _isDisposed;
 
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
@@ -94,8 +95,28 @@ public partial class ListPage : Page, IListPage
     {
     }
 
+    protected override void Dispose(bool disposing)
+    {
+        if (!_isDisposed)
+        {
+            _isDisposed = true;
+
+            if (disposing)
+            {
+                ItemsChanged = null;
+            }
+        }
+
+        base.Dispose(disposing);
+    }
+
     protected void RaiseItemsChanged(int totalItems = -1)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         try
         {
             // TODO #181 - This is the same thing that BaseObservable has to deal with.

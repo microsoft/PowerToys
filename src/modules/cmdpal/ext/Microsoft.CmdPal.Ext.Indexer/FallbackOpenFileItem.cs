@@ -21,6 +21,8 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
 
     private uint _queryCookie = 10;
 
+    private bool _isDisposed;
+
     public FallbackOpenFileItem()
         : base(new NoOpCommand(), Resources.Indexer_Find_Path_fallback_display_title)
     {
@@ -120,9 +122,17 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
         }
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        _searchEngine.Dispose();
-        GC.SuppressFinalize(this);
+        if (!_isDisposed)
+        {
+            _isDisposed = true;
+            if (disposing)
+            {
+                _searchEngine?.Dispose();
+            }
+        }
+
+        base.Dispose(disposing);
     }
 }

@@ -243,6 +243,17 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         if (model != null)
         {
             model.PropChanged -= Model_PropChanged;
+            if (model is IDisposable disposableModel)
+            {
+                try
+                {
+                    disposableModel.Dispose();
+                }
+                catch
+                {
+                    // Ignore exceptions during cleanup
+                }
+            }
         }
     }
 }

@@ -34,6 +34,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     private IEnumerable<CatalogPackage>? _results;
 
+    private bool _disposed;
+
     public static IconInfo WinGetIcon { get; } = IconHelpers.FromRelativePath("Assets\\WinGet.svg");
 
     public static IconInfo ExtensionsIcon { get; } = IconHelpers.FromRelativePath("Assets\\Extension.svg");
@@ -271,7 +273,19 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         return results;
     }
 
-    public void Dispose() => throw new NotImplementedException();
+    protected override void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            _disposed = true;
+            if (disposing)
+            {
+                _cancellationTokenSource?.Dispose();
+            }
+        }
+
+        base.Dispose(disposing);
+    }
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "I just like it")]

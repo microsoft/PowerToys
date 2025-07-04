@@ -46,21 +46,17 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 
     public override IListItem[] GetItems() => Query(SearchText).ToArray();
 
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-
-    public void Dispose(bool disposing)
+    protected override void Dispose(bool disposing)
     {
         if (!_disposed)
         {
+            _disposed = true;
             if (disposing)
             {
                 _cancellationTokenSource?.Dispose();
-                _disposed = true;
             }
         }
+
+        base.Dispose(disposing);
     }
 }

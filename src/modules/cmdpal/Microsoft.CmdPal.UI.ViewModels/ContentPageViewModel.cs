@@ -264,6 +264,17 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         if (model != null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
+            if (model is IDisposable disposableModel)
+            {
+                try
+                {
+                    disposableModel.Dispose();
+                }
+                catch
+                {
+                    // Ignore exceptions during cleanup
+                }
+            }
         }
     }
 }

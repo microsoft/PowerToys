@@ -10,12 +10,39 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 // asynchronously, so as to not block the extension app while it's being
 // processed in the host app.
 // (also consider this for ItemsChanged in ListPage)
-public partial class BaseObservable : INotifyPropChanged
+public partial class BaseObservable : INotifyPropChanged, IDisposable
 {
+    private bool _isDisposed;
+
     public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
+
+    // Protected implementation of Dispose pattern.
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_isDisposed)
+        {
+            _isDisposed = true;
+
+            if (disposing)
+            {
+                PropChanged = null;
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
     protected void OnPropertyChanged(string propertyName)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         try
         {
             // TODO #181 - This is dangerous! If the original host goes away,

@@ -21,6 +21,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     private string initialQuery = string.Empty;
 
+    private bool _isDisposed;
+
     public IndexerPage()
     {
         Id = "com.microsoft.indexer.fileSearch";
@@ -33,6 +35,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     public IndexerPage(string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
     {
+        disposeSearchEngine = false;
         Icon = Icons.FileExplorer;
         Name = Resources.Indexer_Title;
         _searchEngine = searchEngine;
@@ -40,7 +43,6 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         _indexerListItems.AddRange(firstPageData);
         initialQuery = query;
         SearchText = query;
-        disposeSearchEngine = false;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -76,12 +78,21 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         _searchEngine.Query(query, _queryCookie);
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        if (disposeSearchEngine)
+        if (!_isDisposed)
         {
-            _searchEngine.Dispose();
-            GC.SuppressFinalize(this);
+            _isDisposed = true;
+
+            if (disposing)
+            {
+                if (disposeSearchEngine)
+                {
+                    _searchEngine?.Dispose();
+                }
+            }
         }
+
+        base.Dispose(disposing);
     }
 }
