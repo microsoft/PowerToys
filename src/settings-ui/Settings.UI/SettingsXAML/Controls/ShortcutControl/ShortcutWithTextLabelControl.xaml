@@ -28,11 +28,11 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <controls:KeyVisual
-                        VerticalAlignment="Center"
+                        Padding="12,8,12,8"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
-                        IsTabStop="False"
-                        VisualType="SmallOutline" />
+                        FontSize="12"
+                        IsTabStop="False" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
 using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -11,6 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -36,6 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
 
+        private static ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
         private static void OnAllowDisableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var me = d as ShortcutControl;
@@ -49,8 +51,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 return;
             }
-
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             var newValue = (bool)(e?.NewValue ?? false);
 
@@ -103,8 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     hotkeySettings = value;
                     SetValue(HotkeySettingsProperty, value);
-                    PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
-                    AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+                    SetKeys();
                     c.Keys = HotkeySettings.GetKeysList();
                 }
             }
@@ -117,8 +116,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             this.Unloaded += ShortcutControl_Unloaded;
             this.Loaded += ShortcutControl_Loaded;
-
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
@@ -433,11 +430,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             hotkeySettings = null;
 
             SetValue(HotkeySettingsProperty, hotkeySettings);
-            PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
+            SetKeys();
 
             lastValidSettings = hotkeySettings;
-
-            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
             shortcutDialog.Hide();
         }
 
@@ -448,8 +443,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 HotkeySettings = lastValidSettings with { };
             }
 
-            PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();
-            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            SetKeys();
             shortcutDialog.Hide();
         }
 
@@ -462,9 +456,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             var empty = new HotkeySettings();
             HotkeySettings = empty;
-
-            PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
-            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            SetKeys();
             shortcutDialog.Hide();
         }
 
@@ -524,6 +516,23 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private void SetKeys()
+        {
+            var keys = HotkeySettings.GetKeysList();
+
+            if (keys != null && keys.Count > 0)
+            {
+                VisualStateManager.GoToState(this, "Configured", true);
+                PreviewKeysControl.ItemsSource = keys;
+                AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "Normal", true);
+                AutomationProperties.SetHelpText(EditButton, resourceLoader.GetString("ConfigureShortcut"));
+            }
         }
     }
 }
