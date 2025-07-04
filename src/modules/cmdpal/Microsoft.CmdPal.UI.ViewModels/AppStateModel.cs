@@ -21,9 +21,9 @@ public partial class AppStateModel : ObservableObject
 
     ///////////////////////////////////////////////////////////////////////////
     // STATE HERE
-    public RecentCommandsManager RecentCommands { get; private set; } = new();
+    public RecentCommandsManager RecentCommands { get; set; } = new();
 
-    public List<string> RunHistory { get; private set; } = [];
+    public List<string> RunHistory { get; set; } = [];
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
