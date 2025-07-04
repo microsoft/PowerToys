@@ -135,4 +135,10 @@
   <data name="Launch_CommandName" xml:space="preserve">
     <value>Launch</value>
   </data>
+  <data name="WorkspacesPage_Title" xml:space="preserve">
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspace_NotFound_Message" xml:space="preserve">
+    <value>Workspaces not found</value>
+  </data>
 </root>

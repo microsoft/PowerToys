@@ -113,5 +113,23 @@ namespace Microsoft.CmdPal.Ext.PowerToys.Properties {
                 return ResourceManager.GetString("PowerToysProvider_DisplayName", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workspaces not found.
+        /// </summary>
+        internal static string Workspace_NotFound_Message {
+            get {
+                return ResourceManager.GetString("Workspace_NotFound_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workspaces.
+        /// </summary>
+        internal static string WorkspacesPage_Title {
+            get {
+                return ResourceManager.GetString("WorkspacesPage_Title", resourceCulture);
+            }
+        }
     }
 }

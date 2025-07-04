@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.Ext.PowerToys.Classes;
 using Microsoft.CmdPal.Ext.PowerToys.Commands;
+using Microsoft.CmdPal.Ext.PowerToys.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using static Common.UI.SettingsDeepLink;
@@ -21,6 +22,21 @@ internal static class ModuleItemsHelper
         {
             // These modules have their own UI
             case SettingsWindow.Workspaces:
+                {
+                    var entry = new PowerToysModuleEntry
+                    {
+                        Module = module,
+                    };
+                    return new ListItem(new CommandItem(new WorkspacesListPage()))
+                    {
+                        Icon = module.ModuleIcon(),
+                        Title = module.ModuleName(),
+                        MoreCommands = [.. entry.GetCommands(),
+                            new CommandContextItem(new OpenInSettingsCommand(entry))
+                        ],
+                    };
+                }
+
             case SettingsWindow.FancyZones:
             case SettingsWindow.KBM:
             case SettingsWindow.Hosts:
