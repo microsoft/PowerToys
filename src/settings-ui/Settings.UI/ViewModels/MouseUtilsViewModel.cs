@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -17,6 +18,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class MouseUtilsViewModel : PageViewModelBase
     {
         protected override string ModuleName => "MouseUtils";
+
+        // Conflict tracking dictionaries
+        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
+
+        private bool _findMyMouseActivationShortcutHasConflict;
+        private bool _mouseHighlighterActivationShortcutHasConflict;
+        private bool _mousePointerCrosshairsActivationShortcutHasConflict;
+        private string _findMyMouseActivationShortcutTooltip;
+        private string _mouseHighlighterActivationShortcutTooltip;
+        private string _mousePointerCrosshairsActivationShortcutTooltip;
 
         private ISettingsUtils SettingsUtils { get; set; }
 
@@ -182,6 +194,184 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isMousePointerCrosshairsEnabled = GeneralSettingsConfig.Enabled.MousePointerCrosshairs;
+            }
+        }
+
+        /*
+        private bool GetHotkeyConflictStatus(string hotkeyName)
+        {
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+        }
+
+        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData allConflicts)
+        {
+            _hotkeyConflictStatus.Clear();
+            _hotkeyConflictTooltips.Clear();
+
+            var moduleRelatedConflicts = GetModuleRelatedConflicts(allConflicts);
+
+            if (moduleRelatedConflicts.HasConflicts)
+            {
+                var conflictData = moduleRelatedConflicts.InAppConflicts
+                    .Concat(moduleRelatedConflicts.SystemConflicts)
+                    .Where(conflict => conflict.Modules != null)
+                    .SelectMany(conflict => conflict.Modules.Select(module => new { Conflict = conflict, Module = module }))
+                    .Where(item => string.Equals(item.Module.ModuleName, FindMyMouseSettings.ModuleName, StringComparison.OrdinalIgnoreCase) ||
+                                   string.Equals(item.Module.ModuleName, MouseHighlighterSettings.ModuleName, StringComparison.OrdinalIgnoreCase) ||
+                                   string.Equals(item.Module.ModuleName, MousePointerCrosshairsSettings.ModuleName, StringComparison.OrdinalIgnoreCase))
+                    .GroupBy(item => item.Module.HotkeyName)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                foreach (var conflictGroup in conflictData)
+                {
+                    var hotkeyName = conflictGroup.Key;
+                    var conflictItem = conflictGroup.Value;
+
+                    _hotkeyConflictStatus[hotkeyName] = true;
+
+                    // Generate tooltip text based on conflict type
+                    var tooltip = GenerateConflictTooltip(conflictItem.Conflict, conflictItem.Module);
+                    _hotkeyConflictTooltips[hotkeyName] = tooltip;
+                }
+            }
+        }
+
+        private string GenerateConflictTooltip(HotkeyConflictGroupData conflict, ModuleHotkeyData module)
+        {
+            // TODO: Generate proper tooltip text based on conflict type and involved modules
+            if (conflict.IsSystemConflict)
+            {
+                return "This hotkey conflicts with a system hotkey.";
+            }
+            else
+            {
+                var otherModules = conflict.Modules.Where(m => m != module).Select(m => m.ModuleName).ToList();
+                if (otherModules.Count > 0)
+                {
+                    return $"This hotkey conflicts with: {string.Join(", ", otherModules)}";
+                }
+
+                return "This hotkey has a conflict.";
+            }
+        }
+
+        private string GetHotkeyConflictTooltip(string hotkeyName)
+        {
+            return _hotkeyConflictTooltips.TryGetValue(hotkeyName, out string value) ? value : null;
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                FindMyMouseActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
+                MouseHighlighterActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
+                MousePointerCrosshairsActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
+
+                FindMyMouseActivationShortcutTooltip = GetHotkeyConflictTooltip("ActivationShortcut");
+                MouseHighlighterActivationShortcutTooltip = GetHotkeyConflictTooltip("ActivationShortcut");
+                MousePointerCrosshairsActivationShortcutTooltip = GetHotkeyConflictTooltip("ActivationShortcut");
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }*/
+
+        public bool FindMyMouseActivationShortcutHasConflict
+        {
+            get => _findMyMouseActivationShortcutHasConflict;
+            set
+            {
+                if (_findMyMouseActivationShortcutHasConflict != value)
+                {
+                    _findMyMouseActivationShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(FindMyMouseActivationShortcutHasConflict));
+                }
+            }
+        }
+
+        public bool MouseHighlighterActivationShortcutHasConflict
+        {
+            get => _mouseHighlighterActivationShortcutHasConflict;
+            set
+            {
+                if (_mouseHighlighterActivationShortcutHasConflict != value)
+                {
+                    _mouseHighlighterActivationShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(MouseHighlighterActivationShortcutHasConflict));
+                }
+            }
+        }
+
+        public bool MousePointerCrosshairsActivationShortcutHasConflict
+        {
+            get => _mousePointerCrosshairsActivationShortcutHasConflict;
+            set
+            {
+                if (_mousePointerCrosshairsActivationShortcutHasConflict != value)
+                {
+                    _mousePointerCrosshairsActivationShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(MousePointerCrosshairsActivationShortcutHasConflict));
+                }
+            }
+        }
+
+        public string FindMyMouseActivationShortcutTooltip
+        {
+            get => _findMyMouseActivationShortcutTooltip;
+            set
+            {
+                if (_findMyMouseActivationShortcutTooltip != value)
+                {
+                    _findMyMouseActivationShortcutTooltip = value;
+                    OnPropertyChanged(nameof(FindMyMouseActivationShortcutTooltip));
+                }
+            }
+        }
+
+        public string MouseHighlighterActivationShortcutTooltip
+        {
+            get => _mouseHighlighterActivationShortcutTooltip;
+            set
+            {
+                if (_mouseHighlighterActivationShortcutTooltip != value)
+                {
+                    _mouseHighlighterActivationShortcutTooltip = value;
+                    OnPropertyChanged(nameof(MouseHighlighterActivationShortcutTooltip));
+                }
+            }
+        }
+
+        public string MousePointerCrosshairsActivationShortcutTooltip
+        {
+            get => _mousePointerCrosshairsActivationShortcutTooltip;
+            set
+            {
+                if (_mousePointerCrosshairsActivationShortcutTooltip != value)
+                {
+                    _mousePointerCrosshairsActivationShortcutTooltip = value;
+                    OnPropertyChanged(nameof(MousePointerCrosshairsActivationShortcutTooltip));
+                }
             }
         }
 

@@ -32,7 +32,11 @@
 
                 <controls:SettingsGroup x:Uid="Peek_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl 
+                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
+                            HasConflict="{x:Bind Path=ViewModel.ActivationShortcutHasConflict, Mode=OneWay}"
+                            Tooltip="{x:Bind Path=ViewModel.ActivationShortcutTooltip, Mode=OneWay}"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

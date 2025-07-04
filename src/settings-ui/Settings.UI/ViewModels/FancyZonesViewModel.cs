@@ -3,23 +3,37 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class FancyZonesViewModel : Observable
+    public partial class FancyZonesViewModel : PageViewModelBase
     {
+        protected override string ModuleName => FancyZonesSettings.ModuleName;
+
+        // Conflict tracking dictionaries
+        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
+
+        private bool _editorHotkeyHasConflict;
+        private bool _nextTabHotkeyHasConflict;
+        private bool _prevTabHotkeyHasConflict;
+        private string _editorHotkeyTooltip;
+        private string _nextTabHotkeyTooltip;
+        private string _prevTabHotkeyTooltip;
+
         private SettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
-
-        private const string ModuleName = FancyZonesSettings.ModuleName;
 
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
 
@@ -30,6 +44,44 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string settingsConfigFileFolder = string.Empty;
 
         private bool _windows11;
+
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGPOConfigured;
+        private bool _isEnabled;
+        private bool _shiftDrag;
+        private bool _mouseSwitch;
+        private bool _mouseMiddleButtonSpanningMultipleZones;
+        private bool _overrideSnapHotkeys;
+        private bool _moveWindowsAcrossMonitors;
+        private MoveWindowBehaviour _moveWindowBehaviour;
+        private OverlappingZonesAlgorithm _overlappingZonesAlgorithm;
+        private bool _displayOrWorkAreaChangeMoveWindows;
+        private bool _zoneSetChangeMoveWindows;
+        private bool _appLastZoneMoveWindows;
+        private bool _openWindowOnActiveMonitor;
+        private bool _spanZonesAcrossMonitors;
+        private bool _restoreSize;
+        private bool _quickLayoutSwitch;
+        private bool _flashZonesOnQuickLayoutSwitch;
+        private bool _useCursorPosEditorStartupScreen;
+        private bool _showOnAllMonitors;
+        private bool _makeDraggedWindowTransparent;
+        private bool _systemTheme;
+        private bool _showZoneNumber;
+        private bool _allowPopupWindowSnap;
+        private bool _allowChildWindowSnap;
+        private bool _disableRoundCornersOnSnap;
+
+        private int _highlightOpacity;
+        private string _excludedApps;
+        private HotkeySettings _editorHotkey;
+        private bool _windowSwitching;
+        private HotkeySettings _nextTabHotkey;
+        private HotkeySettings _prevTabHotkey;
+        private string _zoneInActiveColor;
+        private string _zoneBorderColor;
+        private string _zoneHighlightColor;
+        private string _zoneNumberColor;
 
         private enum MoveWindowBehaviour
         {
@@ -45,6 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+            : base(ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -137,43 +190,162 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private GpoRuleConfigured _enabledGpoRuleConfiguration;
-        private bool _enabledStateIsGPOConfigured;
-        private bool _isEnabled;
-        private bool _shiftDrag;
-        private bool _mouseSwitch;
-        private bool _mouseMiddleButtonSpanningMultipleZones;
-        private bool _overrideSnapHotkeys;
-        private bool _moveWindowsAcrossMonitors;
-        private MoveWindowBehaviour _moveWindowBehaviour;
-        private OverlappingZonesAlgorithm _overlappingZonesAlgorithm;
-        private bool _displayOrWorkAreaChangeMoveWindows;
-        private bool _zoneSetChangeMoveWindows;
-        private bool _appLastZoneMoveWindows;
-        private bool _openWindowOnActiveMonitor;
-        private bool _spanZonesAcrossMonitors;
-        private bool _restoreSize;
-        private bool _quickLayoutSwitch;
-        private bool _flashZonesOnQuickLayoutSwitch;
-        private bool _useCursorPosEditorStartupScreen;
-        private bool _showOnAllMonitors;
-        private bool _makeDraggedWindowTransparent;
-        private bool _systemTheme;
-        private bool _showZoneNumber;
-        private bool _allowPopupWindowSnap;
-        private bool _allowChildWindowSnap;
-        private bool _disableRoundCornersOnSnap;
+        private bool GetHotkeyConflictStatus(string hotkeyName)
+        {
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+        }
 
-        private int _highlightOpacity;
-        private string _excludedApps;
-        private HotkeySettings _editorHotkey;
-        private bool _windowSwitching;
-        private HotkeySettings _nextTabHotkey;
-        private HotkeySettings _prevTabHotkey;
-        private string _zoneInActiveColor;
-        private string _zoneBorderColor;
-        private string _zoneHighlightColor;
-        private string _zoneNumberColor;
+        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData conflicts)
+        {
+            var moduleRelatedConflicts = GetModuleRelatedConflicts(conflicts);
+
+            // Clear existing status
+            _hotkeyConflictStatus.Clear();
+            _hotkeyConflictTooltips.Clear();
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+            // Process in-app conflicts
+            foreach (var conflict in moduleRelatedConflicts.InAppConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build conflict description
+                    }
+                }
+            }
+
+            // Process system conflicts
+            foreach (var conflict in moduleRelatedConflicts.SystemConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build Sys conflict description.
+                    }
+                }
+            }
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                EditorHotkeyHasConflict = GetHotkeyConflictStatus(FZConfigProperties.DefaultEditorHotkeyValue.HotkeyName);
+                NextTabHotkeyHasConflict = GetHotkeyConflictStatus(FZConfigProperties.DefaultNextTabHotkeyValue.HotkeyName);
+                PrevTabHotkeyHasConflict = GetHotkeyConflictStatus(FZConfigProperties.DefaultPrevTabHotkeyValue.HotkeyName);
+
+                // HotkeyTooltip
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        public bool EditorHotkeyHasConflict
+        {
+            get => _editorHotkeyHasConflict;
+            set
+            {
+                if (_editorHotkeyHasConflict != value)
+                {
+                    _editorHotkeyHasConflict = value;
+                    OnPropertyChanged(nameof(EditorHotkeyHasConflict));
+                }
+            }
+        }
+
+        public bool NextTabHotkeyHasConflict
+        {
+            get => _nextTabHotkeyHasConflict;
+            set
+            {
+                if (_nextTabHotkeyHasConflict != value)
+                {
+                    _nextTabHotkeyHasConflict = value;
+                    OnPropertyChanged(nameof(NextTabHotkeyHasConflict));
+                }
+            }
+        }
+
+        public bool PrevTabHotkeyHasConflict
+        {
+            get => _prevTabHotkeyHasConflict;
+            set
+            {
+                if (_prevTabHotkeyHasConflict != value)
+                {
+                    _prevTabHotkeyHasConflict = value;
+                    OnPropertyChanged(nameof(PrevTabHotkeyHasConflict));
+                }
+            }
+        }
+
+        public string EditorHotkeyTooltip
+        {
+            get => _editorHotkeyTooltip;
+            set
+            {
+                if (_editorHotkeyTooltip != value)
+                {
+                    _editorHotkeyTooltip = value;
+                    OnPropertyChanged(nameof(EditorHotkeyTooltip));
+                }
+            }
+        }
+
+        public string NextTabHotkeyTooltip
+        {
+            get => _nextTabHotkeyTooltip;
+            set
+            {
+                if (_nextTabHotkeyTooltip != value)
+                {
+                    _nextTabHotkeyTooltip = value;
+                    OnPropertyChanged(nameof(NextTabHotkeyTooltip));
+                }
+            }
+        }
+
+        public string PrevTabHotkeyTooltip
+        {
+            get => _prevTabHotkeyTooltip;
+            set
+            {
+                if (_prevTabHotkeyTooltip != value)
+                {
+                    _prevTabHotkeyTooltip = value;
+                    OnPropertyChanged(nameof(PrevTabHotkeyTooltip));
+                }
+            }
+        }
 
         public bool IsEnabled
         {

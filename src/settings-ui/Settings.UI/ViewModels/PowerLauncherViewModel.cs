@@ -3,18 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows.Input;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -23,6 +25,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class PowerLauncherViewModel : PageViewModelBase, IDisposable
     {
+        // Conflict tracking dictionaries
+        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
+
+        private bool _openPowerLauncherHasConflict;
+        private string _openPowerLauncherTooltip;
+
         private int _themeIndex;
         private int _monitorPositionIndex;
 
@@ -133,9 +142,107 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public override void OnPageLoaded()
+        private bool GetHotkeyConflictStatus(string hotkeyName)
         {
-            base.OnPageLoaded();
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+        }
+
+        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData conflicts)
+        {
+            var moduleRelatedConflicts = GetModuleRelatedConflicts(conflicts);
+
+            // Clear existing status
+            _hotkeyConflictStatus.Clear();
+            _hotkeyConflictTooltips.Clear();
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+            // Process in-app conflicts
+            foreach (var conflict in moduleRelatedConflicts.InAppConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build conflict description
+                    }
+                }
+            }
+
+            // Process system conflicts
+            foreach (var conflict in moduleRelatedConflicts.SystemConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build Sys conflict description.
+                    }
+                }
+            }
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                OpenPowerLauncherHasConflict = GetHotkeyConflictStatus("OpenPowerLauncher");
+
+                // HotkeyTooltip = GetHotkeyConflictTooltip("AdvancedPasteUIShortcut");
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        public bool OpenPowerLauncherHasConflict
+        {
+            get => _openPowerLauncherHasConflict;
+            set
+            {
+                if (_openPowerLauncherHasConflict != value)
+                {
+                    _openPowerLauncherHasConflict = value;
+                    OnPropertyChanged(nameof(OpenPowerLauncherHasConflict));
+                }
+            }
+        }
+
+        public string OpenPowerLauncherTooltip
+        {
+            get => _openPowerLauncherTooltip;
+            set
+            {
+                if (_openPowerLauncherTooltip != value)
+                {
+                    _openPowerLauncherTooltip = value;
+                    OnPropertyChanged(nameof(OpenPowerLauncherTooltip));
+                }
+            }
         }
 
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)

@@ -13,12 +13,12 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -34,6 +34,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         protected override string ModuleName => MouseWithoutBordersSettings.ModuleName;
 
+        // Conflict tracking dictionaries
+        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
+
         // These should be in the same order as the ComboBoxItems in MouseWithoutBordersPage.xaml switch machine shortcut options
         private readonly int[] _switchBetweenMachineShortcutOptions =
         {
@@ -45,18 +49,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly Lock _machineMatrixStringLock = new();
 
         private static readonly Dictionary<SocketStatus, Brush> StatusColors = new Dictionary<SocketStatus, Brush>()
-{
-    { SocketStatus.NA, new SolidColorBrush(ColorHelper.FromArgb(0, 0x71, 0x71, 0x71)) },
-    { SocketStatus.Resolving, new SolidColorBrush(Colors.Yellow) },
-    { SocketStatus.Connecting, new SolidColorBrush(Colors.Orange) },
-    { SocketStatus.Handshaking, new SolidColorBrush(Colors.Blue) },
-    { SocketStatus.Error, new SolidColorBrush(Colors.Red) },
-    { SocketStatus.ForceClosed, new SolidColorBrush(Colors.Purple) },
-    { SocketStatus.InvalidKey, new SolidColorBrush(Colors.Brown) },
-    { SocketStatus.Timeout, new SolidColorBrush(Colors.Pink) },
-    { SocketStatus.SendError, new SolidColorBrush(Colors.Maroon) },
-    { SocketStatus.Connected, new SolidColorBrush(Colors.Green) },
-};
+        {
+            { SocketStatus.NA, new SolidColorBrush(ColorHelper.FromArgb(0, 0x71, 0x71, 0x71)) },
+            { SocketStatus.Resolving, new SolidColorBrush(Colors.Yellow) },
+            { SocketStatus.Connecting, new SolidColorBrush(Colors.Orange) },
+            { SocketStatus.Handshaking, new SolidColorBrush(Colors.Blue) },
+            { SocketStatus.Error, new SolidColorBrush(Colors.Red) },
+            { SocketStatus.ForceClosed, new SolidColorBrush(Colors.Purple) },
+            { SocketStatus.InvalidKey, new SolidColorBrush(Colors.Brown) },
+            { SocketStatus.Timeout, new SolidColorBrush(Colors.Pink) },
+            { SocketStatus.SendError, new SolidColorBrush(Colors.Maroon) },
+            { SocketStatus.Connected, new SolidColorBrush(Colors.Green) },
+        };
+
+        private bool _toggleEasyMouseShortcutHasConflict;
+        private string _toggleEasyMouseShortcutTooltip;
+        private bool _lockMachinesShortcutHasConflict;
+        private string _lockMachinesShortcutTooltip;
+        private bool _hotKeySwitch2AllPCHasConflict;
+        private string _hotKeySwitch2AllPCTooltip;
+        private bool _reconnectShortcutHasConflict;
+        private string _reconnectShortcutTooltip;
 
         private bool _connectFieldsVisible;
 
@@ -520,6 +533,190 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.MouseWithoutBorders;
+            }
+        }
+
+        private bool GetHotkeyConflictStatus(string hotkeyName)
+        {
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+        }
+
+        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData conflicts)
+        {
+            var moduleRelatedConflicts = GetModuleRelatedConflicts(conflicts);
+
+            // Clear existing status
+            _hotkeyConflictStatus.Clear();
+            _hotkeyConflictTooltips.Clear();
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+            // Process in-app conflicts
+            foreach (var conflict in moduleRelatedConflicts.InAppConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build conflict description
+                    }
+                }
+            }
+
+            // Process system conflicts
+            foreach (var conflict in moduleRelatedConflicts.SystemConflicts)
+            {
+                foreach (var module in conflict.Modules)
+                {
+                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _hotkeyConflictStatus[module.HotkeyName] = true;
+
+                        // TODO: Build Sys conflict description.
+                    }
+                }
+            }
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                ToggleEasyMouseShortcutHasConflict = GetHotkeyConflictStatus(MouseWithoutBordersProperties.DefaultHotKeyToggleEasyMouse.HotkeyName);
+                LockMachinesShortcutHasConflict = GetHotkeyConflictStatus(MouseWithoutBordersProperties.DefaultHotKeyLockMachine.HotkeyName);
+                HotKeySwitch2AllPCHasConflict = GetHotkeyConflictStatus(MouseWithoutBordersProperties.DefaultHotKeySwitch2AllPC.HotkeyName);
+                ReconnectShortcutHasConflict = GetHotkeyConflictStatus(MouseWithoutBordersProperties.DefaultHotKeyReconnect.HotkeyName);
+
+                // HotkeyTooltip = GetHotkeyConflictTooltip("AdvancedPasteUIShortcut");
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        public bool ToggleEasyMouseShortcutHasConflict
+        {
+            get => _toggleEasyMouseShortcutHasConflict;
+            set
+            {
+                if (_toggleEasyMouseShortcutHasConflict != value)
+                {
+                    _toggleEasyMouseShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(ToggleEasyMouseShortcutHasConflict));
+                }
+            }
+        }
+
+        public string ToggleEasyMouseShortcutTooltip
+        {
+            get => _toggleEasyMouseShortcutTooltip;
+            set
+            {
+                if (_toggleEasyMouseShortcutTooltip != value)
+                {
+                    _toggleEasyMouseShortcutTooltip = value;
+                    OnPropertyChanged(nameof(ToggleEasyMouseShortcutTooltip));
+                }
+            }
+        }
+
+        public bool LockMachinesShortcutHasConflict
+        {
+            get => _lockMachinesShortcutHasConflict;
+            set
+            {
+                if (_lockMachinesShortcutHasConflict != value)
+                {
+                    _lockMachinesShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(LockMachinesShortcutHasConflict));
+                }
+            }
+        }
+
+        public string LockMachinesShortcutTooltip
+        {
+            get => _lockMachinesShortcutTooltip;
+            set
+            {
+                if (_lockMachinesShortcutTooltip != value)
+                {
+                    _lockMachinesShortcutTooltip = value;
+                    OnPropertyChanged(nameof(LockMachinesShortcutTooltip));
+                }
+            }
+        }
+
+        public bool HotKeySwitch2AllPCHasConflict
+        {
+            get => _hotKeySwitch2AllPCHasConflict;
+            set
+            {
+                if (_hotKeySwitch2AllPCHasConflict != value)
+                {
+                    _hotKeySwitch2AllPCHasConflict = value;
+                    OnPropertyChanged(nameof(HotKeySwitch2AllPCHasConflict));
+                }
+            }
+        }
+
+        public string HotKeySwitch2AllPCTooltip
+        {
+            get => _hotKeySwitch2AllPCTooltip;
+            set
+            {
+                if (_hotKeySwitch2AllPCTooltip != value)
+                {
+                    _hotKeySwitch2AllPCTooltip = value;
+                    OnPropertyChanged(nameof(HotKeySwitch2AllPCTooltip));
+                }
+            }
+        }
+
+        public bool ReconnectShortcutHasConflict
+        {
+            get => _reconnectShortcutHasConflict;
+            set
+            {
+                if (_reconnectShortcutHasConflict != value)
+                {
+                    _reconnectShortcutHasConflict = value;
+                    OnPropertyChanged(nameof(ReconnectShortcutHasConflict));
+                }
+            }
+        }
+
+        public string ReconnectShortcutTooltip
+        {
+            get => _reconnectShortcutTooltip;
+            set
+            {
+                if (_reconnectShortcutTooltip != value)
+                {
+                    _reconnectShortcutTooltip = value;
+                    OnPropertyChanged(nameof(ReconnectShortcutTooltip));
+                }
             }
         }
 
