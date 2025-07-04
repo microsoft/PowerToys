@@ -208,7 +208,7 @@ public sealed partial class MainWindow : WindowEx,
         // Remember, IsIconic == "minimized", which is entirely different state
         // from "show/hide"
         // If we're currently minimized, restore us first, before we reveal
-        // our window. Otherwise we'd just be showing a minimized window -
+        // our window. Otherwise, we'd just be showing a minimized window -
         // which would remain not visible to the user.
         if (PInvoke.IsIconic(hwnd))
         {

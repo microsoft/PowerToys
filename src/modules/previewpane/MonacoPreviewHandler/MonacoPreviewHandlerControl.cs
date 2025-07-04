@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         private RichTextBox _textBox;
 
         /// <summary>
-        /// Represent if an text box info bar is added for showing message.
+        /// Represent if a text box info bar is added for showing message.
         /// </summary>
         private bool _infoBarAdded;
 
@@ -364,7 +364,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
             DetectionResult result = CharsetDetector.DetectFromFile(filePath);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            // Check if the detected encoding is not null, otherwise default to UTF-8
+            // Check if the detected encoding is not null; otherwise, default to UTF-8
             Encoding encodingToUse = result.Detected?.Encoding ?? Encoding.UTF8;
 
             using (StreamReader fileReader = new StreamReader(new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), encodingToUse))

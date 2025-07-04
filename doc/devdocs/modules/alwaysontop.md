@@ -55,7 +55,7 @@ The module is initialized in the AlwaysOnTop class. During initialization, the f
 The AlwaysOnTop class handles the pinning and unpinning of windows. Key methods include:
 
 - **PinTopmostWindow**: Pins the specified window on top of others and applies visual indicators
-- **UnpinTopmostWindowss**: Removes the pinning status and visual indicators from the specified window
+- **UnpinTopmostWindows**: Removes the pinning status and visual indicators from the specified window
 - **AssignBorder**: Applies a colored border around the pinned window based on user settings
 
 ### Settings Management

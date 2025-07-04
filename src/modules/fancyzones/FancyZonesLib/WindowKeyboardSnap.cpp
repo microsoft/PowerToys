@@ -474,7 +474,7 @@ bool WindowKeyboardSnap::Extend(HWND window, RECT windowRect, DWORD vkCode, Work
     }
     else
     {
-        auto deletethis = m_extendData.windowInitialIndexSet;
+        auto deleteThis = m_extendData.windowInitialIndexSet;
         m_extendData.windowFinalIndex = targetZone;
         resultIndexSet = layout->GetCombinedZoneRange(m_extendData.windowInitialIndexSet, { targetZone });
     }

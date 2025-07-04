@@ -119,7 +119,7 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// Method that re-opens and processes the filename the app already knows about; expected to not be a first time open
+        /// Method that re-opens and processes the filename that the app already knows about; expected to not be a first time open
         /// </summary>
         private void RefreshRegistryFile()
         {
@@ -986,7 +986,7 @@ namespace RegistryPreviewUILib
         /// Ask the user for the file path if it is unknown because of an unsaved file
         /// </summary>
         /// <param name="fileName">If not empty always ask for a file path and use the value as name.</param>
-        /// <returns>Returns true if user selected a path, otherwise false</returns>
+        /// <returns>Returns true if user selected a path; otherwise, false</returns>
         public bool AskFileName(string fileName)
         {
             if (string.IsNullOrEmpty(_appFileName) || !string.IsNullOrEmpty(fileName) )

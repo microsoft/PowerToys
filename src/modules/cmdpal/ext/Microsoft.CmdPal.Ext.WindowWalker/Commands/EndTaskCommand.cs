@@ -30,7 +30,7 @@ internal sealed partial class EndTaskCommand : InvokableCommand
     /// Method to initiate killing the process of a window
     /// </summary>
     /// <param name="window">Window data</param>
-    /// <returns>True if the PT Run window should close, otherwise false.</returns>
+    /// <returns>True if the PT Run window should close; otherwise, false.</returns>
     private static bool KillProcess(Window window)
     {
         // Validate process

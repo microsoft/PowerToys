@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="c1">base color</param>
         /// <param name="c2">test color</param>
         /// <param name="fuzz">fuzz factor, default is 10</param>
-        /// <returns>true if same, otherwise is false</returns>
+        /// <returns>true if same; otherwise, is false</returns>
         public static bool PixIsSame(Color c1, Color c2, int fuzz = 10)
         {
             return Math.Abs(c1.A - c2.A) <= fuzz && Math.Abs(c1.R - c2.R) <= fuzz && Math.Abs(c1.G - c2.G) <= fuzz && Math.Abs(c1.B - c2.B) <= fuzz;

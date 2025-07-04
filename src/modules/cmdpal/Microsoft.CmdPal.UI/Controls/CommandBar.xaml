@@ -11,7 +11,7 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -40,7 +40,7 @@
                 Default="{StaticResource DefaultContextMenuViewModelTemplate}" />
 
             <!--  Template for context items in the context item menu  -->
-            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
+            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewModels:CommandContextItemViewModel">
                 <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -70,7 +70,7 @@
             </DataTemplate>
 
             <!--  Template for context items flagged as critical  -->
-            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
+            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewModels:CommandContextItemViewModel">
                 <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -127,7 +127,7 @@
                         ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
                         Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="viewmodels:StatusMessageViewModel">
+                            <DataTemplate x:DataType="viewModels:StatusMessageViewModel">
                                 <StackPanel
                                     Grid.Row="0"
                                     Margin="0"

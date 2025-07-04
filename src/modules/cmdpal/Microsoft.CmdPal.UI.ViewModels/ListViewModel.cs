@@ -84,7 +84,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     protected override void OnFilterUpdated(string filter)
     {
-        //// TODO: Just temp testing, need to think about where we want to filter, as ACVS in View could be done, but then grouping need CVS, maybe we do grouping in view
+        //// TODO: Just temp testing, need to think about where we want to filter, as AdvancedCollectionView in View could be done, but then grouping need CollectionViewSource, maybe we do grouping in view
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
         //// Investigate if we re-use src\modules\cmdpal\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\ListHelpers.cs InPlaceUpdateList and FilterList?
 

@@ -190,7 +190,7 @@ void notifications::show_toast_with_activations(std::wstring message,
     // We must set toast's title and contents immediately, because some of the toasts we send could be snoozed.
     // Windows instantiates the snoozed toast from scratch before showing it again, so all bindings that were set
     // using NotificationData would be empty.
-    // Add the launch attribute if launch_uri is provided, otherwise omit it
+    // Add the launch attribute if launch_uri is provided; otherwise, omit it
     toast_xml += LR"(<?xml version="1.0"?>)";
     if (!launch_uri.empty())
     {

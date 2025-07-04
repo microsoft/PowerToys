@@ -33,7 +33,7 @@ namespace WorkspacesEditor.Telemetry
         // Number of apps with "Launch as admin" set
         public int AdminCount { get; set; }
 
-        // True of user checked "Create Shortcut". False if not.
+        // True if user checked "Create Shortcut". False if not.
         public bool ShortcutCreated { get; set; }
 
         public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;

@@ -104,7 +104,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 byte[] allDeskValue = (byte[])virtualDesktopKey.GetValue("VirtualDesktopIDs", null);
                 if (allDeskValue != null)
                 {
-                    // We clear only, if we can read from registry. Otherwise we keep the existing values.
+                    // We clear only, if we can read from registry. Otherwise, we keep the existing values.
                     _availableDesktops.Clear();
 
                     // Each guid has a length of 16 elements
@@ -135,7 +135,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
                 else
                 {
                     // The registry value is missing when the user hasn't switched the desktop at least one time before reading the registry. In this case we can set it to desktop one.
-                    // We can only set it to desktop one, if we have at least one desktop in the desktops list. Otherwise we keep the existing value.
+                    // We can only set it to desktop one, if we have at least one desktop in the desktops list. Otherwise, we keep the existing value.
                     Log.Debug("VirtualDesktopHelper.UpdateDesktopList() failed to read the id for the current desktop form registry.", typeof(VirtualDesktopHelper));
                     _currentDesktop = _availableDesktops.Count >= 1 ? _availableDesktops[0] : _currentDesktop;
                 }
@@ -237,7 +237,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// Returns the number (position) of a desktop.
         /// </summary>
         /// <param name="desktop">The guid of the desktop.</param>
-        /// <returns>Number of the desktop, if found. Otherwise a value of zero.</returns>
+        /// <returns>Number of the desktop, if found. Otherwise, a value of zero.</returns>
         public int GetDesktopNumber(Guid desktop)
         {
             if (_desktopListAutoUpdate)

@@ -117,8 +117,8 @@ namespace MouseUtils.UITests
                 VerifyMouseHighlighterNotAppears(ref settings, "leftClick");
                 VerifyMouseHighlighterNotAppears(ref settings, "rightClick");
 
-                // [Test Case] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-                // [Test Case] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+                // [Test Case] With left mouse button pressed, drag the mouse and verify the highlight is dragged with the pointer.
+                // [Test Case] With right mouse button pressed, drag the mouse and verify the highlight is dragged with the pointer.
                 foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
                 xy = Session.GetMousePosition();
                 Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);

@@ -32,7 +32,7 @@ internal sealed partial class ServiceCommand : InvokableCommand
         }
         else
         {
-            Icon = new IconInfo("\xEDB5"); // Playbadge12 icon
+            Icon = new IconInfo("\xEDB5"); // PlayBadge12 icon
         }
     }
 

@@ -147,7 +147,7 @@ void ThumbnailCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     auto adjustedHeight = windowRect.bottom - windowRect.top;
     winrt::check_bool(SetWindowPos(m_window, HWND_TOPMOST, 0, 0, adjustedWidth, adjustedHeight, SWP_NOMOVE | SWP_SHOWWINDOW));
 
-    // Setup the thumbnail
+    // Set up the thumbnail
     winrt::check_hresult(DwmRegisterThumbnail(m_window, m_currentTarget, m_thumbnail.addressof()));
 
     clientRect = {};

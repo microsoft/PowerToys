@@ -164,7 +164,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                         300px settings card height - 1px top border - 7px top margin - 8px bottom margin - 1px bottom border = 283px image height
 
-                    this ensures we get a preview image scaled at 100% so borders etc are shown at exact pixel sizes in the preview
+                    this ensures we get a preview image scaled at 100% so borders, etc., are shown at exact pixel sizes in the preview
                 */
                 var canvasSize = new SizeInfo(desktopSize.Width, 283).Clamp(desktopSize);
 

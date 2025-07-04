@@ -23,7 +23,7 @@ namespace Common.ComInterlop
         void GetWindowContext(IntPtr pinfo);
 
         /// <summary>
-        /// Directs the host to handle an keyboard shortcut passed from the preview handler.
+        /// Directs the host to handle a keyboard shortcut passed from the preview handler.
         /// </summary>
         /// <param name="pmsg">A reference to <see cref="MSG"/> that corresponds to a keyboard shortcut.</param>
         /// <returns>If the keyboard shortcut is one that the host intends to handle, the host will process it and return S_OK(0); otherwise, it returns S_FALSE(1).</returns>

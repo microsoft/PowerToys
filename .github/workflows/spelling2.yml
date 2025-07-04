@@ -105,7 +105,7 @@ jobs:
           report-timing: 1
           warnings: bad-regex,binary-file,deprecated-feature,ignored-expect-variant,large-file,limited-references,no-newline-at-eof,noisy-file,non-alpha-in-dictionary,token-is-substring,unexpected-line-ending,whitespace-in-dictionary,minified-file,unsupported-configuration,no-files-to-check,unclosed-block-ignore-begin,unclosed-block-ignore-end
           experimental_apply_changes_via_bot: 1
-          use_sarif: ${{ (!github.event.pull_request || (github.event.pull_request.head.repo.full_name == github.repository)) && 1 }}
+          use_sarif: 1
           check_extra_dictionaries: ""
           dictionary_source_prefixes: >
             {
@@ -113,37 +113,28 @@ jobs:
             }
           extra_dictionaries: |
             cspell:software-terms/softwareTerms.txt
+            cspell:cpp/stdlib-c.txt
             cspell:cpp/stdlib-cpp.txt
             cspell:filetypes/filetypes.txt
-            cspell:cpp/stdlib-c.txt
-            cspell:lorem-ipsum/dictionary.txt
-            cspell:python/python/python-lib.txt
             cspell:php/php.txt
-            cspell:fullstack/fullstack.txt
-            cspell:dotnet/dotnet.txt
-            cspell:swift/swift.txt
-            cspell:node/node.txt
             cspell:dart/dart.txt
-            cspell:django/django.txt
-            cspell:python/python/python.txt
+            cspell:dotnet/dotnet.txt
             cspell:powershell/powershell.txt
-            cspell:npm/npm.txt
-            cspell:golang/go.txt
-            cspell:cpp/compiler-msvc.txt
             cspell:csharp/csharp.txt
-            cspell:html/html.txt
+            cspell:python/python/python-lib.txt
+            cspell:node/node.txt
+            cspell:golang/go.txt
+            cspell:npm/npm.txt
+            cspell:fullstack/fullstack.txt
+            cspell:css/css.txt
             cspell:java/java.txt
-            cspell:aws/aws.txt
             cspell:typescript/typescript.txt
-            cspell:cpp/lang-keywords.txt
+            cspell:html/html.txt
+            cspell:r/r.txt
+            cspell:aws/aws.txt
+            cspell:cpp/compiler-msvc.txt
             cspell:python/common/extra.txt
             cspell:scala/scala.txt
-            cspell:shell/shell-all-words.txt
-            cspell:css/css.txt
-            cspell:r/r.txt
-            cspell:java/java-terms.txt
-            cspell:cpp/stdlib-cerrno.txt
-            cspell:k8s/k8s.txt
 
   comment-push:
     name: Report (Push)

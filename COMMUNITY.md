@@ -183,9 +183,9 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
 - [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
 - [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
-- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
-- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
-- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev lead
+- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev Lead
+- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev Lead
+- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead
 - [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
 - [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
 - [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
@@ -225,4 +225,4 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
-- [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
+- [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev Lead

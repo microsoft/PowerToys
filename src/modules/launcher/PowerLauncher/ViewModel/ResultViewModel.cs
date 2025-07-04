@@ -280,7 +280,7 @@ namespace PowerLauncher.ViewModel
         /// <summary>
         ///  Triggers the action on the selected context button
         /// </summary>
-        /// <returns>False if there is nothing selected, otherwise true</returns>
+        /// <returns>False if there is nothing selected; otherwise, true</returns>
         public bool ExecuteSelectedContextButton()
         {
             if (HasSelectedContextButton())

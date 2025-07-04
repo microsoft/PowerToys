@@ -27,7 +27,7 @@ namespace MouseWithoutBorders.Core;
  *
  * SEQUENCE OF EVENTS:
  * DragDropStep01: MachineX: Remember mouse down state since it could be a start of a dragging
- * DragDropStep02: MachineY: Send an message to the MachineX to ask it to check if it is
+ * DragDropStep02: MachineY: Send a message to the MachineX to ask it to check if it is
  *                           doing drag/drop
  * DragDropStep03: MachineX: Got explorerDragDrop, send WM_CHECK_EXPLORER_DRAG_DROP to its mainForm
  * DragDropStep04: MachineX: Show Mouse Without Borders Helper form at mouse cursor to get DragEnter event.

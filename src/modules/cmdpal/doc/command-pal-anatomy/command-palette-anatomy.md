@@ -204,7 +204,7 @@ Let's see what this currently looks like in the Command Palette. First, deploy y
 
 ![alt text](image-3.png)
 
-Then, open the Command Palette by pressing `Win+Ctl+.` and search for "Search SSH Keys". You should see the command displayed in the root view of the Command Palette like this: 
+Then, open the Command Palette by pressing `Win+Ctrl+.` and search for "Search SSH Keys". You should see the command displayed in the root view of the Command Palette like this:
 
 ![alt text](image-4.png)
 

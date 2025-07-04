@@ -2642,7 +2642,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>First part of the default name of new sizes that can be added in PT's settings ui.</comment>
   </data>
   <data name="Awake_IntervalSettingsCard.Header" xml:space="preserve">
-    <value>Interval before returning to the previous awakeness state</value>
+    <value>Interval before returning to the previous awake state</value>
   </data>
   <data name="Awake_ExpirationSettingsExpander.Header" xml:space="preserve">
     <value>End date and time</value>

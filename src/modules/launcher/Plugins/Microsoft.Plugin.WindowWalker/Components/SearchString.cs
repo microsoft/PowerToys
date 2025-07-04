@@ -8,7 +8,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
     /// <summary>
     /// A class to represent a search string
     /// </summary>
-    /// <remarks>Class was added inorder to be able to attach various context data to
+    /// <remarks>Class was added in order to be able to attach various context data to
     /// a search string</remarks>
     internal class SearchString
     {

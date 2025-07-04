@@ -8,7 +8,7 @@ namespace Microsoft.Plugin.Indexer.DriveDetection
 {
     public class RegistryWrapper : IRegistryWrapper
     {
-        // Given the registrypath and the name of the value, to retrieve the data corresponding to that registry key
+        // Given the registry path and the name of the value, to retrieve the data corresponding to that registry key
         public int GetHKLMRegistryValue(string registryLocation, string valueName)
         {
             using (RegistryKey regKey = Registry.LocalMachine.OpenSubKey(registryLocation))

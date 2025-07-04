@@ -60,7 +60,7 @@ OverlayWindow::OverlayWindow(
     m_crosshairCursor.reset(winrt::check_pointer(LoadCursorW(nullptr, IDC_CROSS)));
     m_cursorType = CursorType::Standard;
 
-    // Setup the visual tree
+    // Set up the visual tree
     m_compositor = compositor;
     m_target = CreateWindowTarget(m_compositor);
     m_rootVisual = m_compositor.CreateContainerVisual();

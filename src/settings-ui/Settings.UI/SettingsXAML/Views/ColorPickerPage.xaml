@@ -9,9 +9,9 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     x:Name="RootPage"
-    d:DataContext="{d:DesignInstance Type=viewmodels:ColorPickerViewModel}"
+    d:DataContext="{d:DesignInstance Type=viewModels:ColorPickerViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 

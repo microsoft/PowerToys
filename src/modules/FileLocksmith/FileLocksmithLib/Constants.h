@@ -14,7 +14,7 @@ namespace constants::nonlocalizable
     // String key used by PowerToys
     constexpr WCHAR PowerToyKey[] = L"File Locksmith";
 
-    // Nonlocalized name of this PowerToy, for logs, etc
+    // Nonlocalized name of this PowerToy, for logs, etc.
     constexpr WCHAR PowerToyName[] = L"File Locksmith";
 
     // JSON key used to store whether the module is enabled

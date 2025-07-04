@@ -68,4 +68,4 @@ EnvironmentVariableUILib            # Abstracted UI methods and implementations
 
 - The module reads and writes variables directly to the registry instead of using the Environment API
 - This direct registry access approach is used because the Environment API automatically expands variables and has a timeout for notifications
-- When a profile variable has the same name as an existing User variable, a backup is created with a naming pattern: `VARIABLE_NAME_powertoys_PROFILE_NAME`
+- When a profile variable has the same name as an existing User variable, a backup is created with the naming pattern: `VARIABLE_NAME_powertoys_PROFILE_NAME`
