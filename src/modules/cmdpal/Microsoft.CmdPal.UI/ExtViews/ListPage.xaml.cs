@@ -262,6 +262,12 @@ public sealed partial class ListPage : Page,
         // selection once, at the end of all the updating.
         if (ItemsList.SelectedItem == null)
         {
+        }
+
+        // Always reset the selected item when the top-level list page changes
+        // its items
+        if (!sender.IsNested)
+        {
             ItemsList.SelectedIndex = 0;
         }
     }
