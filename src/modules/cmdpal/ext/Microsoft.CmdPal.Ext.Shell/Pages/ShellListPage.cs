@@ -81,8 +81,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         _cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = _cancellationTokenSource.Token;
 
-        IsLoading = true;
-
         try
         {
             // Save the latest search task
@@ -156,17 +154,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             return score;
         };
 
-        var filteredHistory = string.IsNullOrEmpty(searchText)
-            ? _historyItems.Values.ToList()
-            : ListHelpers.FilterList<KeyValuePair<string, ListItem>>(
-                _historyItems,
-                searchText,
-                filterHistory)
-             .Select(p => p.Value);
-
-        _currentHistoryItems.Clear();
-        _currentHistoryItems.AddRange(filteredHistory);
-
         // Check for cancellation after environment expansion
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -177,6 +164,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             _pathItems.Clear();
             _exeItem = null;
             _uriItem = null;
+
+            _currentHistoryItems.Clear();
+            _currentHistoryItems.AddRange(_historyItems.Values);
+
             return;
         }
 
@@ -250,6 +241,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             && (!exeExists || pathIsDir)
             && couldResolvePath)
         {
+            IsLoading = true;
             await CreatePathItemsAsync(expanded, searchText, cancellationToken);
         }
 
@@ -274,6 +266,33 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         {
             _uriItem = null;
         }
+
+        var histItemsNotInSearch =
+            _historyItems
+                .Where(kv => !kv.Key.Equals(newSearch, StringComparison.OrdinalIgnoreCase));
+        if (_exeItem != null)
+        {
+            // If we have an exe item, we want to remove it from the history items
+            histItemsNotInSearch = histItemsNotInSearch
+                .Where(kv => !kv.Value.Title.Equals(_exeItem.Title, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (_uriItem != null)
+        {
+            // If we have an uri item, we want to remove it from the history items
+            histItemsNotInSearch = histItemsNotInSearch
+                .Where(kv => !kv.Value.Title.Equals(_uriItem.Title, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var filteredHistory =
+            ListHelpers.FilterList<KeyValuePair<string, ListItem>>(
+                histItemsNotInSearch,
+                searchText,
+                filterHistory)
+            .Select(p => p.Value);
+
+        _currentHistoryItems.Clear();
+        _currentHistoryItems.AddRange(filteredHistory);
 
         // Final cancellation check
         cancellationToken.ThrowIfCancellationRequested();
@@ -524,8 +543,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         _historyService.AddRunHistoryItem(commandString);
-
         LoadInitialHistory();
+        DoUpdateSearchText(SearchText);
     }
 
     public void Dispose()
