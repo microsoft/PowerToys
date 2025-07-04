@@ -29,7 +29,8 @@
     <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetupVNext-$(Version)-$(Platform)</OutputName>
     <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
     <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' != 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\MachineSetup</IntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' == 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\UserSetup</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="PowerToys.wxs" />

@@ -91,8 +91,8 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   <PropertyGroup>
     <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
     <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
-    <IntermediateOutputPath Condition=" '$(PerUser)' != 'true' ">obj\$(Platform)\$(Configuration)\MachineSetup</IntermediateOutputPath>
-    <IntermediateOutputPath Condition=" '$(PerUser)' == 'true' ">obj\$(Platform)\$(Configuration)\UserSetup</IntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' != 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\MachineSetup</IntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(PerUser)' == 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\UserSetup</IntermediateOutputPath>
     <SuppressIces>ICE40</SuppressIces>
   </PropertyGroup>
   <ItemGroup>
