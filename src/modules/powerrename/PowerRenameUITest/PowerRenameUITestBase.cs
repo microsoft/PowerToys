@@ -21,7 +21,7 @@ public class PowerRenameUITestBase : UITestBase
         Path.Combine("testItems", "testCase1.txt"), // Test file
     };
 
-    private static readonly string BaseTestFileFolderPath = Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "test", typeof(BasicRenameTests).Name);
+    private static readonly string BaseTestFileFolderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "test", typeof(BasicRenameTests).Name);
 
     private static List<string> TestFilesAndFoldersArray { get; } = InitCleanTestEnvironment();
 
