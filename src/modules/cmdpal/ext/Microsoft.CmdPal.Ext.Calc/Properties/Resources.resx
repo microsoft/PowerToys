@@ -184,6 +184,12 @@
     <value>Ignores your system setting and expects numbers in the format '{0}'.</value>
     <comment>{0} is a placeholder and will be replaced in code.</comment>
   </data>
+  <data name="calculator_settings_close_on_enter" xml:space="preserve">
+    <value>Close on Enter</value>
+  </data>
+  <data name="calculator_settings_close_on_enter_description" xml:space="preserve">
+    <value>Makes Copy and close the primary command</value>
+  </data>
   <data name="calculator_settings_replace_input" xml:space="preserve">
     <value>Replace input if query ends with '='</value>
   </data>
