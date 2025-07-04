@@ -34,9 +34,9 @@ stages:
             inputs:
               buildType: 'specific'
               project: 'Dart'
-              definition: '76541' # main branch build pipeline 的 definitionId
+              definition: '76541'
               buildVersionToDownload: 'latest'
               branchName: 'refs/heads/main'
-              artifactName: 'build-x64-Release/PowerToysSetup-0.0.1-x64.exe'
+              artifactName: 'build-x64-Release'
               targetPath: '$(Build.ArtifactStagingDirectory)'
  
