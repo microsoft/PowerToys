@@ -31,6 +31,8 @@
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=OneWay}"
+                            HasConflict="{x:Bind Path=ViewModel.HotkeyHasConflict, Mode=OneWay}"
+                            Tooltip="{x:Bind Path=ViewModel.HotkeyTooltip, Mode=OneWay}"
                             IsEnabled="False" />
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton
