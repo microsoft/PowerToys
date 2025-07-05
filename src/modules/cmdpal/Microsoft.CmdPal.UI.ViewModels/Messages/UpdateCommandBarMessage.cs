@@ -16,11 +16,11 @@ public record UpdateCommandBarMessage(ICommandBarContext? ViewModel)
 
 public interface IContextMenuContext : INotifyPropertyChanged
 {
-    public IEnumerable<CommandContextItemViewModel> MoreCommands { get; }
+    public IEnumerable<IContextItemViewModel> MoreCommands { get; }
 
     public bool HasMoreCommands { get; }
 
-    public List<CommandContextItemViewModel> AllCommands { get; }
+    public List<IContextItemViewModel> AllCommands { get; }
 
     /// <summary>
     /// Generates a mapping of key -> command item for this particular item's
@@ -33,6 +33,7 @@ public interface IContextMenuContext : INotifyPropertyChanged
     public Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
     {
         return MoreCommands
+            .OfType<CommandContextItemViewModel>()
             .Where(c => c.HasRequestedShortcut)
             .ToDictionary(
             c => c.RequestedShortcut ?? new KeyChord(0, 0, 0),
