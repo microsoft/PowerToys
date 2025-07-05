@@ -146,14 +146,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var expanded = Environment.ExpandEnvironmentVariables(searchText);
         Debug.WriteLine($"Run: searchText={searchText} -> expanded={expanded}");
 
-        // Filter the history items based on the search text
-        var filterHistory = (string query, KeyValuePair<string, ListItem> pair) =>
-        {
-            // Fuzzy search on the key (command string)
-            var score = StringMatcher.FuzzySearch(query, pair.Key).Score;
-            return score;
-        };
-
         // Check for cancellation after environment expansion
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -284,6 +276,14 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
                 .Where(kv => !kv.Value.Title.Equals(_uriItem.Title, StringComparison.OrdinalIgnoreCase));
         }
 
+        // Filter the history items based on the search text
+        var filterHistory = (string query, KeyValuePair<string, ListItem> pair) =>
+        {
+            // Fuzzy search on the key (command string)
+            var score = StringMatcher.FuzzySearch(query, pair.Key).Score;
+            return score;
+        };
+        
         var filteredHistory =
             ListHelpers.FilterList<KeyValuePair<string, ListItem>>(
                 histItemsNotInSearch,
