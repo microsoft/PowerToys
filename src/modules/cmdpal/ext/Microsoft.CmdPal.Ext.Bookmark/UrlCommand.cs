@@ -3,18 +3,25 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Storage.Streams;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public partial class UrlCommand : InvokableCommand
 {
+    private readonly Lazy<IconInfo> _icon;
+
     public string Type { get; }
 
     public string Url { get; }
+
+    public override IconInfo Icon { get => _icon.Value; set => base.Icon = value; }
 
     public UrlCommand(BookmarkData data)
         : this(data.Name, data.Bookmark, data.Type)
@@ -26,7 +33,15 @@ public partial class UrlCommand : InvokableCommand
         Name = name;
         Type = type;
         Url = url;
-        Icon = new IconInfo(IconFromUrl(Url, type));
+
+        // Icon = new IconInfo(IconFromUrl(Url, type));
+        _icon = new Lazy<IconInfo>(() =>
+        {
+            ShellHelpers.ParseExecutableAndArgs(Url, out var exe, out var args);
+            var t = GetIconForPath(exe);
+            t.Wait();
+            return t.Result;
+        });
     }
 
     public override CommandResult Invoke()
@@ -135,5 +150,92 @@ public partial class UrlCommand : InvokableCommand
 
                 return "🔗";
         }
+    }
+
+    public static async Task<IconInfo> GetIconForPath(string target)
+    {
+        IconInfo? icon = null;
+
+        // First, try to get the icon from the thumbnail helper
+        // This works for local files and folders
+        icon = await MaybeGetIconForPath(target);
+        if (icon != null)
+        {
+            return icon;
+        }
+
+        // Okay, that failed. Try to resolve the full path of the executable
+        var exeExists = false;
+        var fullExePath = string.Empty;
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
+
+            // Use Task.Run with timeout - this will actually timeout even if the sync operations don't respond to cancellation
+            var pathResolutionTask = Task.Run(
+                () =>
+            {
+                // Don't check cancellation token here - let the Task timeout handle it
+                exeExists = ShellHelpers.FileExistInPath(target, out fullExePath);
+            },
+                CancellationToken.None);
+
+            // Wait for either completion or timeout
+            pathResolutionTask.Wait(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Debug.WriteLine("Operation was canceled.");
+        }
+
+        if (exeExists)
+        {
+            // If the executable exists, try to get the icon from the file
+            icon = await MaybeGetIconForPath(fullExePath);
+            if (icon != null)
+            {
+                return icon;
+            }
+        }
+
+        // Get the base url up to the first placeholder
+        var placeholderIndex = target.IndexOf('{');
+        var baseString = placeholderIndex > 0 ? target.Substring(0, placeholderIndex) : target;
+        try
+        {
+            var uri = GetUri(baseString);
+            if (uri != null)
+            {
+                var hostname = uri.Host;
+                var faviconUrl = $"{uri.Scheme}://{hostname}/favicon.ico";
+                icon = new IconInfo(faviconUrl);
+            }
+        }
+        catch (UriFormatException)
+        {
+        }
+
+        // If we still don't have an icon, use the target as the icon
+        icon = icon ?? new IconInfo(target);
+
+        return icon;
+    }
+
+    private static async Task<IconInfo?> MaybeGetIconForPath(string target)
+    {
+        try
+        {
+            var stream = await ThumbnailHelper.GetThumbnail(target);
+            if (stream != null)
+            {
+                var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                return new IconInfo(data, data);
+            }
+        }
+        catch
+        {
+        }
+
+        return null;
     }
 }
