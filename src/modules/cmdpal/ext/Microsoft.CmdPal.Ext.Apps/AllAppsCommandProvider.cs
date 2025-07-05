@@ -11,13 +11,15 @@ namespace Microsoft.CmdPal.Ext.Apps;
 
 public partial class AllAppsCommandProvider : CommandProvider
 {
+    public const string WellKnownId = "AllApps";
+
     public static readonly AllAppsPage Page = new();
 
     private readonly CommandItem _listItem;
 
     public AllAppsCommandProvider()
     {
-        Id = "AllApps";
+        Id = WellKnownId;
         DisplayName = Resources.installed_apps;
         Icon = IconHelpers.FromRelativePath("Assets\\AllApps.svg");
         Settings = AllAppsSettings.Instance.Settings;
