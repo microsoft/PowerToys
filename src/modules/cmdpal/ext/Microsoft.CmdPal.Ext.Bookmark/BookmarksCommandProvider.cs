@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using ManagedCommon;
@@ -39,10 +38,7 @@ public partial class BookmarksCommandProvider : CommandProvider
     private void AddNewCommand_AddedCommand(object sender, BookmarkData args)
     {
         ExtensionHost.LogMessage($"Adding bookmark ({args.Name},{args.Bookmark})");
-        if (_bookmarks != null)
-        {
-            _bookmarks.Data.Add(args);
-        }
+        _bookmarks?.Data.Add(args);
 
         SaveAndUpdateCommands();
     }
@@ -128,9 +124,9 @@ public partial class BookmarksCommandProvider : CommandProvider
                 contextMenu.Add(
                     new CommandContextItem(new OpenInTerminalCommand(urlCommand.Url)));
             }
-
-            listItem.Subtitle = urlCommand.Url;
         }
+
+        listItem.Subtitle = bookmark.Bookmark;
 
         var edit = new AddBookmarkPage(bookmark) { Icon = EditIcon };
         edit.AddedCommand += Edit_AddedCommand;
