@@ -163,7 +163,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             return;
         }
 
-        ParseExecutableAndArgs(expanded, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(expanded, out var exe, out var args);
         Debug.WriteLine($"Run: expanded={expanded} -> exe,args='{exe}', '{args}'");
 
         // Check for cancellation before file system operations
@@ -283,7 +283,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             var score = StringMatcher.FuzzySearch(query, pair.Key).Score;
             return score;
         };
-        
+
         var filteredHistory =
             ListHelpers.FilterList<KeyValuePair<string, ListItem>>(
                 histItemsNotInSearch,
@@ -456,46 +456,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         else
         {
             _pathItems.Clear();
-        }
-    }
-
-    internal static void ParseExecutableAndArgs(string input, out string executable, out string arguments)
-    {
-        input = input.Trim();
-        executable = string.Empty;
-        arguments = string.Empty;
-
-        if (string.IsNullOrEmpty(input))
-        {
-            return;
-        }
-
-        if (input.StartsWith("\"", System.StringComparison.InvariantCultureIgnoreCase))
-        {
-            // Find the closing quote
-            var closingQuoteIndex = input.IndexOf('\"', 1);
-            if (closingQuoteIndex > 0)
-            {
-                executable = input.Substring(1, closingQuoteIndex - 1);
-                if (closingQuoteIndex + 1 < input.Length)
-                {
-                    arguments = input.Substring(closingQuoteIndex + 1).TrimStart();
-                }
-            }
-        }
-        else
-        {
-            // Executable ends at first space
-            var firstSpaceIndex = input.IndexOf(' ');
-            if (firstSpaceIndex > 0)
-            {
-                executable = input.Substring(0, firstSpaceIndex);
-                arguments = input[(firstSpaceIndex + 1)..].TrimStart();
-            }
-            else
-            {
-                executable = input;
-            }
         }
     }
 

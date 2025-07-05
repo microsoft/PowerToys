@@ -179,7 +179,7 @@ public class ShellListPageHelpers
             return null;
         }
 
-        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
 
         var exeExists = false;
         var pathIsDir = false;

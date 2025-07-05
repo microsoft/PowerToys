@@ -4,6 +4,7 @@
 
 using System;
 using ManagedCommon;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
@@ -30,25 +31,64 @@ public partial class UrlCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        var target = Url;
-        try
+        var success = LaunchCommand(Url);
+
+        return success ? CommandResult.Dismiss() : CommandResult.KeepOpen();
+    }
+
+    internal static bool LaunchCommand(string target)
+    {
+        ShellHelpers.ParseExecutableAndArgs(target, out var exe, out var args);
+        return LaunchCommand(exe, args);
+    }
+
+    internal static bool LaunchCommand(string exe, string args)
+    {
+        if (string.IsNullOrEmpty(exe))
         {
-            var uri = GetUri(target);
+            var message = "No executable found in the command."; // TODO:LOC
+            Logger.LogError(message);
+
+            var warnToast = new ToastStatusMessage(new StatusMessage
+            {
+                Message = message,
+                State = MessageState.Warning,
+            });
+            warnToast.Show();
+
+            return false;
+        }
+
+        if (ShellHelpers.OpenInShell(exe, args))
+        {
+            return true;
+        }
+
+        // If we reach here, it means the command could not be executed
+        // If there aren't args, then try again as a https: uri
+        if (string.IsNullOrEmpty(args))
+        {
+            var uri = GetUri(exe);
             if (uri != null)
             {
                 _ = Launcher.LaunchUriAsync(uri);
             }
             else
             {
-                // throw new UriFormatException("The provided URL is not valid.");
+                Logger.LogError("The provided URL is not valid.");
             }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex.Message);
+
+            return true;
         }
 
-        return CommandResult.Dismiss();
+        var errorMessage = $"Failed to launch command {exe} {args}"; // TODO:LOC
+        var toast = new ToastStatusMessage(new StatusMessage
+        {
+            Message = errorMessage,
+            State = MessageState.Error,
+        });
+        toast.Show();
+        return false;
     }
 
     internal static Uri? GetUri(string url)

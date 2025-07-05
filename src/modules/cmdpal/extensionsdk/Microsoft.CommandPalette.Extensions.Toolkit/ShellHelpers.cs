@@ -59,4 +59,47 @@ public static class ShellHelpers
         Administrator,
         OtherUser,
     }
+
+    /// <summary>
+    /// Parses the input string to extract the executable and its arguments.
+    /// </summary>
+    public static void ParseExecutableAndArgs(string input, out string executable, out string arguments)
+    {
+        input = input.Trim();
+        executable = string.Empty;
+        arguments = string.Empty;
+
+        if (string.IsNullOrEmpty(input))
+        {
+            return;
+        }
+
+        if (input.StartsWith("\"", System.StringComparison.InvariantCultureIgnoreCase))
+        {
+            // Find the closing quote
+            var closingQuoteIndex = input.IndexOf('\"', 1);
+            if (closingQuoteIndex > 0)
+            {
+                executable = input.Substring(1, closingQuoteIndex - 1);
+                if (closingQuoteIndex + 1 < input.Length)
+                {
+                    arguments = input.Substring(closingQuoteIndex + 1).TrimStart();
+                }
+            }
+        }
+        else
+        {
+            // Executable ends at first space
+            var firstSpaceIndex = input.IndexOf(' ');
+            if (firstSpaceIndex > 0)
+            {
+                executable = input.Substring(0, firstSpaceIndex);
+                arguments = input[(firstSpaceIndex + 1)..].TrimStart();
+            }
+            else
+            {
+                executable = input;
+            }
+        }
+    }
 }
