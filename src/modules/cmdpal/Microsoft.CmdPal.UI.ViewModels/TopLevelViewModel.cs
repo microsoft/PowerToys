@@ -102,6 +102,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             }
 
             HandleChangeAlias();
+            OnPropertyChanged(nameof(AliasText));
+            OnPropertyChanged(nameof(IsDirectAlias));
         }
     }
 
@@ -116,6 +118,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             }
 
             HandleChangeAlias();
+            OnPropertyChanged(nameof(IsDirectAlias));
         }
     }
 

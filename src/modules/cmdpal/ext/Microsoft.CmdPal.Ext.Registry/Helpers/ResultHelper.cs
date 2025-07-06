@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Registry.Classes;
 using Microsoft.CmdPal.Ext.Registry.Commands;
 using Microsoft.CmdPal.Ext.Registry.Constants;
@@ -96,6 +96,7 @@ internal static class ResultHelper
             }
             catch (Exception valueException)
             {
+                Logger.LogError(valueException.Message);
                 var registryEntry = new RegistryEntry(key.Name, valueException);
 
                 resultList.Add(new ListItem(new OpenKeyInEditorCommand(registryEntry))

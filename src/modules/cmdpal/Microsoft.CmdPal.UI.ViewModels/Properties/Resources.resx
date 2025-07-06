@@ -195,7 +195,7 @@
     <value>Extension name</value>
   </data>
   <data name="builtin_create_extension_name_required" xml:space="preserve">
-    <value>Extension name is required, without spaces</value>
+    <value>Extension name is required and must be a valid C# identifier (start with a letter or underscore, followed by letters, numbers, or underscores)</value>
   </data>
   <data name="builtin_create_extension_display_name_header" xml:space="preserve">
     <value>Display name</value>

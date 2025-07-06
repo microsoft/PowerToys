@@ -611,6 +611,7 @@
         <ContentDialog
             x:Name="EntryDialog"
             x:Uid="EntryDialog"
+            x:DataType="models:Entry"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             Loaded="ContentDialog_Loaded_ApplyMargin"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">

@@ -51,6 +51,12 @@ public record PerformCommandMessage
         Context = context.Unsafe;
     }
 
+    public PerformCommandMessage(CommandContextItemViewModel contextCommand)
+    {
+        Command = contextCommand.Command.Model;
+        Context = contextCommand.Model.Unsafe;
+    }
+
     public PerformCommandMessage(ConfirmResultViewModel vm)
     {
         Command = vm.PrimaryCommand.Model;

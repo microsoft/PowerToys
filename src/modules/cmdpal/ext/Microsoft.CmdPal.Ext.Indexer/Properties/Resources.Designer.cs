@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Actions.
+        /// </summary>
+        internal static string Indexer_Command_Actions {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Actions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Browse.
         /// </summary>
         internal static string Indexer_Command_Browse {
@@ -124,6 +133,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search for &quot;{0}&quot; in files.
+        /// </summary>
+        internal static string Indexer_fallback_searchPage_title {
+            get {
+                return ResourceManager.GetString("Indexer_fallback_searchPage_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This file doesn&apos;t exist.
         /// </summary>
         internal static string Indexer_File_Does_Not_Exist {
@@ -165,6 +183,42 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_PlaceholderText {
             get {
                 return ResourceManager.GetString("Indexer_PlaceholderText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Always on.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_AlwaysOn {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_AlwaysOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only when file path exist.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_FilePathExist {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_FilePathExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows file search results on the top-level search results.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_Mode {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Mode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Always off.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_Off {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Off", resourceCulture);
             }
         }
         

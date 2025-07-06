@@ -21,67 +21,74 @@
 
 - Create a new project and add the following references to the project file. Change the OutputPath to your own module's path.
   ```
-  	<PropertyGroup>
-  		<OutputType>Library</OutputType>
-  		<!-- This is a UI test, so don't run as part of MSBuild -->
-  		<RunVSTest>false</RunVSTest>
-  	</PropertyGroup>
-  
-  	<PropertyGroup>
-  		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\KeyboardManagerUITests\</OutputPath>
-  	</PropertyGroup>
-  
-  	<ItemGroup>
-  	    <PackageReference Include="MSTest" />
-  	    <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
-  	    <Folder Include="Properties\" />
-	</ItemGroup>
+    <Project Sdk="Microsoft.NET.Sdk">
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+    <PropertyGroup>
+        <ProjectGuid>{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}</ProjectGuid>
+        <RootNamespace>PowerToys.Hosts.UITests</RootNamespace>
+        <AssemblyName>PowerToys.Hosts.UITests</AssemblyName>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <Nullable>enable</Nullable>
+        <OutputType>Library</OutputType>
+
+        <!-- This is a UI test, so don't run as part of MSBuild -->
+        <RunVSTest>false</RunVSTest>
+        </PropertyGroup>
+        <PropertyGroup>
+        <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Hosts.UITests\</OutputPath>
+        </PropertyGroup>
+
+        <ItemGroup>
+        <PackageReference Include="MSTest" />
+        <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+        </ItemGroup>
+    </Project>
+
   ```
 - Inherit your test class from UITestBase.
   >Set Scope: The default scope starts from the PowerToys settings UI. If you want to start from your own module, set the constructor as shown below:
   
   >Specify Scope:
   ```
-  [TestClass]
-  public class RunFancyZonesTest : UITestBase
-  {
-      public RunFancyZonesTest()
-          : base(PowerToysModule.FancyZone)
-      {
-      }
-  }
+    [TestClass]
+    public class HostModuleTests : UITestBase
+    {
+        public HostModuleTests()
+            : base(PowerToysModule.Hosts, WindowSize.Small_Vertical)
+        {
+        }
+    }
   ```
 
-- Then you can start using session to perform the UI operations.
+- Then you can start performing the UI operations.
 
 **Example**
 ```
-using Microsoft.PowerToys.UITest;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace UITests_KeyboardManager
+[TestMethod("Hosts.Basic.EmptyViewShouldWork")]
+[TestCategory("Hosts File Editor #4")]
+public void TestEmptyView()
 {
-    [TestClass]
-    public class RunKeyboardManagerUITests : UITestBase
-    {
-        [TestMethod]
-        public void OpenKeyboardManagerEditor()
-        {
-            // Open KeyboardManagerEditor
-            this.Session.Find<Button>(By.Name("Remap a key")).Click();
-            this.Session.Attach("Remap keys");
+    this.CloseWarningDialog();
+    this.RemoveAllEntries();
 
-            // Maximize window
-            var window = Session.Find<Window>(By.Name("Remap keys")).Maximize();
+    // 'Add an entry' button (only show-up when list is empty) should be visible
+    Assert.IsTrue(this.HasOne<HyperlinkButton>("Add an entry"), "'Add an entry' button should be visible in the empty view");
 
-            // Add Key Remapping
-            this.Session.Find<Button>(By.Name("Add key remapping")).Click();
-            window.Close();
+    VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "EmptyView");
 
-            // Back to Settings
-            this.Session.Attach(PowerToysModule.PowerToysSettings);
-        }
-    }
+    // Click 'Add an entry' from empty-view for adding Host override rule
+    this.Find<HyperlinkButton>("Add an entry").Click();
+
+    this.AddEntry("192.168.0.1", "localhost", false, false);
+
+    // Should have one row now and not more empty view
+    Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
+    Assert.IsFalse(this.Has<HyperlinkButton>("Add an entry"), "'Add an entry' button should be invisible if not empty view");
+
+    VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "NonEmptyView");
 }
 ```
 

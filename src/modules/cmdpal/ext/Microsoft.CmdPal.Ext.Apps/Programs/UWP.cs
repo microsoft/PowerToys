@@ -3,15 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Storage.Packaging.Appx;
 using Windows.Win32.System.Com;
-using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -53,7 +57,7 @@ public partial class UWP
         FamilyName = package.FamilyName;
     }
 
-    public void InitializeAppInfo(string installedLocation)
+    public unsafe void InitializeAppInfo(string installedLocation)
     {
         Location = installedLocation;
         LocationLocalized = ShellLocalization.Instance.GetLocalizedPath(installedLocation);
@@ -63,26 +67,31 @@ public partial class UWP
         InitPackageVersion(namespaces);
 
         const uint noAttribute = 0x80;
-
-        var access = (uint)STGM.READ;
-        var hResult = PInvoke.SHCreateStreamOnFileEx(path, access, noAttribute, false, null, out IStream stream);
-
-        // S_OK
-        if (hResult == 0)
+        const uint STGMREAD = 0x00000000;
+        try
         {
-            Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication(appInManifest, this)).Where(a =>
+            IStream* stream = null;
+            PInvoke.SHCreateStreamOnFileEx(path, STGMREAD, noAttribute, false, null, &stream).ThrowOnFailure();
+            using var streamHandle = new SafeComHandle((IntPtr)stream);
+
+            Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest =>
+            {
+                using var appHandle = new SafeComHandle(appInManifest);
+                return new UWPApplication((IAppxManifestApplication*)appInManifest, this);
+            }).Where(a =>
             {
                 var valid =
-                !string.IsNullOrEmpty(a.UserModelId) &&
-                !string.IsNullOrEmpty(a.DisplayName) &&
-                a.AppListEntry != "none";
-
+                    !string.IsNullOrEmpty(a.UserModelId) &&
+                    !string.IsNullOrEmpty(a.DisplayName) &&
+                    a.AppListEntry != "none";
                 return valid;
             }).ToList();
         }
-        else
+        catch (Exception ex)
         {
             Apps = Array.Empty<UWPApplication>();
+            Logger.LogError($"Failed to initialize UWP app info for {Name} ({FullName}): {ex.Message}");
+            return;
         }
     }
 
@@ -121,34 +130,36 @@ public partial class UWP
     {
         var windows10 = new Version(10, 0);
         var support = Environment.OSVersion.Version.Major >= windows10.Major;
-        if (support)
-        {
-            var applications = CurrentUserPackages().AsParallel().SelectMany(p =>
-            {
-                UWP u;
-                try
-                {
-                    u = new UWP(p);
-                    u.InitializeAppInfo(p.InstalledLocation);
-                }
-                catch (Exception )
-                {
-                    return Array.Empty<UWPApplication>();
-                }
 
-                return u.Apps;
-            });
-
-            var updatedListWithoutDisabledApps = applications
-            .Where(t1 => AllAppsSettings.Instance.DisabledProgramSources.All(x => x.UniqueIdentifier != t1.UniqueIdentifier))
-            .Select(x => x);
-
-            return updatedListWithoutDisabledApps.ToArray();
-        }
-        else
+        if (!support)
         {
             return Array.Empty<UWPApplication>();
         }
+
+        var appsBag = new ConcurrentBag<UWPApplication>();
+
+        Parallel.ForEach(CurrentUserPackages(), p =>
+        {
+            try
+            {
+                var u = new UWP(p);
+                u.InitializeAppInfo(p.InstalledLocation);
+
+                foreach (var app in u.Apps)
+                {
+                    if (AllAppsSettings.Instance.DisabledProgramSources.All(x => x.UniqueIdentifier != app.UniqueIdentifier))
+                    {
+                        appsBag.Add(app);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex.Message);
+            }
+        });
+
+        return appsBag.ToArray();
     }
 
     private static IEnumerable<IPackage> CurrentUserPackages()
@@ -161,8 +172,9 @@ public partial class UWP
                 var path = p.InstalledLocation;
                 return !f && !string.IsNullOrEmpty(path);
             }
-            catch (Exception )
+            catch (Exception ex)
             {
+                Logger.LogError(ex.Message);
                 return false;
             }
         });

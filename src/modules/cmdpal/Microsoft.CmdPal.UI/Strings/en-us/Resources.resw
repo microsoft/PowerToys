@@ -322,6 +322,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Description" xml:space="preserve">
     <value>This key will open the Command Palette.</value>
   </data>
+  <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Header" xml:space="preserve">
+    <value>Use low-level keyboard hook</value>
+  </data>
+  <data name="Settings_GeneralPage_LowLevelHook_SettingsCard.Description" xml:space="preserve">
+    <value>Try this if there are issues with the shortcut (Command Palette might not get focus when triggered from an elevated window)</value>
+  </data>
+  <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Header" xml:space="preserve">
+    <value>Ignore shortcut in fullscreen mode</value>
+  </data>
+  <data name="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard.Description" xml:space="preserve">
+    <value>Preventing disruption of the program running in fullscreen by unintentional activation of shortcut</value>
+  </data>
   <data name="Settings_GeneralPage_GoHome_SettingsCard.Header" xml:space="preserve">
     <value>Go home when activated</value>
   </data>
@@ -373,9 +385,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
     <value>Extensions</value>
   </data>
-  <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>More commands</value>
-  </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Command Palette settings</value>
   </data>
@@ -385,10 +394,34 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
     <value>Behavior</value>
   </data>
+  <data name="ContextFilterBox.PlaceholderText" xml:space="preserve">
+    <value>Search commands...</value>
+  </data>
   <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Header" xml:space="preserve">
     <value>Show system tray icon</value>
   </data>
   <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Description" xml:space="preserve">
     <value>Choose if Command Palette is visible in the system tray</value>
+  </data>
+  <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="BackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More</value>
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TrayMenu_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Indirect</value>
   </data>
 </root>

@@ -13,7 +13,7 @@ using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessage
 namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
 [SuppressMessage("Interoperability", "CA1401:P/Invokes should not be visible", Justification = "We want plugins to share this NativeMethods class, instead of each one creating its own.")]
-public static class NativeMethods
+public static partial class NativeMethods
 {
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     public static extern int EnumWindows(EnumWindowsProc callPtr, IntPtr lParam);
@@ -98,32 +98,6 @@ public static class NativeMethods
     [DllImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GetFirmwareType(ref FirmwareType FirmwareType);
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool ExitWindowsEx(uint uFlags, uint dwReason);
-
-    [DllImport("user32")]
-    public static extern void LockWorkStation();
-
-    [DllImport("Powrprof.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
-
-    [DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
-    public static extern uint SHEmptyRecycleBin(IntPtr hWnd, uint dwFlags);
-
-    [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-    public static extern HRESULT SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, uint cchOutBuf, IntPtr ppvReserved);
-
-    [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-    public static extern HRESULT SHCreateStreamOnFileEx(string fileName, STGM grfMode, uint attributes, bool create, System.Runtime.InteropServices.ComTypes.IStream reserved, out System.Runtime.InteropServices.ComTypes.IStream stream);
-
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string path, IntPtr pbc, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItem shellItem);
-
-    [DllImport("rpcrt4.dll")]
-    public static extern int UuidCreateSequential(out GUIDDATA Uuid);
 }
 
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "These are the names used by win32.")]
@@ -159,19 +133,6 @@ public static class Win32Constants
     /// The UUID is guaranteed to be unique to this computer only.
     /// </summary>
     public const int RPC_S_UUID_LOCAL_ONLY = 0x720;
-}
-
-public static class ShellItemTypeConstants
-{
-    /// <summary>
-    /// Guid for type IShellItem.
-    /// </summary>
-    public static readonly Guid ShellItemGuid = new("43826d1e-e718-42ee-bc55-a1e261c37bfe");
-
-    /// <summary>
-    /// Guid for type IShellItem2.
-    /// </summary>
-    public static readonly Guid ShellItem2Guid = new("7E9FB0D3-919F-4307-AB2E-9B1860310C93");
 }
 
 public enum HRESULT : uint
@@ -1122,26 +1083,6 @@ public enum ExtendedWindowStyles : uint
     /// the foreground window.
     /// </summary>
     WS_EX_NOACTIVATE = 0x8000000,
-}
-
-[ComImport]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-[Guid("43826d1e-e718-42ee-bc55-a1e261c37bfe")]
-public interface IShellItem
-{
-    void BindToHandler(
-        IntPtr pbc,
-        [MarshalAs(UnmanagedType.LPStruct)] Guid bhid,
-        [MarshalAs(UnmanagedType.LPStruct)] Guid riid,
-        out IntPtr ppv);
-
-    void GetParent(out IShellItem ppsi);
-
-    void GetDisplayName(SIGDN sigdnName, [MarshalAs(UnmanagedType.LPWStr)] out string ppszName);
-
-    void GetAttributes(uint sfgaoMask, out uint psfgaoAttribs);
-
-    void Compare(IShellItem psi, uint hint, out int piOrder);
 }
 
 /// <summary>

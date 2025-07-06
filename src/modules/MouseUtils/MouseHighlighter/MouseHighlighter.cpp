@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "MouseHighlighter.h"
 #include "trace.h"
+#include <cmath>
 
 #ifdef COMPOSITION
 namespace winrt
@@ -43,7 +44,7 @@ private:
     void AddDrawingPoint(MouseButton button);
     void UpdateDrawingPointPosition(MouseButton button);
     void StartDrawingPointFading(MouseButton button);
-    void ClearDrawingPoint(MouseButton button);
+    void ClearDrawingPoint();
     void ClearDrawing();
     void BringToFront();
     HHOOK m_mouseHook = NULL;
@@ -66,10 +67,12 @@ private:
     winrt::CompositionSpriteShape m_leftPointer{ nullptr };
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
     winrt::CompositionSpriteShape m_alwaysPointer{ nullptr };
+    winrt::CompositionSpriteShape m_spotlightPointer{ nullptr };
 
     bool m_leftPointerEnabled = true;
     bool m_rightPointerEnabled = true;
     bool m_alwaysPointerEnabled = true;
+    bool m_spotlightMode = false;
 
     bool m_leftButtonPressed = false;
     bool m_rightButtonPressed = false;
@@ -95,8 +98,7 @@ bool Highlighter::CreateHighlighter()
     try
     {
         // We need a dispatcher queue.
-        DispatcherQueueOptions options =
-        {
+        DispatcherQueueOptions options = {
             sizeof(options),
             DQTYPE_THREAD_CURRENT,
             DQTAT_COM_ASTA,
@@ -122,7 +124,8 @@ bool Highlighter::CreateHighlighter()
         m_root.Children().InsertAtTop(m_shape);
 
         return true;
-    } catch (...)
+    }
+    catch (...)
     {
         return false;
     }
@@ -130,6 +133,9 @@ bool Highlighter::CreateHighlighter()
 
 void Highlighter::AddDrawingPoint(MouseButton button)
 {
+    if (!m_compositor)
+        return;
+
     POINT pt;
 
     // Applies DPIs.
@@ -141,6 +147,7 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     // Create circle and add it.
     auto circleGeometry = m_compositor.CreateEllipseGeometry();
     circleGeometry.Radius({ m_radius, m_radius });
+
     auto circleShape = m_compositor.CreateSpriteShape(circleGeometry);
     circleShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
     if (button == MouseButton::Left)
@@ -156,9 +163,22 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     else
     {
         // always
-        circleShape.FillBrush(m_compositor.CreateColorBrush(m_alwaysColor));
-        m_alwaysPointer = circleShape;
+        if (m_spotlightMode)
+        {
+            float borderThickness = static_cast<float>(std::hypot(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN)));
+            circleGeometry.Radius({ static_cast<float>(borderThickness / 2.0 + m_radius), static_cast<float>(borderThickness / 2.0 + m_radius) });
+            circleShape.FillBrush(nullptr);
+            circleShape.StrokeBrush(m_compositor.CreateColorBrush(m_alwaysColor));
+            circleShape.StrokeThickness(borderThickness);
+            m_spotlightPointer = circleShape;
+        }
+        else
+        {
+            circleShape.FillBrush(m_compositor.CreateColorBrush(m_alwaysColor));
+            m_alwaysPointer = circleShape;
+        }
     }
+
     m_shape.Shapes().Append(circleShape);
 
     // TODO: We're leaking shapes for long drawing sessions.
@@ -190,7 +210,20 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
     else
     {
         // always
-        m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        if (m_spotlightMode)
+        {
+            if (m_spotlightPointer)
+            {
+                m_spotlightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+            }
+        }
+        else
+        {
+            if (m_alwaysPointer)
+            {
+                m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+            }
+        }
     }
 }
 void Highlighter::StartDrawingPointFading(MouseButton button)
@@ -229,20 +262,22 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
     circleShape.FillBrush().StartAnimation(L"Color", animation);
 }
 
-void Highlighter::ClearDrawingPoint(MouseButton _button)
+void Highlighter::ClearDrawingPoint()
 {
-    winrt::Windows::UI::Composition::CompositionSpriteShape circleShape{ nullptr };
-
-    if (nullptr == m_alwaysPointer)
+    if (m_spotlightMode)
     {
-        // Guard against alwaysPointer not being initialized.
-        return;
+        if (m_spotlightPointer)
+        {
+            m_spotlightPointer.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        }
     }
-
-    // always
-    circleShape = m_alwaysPointer;
-
-    circleShape.FillBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+    else
+    {
+        if (m_alwaysPointer)
+        {
+            m_alwaysPointer.FillBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        }
+    }
 }
 
 void Highlighter::ClearDrawing()
@@ -269,13 +304,14 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 if (instance->m_alwaysPointerEnabled && !instance->m_rightButtonPressed)
                 {
                     // Clear AlwaysPointer only when it's enabled and RightPointer is not active
-                    instance->ClearDrawingPoint(MouseButton::None);
+                    instance->ClearDrawingPoint();
                 }
                 if (instance->m_leftButtonPressed)
                 {
                     // There might be a stray point from the user releasing the mouse button on an elevated window, which wasn't caught by us.
                     instance->StartDrawingPointFading(MouseButton::Left);
                 }
+
                 instance->AddDrawingPoint(MouseButton::Left);
                 instance->m_leftButtonPressed = true;
                 // start a timer for the scenario, when the user clicks a pinned window which has no focus.
@@ -293,7 +329,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 if (instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed)
                 {
                     // Clear AlwaysPointer only when it's enabled and LeftPointer is not active
-                    instance->ClearDrawingPoint(MouseButton::None);
+                    instance->ClearDrawingPoint();
                 }
                 if (instance->m_rightButtonPressed)
                 {
@@ -358,13 +394,21 @@ void Highlighter::StartDrawing()
 {
     Logger::info("Starting draw mode.");
     Trace::StartHighlightingSession();
+
+    if (m_spotlightMode && m_alwaysColor.A != 0)
+    {
+        Trace::StartSpotlightSession();
+    }
+
     m_visible = true;
 
     // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
     ClearDrawing();
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
-    instance->AddDrawingPoint(MouseButton::None);
+
+    instance->AddDrawingPoint(Highlighter::MouseButton::None);
+
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
 }
 
@@ -377,6 +421,7 @@ void Highlighter::StopDrawing()
     m_leftPointer = nullptr;
     m_rightPointer = nullptr;
     m_alwaysPointer = nullptr;
+    m_spotlightPointer = nullptr;
     ShowWindow(m_hwnd, SW_HIDE);
     UnhookWindowsHookEx(m_mouseHook);
     ClearDrawing();
@@ -388,7 +433,8 @@ void Highlighter::SwitchActivationMode()
     PostMessage(m_hwnd, WM_SWITCH_ACTIVATION_MODE, 0, 0);
 }
 
-void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
+void Highlighter::ApplySettings(MouseHighlighterSettings settings)
+{
     m_radius = static_cast<float>(settings.radius);
     m_fadeDelay_ms = settings.fadeDelayMs;
     m_fadeDuration_ms = settings.fadeDurationMs;
@@ -398,9 +444,23 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
     m_leftPointerEnabled = settings.leftButtonColor.A != 0;
     m_rightPointerEnabled = settings.rightButtonColor.A != 0;
     m_alwaysPointerEnabled = settings.alwaysColor.A != 0;
+    m_spotlightMode = settings.spotlightMode && settings.alwaysColor.A != 0;
+
+    if (m_spotlightMode)
+    {
+        m_leftPointerEnabled = false;
+        m_rightPointerEnabled = false;
+    }
+
+    if (instance->m_visible)
+    {
+        instance->StopDrawing();
+        instance->StartDrawing();
+    }
 }
 
-void Highlighter::BringToFront() {
+void Highlighter::BringToFront()
+{
     // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
 }
@@ -488,8 +548,7 @@ bool Highlighter::MyRegisterClass(HINSTANCE hInstance)
     m_hwndOwner = CreateWindow(L"static", nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hInstance, nullptr);
 
     DWORD exStyle = WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_NOREDIRECTIONBITMAP | WS_EX_TOOLWINDOW;
-    return CreateWindowExW(exStyle, m_className, m_windowTitle, WS_POPUP,
-        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hInstance, nullptr) != nullptr;
+    return CreateWindowExW(exStyle, m_className, m_windowTitle, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hInstance, nullptr) != nullptr;
 }
 
 void Highlighter::Terminate()

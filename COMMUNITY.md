@@ -6,8 +6,8 @@ Names are in alphabetical order based on first name.
 
 ## High impact community members
 
-### [@Aaron-Junker](https://github.com/Aaron-Junker) - [Aaron Junker](https://aaron-junker.github.io)
-Aaron has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Aaron was the primary person for helping build the File Explorer preview pane handler for developer files.
+### [@Noraa-Junker](https://github.com/Noraa-Junker) - [Noraa Junker](https://noraajunker.ch)
+Noraa has helped triaging, discussing, and creating a substantial number of issues and contributed features/fixes. Noraa was the primary person for helping build the File Explorer preview pane handler for developer files.
 
 ### [@cgaarden](https://github.com/cgaarden) - [Christian Gaarden Gaardmark](https://www.onegreatworld.com) 
 Christian contributed New+ utility
@@ -21,7 +21,7 @@ Connor was the creator of Workspaces and helped create Command Palette (PowerToy
 ### [@damienleroy](https://github.com/damienleroy) - [Damien Leroy](https://www.linkedin.com/in/Damien-Leroy-b2734416a/)
 Damien has helped out by developing and contributing the Quick Accent utility.
 
-### [@daverayment ](https://github.com/daverayment) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
+### [@daverayment](https://github.com/daverayment) - [David Rayment](https://www.linkedin.com/in/david-rayment-168b5251/)
 Dave has helped improve the experience inside of Peek by adding in new features and fixing bugs.
 
 ### [@davidegiacometti](https://github.com/davidegiacometti) - [Davide Giacometti](https://www.linkedin.com/in/davidegiacometti/)
@@ -117,10 +117,6 @@ PowerRename is from Chris's SmartRename and icon rendering for SVGs in File Expl
 
 PowerToys Awake is a tool to keep your computer awake.
 
-### [@Niels9001](https://github.com/niels9001/) - [Niels Laute](https://nielslaute.com/)
-
-Niels has helped drive large sums of our update toward a new [consistent and modern UX](https://github.com/microsoft/PowerToys/issues/891). This includes the [launcher work](https://github.com/microsoft/PowerToys/issues/44), color picker UX update and [icon design](https://github.com/microsoft/PowerToys/issues/1118).
-
 ### [@randyrants](https://github.com/randyrants) - [Randy Santossio](https://www.randyrants.com)
 
 Randy contributed Registry Preview and some very early conversations about keyboard remapping.
@@ -184,11 +180,9 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 
 ## PowerToys core team
 
-- [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
-- [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
-- [@zhiwei-ms](https://github.com/zhiwei-ms) - Zhiwei Yu - Product Manager
+- [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
 - [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
 - [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev lead
@@ -204,6 +198,13 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
 - [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
 - [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
+- [@zadjii-msft](https://github.com/zadjii-msft) - Mike Griese - Dev
+- [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
+- [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
+- [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
+- [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
+- [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev
+- [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
 
 ## Former PowerToys core team members
 
@@ -211,6 +212,7 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
 - [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
 - [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
+- [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
 - [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
 - [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev

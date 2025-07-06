@@ -46,6 +46,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [QuickNotes](https://github.com/ruslanlap/CommunityPowerToysRunPlugin-QuickNotes) | [ruslanlap](https://github.com/ruslanlap) | Create, manage, and search notes directly from PowerToys Run. |
 | [Weather](https://github.com/ruslanlap/PowerToysRun-Weather) | [ruslanlap](https://github.com/ruslanlap) | Get real-time weather information directly from PowerToys Run. |
 | [Pomodoro](https://github.com/ruslanlap/PowerToysRun-Pomodoro) | [ruslanlap](https://github.com/ruslanlap) | Manage Pomodoro productivity sessions directly from PowerToys Run. |
+| [Definition](https://github.com/ruslanlap/PowerToysRun-Definition) | [ruslanlap](https://github.com/ruslanlap) | Lookup word definitions, phonetics, and synonyms directly in PowerToys Run. |
 
 ## Extending software plugins
 
@@ -68,3 +69,5 @@ Below are community created plugins that target a website or software.  They are
 | [Bilibili](https://github.com/Whuihuan/PowerToysRun-Bilibili) | [Whuihuan](https://github.com/Whuihuan) | Use AVID or BVID to parse and jump to Bilibili |
 | [YubicoOauthOTP](https://github.com/dlnilsson/Community.PowerToys.Run.Plugin.YubicoOauthOTP) | [dlnilsson](https://github.com/dlnilsson) | Display generated codes from OATH accounts stored on the YubiKey in powerToys Run  |
 | [Firefox Bookmark](https://github.com/8LWXpg/PowerToysRun-FirefoxBookmark) | [8LWXpg](https://github.com/8LWXpg) | Open bookmarks in Firefox based browser |
+| [Linear](https://github.com/vednig/powertoys-linear) | [vednig](https://github.com/vednig) | Create Linear Issues directly from Powertoys Run |
+| [SpeedTest](https://github.com/ruslanlap/PowerToysRun-SpeedTest) | [ruslanlap](https://github.com/ruslanlap) | One-command internet speed tests with real-time results, modern UI, and shareable links. |

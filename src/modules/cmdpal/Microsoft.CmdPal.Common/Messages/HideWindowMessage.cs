@@ -4,6 +4,6 @@
 
 namespace Microsoft.CmdPal.Common.Messages;
 
-public record HideWindowMessage()
+public partial record HideWindowMessage()
 {
 }

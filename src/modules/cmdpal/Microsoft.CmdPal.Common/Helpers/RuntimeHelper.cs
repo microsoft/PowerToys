@@ -9,7 +9,7 @@ using Windows.Win32.Foundation;
 
 namespace Microsoft.CmdPal.Common.Helpers;
 
-public static class RuntimeHelper
+public static partial class RuntimeHelper
 {
     public static bool IsMSIX
     {

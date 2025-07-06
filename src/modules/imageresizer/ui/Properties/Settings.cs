@@ -19,6 +19,7 @@ using System.Threading;
 using System.Windows.Media.Imaging;
 
 using ImageResizer.Models;
+using ManagedCommon;
 
 namespace ImageResizer.Properties
 {
@@ -63,10 +64,10 @@ namespace ImageResizer.Properties
             FileName = "%1 (%2)";
             Sizes = new ObservableCollection<ResizeSize>
             {
-                new ResizeSize("$small$", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
-                new ResizeSize("$medium$", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
-                new ResizeSize("$large$", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
-                new ResizeSize("$phone$", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
+                new ResizeSize(0, "$small$", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel),
+                new ResizeSize(1, "$medium$", ResizeFit.Fit, 1366, 768, ResizeUnit.Pixel),
+                new ResizeSize(2, "$large$", ResizeFit.Fit, 1920, 1080, ResizeUnit.Pixel),
+                new ResizeSize(3, "$phone$", ResizeFit.Fit, 320, 568, ResizeUnit.Pixel),
             };
             KeepDateModified = false;
             FallbackEncoder = new System.Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
@@ -480,6 +481,9 @@ namespace ImageResizer.Properties
                 {
                     Sizes.Clear();
                     Sizes.AddRange(jsonSettings.Sizes);
+
+                    // Ensure Ids are unique and handle missing Ids
+                    IdRecoveryHelper.RecoverInvalidIds(Sizes);
                 }
             });
 
