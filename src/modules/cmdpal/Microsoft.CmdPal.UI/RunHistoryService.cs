@@ -20,7 +20,7 @@ internal sealed class RunHistoryService : IRunHistoryService
     {
         if (_appStateModel.RunHistory.Count == 0)
         {
-            var history = Microsoft.Terminal.UI.IconPathConverter.CreateRunHistory();
+            var history = Microsoft.Terminal.UI.RunHistory.CreateRunHistory();
             _appStateModel.RunHistory.AddRange(history);
         }
 

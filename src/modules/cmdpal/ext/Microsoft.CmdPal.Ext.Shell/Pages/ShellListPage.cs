@@ -266,7 +266,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             var score = StringMatcher.FuzzySearch(query, pair.Key).Score;
             return score;
         };
-        
+
         var filteredHistory =
             ListHelpers.FilterList<KeyValuePair<string, ListItem>>(
                 histItemsNotInSearch,
