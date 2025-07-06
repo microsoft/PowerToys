@@ -36,7 +36,7 @@ internal sealed partial class ExecuteItem : InvokableCommand
         else
         {
             Name = Properties.Resources.generic_run_command;
-            Icon = Icons.RunV2; // new IconInfo("\uE751"); // Return Key Icon
+            Icon = Icons.RunV2;
         }
 
         Cmd = cmd;

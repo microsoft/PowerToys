@@ -11,14 +11,13 @@
             "PowerToys.ActionRunner.exe",
             "PowerToys.Update.exe",
             "PowerToys.BackgroundActivatorDLL.dll",
-            "Notifications.dll",
-            "os-detection.dll",
+
             "PowerToys.exe",
             "PowerToys.FilePreviewCommon.dll",
             "PowerToys.Interop.dll",
             "Tools\\PowerToys.BugReportTool.exe",
             "StylesReportTool\\PowerToys.StylesReportTool.exe",
-            "Telemetry.dll",
+
             "CalculatorEngineCommon.dll",
             "PowerToys.ManagedTelemetry.dll",
             "PowerToys.ManagedCommon.dll",
@@ -33,7 +32,7 @@
             "PowerToys.AlwaysOnTopModuleInterface.dll",
 
             "PowerToys.CmdNotFoundModuleInterface.dll",
-            "PowerToys.CmdNotFound.dll",
+
 
             "PowerToys.ColorPicker.dll",
             "PowerToys.ColorPickerUI.dll",
@@ -54,7 +53,7 @@
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
 
-            "fancyzones.dll",
+
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
             "PowerToys.FancyZonesEditorCommon.dll",
@@ -136,7 +135,7 @@
             "PowerToys.PowerLauncher.dll",
             "PowerToys.PowerLauncher.exe",
             "PowerToys.PowerLauncher.Telemetry.dll",
-            "Wox.dll",
+
             "Wox.Infrastructure.dll",
             "Wox.Plugin.dll",
             "RunPlugins\\Calculator\\Microsoft.PowerToys.Run.Plugin.Calculator.dll",
@@ -275,16 +274,16 @@
                 "Mono.Cecil.Pdb.dll",
                 "Mono.Cecil.Rocks.dll",
                 "Newtonsoft.Json.dll",
-                "Newtonsoft.Json.Bson.dll",
+
                 "NLog.dll",
                 "HtmlAgilityPack.dll",
                 "Markdig.Signed.dll",
                 "HelixToolkit.dll",
                 "HelixToolkit.Core.Wpf.dll",
                 "Mages.Core.dll",
-                "JetBrains.Annotations.dll",
+
                 "NLog.Extensions.Logging.dll",
-                "getfilesiginforedist.dll",
+
                 "concrt140_app.dll",
                 "msvcp140_1_app.dll",
                 "msvcp140_2_app.dll",
@@ -294,22 +293,8 @@
                 "vcomp140_app.dll",
                 "vcruntime140_1_app.dll",
                 "vcruntime140_app.dll",
-                "WinUI3Apps\\CommunityToolkit.Labs.WinUI.SettingsControls.dll",
+
                 "UnicodeInformation.dll",
-                "Vanara.Core.dll",
-                "Vanara.PInvoke.ComCtl32.dll",
-                "Vanara.PInvoke.Cryptography.dll",
-                "Vanara.PInvoke.Gdi32.dll",
-                "Vanara.PInvoke.Kernel32.dll",
-                "Vanara.PInvoke.Ole.dll",
-                "Vanara.PInvoke.Rpc.dll",
-                "Vanara.PInvoke.Security.dll",
-                "Vanara.PInvoke.Shared.dll",
-                "Vanara.PInvoke.Shell32.dll",
-                "Vanara.PInvoke.ShlwApi.dll",
-                "Vanara.PInvoke.User32.dll",
-                "WinUI3Apps\\clrcompression.dll",
-                "WinUI3Apps\\Microsoft.Graphics.Canvas.Interop.dll",
                 "Microsoft.Web.WebView2.Core.dll",
                 "Microsoft.Web.WebView2.WinForms.dll",
                 "Microsoft.Web.WebView2.Wpf.dll",
@@ -336,7 +321,7 @@
                 "Testably.Abstractions.FileSystem.Interface.dll",
                 "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
                 "ColorCode.Core.dll", 
-                "ColorCode.UWP.dll",
+
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
                 "Wpf.Ui.dll"

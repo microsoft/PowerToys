@@ -2,10 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
-using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
@@ -132,19 +130,6 @@ public sealed partial class SearchBar : UserControl,
             WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>();
             e.Handled = true;
         }
-
-        // else if (e.Key == VirtualKey.Right)
-        // {
-        //    var suggestion = CurrentPageViewModel?.TextToSuggest;
-        //    if (CurrentPageViewModel != null && !string.IsNullOrEmpty(suggestion))
-        //    {
-        //        var currentText = FilterBox.Text;
-
-        // FilterBox.Text = suggestion;
-        //        FilterBox.Select(FilterBox.Text.Length, 0);
-        //        e.Handled = true;
-        //    }
-        // }
         else if (e.Key == VirtualKey.Escape)
         {
             if (string.IsNullOrEmpty(FilterBox.Text))
@@ -243,7 +228,7 @@ public sealed partial class SearchBar : UserControl,
                 FilterBox.Text = _lastText ?? string.Empty;
                 FilterBox.Select(FilterBox.Text.Length, 0);
 
-                Logger.LogInfo("deleting suggestion");
+                // Logger.LogInfo("deleting suggestion");
                 _inSuggestion = false;
                 _lastText = null;
 
@@ -253,8 +238,6 @@ public sealed partial class SearchBar : UserControl,
 
             var ignoreLeave =
 
-                // e.Key == VirtualKey.Back ||
-                // e.Key == VirtualKey.Delete ||
                 e.Key == VirtualKey.Up ||
                 e.Key == VirtualKey.Down ||
 
@@ -272,7 +255,7 @@ public sealed partial class SearchBar : UserControl,
                 return;
             }
 
-            Logger.LogInfo("leaving suggestion");
+            // Logger.LogInfo("leaving suggestion");
             _inSuggestion = false;
             _lastText = null;
         }
@@ -289,7 +272,7 @@ public sealed partial class SearchBar : UserControl,
 
     private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        Debug.WriteLine($"FilterBox_TextChanged: {FilterBox.Text}");
+        // Logger.LogInfo($"FilterBox_TextChanged: {FilterBox.Text}");
 
         // TERRIBLE HACK TODO GH #245
         // There's weird wacky bugs with debounce currently. We're trying
@@ -305,7 +288,7 @@ public sealed partial class SearchBar : UserControl,
 
         if (_inSuggestion)
         {
-            Logger.LogInfo($"-- skipping, in suggestion --");
+            // Logger.LogInfo($"-- skipping, in suggestion --");
             return;
         }
 
@@ -327,7 +310,7 @@ public sealed partial class SearchBar : UserControl,
     {
         if (_inSuggestion)
         {
-            Logger.LogInfo($"--- skipping ---");
+            // Logger.LogInfo($"--- skipping ---");
             return;
         }
 
@@ -387,7 +370,7 @@ public sealed partial class SearchBar : UserControl,
 
             if (clearSuggestion && _inSuggestion)
             {
-                Logger.LogInfo($"Cleared suggestion \"{_lastText}\" to {suggestion}");
+                // Logger.LogInfo($"Cleared suggestion \"{_lastText}\" to {suggestion}");
                 _inSuggestion = false;
                 FilterBox.Text = _lastText ?? string.Empty;
                 _lastText = null;
@@ -413,15 +396,14 @@ public sealed partial class SearchBar : UserControl,
 
             _lastText = currentText;
 
-            if (_inSuggestion)
-            {
-                Logger.LogInfo($"Suggestion from \"{_lastText}\" to {suggestion}");
-            }
-            else
-            {
-                Logger.LogInfo($"Entering suggestion from \"{_lastText}\" to {suggestion}");
-            }
-
+            // if (_inSuggestion)
+            // {
+            //     Logger.LogInfo($"Suggestion from \"{_lastText}\" to {suggestion}");
+            // }
+            // else
+            // {
+            //     Logger.LogInfo($"Entering suggestion from \"{_lastText}\" to {suggestion}");
+            // }
             _inSuggestion = true;
 
             var matchedChars = 0;
@@ -460,7 +442,7 @@ public sealed partial class SearchBar : UserControl,
             if (wrappedInQuotes)
             {
                 FilterBox.Select(
-                    (skipCheckingFirst ? 1 : 0) + matchedChars, // matchedChars == 0 ? 1 : matchedChars,
+                    (skipCheckingFirst ? 1 : 0) + matchedChars,
                     Math.Max(0, suggestion.Length - matchedChars - 1 + (skipCheckingFirst ? -1 : 0)));
             }
             else
