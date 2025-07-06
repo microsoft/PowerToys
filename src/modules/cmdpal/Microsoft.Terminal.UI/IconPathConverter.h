@@ -1,7 +1,6 @@
 #pragma once
 
 #include "IconPathConverter.g.h"
-#include "types.h"
 
 namespace winrt::Microsoft::Terminal::UI::implementation
 {
@@ -15,11 +14,6 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         static Microsoft::UI::Xaml::Controls::IconElement IconMUX(const winrt::hstring& iconPath);
         static Microsoft::UI::Xaml::Controls::IconElement IconMUX(const winrt::hstring& iconPath, const int targetSize);
 
-
-        static winrt::Windows::Foundation::Collections::IVector<hstring> CreateRunHistory();
-
-    private:
-        winrt::Windows::Foundation::Collections::IVector<hstring> _mruHistory;
     };
 }
 

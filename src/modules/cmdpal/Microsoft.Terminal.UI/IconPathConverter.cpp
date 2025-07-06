@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "IconPathConverter.h"
+#include "RunHistory.h"
 #include "IconPathConverter.g.cpp"
+#include "RunHistory.g.cpp"
 
 // #include "Utils.h"
 
@@ -388,7 +390,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     // Run history
     // Largely copied from the Run work circa 2022.
 
-    winrt::Windows::Foundation::Collections::IVector<hstring> IconPathConverter::CreateRunHistory()
+    winrt::Windows::Foundation::Collections::IVector<hstring> RunHistory::CreateRunHistory()
     {
         // Load MRU history
         std::vector<hstring> history;

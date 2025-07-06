@@ -153,6 +153,9 @@
     <ClInclude Include="IconPathConverter.h">
       <DependentUpon>IconPathConverter.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="RunHistory.h">
+      <DependentUpon>RunHistory.idl</DependentUpon>
+    </ClInclude>
     <ClInclude Include="ResourceString.h">
       <DependentUpon>ResourceString.idl</DependentUpon>
     </ClInclude>
@@ -176,6 +179,7 @@
   <ItemGroup>
     <Midl Include="Converters.idl" />
     <Midl Include="IconPathConverter.idl" />
+    <Midl Include="RunHistory.idl" />
     <Midl Include="IDirectKeyListener.idl" />
     <Midl Include="ResourceString.idl" />
   </ItemGroup>
