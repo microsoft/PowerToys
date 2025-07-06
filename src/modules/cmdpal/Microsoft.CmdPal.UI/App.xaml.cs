@@ -100,8 +100,6 @@ public partial class App : Application
         files.SuppressFallbackWhen(ShellCommandsProvider.SuppressFileFallbackIf);
         services.AddSingleton<ICommandProvider>(allApps);
 
-        // var run = new ShellCommandsProvider();
-        // var hist = Microsoft.Terminal.UI.IconPathConverter.CreateRunHistory();
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);

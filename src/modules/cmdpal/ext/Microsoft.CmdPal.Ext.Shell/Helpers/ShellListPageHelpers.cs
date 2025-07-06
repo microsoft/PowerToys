@@ -200,7 +200,6 @@ public class ShellListPageHelpers
                 CancellationToken.None); // Use None here since we're handling timeout differently
 
             // Wait for either completion or timeout
-            // pathResolutionTask.WaitAsync(cts.Token).ConfigureAwait(false);
             pathResolutionTask.Wait(cts.Token);
         }
         catch (OperationCanceledException)
