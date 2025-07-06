@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -64,11 +63,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     private void DoUpdateSearchText(string newSearch)
     {
         // Cancel any ongoing search
-        if (_cancellationTokenSource != null)
-        {
-            Debug.WriteLine("Shell: Cancelling old search");
-            _cancellationTokenSource.Cancel();
-        }
+        _cancellationTokenSource?.Cancel();
 
         _cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = _cancellationTokenSource.Token;
@@ -85,10 +80,9 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             // DO NOTHING HERE
             return;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Handle other exceptions
-            Debug.WriteLine($"Shell: DoUpdateSearchText threw exception: {ex.Message}");
             return;
         }
 
@@ -113,12 +107,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         catch (OperationCanceledException)
         {
             // Handle cancellation gracefully
-            Debug.WriteLine($"Shell: Cancelled search for '{newSearch}'");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Handle other exceptions
-            Debug.WriteLine($"Shell: ProcessSearchResultsAsync threw exception: {ex.Message}");
             IsLoading = false;
         }
     }
@@ -128,8 +120,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // Check for cancellation at the start
         cancellationToken.ThrowIfCancellationRequested();
 
-        Debug.WriteLine($"Run: update search -> \"{newSearch}\"");
-
         // If the search text is the start of a path to a file (it might be a
         // UNC path), then we want to list all the files that start with that text:
 
@@ -138,7 +128,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var searchText = newSearch.Trim();
 
         var expanded = Environment.ExpandEnvironmentVariables(searchText);
-        Debug.WriteLine($"Run: searchText={searchText} -> expanded={expanded}");
 
         // Check for cancellation after environment expansion
         cancellationToken.ThrowIfCancellationRequested();
@@ -154,7 +143,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         ParseExecutableAndArgs(expanded, out var exe, out var args);
-        Debug.WriteLine($"Run: expanded={expanded} -> exe,args='{exe}', '{args}'");
 
         // Check for cancellation before file system operations
         cancellationToken.ThrowIfCancellationRequested();
@@ -196,24 +184,19 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         {
             // Timeout occurred
             couldResolvePath = false;
-            Debug.WriteLine($"Run: Path resolution timed out after 200ms for '{expanded}'");
         }
         catch (OperationCanceledException)
         {
             // Timeout occurred (from WaitAsync)
             couldResolvePath = false;
-            Debug.WriteLine($"Run: Path resolution timed out after 200ms for '{expanded}'");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Handle any other exceptions that might bubble up
             couldResolvePath = false;
-            Debug.WriteLine($"Run: Unexpected exception during path resolution: {ex.Message}");
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-
-        Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
 
         _pathItems.Clear();
 
@@ -357,7 +340,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         var dirExists = Directory.Exists(directoryPath);
-        Debug.WriteLine($"Run: dirExists({directoryPath})={dirExists}");
 
         // searchPath is fully expanded, and originalPath is not. We might get:
         // * original: X%Y%Z\partial
@@ -389,8 +371,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             {
                 originalBeginning = string.Concat(originalBeginning, '\\');
             }
-
-            Debug.WriteLine($"  '{trimmed}'\n->'{searchPathTrailer.PadLeft(directoryPath.Length)}'\n->'{originalBeginning}'");
 
             // Create a list of commands for each file
             var commands = files.Select(f => PathToListItem(f, originalBeginning)).ToList();
