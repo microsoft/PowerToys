@@ -10,8 +10,6 @@ namespace Microsoft.Terminal.UI
         static Microsoft.UI.Xaml.Controls.IconSource IconSourceMUX(String path, Boolean convertToGrayscale);
         static Microsoft.UI.Xaml.Controls.IconElement IconMUX(String path);
         static Microsoft.UI.Xaml.Controls.IconElement IconMUX(String path, Int32 targetSize);
-
-        static Windows.Foundation.Collections.IVector<String> CreateRunHistory();
     };
 
 }

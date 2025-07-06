@@ -47,7 +47,7 @@ internal sealed partial class PathListItem : ListItem
 
         TextToSuggest = suggestion;
         MoreCommands = [
-            new CommandContextItem(new CopyTextCommand(path) { Name = "Copy path" }) { } // TODO:LOC
+            new CommandContextItem(new CopyTextCommand(path) { Name = Properties.Resources.copy_path_command_name }) { }
         ];
 
         // TODO: Follow-up during 0.4. Add the indexer commands here.

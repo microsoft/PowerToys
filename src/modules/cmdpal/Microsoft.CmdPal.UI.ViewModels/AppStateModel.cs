@@ -21,6 +21,8 @@ public partial class AppStateModel : ObservableObject
 
     ///////////////////////////////////////////////////////////////////////////
     // STATE HERE
+    // Make sure that you make the setters public (JsonSerializer.Deserialize will fail silently otherwise)!
+    // Make sure that any new types you add are added to JsonSerializationContext!
     public RecentCommandsManager RecentCommands { get; set; } = new();
 
     public List<string> RunHistory { get; set; } = [];

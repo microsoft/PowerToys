@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,11 +30,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     public override void UpdateQuery(string query)
     {
         // Cancel any ongoing query processing
-        if (_cancellationTokenSource != null)
-        {
-            Debug.WriteLine("FallbackExecuteItem: Cancelling old query");
-            _cancellationTokenSource.Cancel();
-        }
+        _cancellationTokenSource?.Cancel();
 
         _cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = _cancellationTokenSource.Token;
@@ -50,10 +45,9 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             // DO NOTHING HERE
             return;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Handle other exceptions
-            Debug.WriteLine($"FallbackExecuteItem: UpdateQuery threw exception: {ex.Message}");
             return;
         }
 
@@ -70,12 +64,10 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         catch (OperationCanceledException)
         {
             // Handle cancellation gracefully
-            Debug.WriteLine("FallbackExecuteItem: Cancelled query update");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Handle other exceptions
-            Debug.WriteLine($"FallbackExecuteItem: ProcessUpdateResultsAsync threw exception: {ex.Message}");
         }
     }
 
@@ -130,26 +122,21 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         catch (TimeoutException)
         {
             // Timeout occurred - use defaults
-            Debug.WriteLine($"FallbackExecuteItem: File system check timed out after 200ms for '{exe}'");
             return;
         }
         catch (OperationCanceledException)
         {
             // Timeout occurred (from WaitAsync) - use defaults
-            Debug.WriteLine($"FallbackExecuteItem: File system check timed out after 200ms for '{exe}'");
             return;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Handle any other exceptions that might bubble up
-            Debug.WriteLine($"FallbackExecuteItem: Unexpected exception during file system check: {ex.Message}");
             return;
         }
 
         // Check for cancellation before updating UI properties
         cancellationToken.ThrowIfCancellationRequested();
-
-        Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
 
         if (exeExists)
         {
