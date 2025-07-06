@@ -4,6 +4,7 @@
 
 using System.IO;
 using System.Text.Json;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerAccent.Core.Models;
 using PowerAccent.Core.SerializationContext;
@@ -70,15 +71,29 @@ namespace PowerAccent.Core.Tools
                 CharacterUsageTimestamp = _characterUsageTimestamp,
             };
 
-            var json = JsonSerializer.Serialize(data, SourceGenerationContext.Default.UsageInfoData);
-            File.WriteAllText(_filePath, json);
+            try
+            {
+                var json = JsonSerializer.Serialize(data, SourceGenerationContext.Default.UsageInfoData);
+                File.WriteAllText(_filePath, json);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to save usage file", ex);
+            }
         }
 
         public void Delete()
         {
-            if (File.Exists(_filePath))
+            try
             {
-                File.Delete(_filePath);
+                if (File.Exists(_filePath))
+                {
+                    File.Delete(_filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to delete usage file", ex);
             }
         }
 
@@ -89,8 +104,16 @@ namespace PowerAccent.Core.Tools
                 return new UsageInfoData();
             }
 
-            var json = File.ReadAllText(_filePath);
-            return JsonSerializer.Deserialize(json, SourceGenerationContext.Default.UsageInfoData);
+            try
+            {
+                var json = File.ReadAllText(_filePath);
+                return JsonSerializer.Deserialize(json, SourceGenerationContext.Default.UsageInfoData);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to read usage file", ex);
+                return new UsageInfoData();
+            }
         }
     }
 }
