@@ -11,6 +11,9 @@ using HostsUILib.Helpers;
 
 namespace HostsUILib.Models
 {
+#if !TESTONLY
+    [Microsoft.UI.Xaml.Data.Bindable]
+#endif
     public partial class Entry : ObservableObject
     {
         private static readonly char[] _spaceCharacters = new char[] { ' ', '\t' };

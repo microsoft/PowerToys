@@ -128,7 +128,7 @@ namespace Peek.UI
         {
             // Need to read the foreground HWND before activating Peek to avoid focus stealing
             // Foreground HWND must always be Explorer or Desktop
-            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+            var foregroundWindowHandle = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
 
             bool firstActivation = false;
 

@@ -11,11 +11,12 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
+using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class SettingsWindow : Window,
+public sealed partial class SettingsWindow : WindowEx,
     IRecipient<NavigateToExtensionSettingsMessage>,
     IRecipient<QuitMessage>
 {
@@ -70,7 +71,6 @@ public sealed partial class SettingsWindow : Window,
 
     private void PositionCentered()
     {
-        AppWindow.Resize(new SizeInt32 { Width = 1280, Height = 720 });
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {

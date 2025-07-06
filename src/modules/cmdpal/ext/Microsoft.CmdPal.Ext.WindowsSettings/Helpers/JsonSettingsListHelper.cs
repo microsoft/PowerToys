@@ -4,10 +4,9 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 
@@ -21,6 +20,8 @@ internal static class JsonSettingsListHelper
     /// </summary>
     private const string _settingsFile = "WindowsSettings.json";
 
+    private const string _extTypeNamespace = "Microsoft.CmdPal.Ext.WindowsSettings";
+
     private static readonly JsonSerializerOptions _serializerOptions = new()
     {
     };
@@ -32,7 +33,6 @@ internal static class JsonSettingsListHelper
     internal static Classes.WindowsSettings ReadAllPossibleSettings()
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var type = assembly.GetTypes().FirstOrDefault(x => x.Name == nameof(WindowsSettingsCommandsProvider));
 
 #pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
         Classes.WindowsSettings? settings = null;
@@ -40,7 +40,7 @@ internal static class JsonSettingsListHelper
 
         try
         {
-            var resourceName = $"{type?.Namespace}.{_settingsFile}";
+            var resourceName = $"{_extTypeNamespace}.{_settingsFile}";
             using var stream = assembly.GetManifestResourceStream(resourceName);
             if (stream is null)
             {
@@ -48,18 +48,20 @@ internal static class JsonSettingsListHelper
             }
 
             var options = _serializerOptions;
-            options.Converters.Add(new JsonStringEnumConverter());
 
+            // Why we need it? I don't see any enum usage in WindowsSettings
+            // options.Converters.Add(new JsonStringEnumConverter());
             using var reader = new StreamReader(stream);
             var text = reader.ReadToEnd();
 
-            settings = JsonSerializer.Deserialize<Classes.WindowsSettings>(text, options);
+            settings = JsonSerializer.Deserialize(text, WindowsSettingsJsonSerializationContext.Default.WindowsSettings);
         }
 #pragma warning disable CS0168
         catch (Exception exception)
         {
             // TODO GH #108 Logging is something we have to take care of
             // Log.Exception("Error loading settings JSON file", exception, typeof(JsonSettingsListHelper));
+            Logger.LogError($"Error loading settings JSON file: {exception.Message}");
         }
 #pragma warning restore CS0168
         return settings ?? new Classes.WindowsSettings();

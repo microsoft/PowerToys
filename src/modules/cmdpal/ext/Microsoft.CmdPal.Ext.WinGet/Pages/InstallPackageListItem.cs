@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
@@ -31,7 +32,7 @@ public partial class InstallPackageListItem : ListItem
     {
         _package = package;
 
-        var version = _package.DefaultInstallVersion;
+        var version = _package.DefaultInstallVersion ?? _package.InstalledVersion;
         var versionTagText = "Unknown";
         if (version != null)
         {
@@ -49,7 +50,16 @@ public partial class InstallPackageListItem : ListItem
 
     private Details? BuildDetails(PackageVersionInfo? version)
     {
-        var metadata = version?.GetCatalogPackageMetadata();
+        CatalogPackageMetadata? metadata = null;
+        try
+        {
+            metadata = version?.GetCatalogPackageMetadata();
+        }
+        catch (COMException ex)
+        {
+            Logger.LogWarning($"{ex.ErrorCode}");
+        }
+
         if (metadata != null)
         {
             if (metadata.Tags.Where(t => t.Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase)).Any())
@@ -146,15 +156,35 @@ public partial class InstallPackageListItem : ListItem
 
     private async void UpdatedInstalledStatus()
     {
-        var status = await _package.CheckInstalledStatusAsync();
+        try
+        {
+            var status = await _package.CheckInstalledStatusAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // DO NOTHING HERE
+            return;
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            ExtensionHost.LogMessage($"[WinGet] UpdatedInstalledStatus throw exception: {ex.Message}");
+            return;
+        }
+
         var isInstalled = _package.InstalledVersion != null;
 
+        var installedState = isInstalled ?
+            (_package.IsUpdateAvailable ?
+                PackageInstallCommandState.Update : PackageInstallCommandState.Uninstall) :
+            PackageInstallCommandState.Install;
+
         // might be an uninstall command
-        InstallPackageCommand installCommand = new(_package, isInstalled);
+        InstallPackageCommand installCommand = new(_package, installedState);
 
         if (isInstalled)
         {
-            this.Icon = InstallPackageCommand.CompletedIcon;
+            this.Icon = installCommand.Icon;
             this.Command = new NoOpCommand();
             List<IContextItem> contextMenu = [];
             CommandContextItem uninstallContextItem = new(installCommand)
@@ -180,7 +210,7 @@ public partial class InstallPackageListItem : ListItem
         }
 
         // didn't find the app
-        _installCommand = new InstallPackageCommand(_package, isInstalled);
+        _installCommand = new InstallPackageCommand(_package, installedState);
         this.Command = _installCommand;
 
         Icon = _installCommand.Icon;

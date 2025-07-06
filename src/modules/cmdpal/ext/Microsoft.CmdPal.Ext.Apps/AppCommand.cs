@@ -2,11 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Services.Maps;
+using Windows.Win32;
+using Windows.Win32.System.Com;
+using Windows.Win32.UI.Shell;
 using WyHash;
 
 namespace Microsoft.CmdPal.Ext.Apps;
@@ -25,28 +32,41 @@ internal sealed partial class AppCommand : InvokableCommand
 
     internal static async Task StartApp(string aumid)
     {
-        var appManager = new ApplicationActivationManager();
-        const ActivateOptions noFlags = ActivateOptions.None;
         await Task.Run(() =>
         {
-            try
+            unsafe
             {
-                appManager.ActivateApplication(aumid, /*queryArguments*/ string.Empty, noFlags, out var unusedPid);
-            }
-            catch (System.Exception)
-            {
+                IApplicationActivationManager* appManager = null;
+                try
+                {
+                    PInvoke.CoCreateInstance(typeof(ApplicationActivationManager).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out appManager).ThrowOnFailure();
+                    using var handle = new SafeComHandle((IntPtr)appManager);
+                    appManager->ActivateApplication(
+                        aumid,
+                        string.Empty,
+                        ACTIVATEOPTIONS.AO_NONE,
+                        out var unusedPid);
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError(ex.Message);
+                }
             }
         }).ConfigureAwait(false);
     }
 
     internal static async Task StartExe(string path)
     {
-        var appManager = new ApplicationActivationManager();
-
-        // const ActivateOptions noFlags = ActivateOptions.None;
         await Task.Run(() =>
         {
-            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            try
+            {
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(ex.Message);
+            }
         });
     }
 

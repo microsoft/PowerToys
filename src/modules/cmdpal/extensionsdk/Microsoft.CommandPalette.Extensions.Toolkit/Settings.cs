@@ -118,6 +118,10 @@ public sealed partial class Settings : ICommandSettings
             _settings = settings;
             Name = "Settings";
             Icon = new IconInfo("\uE713"); // Settings icon
+
+            // When our settings change, make sure to let CmdPal know to
+            // retrieve the new forms
+            _settings.SettingsChanged += (s, e) => RaiseItemsChanged();
         }
     }
 

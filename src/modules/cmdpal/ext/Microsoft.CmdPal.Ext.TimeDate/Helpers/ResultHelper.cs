@@ -2,9 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Globalization;
-using System.IO;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
@@ -33,21 +32,24 @@ internal static class ResultHelper
 
     public static IconInfo TimeDateIcon { get; } = new IconInfo("\uEC92");
 
+    public static IconInfo ErrorIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png");
+
     /// <summary>
-    /// Gets a result with an error message that only numbers can't be parsed
+    /// Gets a result with an error message that input can't be parsed
     /// </summary>
     /// <returns>Element of type <see cref="Result"/>.</returns>
-    internal static ListItem CreateNumberErrorResult() => new ListItem(new NoOpCommand())
-    {
-        Title = Resources.Microsoft_plugin_timedate_ErrorResultTitle,
-        Subtitle = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle,
-        Icon = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png"),
-    };
-
+#pragma warning disable CA1863 // Use 'CompositeFormat'
     internal static ListItem CreateInvalidInputErrorResult() => new ListItem(new NoOpCommand())
     {
         Title = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle,
-        Subtitle = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageSubTitle,
-        Icon = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png"),
+        Icon = ErrorIcon,
+        Details = new Details()
+        {
+            Title = Resources.Microsoft_plugin_timedate_InvalidInput_DetailsHeader,
+
+            // Because of translation we can't use 'CompositeFormat'.
+            Body = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_InvalidInput_SupportedInput, "**", "\n\n", "\n\n* "),
+        },
     };
+#pragma warning restore CA1863 // Use 'CompositeFormat'
 }

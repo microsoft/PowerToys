@@ -92,6 +92,9 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                 var run = 0;
                 var chunksLen = fileSize - QOI_PADDING_LENGTH;
 
+                var x = 0;
+                var rowAdd = bitmapData.Stride - (channels * bitmapData.Width);
+
                 for (var dataIndex = 0; dataIndex < dataLength; dataIndex += channels)
                 {
                     if (run > 0)
@@ -152,6 +155,14 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                         {
                             bitmapPixel[3] = pixel.A;
                         }
+                    }
+
+                    x++;
+                    if (x == bitmapData.Width)
+                    {
+                        // We align dataIndex with the stride
+                        dataIndex += rowAdd;
+                        x = 0;
                     }
                 }
 

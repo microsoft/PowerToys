@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <PathToRoot>..\..\..\..\..\</PathToRoot>
-    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.6.250205002</WasdkNuget>
+    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.7.250513003</WasdkNuget>
     <CppWinRTNuget>$(PathToRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5</CppWinRTNuget>
-    <WindowsSdkBuildToolsNuget>$(PathToRoot)packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428</WindowsSdkBuildToolsNuget>
+    <WindowsSdkBuildToolsNuget>$(PathToRoot)packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188</WindowsSdkBuildToolsNuget>
     <WebView2Nuget>$(PathToRoot)packages\Microsoft.Web.WebView2.1.0.2903.40</WebView2Nuget>
   </PropertyGroup>
   <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props')" />
@@ -24,7 +24,7 @@
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
-    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
@@ -180,12 +180,4 @@
     <Error Condition="!Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.targets'))" />
     <Error Condition="!Exists('$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets'))" />
   </Target>
-  <ItemGroup>
-    <ResourceCompile Include="version.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\common\version\version.vcxproj">
-      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
-    </ProjectReference>
-  </ItemGroup>
 </Project>

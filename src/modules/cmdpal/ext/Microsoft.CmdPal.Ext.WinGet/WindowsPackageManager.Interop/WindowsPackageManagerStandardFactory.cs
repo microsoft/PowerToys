@@ -20,20 +20,25 @@ public class WindowsPackageManagerStandardFactory : WindowsPackageManagerFactory
     protected override T CreateInstance<T>(Guid clsid, Guid iid)
     {
         var pUnknown = IntPtr.Zero;
-        try
+        unsafe
         {
-            var hr = PInvoke.CoCreateInstance(clsid, null, CLSCTX.CLSCTX_ALL, iid, out var result);
-            Marshal.ThrowExceptionForHR(hr);
-            pUnknown = Marshal.GetIUnknownForObject(result);
-            return MarshalGeneric<T>.FromAbi(pUnknown);
-        }
-        finally
-        {
-            // CoCreateInstance and FromAbi both AddRef on the native object.
-            // Release once to prevent memory leak.
-            if (pUnknown != IntPtr.Zero)
+            try
             {
-                Marshal.Release(pUnknown);
+                var hr = PInvoke.CoCreateInstance(clsid, null, CLSCTX.CLSCTX_ALL, iid, out var result);
+                Marshal.ThrowExceptionForHR(hr);
+
+                pUnknown = new IntPtr(result);
+
+                return MarshalGeneric<T>.FromAbi(pUnknown);
+            }
+            finally
+            {
+                // CoCreateInstance and FromAbi both AddRef on the native object.
+                // Release once to prevent memory leak.
+                if (pUnknown != IntPtr.Zero)
+                {
+                    Marshal.Release(pUnknown);
+                }
             }
         }
     }

@@ -32,7 +32,8 @@
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind Description}"
                     TextTrimming="CharacterEllipsis"
-                    TextWrapping="NoWrap" />
+                    TextWrapping="NoWrap"
+                    ToolTipService.ToolTip="{x:Bind Description}" />
             </Grid>
         </DataTemplate>
 

@@ -12,12 +12,14 @@ namespace Microsoft.CmdPal.Ext.Shell;
 internal sealed partial class FallbackExecuteItem : FallbackCommandItem
 {
     private readonly ExecuteItem _executeItem;
+    private readonly SettingsManager _settings;
 
     public FallbackExecuteItem(SettingsManager settings)
         : base(
             new ExecuteItem(string.Empty, settings) { Id = "com.microsoft.run.fallback" },
             Resources.shell_command_display_title)
     {
+        _settings = settings;
         _executeItem = (ExecuteItem)this.Command!;
         Title = string.Empty;
         _executeItem.Name = string.Empty;
@@ -30,5 +32,9 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
         _executeItem.Cmd = query;
         _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Properties.Resources.generic_run_command;
         Title = query;
+        MoreCommands = [
+            new CommandContextItem(new ExecuteItem(query, _settings, RunAsType.Administrator)),
+            new CommandContextItem(new ExecuteItem(query, _settings, RunAsType.OtherUser)),
+        ];
     }
 }

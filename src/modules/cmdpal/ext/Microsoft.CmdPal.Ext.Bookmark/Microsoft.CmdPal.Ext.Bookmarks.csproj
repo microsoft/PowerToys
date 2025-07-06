@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Bookmarks</RootNamespace>
     <Nullable>enable</Nullable>
@@ -16,7 +17,7 @@
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
     <ProjectReference Include="..\..\ext\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
@@ -24,7 +25,7 @@
       <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <Content Update="Assets\Bookmark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -39,5 +40,5 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
-  
+
 </Project>

@@ -8,11 +8,13 @@ Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
 ACCESSTOKEN
+acfs
 AClient
 AColumn
 acrt
 ACTIVATEAPP
 activationaction
+ACTIVATEOPTIONS
 ACVS
 adaptivecards
 ADate
@@ -67,6 +69,7 @@ appwiz
 APSTUDIO
 AQS
 ARandom
+Arash
 ARCHITEW
 ARemapped
 ARPINSTALLLOCATION
@@ -138,6 +141,7 @@ boxmodel
 BPBF
 bpmf
 bpp
+breadcrumb
 Breadcrumb
 Browsable
 BROWSEINFO
@@ -153,6 +157,7 @@ builttoroam
 BVal
 BValue
 byapp
+BYCOMMAND
 BYPOSITION
 CALCRECT
 CALG
@@ -173,6 +178,7 @@ CContext
 CDeclaration
 CElems
 CENTERALIGN
+cer
 certlm
 certmgr
 cfp
@@ -187,6 +193,7 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
+cleanmgr
 clickable
 clickonce
 CLIENTEDGE
@@ -196,7 +203,9 @@ CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
+clp
 CLSCTX
+CLSCTXLOCALSERVER
 clsids
 Clusion
 cmder
@@ -270,8 +279,10 @@ currentculture
 CURRENTDIR
 CURSORINFO
 cursorpos
+CURSORSHOWING
 customaction
 CUSTOMACTIONTEST
+CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
@@ -311,6 +322,7 @@ debugbreak
 declatory
 decryptor
 Dedup
+Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
 DEFAULTFLAGS
@@ -335,15 +347,20 @@ DESELECTOTHERS
 DESIGNINFO
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
+DESKTOPHORZRES
 desktopshorcutinstalled
+DESKTOPVERTRES
 devblogs
 devdocs
 devmgmt
 DEVMODE
 DEVMODEW
 devpal
+DFX
 DIALOGEX
+digicert
 dimm
+DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
 diskmgmt
@@ -387,6 +404,7 @@ DVASPECTINFO
 DVD
 dvr
 DVTARGETDEVICE
+dwflags
 dwl
 dwm
 dwmapi
@@ -461,6 +479,7 @@ EXPCMDFLAGS
 EXPCMDSTATE
 explr
 exppowertoys
+exprtk
 exptas
 exsb
 exstyle
@@ -474,6 +493,7 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
 fff
+FFFF
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
@@ -515,11 +535,13 @@ FRAMECHANGED
 frm
 Froml
 FROMTOUCH
+fsanitize
 fsmgmt
 FZE
 gacutil
 Gaeilge
 Gaidhlig
+gameid
 GC'ed
 GCLP
 gdi
@@ -590,6 +612,7 @@ helptext
 HGFE
 hglobal
 hhk
+HHmmssfff
 hhx
 Hiber
 Hiberboot
@@ -598,6 +621,7 @@ hicon
 HIDEREADONLY
 HIDEWINDOW
 Hif
+hightlight
 HIMAGELIST
 himl
 hinst
@@ -626,6 +650,7 @@ HOTKEYF
 hotkeys
 hotlight
 hotspot
+Hostx
 HPAINTBUFFER
 HRAWINPUT
 HREDRAW
@@ -658,7 +683,6 @@ IBeam
 icf
 ICONERROR
 ICONLOCATION
-idc
 IDCANCEL
 IDD
 idk
@@ -669,7 +693,6 @@ IDR
 IDXGI
 ietf
 IEXPLORE
-iextn
 IFACEMETHOD
 IFACEMETHODIMP
 IFile
@@ -678,6 +701,7 @@ IGo
 iid
 Iindex
 Ijwhost
+ILD
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
@@ -707,7 +731,7 @@ INPUTMOUSE
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
-INSTALLDIR
+installdir
 INSTALLFOLDER
 INSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER
 INSTALLFOLDERTOPREVIOUSINSTALLFOLDER
@@ -732,6 +756,7 @@ isocpp
 iss
 issecret
 ISSEPARATOR
+istep
 ith
 ITHUMBNAIL
 IUI
@@ -742,6 +767,7 @@ iwr
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JLO
 jobject
 jpe
 jpnime
@@ -775,6 +801,7 @@ LCIDTo
 Lclean
 Ldone
 Ldr
+LEFTALIGN
 LEFTSCROLLBAR
 LEFTTEXT
 LError
@@ -797,11 +824,11 @@ LMENU
 lnks
 LOADFROMFILE
 LOBYTE
-localappdata
 LOCALDISPLAY
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
+LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
@@ -897,6 +924,7 @@ metafile
 mfc
 Mgmt
 Microwaved
+middleclickaction
 midl
 mii
 mindaro
@@ -938,6 +966,7 @@ mpmc
 MRM
 MRT
 mru
+MSAL
 msc
 mscorlib
 msctls
@@ -961,7 +990,6 @@ msrc
 msstore
 mst
 msvcp
-msvsmon
 MTND
 MULTIPLEUSE
 multizone
@@ -1001,6 +1029,7 @@ netsh
 newcolor
 NEWDIALOGSTYLE
 NEWFILE
+NEWFILEHEADER
 newitem
 newpath
 newplus
@@ -1034,6 +1063,7 @@ NOINHERITLAYOUT
 NOINTERFACE
 NOINVERT
 NOLINKINFO
+nologo
 NOMCX
 NOMINMAX
 NOMIRRORBITMAP
@@ -1071,6 +1101,7 @@ NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
 NOTXORPEN
+notwindows
 NOZORDER
 NPH
 npmjs
@@ -1136,6 +1167,7 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
+partow
 PATPAINT
 pbc
 pbi
@@ -1234,6 +1266,7 @@ prg
 prgh
 prgms
 pri
+primaryclickaction
 PRINTCLIENT
 printmanagement
 prm
@@ -1255,6 +1288,7 @@ prvpane
 psapi
 pscid
 PSECURITY
+psexec
 psfgao
 psfi
 PSMODULEPATH
@@ -1295,6 +1329,7 @@ QUNS
 QXZ
 RAII
 RAlt
+Rappl
 randi
 Rasterization
 Rasterize
@@ -1391,6 +1426,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+sancov
 SAVEFAILED
 scanled
 schedtasks
@@ -1407,8 +1443,10 @@ SDKDDK
 sdns
 searchterm
 SEARCHUI
+secondaryclickaction
 SECONDARYDISPLAY
 secpol
+securestring
 SEEMASKINVOKEIDLIST
 SELCHANGE
 SENDCHANGE
@@ -1453,13 +1491,13 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
+SHELLICONSIZE
 SHFILEINFO
 SHFILEOPSTRUCT
 SHGDN
 SHGDNF
 SHGFI
-SHGFIICON
-SHGFILARGEICON
+SHIL
 shinfo
 shlwapi
 shobjidl
@@ -1490,8 +1528,9 @@ SICHINT
 SIDs
 siex
 sigdn
+Signedness
 SIGNINGSCENARIO
-Signtool
+signtool
 SINGLEKEY
 sipolicy
 SIZEBOX
@@ -1507,8 +1546,10 @@ SLGP
 sln
 SMALLICON
 smartphone
+smileys
 SMTO
 SNAPPROCESS
+snk
 snwprintf
 softline
 SOURCECLIENTAREAONLY
@@ -1557,9 +1598,11 @@ stdcpp
 stdcpplatest
 STDMETHODCALLTYPE
 STDMETHODIMP
+steamapps
 STGC
 STGM
 STGMEDIUM
+STGMREAD
 STICKYKEYS
 sticpl
 storelogo
@@ -1636,8 +1679,10 @@ TDefault
 TDevice
 telephon
 templatenamespace
+TESTONLY
 testprocess
 TEXCOORD
+TEXTBOXNEWLINE
 TEXTEXTRACTOR
 TEXTINCLUDE
 tfopen
@@ -1687,6 +1732,7 @@ trx
 tsa
 TSender
 TServer
+tskill
 tstoi
 TStr
 tweakme
@@ -1750,7 +1796,6 @@ uxtheme
 vabdq
 validmodulename
 valuegenerator
-VARENUM
 variantassignment
 vcamp
 VCENTER
@@ -1846,6 +1891,7 @@ WINDOWPOSCHANGING
 WINDOWSBUILDNUMBER
 windowssearch
 windowssettings
+windowsterminal
 WINDOWSTYLES
 WINDOWSTYLESICON
 winerror
@@ -1919,6 +1965,8 @@ WUX
 Wwanpp
 XAxis
 xclip
+xcopy
+XDeployment
 XDocument
 XElement
 xfd
@@ -1954,6 +2002,22 @@ Zoneszonabletester
 Zoomin
 zoomit
 ZOOMITX
+Zorder
 ZXk
 ZXNs
 zzz
+ACIE
+AOklab
+BCIE
+BOklab
+culori
+Evercoder
+LCh
+CIELCh
+CLSCTXINPROCALL
+IIDI
+irow
+lcid
+ppwsz
+rguid
+VARTYPE

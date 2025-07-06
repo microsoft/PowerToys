@@ -38,6 +38,7 @@
             <Setter Property="IsTabStop" Value="False" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="AutomationProperties.AutomationControlType" Value="Custom" />
             <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
             <Setter Property="Padding" Value="{ThemeResource TagPadding}" />
             <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
@@ -56,6 +57,7 @@
                             Padding="{TemplateBinding Padding}"
                             HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            AutomationProperties.Name="{TemplateBinding Text}"
                             Background="{TemplateBinding Background}"
                             BackgroundSizing="{TemplateBinding BackgroundSizing}"
                             BorderBrush="{TemplateBinding BorderBrush}"

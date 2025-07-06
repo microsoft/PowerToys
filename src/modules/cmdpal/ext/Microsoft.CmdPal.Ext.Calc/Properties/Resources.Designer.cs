@@ -61,11 +61,38 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to calculate the input.
+        /// </summary>
+        public static string calculator_calculation_failed_title {
+            get {
+                return ResourceManager.GetString("calculator_calculation_failed_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy binary.
+        /// </summary>
+        public static string calculator_copy_binary {
+            get {
+                return ResourceManager.GetString("calculator_copy_binary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy.
         /// </summary>
         public static string calculator_copy_command_name {
             get {
                 return ResourceManager.GetString("calculator_copy_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy hexadecimal.
+        /// </summary>
+        public static string calculator_copy_hex {
+            get {
+                return ResourceManager.GetString("calculator_copy_hex", resourceCulture);
             }
         }
         
@@ -79,11 +106,20 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Quickly evaluate typed equations.
+        ///   Looks up a localized string similar to Expression contains division by zero.
         /// </summary>
-        public static string calculator_displayTitle_text {
+        public static string calculator_division_by_zero {
             get {
-                return ResourceManager.GetString("calculator_displayTitle_text", resourceCulture);
+                return ResourceManager.GetString("calculator_division_by_zero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unsupported use of square brackets.
+        /// </summary>
+        public static string calculator_double_array_returned {
+            get {
+                return ResourceManager.GetString("calculator_double_array_returned", resourceCulture);
             }
         }
         
@@ -93,6 +129,42 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         public static string calculator_error {
             get {
                 return ResourceManager.GetString("calculator_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter an expression.
+        /// </summary>
+        public static string calculator_expression_empty {
+            get {
+                return ResourceManager.GetString("calculator_expression_empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Expression wrong or incomplete.
+        /// </summary>
+        public static string calculator_expression_not_complete {
+            get {
+                return ResourceManager.GetString("calculator_expression_not_complete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Calculation result is not a valid number (NaN).
+        /// </summary>
+        public static string calculator_not_a_number {
+            get {
+                return ResourceManager.GetString("calculator_not_a_number", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Result value was either too large or too small for a decimal number.
+        /// </summary>
+        public static string calculator_not_covert_to_decimal {
+            get {
+                return ResourceManager.GetString("calculator_not_covert_to_decimal", resourceCulture);
             }
         }
         
@@ -111,6 +183,105 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         public static string calculator_save_command_name {
             get {
                 return ResourceManager.GetString("calculator_save_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use English (United States) number format for input.
+        /// </summary>
+        public static string calculator_settings_in_en_format {
+            get {
+                return ResourceManager.GetString("calculator_settings_in_en_format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignores your system setting and expects numbers in the format &apos;{0}&apos;..
+        /// </summary>
+        public static string calculator_settings_in_en_format_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_in_en_format_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use English (United States) number format for output.
+        /// </summary>
+        public static string calculator_settings_out_en_format {
+            get {
+                return ResourceManager.GetString("calculator_settings_out_en_format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ignores your system setting and returns numbers in the format &apos;{0}&apos;..
+        /// </summary>
+        public static string calculator_settings_out_en_format_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_out_en_format_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace input if query ends with &apos;=&apos;.
+        /// </summary>
+        public static string calculator_settings_replace_input {
+            get {
+                return ResourceManager.GetString("calculator_settings_replace_input", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to When using direct activation, appending &apos;=&apos; to the expression will replace the input with the calculated result (e.g. &apos;=5*3-2=&apos; will change the query to &apos;=13&apos;)..
+        /// </summary>
+        public static string calculator_settings_replace_input_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_replace_input_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Degrees.
+        /// </summary>
+        public static string calculator_settings_trig_unit_degrees {
+            get {
+                return ResourceManager.GetString("calculator_settings_trig_unit_degrees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gradians.
+        /// </summary>
+        public static string calculator_settings_trig_unit_gradians {
+            get {
+                return ResourceManager.GetString("calculator_settings_trig_unit_gradians", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trigonometry Unit.
+        /// </summary>
+        public static string calculator_settings_trig_unit_mode {
+            get {
+                return ResourceManager.GetString("calculator_settings_trig_unit_mode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the angle unit to use for trigonometry operations.
+        /// </summary>
+        public static string calculator_settings_trig_unit_mode_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_trig_unit_mode_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Radians.
+        /// </summary>
+        public static string calculator_settings_trig_unit_radians {
+            get {
+                return ResourceManager.GetString("calculator_settings_trig_unit_radians", resourceCulture);
             }
         }
         
