@@ -132,19 +132,6 @@ public sealed partial class SearchBar : UserControl,
             WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>();
             e.Handled = true;
         }
-
-        // else if (e.Key == VirtualKey.Right)
-        // {
-        //    var suggestion = CurrentPageViewModel?.TextToSuggest;
-        //    if (CurrentPageViewModel != null && !string.IsNullOrEmpty(suggestion))
-        //    {
-        //        var currentText = FilterBox.Text;
-
-        // FilterBox.Text = suggestion;
-        //        FilterBox.Select(FilterBox.Text.Length, 0);
-        //        e.Handled = true;
-        //    }
-        // }
         else if (e.Key == VirtualKey.Escape)
         {
             if (string.IsNullOrEmpty(FilterBox.Text))
@@ -253,8 +240,6 @@ public sealed partial class SearchBar : UserControl,
 
             var ignoreLeave =
 
-                // e.Key == VirtualKey.Back ||
-                // e.Key == VirtualKey.Delete ||
                 e.Key == VirtualKey.Up ||
                 e.Key == VirtualKey.Down ||
 

@@ -33,29 +33,6 @@ internal sealed partial class PathListItem : ListItem
         // NOTE ME:
         // If there are spaces on originalDir, trim them off, BEFORE combining originalDir and fileName.
         // THEN add quotes at the end
-        // var hasSpace = path.Contains(' ');
-
-        // // var originalDir = Path.GetDirectoryName(originalSearch) ?? path;
-        // var originalPath = Path.Combine(originalDir, fileName);
-        // var suggestion = originalPath;
-        // if (hasSpace)
-        // {
-        //     var startsWithQuote = originalDir.StartsWith("\"", StringComparison.CurrentCultureIgnoreCase);
-        //     var endsWithQuote = originalDir.EndsWith("\"", StringComparison.CurrentCultureIgnoreCase);
-        //     if (!startsWithQuote)
-        //     {
-        //         suggestion = string.Concat("\"", suggestion);
-        //     }
-        //
-        //     if (!endsWithQuote)
-        //     {
-        //         suggestion = string.Concat(suggestion, "\"");
-        //     }
-        // }
-
-        // NOTE ME:
-        // If there are spaces on originalDir, trim them off, BEFORE combining originalDir and fileName.
-        // THEN add quotes at the end
 
         // Trim off leading & trailing quote, if there is one
         var trimmed = originalDir.Trim('"');
@@ -70,7 +47,7 @@ internal sealed partial class PathListItem : ListItem
 
         TextToSuggest = suggestion;
         MoreCommands = [
-            new CommandContextItem(new CopyTextCommand(path) { Name = "Copy path" }) { } // TODO:LOC
+            new CommandContextItem(new CopyTextCommand(path) { Name = Properties.Resources.copy_path_command_name }) { }
         ];
 
         // MoreCommands = [

@@ -28,7 +28,7 @@ internal sealed partial class RunExeItem : ListItem
         Exe = exe;
         var command = new AnonymousCommand(Run)
         {
-            Name = "Run", // TODO:LOC
+            Name = Properties.Resources.generic_run_command,
             Result = CommandResult.Dismiss(),
         };
         Command = command;
