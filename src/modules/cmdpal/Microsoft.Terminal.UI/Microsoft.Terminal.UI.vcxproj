@@ -171,6 +171,9 @@
     <ClCompile Include="IconPathConverter.cpp">
       <DependentUpon>IconPathConverter.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="RunHistory.cpp">
+      <DependentUpon>RunHistory.idl</DependentUpon>
+    </ClCompile>
     <ClCompile Include="ResourceString.cpp">
       <DependentUpon>ResourceString.idl</DependentUpon>
     </ClCompile>
