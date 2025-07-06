@@ -6,7 +6,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
 using Windows.System;
@@ -17,24 +16,21 @@ public partial class UrlCommand : InvokableCommand
 {
     private readonly Lazy<IconInfo> _icon;
 
-    public string Type { get; }
-
     public string Url { get; }
 
     public override IconInfo Icon { get => _icon.Value; set => base.Icon = value; }
 
     public UrlCommand(BookmarkData data)
-        : this(data.Name, data.Bookmark, data.Type)
+        : this(data.Name, data.Bookmark)
     {
     }
 
-    public UrlCommand(string name, string url, string type)
+    public UrlCommand(string name, string url)
     {
-        Name = name;
-        Type = type;
+        Name = Properties.Resources.bookmarks_command_name_open;
+
         Url = url;
 
-        // Icon = new IconInfo(IconFromUrl(Url, type));
         _icon = new Lazy<IconInfo>(() =>
         {
             ShellHelpers.ParseExecutableAndArgs(Url, out var exe, out var args);
@@ -61,15 +57,8 @@ public partial class UrlCommand : InvokableCommand
     {
         if (string.IsNullOrEmpty(exe))
         {
-            var message = "No executable found in the command."; // TODO:LOC
+            var message = "No executable found in the command.";
             Logger.LogError(message);
-
-            var warnToast = new ToastStatusMessage(new StatusMessage
-            {
-                Message = message,
-                State = MessageState.Warning,
-            });
-            warnToast.Show();
 
             return false;
         }
@@ -96,13 +85,6 @@ public partial class UrlCommand : InvokableCommand
             return true;
         }
 
-        var errorMessage = $"Failed to launch command {exe} {args}"; // TODO:LOC
-        var toast = new ToastStatusMessage(new StatusMessage
-        {
-            Message = errorMessage,
-            State = MessageState.Error,
-        });
-        toast.Show();
         return false;
     }
 
@@ -118,38 +100,6 @@ public partial class UrlCommand : InvokableCommand
         }
 
         return uri;
-    }
-
-    internal static string IconFromUrl(string url, string type)
-    {
-        switch (type)
-        {
-            case "file":
-                return "📄";
-            case "folder":
-                return "📁";
-            case "web":
-            default:
-                // Get the base url up to the first placeholder
-                var placeholderIndex = url.IndexOf('{');
-                var baseString = placeholderIndex > 0 ? url.Substring(0, placeholderIndex) : url;
-                try
-                {
-                    var uri = GetUri(baseString);
-                    if (uri != null)
-                    {
-                        var hostname = uri.Host;
-                        var faviconUrl = $"{uri.Scheme}://{hostname}/favicon.ico";
-                        return faviconUrl;
-                    }
-                }
-                catch (UriFormatException ex)
-                {
-                    Logger.LogError(ex.Message);
-                }
-
-                return "🔗";
-        }
     }
 
     public static async Task<IconInfo> GetIconForPath(string target)

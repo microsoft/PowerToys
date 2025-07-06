@@ -116,7 +116,7 @@ public partial class BookmarksCommandProvider : CommandProvider
         // Add commands for folder types
         if (command is UrlCommand urlCommand)
         {
-            if (urlCommand.Type == "folder")
+            if (!bookmark.IsWebUrl())
             {
                 contextMenu.Add(
                     new CommandContextItem(new DirectoryPage(urlCommand.Url)));
@@ -126,6 +126,7 @@ public partial class BookmarksCommandProvider : CommandProvider
             }
         }
 
+        listItem.Title = bookmark.Name;
         listItem.Subtitle = bookmark.Bookmark;
 
         var edit = new AddBookmarkPage(bookmark) { Icon = EditIcon };

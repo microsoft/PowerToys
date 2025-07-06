@@ -18,16 +18,15 @@ internal sealed partial class BookmarkPlaceholderPage : ContentPage
     public override IconInfo Icon { get => _icon.Value; set => base.Icon = value; }
 
     public BookmarkPlaceholderPage(BookmarkData data)
-        : this(data.Name, data.Bookmark, data.Type)
+        : this(data.Name, data.Bookmark)
     {
     }
 
-    public BookmarkPlaceholderPage(string name, string url, string type)
+    public BookmarkPlaceholderPage(string name, string url)
     {
-        Name = name;
+        Name = Properties.Resources.bookmarks_command_name_open;
 
-        // Icon = new IconInfo(UrlCommand.IconFromUrl(url, type));
-        _bookmarkPlaceholder = new BookmarkPlaceholderForm(name, url, type);
+        _bookmarkPlaceholder = new BookmarkPlaceholderForm(name, url);
 
         _icon = new Lazy<IconInfo>(() =>
         {

@@ -22,7 +22,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
     private readonly string _bookmark = string.Empty;
 
     // TODO pass in an array of placeholders
-    public BookmarkPlaceholderForm(string name, string url, string type)
+    public BookmarkPlaceholderForm(string name, string url)
     {
         _bookmark = url;
         var r = new Regex(Regex.Escape("{") + "(.*?)" + Regex.Escape("}"));
