@@ -39,4 +39,19 @@ stages:
               branchName: 'refs/heads/main'
               artifactName: 'build-x64-Release'
               targetPath: '$(Build.ArtifactStagingDirectory)'
+          - task: PowerShell@2
+            displayName: 'Check and Install PowerToys'
+            inputs:
+              targetType: 'inline'
+              script: |
+                $installer = Get-ChildItem -Path '$(Build.ArtifactStagingDirectory)' -Recurse -Filter 'PowerToysSetup-*.exe' | Select-Object -First 1
+                if ($installer) {
+                  $process = Start-Process -FilePath $installer.FullName -ArgumentList '/install /quiet' -Wait -PassThru -NoNewWindow
+                    
+                  if ($process.ExitCode -eq 0) {
+                    Write-Host "PowerToys installation completed successfully"
+                  } else {
+                    Write-Error "Installation failed with exit code: $($process.ExitCode)"
+                  }
+                }
  
