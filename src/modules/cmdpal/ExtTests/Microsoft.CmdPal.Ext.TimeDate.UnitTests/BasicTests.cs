@@ -5,25 +5,24 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
-{
-    [TestClass]
-    public class BasicTests
-    {
-        [TestMethod]
-        public void BasicTest()
-        {
-            // This is a basic test to verify the test project can run
-            Assert.IsTrue(true);
-        }
+namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
-        [TestMethod]
-        public void DateTimeTest()
-        {
-            // Test basic DateTime functionality
-            var now = DateTime.Now;
-            Assert.IsNotNull(now);
-            Assert.IsTrue(now > DateTime.MinValue);
-        }
+[TestClass]
+public class BasicTests
+{
+    [TestMethod]
+    public void BasicTest()
+    {
+        // This is a basic test to verify the test project can run
+        Assert.IsTrue(true);
+    }
+
+    [TestMethod]
+    public void DateTimeTest()
+    {
+        // Test basic DateTime functionality
+        var now = DateTime.Now;
+        Assert.IsNotNull(now);
+        Assert.IsTrue(now > DateTime.MinValue);
     }
 }

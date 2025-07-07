@@ -53,5 +53,10 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Microsoft.CmdPal.Ext.Calc.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 
 </Project>

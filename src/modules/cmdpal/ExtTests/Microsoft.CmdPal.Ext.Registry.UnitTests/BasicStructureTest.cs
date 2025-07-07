@@ -4,16 +4,15 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.Ext.Registry.UnitTests
+namespace Microsoft.CmdPal.Ext.Registry.UnitTests;
+
+[TestClass]
+public class BasicStructureTest
 {
-    [TestClass]
-    public class BasicStructureTest
+    [TestMethod]
+    public void CanCreateTestClass()
     {
-        [TestMethod]
-        public void CanCreateTestClass()
-        {
-            // This is a basic test to verify the test project structure is correct
-            Assert.IsTrue(true);
-        }
+        // This is a basic test to verify the test project structure is correct
+        Assert.IsTrue(true);
     }
 }

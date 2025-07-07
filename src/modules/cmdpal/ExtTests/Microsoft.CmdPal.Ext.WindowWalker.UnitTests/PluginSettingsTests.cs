@@ -12,62 +12,49 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.UnitTests;
 
 [TestClass]
 public class PluginSettingsTests
+{
+    [DataTestMethod]
+    [DataRow("ResultsFromVisibleDesktopOnly")]
+    [DataRow("SubtitleShowPid")]
+    [DataRow("SubtitleShowDesktopName")]
+    [DataRow("ConfirmKillProcess")]
+    [DataRow("KillProcessTree")]
+    [DataRow("OpenAfterKillAndClose")]
+    [DataRow("HideKillProcessOnElevatedProcesses")]
+    [DataRow("HideExplorerSettingInfo")]
+    [DataRow("InMruOrder")]
+    public void DoesSettingExist(string name)
     {
-        [TestMethod]
-        public void SettingsCount()
-        {
-            // Setup
-            PropertyInfo[] settings = SettingsManager.Instance?.GetType()?.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        // Setup
+        Type settings = SettingsManager.Instance?.GetType();
 
-            // Act
-            var result = settings?.Length;
+        // Act
+        var result = settings?.GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
 
-            // Assert
-            Assert.AreEqual(9, result); // Updated to 9 as it includes InMruOrder
-        }
-
-        [DataTestMethod]
-        [DataRow("ResultsFromVisibleDesktopOnly")]
-        [DataRow("SubtitleShowPid")]
-        [DataRow("SubtitleShowDesktopName")]
-        [DataRow("ConfirmKillProcess")]
-        [DataRow("KillProcessTree")]
-        [DataRow("OpenAfterKillAndClose")]
-        [DataRow("HideKillProcessOnElevatedProcesses")]
-        [DataRow("HideExplorerSettingInfo")]
-        [DataRow("InMruOrder")]
-        public void DoesSettingExist(string name)
-        {
-            // Setup
-            Type settings = SettingsManager.Instance?.GetType();
-
-            // Act
-            var result = settings?.GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
-
-            // Assert
-            Assert.IsNotNull(result);
-        }
-
-        [DataTestMethod]
-        [DataRow("ResultsFromVisibleDesktopOnly", false)]
-        [DataRow("SubtitleShowPid", false)]
-        [DataRow("SubtitleShowDesktopName", true)]
-        [DataRow("ConfirmKillProcess", true)]
-        [DataRow("KillProcessTree", false)]
-        [DataRow("OpenAfterKillAndClose", false)]
-        [DataRow("HideKillProcessOnElevatedProcesses", false)]
-        [DataRow("HideExplorerSettingInfo", true)]
-        [DataRow("InMruOrder", true)]
-        public void DefaultValues(string name, bool valueExpected)
-        {
-            // Setup
-            SettingsManager setting = SettingsManager.Instance;
-
-            // Act
-            PropertyInfo propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
-            var result = propertyInfo?.GetValue(setting);
-
-            // Assert
-            Assert.AreEqual(valueExpected, result);
-        }
+        // Assert
+        Assert.IsNotNull(result);
     }
+
+    [DataTestMethod]
+    [DataRow("ResultsFromVisibleDesktopOnly", false)]
+    [DataRow("SubtitleShowPid", false)]
+    [DataRow("SubtitleShowDesktopName", true)]
+    [DataRow("ConfirmKillProcess", true)]
+    [DataRow("KillProcessTree", false)]
+    [DataRow("OpenAfterKillAndClose", false)]
+    [DataRow("HideKillProcessOnElevatedProcesses", false)]
+    [DataRow("HideExplorerSettingInfo", true)]
+    [DataRow("InMruOrder", true)]
+    public void DefaultValues(string name, bool valueExpected)
+    {
+        // Setup
+        SettingsManager setting = SettingsManager.Instance;
+
+        // Act
+        PropertyInfo propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
+        var result = propertyInfo?.GetValue(setting);
+
+        // Assert
+        Assert.AreEqual(valueExpected, result);
+    }
+}

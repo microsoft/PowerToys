@@ -4,61 +4,65 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CmdPal.Ext.System.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.System.UnitTests;
 
 [TestClass]
 public class ImageTests
+{
+    [DataTestMethod]
+    [DataRow("shutdown", "ShutdownIcon")]
+    [DataRow("restart", "RestartIcon")]
+    [DataRow("sign out", "LogoffIcon")]
+    [DataRow("lock", "LockIcon")]
+    [DataRow("sleep", "SleepIcon")]
+    [DataRow("hibernate", "SleepIcon")]
+    [DataRow("recycle bin", "RecycleBinIcon")]
+    [DataRow("uefi firmware settings", "FirmwareSettingsIcon")]
+    [DataRow("ip v4 addr", "NetworkAdapterIcon")]
+    [DataRow("ip v6 addr", "NetworkAdapterIcon")]
+    [DataRow("mac addr", "NetworkAdapterIcon")]
+    public void IconThemeDarkTest(string typedString, string expectedIconPropertyName)
     {
-        [DataTestMethod]
-        [DataRow("shutdown", "shutdown")]
-        [DataRow("restart", "restart")]
-        [DataRow("sign out", "logoff")]
-        [DataRow("lock", "lock")]
-        [DataRow("sleep", "sleep")]
-        [DataRow("hibernate", "sleep")]
-        [DataRow("recycle bin", "recyclebin")]
-        [DataRow("uefi firmware settings", "firmwareSettings")]
-        [DataRow("ip v4 addr", "networkAdapter")]
-        [DataRow("ip v6 addr", "networkAdapter")]
-        [DataRow("mac addr", "networkAdapter")]
-        public void IconThemeDarkTest(string typedString, string expectedIconName)
-        {
-            // Setup
-            var iconUri = Icons.GetIcon(expectedIconName);
+        // Setup
+        var iconProperty = typeof(Icons).GetProperty(expectedIconPropertyName);
+        var iconUri = iconProperty?.GetValue(null) as IconInfo;
 
-            // Act
-            // Since we can't easily mock the complete system, just test that icons are available
-            var result = iconUri;
+        // Act
+        // Since we can't easily mock the complete system, just test that icons are available
+        var result = iconUri;
 
-            // Assert
-            Assert.IsNotNull(result);
-        }
-
-        [DataTestMethod]
-        [DataRow("shutdown", "shutdown")]
-        [DataRow("restart", "restart")]
-        [DataRow("sign out", "logoff")]
-        [DataRow("lock", "lock")]
-        [DataRow("sleep", "sleep")]
-        [DataRow("hibernate", "sleep")]
-        [DataRow("recycle bin", "recyclebin")]
-        [DataRow("uefi firmware settings", "firmwareSettings")]
-        [DataRow("ip v4 addr", "networkAdapter")]
-        [DataRow("ip v6 addr", "networkAdapter")]
-        [DataRow("mac addr", "networkAdapter")]
-        public void IconThemeLightTest(string typedString, string expectedIconName)
-        {
-            // Setup
-            var iconUri = Icons.GetIcon(expectedIconName);
-
-            // Act
-            // Since we can't easily mock the complete system, just test that icons are available
-            var result = iconUri;
-
-            // Assert
-            Assert.IsNotNull(result);
-        }
+        // Assert
+        Assert.IsNotNull(result);
     }
+
+    [DataTestMethod]
+    [DataRow("shutdown", "ShutdownIcon")]
+    [DataRow("restart", "RestartIcon")]
+    [DataRow("sign out", "LogoffIcon")]
+    [DataRow("lock", "LockIcon")]
+    [DataRow("sleep", "SleepIcon")]
+    [DataRow("hibernate", "SleepIcon")]
+    [DataRow("recycle bin", "RecycleBinIcon")]
+    [DataRow("uefi firmware settings", "FirmwareSettingsIcon")]
+    [DataRow("ip v4 addr", "NetworkAdapterIcon")]
+    [DataRow("ip v6 addr", "NetworkAdapterIcon")]
+    [DataRow("mac addr", "NetworkAdapterIcon")]
+    public void IconThemeLightTest(string typedString, string expectedIconPropertyName)
+    {
+        // Setup
+        var iconProperty = typeof(Icons).GetProperty(expectedIconPropertyName);
+        var iconUri = iconProperty?.GetValue(null) as IconInfo;
+
+        // Act
+        // Since we can't easily mock the complete system, just test that icons are available
+        var result = iconUri;
+
+        // Assert
+        Assert.IsNotNull(result);
+    }
+}

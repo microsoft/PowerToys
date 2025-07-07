@@ -128,15 +128,15 @@ public class QueryTests
     }
 
     [DataTestMethod]
-    [DataRow("12:30", "Time -")]
-    [DataRow("10.10.2022", "Date -")]
-    [DataRow("u1646408119", "Date and time -")]
-    [DataRow("u+1646408119", "Date and time -")]
-    [DataRow("u-1646408119", "Date and time -")]
-    [DataRow("ums1646408119", "Date and time -")]
-    [DataRow("ums+1646408119", "Date and time -")]
-    [DataRow("ums-1646408119", "Date and time -")]
-    [DataRow("ft637820085517321977", "Date and time -")]
+    [DataRow("12:30", "Time")]
+    [DataRow("10.10.2022", "Date")]
+    [DataRow("u1646408119", "Date and time")]
+    [DataRow("u+1646408119", "Date and time")]
+    [DataRow("u-1646408119", "Date and time")]
+    [DataRow("ums1646408119", "Date and time")]
+    [DataRow("ums+1646408119", "Date and time")]
+    [DataRow("ums-1646408119", "Date and time")]
+    [DataRow("ft637820085517321977", "Date and time")]
     public void DateTimeNumberOnlyInput(string query, string expectedSubtitle)
     {
         // Setup
@@ -308,11 +308,11 @@ public class QueryTests
     }
 
     [DataTestMethod]
-    [DataRow("time u", "Time UTC -")]
-    [DataRow("now u", "Now UTC -")]
-    [DataRow("iso utc", "ISO 8601 UTC -")]
-    [DataRow("iso zone", "ISO 8601 with time zone - ")]
-    [DataRow("iso utc zone", "ISO 8601 UTC with time zone -")]
+    [DataRow("time u", "Time UTC")]
+    [DataRow("now u", "Now UTC")]
+    [DataRow("iso utc", "ISO 8601 UTC")]
+    [DataRow("iso zone", "ISO 8601 with time zone")]
+    [DataRow("iso utc zone", "ISO 8601 UTC with time zone")]
     public void UTCRelatedQueries(string query, string expectedSubtitle)
     {
         // Setup

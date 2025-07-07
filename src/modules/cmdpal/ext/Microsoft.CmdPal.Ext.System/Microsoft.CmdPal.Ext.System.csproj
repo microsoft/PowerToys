@@ -33,4 +33,9 @@
       <CustomToolNamespace>Microsoft.CmdPal.Ext.System</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Microsoft.CmdPal.Ext.System.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

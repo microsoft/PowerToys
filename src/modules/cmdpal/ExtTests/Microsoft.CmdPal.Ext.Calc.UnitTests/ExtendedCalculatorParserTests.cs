@@ -31,10 +31,10 @@ public class ExtendedCalculatorParserTests
         public void Interpret_ThrowError_WhenCalledNullOrEmpty(string input)
         {
             // Arrange
-            var engine = new CalculateEngine();
+            var settings = new SettingsManager();
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => engine.Interpret(input, CultureInfo.CurrentCulture, out _));
+            Assert.ThrowsException<ArgumentNullException>(() => CalculateEngine.Interpret(settings, input, CultureInfo.CurrentCulture, out _));
         }
 
         [DataTestMethod]
@@ -43,10 +43,10 @@ public class ExtendedCalculatorParserTests
         public void Interpret_NoResult_WhenCalled(string input)
         {
             // Arrange
-            var engine = new CalculateEngine();
+            var settings = new SettingsManager();
 
             // Act
-            var result = engine.Interpret(input, CultureInfo.CurrentCulture, out _);
+            var result = CalculateEngine.Interpret(settings, input, CultureInfo.CurrentCulture, out _);
 
             // Assert
             Assert.AreEqual(default(CalculateResult), result);
@@ -85,11 +85,11 @@ public class ExtendedCalculatorParserTests
         public void Interpret_NoErrors_WhenCalledWithRounding(string input, decimal expectedResult)
         {
             // Arrange
-            var engine = new CalculateEngine();
+            var settings = new SettingsManager();
 
             // Act
             // Using InvariantCulture since this is internal
-            var result = engine.Interpret(input, CultureInfo.InvariantCulture, out _);
+            var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out _);
 
             // Assert
             Assert.IsNotNull(result);
