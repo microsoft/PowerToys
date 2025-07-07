@@ -312,8 +312,9 @@ public sealed partial class MainWindow : WindowEx,
 
         // Hide the window to return focus to the previous window
         // Show it again (while it's cloaked) to ensure that the window is displayed instantly when uncloaked
-        this.Hide();
-        this.Show();
+        // ShowWindow needs to run on the UI thread, otherwise it silently fails
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNA); // SW_SHOWNA will not activate the window
     }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
