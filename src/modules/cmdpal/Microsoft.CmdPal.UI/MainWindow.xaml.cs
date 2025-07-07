@@ -286,7 +286,8 @@ public sealed partial class MainWindow : WindowEx,
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
-    public void Receive(HideWindowMessage message) => HideWindow();
+    public void Receive(HideWindowMessage message) => 
+        DispatcherQueue.TryEnqueue(HideWindow);
 
     public void Receive(QuitMessage message) =>
 
@@ -294,7 +295,7 @@ public sealed partial class MainWindow : WindowEx,
         DispatcherQueue.TryEnqueue(() => Close());
 
     public void Receive(DismissMessage message) =>
-        HideWindow();
+        DispatcherQueue.TryEnqueue(HideWindow);
 
     private void HideWindow()
     {
