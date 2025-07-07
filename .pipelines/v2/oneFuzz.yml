@@ -48,120 +48,14 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                # 检查当前权限
-                $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-                Write-Host "Running as administrator: $isAdmin"
-                Write-Host "Current user: $env:USERNAME"
-                Write-Host "Current domain: $env:USERDOMAIN"
-                
-                # 列出所有下载的文件
-                Write-Host "Files in artifact directory:"
-                Get-ChildItem -Path '$(Build.ArtifactStagingDirectory)' -Recurse | ForEach-Object {
-                  Write-Host "  $($_.FullName) (Size: $($_.Length) bytes)"
-                }
-                
-                # 查找安装程序
                 $installer = Get-ChildItem -Path '$(Build.ArtifactStagingDirectory)' -Recurse -Filter 'PowerToysSetup-*.exe' | Select-Object -First 1
-                
                 if ($installer) {
-                  Write-Host "Found installer: $($installer.FullName)"
-                  Write-Host "Installer size: $($installer.Length) bytes"
-                  
-                  # 获取文件版本信息
-                  try {
-                    $versionInfo = Get-ItemProperty $installer.FullName | Select-Object VersionInfo
-                    Write-Host "Installer version: $($versionInfo.VersionInfo.FileVersion)"
-                  } catch {
-                    Write-Host "Could not get version info: $($_.Exception.Message)"
-                  }
-                  
-                  # 尝试多种安装参数
-                  $installMethods = @(
-                    @{Args = @('/S'); Description = "NSIS Silent"},
-                    @{Args = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'); Description = "Inno Setup Silent"},
-                    @{Args = @('/quiet'); Description = "MSI Quiet"},
-                    @{Args = @('/install', '/quiet'); Description = "Custom Install Quiet"},
-                    @{Args = @('/silent'); Description = "Generic Silent"}
-                  )
-                  
-                  $success = $false
-                  
-                  foreach ($method in $installMethods) {
-                    Write-Host "Trying installation method: $($method.Description)"
-                    Write-Host "Arguments: $($method.Args -join ' ')"
+                  $process = Start-Process -FilePath $installer.FullName -ArgumentList @('/passive', '/norestart') -Wait -PassThru -NoNewWindow
                     
-                    try {
-                      $process = Start-Process -FilePath $installer.FullName -ArgumentList $method.Args -Wait -PassThru -NoNewWindow
-                      Write-Host "Exit code: $($process.ExitCode)"
-                      
-                      if ($process.ExitCode -eq 0) {
-                        Write-Host "✅ PowerToys installation completed successfully with method: $($method.Description)"
-                        $success = $true
-                        break
-                      } elseif ($process.ExitCode -eq 3010) {
-                        Write-Host "✅ PowerToys installation completed but requires restart (exit code 3010)"
-                        $success = $true
-                        break
-                      } else {
-                        Write-Warning "❌ Method failed with exit code: $($process.ExitCode)"
-                      }
-                    } catch {
-                      Write-Warning "❌ Method failed with exception: $($_.Exception.Message)"
-                    }
-                    
-                    Start-Sleep -Seconds 2
-                  }
-                  
-                  if (-not $success) {
-                    Write-Error "All installation methods failed"
-                    
-                    # 尝试提取安装程序信息
-                    Write-Host "Attempting to extract installer information..."
-                    try {
-                      & $installer.FullName /? 2>&1 | Out-String | Write-Host
-                    } catch {
-                      Write-Host "Could not get installer help: $($_.Exception.Message)"
-                    }
-                    
-                    exit 1
-                  }
-                  
-                  # 验证安装
-                  Write-Host "Verifying installation..."
-                  $powerToysPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
-                  if (Test-Path $powerToysPath) {
-                    Write-Host "✅ PowerToys installed successfully at: $powerToysPath"
-                    
-                    # 获取安装的版本
-                    try {
-                      $installedVersion = (Get-ItemProperty $powerToysPath).VersionInfo.FileVersion
-                      Write-Host "Installed version: $installedVersion"
-                    } catch {
-                      Write-Host "Could not get installed version"
-                    }
+                  if ($process.ExitCode -eq 0) {
+                    Write-Host "PowerToys installation completed successfully"
                   } else {
-                    Write-Warning "⚠️ PowerToys executable not found at expected location"
-                    
-                    # 搜索其他可能的位置
-                    $searchPaths = @(
-                      "${env:ProgramFiles(x86)}\PowerToys\PowerToys.exe",
-                      "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe"
-                    )
-                    
-                    foreach ($path in $searchPaths) {
-                      if (Test-Path $path) {
-                        Write-Host "Found PowerToys at: $path"
-                        break
-                      }
-                    }
+                    Write-Error "Installation failed with exit code: $($process.ExitCode)"
                   }
-                  
-                } else {
-                  Write-Error "PowerToys installer not found!"
-                  Write-Host "Available files:"
-                  Get-ChildItem -Path '$(Build.ArtifactStagingDirectory)' -Recurse | ForEach-Object {
-                    Write-Host "  $($_.Name)"
-                  }
-                  exit 1
                 }
  
