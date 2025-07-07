@@ -193,7 +193,6 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
-cleanmgr
 clickable
 clickonce
 CLIENTEDGE
@@ -205,7 +204,6 @@ CLIPSIBLINGS
 closesocket
 clp
 CLSCTX
-CLSCTXLOCALSERVER
 clsids
 Clusion
 cmder
@@ -763,7 +761,6 @@ IUI
 IUnknown
 IUse
 IWIC
-iwr
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
@@ -1288,7 +1285,6 @@ prvpane
 psapi
 pscid
 PSECURITY
-psexec
 psfgao
 psfi
 PSMODULEPATH
@@ -1546,7 +1542,6 @@ SLGP
 sln
 SMALLICON
 smartphone
-smileys
 SMTO
 SNAPPROCESS
 snk
@@ -1891,7 +1886,6 @@ WINDOWPOSCHANGING
 WINDOWSBUILDNUMBER
 windowssearch
 windowssettings
-windowsterminal
 WINDOWSTYLES
 WINDOWSTYLESICON
 winerror
@@ -1995,7 +1989,6 @@ YStr
 YTM
 YVIRTUALSCREEN
 ZEROINIT
-Zhiwei
 zonable
 zoneset
 Zoneszonabletester
@@ -2014,8 +2007,6 @@ culori
 Evercoder
 LCh
 CIELCh
-CLSCTXINPROCALL
-IIDI
 irow
 lcid
 ppwsz
