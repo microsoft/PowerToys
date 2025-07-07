@@ -103,37 +103,30 @@ public class TimeAndDateHelperTests
     public void GetCurrentTimeFormatTest()
     {
         // Setup
-        var now = DateTime.Now;
+        var testDateTime = new DateTime(2023, 12, 25, 14, 30, 45);
 
         // Act
-        var timeResult = now.ToString("T", CultureInfo.CurrentCulture);
-        var dateResult = now.ToString("d", CultureInfo.CurrentCulture);
+        var timeResult = testDateTime.ToString("T", CultureInfo.CurrentCulture);
+        var dateResult = testDateTime.ToString("d", CultureInfo.CurrentCulture);
 
         // Assert
-        Assert.IsFalse(string.IsNullOrEmpty(timeResult));
-        Assert.IsFalse(string.IsNullOrEmpty(dateResult));
+        Assert.AreEqual("2:30:45 PM", timeResult);
+        Assert.AreEqual("12/25/2023", dateResult);
     }
 
-    [TestMethod]
-    public void ValidateCustomDateTimeFormats()
+    [DataTestMethod]
+    [DataRow("yyyy-MM-dd HH:mm:ss", "2023-12-25 14:30:45")]
+    [DataRow("dddd, MMMM dd, yyyy", "Monday, December 25, 2023")]
+    [DataRow("HH:mm:ss tt", "14:30:45 PM")]
+    public void ValidateCustomDateTimeFormats(string format, string expectedResult)
     {
         // Setup
         var testDate = new DateTime(2023, 12, 25, 14, 30, 45);
 
-        // Act & Assert - Test various custom formats don't crash
-        try
-        {
-            var result1 = testDate.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.CurrentCulture);
-            var result2 = testDate.ToString("dddd, MMMM dd, yyyy", CultureInfo.CurrentCulture);
-            var result3 = testDate.ToString("HH:mm:ss tt", CultureInfo.CurrentCulture);
+        // Act
+        var result = testDate.ToString(format, CultureInfo.CurrentCulture);
 
-            Assert.IsFalse(string.IsNullOrEmpty(result1));
-            Assert.IsFalse(string.IsNullOrEmpty(result2));
-            Assert.IsFalse(string.IsNullOrEmpty(result3));
-        }
-        catch (Exception ex)
-        {
-            Assert.Fail($"Custom date format parsing failed: {ex.Message}");
-        }
+        // Assert
+        Assert.AreEqual(expectedResult, result);
     }
 }
