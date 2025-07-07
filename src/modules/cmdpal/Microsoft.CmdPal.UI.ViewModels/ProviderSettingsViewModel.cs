@@ -25,7 +25,11 @@ public partial class ProviderSettingsViewModel(
 
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? "Built-in";
 
-    public string ExtensionSubtext => IsEnabled ? $"{ExtensionName}, {TopLevelCommands.Count + FallbackCommands.Count} commands" : Resources.builtin_disabled_extension;
+    public string ExtensionSubtext => IsEnabled ?
+        HasFallbackCommands ?
+            $"{ExtensionName}, {TopLevelCommands.Count} commands, {FallbackCommands.Count} fallback commands" :
+            $"{ExtensionName}, {TopLevelCommands.Count} commands" :
+        Resources.builtin_disabled_extension;
 
     [MemberNotNullWhen(true, nameof(Extension))]
     public bool IsFromExtension => _provider.Extension != null;
