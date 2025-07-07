@@ -701,6 +701,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.TimeDa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.TimeDate.UnitTests", "src\modules\cmdpal\ExtTests\Microsoft.CmdPal.Ext.TimeDate.UnitTests\Microsoft.CmdPal.Ext.TimeDate.UnitTests.csproj", "{97E31501-601E-493D-A6A8-1EEB799F4ADC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Registry.UnitTests", "src\modules\cmdpal\ExtTests\Microsoft.CmdPal.Ext.Registry.UnitTests\Microsoft.CmdPal.Ext.Registry.UnitTests.csproj", "{A1B2C3D4-E5F6-7890-ABCD-56789ABCDEF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Calc.UnitTests", "src\modules\cmdpal\ExtTests\Microsoft.CmdPal.Ext.Calc.UnitTests\Microsoft.CmdPal.Ext.Calc.UnitTests.csproj", "{B2C3D4E5-F6A7-8901-BCDE-6789ABCDEF01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.WindowWalker.UnitTests", "src\modules\cmdpal\ExtTests\Microsoft.CmdPal.Ext.WindowWalker.UnitTests\Microsoft.CmdPal.Ext.WindowWalker.UnitTests.csproj", "{C3D4E5F6-A7B8-9012-CDEF-789ABCDEF012}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.System.UnitTests", "src\modules\cmdpal\ExtTests\Microsoft.CmdPal.Ext.System.UnitTests\Microsoft.CmdPal.Ext.System.UnitTests.csproj", "{D4E5F6A7-B8C9-0123-DEF0-89ABCDEF0123}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.TimeDate.UnitTests", "src\modules\cmdpal\ExtTests\Microsoft.CmdPal.Ext.TimeDate.UnitTests\Microsoft.CmdPal.Ext.TimeDate.UnitTests.csproj", "{97E31501-601E-493D-A6A8-1EEB799F4ADC}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UITestAutomation", "src\common\UITestAutomation\UITestAutomation.csproj", "{A558C25D-2007-498E-8B6F-43405AFAE9E2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyboardManagerEditorUI", "src\modules\keyboardmanager\KeyboardManagerEditorUI\KeyboardManagerEditorUI.csproj", "{08F9155D-B6DC-46E5-9C83-AF60B655898B}"
@@ -2671,6 +2681,41 @@ Global
 		{14AFD976-B4D2-49D0-9E6C-AA93CC061B8A}.Release|ARM64.Build.0 = Release|ARM64
 		{14AFD976-B4D2-49D0-9E6C-AA93CC061B8A}.Release|x64.ActiveCfg = Release|x64
 		{14AFD976-B4D2-49D0-9E6C-AA93CC061B8A}.Release|x64.Build.0 = Release|x64
+		{97E31501-601E-493D-A6A8-1EEB799F4ADC}.Release|ARM64.Build.0 = Release|ARM64
+		{97E31501-601E-493D-A6A8-1EEB799F4ADC}.Release|x64.ActiveCfg = Release|x64
+		{97E31501-601E-493D-A6A8-1EEB799F4ADC}.Release|x64.Build.0 = Release|x64
+		{A1B2C3D4-E5F6-7890-ABCD-56789ABCDEF0}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{A1B2C3D4-E5F6-7890-ABCD-56789ABCDEF0}.Debug|ARM64.Build.0 = Debug|ARM64
+		{A1B2C3D4-E5F6-7890-ABCD-56789ABCDEF0}.Debug|x64.ActiveCfg = Debug|x64
+		{A1B2C3D4-E5F6-7890-ABCD-56789ABCDEF0}.Debug|x64.Build.0 = Debug|x64
+		{A1B2C3D4-E5F6-7890-ABCD-56789ABCDEF0}.Release|ARM64.ActiveCfg = Release|ARM64
+		{A1B2C3D4-E5F6-7890-ABCD-56789ABCDEF0}.Release|ARM64.Build.0 = Release|ARM64
+		{A1B2C3D4-E5F6-7890-ABCD-56789ABCDEF0}.Release|x64.ActiveCfg = Release|x64
+		{A1B2C3D4-E5F6-7890-ABCD-56789ABCDEF0}.Release|x64.Build.0 = Release|x64
+		{B2C3D4E5-F6A7-8901-BCDE-6789ABCDEF01}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{B2C3D4E5-F6A7-8901-BCDE-6789ABCDEF01}.Debug|ARM64.Build.0 = Debug|ARM64
+		{B2C3D4E5-F6A7-8901-BCDE-6789ABCDEF01}.Debug|x64.ActiveCfg = Debug|x64
+		{B2C3D4E5-F6A7-8901-BCDE-6789ABCDEF01}.Debug|x64.Build.0 = Debug|x64
+		{B2C3D4E5-F6A7-8901-BCDE-6789ABCDEF01}.Release|ARM64.ActiveCfg = Release|ARM64
+		{B2C3D4E5-F6A7-8901-BCDE-6789ABCDEF01}.Release|ARM64.Build.0 = Release|ARM64
+		{B2C3D4E5-F6A7-8901-BCDE-6789ABCDEF01}.Release|x64.ActiveCfg = Release|x64
+		{B2C3D4E5-F6A7-8901-BCDE-6789ABCDEF01}.Release|x64.Build.0 = Release|x64
+		{C3D4E5F6-A7B8-9012-CDEF-789ABCDEF012}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{C3D4E5F6-A7B8-9012-CDEF-789ABCDEF012}.Debug|ARM64.Build.0 = Debug|ARM64
+		{C3D4E5F6-A7B8-9012-CDEF-789ABCDEF012}.Debug|x64.ActiveCfg = Debug|x64
+		{C3D4E5F6-A7B8-9012-CDEF-789ABCDEF012}.Debug|x64.Build.0 = Debug|x64
+		{C3D4E5F6-A7B8-9012-CDEF-789ABCDEF012}.Release|ARM64.ActiveCfg = Release|ARM64
+		{C3D4E5F6-A7B8-9012-CDEF-789ABCDEF012}.Release|ARM64.Build.0 = Release|ARM64
+		{C3D4E5F6-A7B8-9012-CDEF-789ABCDEF012}.Release|x64.ActiveCfg = Release|x64
+		{C3D4E5F6-A7B8-9012-CDEF-789ABCDEF012}.Release|x64.Build.0 = Release|x64
+		{D4E5F6A7-B8C9-0123-DEF0-89ABCDEF0123}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{D4E5F6A7-B8C9-0123-DEF0-89ABCDEF0123}.Debug|ARM64.Build.0 = Debug|ARM64
+		{D4E5F6A7-B8C9-0123-DEF0-89ABCDEF0123}.Debug|x64.ActiveCfg = Debug|x64
+		{D4E5F6A7-B8C9-0123-DEF0-89ABCDEF0123}.Debug|x64.Build.0 = Debug|x64
+		{D4E5F6A7-B8C9-0123-DEF0-89ABCDEF0123}.Release|ARM64.ActiveCfg = Release|ARM64
+		{D4E5F6A7-B8C9-0123-DEF0-89ABCDEF0123}.Release|ARM64.Build.0 = Release|ARM64
+		{D4E5F6A7-B8C9-0123-DEF0-89ABCDEF0123}.Release|x64.ActiveCfg = Release|x64
+		{D4E5F6A7-B8C9-0123-DEF0-89ABCDEF0123}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
