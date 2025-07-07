@@ -134,6 +134,32 @@ private:
     bool run_in_service_mode = false;
     PROCESS_INFORMATION p_info = {};
 
+    // Helper function to convert HotkeyObject to Hotkey struct
+    Hotkey ConvertHotkeyObjectToHotkey(const PowerToysSettings::HotkeyObject& hotkeyObj, const wchar_t* name)
+    {
+        Hotkey hotkey;
+        hotkey.win = hotkeyObj.win_pressed();
+        hotkey.ctrl = hotkeyObj.ctrl_pressed();
+        hotkey.alt = hotkeyObj.alt_pressed();
+        hotkey.shift = hotkeyObj.shift_pressed();
+        hotkey.key = static_cast<unsigned char>(hotkeyObj.get_code());
+        hotkey.name = name;
+        return hotkey;
+    }
+
+    // Helper function to create a default disabled hotkey
+    Hotkey CreateDisabledHotkey(const wchar_t* name)
+    {
+        Hotkey hotkey;
+        hotkey.win = false;
+        hotkey.ctrl = false;
+        hotkey.alt = false;
+        hotkey.shift = false;
+        hotkey.key = 0;
+        hotkey.name = name;
+        return hotkey;
+    }
+
     bool is_enabled_by_default() const override
     {
         return false;
@@ -562,6 +588,77 @@ public:
     virtual bool is_enabled() override
     {
         return m_enabled;
+    }
+
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        constexpr size_t num_hotkeys = 4; // We have 4 hotkeys
+
+        if (hotkeys && buffer_size >= num_hotkeys)
+        {
+            try
+            {
+                PowerToysSettings::PowerToyValues values =
+                    PowerToysSettings::PowerToyValues::load_from_settings_file(MODULE_NAME);
+
+                // Cache the raw JSON object to avoid multiple parsing
+                json::JsonObject root_json = values.get_raw_json();
+                json::JsonObject properties_json = root_json.GetNamedObject(L"properties", json::JsonObject{});
+
+                size_t hotkey_index = 0;
+
+                // Helper lambda to extract hotkey from JSON properties
+                auto extract_hotkey = [&](const wchar_t* property_name, const wchar_t* hotkey_name, bool default_win, bool default_ctrl, bool default_alt, bool default_shift, unsigned char default_key) -> Hotkey {
+                    if (properties_json.HasKey(property_name))
+                    {
+                        try
+                        {
+                            json::JsonObject hotkey_json = properties_json.GetNamedObject(property_name);
+
+                            // Extract hotkey properties directly from JSON
+                            bool win = hotkey_json.GetNamedBoolean(L"win", default_win);
+                            bool ctrl = hotkey_json.GetNamedBoolean(L"ctrl", default_ctrl);
+                            bool alt = hotkey_json.GetNamedBoolean(L"alt", default_alt);
+                            bool shift = hotkey_json.GetNamedBoolean(L"shift", default_shift);
+                            unsigned char key = static_cast<unsigned char>(
+                                hotkey_json.GetNamedNumber(L"code", default_key));
+
+                            return { win, ctrl, shift, alt, key, hotkey_name };
+                        }
+                        catch (...)
+                        {
+                            // If parsing individual hotkey fails, use defaults
+                            return { default_win, default_ctrl, default_shift, default_alt, default_key, hotkey_name };
+                        }
+                    }
+                    else
+                    {
+                        // Property doesn't exist, use defaults
+                        return { default_win, default_ctrl, default_shift, default_alt, default_key, hotkey_name };
+                    }
+                };
+
+                // Extract all hotkeys using the optimized helper
+                hotkeys[hotkey_index++] = extract_hotkey(L"ToggleEasyMouseShortcut", TOGGLEEASYMOUSE_SHORTCUT_NAME, false, true, false, true, 0x45); // Ctrl+Shift+E
+
+                hotkeys[hotkey_index++] = extract_hotkey(L"LockMachineShortcut", LOCKMACHINE_SHORTCUT_NAME, false, true, false, true, 0x4C); // Ctrl+Shift+L
+
+                hotkeys[hotkey_index++] = extract_hotkey(L"ReconnectShortcut", RECONNECT_SHORTCUT_NAME, true, true, true, false, 0x52); // Win+Ctrl+Alt+R
+
+                hotkeys[hotkey_index++] = extract_hotkey(L"Switch2AllPCShortcut", SWITCH2ALLPC_SHORTCUT_NAME, false, false, false, false, 0); // Disabled by default
+            }
+            catch (std::exception&)
+            {
+                // If settings file doesn't exist or is corrupted, use default hotkeys
+                size_t hotkey_index = 0;
+                hotkeys[hotkey_index++] = { false, true, false, true, 0x45, TOGGLEEASYMOUSE_SHORTCUT_NAME }; // Ctrl+Shift+E
+                hotkeys[hotkey_index++] = { false, true, false, true, 0x4C, LOCKMACHINE_SHORTCUT_NAME }; // Ctrl+Shift+L
+                hotkeys[hotkey_index++] = { true, true, true, false, 0x52, RECONNECT_SHORTCUT_NAME }; // Win+Ctrl+Alt+R
+                hotkeys[hotkey_index++] = CreateDisabledHotkey(SWITCH2ALLPC_SHORTCUT_NAME); // Disabled
+            }
+        }
+
+        return num_hotkeys;
     }
 
     void launch_add_firewall_process()
