@@ -8,7 +8,7 @@ using System.Linq;
 using Microsoft.CmdPal.Ext.Registry.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.Ext.Registry.UnitTests.Helpers;
+namespace Microsoft.CmdPal.Ext.Registry.UnitTests;
 
 [TestClass]
 public class ResultHelperTest
