@@ -107,17 +107,17 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
     private void UpdateTags(ITag[]? newTagsFromModel)
     {
+        var newTags = newTagsFromModel?.Select(t =>
+        {
+            var vm = new TagViewModel(t, PageContext);
+            vm.InitializeProperties();
+            return vm;
+        })
+            .ToList() ?? [];
+
         DoOnUiThread(
             () =>
             {
-                var newTags = newTagsFromModel?.Select(t =>
-                {
-                    var vm = new TagViewModel(t, PageContext);
-                    vm.InitializeProperties();
-                    return vm;
-                })
-                    .ToList() ?? [];
-
                 // Tags being an ObservableCollection instead of a List lead to
                 // many COM exception issues.
                 Tags = new(newTags);

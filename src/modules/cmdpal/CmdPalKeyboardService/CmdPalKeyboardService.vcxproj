@@ -108,7 +108,6 @@
     <ClInclude Include="KeyboardListener.h">
       <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClInclude>
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -130,9 +129,6 @@
     <None Include="PropertySheet.props" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ResourceCompile Include="CmdPalKeyboardService.rc" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">

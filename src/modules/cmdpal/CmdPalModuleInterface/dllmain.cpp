@@ -117,16 +117,18 @@ private:
 
         for (DWORD pid : processIds)
         {
-            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+            HANDLE hProcess = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, FALSE, pid);
 
             if (hProcess != NULL)
             {
                 SetEvent(m_hTerminateEvent);
 
-                // Wait for 1.5 seconds for the process to end correctly and stop etw tracer
-                WaitForSingleObject(hProcess, 1500);
+                // Wait for 1.5 seconds for the process to end correctly, allowing time for ETW tracer and extensions to stop
+                if (WaitForSingleObject(hProcess, 1500) == WAIT_TIMEOUT)
+                {
+                    TerminateProcess(hProcess, 0);
+                }
 
-                TerminateProcess(hProcess, 0);
                 CloseHandle(hProcess);
             }
         }
@@ -217,10 +219,11 @@ public:
         CmdPal::m_enabled.store(true);
 
         std::wstring packageName = L"Microsoft.CommandPalette";
-        std::wstring launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette_8wekyb3d8bbwe!App";
+        // Launch CmdPal as normal user using explorer
+        std::wstring launchPath = L"explorer.exe";
+        std::wstring launchArgs = L"x-cmdpal://background";
 #ifdef IS_DEV_BRANDING
         packageName = L"Microsoft.CommandPalette.Dev";
-        launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App";
 #endif
 
         if (!package::GetRegisteredPackage(packageName, false).has_value())
@@ -269,13 +272,13 @@ public:
         if (!firstEnableCall)
         {
             Logger::trace("Not first attempt, try to launch");
-            LaunchApp(launchPath, L"RunFromPT", false /*no elevated*/, false /*error pop up*/);
+            LaunchApp(launchPath, launchArgs, false /*no elevated*/, false /*error pop up*/);
         }
         else
         {
             // If first time enable, do retry launch.
             Logger::trace("First attempt, try to launch");
-            std::thread launchThread(&CmdPal::RetryLaunch, launchPath);
+            std::thread launchThread(&CmdPal::RetryLaunch, launchPath, launchArgs);
             launchThread.detach();
         }
 
@@ -290,14 +293,14 @@ public:
         CmdPal::m_enabled.store(false);
     }
 
-    static void RetryLaunch(std::wstring path)
+    static void RetryLaunch(std::wstring path, std::wstring cmdArgs)
     {
         const int base_delay_milliseconds = 1000;
         int max_retry = 9; // 2**9 - 1 seconds. Control total wait time within 10 min.
         int retry = 0;
         do
         {
-            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry < max_retry);
+            auto launch_result = LaunchApp(path, cmdArgs, false, retry < max_retry);
             if (launch_result)
             {
                 Logger::info(L"CmdPal launched successfully after {} retries.", retry);

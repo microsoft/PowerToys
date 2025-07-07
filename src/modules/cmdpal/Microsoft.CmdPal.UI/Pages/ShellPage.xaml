@@ -29,6 +29,7 @@
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
+                CommandTemplate="{StaticResource DetailsCommandsTemplate}"
                 LinkTemplate="{StaticResource DetailsLinkTemplate}"
                 SeparatorTemplate="{StaticResource DetailsSeparatorTemplate}"
                 TagTemplate="{StaticResource DetailsTagsTemplate}" />
@@ -50,6 +51,27 @@
                     ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
             </DataTemplate>
 
+            <DataTemplate x:Key="CommandTemplate" x:DataType="viewModels:CommandViewModel">
+                <StackPanel Orientation="Vertical">
+                    <Button
+                        Name="Command"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Click="Command_Click"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <cpcontrols:IconBox
+                                Width="16"
+                                Height="16"
+                                Margin="0,3,8,0"
+                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                            <TextBlock Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DataTemplate>
+
             <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
                 <StackPanel Orientation="Vertical">
                     <TextBlock
@@ -69,6 +91,18 @@
                         FontSize="12"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                    <TextBlock
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Key, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                    <ItemsControl
+                        ItemTemplate="{StaticResource CommandTemplate}"
+                        ItemsSource="{x:Bind Commands, Mode=OneWay}"
+                        Visibility="{x:Bind HasCommands, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">

@@ -246,6 +246,7 @@ namespace WorkspacesEditor.Models
                     AppPath = app.ApplicationPath,
                     AppTitle = app.Title,
                     PwaAppId = string.IsNullOrEmpty(app.PwaAppId) ? string.Empty : app.PwaAppId,
+                    Version = string.IsNullOrEmpty(app.Version) ? string.Empty : app.Version,
                     PackageFullName = app.PackageFullName,
                     AppUserModelId = app.AppUserModelId,
                     Parent = this,

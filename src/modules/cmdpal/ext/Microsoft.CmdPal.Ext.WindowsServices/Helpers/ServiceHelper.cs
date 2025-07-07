@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.WindowsServices.Commands;
 using Microsoft.CmdPal.Ext.WindowsServices.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -147,12 +148,14 @@ public static class ServiceHelper
                 // TODO GH #108 We need to figure out some logging
                 // contextAPI.ShowNotification(GetLocalizedErrorMessage(action), serviceResult.DisplayName);
                 // Log.Error($"The command returned {exitCode}", MethodBase.GetCurrentMethod().DeclaringType);
+                Logger.LogError($"The command returned {exitCode}");
             }
         }
         catch (Win32Exception ex)
         {
             // TODO GH #108 We need to figure out some logging
             // Log.Error(ex.Message, MethodBase.GetCurrentMethod().DeclaringType);
+            Logger.LogError($"Failed to change service '{serviceResult.DisplayName}' status to {action}: {ex.Message}");
         }
     }
 #pragma warning restore IDE0059, CS0168, SA1005
@@ -173,6 +176,7 @@ public static class ServiceHelper
         catch (Exception ex)
         {
             // TODO GH #108 We need to figure out some logging
+            Logger.LogError($"Failed to open services.msc: {ex.Message}");
         }
     }
 #pragma warning restore IDE0059, CS0168, SA1005

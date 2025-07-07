@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
@@ -37,8 +38,9 @@ public class ListRepository<T> : IRepository<T>, IEnumerable<T>
             _items = new ConcurrentDictionary<int, T>(list.ToDictionary(i => i.GetHashCode()));
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
+            Logger.LogInfo(ex.Message);
         }
     }
 
@@ -65,11 +67,6 @@ public class ListRepository<T> : IRepository<T>, IEnumerable<T>
             {
             }
         }
-    }
-
-    public ParallelQuery<T> AsParallel()
-    {
-        return _items.Values.AsParallel();
     }
 
     public bool Contains(T item)

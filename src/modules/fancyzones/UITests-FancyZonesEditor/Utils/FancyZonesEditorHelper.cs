@@ -117,9 +117,9 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             session.Find<Element>(By.ClassName(ClassName.ContextMenu)).Find<Element>(menuItem).Click();
         }
 
-        public static Element? GetZone(Session session, int zoneNumber, string zoneClassName)
+        public static Custom? GetZone(Session session, int zoneNumber, string zoneClassName)
         {
-            var zones = session.FindAll<Element>(By.ClassName(zoneClassName));
+            var zones = session.FindAll<Custom>(By.ClassName(zoneClassName));
             foreach (var zone in zones)
             {
                 try
@@ -157,7 +157,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public static void MoveSplitter(Session session, int index, int xOffset, int yOffset)
         {
-            var thumbs = session.FindAll<Element>(By.ClassName(ClassName.Thumb));
+            var thumbs = session.FindAll<Thumb>(By.ClassName(ClassName.Thumb));
             if (thumbs.Count == 0 || index >= thumbs.Count)
             {
                 return;

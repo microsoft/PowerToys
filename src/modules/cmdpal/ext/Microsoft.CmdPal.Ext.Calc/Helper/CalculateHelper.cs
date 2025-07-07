@@ -35,7 +35,7 @@ public static class CalculateHelper
     {
         if (string.IsNullOrWhiteSpace(input))
         {
-            throw new ArgumentNullException(paramName: nameof(input));
+            return false;
         }
 
         if (!RegValidExpressChar.IsMatch(input))
