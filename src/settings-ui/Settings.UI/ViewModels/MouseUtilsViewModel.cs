@@ -5,11 +5,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
-
+using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.Utilities;
 
@@ -197,7 +199,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        /*
         private bool GetHotkeyConflictStatus(string hotkeyName)
         {
             return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
@@ -208,30 +209,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _hotkeyConflictStatus.Clear();
             _hotkeyConflictTooltips.Clear();
 
-            var moduleRelatedConflicts = GetModuleRelatedConflicts(allConflicts);
-
-            if (moduleRelatedConflicts.HasConflicts)
+            // Define the four MouseUtils submodule names
+            var mouseUtilsModules = new HashSet<string>
             {
-                var conflictData = moduleRelatedConflicts.InAppConflicts
-                    .Concat(moduleRelatedConflicts.SystemConflicts)
-                    .Where(conflict => conflict.Modules != null)
-                    .SelectMany(conflict => conflict.Modules.Select(module => new { Conflict = conflict, Module = module }))
-                    .Where(item => string.Equals(item.Module.ModuleName, FindMyMouseSettings.ModuleName, StringComparison.OrdinalIgnoreCase) ||
-                                   string.Equals(item.Module.ModuleName, MouseHighlighterSettings.ModuleName, StringComparison.OrdinalIgnoreCase) ||
-                                   string.Equals(item.Module.ModuleName, MousePointerCrosshairsSettings.ModuleName, StringComparison.OrdinalIgnoreCase))
-                    .GroupBy(item => item.Module.HotkeyName)
-                    .ToDictionary(g => g.Key, g => g.First());
+                FindMyMouseSettings.ModuleName,        // "FindMyMouse"
+                MouseHighlighterSettings.ModuleName,   // "MouseHighlighter"
+                MousePointerCrosshairsSettings.ModuleName, // "MousePointerCrosshairs"
+                MouseJumpSettings.ModuleName,           // "MouseJump"
+            };
 
-                foreach (var conflictGroup in conflictData)
+            // Process in-app conflicts
+            foreach (var conflict in allConflicts.InAppConflicts)
+            {
+                ProcessConflictGroup(conflict, mouseUtilsModules);
+            }
+
+            // Process system conflicts
+            foreach (var conflict in allConflicts.SystemConflicts)
+            {
+                ProcessConflictGroup(conflict, mouseUtilsModules);
+            }
+        }
+
+        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, HashSet<string> mouseUtilsModules)
+        {
+            // Check if any of the modules in this conflict are MouseUtils submodules
+            var involvedMouseUtilsModules = conflict.Modules
+                .Where(module => mouseUtilsModules.Contains(module.ModuleName))
+                .ToList();
+
+            if (involvedMouseUtilsModules.Count != 0)
+            {
+                // For each involved MouseUtils module, mark the hotkey as having a conflict
+                foreach (var module in involvedMouseUtilsModules)
                 {
-                    var hotkeyName = conflictGroup.Key;
-                    var conflictItem = conflictGroup.Value;
-
-                    _hotkeyConflictStatus[hotkeyName] = true;
-
-                    // Generate tooltip text based on conflict type
-                    var tooltip = GenerateConflictTooltip(conflictItem.Conflict, conflictItem.Module);
-                    _hotkeyConflictTooltips[hotkeyName] = tooltip;
+                    string hotkeyKey = $"{module.ModuleName}_{module.HotkeyName}";
+                    _hotkeyConflictStatus[hotkeyKey] = true;
+                    _hotkeyConflictTooltips[hotkeyKey] = GenerateConflictTooltip(conflict, module);
                 }
             }
         }
@@ -267,13 +281,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Update properties using setters to trigger PropertyChanged
             void UpdateConflictProperties()
             {
-                FindMyMouseActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
-                MouseHighlighterActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
-                MousePointerCrosshairsActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
+                FindMyMouseActivationShortcutHasConflict = GetHotkeyConflictStatus($"{FindMyMouseSettings.ModuleName}_ActivationShortcut");
+                MouseHighlighterActivationShortcutHasConflict = GetHotkeyConflictStatus($"{MouseHighlighterSettings.ModuleName}_ActivationShortcut");
+                MousePointerCrosshairsActivationShortcutHasConflict = GetHotkeyConflictStatus($"{MousePointerCrosshairsSettings.ModuleName}_ActivationShortcut");
+                MouseJumpActivationShortcutHasConflict = GetHotkeyConflictStatus($"{MouseJumpSettings.ModuleName}_ActivationShortcut");
 
-                FindMyMouseActivationShortcutTooltip = GetHotkeyConflictTooltip("ActivationShortcut");
-                MouseHighlighterActivationShortcutTooltip = GetHotkeyConflictTooltip("ActivationShortcut");
-                MousePointerCrosshairsActivationShortcutTooltip = GetHotkeyConflictTooltip("ActivationShortcut");
+                FindMyMouseActivationShortcutTooltip = GetHotkeyConflictTooltip($"{FindMyMouseSettings.ModuleName}_ActivationShortcut");
+                MouseHighlighterActivationShortcutTooltip = GetHotkeyConflictTooltip($"{MouseHighlighterSettings.ModuleName}_ActivationShortcut");
+                MousePointerCrosshairsActivationShortcutTooltip = GetHotkeyConflictTooltip($"{MousePointerCrosshairsSettings.ModuleName}_ActivationShortcut");
+                MouseJumpActivationShortcutTooltip = GetHotkeyConflictTooltip($"{MouseJumpSettings.ModuleName}_ActivationShortcut");
             }
 
             _ = Task.Run(() =>
@@ -295,7 +311,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     UpdateConflictProperties();
                 }
             });
-        }*/
+        }
 
         public bool FindMyMouseActivationShortcutHasConflict
         {
