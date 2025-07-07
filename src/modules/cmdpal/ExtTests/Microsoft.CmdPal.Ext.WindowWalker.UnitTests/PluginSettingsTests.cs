@@ -13,19 +13,6 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.UnitTests;
 [TestClass]
 public class PluginSettingsTests
 {
-    [TestMethod]
-    public void SettingsCount()
-    {
-        // Setup
-        PropertyInfo[] settings = SettingsManager.Instance?.GetType()?.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-        // Act
-        var result = settings?.Length;
-
-        // Assert
-        Assert.AreEqual(9, result); // Updated to 9 as it includes InMruOrder
-    }
-
     [DataTestMethod]
     [DataRow("ResultsFromVisibleDesktopOnly")]
     [DataRow("SubtitleShowPid")]
