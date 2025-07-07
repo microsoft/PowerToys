@@ -6,6 +6,8 @@ using System;
 using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -399,10 +401,41 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 else
                 {
                     EnableKeys();
+                    if (lastValidSettings.IsValid())
+                    {
+                        lastValidSettings.HotkeyName = hotkeySettings.HotkeyName;
+                        lastValidSettings.OwnerModuleName = hotkeySettings.OwnerModuleName;
+                        CheckForConflicts(lastValidSettings);
+                    }
                 }
             }
 
             c.IsWarningAltGr = internalSettings.Ctrl && internalSettings.Alt && !internalSettings.Win && (internalSettings.Code > 0);
+        }
+
+        private void CheckForConflicts(HotkeySettings settings)
+        {
+            void UpdateUIForConflict(bool hasConflict, string conflictModule, string conflictHotkeyName)
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (hasConflict)
+                    {
+                        c.ConflictMessage = $"Conflict detected with {conflictModule}, current settings: {settings}";
+                        c.HasConflict = true;
+                    }
+                    else
+                    {
+                        c.ConflictMessage = string.Empty;
+                        c.HasConflict = false;
+                    }
+                });
+            }
+
+            HotkeyConflictHelper.CheckHotkeyConflict(
+                settings,
+                ShellPage.SendDefaultIPCMessage,
+                UpdateUIForConflict);
         }
 
         private void EnableKeys()
@@ -479,6 +512,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             c.Keys = null;
             c.Keys = HotkeySettings.GetKeysList();
 
+            // Reset conflict status when opening dialog
+            c.HasConflict = false;
+            c.ConflictMessage = string.Empty;
+
             // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
             // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
             c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
@@ -503,7 +540,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             if (ComboIsValid(lastValidSettings))
             {
-                HotkeySettings = lastValidSettings with { };
+                if (c.HasConflict)
+                {
+                    lastValidSettings = lastValidSettings with { HasConflict = true };
+                }
+                else
+                {
+                    lastValidSettings = lastValidSettings with { HasConflict = false };
+                }
+
+                HotkeySettings = lastValidSettings;
             }
 
             SetKeys();
