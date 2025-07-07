@@ -108,10 +108,11 @@
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>
 
-                                <TextBlock x:Uid="ExtensionFallbackCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                                <TextBlock x:Uid="ExtensionFallbackCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Visibility="{x:Bind ViewModel.HasFallbackCommands}" />
 
                                 <ItemsRepeater 
                                     ItemsSource="{x:Bind ViewModel.FallbackCommands, Mode=OneWay}" 
+                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}"
                                     Layout="{StaticResource VerticalStackLayout}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="viewmodels:TopLevelViewModel">

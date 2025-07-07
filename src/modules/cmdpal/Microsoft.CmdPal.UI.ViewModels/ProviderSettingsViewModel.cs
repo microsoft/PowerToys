@@ -153,6 +153,8 @@ public partial class ProviderSettingsViewModel(
         }
     }
 
+    public bool HasFallbackCommands => _provider.FallbackItems?.Length > 0;
+
     private List<TopLevelViewModel> BuildFallbackViewModels()
     {
         var thisProvider = _provider;
