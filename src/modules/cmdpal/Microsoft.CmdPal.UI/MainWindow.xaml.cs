@@ -298,7 +298,30 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HideWindow()
     {
-        // Hide our window
+        // First, use EnumWindows to find the first HWND that's not us, and set it as the foreground window
+        PInvoke.EnumWindows(
+            (hwnd, lParam) =>
+            {
+                if (hwnd != _hwnd && PInvoke.IsWindowVisible(hwnd))
+                {
+                    // and make sure it's not a tool window
+                    var exStyle = (WINDOW_EX_STYLE)PInvoke.GetWindowLong(hwnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
+
+                    if (exStyle.HasFlag(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW))
+                    {
+                        return true; // continue enumerating
+                    }
+
+                    PInvoke.SetForegroundWindow(hwnd);
+                    return false; // stop enumerating
+                }
+
+                return true; // continue enumerating
+            },
+            IntPtr.Zero);
+
+        // THEN,
+        // Hide our window by DWM cloaking it
 
         // Instead of hiding the window, cloak it from DWM
         // This will make it invisible to the user, such that we can show it again

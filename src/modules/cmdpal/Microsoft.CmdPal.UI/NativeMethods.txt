@@ -43,3 +43,9 @@ MessageBox
 DwmGetWindowAttribute
 DwmSetWindowAttribute
 DWM_CLOAKED_APP
+
+EnumWindows
+IsWindowVisible
+GetClientRect
+GetWindowLong
+WINDOW_EX_STYLE
