@@ -5,10 +5,10 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define ImageResizerAssetsFiles=?>
-  <?define ImageResizerAssetsFilesPath=$(var.BinDir)Assets\ImageResizer\?>
+  <?define ImageResizerAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\ImageResizer\?>
 
   <Fragment>
-    <DirectoryRef Id="BaseApplicationsAssetsFolder">
+    <DirectoryRef Id="WinUI3AppsAssetsFolder">
       <Directory Id="ImageResizerAssetsFolder" Name="ImageResizer" />
     </DirectoryRef>
 
@@ -18,7 +18,7 @@
 
       <Component Id="Module_ImageResizer_Registry" Win64="yes">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\CLSID\{51B4D7E5-7568-4234-B4BB-47FB3C016A69}\InprocServer32">
-          <RegistryValue Value="[INSTALLFOLDER]PowerToys.ImageResizerExt.dll" Type="string" />
+          <RegistryValue Value="[WinUI3AppsInstallFolder]PowerToys.ImageResizerExt.dll" Type="string" />
           <RegistryValue Name="ThreadingModel" Value="Apartment" Type="string" />
         </RegistryKey>
 

@@ -5,7 +5,7 @@
   
   <PropertyGroup>
     <AssemblyTitle>PowerToys.ImageResizer</AssemblyTitle>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>

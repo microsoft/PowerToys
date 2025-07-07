@@ -26,7 +26,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
     <TargetName>PowerToys.ImageResizerExt</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
