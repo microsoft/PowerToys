@@ -1202,6 +1202,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Settings.Properties.ToggleEasyMouseShortcut = value ?? MouseWithoutBordersProperties.DefaultHotKeyToggleEasyMouse;
                     NotifyPropertyChanged();
+                    NotifyModuleUpdatedSettings();
                 }
             }
         }
@@ -1217,6 +1218,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.LockMachineShortcut = value;
                     Settings.Properties.LockMachineShortcut = value ?? MouseWithoutBordersProperties.DefaultHotKeyLockMachine;
                     NotifyPropertyChanged();
+                    NotifyModuleUpdatedSettings();
                 }
             }
         }
@@ -1232,6 +1234,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.ReconnectShortcut = value;
                     Settings.Properties.ReconnectShortcut = value ?? MouseWithoutBordersProperties.DefaultHotKeyReconnect;
                     NotifyPropertyChanged();
+                    NotifyModuleUpdatedSettings();
                 }
             }
         }
@@ -1247,6 +1250,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.Switch2AllPCShortcut = value;
                     Settings.Properties.Switch2AllPCShortcut = value ?? MouseWithoutBordersProperties.DefaultHotKeySwitch2AllPC;
                     NotifyPropertyChanged();
+                    NotifyModuleUpdatedSettings();
                 }
             }
         }
@@ -1405,11 +1409,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void NotifyModuleUpdatedSettings()
         {
             SendConfigMSG(
-        string.Format(
-        CultureInfo.InvariantCulture,
-        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-        MouseWithoutBordersSettings.ModuleName,
-        JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.MouseWithoutBordersSettings)));
+                string.Format(
+                CultureInfo.InvariantCulture,
+                "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                MouseWithoutBordersSettings.ModuleName,
+                JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.MouseWithoutBordersSettings)));
         }
 
         public void NotifyUpdatedSettings()
