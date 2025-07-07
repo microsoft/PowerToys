@@ -534,6 +534,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             lastValidSettings = hotkeySettings;
             shortcutDialog.Hide();
+
+            // Send RequestAllConflicts IPC to update the UI after changed hotkey settings.
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -553,6 +556,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             SetKeys();
+
+            // Send RequestAllConflicts IPC to update the UI after changed hotkey settings.
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+
             shortcutDialog.Hide();
         }
 
