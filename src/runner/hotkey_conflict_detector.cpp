@@ -271,6 +271,8 @@ namespace HotkeyConflictDetector
         for (auto it = inAppConflictHotkeyMap.begin(); it != inAppConflictHotkeyMap.end();)
         {
             auto& conflictSet = it->second;
+            uint16_t handle = it->first;
+
             for (auto setIt = conflictSet.begin(); setIt != conflictSet.end();)
             {
                 if (setIt->moduleName == moduleName)
@@ -284,8 +286,16 @@ namespace HotkeyConflictDetector
                     ++setIt;
                 }
             }
+
             if (conflictSet.empty())
             {
+                it = inAppConflictHotkeyMap.erase(it);
+            }
+            else if (conflictSet.size() == 1)
+            {
+                // Move the only remaining conflict to main map
+                const auto& onlyConflict = *conflictSet.begin();
+                hotkeyMap[handle] = onlyConflict;
                 it = inAppConflictHotkeyMap.erase(it);
             }
             else
