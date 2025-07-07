@@ -28,6 +28,10 @@ stages:
     displayName: Download From Release Pipeline
     jobs:
       - job: Download
+        pool:
+          name: SHINE-INT-L
+          image: SHINE-VS17-Latest
+          os: windows
         displayName: Download artifact from release pipeline and Fuzz
         steps:
           - task: DownloadPipelineArtifact@2
