@@ -15,6 +15,20 @@ if (-not $Installer) {
 Write-Host "Found PowerToys installer: $($Installer.Name)"
 
 # Install PowerToys
-Start-Process -Wait -FilePath $Installer.FullName -ArgumentList "/passive /norestart"
+$Process = Start-Process -Wait -FilePath $Installer.FullName -ArgumentList "/passive /norestart" -PassThru
 
-Write-Host "PowerToys installation completed"
+if ($Process.ExitCode -ne 0 -and $Process.ExitCode -ne 3010) {
+    throw "PowerToys installation failed with exit code: $($Process.ExitCode)"
+}
+
+# Verify installation
+$PowerToysPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
+if (-not (Test-Path $PowerToysPath)) {
+    $PowerToysPath = "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe"
+}
+
+if (Test-Path $PowerToysPath) {
+    Write-Host "PowerToys installation completed successfully"
+} else {
+    throw "PowerToys installation verification failed - executable not found"
+}
