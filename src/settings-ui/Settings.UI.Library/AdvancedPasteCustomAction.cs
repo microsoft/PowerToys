@@ -5,8 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
@@ -20,6 +20,8 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
     private bool _canMoveUp;
     private bool _canMoveDown;
     private bool _isValid;
+    private bool _hasConflict;
+    private string _tooltip;
 
     [JsonPropertyName("id")]
     public int Id
@@ -65,7 +67,8 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
                 // We null-coalesce here rather than outside this branch as we want to raise PropertyChanged when the setter is called
                 // with null; the ShortcutControl depends on this.
                 _shortcut = value ?? new();
-
+                _shortcut.HotkeyName = $"CustomAction_{this.Id}";
+                _shortcut.OwnerModuleName = AdvancedPasteSettings.ModuleName;
                 OnPropertyChanged();
             }
         }
@@ -100,6 +103,20 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
     }
 
     [JsonIgnore]
+    public bool HasConflict
+    {
+        get => _hasConflict;
+        set => Set(ref _hasConflict, value);
+    }
+
+    [JsonIgnore]
+    public string Tooltip
+    {
+        get => _tooltip;
+        set => Set(ref _tooltip, value);
+    }
+
+    [JsonIgnore]
     public IEnumerable<IAdvancedPasteAction> SubActions => [];
 
     public object Clone()
@@ -118,6 +135,8 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
         IsShown = other.IsShown;
         CanMoveUp = other.CanMoveUp;
         CanMoveDown = other.CanMoveDown;
+        HasConflict = other.HasConflict;
+        Tooltip = other.Tooltip;
     }
 
     private HotkeySettings GetShortcutClone()
@@ -128,7 +147,10 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
             _ = HotkeySettings.TryParseFromCmd(shortcutString, out shortcut);
         }
 
-        return (shortcut as HotkeySettings) ?? new HotkeySettings();
+        var result = (shortcut as HotkeySettings) ?? new HotkeySettings();
+        result.HotkeyName = $"CustomAction_{this.Id}";
+        result.OwnerModuleName = AdvancedPasteSettings.ModuleName;
+        return result;
     }
 
     private void UpdateIsValid()

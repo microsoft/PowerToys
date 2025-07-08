@@ -14,14 +14,8 @@
     d:DataContext="{d:DesignInstance Type=viewmodels:ColorPickerViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
-    <Page.Resources>
-        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVis" />
-    </Page.Resources>
-
     <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ColorPicker.png">
         <controls:SettingsPageControl.ModuleContent>
-
             <StackPanel
                 x:Name="ColorPickerView"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
@@ -45,7 +39,11 @@
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HasConflict="{x:Bind ViewModel.ActivationShortcutHasConflict, Mode=OneWay}"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
+                            Tooltip="{x:Bind ViewModel.ActivationShortcutTooltip, Mode=OneWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">

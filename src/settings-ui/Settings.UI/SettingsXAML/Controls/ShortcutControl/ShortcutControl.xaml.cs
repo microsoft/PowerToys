@@ -3,14 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
+using System.Collections.Generic;
+using System.Linq;
 using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -33,8 +38,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("Enabled", typeof(bool), typeof(ShortcutControl), null);
         public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(ShortcutControl), null);
-
         public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
+
+        // New dependency properties for conflict status and tooltip
+        public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnHasConflictChanged));
+        public static readonly DependencyProperty TooltipProperty = DependencyProperty.Register("Tooltip", typeof(string), typeof(ShortcutControl), new PropertyMetadata(null, OnTooltipChanged));
+
+        private static ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
         private static void OnAllowDisableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -50,12 +60,32 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-
             var newValue = (bool)(e?.NewValue ?? false);
 
             var text = newValue ? resourceLoader.GetString("Activation_Shortcut_With_Disable_Description") : resourceLoader.GetString("Activation_Shortcut_Description");
             description.Text = text;
+        }
+
+        private static void OnHasConflictChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = d as ShortcutControl;
+            if (control == null)
+            {
+                return;
+            }
+
+            control.UpdateKeyVisualStyles();
+        }
+
+        private static void OnTooltipChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = d as ShortcutControl;
+            if (control == null)
+            {
+                return;
+            }
+
+            control.UpdateTooltip();
         }
 
         private ShortcutDialogContentControl c = new ShortcutDialogContentControl();
@@ -65,6 +95,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get => (bool)GetValue(AllowDisableProperty);
             set => SetValue(AllowDisableProperty, value);
+        }
+
+        public bool HasConflict
+        {
+            get => (bool)GetValue(HasConflictProperty);
+            set => SetValue(HasConflictProperty, value);
+        }
+
+        public string Tooltip
+        {
+            get => (string)GetValue(TooltipProperty);
+            set => SetValue(TooltipProperty, value);
         }
 
         public bool Enabled
@@ -103,8 +145,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     hotkeySettings = value;
                     SetValue(HotkeySettingsProperty, value);
-                    PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
-                    AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+                    SetKeys();
                     c.Keys = HotkeySettings.GetKeysList();
                 }
             }
@@ -117,8 +158,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             this.Unloaded += ShortcutControl_Unloaded;
             this.Loaded += ShortcutControl_Loaded;
-
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
@@ -137,6 +176,29 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
 
             OnAllowDisableChanged(this, null);
+        }
+
+        private void UpdateKeyVisualStyles()
+        {
+            if (PreviewKeysControl?.ItemsSource != null)
+            {
+                // Force refresh of the ItemsControl to update KeyVisual styles
+                var items = PreviewKeysControl.ItemsSource;
+                PreviewKeysControl.ItemsSource = null;
+                PreviewKeysControl.ItemsSource = items;
+            }
+        }
+
+        private void UpdateTooltip()
+        {
+            if (!string.IsNullOrEmpty(Tooltip))
+            {
+                ToolTipService.SetToolTip(EditButton, Tooltip);
+            }
+            else
+            {
+                ToolTipService.SetToolTip(EditButton, null);
+            }
         }
 
         private void ShortcutControl_Unloaded(object sender, RoutedEventArgs e)
@@ -171,6 +233,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 App.GetSettingsWindow().Activated += ShortcutDialog_SettingsWindow_Activated;
             }
+
+            // Initialize tooltip when loaded
+            UpdateTooltip();
         }
 
         private void KeyEventHandler(int key, bool matchValue, int matchValueCode)
@@ -305,6 +370,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             KeyEventHandler(key, true, key);
 
             c.Keys = internalSettings.GetKeysList();
+            c.ConflictMessage = string.Empty;
+            c.HasConflict = false;
 
             if (internalSettings.GetKeysList().Count == 0)
             {
@@ -339,10 +406,65 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 else
                 {
                     EnableKeys();
+                    if (lastValidSettings.IsValid())
+                    {
+                        lastValidSettings.HotkeyName = hotkeySettings.HotkeyName;
+                        lastValidSettings.OwnerModuleName = hotkeySettings.OwnerModuleName;
+                        CheckForConflicts(lastValidSettings);
+                    }
                 }
             }
 
             c.IsWarningAltGr = internalSettings.Ctrl && internalSettings.Alt && !internalSettings.Win && (internalSettings.Code > 0);
+        }
+
+        private void CheckForConflicts(HotkeySettings settings)
+        {
+            void UpdateUIForConflict(bool hasConflict, HotkeyConflictResponse hotkeyConflictResponse)
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (hasConflict)
+                    {
+                        // Build conflict message from all conflicts - only show module names
+                        var conflictingModules = new HashSet<string>();
+
+                        foreach (var conflict in hotkeyConflictResponse.AllConflicts)
+                        {
+                            if (!string.IsNullOrEmpty(conflict.ModuleName))
+                            {
+                                conflictingModules.Add(conflict.ModuleName);
+                            }
+                        }
+
+                        if (conflictingModules.Count > 0)
+                        {
+                            var moduleNames = conflictingModules.ToArray();
+                            var conflictMessage = moduleNames.Length == 1
+                                ? $"Conflict detected with {moduleNames[0]}"
+                                : $"Conflicts detected with: {string.Join(", ", moduleNames)}";
+
+                            c.ConflictMessage = conflictMessage;
+                        }
+                        else
+                        {
+                            c.ConflictMessage = "Conflict detected with unknown module";
+                        }
+
+                        c.HasConflict = true;
+                    }
+                    else
+                    {
+                        c.ConflictMessage = string.Empty;
+                        c.HasConflict = false;
+                    }
+                });
+            }
+
+            HotkeyConflictHelper.CheckHotkeyConflict(
+                settings,
+                ShellPage.SendDefaultIPCMessage,
+                UpdateUIForConflict);
         }
 
         private void EnableKeys()
@@ -419,6 +541,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             c.Keys = null;
             c.Keys = HotkeySettings.GetKeysList();
 
+            // Reset conflict status when opening dialog
+            c.HasConflict = false;
+            c.ConflictMessage = string.Empty;
+
             // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
             // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
             c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
@@ -433,23 +559,36 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             hotkeySettings = null;
 
             SetValue(HotkeySettingsProperty, hotkeySettings);
-            PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
+            SetKeys();
 
             lastValidSettings = hotkeySettings;
-
-            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
             shortcutDialog.Hide();
+
+            // Send RequestAllConflicts IPC to update the UI after changed hotkey settings.
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             if (ComboIsValid(lastValidSettings))
             {
-                HotkeySettings = lastValidSettings with { };
+                if (c.HasConflict)
+                {
+                    lastValidSettings = lastValidSettings with { HasConflict = true };
+                }
+                else
+                {
+                    lastValidSettings = lastValidSettings with { HasConflict = false };
+                }
+
+                HotkeySettings = lastValidSettings;
             }
 
-            PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();
-            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            SetKeys();
+
+            // Send RequestAllConflicts IPC to update the UI after changed hotkey settings.
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+
             shortcutDialog.Hide();
         }
 
@@ -462,9 +601,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             var empty = new HotkeySettings();
             HotkeySettings = empty;
-
-            PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
-            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            SetKeys();
             shortcutDialog.Hide();
         }
 
@@ -524,6 +661,23 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private void SetKeys()
+        {
+            var keys = HotkeySettings.GetKeysList();
+
+            if (keys != null && keys.Count > 0)
+            {
+                VisualStateManager.GoToState(this, "Configured", true);
+                PreviewKeysControl.ItemsSource = keys;
+                AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, "Normal", true);
+                AutomationProperties.SetHelpText(EditButton, resourceLoader.GetString("ConfigureShortcut"));
+            }
         }
     }
 }

@@ -30,6 +30,9 @@ namespace
     const wchar_t JSON_KEY_REPARENT_HOTKEY[] = L"reparent-hotkey";
     const wchar_t JSON_KEY_THUMBNAIL_HOTKEY[] = L"thumbnail-hotkey";
     const wchar_t JSON_KEY_VALUE[] = L"value";
+    const wchar_t JSON_KEY_NAME[] = L"hotkeyName";
+    const wchar_t REPARENT_SHORTCUT_NAME[] = L"ReparentHotkey";
+    const wchar_t THUMBNAIL_SHORTCUT_NAME[] = L"ThumbnailHotkey";
 }
 
 BOOL APIENTRY DllMain( HMODULE /*hModule*/,
@@ -262,6 +265,7 @@ private:
                 _temp_reparent.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
                 _temp_reparent.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
                 _temp_reparent.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                _temp_reparent.name = REPARENT_SHORTCUT_NAME;
                 m_reparent_hotkey = _temp_reparent;
             }
             catch (...)
@@ -277,6 +281,7 @@ private:
                 _temp_thumbnail.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
                 _temp_thumbnail.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
                 _temp_thumbnail.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                _temp_thumbnail.name = THUMBNAIL_SHORTCUT_NAME;
                 m_thumbnail_hotkey = _temp_thumbnail;
             }
             catch (...)
@@ -319,8 +324,8 @@ private:
     HANDLE m_hProcess = nullptr;
 
     // TODO: actual default hotkey setting in line with other PowerToys.
-    Hotkey m_reparent_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'R' };
-    Hotkey m_thumbnail_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'T' };
+    Hotkey m_reparent_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'R', .name = REPARENT_SHORTCUT_NAME };
+    Hotkey m_thumbnail_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'T', .name = THUMBNAIL_SHORTCUT_NAME };
 
     HANDLE m_reparent_event_handle;
     HANDLE m_thumbnail_event_handle;

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "centralized_hotkeys.h"
+#include "hotkey_conflict_detector.h"
 
 #include <map>
 #include <common/logger/logger.h>
@@ -40,12 +41,15 @@ namespace CentralizedHotkeys
         return res;
     }
 
-    bool AddHotkeyAction(Shortcut shortcut, Action action)
+    bool AddHotkeyAction(Shortcut shortcut, Action action, std::wstring moduleName, bool isEnabled)
     {
-        if (!actions[shortcut].empty())
+        HotkeyConflictDetector::HotkeyConflictManager& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+        HotkeyConflictDetector::Hotkey hotkey = HotkeyConflictDetector::ShortcutToHotkey(shortcut);
+        bool succeed = hkmng.AddHotkey(hotkey, moduleName.c_str(), shortcut.hotkeyName, isEnabled);
+
+        if (!succeed)
         {
-            // It will only work if previous one is rewritten
-            Logger::warn(L"{} shortcut is already registered", ToWstring(shortcut));
+            Logger::warn(L"Shortcut conflict detected. Shortcut: {}, from module: {}", ToWstring(shortcut), moduleName);
         }
 
         actions[shortcut].push_back(action);
@@ -57,7 +61,6 @@ namespace CentralizedHotkeys
                 static int nextId = 0;
                 ids[shortcut] = nextId++;
             }
-
             if (!RegisterHotKey(runnerWindow, ids[shortcut], shortcut.modifiersMask, shortcut.vkCode))
             {
                 Logger::warn(L"Failed to add {} shortcut. {}", ToWstring(shortcut), get_last_error_or_default(GetLastError()));
@@ -73,8 +76,18 @@ namespace CentralizedHotkeys
 
     void UnregisterHotkeysForModule(std::wstring moduleName)
     {
+        auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
         for (auto it = actions.begin(); it != actions.end(); it++)
         {
+            for (auto action : it->second)
+            {
+                if (action.moduleName == moduleName)
+                {
+                    HotkeyConflictDetector::Hotkey hotkey = HotkeyConflictDetector::ShortcutToHotkey(it->first);
+                    hkmng.RemoveHotkey(hotkey, moduleName);
+                }
+            }
+
             auto val = std::find_if(it->second.begin(), it->second.end(), [moduleName](Action a) { return a.moduleName == moduleName; });
             if (val != it->second.end())
             {

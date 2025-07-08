@@ -10,13 +10,6 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    <Page.Resources>
-        <tkconverters:BoolToVisibilityConverter
-            x:Key="BoolToInvertedVisibilityConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
-        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-    </Page.Resources>
     <controls:SettingsPageControl x:Uid="CmdNotFound" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdNotFound.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">

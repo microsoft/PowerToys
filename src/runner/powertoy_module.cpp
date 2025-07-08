@@ -55,6 +55,15 @@ void PowertoyModule::update_hotkeys()
 {
     CentralizedKeyboardHook::ClearModuleHotkeys(pt_module->get_key());
 
+    if (pt_module->is_enabled())
+    {
+        Logger::trace(L"{} module is enabled, registering hotkeys", pt_module->get_key());
+    }
+    else
+    {
+        Logger::trace(L"{} module is disabled, unregistering hotkeys", pt_module->get_key());
+    }
+
     size_t hotkeyCount = pt_module->get_hotkeys(nullptr, 0);
     std::vector<PowertoyModuleIface::Hotkey> hotkeys(hotkeyCount);
     pt_module->get_hotkeys(hotkeys.data(), hotkeyCount);
@@ -63,7 +72,7 @@ void PowertoyModule::update_hotkeys()
 
     for (size_t i = 0; i < hotkeyCount; i++)
     {
-        CentralizedKeyboardHook::SetHotkeyAction(pt_module->get_key(), hotkeys[i], [modulePtr, i] {
+        CentralizedKeyboardHook::SetHotkeyAction(pt_module->get_key(), hotkeys[i], pt_module->is_enabled(), [modulePtr, i] {
             Logger::trace(L"{} hotkey is invoked from Centralized keyboard hook", modulePtr->get_key());
             return modulePtr->on_hotkey(i);
         });
@@ -83,7 +92,7 @@ void PowertoyModule::UpdateHotkeyEx()
             modulePtr->OnHotkeyEx();
         };
 
-        CentralizedHotkeys::AddHotkeyAction({ hotkey.modifiersMask, hotkey.vkCode }, { pt_module->get_key(), action });
+        CentralizedHotkeys::AddHotkeyAction({ hotkey.modifiersMask, hotkey.vkCode, hotkey.name }, { pt_module->get_key(), action }, pt_module->get_name(), pt_module->is_enabled());
     }
 
     // HACK:

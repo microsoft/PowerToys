@@ -4,17 +4,29 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Serialization;
-
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public record HotkeySettings : ICmdLineRepresentable
+    public record HotkeySettings : ICmdLineRepresentable, INotifyPropertyChanged
     {
         private const int VKTAB = 0x09;
+        private bool _hasConflict;
+        private string _conflictDescription;
+        private bool _isSystemConflict;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public HotkeySettings()
         {
@@ -23,6 +35,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Alt = false;
             Shift = false;
             Code = 0;
+
+            HasConflict = false;
+            HotkeyName = string.Empty;
+            OwnerModuleName = string.Empty;
+        }
+
+        public HotkeySettings(string hotkeyName, string ownerModuleName)
+        {
+            Win = false;
+            Ctrl = false;
+            Alt = false;
+            Shift = false;
+            Code = 0;
+
+            HasConflict = false;
+            HotkeyName = hotkeyName;
+            OwnerModuleName = ownerModuleName;
         }
 
         /// <summary>
@@ -33,13 +62,60 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <param name="alt">Should Alt key be used</param>
         /// <param name="shift">Should Shift key be used</param>
         /// <param name="code">Go to https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes to see list of v-keys</param>
-        public HotkeySettings(bool win, bool ctrl, bool alt, bool shift, int code)
+        public HotkeySettings(bool win, bool ctrl, bool alt, bool shift, int code, string hotkeyName = "", string ownerModuleName = "", bool hasConflict = false)
         {
             Win = win;
             Ctrl = ctrl;
             Alt = alt;
             Shift = shift;
             Code = code;
+            HasConflict = hasConflict;
+            HotkeyName = hotkeyName;
+            OwnerModuleName = ownerModuleName;
+        }
+
+        public bool HasConflict
+        {
+            get => _hasConflict;
+            set
+            {
+                if (_hasConflict != value)
+                {
+                    _hasConflict = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string ConflictDescription
+        {
+            get => _conflictDescription ?? string.Empty;
+            set
+            {
+                if (_conflictDescription != value)
+                {
+                    _conflictDescription = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsSystemConflict
+        {
+            get => _isSystemConflict;
+            set
+            {
+                if (_isSystemConflict != value)
+                {
+                    _isSystemConflict = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public virtual void UpdateConflictStatus()
+        {
+            Logger.LogInfo($"{this.ToString()}");
         }
 
         [JsonPropertyName("win")]
@@ -56,6 +132,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("code")]
         public int Code { get; set; }
+
+        [JsonPropertyName("hotkeyName")]
+        public string HotkeyName { get; set; }
+
+        [JsonPropertyName("ownerModuleName")]
+        public string OwnerModuleName { get; set; }
 
         // This is currently needed for FancyZones, we need to unify these two objects
         // see src\common\settings_objects.h
@@ -120,9 +202,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             if (Shift)
             {
-                shortcutList.Add("Shift");
-
-                // shortcutList.Add(16); // The Shift key or button.
+                shortcutList.Add(16); // The Shift key or button.
             }
 
             if (Code > 0)

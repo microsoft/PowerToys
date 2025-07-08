@@ -35,11 +35,15 @@
                 <DataTemplate>
                     <controls:KeyVisual
                         Height="56"
+                        Padding="20,8,20,8"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
-                        IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        FontSize="19"
+                        FontWeight="SemiBold"
+                        IsInvalid="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                         IsTabStop="False"
-                        VisualType="Large" />
+                        Style="{StaticResource AccentKeyVisualStyle}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
@@ -51,19 +55,24 @@
             Orientation="Vertical"
             Spacing="8">
             <Grid Height="62">
-
                 <InfoBar
                     x:Uid="InvalidShortcut"
                     IsClosable="False"
                     IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                     Severity="Error" />
-
                 <InfoBar
                     x:Uid="WarningShortcutAltGr"
                     IsClosable="False"
                     IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
+                    Severity="Warning" />
+                <InfoBar
+                    Title="Hotkey Conflict"
+                    Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
+                    IsClosable="False"
+                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
+                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
                     Severity="Warning" />
             </Grid>
             <tk7controls:MarkdownTextBlock

@@ -5,7 +5,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -39,6 +38,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new DashboardViewModel(
                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()
@@ -54,6 +55,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void DashboardListItemClick(object sender, RoutedEventArgs e)
         {
             ViewModel.DashboardListItemClick(sender);
+        }
+
+        private void WhatsNewButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (App.GetOobeWindow() == null)
+            {
+                App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.WhatsNew));
+            }
+            else
+            {
+                App.GetOobeWindow().SetAppWindow(OOBE.Enums.PowerToysModules.WhatsNew);
+            }
+
+            App.GetOobeWindow().Activate();
         }
     }
 }
