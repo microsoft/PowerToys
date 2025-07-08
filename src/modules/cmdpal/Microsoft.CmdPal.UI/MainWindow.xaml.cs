@@ -589,11 +589,9 @@ public sealed partial class MainWindow : WindowEx,
             {
                 // ... then manually hide our window. When debugged, we won't get the cool cloaking,
                 // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
-                // PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
                 Cloak();
                 this.Hide();
 
-                // Uncloak();
                 return;
             }
 
