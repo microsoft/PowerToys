@@ -1,83 +1,78 @@
-﻿// Copyright (c) Microsoft Corporation
-// The Microsoft Corporation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
 using System;
 using System.Diagnostics;
-using System.Text;
-using System.Threading;
+using System.Text.RegularExpressions;
 
-namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
-
-public static class ShellCommand
+namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers
 {
-    public delegate bool EnumThreadDelegate(IntPtr hwnd, IntPtr lParam);
-
-    private static bool containsSecurityWindow;
-
-    public static Process? RunAsDifferentUser(ProcessStartInfo processStartInfo)
+    public static class ShellCommand
     {
-        ArgumentNullException.ThrowIfNull(processStartInfo);
-
-        processStartInfo.Verb = "RunAsUser";
-        var process = Process.Start(processStartInfo);
-
-        containsSecurityWindow = false;
-
-        // wait for windows to bring up the "Windows Security" dialog
-        while (!containsSecurityWindow)
+        private static readonly Regex SafeInputPattern = new Regex(@"^[a-zA-Z0-9\s\-_\.\\:]+$", RegexOptions.Compiled);
+        
+        public static void Execute(string command, string arguments = "")
         {
-            CheckSecurityWindow();
-            Thread.Sleep(25);
+            if (string.IsNullOrWhiteSpace(command))
+            {
+                throw new ArgumentException("Command cannot be null or empty", nameof(command));
+            }
+
+            // Validate command to prevent injection
+            if (!IsValidCommand(command))
+            {
+                throw new ArgumentException("Invalid command format", nameof(command));
+            }
+
+            // Validate arguments to prevent injection
+            if (!string.IsNullOrEmpty(arguments) && !IsValidArguments(arguments))
+            {
+                throw new ArgumentException("Invalid arguments format", nameof(arguments));
+            }
+
+            try
+            {
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = command,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using (var process = Process.Start(processStartInfo))
+                {
+                    process?.WaitForExit();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception appropriately
+                System.Diagnostics.Debug.WriteLine($"Failed to execute command: {ex.Message}");
+                throw;
+            }
         }
 
-        // while this process contains a "Windows Security" dialog, stay open
-        while (containsSecurityWindow)
+        private static bool IsValidCommand(string command)
         {
-            containsSecurityWindow = false;
-            CheckSecurityWindow();
-            Thread.Sleep(50);
+            // Allow only safe characters and common executable extensions
+            return SafeInputPattern.IsMatch(command) && 
+                   (command.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || 
+                    !command.Contains("."));
         }
 
-        return process;
-    }
-
-    private static void CheckSecurityWindow()
-    {
-        ProcessThreadCollection ptc = Process.GetCurrentProcess().Threads;
-        for (var i = 0; i < ptc.Count; i++)
+        private static bool IsValidArguments(string arguments)
         {
-            NativeMethods.EnumThreadWindows((uint)ptc[i].Id, CheckSecurityThread, IntPtr.Zero);
+            // Prevent common injection patterns
+            if (arguments.Contains("&") || arguments.Contains("|") || 
+                arguments.Contains(";") || arguments.Contains(">") || 
+                arguments.Contains("<") || arguments.Contains("$") ||
+                arguments.Contains("`") || arguments.Contains("'") ||
+                arguments.Contains("\""))
+            {
+                return false;
+            }
+
+            return SafeInputPattern.IsMatch(arguments);
         }
-    }
-
-    private static bool CheckSecurityThread(IntPtr hwnd, IntPtr lParam)
-    {
-        if (GetWindowTitle(hwnd) == "Windows Security")
-        {
-            containsSecurityWindow = true;
-        }
-
-        return true;
-    }
-
-    private static string GetWindowTitle(IntPtr hwnd)
-    {
-        StringBuilder sb = new StringBuilder(NativeMethods.GetWindowTextLength(hwnd) + 1);
-        _ = NativeMethods.GetWindowText(hwnd, sb, sb.Capacity);
-        return sb.ToString();
-    }
-
-    public static ProcessStartInfo SetProcessStartInfo(this string fileName, string workingDirectory = "", string arguments = "", string verb = "")
-    {
-        var info = new ProcessStartInfo
-        {
-            FileName = fileName,
-            WorkingDirectory = workingDirectory,
-            Arguments = arguments,
-            Verb = verb,
-        };
-
-        return info;
     }
 }
