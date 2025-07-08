@@ -1,0 +1,102 @@
+# Minimal UI Tests Build Template
+# This template only builds UI test projects and stages their test DLLs for consumption by test pipelines
+
+parameters:
+  - name: buildConfigurations
+    type: object
+    default:
+      - Release
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+  - name: condition
+    type: string
+    default: ''
+  - name: dependsOn
+    type: object
+    default: []
+  - name: pool
+    type: object
+    default: []
+  - name: variables
+    type: object
+    default: {}
+
+jobs:
+- job: BuildUITests
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
+  strategy:
+    matrix:
+      ${{ each config in parameters.buildConfigurations }}:
+        ${{ each platform in parameters.buildPlatforms }}:
+          ${{ config }}_${{ platform }}:
+            BuildConfiguration: ${{ config }}
+            BuildPlatform: ${{ platform }}
+  variables:
+    JobOutputDirectory: $(Build.ArtifactStagingDirectory)
+    LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
+    JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)
+    ${{ insert }}: ${{ parameters.variables }}
+  displayName: Build UI Tests Only
+  timeoutInMinutes: 60
+  cancelTimeoutInMinutes: 1
+  templateContext:
+    outputs:
+    - output: pipelineArtifact
+      artifactName: $(JobOutputArtifactName)
+      targetPath: $(Build.ArtifactStagingDirectory)
+  steps:
+  - checkout: self
+    clean: true
+    submodules: true
+    persistCredentials: True
+    fetchTags: false
+    fetchDepth: 1
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '9.0'
+
+  - template: .\steps-restore-nuget.yml
+
+  # Build only UI test projects
+  - task: VSBuild@1
+    displayName: Build C# UI Test Projects
+    inputs:
+      solution: |
+        src/modules/fancyzones/UITests-FancyZones/UITests-FancyZones.csproj
+        src/modules/fancyzones/UITests-FancyZonesEditor/UITests-FancyZonesEditor.csproj
+        src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj
+        src/modules/Workspaces/WorkspacesEditorUITest/WorkspacesEditorUITest.csproj
+        src/modules/imageresizer/tests/ImageResizerUITest.csproj
+        src/modules/Hosts/Hosts.UITests/Hosts.UITests.csproj
+        src/common/UITestAutomation/UITestAutomation.csproj
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
+        /bl:$(LogOutputDirectory)\build-uitests.binlog
+        /p:BuildProjectReferences=true
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  # Stage test project outputs with directory structure
+  - task: CopyFiles@2
+    displayName: Stage UI Test Build Outputs
+    inputs:
+      sourceFolder: '$(Build.SourcesDirectory)'
+      contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
+      targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+
+  - publish: $(JobOutputDirectory)
+    artifact: $(JobOutputArtifactName)
+    displayName: Publish UI Test artifacts
+    condition: always()
