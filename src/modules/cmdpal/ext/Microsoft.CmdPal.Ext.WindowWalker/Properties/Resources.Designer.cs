@@ -124,7 +124,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Info: Ending the Explorer process isn&apos;t possible..
+        ///   Looks up a localized string similar to Info: Killing the Explorer process isn&apos;t possible..
         /// </summary>
         public static string windowwalker_ExplorerInfoTitle {
             get {
@@ -133,7 +133,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to End task.
+        ///   Looks up a localized string similar to Kill process.
         /// </summary>
         public static string windowwalker_Kill {
             get {
@@ -142,7 +142,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The following process will be ended:.
+        ///   Looks up a localized string similar to Your are going to kill the following process:.
         /// </summary>
         public static string windowwalker_KillMessage {
             get {
@@ -160,7 +160,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to End task confirmation.
+        ///   Looks up a localized string similar to Kill process confirmation.
         /// </summary>
         public static string windowwalker_KillMessageTitle {
             get {
