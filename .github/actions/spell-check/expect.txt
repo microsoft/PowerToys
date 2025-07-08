@@ -489,6 +489,7 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fesf
 fff
 FFFF
 FILEEXPLORER
@@ -533,6 +534,7 @@ Froml
 FROMTOUCH
 fsanitize
 fsmgmt
+fxf
 FZE
 gacutil
 Gaeilge
