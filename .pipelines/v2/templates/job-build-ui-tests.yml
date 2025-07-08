@@ -22,16 +22,9 @@ parameters:
   - name: variables
     type: object
     default: {}
-  - name: uiTestProjectsToBuild
-    type: object
-    default:
-      - 'src/common/UITestAutomation/UITestAutomation.csproj'
-      - 'src/modules/fancyzones/UITests-FancyZones/UITests-FancyZones.csproj'
-      - 'src/modules/fancyzones/UITests-FancyZonesEditor/UITests-FancyZonesEditor.csproj'
-      - 'src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj'
-      - 'src/modules/Workspaces/WorkspacesEditorUITest/WorkspacesEditorUITest.csproj'
-      - 'src/modules/imageresizer/tests/ImageResizerUITest.csproj'
-      - 'src/modules/Hosts/Hosts.UITests/Hosts.UITests.csproj'
+  - name: uiTestProjectPattern
+    type: string
+    default: '*UITest*.csproj'
 
 jobs:
 - job: BuildUITests
@@ -49,7 +42,7 @@ jobs:
   variables:
     JobOutputDirectory: $(Build.ArtifactStagingDirectory)
     LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
-    JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)
+    JobOutputArtifactName: build-uitests-$(BuildPlatform)-$(BuildConfiguration)
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform)
     ${{ insert }}: ${{ parameters.variables }}
   displayName: Build UI Tests Only
@@ -84,25 +77,70 @@ jobs:
       restoreSolution: PowerToys.sln
       restoreDirectory: '$(Build.SourcesDirectory)\packages'
 
-  # Build only UI test projects
-  - ${{ each project in parameters.uiTestProjectsToBuild }}:
-    - task: VSBuild@1
-      displayName: Build UI Test Project ${{ project }}
-      inputs:
-        solution: ${{ project }}
-        vsVersion: 17.0
-        msbuildArgs: >-
-          -restore
-          -graph
-          /p:RestorePackagesConfig=true
-          /p:BuildProjectReferences=true
-          /p:CIBuild=true
-          /bl:$(LogOutputDirectory)\build-${{ join('_',split(project, '/')) }}.binlog
-          $(NUGET_RESTORE_MSBUILD_ARGS)
-        platform: $(BuildPlatform)
-        configuration: $(BuildConfiguration)
-        msbuildArchitecture: x64
-        maximumCpuCount: true
+  # Dynamically discover and build UI test projects
+  - pwsh: |
+      $uiTestProjects = @()
+      
+      # Search for UI test projects using the pattern
+      $projectFiles = Get-ChildItem -Path "$(Build.SourcesDirectory)" -Filter "${{ parameters.uiTestProjectPattern }}" -Recurse
+      
+      Write-Host "Found $($projectFiles.Count) UI test projects:"
+      foreach ($project in $projectFiles) {
+        $relativePath = $project.FullName.Replace("$(Build.SourcesDirectory)\", "").Replace("\", "/")
+        Write-Host "  - $relativePath"
+        $uiTestProjects += $relativePath
+      }
+      
+      if ($uiTestProjects.Count -eq 0) {
+        Write-Host "##vso[task.logissue type=warning]No UI test projects found with pattern: ${{ parameters.uiTestProjectPattern }}"
+        exit 0
+      }
+      
+      # Build each discovered project
+      foreach ($project in $uiTestProjects) {
+        Write-Host "Building project: $project"
+        
+        # Generate safe artifact name for logging
+        $artifactName = $project -replace '[/\\]', '_' -replace '\.csproj$', ''
+        
+        # Use VSBuild for consistency with the main build pipeline
+        $msbuildArgs = @(
+          "-restore",
+          "-graph",
+          "/p:RestorePackagesConfig=true",
+          "/p:BuildProjectReferences=true", 
+          "/p:CIBuild=true",
+          "/bl:$(LogOutputDirectory)\build-$artifactName.binlog",
+          "$(NUGET_RESTORE_MSBUILD_ARGS)"
+        )
+        
+        $arguments = @{
+          'FilePath' = 'dotnet'
+          'ArgumentList' = @(
+            'build', 
+            $project,
+            '--configuration', '$(BuildConfiguration)',
+            '--verbosity', 'minimal'
+          ) + $msbuildArgs
+          'WorkingDirectory' = '$(Build.SourcesDirectory)'
+          'NoNewWindow' = $true
+          'Wait' = $true
+          'PassThru' = $true
+        }
+        
+        $process = Start-Process @arguments
+        
+        if ($process.ExitCode -ne 0) {
+          Write-Host "##vso[task.logissue type=error]Build failed for project: $project"
+          exit $process.ExitCode
+        }
+        
+        Write-Host "Successfully built: $project"
+      }
+      
+      Write-Host "All UI test projects built successfully!"
+    displayName: Discover and Build UI Test Projects
+    workingDirectory: $(Build.SourcesDirectory)
 
   # Stage test project outputs with directory structure
   - task: CopyFiles@2
