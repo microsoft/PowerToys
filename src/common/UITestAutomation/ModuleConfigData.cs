@@ -86,6 +86,8 @@ namespace Microsoft.PowerToys.UITest
         public const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
 
         public Dictionary<PowerToysModule, string> ModuleWindowName { get; }
+        
+        private bool UseInstallerForTest { get; }
 
         private ModuleConfigData()
         {
@@ -113,7 +115,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.Runner] = @"\..\..\..\PowerToys.exe",
                 [PowerToysModule.Workspaces] = @"\..\..\..\PowerToys.WorkspacesEditor.exe",
             };
-            
+
             // Installed PowerToys paths
             string powerToysInstallPath = GetPowerToysInstallPath();
             InstalledModulePath = new Dictionary<PowerToysModule, string>
