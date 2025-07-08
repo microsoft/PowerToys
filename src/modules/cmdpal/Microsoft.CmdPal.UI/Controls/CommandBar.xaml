@@ -43,6 +43,10 @@
                 </Style.Setters>
             </Style>
 
+            <Flyout x:Name="ContextMenuFlyout" FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}">
+                <cpcontrols:ContextMenu />
+            </Flyout>
+            
             <Style x:Key="HotkeyStyle" TargetType="Border">
                 <Style.Setters>
                     <Setter Property="Padding" Value="4" />
@@ -196,16 +200,8 @@
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="MoreCommandsButton_Tapped"
-                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
-                <Button.Flyout>
-                    <Flyout
-                        Closing="Flyout_Closing"
-                        Opened="Flyout_Opened"
-                        Placement="TopEdgeAlignedRight">
-                          <cpcontrols:ContextMenu />
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
+                ToolTipService.ToolTip="Ctrl+K"
+                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}"/>
         </StackPanel>
     </Grid>
 </UserControl>

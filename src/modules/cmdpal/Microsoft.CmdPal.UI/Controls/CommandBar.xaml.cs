@@ -56,13 +56,13 @@ public sealed partial class CommandBar : UserControl,
             _ = DispatcherQueue.TryEnqueue(
                 () =>
                 {
-                ContextMenuFlyout.ShowAt(
-                    MoreCommandsButton,
-                    new FlyoutShowOptions()
-                    {
-                        ShowMode = FlyoutShowMode.Standard,
-                        Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
-                    });
+                    ContextMenuFlyout.ShowAt(
+                        MoreCommandsButton,
+                        new FlyoutShowOptions()
+                        {
+                            ShowMode = FlyoutShowMode.Standard,
+                            Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                        });
                 });
         }
         else
@@ -70,14 +70,14 @@ public sealed partial class CommandBar : UserControl,
             _ = DispatcherQueue.TryEnqueue(
             () =>
             {
-            ContextMenuFlyout.ShowAt(
-                message.Element!,
-                new FlyoutShowOptions()
-                {
-                    ShowMode = FlyoutShowMode.Standard,
-                    Placement = (FlyoutPlacementMode)message.FlyoutPlacementMode!,
-                    Position = message.Point,
-                });
+                ContextMenuFlyout.ShowAt(
+                    message.Element!,
+                    new FlyoutShowOptions()
+                    {
+                        ShowMode = FlyoutShowMode.Standard,
+                        Placement = (FlyoutPlacementMode)message.FlyoutPlacementMode!,
+                        Position = message.Point,
+                    });
             });
         }
     }

@@ -55,13 +55,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     IContextItem?[] ICommandItem.MoreCommands => _commandItemViewModel.MoreCommands
                                                     .Select(item =>
                                                     {
-                                                        if (item is SeparatorContextItemViewModel)
+                                                        if (item is ISeparatorContextItem)
                                                         {
                                                             return item as IContextItem;
                                                         }
                                                         else
                                                         {
-                                                            return ((CommandContextItemViewModel)item).Model.Unsafe as IContextItem;
+                                                            return ((CommandContextItemViewModel)item).Model.Unsafe;
                                                         }
                                                     }).ToArray();
 

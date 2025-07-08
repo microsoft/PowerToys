@@ -248,11 +248,8 @@ public partial class ContextMenuViewModel : ObservableObject,
 
         if (command.HasMoreCommands)
         {
-            // Execute the command
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
-
             // Display the commands child commands
-            PushContextStack(command.MoreCommands);
+            PushContextStack(command.AllCommands);
             OnPropertyChanging(nameof(FilteredItems));
             OnPropertyChanged(nameof(FilteredItems));
             return ContextKeybindingResult.KeepOpen;
