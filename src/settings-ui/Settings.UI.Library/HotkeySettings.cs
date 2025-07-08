@@ -120,9 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             if (Shift)
             {
-                shortcutList.Add("Shift");
-
-                // shortcutList.Add(16); // The Shift key or button.
+                shortcutList.Add(16); // The Shift key or button.
             }
 
             if (Code > 0)
