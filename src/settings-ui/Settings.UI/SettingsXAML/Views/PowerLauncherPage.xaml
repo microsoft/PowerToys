@@ -34,7 +34,7 @@
             NumberBoxTemplate="{StaticResource NumberBoxTemplate}"
             TextboxTemplate="{StaticResource TextBoxTemplate}" />
 
-        <DataTemplate x:Key="CheckBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+        <DataTemplate x:Key="CheckBoxTemplate" x:DataType="viewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     MinHeight="0"
@@ -75,7 +75,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="TextBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+        <DataTemplate x:Key="TextBoxTemplate" x:DataType="viewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     MinHeight="0"
@@ -97,7 +97,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="NumberBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+        <DataTemplate x:Key="NumberBoxTemplate" x:DataType="viewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     MinHeight="0"
@@ -120,7 +120,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="MultilineTextBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+        <DataTemplate x:Key="MultilineTextBoxTemplate" x:DataType="viewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     MinHeight="0"
@@ -147,7 +147,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="CheckBoxComboBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+        <DataTemplate x:Key="CheckBoxComboBoxTemplate" x:DataType="viewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     MinHeight="0"
@@ -183,7 +183,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="CheckBoxTextBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+        <DataTemplate x:Key="CheckBoxTextBoxTemplate" x:DataType="viewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     MinHeight="0"
@@ -220,7 +220,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="CheckBoxMultilineTextBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+        <DataTemplate x:Key="CheckBoxMultilineTextBoxTemplate" x:DataType="viewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     MinHeight="0"
@@ -262,7 +262,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="CheckBoxNumberBoxTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+        <DataTemplate x:Key="CheckBoxNumberBoxTemplate" x:DataType="viewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     MinHeight="0"
@@ -300,7 +300,7 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="EmptyTemplate" x:DataType="ViewModels:PluginAdditionalOptionViewModel">
+        <DataTemplate x:Key="EmptyTemplate" x:DataType="viewModels:PluginAdditionalOptionViewModel">
             <StackPanel HorizontalAlignment="Stretch" Orientation="Vertical" />
         </DataTemplate>
     </Page.Resources>
@@ -614,7 +614,7 @@
                             <StackLayout Spacing="2" />
                         </ItemsRepeater.Layout>
                         <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="ViewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
+                            <DataTemplate x:DataType="viewModels:PowerLauncherPluginViewModel" x:DefaultBindMode="OneWay">
                                 <Grid>
                                     <tkcontrols:SettingsExpander Description="{x:Bind Description}" Header="{x:Bind Path=Name}">
                                         <tkcontrols:SettingsExpander.HeaderIcon>
