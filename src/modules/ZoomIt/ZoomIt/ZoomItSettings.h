@@ -70,7 +70,7 @@ REG_SETTING RegSettings[] = {
     { L"FontScale", SETTING_TYPE_DWORD, 0, &g_FontScale, static_cast<DOUBLE>(g_FontScale) },
     { L"ShowExpiredTime", SETTING_TYPE_BOOLEAN, 0, &g_ShowExpiredTime, static_cast<DOUBLE>(g_ShowExpiredTime) },
     { L"ShowTrayIcon", SETTING_TYPE_BOOLEAN, 0, &g_ShowTrayIcon, static_cast<DOUBLE>(g_ShowTrayIcon) },
-    { L"AnimnateZoom", SETTING_TYPE_BOOLEAN, 0, &g_AnimateZoom, static_cast<DOUBLE>(g_AnimateZoom) },
+    { L"AnimateZoom", SETTING_TYPE_BOOLEAN, 0, &g_AnimateZoom, static_cast<DOUBLE>(g_AnimateZoom) },
     { L"TelescopeZoomOut", SETTING_TYPE_BOOLEAN, 0, &g_TelescopeZoomOut, static_cast<DOUBLE>(g_TelescopeZoomOut) },
     { L"SnapToGrid", SETTING_TYPE_BOOLEAN, 0, &g_SnapToGrid, static_cast<DOUBLE>(g_SnapToGrid) },
     { L"ZoominSliderLevel", SETTING_TYPE_DWORD, 0, &g_SliderZoomLevel, static_cast<DOUBLE>(g_SliderZoomLevel) },

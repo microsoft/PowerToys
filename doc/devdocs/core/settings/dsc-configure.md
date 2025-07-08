@@ -1,6 +1,6 @@
 # What is it
 
-We would like to enable our users to use [`winget configure`](https://learn.microsoft.com/en-us/windows/package-manager/winget/configure) command to install PowerToys and configure its settings with a [Winget  configuration file](https://learn.microsoft.com/en-us/windows/package-manager/configuration/create). For example:
+We would like to enable our users to use [`winget configure`](https://learn.microsoft.com/en-us/windows/package-manager/winget/configure) command to install PowerToys and configure its settings with a [WinGet configuration file](https://learn.microsoft.com/en-us/windows/package-manager/configuration/create). For example:
 
 ```yaml
 properties:
@@ -35,7 +35,7 @@ This should install PowerToys and make `PowerToysConfigure` resource available. 
 PowerToys.Settings.exe set <ModuleName>.<SettingName> <SettingValue>
 ```
 
-So for the example the config above should perform 3 following invocations:
+So for example the config above should perform 3 following invocations:
 ```
 PowerToys.Settings.exe set ShortcutGuide.Enabled false
 PowerToys.Settings.exe set FancyZones.Enabled true
