@@ -52,7 +52,7 @@ stages:
               useVSPreview: ${{ parameters.useVSPreview }}
 
     - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
-      - stage: BuildUITests
+      - stage: BuildUITests_${{ platform }}
         displayName: Build UI Tests Only
         dependsOn: []
         jobs:
