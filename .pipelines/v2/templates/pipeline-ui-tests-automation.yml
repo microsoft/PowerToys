@@ -70,9 +70,11 @@ stages:
       - stage: Test_x64Win10
         displayName: Test x64Win10
         ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
-          dependsOn: [BuildUITests_${{ platform }}]
+          dependsOn:
+            - BuildUITests_${{ platform }}
         ${{ else }}:
-          dependsOn: [Build_${{ platform }}]
+          dependsOn:
+            - Build_${{ platform }}
         jobs:
             - template: job-test-project.yml
               parameters:
@@ -84,9 +86,11 @@ stages:
       - stage: Test_x64Win11
         displayName: Test x64Win11
         ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
-          dependsOn: [BuildUITests_${{ platform }}]
+          dependsOn:
+            - BuildUITests_${{ platform }}
         ${{ else }}:
-          dependsOn: [Build_${{ platform }}]
+          dependsOn:
+            - Build_${{ platform }}
         jobs:
             - template: job-test-project.yml
               parameters:
@@ -98,9 +102,11 @@ stages:
       - stage: Test_${{ platform }}
         displayName: Test ${{ platform }}
         ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
-          dependsOn: [BuildUITests_${{ platform }}]
+          dependsOn:
+            - BuildUITests_${{ platform }}
         ${{ else }}:
-          dependsOn: [Build_${{ platform }}]
+          dependsOn:
+            - Build_${{ platform }}
         jobs:
           - template: job-test-project.yml
             parameters:
