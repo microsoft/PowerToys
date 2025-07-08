@@ -520,7 +520,7 @@ namespace Microsoft.ColorPicker.UnitTests
         //   echo 0xFF 0xFF 0xFF | transicc -i "*sRGB" -o "*XYZ" -t 3 -d 0
         // where "0xFF 0xFF 0xFF" are filled in with the hexadecimal red/green/blue values;
         // "-t 3" means using absolute colorimetric intent, in other words, disabling white point scaling;
-        // "-d 0" means disabling chromatic adaptation, otherwise it will output CIEXYZ-D50 instead of D65.
+        // "-d 0" means disabling chromatic adaptation; otherwise, it will output CIEXYZ-D50 instead of D65.
         //
         // If we have the same results as the reference output listed below, it means our algorithm is accurate.
         [TestMethod]
