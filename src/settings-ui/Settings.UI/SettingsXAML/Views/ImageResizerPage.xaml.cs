@@ -27,8 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             ViewModel = new ImageResizerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, loader);
             DataContext = ViewModel;
-
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public async void DeleteCustomSize(object sender, RoutedEventArgs e)

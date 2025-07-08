@@ -5121,4 +5121,10 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
+  <data name="InAppHotkeyConflictTooltipText" xml:space="preserve">
+    <value>This shortcut conflicts with another shortcut.</value>
+  </data>
+  <data name="SysHotkeyConflictTooltipText" xml:space="preserve">
+    <value>This shortcut conflicts with a pre-defined system shortcut.</value>
+  </data>
 </root>
