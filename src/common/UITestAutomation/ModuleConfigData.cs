@@ -89,6 +89,11 @@ namespace Microsoft.PowerToys.UITest
 
         private ModuleConfigData()
         {
+            // Check if we should use installer paths from environment variable
+            string useInstallerForTestEnv = Environment.GetEnvironmentVariable("useInstallerForTest") ??
+                                          Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
+            UseInstallerForTest = bool.TryParse(useInstallerForTestEnv, out bool result) && result;
+
             // The exe window name for each module.
             ModuleWindowName = new Dictionary<PowerToysModule, string>
             {
@@ -108,9 +113,59 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.Runner] = @"\..\..\..\PowerToys.exe",
                 [PowerToysModule.Workspaces] = @"\..\..\..\PowerToys.WorkspacesEditor.exe",
             };
+            
+            // Installed PowerToys paths
+            string powerToysInstallPath = GetPowerToysInstallPath();
+            InstalledModulePath = new Dictionary<PowerToysModule, string>
+            {
+                [PowerToysModule.PowerToysSettings] = Path.Combine(powerToysInstallPath, "WinUI3Apps", "PowerToys.Settings.exe"),
+                [PowerToysModule.FancyZone] = Path.Combine(powerToysInstallPath, "PowerToys.FancyZonesEditor.exe"),
+                [PowerToysModule.Hosts] = Path.Combine(powerToysInstallPath, "WinUI3Apps", "PowerToys.Hosts.exe"),
+                [PowerToysModule.Runner] = Path.Combine(powerToysInstallPath, "PowerToys.exe"),
+                [PowerToysModule.Workspaces] = Path.Combine(powerToysInstallPath, "PowerToys.WorkspacesEditor.exe"),
+            };
         }
 
-        public string GetModulePath(PowerToysModule scope) => ModulePath[scope];
+        private string GetPowerToysInstallPath()
+        {
+            // Try common installation paths
+            string[] possiblePaths = {
+                @"C:\Program Files\PowerToys",
+                @"C:\Program Files (x86)\PowerToys",
+                Environment.ExpandEnvironmentVariables(@"%LocalAppData%\Microsoft\PowerToys"),
+                Environment.ExpandEnvironmentVariables(@"%ProgramFiles%\PowerToys")
+            };
+
+            foreach (string path in possiblePaths)
+            {
+                if (Directory.Exists(path) && File.Exists(Path.Combine(path, "PowerToys.exe")))
+                {
+                    return path;
+                }
+            }
+
+            // Fallback to Program Files if not found
+            return @"C:\Program Files\PowerToys";
+        }
+
+        public string GetModulePath(PowerToysModule scope)
+        {
+            if (UseInstallerForTest)
+            {
+                string installedPath = InstalledModulePath[scope];
+                if (File.Exists(installedPath))
+                {
+                    return installedPath;
+                }
+                else
+                {
+                    // Log warning and fallback to development path
+                    Console.WriteLine($"Warning: Installed module not found at {installedPath}, using development path");
+                }
+            }
+
+            return ModulePath[scope];
+        }
 
         public string GetWindowsApplicationDriverUrl() => WindowsApplicationDriverUrl;
 
