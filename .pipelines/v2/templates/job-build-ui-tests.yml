@@ -22,6 +22,16 @@ parameters:
   - name: variables
     type: object
     default: {}
+  - name: uiTestProjectsToBuild
+    type: object
+    default:
+      - 'src/common/UITestAutomation/UITestAutomation.csproj'
+      - 'src/modules/fancyzones/UITests-FancyZones/UITests-FancyZones.csproj'
+      - 'src/modules/fancyzones/UITests-FancyZonesEditor/UITests-FancyZonesEditor.csproj'
+      - 'src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj'
+      - 'src/modules/Workspaces/WorkspacesEditorUITest/WorkspacesEditorUITest.csproj'
+      - 'src/modules/imageresizer/tests/ImageResizerUITest.csproj'
+      - 'src/modules/Hosts/Hosts.UITests/Hosts.UITests.csproj'
 
 jobs:
 - job: BuildUITests
@@ -65,28 +75,22 @@ jobs:
   - template: .\steps-restore-nuget.yml
 
   # Build only UI test projects
-  - task: VSBuild@1
-    displayName: Build C# UI Test Projects
-    inputs:
-      solution: |
-        src/modules/fancyzones/UITests-FancyZones/UITests-FancyZones.csproj
-        src/modules/fancyzones/UITests-FancyZonesEditor/UITests-FancyZonesEditor.csproj
-        src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj
-        src/modules/Workspaces/WorkspacesEditorUITest/WorkspacesEditorUITest.csproj
-        src/modules/imageresizer/tests/ImageResizerUITest.csproj
-        src/modules/Hosts/Hosts.UITests/Hosts.UITests.csproj
-        src/common/UITestAutomation/UITestAutomation.csproj
-      vsVersion: 17.0
-      msbuildArgs: >-
-        -restore
-        /p:RestorePackagesConfig=true
-        /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-uitests.binlog
-        /p:BuildProjectReferences=true
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
+  - ${{ each project in parameters.uiTestProjectsToBuild }}:
+    - task: VSBuild@1
+      displayName: Build UI Test Project ${{ project }}
+      inputs:
+        solution: ${{ project }}
+        vsVersion: 17.0
+        msbuildArgs: >-
+          -restore
+          /p:RestorePackagesConfig=true
+          /p:CIBuild=true
+          /bl:$(LogOutputDirectory)\build-${{ join('_',split(project, '/')) }}.binlog
+          /p:BuildProjectReferences=true
+        platform: $(BuildPlatform)
+        configuration: $(BuildConfiguration)
+        msbuildArchitecture: x64
+        maximumCpuCount: true
 
   # Stage test project outputs with directory structure
   - task: CopyFiles@2
