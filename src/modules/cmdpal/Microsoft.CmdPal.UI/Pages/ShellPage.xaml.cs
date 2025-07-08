@@ -211,7 +211,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             // cancel
         }
-
     }
 
     private void InitializeConfirmationDialog(ConfirmResultViewModel vm)

@@ -280,7 +280,7 @@ public partial class ShellViewModel : ObservableObject,
             {
                 Logger.LogDebug($"Invoking command");
 
-                // PowerToysTelemetry.Log.WriteEvent(new BeginInvoke()); // TODO!
+                WeakReferenceMessenger.Default.Send<BeginInvokeMessage>();
                 StartInvoke(message, invokable);
             }
         }
@@ -346,7 +346,7 @@ public partial class ShellViewModel : ObservableObject,
         var kind = result.Kind;
         Logger.LogDebug($"handling {kind.ToString()}");
 
-        // PowerToysTelemetry.Log.WriteEvent(new CmdPalInvokeResult(kind)); // TODO!
+        WeakReferenceMessenger.Default.Send<CmdPalInvokeResultMessage>(new(kind));
         switch (kind)
         {
             case CommandResultKind.Dismiss:
