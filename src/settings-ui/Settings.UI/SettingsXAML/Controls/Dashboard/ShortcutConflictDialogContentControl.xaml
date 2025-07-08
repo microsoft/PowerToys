@@ -1,0 +1,183 @@
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard.ShortcutConflictDialogContentControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hotkeyConflicts="using:Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:BoolToConflictTypeConverter x:Key="BoolToConflictTypeConverter" />
+    </UserControl.Resources>
+
+    <Grid MinWidth="500" MaxWidth="600">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <FontIcon 
+                    FontFamily="Segoe Fluent Icons"
+                    Glyph="&#xE814;"
+                    FontSize="20"
+                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center" />
+                <TextBlock
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    Text="Shortcut conflicts detected"
+                    VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock
+                Style="{StaticResource BodyTextBlockStyle}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="These shortcuts are conflicting with other modules or system shortcuts. Please resolve these conflicts to ensure proper functionality."
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <!-- Conflicts List -->
+        <ScrollViewer 
+            Grid.Row="1" 
+            MaxHeight="400"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto"
+            ZoomMode="Disabled"
+            Padding="0,0,8,0">
+            <ItemsControl ItemsSource="{x:Bind ConflictItems, Mode=OneWay}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="hotkeyConflicts:HotkeyConflictGroupData">
+                        <Border
+                            Margin="0,0,0,12"
+                            Padding="16,12"
+                            Background="{ThemeResource LayerFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Shortcut Display -->
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border
+                                        Grid.Column="0"
+                                        Padding="10,4"
+                                        Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                        CornerRadius="4"
+                                        Margin="0,0,8,0">
+                                        <TextBlock
+                                            FontFamily="Cascadia Code, Consolas, monospace"
+                                            FontSize="13"
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                            Text="{x:Bind Hotkey.ToString()}"
+                                            TextTrimming="CharacterEllipsis"
+                                            MaxWidth="150" />
+                                    </Border>
+
+                                    <Border
+                                        Grid.Column="2"
+                                        Padding="8,4"
+                                        Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                                        CornerRadius="12"
+                                        VerticalAlignment="Center">
+                                        <TextBlock
+                                            FontSize="11"
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                            Text="{x:Bind IsSystemConflict, Converter={StaticResource BoolToConflictTypeConverter}}" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Conflicting Modules Header -->
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Margin="0,0,0,8"
+                                    FontWeight="SemiBold"
+                                    FontSize="13"
+                                    Text="Conflicting modules:" />
+
+                                <!-- Conflicting Modules List -->
+                                <ItemsControl Grid.Row="2" ItemsSource="{x:Bind Modules}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="hotkeyConflicts:ModuleHotkeyData">
+                                            <Border
+                                                Margin="0,0,0,6"
+                                                Padding="12,8"
+                                                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                                CornerRadius="6">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <FontIcon 
+                                                        FontFamily="Segoe Fluent Icons"
+                                                        Glyph="&#xE8F4;"
+                                                        FontSize="14"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Margin="0,0,8,0"
+                                                        VerticalAlignment="Center" />
+                                                    <TextBlock
+                                                        FontSize="14"
+                                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                        FontWeight="SemiBold"
+                                                        Text="{x:Bind ModuleName}"
+                                                        Margin="0,0,12,0"
+                                                        VerticalAlignment="Center" />
+                                                    <TextBlock
+                                                        FontSize="14"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="{x:Bind HotkeyName}"
+                                                        VerticalAlignment="Center"
+                                                        TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Empty State -->
+        <StackPanel
+            Grid.Row="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Visibility="{x:Bind ConflictItems.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}">
+            <FontIcon 
+                FontFamily="Segoe Fluent Icons"
+                Glyph="&#xE73E;"
+                FontSize="48"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,16" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                FontSize="16"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="No conflicts detected" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                FontSize="14"
+                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                Text="All shortcuts are working properly"
+                Margin="0,4,0,0" />
+        </StackPanel>
+    </Grid>
+</UserControl>

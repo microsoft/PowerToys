@@ -24,6 +24,7 @@
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
     <None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
     <None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
+    <None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictDialogContentControl.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />
@@ -134,6 +135,9 @@
     <None Update="Assets\Settings\Scripts\DisableModule.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictDialogContentControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
