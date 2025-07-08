@@ -29,8 +29,8 @@ stages:
     jobs:
       - job: Download
         pool:
-          name: SHINE-INT-L
-          image: SHINE-VS17-Latest
+          name: SHINE-INT-Testing-x64
+          demands: ImageOverride -equals SHINE-W11-Testing
           os: windows
         displayName: Download artifact from release pipeline and Fuzz
         steps:
