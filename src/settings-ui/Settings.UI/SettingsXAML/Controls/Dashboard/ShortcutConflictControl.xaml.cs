@@ -4,108 +4,130 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.ComponentModel;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
-using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public sealed partial class ShortcutConflictControl : UserControl
+    public sealed partial class ShortcutConflictControl : UserControl, INotifyPropertyChanged
     {
-        private AllHotkeyConflictsData _currentConflicts;
+        private static readonly ResourceLoader ResourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+        public static readonly DependencyProperty AllHotkeyConflictsDataProperty =
+            DependencyProperty.Register(
+                nameof(AllHotkeyConflictsData),
+                typeof(AllHotkeyConflictsData),
+                typeof(ShortcutConflictControl),
+                new PropertyMetadata(null, OnAllHotkeyConflictsDataChanged));
+
+        public AllHotkeyConflictsData AllHotkeyConflictsData
+        {
+            get => (AllHotkeyConflictsData)GetValue(AllHotkeyConflictsDataProperty);
+            set => SetValue(AllHotkeyConflictsDataProperty, value);
+        }
+
+        public int ConflictCount
+        {
+            get
+            {
+                if (AllHotkeyConflictsData == null)
+                {
+                    return 0;
+                }
+
+                int count = 0;
+                if (AllHotkeyConflictsData.InAppConflicts != null)
+                {
+                    count += AllHotkeyConflictsData.InAppConflicts.Count;
+                }
+
+                if (AllHotkeyConflictsData.SystemConflicts != null)
+                {
+                    count += AllHotkeyConflictsData.SystemConflicts.Count;
+                }
+
+                return count;
+            }
+        }
+
+        public string ConflictText
+        {
+            get
+            {
+                var count = ConflictCount;
+                return count switch
+                {
+                    // Todo: localization support
+                    0 => "No conflicts found",
+                    1 => "1 conflict found",
+                    _ => $"{count} conflicts found",
+                };
+            }
+        }
+
+        public bool HasConflicts => ConflictCount > 0;
+
+        private static void OnAllHotkeyConflictsDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ShortcutConflictControl control)
+            {
+                control.UpdateProperties();
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void UpdateProperties()
+        {
+            OnPropertyChanged(nameof(ConflictCount));
+            OnPropertyChanged(nameof(ConflictText));
+            OnPropertyChanged(nameof(HasConflicts));
+
+            // Update visibility based on conflict count
+            Visibility = HasConflicts ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public ShortcutConflictControl()
         {
             InitializeComponent();
-            RegisterForConflictUpdates();
-            GetShortcutConflicts();
+            DataContext = this;
+
+            // Initially hide the control if no conflicts
+            Visibility = HasConflicts ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void RegisterForConflictUpdates()
+        private async void ShortcutConflictBtn_Click(object sender, RoutedEventArgs e)
         {
-            // Subscribe to conflict updates from the global manager
-            if (GlobalHotkeyConflictManager.Instance != null)
+            if (AllHotkeyConflictsData == null || !HasConflicts)
             {
-                GlobalHotkeyConflictManager.Instance.ConflictsUpdated += OnConflictsUpdated;
-            }
-        }
-
-        private void GetShortcutConflicts()
-        {
-            // Request all hotkey conflicts via IPC
-            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
-        }
-
-        private void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
-        {
-            _currentConflicts = e.Conflicts;
-
-            // Update UI on the main thread
-            this.DispatcherQueue.TryEnqueue(() =>
-            {
-                UpdateConflictDisplay();
-            });
-        }
-
-        private void UpdateConflictDisplay()
-        {
-            if (_currentConflicts == null)
-            {
-                this.Visibility = Visibility.Collapsed;
                 return;
             }
 
-            // Check if there are any conflicts
-            bool hasConflicts = _currentConflicts.InAppConflicts.Count != 0 || _currentConflicts.SystemConflicts.Count != 0;
-
-            if (!hasConflicts)
+            var conflictDialog = new ContentDialog
             {
-                this.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                this.Visibility = Visibility.Visible;
+                // TODO: loalization support
+                Title = "Shortcut Conflicts",
+                Content = new ShortcutConflictDialogContentControl
+                {
+                    ConflictsData = AllHotkeyConflictsData,
+                },
+                CloseButtonText = "Close",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot,
+                RequestedTheme = this.ActualTheme,
+            };
 
-                // TODO: Update UI elements to show conflict count or details
-                // For example, update button text with conflict count
-                // ShortcutConflictBtn.Content = $"View {GetTotalConflictCount()} conflicts";
-            }
-        }
-
-        private int GetTotalConflictCount()
-        {
-            if (_currentConflicts == null)
-            {
-                return 0;
-            }
-
-            return _currentConflicts.InAppConflicts.Count + _currentConflicts.SystemConflicts.Count;
-        }
-
-        private void ShortcutConflictBtn_Click(object sender, RoutedEventArgs e)
-        {
-            // TODO: Handle the button click event to show the shortcut conflicts window.
-            // You can now use _currentConflicts to display detailed conflict information
-        }
-
-        // Clean up event subscription when control is unloaded
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-        {
-            if (GlobalHotkeyConflictManager.Instance != null)
-            {
-                GlobalHotkeyConflictManager.Instance.ConflictsUpdated -= OnConflictsUpdated;
-            }
+            await conflictDialog.ShowAsync();
         }
     }
 }
