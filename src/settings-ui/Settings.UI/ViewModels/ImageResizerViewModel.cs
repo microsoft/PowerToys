@@ -18,10 +18,8 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels;
 
-public partial class ImageResizerViewModel : PageViewModelBase
+public partial class ImageResizerViewModel : Observable
 {
-    protected override string ModuleName => ImageResizerSettings.ModuleName;
-
     private static readonly string DefaultPresetNamePrefix =
         Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_DefaultSize_NewSizePrefix");
 
@@ -51,12 +49,11 @@ public partial class ImageResizerViewModel : PageViewModelBase
 
     private ImageResizerSettings Settings { get; set; }
 
-    private const string ModuleNameConst = ImageResizerSettings.ModuleName;
+    private const string ModuleName = ImageResizerSettings.ModuleName;
 
     private Func<string, int> SendConfigMSG { get; }
 
     public ImageResizerViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string> resourceLoader)
-        : base(ipcMSGCallBackFunc)
     {
         _isInitializing = true;
 
@@ -69,12 +66,12 @@ public partial class ImageResizerViewModel : PageViewModelBase
 
         try
         {
-            Settings = _settingsUtils.GetSettings<ImageResizerSettings>(ModuleNameConst);
+            Settings = _settingsUtils.GetSettings<ImageResizerSettings>(ModuleName);
             IdRecoveryHelper.RecoverInvalidIds(Settings.Properties.ImageresizerSizes.Value);
         }
         catch (Exception e)
         {
-            Logger.LogError($"Exception encountered while reading {ModuleNameConst} settings.", e);
+            Logger.LogError($"Exception encountered while reading {ModuleName} settings.", e);
 #if DEBUG
             if (e is ArgumentException || e is ArgumentNullException || e is PathTooLongException)
             {
@@ -82,7 +79,7 @@ public partial class ImageResizerViewModel : PageViewModelBase
             }
 #endif
             Settings = new ImageResizerSettings(resourceLoader);
-            _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleNameConst);
+            _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
 
         // set the callback functions value to handle outgoing IPC message.
@@ -101,8 +98,6 @@ public partial class ImageResizerViewModel : PageViewModelBase
         _customSize = Settings.Properties.ImageresizerCustomSize.Value;
 
         _isInitializing = false;
-
-        // ImageResizer module doesn't have hotkey settings, so no need to register hotkeys
     }
 
     private void InitializeEnabledValue()
@@ -230,7 +225,7 @@ public partial class ImageResizerViewModel : PageViewModelBase
             if (!_isInitializing)
             {
                 updateSettingsAction(value);
-                _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleNameConst);
+                _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
             }
 
             OnPropertyChanged(propertyName);
@@ -336,8 +331,8 @@ public partial class ImageResizerViewModel : PageViewModelBase
     public void SaveImageSizes()
     {
         Settings.Properties.ImageresizerSizes = new ImageResizerSizes(Sizes);
-        _settingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleNameConst, "sizes.json");
-        _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleNameConst);
+        _settingsUtils.SaveSettings(Settings.Properties.ImageresizerSizes.ToJsonString(), ModuleName, "sizes.json");
+        _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
     }
 
     public void SizePropertyChanged(object sender, PropertyChangedEventArgs e)

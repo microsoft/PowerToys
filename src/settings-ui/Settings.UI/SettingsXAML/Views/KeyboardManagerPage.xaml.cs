@@ -38,7 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             InitializeComponent();
             DataContext = ViewModel;
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OnConfigFileUpdate()

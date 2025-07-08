@@ -34,10 +34,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly ISettingsUtils _settingsUtils;
         private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
-        // Conflict tracking dictionaries
-        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
-        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
-
         private readonly ColorPickerSettings _colorPickerSettings;
         private Timer _delayedTimer;
 
@@ -125,55 +121,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _activationShortcutTooltip = value;
                     OnPropertyChanged(nameof(ActivationShortcutTooltip));
-                }
-            }
-        }
-
-        private bool GetHotkeyConflictStatus(string hotkeyName)
-        {
-            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
-        }
-
-        private string GetHotkeyConflictTooltip(string hotkeyName)
-        {
-            return _hotkeyConflictTooltips.TryGetValue(hotkeyName, out string value) ? value : null;
-        }
-
-        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData conflicts)
-        {
-            var moduleRelatedConflicts = GetModuleRelatedConflicts(conflicts);
-
-            // Clear existing status
-            _hotkeyConflictStatus.Clear();
-            _hotkeyConflictTooltips.Clear();
-
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-
-            // Process in-app conflicts
-            foreach (var conflict in moduleRelatedConflicts.InAppConflicts)
-            {
-                foreach (var module in conflict.Modules)
-                {
-                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _hotkeyConflictStatus[module.HotkeyName] = true;
-
-                        // TODO: Build conflict description
-                    }
-                }
-            }
-
-            // Process system conflicts
-            foreach (var conflict in moduleRelatedConflicts.SystemConflicts)
-            {
-                foreach (var module in conflict.Modules)
-                {
-                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _hotkeyConflictStatus[module.HotkeyName] = true;
-
-                        // TODO: Build Sys conflict description.
-                    }
                 }
             }
         }

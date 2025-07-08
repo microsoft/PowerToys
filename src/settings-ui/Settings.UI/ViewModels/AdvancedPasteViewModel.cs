@@ -35,8 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class AdvancedPasteViewModel : PageViewModelBase, IDisposable
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
-        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
-        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
 
         // Private backing fields for conflict properties
         private bool _advancedPasteUIShortcutHasConflict;
@@ -285,16 +283,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private bool GetHotkeyConflictStatus(string hotkeyName)
-        {
-            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
-        }
-
-        private string GetHotkeyConflictTooltip(string hotkeyName)
-        {
-            return _hotkeyConflictTooltips.TryGetValue(hotkeyName, out string value) ? value : null;
-        }
-
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
             UpdateHotkeyConflictStatus(e.Conflicts);
@@ -365,42 +353,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     additionalAction.Tooltip = GetHotkeyConflictTooltip(kvp.Value);
                 }
             }
-        }
-
-        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData allConflicts)
-        {
-            _hotkeyConflictStatus.Clear();
-            _hotkeyConflictTooltips.Clear();
-
-            var moduleRelatedConflicts = GetModuleRelatedConflicts(allConflicts);
-
-            if (moduleRelatedConflicts.HasConflicts)
-            {
-                var conflictData = moduleRelatedConflicts.InAppConflicts
-                    .Concat(moduleRelatedConflicts.SystemConflicts)
-                    .Where(conflict => conflict.Modules != null)
-                    .SelectMany(conflict => conflict.Modules.Select(module => new { Conflict = conflict, Module = module }))
-                    .Where(item => string.Equals(item.Module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
-                    .GroupBy(item => item.Module.HotkeyName)
-                    .ToDictionary(g => g.Key, g => g.First());
-
-                foreach (var conflictGroup in conflictData)
-                {
-                    var hotkeyName = conflictGroup.Key;
-                    var conflictItem = conflictGroup.Value;
-
-                    _hotkeyConflictStatus[hotkeyName] = true;
-
-                    // TODO: Generate tooltip text based on conflict type
-                    var tooltip = GenerateConflictTooltip();
-                    _hotkeyConflictTooltips[hotkeyName] = tooltip;
-                }
-            }
-        }
-
-        private string GenerateConflictTooltip()
-        {
-            return "TODO: implement the tooltip.";
         }
 
         public bool IsEnabled

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
@@ -144,7 +145,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             int isEnabled = 0;
-            NativeMethods.SystemParametersInfo(NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
+            Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
             _isAnimationEnabledBySystem = isEnabled != 0;
 
             // set the callback functions value to handle outgoing IPC message.
@@ -199,12 +200,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private bool GetHotkeyConflictStatus(string hotkeyName)
-        {
-            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
-        }
-
-        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData allConflicts)
+        protected override void UpdateHotkeyConflictStatus(AllHotkeyConflictsData allConflicts)
         {
             _hotkeyConflictStatus.Clear();
             _hotkeyConflictTooltips.Clear();
@@ -221,17 +217,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Process in-app conflicts
             foreach (var conflict in allConflicts.InAppConflicts)
             {
-                ProcessConflictGroup(conflict, mouseUtilsModules);
+                ProcessConflictGroup(conflict, mouseUtilsModules, false);
             }
 
             // Process system conflicts
             foreach (var conflict in allConflicts.SystemConflicts)
             {
-                ProcessConflictGroup(conflict, mouseUtilsModules);
+                ProcessConflictGroup(conflict, mouseUtilsModules, true);
             }
         }
 
-        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, HashSet<string> mouseUtilsModules)
+        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, HashSet<string> mouseUtilsModules, bool isSysConflict)
         {
             // Check if any of the modules in this conflict are MouseUtils submodules
             var involvedMouseUtilsModules = conflict.Modules
@@ -245,31 +241,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     string hotkeyKey = $"{module.ModuleName}_{module.HotkeyName}";
                     _hotkeyConflictStatus[hotkeyKey] = true;
-                    _hotkeyConflictTooltips[hotkeyKey] = GenerateConflictTooltip(conflict, module);
+                    _hotkeyConflictTooltips[hotkeyKey] = isSysConflict
+                        ? ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText")
+                        : ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
                 }
             }
         }
 
-        private string GenerateConflictTooltip(HotkeyConflictGroupData conflict, ModuleHotkeyData module)
+        protected override bool GetHotkeyConflictStatus(string hotkeyName)
         {
-            // TODO: Generate proper tooltip text based on conflict type and involved modules
-            if (conflict.IsSystemConflict)
-            {
-                return "This hotkey conflicts with a system hotkey.";
-            }
-            else
-            {
-                var otherModules = conflict.Modules.Where(m => m != module).Select(m => m.ModuleName).ToList();
-                if (otherModules.Count > 0)
-                {
-                    return $"This hotkey conflicts with: {string.Join(", ", otherModules)}";
-                }
-
-                return "This hotkey has a conflict.";
-            }
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
         }
 
-        private string GetHotkeyConflictTooltip(string hotkeyName)
+        protected override string GetHotkeyConflictTooltip(string hotkeyName)
         {
             return _hotkeyConflictTooltips.TryGetValue(hotkeyName, out string value) ? value : null;
         }
