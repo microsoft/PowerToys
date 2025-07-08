@@ -77,25 +77,57 @@ namespace HotkeyConflictDetector
         return HotkeyConflictType::InAppConflict;
     }
 
-    HotkeyConflictInfo HotkeyConflictManager::GetConflict(Hotkey const& _hotkey)
+    // This function should only be called when a conflict has already been identified. 
+    // It returns a list of all conflicting shortcuts.
+    std::vector<HotkeyConflictInfo> HotkeyConflictManager::GetAllConflicts(Hotkey const& _hotkey)
     {
-        HotkeyConflictInfo conflictHotkeyInfo;
-
+        std::vector<HotkeyConflictInfo> conflicts;
         uint16_t handle = GetHotkeyHandle(_hotkey);
 
-        if (hotkeyMap.find(handle) != hotkeyMap.end())
+        // Check in-app conflicts first
+        auto inAppIt = inAppConflictHotkeyMap.find(handle);
+        if (inAppIt != inAppConflictHotkeyMap.end())
         {
-            return hotkeyMap[handle];
+            // Add all in-app conflicts
+            for (const auto& conflict : inAppIt->second)
+            {
+                conflicts.push_back(conflict);
+            }
+
+            return conflicts;
         }
 
-        // Check if shortcut has conflict with system pre-defined hotkeys
-        if (HasConflictWithSystemHotkey(_hotkey))
+        // Check system conflicts
+        auto sysIt = sysConflictHotkeyMap.find(handle);
+        if (sysIt != sysConflictHotkeyMap.end())
         {
-            conflictHotkeyInfo.hotkey = _hotkey;
-            conflictHotkeyInfo.moduleName = L"System";
+            HotkeyConflictInfo systemConflict;
+            systemConflict.hotkey = _hotkey;
+            systemConflict.moduleName = L"System";
+            systemConflict.hotkeyName = L"System Hotkey";
+
+            conflicts.push_back(systemConflict);
+
+            return conflicts;
         }
 
-        return conflictHotkeyInfo;
+        // Check if there's a successfully registered hotkey that would conflict
+        auto registeredIt = hotkeyMap.find(handle);
+        if (registeredIt != hotkeyMap.end())
+        {
+            conflicts.push_back(registeredIt->second);
+
+            return conflicts;
+        }
+
+        // If all the above conditions are ruled out, a system-level conflict is the only remaining explanation.
+        HotkeyConflictInfo systemConflict;
+        systemConflict.hotkey = _hotkey;
+        systemConflict.moduleName = L"System";
+        systemConflict.hotkeyName = L"System Hotkey";
+        conflicts.push_back(systemConflict);
+
+        return conflicts;
     }
 
     bool HotkeyConflictManager::AddHotkey(Hotkey const& _hotkey, const wchar_t* _moduleName, const wchar_t* _hotkeyName, bool isEnabled)

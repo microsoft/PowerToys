@@ -73,12 +73,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public delegate void HotkeyConflictCheckCallback(bool hasConflict, string conflictModuleName, string conflictHotkeyName);
-
-        private Dictionary<string, HotkeyConflictCheckCallback> _pendingHotkeyConflictChecks = new Dictionary<string, HotkeyConflictCheckCallback>();
-
-        private string GenerateRequestId() => Guid.NewGuid().ToString();
-
         public AdvancedPasteViewModel(
             ISettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,

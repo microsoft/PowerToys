@@ -70,21 +70,43 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 hasConflict = hasConflictValue.GetBoolean();
             }
 
-            string conflictModuleName = string.Empty;
-            string conflictHotkeyName = string.Empty;
+            var allConflicts = new List<ModuleHotkeyData>();
 
             if (hasConflict)
             {
-                if (json.TryGetValue("conflict_module", out IJsonValue conflictModuleValue) &&
-                    conflictModuleValue.ValueType == JsonValueType.String)
+                // Parse the all_conflicts array
+                if (json.TryGetValue("all_conflicts", out IJsonValue allConflictsValue) &&
+                    allConflictsValue.ValueType == JsonValueType.Array)
                 {
-                    conflictModuleName = conflictModuleValue.GetString();
-                }
+                    var conflictsArray = allConflictsValue.GetArray();
+                    foreach (var conflictItem in conflictsArray)
+                    {
+                        if (conflictItem.ValueType == JsonValueType.Object)
+                        {
+                            var conflictObj = conflictItem.GetObject();
 
-                if (json.TryGetValue("conflict_hotkey_name", out IJsonValue conflictHotkeyValue) &&
-                    conflictHotkeyValue.ValueType == JsonValueType.String)
-                {
-                    conflictHotkeyName = conflictHotkeyValue.GetString();
+                            string moduleName = string.Empty;
+                            string hotkeyName = string.Empty;
+
+                            if (conflictObj.TryGetValue("module", out IJsonValue moduleValue) &&
+                                moduleValue.ValueType == JsonValueType.String)
+                            {
+                                moduleName = moduleValue.GetString();
+                            }
+
+                            if (conflictObj.TryGetValue("hotkey_name", out IJsonValue hotkeyValue) &&
+                                hotkeyValue.ValueType == JsonValueType.String)
+                            {
+                                hotkeyName = hotkeyValue.GetString();
+                            }
+
+                            allConflicts.Add(new ModuleHotkeyData
+                            {
+                                ModuleName = moduleName,
+                                HotkeyName = hotkeyName,
+                            });
+                        }
+                    }
                 }
             }
 
@@ -92,8 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             {
                 RequestId = requestId,
                 HasConflict = hasConflict,
-                ConflictModuleName = conflictModuleName,
-                ConflictHotkeyName = conflictHotkeyName,
+                AllConflicts = allConflicts,
             };
 
             HotkeyConflictHelper.HandleHotkeyConflictResponse(response);

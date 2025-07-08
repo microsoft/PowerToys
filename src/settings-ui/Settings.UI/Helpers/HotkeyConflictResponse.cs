@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
@@ -16,8 +17,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public bool HasConflict { get; set; }
 
-        public string ConflictModuleName { get; set; }
-
-        public string ConflictHotkeyName { get; set; }
+        public List<ModuleHotkeyData> AllConflicts { get; set; } = new List<ModuleHotkeyData>();
     }
 }
