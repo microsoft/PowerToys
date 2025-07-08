@@ -27,6 +27,7 @@ parameters:
     default:
       - 'src/common/UITestAutomation/UITestAutomation.csproj'
       - 'src/modules/fancyzones/UITests-FancyZones/UITests-FancyZones.csproj'
+      - 'src/modules/fancyzones/UITests-FancyZonesEditor/UITests-FancyZonesEditor.csproj'
       - 'src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj'
       - 'src/modules/Workspaces/WorkspacesEditorUITest/WorkspacesEditorUITest.csproj'
       - 'src/modules/imageresizer/tests/ImageResizerUITest.csproj'
@@ -49,6 +50,7 @@ jobs:
     JobOutputDirectory: $(Build.ArtifactStagingDirectory)
     LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)
+    NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform)
     ${{ insert }}: ${{ parameters.variables }}
   displayName: Build UI Tests Only
   timeoutInMinutes: 60
@@ -82,10 +84,12 @@ jobs:
         vsVersion: 17.0
         msbuildArgs: >-
           -restore
+          -graph
           /p:RestorePackagesConfig=true
+          /p:BuildProjectReferences=true
           /p:CIBuild=true
           /bl:$(LogOutputDirectory)\build-${{ join('_',split(project, '/')) }}.binlog
-          /p:BuildProjectReferences=true
+          $(NUGET_RESTORE_MSBUILD_ARGS)
         platform: $(BuildPlatform)
         configuration: $(BuildConfiguration)
         msbuildArchitecture: x64
