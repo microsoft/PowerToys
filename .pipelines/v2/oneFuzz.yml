@@ -44,8 +44,5 @@ stages:
               artifactName: 'build-x64-Release'
               targetPath: '$(Build.ArtifactStagingDirectory)'
           - pwsh: |-
-              & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
-            displayName: Download and install WiX 3.14 development build
-          - pwsh: |-
               & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1"
             displayName: Install PowerToys

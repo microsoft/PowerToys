@@ -6,7 +6,7 @@ if (-not $ArtifactPath) {
     throw "BUILD_ARTIFACTSTAGINGDIRECTORY environment variable not set"
 }
 
-$Installer = Get-ChildItem -Path $ArtifactPath -Recurse -Filter 'PowerToysSetup-*.exe' | Select-Object -First 1
+$Installer = Get-ChildItem -Path $ArtifactPath -Recurse -Filter 'PowerToysUserSetup-*.exe' | Select-Object -First 1
 
 if (-not $Installer) {
     throw "PowerToys installer not found in artifact directory"
@@ -22,7 +22,7 @@ if ($Process.ExitCode -ne 0 -and $Process.ExitCode -ne 3010) {
 }
 
 # Verify installation
-$PowerToysPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
+$PowerToysPath = "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe"
 if (-not (Test-Path $PowerToysPath)) {
     $PowerToysPath = "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe"
 }
