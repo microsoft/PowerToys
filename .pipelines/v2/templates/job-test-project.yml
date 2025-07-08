@@ -95,6 +95,21 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
+  - task: DownloadPipelineArtifact@2
+      inputs:
+      buildType: 'specific'
+      project: 'Dart'
+      definition: '76541'
+      buildVersionToDownload: 'latest'
+      branchName: 'refs/heads/main'
+      artifactName: 'build-${{ parameters.platform }}-Release'
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      patterns: |
+        **/PowerToysSetup-*.exe
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1"
+      displayName: Install PowerToys
+
   - ${{ if ne(parameters.platform, 'arm64') }}:
     - task: ScreenResolutionUtility@1
       inputs:
