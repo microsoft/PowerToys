@@ -44,7 +44,7 @@ ALPHATYPE
 AModifier
 amr
 ANDSCANS
-AnimnateZoom
+Animnate
 ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
