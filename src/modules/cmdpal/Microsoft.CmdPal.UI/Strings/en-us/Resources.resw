@@ -412,4 +412,16 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More</value>
   </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TrayMenu_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Indirect</value>
+  </data>
 </root>

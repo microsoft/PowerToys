@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using ManagedCommon;
@@ -78,8 +79,11 @@ public static class DefaultBrowserInfo
             try
             {
                 var progId = GetRegistryValue(
-                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice",
-                    "ProgId");
+                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoiceLatest\ProgId",
+                    "ProgId")
+                    ?? GetRegistryValue(
+                        @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice",
+                        "ProgId");
                 var appName = GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}\Application", "ApplicationName")
                     ?? GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}", "FriendlyTypeName");
 
@@ -188,17 +192,20 @@ public static class DefaultBrowserInfo
                 {
                     var buffer = stackalloc char[128];
                     var capacity = 128;
-                    void* reserved = null;
+                    var firstChar = str[0];
+                    var strPtr = &firstChar;
 
                     // S_OK == 0
-                    if (global::Windows.Win32.PInvoke.SHLoadIndirectString(
-                            str,
+                    fixed (char* pszSourceLocal = str)
+                    {
+                        if (global::Windows.Win32.PInvoke.SHLoadIndirectString(
+                            pszSourceLocal,
                             buffer,
                             (uint)capacity,
-                            ref reserved)
-                        == 0)
-                    {
-                        return new string(buffer);
+                            default) == 0)
+                        {
+                            return new string(buffer);
+                        }
                     }
                 }
 

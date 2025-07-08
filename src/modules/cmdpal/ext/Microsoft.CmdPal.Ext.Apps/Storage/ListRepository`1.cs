@@ -69,11 +69,6 @@ public class ListRepository<T> : IRepository<T>, IEnumerable<T>
         }
     }
 
-    public ParallelQuery<T> AsParallel()
-    {
-        return _items.Values.AsParallel();
-    }
-
     public bool Contains(T item)
     {
         if (item is not null)

@@ -92,6 +92,7 @@
 ^\.github/actions/spell-check/
 ^\.gitmodules$
 ^\Q.github/workflows/spelling2.yml\E$
+^\Q.pipelines/272MSSharedLibSN2048.snk\E$
 ^\Q.pipelines/ESRPSigning_core.json\E$
 ^\Qdoc/devdocs/localization.md\E$
 ^\Qsrc/common/ManagedCommon/ColorFormatHelper.cs\E$
@@ -120,7 +121,10 @@
 ^src/modules/MouseWithoutBorders/App/Form/.*\.resx$
 ^src/modules/MouseWithoutBorders/App/Helper/.*\.resx$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
+^src/modules/ZoomIt/ZoomIt/ZoomIt\.idc$
 ^src/Monaco/
 ^src/common/sysinternals/Eula/
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ignore$
+^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
+^src/common/CalculatorEngineCommon/exprtk\.hpp$

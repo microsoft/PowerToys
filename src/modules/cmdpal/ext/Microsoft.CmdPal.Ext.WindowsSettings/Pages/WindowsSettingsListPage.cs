@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
+using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
+using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -18,9 +20,15 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
     public WindowsSettingsListPage(Classes.WindowsSettings windowsSettings)
     {
         Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
-        Name = "Windows Settings";
+        Name = Resources.settings_title;
         Id = "com.microsoft.cmdpal.windowsSettings";
         _windowsSettings = windowsSettings;
+    }
+
+    public WindowsSettingsListPage(Classes.WindowsSettings windowsSettings, string query)
+        : this(windowsSettings)
+    {
+        SearchText = query;
     }
 
     public List<ListItem> Query(string query)
@@ -31,63 +39,21 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
         }
 
         var filteredList = _windowsSettings.Settings
-            .Where(Predicate)
-            .OrderBy(found => found.Name);
+            .Select(setting => ScoringHelper.SearchScoringPredicate(query, setting))
+            .Where(scoredSetting => scoredSetting.Score > 0)
+            .OrderByDescending(scoredSetting => scoredSetting.Score)
+            .Select(scoredSetting => scoredSetting.Setting);
 
-        var newList = ResultHelper.GetResultList(filteredList, query);
+        var newList = ResultHelper.GetResultList(filteredList);
         return newList;
-
-        bool Predicate(WindowsSetting found)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                // If no search string is entered skip query comparison.
-                return true;
-            }
-
-            if (found.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase))
-            {
-                return true;
-            }
-
-            if (!(found.Areas is null))
-            {
-                foreach (var area in found.Areas)
-                {
-                    // Search for areas on normal queries.
-                    if (area.Contains(query, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        return true;
-                    }
-
-                    // Search for Area only on queries with action char.
-                    if (area.Contains(query.Replace(":", string.Empty), StringComparison.CurrentCultureIgnoreCase)
-                    && query.EndsWith(":", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            if (!(found.AltNames is null))
-            {
-                foreach (var altName in found.AltNames)
-                {
-                    if (altName.Contains(query, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            // Search by key char '>' for app name and settings path
-            return query.Contains('>') ? ResultHelper.FilterBySettingsPath(found, query) : false;
-        }
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        RaiseItemsChanged(0);
+        if (oldSearch != newSearch)
+        {
+            RaiseItemsChanged(0);
+        }
     }
 
     public override IListItem[] GetItems()

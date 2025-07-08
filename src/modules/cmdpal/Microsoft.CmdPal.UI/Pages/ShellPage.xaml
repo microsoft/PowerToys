@@ -29,6 +29,7 @@
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
+                CommandTemplate="{StaticResource DetailsCommandsTemplate}"
                 LinkTemplate="{StaticResource DetailsLinkTemplate}"
                 SeparatorTemplate="{StaticResource DetailsSeparatorTemplate}"
                 TagTemplate="{StaticResource DetailsTagsTemplate}" />
@@ -50,6 +51,27 @@
                     ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
             </DataTemplate>
 
+            <DataTemplate x:Key="CommandTemplate" x:DataType="viewModels:CommandViewModel">
+                <StackPanel Orientation="Vertical">
+                    <Button
+                        Name="Command"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Click="Command_Click"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <cpcontrols:IconBox
+                                Width="16"
+                                Height="16"
+                                Margin="0,3,8,0"
+                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                            <TextBlock Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DataTemplate>
+
             <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
                 <StackPanel Orientation="Vertical">
                     <TextBlock
@@ -69,6 +91,18 @@
                         FontSize="12"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                    <TextBlock
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Key, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                    <ItemsControl
+                        ItemTemplate="{StaticResource CommandTemplate}"
+                        ItemsSource="{x:Bind Commands, Mode=OneWay}"
+                        Visibility="{x:Bind HasCommands, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
@@ -346,19 +380,19 @@
                             To="24,0,0"
                             Duration="0:0:0.187" />
                     </animations:Implicit.HideAnimations>
-                    <Grid Margin="12">
+                    <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
                         <cpcontrols:IconBox
                             x:Name="HeroImageBorder"
                             Width="64"
-                            Margin="16,8,16,16"
-                            HorizontalAlignment="Center"
+                            Margin="0,0,16,16"
+                            HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
@@ -366,17 +400,15 @@
 
                         <TextBlock
                             Grid.Row="1"
-                            HorizontalAlignment="Center"
                             FontSize="18"
                             FontWeight="SemiBold"
                             Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
-                            TextAlignment="Center"
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
                         <toolkit:MarkdownTextBlock
                             Grid.Row="2"
-                            Margin="0,12,0,24"
+                            Margin="0,4,0,24"
                             Background="Transparent"
                             Header3FontSize="12"
                             Header3FontWeight="Normal"

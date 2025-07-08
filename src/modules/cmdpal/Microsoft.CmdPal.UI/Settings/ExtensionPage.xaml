@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.ExtensionPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -92,12 +92,11 @@
 
                                                     <controls:SettingsCard x:Uid="Settings_ExtensionPage_Alias_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
                                                         <StackPanel Orientation="Vertical">
-                                                            <TextBox Text="{x:Bind AliasText, Mode=TwoWay}" />
+                                                            <TextBox Text="{x:Bind AliasText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                             <ToggleSwitch
+                                                                x:Uid="Settings_ExtensionPage_Alias_ToggleSwitch"
                                                                 IsEnabled="{x:Bind AliasText, Converter={StaticResource StringEmptyToBoolConverter}, Mode=OneWay}"
-                                                                IsOn="{x:Bind IsDirectAlias, Mode=TwoWay}"
-                                                                OffContent="Indirect"
-                                                                OnContent="Direct" />
+                                                                IsOn="{x:Bind IsDirectAlias, Mode=TwoWay}" />
                                                         </StackPanel>
                                                     </controls:SettingsCard>
 

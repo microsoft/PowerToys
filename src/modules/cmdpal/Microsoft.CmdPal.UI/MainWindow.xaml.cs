@@ -29,7 +29,6 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
-using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinUIEx;
@@ -47,22 +46,8 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
-    private bool _ignoreHotKeyWhenFullScreen = true;
-
-    // Stylistically, window messages are WM_*
-#pragma warning disable SA1310 // Field names should not contain underscore
-#pragma warning disable SA1306 // Field names should begin with lower-case letter
-    private const uint MY_NOTIFY_ID = 1000;
-    private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
-    private readonly uint WM_TASKBAR_RESTART;
-#pragma warning restore SA1306 // Field names should begin with lower-case letter
-#pragma warning restore SA1310 // Field names should not contain underscore
-
     private readonly KeyboardListener _keyboardListener;
-
-    // Notification Area ("Tray") icon data
-    private NOTIFYICONDATAW? _trayIconData;
-    private DestroyIconSafeHandle? _largeIcon;
+    private bool _ignoreHotKeyWhenFullScreen = true;
 
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
@@ -72,17 +57,16 @@ public sealed partial class MainWindow : WindowEx,
         InitializeComponent();
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
-        CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
+
+        unsafe
+        {
+            CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
+        }
 
         _keyboardListener = new KeyboardListener();
         _keyboardListener.Start();
 
         _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
-
-        // TaskbarCreated is the message that's broadcast when explorer.exe
-        // restarts. We need to know when that happens to be able to bring our
-        // notification area icon back
-        WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
@@ -159,7 +143,7 @@ public sealed partial class MainWindow : WindowEx,
         var settings = App.Current.Services.GetService<SettingsModel>()!;
 
         SetupHotkey(settings);
-        SetupTrayIcon(settings.ShowSystemTrayIcon);
+        App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
 
@@ -219,7 +203,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
     {
-        var hwnd = new HWND(hwndValue);
+        var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
         // Remember, IsIconic == "minimized", which is entirely different state
         // from "show/hide"
@@ -332,7 +316,7 @@ public sealed partial class MainWindow : WindowEx,
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
         extensionService.SignalStopExtensionsAsync();
 
-        RemoveTrayIcon();
+        App.Current.Services.GetService<TrayIconService>()!.Destroy();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
@@ -340,6 +324,7 @@ public sealed partial class MainWindow : WindowEx,
         DisposeAcrylic();
 
         _keyboardListener.Stop();
+        Environment.Exit(0);
     }
 
     private void DisposeAcrylic()
@@ -515,18 +500,27 @@ public sealed partial class MainWindow : WindowEx,
 
             if (key != null)
             {
-                var vk = key.Code;
-                var modifiers =
-                    (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                    (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                    (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                    (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                    ;
-
-                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                if (success)
+                if (settings.UseLowLevelGlobalHotkey)
                 {
-                    _hotkeys.Add(commandHotkey);
+                    _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandHotkey.CommandId);
+
+                    _hotkeys.Add(new(globalHotkey, string.Empty));
+                }
+                else
+                {
+                    var vk = key.Code;
+                    var modifiers =
+                        (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+                        (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+                        (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+                        (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
+                        ;
+
+                    var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                    if (success)
+                    {
+                        _hotkeys.Add(commandHotkey);
+                    }
                 }
             }
         }
@@ -606,100 +600,8 @@ public sealed partial class MainWindow : WindowEx,
 
                     return (LRESULT)IntPtr.Zero;
                 }
-
-            // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
-            // We'll also never receive WM_TASKBAR_RESTART message if the first call to Shell_NotifyIcon failed, so we use
-            // WM_WINDOWPOSCHANGING which is always received on explorer startup sequence.
-            case PInvoke.WM_WINDOWPOSCHANGING:
-                {
-                    if (_trayIconData == null)
-                    {
-                        SetupTrayIcon();
-                    }
-                }
-
-                break;
-            default:
-                // WM_TASKBAR_RESTART isn't a compile-time constant, so we can't
-                // use it in a case label
-                if (uMsg == WM_TASKBAR_RESTART)
-                {
-                    // Handle the case where explorer.exe restarts.
-                    // Even if we created it before, do it again
-                    SetupTrayIcon();
-                }
-                else if (uMsg == WM_TRAY_ICON)
-                {
-                    switch ((uint)lParam.Value)
-                    {
-                        case PInvoke.WM_RBUTTONUP:
-                        case PInvoke.WM_LBUTTONUP:
-                        case PInvoke.WM_LBUTTONDBLCLK:
-                            Summon(string.Empty);
-                            break;
-                    }
-                }
-
-                break;
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
-    }
-
-    private void SetupTrayIcon(bool? showSystemTrayIcon = null)
-    {
-        if (showSystemTrayIcon ?? App.Current.Services.GetService<SettingsModel>()!.ShowSystemTrayIcon)
-        {
-            // We only need to build the tray data once.
-            if (_trayIconData == null)
-            {
-                // We need to stash this handle, so it doesn't clean itself up. If
-                // explorer restarts, we'll come back through here, and we don't
-                // really need to re-load the icon in that case. We can just use
-                // the handle from the first time.
-                _largeIcon = GetAppIconHandle();
-                _trayIconData = new NOTIFYICONDATAW()
-                {
-                    cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATAW)),
-                    hWnd = _hwnd,
-                    uID = MY_NOTIFY_ID,
-                    uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
-                    uCallbackMessage = WM_TRAY_ICON,
-                    hIcon = (HICON)_largeIcon.DangerousGetHandle(),
-                    szTip = RS_.GetString("AppStoreName"),
-                };
-            }
-
-            var d = (NOTIFYICONDATAW)_trayIconData;
-
-            // Add the notification icon
-            PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d);
-        }
-        else
-        {
-            RemoveTrayIcon();
-        }
-    }
-
-    private void RemoveTrayIcon()
-    {
-        if (_trayIconData != null)
-        {
-            var d = (NOTIFYICONDATAW)_trayIconData;
-            if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
-            {
-                _trayIconData = null;
-            }
-        }
-
-        _largeIcon?.Close();
-    }
-
-    private DestroyIconSafeHandle GetAppIconHandle()
-    {
-        var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        DestroyIconSafeHandle largeIcon;
-        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
-        return largeIcon;
     }
 }
