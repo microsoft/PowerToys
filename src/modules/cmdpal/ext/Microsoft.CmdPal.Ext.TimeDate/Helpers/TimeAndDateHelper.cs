@@ -10,7 +10,7 @@ using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-public static class TimeAndDateHelper
+internal static class TimeAndDateHelper
 {
     /* htcfreek:Currently not used.
      * private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d"); */
@@ -159,7 +159,7 @@ public static class TimeAndDateHelper
     /// <param name="timestamp">The new <see cref="DateTime"/> object</param>
     /// <param name="inputParsingErrorMsg">Error message shown to the user</param>
     /// <returns>True on success, otherwise false</returns>
-    public static bool ParseStringAsDateTime(in string input, out DateTime timestamp, out string inputParsingErrorMsg)
+    internal static bool ParseStringAsDateTime(in string input, out DateTime timestamp, out string inputParsingErrorMsg)
     {
         inputParsingErrorMsg = string.Empty;
         CompositeFormat errorMessage = CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_InvalidInput_SupportedRange);
@@ -326,7 +326,7 @@ public static class TimeAndDateHelper
     /// <param name="eraShortFormat">Era abbreviation.</param>
     /// <param name="format">Format definition.</param>
     /// <returns>Formated date/time string.</returns>
-    public static string ConvertToCustomFormat(DateTime date, long unix, long unixMilliseconds, int calWeek, string eraShortFormat, string format, CalendarWeekRule firstWeekRule, DayOfWeek firstDayOfTheWeek)
+    internal static string ConvertToCustomFormat(DateTime date, long unix, long unixMilliseconds, int calWeek, string eraShortFormat, string format, CalendarWeekRule firstWeekRule, DayOfWeek firstDayOfTheWeek)
     {
         var result = format;
 
@@ -383,7 +383,7 @@ public static class TimeAndDateHelper
     /// </summary>
     /// <param name="str">String to test.</param>
     /// <returns>True if yes and otherwise false</returns>
-    public static bool StringContainsCustomFormatSyntax(string str)
+    internal static bool StringContainsCustomFormatSyntax(string str)
     {
         return _regexCustomDateTimeFormats.IsMatch(str);
     }
@@ -391,7 +391,7 @@ public static class TimeAndDateHelper
     /// <summary>
     /// Returns a CalendarWeekRule enum value based on the plugin setting.
     /// </summary>
-    public static CalendarWeekRule GetCalendarWeekRule(int pluginSetting)
+    internal static CalendarWeekRule GetCalendarWeekRule(int pluginSetting)
     {
         switch (pluginSetting)
         {
@@ -410,7 +410,7 @@ public static class TimeAndDateHelper
     /// <summary>
     /// Returns a DayOfWeek enum value based on the FirstDayOfWeek plugin setting.
     /// </summary>
-    public static DayOfWeek GetFirstDayOfWeek(int pluginSetting)
+    internal static DayOfWeek GetFirstDayOfWeek(int pluginSetting)
     {
         switch (pluginSetting)
         {

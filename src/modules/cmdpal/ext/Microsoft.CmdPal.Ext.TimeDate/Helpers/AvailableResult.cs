@@ -7,32 +7,32 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-public sealed class AvailableResult
+internal sealed class AvailableResult
 {
     /// <summary>
     /// Gets or sets the time/date value
     /// </summary>
-    public string Value { get; set; }
+    internal string Value { get; set; }
 
     /// <summary>
     /// Gets or sets the text used for the subtitle and as search term
     /// </summary>
-    public string Label { get; set; }
+    internal string Label { get; set; }
 
     /// <summary>
     /// Gets or sets an alternative search tag that will be evaluated if label doesn't match. For example we like to show the era on searches for 'year' too.
     /// </summary>
-    public string AlternativeSearchTag { get; set; }
+    internal string AlternativeSearchTag { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating the type of result
     /// </summary>
-    public ResultIconType IconType { get; set; }
+    internal ResultIconType IconType { get; set; }
 
     /// <summary>
     /// Gets or sets a value to show additional error details
     /// </summary>
-    public string ErrorDetails { get; set; } = string.Empty;
+    internal string ErrorDetails { get; set; } = string.Empty;
 
     /// <summary>
     /// Returns the path to the icon

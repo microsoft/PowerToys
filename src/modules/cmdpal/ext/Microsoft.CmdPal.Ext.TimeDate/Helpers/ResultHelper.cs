@@ -8,7 +8,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-public static class ResultHelper
+internal static class ResultHelper
 {
     /// <summary>
     /// Get the string based on the requested type
@@ -17,7 +17,7 @@ public static class ResultHelper
     /// <param name="stringId">Id of the string. (Example: `MyString` for `MyString` and `MyStringNow`)</param>
     /// <param name="stringIdNow">Optional string id for now case</param>
     /// <returns>The string from the resource file, or <see cref="string.Empty"/> otherwise.</returns>
-    public static string SelectStringFromResources(bool isSystemTimeDate, string stringId, string stringIdNow = default)
+    internal static string SelectStringFromResources(bool isSystemTimeDate, string stringId, string stringIdNow = default)
     {
         return !isSystemTimeDate
             ? Resources.ResourceManager.GetString(stringId, CultureInfo.CurrentUICulture) ?? string.Empty
@@ -39,7 +39,7 @@ public static class ResultHelper
     /// </summary>
     /// <returns>Element of type <see cref="Result"/>.</returns>
 #pragma warning disable CA1863 // Use 'CompositeFormat'
-    public static ListItem CreateInvalidInputErrorResult() => new ListItem(new NoOpCommand())
+    internal static ListItem CreateInvalidInputErrorResult() => new ListItem(new NoOpCommand())
     {
         Title = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle,
         Icon = ErrorIcon,
