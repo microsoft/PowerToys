@@ -137,7 +137,7 @@ namespace Microsoft.PowerToys.UITest
             {
                 @"C:\Program Files\PowerToys",
                 @"C:\Program Files (x86)\PowerToys",
-                Environment.ExpandEnvironmentVariables(@"%LocalAppData%\Microsoft\PowerToys"),
+                Environment.ExpandEnvironmentVariables(@"%LocalAppData%\PowerToys"),
                 Environment.ExpandEnvironmentVariables(@"%ProgramFiles%\PowerToys"),
             };
 
