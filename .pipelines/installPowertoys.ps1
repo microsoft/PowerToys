@@ -1,6 +1,47 @@
+$ProgressPreference = 'SilentlyContinue'
+
+# Find PowerToys installer in artifact directory
+$ArtifactPath = $ENV:BUILD_ARTIFACTSTAGINGDIRECTORY
+if (-not $ArtifactPath) {
+    throw "BUILD_ARTIFACTSTAGINGDIRECTORY environment variable not set"
+}
+
+Write-Host "Looking for installer in: $ArtifactPath"
+
+# Check if we have zip files that need to be extracted
+$ZipFiles = Get-ChildItem -Path $ArtifactPath -Recurse -Filter '*.zip'
+if ($ZipFiles) {
+    Write-Host "Found zip files, extracting..."
+    foreach ($ZipFile in $ZipFiles) {
+        Write-Host "Extracting: $($ZipFile.Name)"
+        $ExtractPath = Join-Path $ArtifactPath $ZipFile.BaseName
+        Expand-Archive -Path $ZipFile.FullName -DestinationPath $ExtractPath -Force
+    }
+}
+
+# List all files to debug
+Write-Host "All files in artifact directory:"
+Get-ChildItem -Path $ArtifactPath -Recurse | ForEach-Object { 
+    Write-Host "  $($_.FullName) (Size: $($_.Length) bytes)"
+}
+
+# First try to find user installer
+$Installer = Get-ChildItem -Path $ArtifactPath -Recurse -Filter 'PowerToysUserSetup-*.exe' | Select-Object -First 1
+
+if (-not $Installer) {
+    Write-Host "PowerToysUserSetup-*.exe not found, looking for machine installer..."
+    $Installer = Get-ChildItem -Path $ArtifactPath -Recurse -Filter 'PowerToysSetup-*.exe' | Select-Object -First 1
+}
+
+if (-not $Installer) {
+    throw "PowerToys installer not found in artifact directory"
+}
+
+Write-Host "Found PowerToys installer: $($Installer.Name)"
+Write-Host "Full path: $($Installer.FullName)"
+
 # Install PowerToys
 Write-Host "Installing PowerToys with arguments: /passive /norestart"
-Write-Host "Installer path: $($Installer.FullName)"
 Write-Host "Current user: $env:USERNAME"
 Write-Host "User profile: $env:USERPROFILE"
 
@@ -53,4 +94,16 @@ if ($Process.ExitCode -eq 1) {
 
 if ($Process.ExitCode -ne 0 -and $Process.ExitCode -ne 3010) {
     throw "PowerToys installation failed with exit code: $($Process.ExitCode)"
+}
+
+# Verify installation
+$PowerToysPath = "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe"
+if (-not (Test-Path $PowerToysPath)) {
+    $PowerToysPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
+}
+
+if (Test-Path $PowerToysPath) {
+    Write-Host "PowerToys installation completed successfully at: $PowerToysPath"
+} else {
+    throw "PowerToys installation verification failed - executable not found"
 }
