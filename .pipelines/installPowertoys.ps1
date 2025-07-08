@@ -85,8 +85,15 @@ if ($Process.ExitCode -eq 1) {
             Write-Host "Found log files at $LogPath"
             foreach ($LogFile in $LogFiles) {
                 Write-Host "Log file: $($LogFile.FullName)"
-                Write-Host "Last 20 lines of log:"
-                Get-Content $LogFile.FullName -Tail 20 | Write-Host
+                Write-Host "File size: $($LogFile.Length) bytes"
+                Write-Host "==================== FULL LOG CONTENT ===================="
+                try {
+                    $LogContent = Get-Content $LogFile.FullName -Raw
+                    Write-Host $LogContent
+                } catch {
+                    Write-Host "Could not read log file: $($_.Exception.Message)"
+                }
+                Write-Host "===================== END OF LOG ====================="
             }
         }
     }
