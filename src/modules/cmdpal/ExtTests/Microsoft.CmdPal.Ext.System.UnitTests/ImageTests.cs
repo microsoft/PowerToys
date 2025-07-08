@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CmdPal.Ext.System.Helpers;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -30,14 +31,14 @@ public class ImageTests
     {
         // Setup
         var iconProperty = typeof(Icons).GetProperty(expectedIconPropertyName);
-        var iconUri = iconProperty?.GetValue(null) as IconInfo;
+        var iconInfo = iconProperty?.GetValue(null) as IconInfo;
 
         // Act
-        // Since we can't easily mock the complete system, just test that icons are available
-        var result = iconUri;
+        var result = iconInfo.Dark;
 
         // Assert
         Assert.IsNotNull(result);
+        Assert.IsNotNull(result.Icon);
     }
 
     [DataTestMethod]
@@ -56,13 +57,13 @@ public class ImageTests
     {
         // Setup
         var iconProperty = typeof(Icons).GetProperty(expectedIconPropertyName);
-        var iconUri = iconProperty?.GetValue(null) as IconInfo;
+        var iconInfo = iconProperty?.GetValue(null) as IconInfo;
 
         // Act
-        // Since we can't easily mock the complete system, just test that icons are available
-        var result = iconUri;
+        var result = iconInfo.Light;
 
         // Assert
         Assert.IsNotNull(result);
+        Assert.IsNotNull(result.Icon);
     }
 }

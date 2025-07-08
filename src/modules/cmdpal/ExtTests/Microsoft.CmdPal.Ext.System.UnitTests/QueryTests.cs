@@ -65,7 +65,7 @@ public class QueryTests
     {
         // Setup
         var firmwareType = Win32Helpers.GetSystemFirmwareType();
-        bool isUefiMode = firmwareType == FirmwareType.Uefi;
+        var isUefiMode = firmwareType == FirmwareType.Uefi;
 
         // Act
         var commands = Commands.GetSystemCommands(isUefiMode, false, false, false);
