@@ -78,6 +78,8 @@ namespace Microsoft.PowerToys.UITest
     {
         private Dictionary<PowerToysModule, string> ModulePath { get; }
 
+        private Dictionary<PowerToysModule, string> InstalledModulePath { get; }
+
         // Singleton instance of ModuleConfigData.
         private static readonly Lazy<ModuleConfigData> SingletonInstance = new Lazy<ModuleConfigData>(() => new ModuleConfigData());
 
@@ -86,15 +88,15 @@ namespace Microsoft.PowerToys.UITest
         public const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
 
         public Dictionary<PowerToysModule, string> ModuleWindowName { get; }
-        
+
         private bool UseInstallerForTest { get; }
 
         private ModuleConfigData()
         {
             // Check if we should use installer paths from environment variable
-            string useInstallerForTestEnv = Environment.GetEnvironmentVariable("useInstallerForTest") ??
-                                          Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
-            UseInstallerForTest = bool.TryParse(useInstallerForTestEnv, out bool result) && result;
+            string? useInstallerForTestEnv =
+                            Environment.GetEnvironmentVariable("useInstallerForTest") ?? Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
+            UseInstallerForTest = !string.IsNullOrEmpty(useInstallerForTestEnv) && bool.TryParse(useInstallerForTestEnv, out bool result) && result;
 
             // The exe window name for each module.
             ModuleWindowName = new Dictionary<PowerToysModule, string>
@@ -131,11 +133,12 @@ namespace Microsoft.PowerToys.UITest
         private string GetPowerToysInstallPath()
         {
             // Try common installation paths
-            string[] possiblePaths = {
+            string[] possiblePaths =
+            {
                 @"C:\Program Files\PowerToys",
                 @"C:\Program Files (x86)\PowerToys",
                 Environment.ExpandEnvironmentVariables(@"%LocalAppData%\Microsoft\PowerToys"),
-                Environment.ExpandEnvironmentVariables(@"%ProgramFiles%\PowerToys")
+                Environment.ExpandEnvironmentVariables(@"%ProgramFiles%\PowerToys"),
             };
 
             foreach (string path in possiblePaths)
