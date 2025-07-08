@@ -43,9 +43,16 @@
                 </Style.Setters>
             </Style>
 
-            <Flyout x:Name="ContextMenuFlyout" FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}">
-                <cpcontrols:ContextMenu />
-            </Flyout>
+            <Style x:Key="HotkeyStyle" TargetType="Border">
+                <Style.Setters>
+                    <Setter Property="Padding" Value="4" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="Background" Value="{ThemeResource ControlFillColorSecondaryBrush}" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="CornerRadius" Value="6" />
+                </Style.Setters>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -139,17 +146,12 @@
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
-                    <Border
-                        Padding="4"
-                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4">
+                    <Border Style="{StaticResource HotkeyStyle}">
                         <FontIcon
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             FontSize="10"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                             Glyph="&#xE751;" />
                     </Border>
                 </StackPanel>
@@ -167,32 +169,20 @@
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
-                    <StackPanel Orientation="Horizontal" Spacing="2">
-                        <Border
-                            Padding="4,2,4,2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
                             <TextBlock
                                 CharacterSpacing="4"
                                 FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                 Text="Ctrl" />
                         </Border>
-                        <Border
-                            Padding="4"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
+                        <Border Style="{StaticResource HotkeyStyle}">
                             <FontIcon
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                 Glyph="&#xE751;" />
                         </Border>
                     </StackPanel>
@@ -206,8 +196,16 @@
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="MoreCommandsButton_Tapped"
-                ToolTipService.ToolTip="Ctrl+K"
-                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}" />
+                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
+                <Button.Flyout>
+                    <Flyout
+                        Closing="Flyout_Closing"
+                        Opened="Flyout_Opened"
+                        Placement="TopEdgeAlignedRight">
+                          <cpcontrols:ContextMenu />
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

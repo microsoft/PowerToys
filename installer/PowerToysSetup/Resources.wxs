@@ -186,7 +186,7 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="ImageResizer_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
-        <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.ImageResizer.resources.dll" />
+        <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\WinUI3Apps\$(var.Language)\PowerToys.ImageResizer.resources.dll" />
       </Component>
       <Component
           Id="ColorPicker_$(var.IdSafeLanguage)_Component"

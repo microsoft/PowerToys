@@ -121,7 +121,7 @@ public class ExtensionWrapper : IExtensionWrapper
 
                             if (hr.Value == -2147024893)
                             {
-                                Logger.LogDebug($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
+                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
 
                                 // We don't really need to throw this exception.
                                 // We'll just return out nothing.
