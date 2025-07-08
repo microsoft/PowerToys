@@ -769,6 +769,8 @@ jpnime
 Jsons
 jsonval
 jxr
+KBSC
+kdc
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -1652,6 +1654,7 @@ targetentrypoint
 TARGETHEADER
 targetver
 taskkill
+taskmgr
 taskschd
 TCHAR
 TCIF
