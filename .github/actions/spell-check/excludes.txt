@@ -128,3 +128,5 @@
 ^tools/project_template/ModuleTemplate/resource\.h$
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ignore$
+^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
+^src/common/CalculatorEngineCommon/exprtk\.hpp$

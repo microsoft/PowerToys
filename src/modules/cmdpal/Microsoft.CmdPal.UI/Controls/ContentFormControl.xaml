@@ -19,6 +19,5 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-
     <Grid x:Name="ContentGrid" />
 </UserControl>
