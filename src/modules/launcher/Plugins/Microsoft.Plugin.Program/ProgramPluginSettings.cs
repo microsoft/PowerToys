@@ -15,9 +15,9 @@ namespace Microsoft.Plugin.Program
 
         public List<DisabledProgramSource> DisabledProgramSources { get; set; } = new List<DisabledProgramSource>();
 
-        public List<string> ProgramSuffixes { get; set; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url" };
+        public List<string> ProgramSuffixes { get; set; } = new List<string>() { "appref-ms", "lnk", "url" };
 
-        public List<string> RunCommandSuffixes { get; set; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url", "cpl", "msc" };
+        public List<string> RunCommandSuffixes { get; set; } = new List<string>() { "bat", "cmd", "appref-ms", "exe", "lnk", "url", "cpl", "msc" };
 
         public bool EnableStartMenuSource { get; set; } = true;
 
