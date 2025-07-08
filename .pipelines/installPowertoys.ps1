@@ -25,8 +25,8 @@ if ($Process.ExitCode -eq 0 -or $Process.ExitCode -eq 3010) {
 }
 
 # Verify installation
-if (Test-Path "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe") {
-    Write-Host "✅ PowerToys verified at: ${env:LOCALAPPDATA}\PowerToys\PowerToys.exe"
+if (Test-Path "${env:ProgramFiles}\PowerToys\PowerToys.exe") {
+    Write-Host "✅ PowerToys verified at: ${env:ProgramFiles}\PowerToys\PowerToys.exe"
 } else {
     throw "PowerToys installation verification failed"
 }
