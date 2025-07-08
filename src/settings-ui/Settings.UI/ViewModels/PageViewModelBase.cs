@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
@@ -18,6 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private readonly Func<string, int> sendConfigMSG;
         private readonly List<HotkeySettings> _hotkeySettings = new List<HotkeySettings>();
+
+        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
 
         protected abstract string ModuleName { get; }
 
@@ -120,6 +124,48 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             return moduleConflicts;
+        }
+
+        protected virtual void UpdateHotkeyConflictStatus(AllHotkeyConflictsData allConflicts)
+        {
+            _hotkeyConflictStatus.Clear();
+            _hotkeyConflictTooltips.Clear();
+
+            var moduleRelatedConflicts = GetModuleRelatedConflicts(allConflicts);
+
+            if (moduleRelatedConflicts.InAppConflicts.Count > 0)
+            {
+                foreach (var conflictGroup in moduleRelatedConflicts.InAppConflicts)
+                {
+                    foreach (var conflict in conflictGroup.Modules)
+                    {
+                        _hotkeyConflictStatus[conflict.HotkeyName] = true;
+                        _hotkeyConflictTooltips[conflict.HotkeyName] = ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
+                    }
+                }
+            }
+
+            if (moduleRelatedConflicts.SystemConflicts.Count > 0)
+            {
+                foreach (var conflictGroup in moduleRelatedConflicts.SystemConflicts)
+                {
+                    foreach (var conflict in conflictGroup.Modules)
+                    {
+                        _hotkeyConflictStatus[conflict.HotkeyName] = true;
+                        _hotkeyConflictTooltips[conflict.HotkeyName] = ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText");
+                    }
+                }
+            }
+        }
+
+        protected virtual bool GetHotkeyConflictStatus(string hotkeyName)
+        {
+            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+        }
+
+        protected virtual string GetHotkeyConflictTooltip(string hotkeyName)
+        {
+            return _hotkeyConflictTooltips.TryGetValue(hotkeyName, out string value) ? value : null;
         }
 
         private bool IsModuleInvolved(HotkeyConflictGroupData conflict)

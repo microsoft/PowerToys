@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
@@ -22,10 +23,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class AlwaysOnTopViewModel : PageViewModelBase
     {
         protected override string ModuleName => AlwaysOnTopSettings.ModuleName;
-
-        // Conflict tracking dictionaries
-        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
-        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
 
         private bool _hotkeyHasConflict;
         private string _hotkeyTooltip;
@@ -92,50 +89,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private bool GetHotkeyConflictStatus(string hotkeyName)
-        {
-            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
-        }
-
-        private void UpdateHotkeyConflictStatus(AllHotkeyConflictsData conflicts)
-        {
-            var moduleRelatedConflicts = GetModuleRelatedConflicts(conflicts);
-
-            // Clear existing status
-            _hotkeyConflictStatus.Clear();
-            _hotkeyConflictTooltips.Clear();
-
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-
-            // Process in-app conflicts
-            foreach (var conflict in moduleRelatedConflicts.InAppConflicts)
-            {
-                foreach (var module in conflict.Modules)
-                {
-                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _hotkeyConflictStatus[module.HotkeyName] = true;
-
-                        // TODO: Build conflict description
-                    }
-                }
-            }
-
-            // Process system conflicts
-            foreach (var conflict in moduleRelatedConflicts.SystemConflicts)
-            {
-                foreach (var module in conflict.Modules)
-                {
-                    if (string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _hotkeyConflictStatus[module.HotkeyName] = true;
-
-                        // TODO: Build Sys conflict description.
-                    }
-                }
-            }
-        }
-
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
             UpdateHotkeyConflictStatus(e.Conflicts);
@@ -144,8 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             void UpdateConflictProperties()
             {
                 HotkeyHasConflict = GetHotkeyConflictStatus(AlwaysOnTopProperties.DefaultHotkeyValue.HotkeyName);
-
-                // HotkeyTooltip = GetHotkeyConflictTooltip("AdvancedPasteUIShortcut");
+                HotkeyTooltip = GetHotkeyConflictTooltip(AlwaysOnTopProperties.DefaultHotkeyValue.HotkeyName);
             }
 
             _ = Task.Run(() =>
