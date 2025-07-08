@@ -115,14 +115,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             // Navigate to the appropriate host page for that VM
             RootFrame.Navigate(
-            message.Page switch
-            {
-                ListViewModel => typeof(ListPage),
-                ContentPageViewModel => typeof(ContentPage),
-                _ => throw new NotSupportedException(),
-            },
-            message.Page,
-            message.WithAnimation ? _slideRightTransition : _noAnimation);
+                message.Page switch
+                {
+                    ListViewModel => typeof(ListPage),
+                    ContentPageViewModel => typeof(ContentPage),
+                    _ => throw new NotSupportedException(),
+                },
+                message.Page,
+                message.WithAnimation ? _slideRightTransition : _noAnimation);
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
 

@@ -255,8 +255,6 @@ public partial class ShellViewModel : ObservableObject,
             {
                 Logger.LogDebug($"Navigating to page");
 
-                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
-
                 var isMainPage = command is MainListPage;
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
@@ -271,6 +269,7 @@ public partial class ShellViewModel : ObservableObject,
                 LoadPageViewModel(pageViewModel);
                 _isNested = !isMainPage;
 
+                OnUIThread(() => { WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)); });
                 WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation));
 
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
@@ -474,5 +473,14 @@ public partial class ShellViewModel : ObservableObject,
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [SupportedOSPlatform("windows5.0")]
         internal static extern unsafe global::Windows.Win32.Foundation.HRESULT CoAllowSetForegroundWindow(nint pUnk, [Optional] void* lpvReserved);
+    }
+
+    private void OnUIThread(Action action)
+    {
+        _ = Task.Factory.StartNew(
+            action,
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _scheduler);
     }
 }
