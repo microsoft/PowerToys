@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
@@ -367,6 +370,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             KeyEventHandler(key, true, key);
 
             c.Keys = internalSettings.GetKeysList();
+            c.ConflictMessage = string.Empty;
+            c.HasConflict = false;
 
             if (internalSettings.GetKeysList().Count == 0)
             {
@@ -415,13 +420,37 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void CheckForConflicts(HotkeySettings settings)
         {
-            void UpdateUIForConflict(bool hasConflict, string conflictModule, string conflictHotkeyName)
+            void UpdateUIForConflict(bool hasConflict, HotkeyConflictResponse hotkeyConflictResponse)
             {
                 DispatcherQueue.TryEnqueue(() =>
                 {
                     if (hasConflict)
                     {
-                        c.ConflictMessage = $"Conflict detected with {conflictModule}, current settings: {settings}";
+                        // Build conflict message from all conflicts - only show module names
+                        var conflictingModules = new HashSet<string>();
+
+                        foreach (var conflict in hotkeyConflictResponse.AllConflicts)
+                        {
+                            if (!string.IsNullOrEmpty(conflict.ModuleName))
+                            {
+                                conflictingModules.Add(conflict.ModuleName);
+                            }
+                        }
+
+                        if (conflictingModules.Count > 0)
+                        {
+                            var moduleNames = conflictingModules.ToArray();
+                            var conflictMessage = moduleNames.Length == 1
+                                ? $"Conflict detected with {moduleNames[0]}"
+                                : $"Conflicts detected with: {string.Join(", ", moduleNames)}";
+
+                            c.ConflictMessage = conflictMessage;
+                        }
+                        else
+                        {
+                            c.ConflictMessage = "Conflict detected with unknown module";
+                        }
+
                         c.HasConflict = true;
                     }
                     else
