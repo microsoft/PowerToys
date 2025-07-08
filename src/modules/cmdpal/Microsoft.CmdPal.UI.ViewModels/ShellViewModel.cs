@@ -19,7 +19,6 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ShellViewModel : ObservableObject,
     IRecipient<PerformCommandMessage>
 {
-    // private readonly IServiceProvider _serviceProvider;
     private readonly IRootPageService _rootPageService;
     private readonly TaskScheduler _scheduler;
     private readonly Lock _invokeLock = new();
@@ -68,7 +67,6 @@ public partial class ShellViewModel : ObservableObject,
 
     public ShellViewModel(TaskScheduler scheduler, IRootPageService rootPageService)
     {
-        // _serviceProvider = serviceProvider;
         _scheduler = scheduler;
         _rootPageService = rootPageService;
         _currentPage = new LoadingPageViewModel(null, _scheduler);
@@ -80,14 +78,23 @@ public partial class ShellViewModel : ObservableObject,
     [RelayCommand]
     public async Task<bool> LoadAsync()
     {
+        // First, do any loading that the root page service needs to do before we can
+        // display the root page. For example, this might include loading
+        // the built-in commands, or loading the settings.
         await _rootPageService.PreLoadAsync();
 
         IsLoaded = true;
 
-        // Built-ins have loaded. We can display our page at this point.
+        // Now that the basics are set up, we can load the root page.
         _rootPage = _rootPageService.GetRootPage();
+        // This sends a message to us to load the root page view model.
         WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
 
+        // Now that the root page is loaded, do any post-load work that the root page service needs to do.
+        // This runs asynchronously, on a background thread.
+        // This might include starting extensions, for example.
+        // Note: We don't await this, so that we can return immediately.
+        // This is important because we don't want to block the UI thread.
         _ = Task.Run(async () =>
         {
             await _rootPageService.PostLoadRootPageAsync();
