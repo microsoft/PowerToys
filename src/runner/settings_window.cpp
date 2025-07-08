@@ -275,9 +275,20 @@ void dispatch_received_json(const std::wstring& json_to_parse)
 
                 if (hasConflict)
                 {
-                    auto conflictInfo = hkmng.GetConflict(hotkey);
-                    response.SetNamedValue(L"conflict_module", json::JsonValue::CreateStringValue(conflictInfo.moduleName));
-                    response.SetNamedValue(L"conflict_hotkey_name", json::JsonValue::CreateStringValue(conflictInfo.hotkeyName));
+                    auto conflicts = hkmng.GetAllConflicts(hotkey);
+                    if (!conflicts.empty())
+                    {
+                        // Include all conflicts in the response
+                        json::JsonArray allConflicts;
+                        for (const auto& conflict : conflicts)
+                        {
+                            json::JsonObject conflictObj;
+                            conflictObj.SetNamedValue(L"module", json::JsonValue::CreateStringValue(conflict.moduleName));
+                            conflictObj.SetNamedValue(L"hotkey_name", json::JsonValue::CreateStringValue(conflict.hotkeyName));
+                            allConflicts.Append(conflictObj);
+                        }
+                        response.SetNamedValue(L"all_conflicts", allConflicts);
+                    }
                 }
 
                 std::unique_lock lock{ ipc_mutex };
