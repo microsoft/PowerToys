@@ -308,12 +308,13 @@ public sealed partial class MainWindow : WindowEx,
 
         // Then hide our HWND, to make sure that the OS gives the FG / focus back to another app
         // (there's no way for us to guess what the right hwnd might be, only the OS can do it right)
-        this.Hide();
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
         // TRICKY: show our HWND again. This will trick XAML into painting our
         // HWND again, so that we avoid the "flicker" caused by a WinUI3 app
         // window being first shown
-        this.Show();
+        // SW_SHOWNA will prevent us for trying to fight the focus back
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNA);
 
         // Intentionally leave the window cloaked. So our window is "visible",
         // but also cloaked, so you can't see it.
@@ -589,11 +590,9 @@ public sealed partial class MainWindow : WindowEx,
             {
                 // ... then manually hide our window. When debugged, we won't get the cool cloaking,
                 // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
-                // PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
                 Cloak();
                 this.Hide();
 
-                // Uncloak();
                 return;
             }
 
