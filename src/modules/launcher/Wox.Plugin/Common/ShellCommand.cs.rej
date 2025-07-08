@@ -1,0 +1,19 @@
+--- src/modules/launcher/Wox.Plugin/Common/ShellCommand.cs
++++ src/modules/launcher/Wox.Plugin/Common/ShellCommand.cs
+@@ -22,7 +22,15 @@
+         
+         public static Process RunCommand(string command, string arguments = "")
+         {
+-            return Process.Start(command + " " + arguments);
++            var processStartInfo = new ProcessStartInfo
++            {
++                FileName = command,
++                Arguments = arguments,
++                UseShellExecute = false,
++                CreateNoWindow = true
++            };
++            
++            return Process.Start(processStartInfo);
+         }
+     }
+ }
