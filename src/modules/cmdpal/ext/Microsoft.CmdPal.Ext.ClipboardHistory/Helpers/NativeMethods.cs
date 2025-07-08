@@ -4,7 +4,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using System.Text;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
@@ -105,21 +104,4 @@ public static partial class NativeMethods
 
     [LibraryImport("ole32.dll")]
     internal static partial void CoUninitialize();
-
-    [DllImport("user32.dll")]
-    internal static extern IntPtr GetForegroundWindow();
-
-    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    internal static extern int GetWindowTextLength(IntPtr hWnd);
-
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    internal static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-
-    internal static string GetWindowTitle(IntPtr hWnd)
-    {
-        var length = GetWindowTextLength(hWnd);
-        var sb = new StringBuilder(length + 1);
-        _ = GetWindowText(hWnd, sb, sb.Capacity);
-        return sb.ToString();
-    }
 }

@@ -16,11 +16,12 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
     {
         _clipboardHistoryListItem = new ListItem(new ClipboardHistoryListPage())
         {
-            Title = "Search Clipboard History",
+            Title = Properties.Resources.list_item_title,
+            Subtitle = Properties.Resources.list_item_subtitle,
             Icon = new IconInfo("\xE8C8"), // Copy icon
         };
 
-        DisplayName = $"Clipboard History";
+        DisplayName = Properties.Resources.provider_display_name;
         Icon = new IconInfo("\xE8C8"); // Copy icon
         Id = "Windows.ClipboardHistory";
     }
