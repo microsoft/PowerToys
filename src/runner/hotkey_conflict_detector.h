@@ -46,7 +46,7 @@ namespace HotkeyConflictDetector
         static HotkeyConflictManager& GetInstance();
 
         HotkeyConflictType HasConflict(const Hotkey& hotkey, const wchar_t* moduleName, const wchar_t* hotkeyName);
-        HotkeyConflictInfo GetConflict(const Hotkey& hotkey);
+        std::vector<HotkeyConflictInfo> HotkeyConflictManager::GetAllConflicts(Hotkey const& _hotkey);
         bool AddHotkey(const Hotkey& hotkey, const wchar_t* moduleName, const wchar_t* hotkeyName, bool isEnabled);
         bool RemoveHotkey(const Hotkey& hotkey, const std::wstring& moduleName);
         std::vector<HotkeyConflictInfo> RemoveHotkeyByModule(const std::wstring& moduleName);

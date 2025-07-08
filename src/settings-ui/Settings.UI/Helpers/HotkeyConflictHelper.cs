@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     public class HotkeyConflictHelper
     {
-        public delegate void HotkeyConflictCheckCallback(bool hasConflict, string conflictModuleName, string conflictHotkeyName);
+        public delegate void HotkeyConflictCheckCallback(bool hasConflict, HotkeyConflictResponse conflicts);
 
         private static readonly Dictionary<string, HotkeyConflictCheckCallback> PendingHotkeyConflictChecks = new Dictionary<string, HotkeyConflictCheckCallback>();
         private static readonly object LockObject = new object();
@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public static void HandleHotkeyConflictResponse(HotkeyConflictResponse response)
         {
-            if (response == null)
+            if (response.AllConflicts.Count == 0)
             {
                 return;
             }
@@ -67,7 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 }
             }
 
-            callback?.Invoke(response.HasConflict, response.ConflictModuleName, response.ConflictHotkeyName);
+            callback?.Invoke(response.HasConflict, response);
         }
 
         private static string GenerateRequestId() => Guid.NewGuid().ToString();
