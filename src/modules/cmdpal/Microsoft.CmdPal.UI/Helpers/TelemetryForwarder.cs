@@ -9,6 +9,15 @@ using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.CmdPal.UI;
 
+/// <summary>
+/// TelemetryForwarder is responsible for forwarding telemetry events from the
+/// command palette core to PowerToys Telemetry.
+/// This allows us to emit telemetry events as messages from the core,
+/// and then handle them by logging to our PT telemetry provider.
+///
+/// We may in the future want to replace this with a more generic "ITelemetryService"
+/// or something similar, but this works for now.
+/// </summary>
 internal sealed class TelemetryForwarder :
     IRecipient<BeginInvokeMessage>,
     IRecipient<CmdPalInvokeResultMessage>
