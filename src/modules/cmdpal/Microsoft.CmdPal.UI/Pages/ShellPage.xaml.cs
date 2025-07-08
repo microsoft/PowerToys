@@ -25,15 +25,11 @@ namespace Microsoft.CmdPal.UI.Pages;
 /// </summary>
 public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<NavigateBackMessage>,
-
-    // IRecipient<PerformCommandMessage>,
     IRecipient<OpenSettingsMessage>,
     IRecipient<HotkeySummonMessage>,
     IRecipient<ShowDetailsMessage>,
     IRecipient<HideDetailsMessage>,
     IRecipient<ClearSearchMessage>,
-
-    // IRecipient<HandleCommandResultMessage>,
     IRecipient<LaunchUriMessage>,
     IRecipient<SettingsWindowClosedMessage>,
     IRecipient<GoHomeMessage>,
@@ -66,9 +62,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
-
-        // WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
-        // WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<HotkeySummonMessage>(this);
         WeakReferenceMessenger.Default.Register<SettingsWindowClosedMessage>(this);
@@ -112,147 +105,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    // public void Receive(PerformCommandMessage message)
-    // {
-    //     PerformCommand(message);
-    // }
-
-    // private void PerformCommand(PerformCommandMessage message)
-    // {
-    //     var command = message.Command.Unsafe;
-    //     if (command == null)
-    //     {
-    //         return;
-    //     }
-
-    // if (!ViewModel.CurrentPage.IsNested)
-    //     {
-    //         // on the main page here
-    //         ViewModel.PerformTopLevelCommand(message);
-    //     }
-
-    // IExtensionWrapper? extension = null;
-
-    // // TODO: Actually loading up the page, or invoking the command -
-    //     // that might belong in the model, not the view?
-    //     // Especially considering the try/catch concerns around the fact that the
-    //     // COM call might just fail.
-    //     // Or the command may be a stub. Future us problem.
-    //     try
-    //     {
-    //         // In the case that we're coming from a top-level command, the
-    //         // current page's host is the global instance. We only really want
-    //         // to use that as the host of last resort.
-    //         var pageHost = ViewModel.CurrentPage?.ExtensionHost;
-    //         if (pageHost == CommandPaletteHost.Instance)
-    //         {
-    //             pageHost = null;
-    //         }
-
-    // var messageHost = message.ExtensionHost;
-
-    // // Use the host from the current page if it has one, else use the
-    //         // one specified in the PerformMessage for a top-level command,
-    //         // else just use the global one.
-    //         CommandPaletteHost host;
-
-    // // Top level items can come through without a Extension set on the
-    //         // message. In that case, the `Context` is actually the
-    //         // TopLevelViewModel itself, and we can use that to get at the
-    //         // extension object.
-    //         extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
-    //         if (extension == null && message.Context is TopLevelViewModel topLevelViewModel)
-    //         {
-    //             extension = topLevelViewModel.ExtensionHost?.Extension;
-    //             host = pageHost ?? messageHost ?? topLevelViewModel?.ExtensionHost ?? CommandPaletteHost.Instance;
-    //         }
-    //         else
-    //         {
-    //             host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
-    //         }
-
-    // if (extension != null)
-    //         {
-    //             if (messageHost != null)
-    //             {
-    //                 Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
-    //             }
-    //             else
-    //             {
-    //                 Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
-    //             }
-    //         }
-
-    // ViewModel.SetActiveExtension(extension);
-
-    // if (command is IPage page)
-    //         {
-    //             Logger.LogDebug($"Navigating to page");
-
-    // // TODO GH #526 This needs more better locking too
-    //             _ = _queue.TryEnqueue(() =>
-    //             {
-    //                 // Also hide our details pane about here, if we had one
-    //                 HideDetails();
-
-    // WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
-
-    // var isMainPage = command is MainListPage;
-
-    // // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-    //                 PageViewModel pageViewModel = page switch
-    //                 {
-    //                     IListPage listPage => new ListViewModel(listPage, _mainTaskScheduler, host)
-    //                     {
-    //                         IsNested = !isMainPage,
-    //                     },
-    //                     IContentPage contentPage => new ContentPageViewModel(contentPage, _mainTaskScheduler, host),
-    //                     _ => throw new NotSupportedException(),
-    //                 };
-
-    // // Kick off async loading of our ViewModel
-    //                 ViewModel.LoadPageViewModel(pageViewModel);
-
-    // // Navigate to the appropriate host page for that VM
-    //                 RootFrame.Navigate(
-    //                     page switch
-    //                     {
-    //                         IListPage => typeof(ListPage),
-    //                         IContentPage => typeof(ContentPage),
-    //                         _ => throw new NotSupportedException(),
-    //                     },
-    //                     pageViewModel,
-    //                     message.WithAnimation ? _slideRightTransition : _noAnimation);
-
-    // PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
-
-    // // Refocus on the Search for continual typing on the next search request
-    //                 SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
-
-    // if (isMainPage)
-    //                 {
-    //                     // todo BODGY
-    //                     RootFrame.BackStack.Clear();
-    //                 }
-
-    // // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
-    //                 // See RootFrame_Navigated event handler.
-    //             });
-    //         }
-    //         else if (command is IInvokableCommand invokable)
-    //         {
-    //             Logger.LogDebug($"Invoking command");
-    //             PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());
-    //             HandleInvokeCommand(message, invokable);
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         // TODO: It would be better to do this as a page exception, rather
-    //         // than a silent log message.
-    //         CommandPaletteHost.Instance.Log(ex.Message);
-    //     }
-    // }
     public void Receive(NavigateToPageMessage message)
     {
         // TODO GH #526 This needs more better locking too
@@ -349,22 +201,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // };
         }
 
-        // DispatcherQueue.TryEnqueue(async () =>
-        // {
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
             var performMessage = new PerformCommandMessage(vm);
             WeakReferenceMessenger.Default.Send(performMessage);
-
-            // PerformCommand(performMessage);
         }
         else
         {
             // cancel
         }
 
-        // });
     }
 
     private void InitializeConfirmationDialog(ConfirmResultViewModel vm)
@@ -372,78 +219,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         vm.SafeInitializePropertiesSynchronous();
     }
 
-    // private void HandleCommandResultOnUiThread(ICommandResult? result)
-    // {
-    //     try
-    //     {
-    //         if (result != null)
-    //         {
-    //             var kind = result.Kind;
-    //             Logger.LogDebug($"handling {kind.ToString()}");
-    //             PowerToysTelemetry.Log.WriteEvent(new CmdPalInvokeResult(kind));
-    //             switch (kind)
-    //             {
-    //                 case CommandResultKind.Dismiss:
-    //                     {
-    //                         // Reset the palette to the main page and dismiss
-    //                         GoHome(withAnimation: false, focusSearch: false);
-    //                         WeakReferenceMessenger.Default.Send<DismissMessage>();
-    //                         break;
-    //                     }
-
-    // case CommandResultKind.GoHome:
-    //                     {
-    //                         // Go back to the main page, but keep it open
-    //                         GoHome();
-    //                         break;
-    //                     }
-
-    // case CommandResultKind.GoBack:
-    //                     {
-    //                         GoBack();
-    //                         break;
-    //                     }
-
-    // case CommandResultKind.Hide:
-    //                     {
-    //                         // Keep this page open, but hide the palette.
-    //                         WeakReferenceMessenger.Default.Send<DismissMessage>();
-    //                         break;
-    //                     }
-
-    // case CommandResultKind.KeepOpen:
-    //                     {
-    //                         // Do nothing.
-    //                         break;
-    //                     }
-
-    // case CommandResultKind.Confirm:
-    //                     {
-    //                         if (result.Args is IConfirmationArgs a)
-    //                         {
-    //                             HandleConfirmArgs(a);
-    //                         }
-
-    // break;
-    //                     }
-
-    // case CommandResultKind.ShowToast:
-    //                     {
-    //                         if (result.Args is IToastArgs a)
-    //                         {
-    //                             _toast.ShowToast(a.Message);
-    //                             HandleCommandResultOnUiThread(a.Result);
-    //                         }
-
-    // break;
-    //                     }
-    //             }
-    //         }
-    //     }
-    //     catch
-    //     {
-    //     }
-    // }
     public void Receive(OpenSettingsMessage message)
     {
         _ = DispatcherQueue.TryEnqueue(() =>
@@ -496,13 +271,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(LaunchUriMessage message) => _ = global::Windows.System.Launcher.LaunchUriAsync(message.Uri);
 
-    // public void Receive(HandleCommandResultMessage message)
-    // {
-    //    DispatcherQueue.TryEnqueue(() =>
-    //    {
-    //        HandleCommandResultOnUiThread(message.Result.Unsafe);
-    //    });
-    // }
     private void HideDetails()
     {
         ViewModel.Details = null;
@@ -635,8 +403,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             GoBack(withAnimation, focusSearch);
         }
-
-        // WeakReferenceMessenger.Default.Send<GoHomeMessage>();
     }
 
     private void BackButton_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
