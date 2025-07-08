@@ -149,6 +149,7 @@ bthprops
 bti
 BTNFACE
 bugreport
+bugreporttool
 BUILDARCH
 BUILDNUMBER
 buildtransitive
@@ -244,6 +245,7 @@ CONTROLL
 CONTROLPARENT
 copiedcolorrepresentation
 COPYPEN
+coreclr
 COREWINDOW
 cotaskmem
 COULDNOT
@@ -252,6 +254,7 @@ cpcontrols
 cph
 cplusplus
 CPower
+cppvsdbg
 cppwinrt
 createdump
 CREATEPROCESS
@@ -903,6 +906,7 @@ maxversiontested
 mber
 MBM
 MBR
+mcp
 MDICHILD
 MDL
 mdtext
@@ -1611,6 +1615,7 @@ sttngs
 Stubless
 STYLECHANGED
 STYLECHANGING
+stylesreporttool
 subkeys
 sublang
 SUBMODULEUPDATE
