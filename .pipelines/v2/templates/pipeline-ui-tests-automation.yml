@@ -28,6 +28,14 @@ parameters:
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
+
+    - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+      - name: buildStageName
+        value: BuildUITests_${{ platform }}
+    - ${{ else }}:
+      - name: buildStageName  
+        value: Build_${{ platform }}
+
     - ${{ if eq(parameters.useLatestOfficialBuild, false) }}:
       - stage: Build_${{ platform }}
         displayName: Build ${{ platform }}
@@ -70,7 +78,7 @@ stages:
       - stage: Test_x64Win10
         displayName: Test x64Win10
         dependsOn:
-          - Build_${{platform}}
+          - $(buildStageName)
         jobs:
             - template: job-test-project.yml
               parameters:
@@ -82,7 +90,7 @@ stages:
       - stage: Test_x64Win11
         displayName: Test x64Win11
         dependsOn:
-          - Build_${{platform}}
+          - $(buildStageName)
         jobs:
             - template: job-test-project.yml
               parameters:
@@ -94,7 +102,7 @@ stages:
       - stage: Test_${{ platform }}
         displayName: Test ${{ platform }}
         dependsOn:
-          - Build_${{platform}}
+          - $(buildStageName)
         jobs:
           - template: job-test-project.yml
             parameters:
