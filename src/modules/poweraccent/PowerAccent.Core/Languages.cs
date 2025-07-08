@@ -218,7 +218,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_X => new[] { "ẋ", "×" },
                 LetterKey.VK_Y => new[] { "ẏ", "ꝡ" },
                 LetterKey.VK_Z => new[] { "ʒ", "ǯ", "ℤ" },
-                LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–", "√" }, // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
+                LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–", "√", "‟", "《", "》", "‛", "〈", "〉", "″", "‴", "⁗" }, // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
                 LetterKey.VK_PERIOD => new[] { "…", "⁝", "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030B", "\u030C" },
                 LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "—", "―", "⁓", "−", "⸺", "⸻", "∓" },
                 LetterKey.VK_SLASH_ => new[] { "÷", "√" },
@@ -296,6 +296,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "€" },
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_Z => new[] { "ž" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "»", "«" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -311,6 +312,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new[] { "ü" },
                 LetterKey.VK_Z => new[] { "ž" },
                 LetterKey.VK_S => new[] { "š" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "«", "»" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -338,6 +340,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_A => new[] { "ä", "å" },
                 LetterKey.VK_E => new[] { "€" },
                 LetterKey.VK_O => new[] { "ö" },
+                LetterKey.VK_COMMA => new[] { "”", "’", "»" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -354,6 +357,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new[] { "ô", "ö", "ó", "ò", "õ", "œ" },
                 LetterKey.VK_U => new[] { "û", "ù", "ü", "ú" },
                 LetterKey.VK_Y => new[] { "ÿ", "ý" },
+                LetterKey.VK_COMMA => new[] { "«", "»", "‹", "›", "“", "”", "‘", "’" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -370,6 +374,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new[] { "ú" },
                 LetterKey.VK_Y => new[] { "ý" },
                 LetterKey.VK_T => new[] { "þ" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "‚", "‘" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -387,7 +392,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_N => new[] { "ñ" },
                 LetterKey.VK_O => new[] { "ó" },
                 LetterKey.VK_U => new[] { "ú", "ü" },
-                LetterKey.VK_COMMA => new[] { "¿", "?", "¡", "!" },
+                LetterKey.VK_COMMA => new[] { "¿", "?", "¡", "!", "«", "»", "“", "”", "‘", "’" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -405,7 +410,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new[] { "ò", "ó" },
                 LetterKey.VK_U => new[] { "ù", "ú", "ü" },
                 LetterKey.VK_L => new[] { "·" },
-                LetterKey.VK_COMMA => new[] { "¿", "?", "¡", "!" },
+                LetterKey.VK_COMMA => new[] { "¿", "?", "¡", "!", "«", "»", "“", "”", "‘", "’" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -421,6 +426,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new[] { "ō" },
                 LetterKey.VK_S => new[] { "$" },
                 LetterKey.VK_U => new[] { "ū" },
+                LetterKey.VK_COMMA => new[] { "“", "”", "‘", "’" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -437,6 +443,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_N => new[] { "ñ" },
                 LetterKey.VK_O => new[] { "ó", "ö", "ô" },
                 LetterKey.VK_U => new[] { "ú", "ü", "û" },
+                LetterKey.VK_COMMA => new[] { "“", "„", "”", "‘", ",", "’" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -463,6 +470,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_V => new[] { "ü", "ǖ", "ǘ", "ǚ", "ǜ" },
                 LetterKey.VK_Y => new[] { "¥" },
                 LetterKey.VK_Z => new[] { "ẑ" },
+                LetterKey.VK_COMMA => new[] { "“", "”", "‘", "’", "「", "」", "『", "』" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -499,6 +507,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_S => new[] { "ş" },
                 LetterKey.VK_T => new[] { "₺" },
                 LetterKey.VK_U => new[] { "ü", "û" },
+                LetterKey.VK_COMMA => new[] { "“", "”", "‘", "’", "«", "»", "‹", "›" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -516,6 +525,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new[] { "ó" },
                 LetterKey.VK_S => new[] { "ś" },
                 LetterKey.VK_Z => new[] { "ż", "ź" },
+                LetterKey.VK_COMMA => new[] { "„", "”", "‘", "’", "»", "«" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -533,7 +543,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_P => new[] { "π" },
                 LetterKey.VK_S => new[] { "$" },
                 LetterKey.VK_U => new[] { "ú" },
-                LetterKey.VK_COMMA => new[] { "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺" },
+                LetterKey.VK_COMMA => new[] { "≤", "≥", "≠", "≈", "≙", "±", "₊", "⁺", "“", "”", "‘", "’", "«", "»" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -588,6 +598,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new[] { "ú" },
                 LetterKey.VK_Y => new[] { "ý" },
                 LetterKey.VK_Z => new[] { "ž" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "‚", "‘", "»", "«", "›", "‹" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -602,6 +613,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_I => new[] { "í" },
                 LetterKey.VK_O => new[] { "ó" },
                 LetterKey.VK_U => new[] { "ú" },
+                LetterKey.VK_COMMA => new[] { "“", "”", "‘", "’" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -617,6 +629,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new[] { "ò" },
                 LetterKey.VK_P => new[] { "£" },
                 LetterKey.VK_U => new[] { "ù" },
+                LetterKey.VK_COMMA => new[] { "“", "”", "‘", "’" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -639,6 +652,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new[] { "ů", "ú" },
                 LetterKey.VK_Y => new[] { "ý" },
                 LetterKey.VK_Z => new[] { "ž" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "‚", "‘", "»", "«", "›", "‹" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -653,6 +667,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new[] { "ö" },
                 LetterKey.VK_S => new[] { "ß" },
                 LetterKey.VK_U => new[] { "ü" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "‚", "‘", "»", "«", "›", "‹" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -683,6 +698,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_X => new string[] { "ξ" },
                 LetterKey.VK_Y => new string[] { "υ" },
                 LetterKey.VK_Z => new string[] { "ζ" },
+                LetterKey.VK_COMMA => new[] { "“", "”", "«", "»", },
                 _ => Array.Empty<string>(),
             };
         }
@@ -704,7 +720,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new[] { "וֹ", "וּ", "װ", "\u05b9" },
                 LetterKey.VK_X => new[] { "\u05b6", "\u05b1" },
                 LetterKey.VK_Y => new[] { "ױ" },
-                LetterKey.VK_COMMA => new[] { "”", "’", "״", "׳" },
+                LetterKey.VK_COMMA => new[] { "”", "’", "'", "״", "׳" },
                 LetterKey.VK_PERIOD => new[] { "\u05ab", "\u05bd", "\u05bf" },
                 LetterKey.VK_MINUS => new[] { "–", "־" },
                 _ => Array.Empty<string>(),
@@ -721,6 +737,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_I => new[] { "í" },
                 LetterKey.VK_O => new[] { "ó", "ő", "ö" },
                 LetterKey.VK_U => new[] { "ú", "ű", "ü" },
+                LetterKey.VK_COMMA => new[] { "„", "”", "»", "«" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -734,6 +751,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_I => new[] { "î" },
                 LetterKey.VK_S => new[] { "ș" },
                 LetterKey.VK_T => new[] { "ț" },
+                LetterKey.VK_COMMA => new[] { "„", "”", "«", "»" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -748,6 +766,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_I => new[] { "ì", "í" },
                 LetterKey.VK_O => new[] { "ò", "ó" },
                 LetterKey.VK_U => new[] { "ù", "ú" },
+                LetterKey.VK_COMMA => new[] { "«", "»", "“", "”", "‘", "’" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -766,6 +785,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_R => new[] { "ř" },
                 LetterKey.VK_S => new[] { "ş" },
                 LetterKey.VK_U => new[] { "û", "ü" },
+                LetterKey.VK_COMMA => new[] { "«", "»", "“", "”" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -783,6 +803,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_U => new[] { "û" },
                 LetterKey.VK_Y => new[] { "ŷ" },
                 LetterKey.VK_W => new[] { "ŵ" },
+                LetterKey.VK_COMMA => new[] { "‘", "’", "“", "“" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -795,6 +816,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_A => new[] { "å", "ä" },
                 LetterKey.VK_E => new[] { "é" },
                 LetterKey.VK_O => new[] { "ö" },
+                LetterKey.VK_COMMA => new[] { "”", "’", "»", "«" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -808,6 +830,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_D => new[] { "đ" },
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_Z => new[] { "ž" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "‚", "’", "»", "«", "›", "‹" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -832,6 +855,7 @@ namespace PowerAccent.Core
             {
                 LetterKey.VK_E => new[] { "ѐ" },
                 LetterKey.VK_I => new[] { "ѝ" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "’", "‘" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -845,6 +869,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "€", "é" },
                 LetterKey.VK_O => new[] { "ø" },
                 LetterKey.VK_S => new[] { "$" },
+                LetterKey.VK_COMMA => new[] { "«", "»", ",", "‘", "’", "„", "“" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -857,6 +882,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_A => new[] { "å", "æ" },
                 LetterKey.VK_E => new[] { "€" },
                 LetterKey.VK_O => new[] { "ø" },
+                LetterKey.VK_COMMA => new[] { "»", "«", "“", "”", "›", "‹", "‘", "’" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -873,6 +899,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_U => new[] { "ų", "ū" },
                 LetterKey.VK_Z => new[] { "ž" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "‚", "‘" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -886,6 +913,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "€" },
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_Z => new[] { "ž" },
+                LetterKey.VK_COMMA => new[] { "„", "“", "»", "«" },
                 _ => Array.Empty<string>(),
             };
         }
