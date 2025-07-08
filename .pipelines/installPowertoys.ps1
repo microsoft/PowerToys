@@ -8,30 +8,14 @@ if (-not $ArtifactPath) {
 
 Write-Host "Looking for installer in: $ArtifactPath"
 
-# Check if we have zip files that need to be extracted
-$ZipFiles = Get-ChildItem -Path $ArtifactPath -Recurse -Filter '*.zip'
-if ($ZipFiles) {
-    Write-Host "Found zip files, extracting..."
-    foreach ($ZipFile in $ZipFiles) {
-        Write-Host "Extracting: $($ZipFile.Name)"
-        $ExtractPath = Join-Path $ArtifactPath $ZipFile.BaseName
-        Expand-Archive -Path $ZipFile.FullName -DestinationPath $ExtractPath -Force
-    }
-}
-
-# List all files to debug
-Write-Host "All files in artifact directory:"
+# List downloaded files
+Write-Host "Downloaded files:"
 Get-ChildItem -Path $ArtifactPath -Recurse | ForEach-Object { 
     Write-Host "  $($_.FullName) (Size: $($_.Length) bytes)"
 }
 
-# First try to find user installer
-$Installer = Get-ChildItem -Path $ArtifactPath -Recurse -Filter 'PowerToysUserSetup-*.exe' | Select-Object -First 1
-
-if (-not $Installer) {
-    Write-Host "PowerToysUserSetup-*.exe not found, looking for machine installer..."
-    $Installer = Get-ChildItem -Path $ArtifactPath -Recurse -Filter 'PowerToysSetup-*.exe' | Select-Object -First 1
-}
+# Find PowerToys installer
+$Installer = Get-ChildItem -Path $ArtifactPath -Recurse -Filter 'PowerToysSetup-*.exe' | Select-Object -First 1
 
 if (-not $Installer) {
     throw "PowerToys installer not found in artifact directory"

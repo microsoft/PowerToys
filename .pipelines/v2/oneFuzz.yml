@@ -43,6 +43,8 @@ stages:
               branchName: 'refs/heads/main'
               artifactName: 'build-x64-Release'
               targetPath: '$(Build.ArtifactStagingDirectory)'
+              patterns: |
+                **/PowerToysSetup-*.exe
           - pwsh: |-
               & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1"
             displayName: Install PowerToys
