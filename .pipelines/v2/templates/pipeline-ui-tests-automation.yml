@@ -108,6 +108,7 @@ stages:
                   useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
                   uiTestModules: ${{ parameters.uiTestModules }}
                   installMode: 'peruser'
+                  jobSuffix: '_PerUser'
 
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win11
@@ -139,6 +140,7 @@ stages:
                   useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
                   uiTestModules: ${{ parameters.uiTestModules }}
                   installMode: 'peruser'
+                  jobSuffix: '_PerUser'
 
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
@@ -170,3 +172,4 @@ stages:
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
                 uiTestModules: ${{ parameters.uiTestModules }}
                 installMode: 'peruser'
+                jobSuffix: '_PerUser'

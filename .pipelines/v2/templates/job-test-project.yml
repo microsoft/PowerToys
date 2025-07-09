@@ -26,10 +26,13 @@ parameters:
     values:
       - 'machine'
       - 'peruser'
+  - name: jobSuffix
+    type: string
+    default: ''
 
 jobs:
-- job: Test${{ parameters.platform }}${{ parameters.configuration }}
-  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}
+- job: Test${{ parameters.platform }}${{ parameters.configuration }} ${{ parameters.jobSuffix }}
+  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }} ${{ parameters.jobSuffix }}
   timeoutInMinutes: 300
   variables:
     ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
