@@ -26,11 +26,12 @@ namespace Microsoft.PowerToys.UITest
 
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
+        private readonly string[]? commandLineArgs;
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
         private string? screenshotDirectory;
 
-        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
+        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
         {
             this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
@@ -45,6 +46,7 @@ namespace Microsoft.PowerToys.UITest
 
             this.scope = scope;
             this.size = size;
+            this.commandLineArgs = commandLineArgs;
         }
 
         /// <summary>
@@ -66,7 +68,7 @@ namespace Microsoft.PowerToys.UITest
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
             }
 
-            this.sessionHelper = new SessionHelper(scope).Init();
+            this.sessionHelper = new SessionHelper(scope, commandLineArgs).Init();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
         }
 
