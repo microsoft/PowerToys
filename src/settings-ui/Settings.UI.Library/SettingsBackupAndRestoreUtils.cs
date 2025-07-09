@@ -384,7 +384,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
-        /// Method <c>GetSettingsBackupAndRestoreDir</c> returns the path the backup and restore location.
+        /// Method <c>GetSettingsBackupAndRestoreDir</c> returns the path of the backup and restore location.
         /// </summary>
         /// <remarks>
         /// This will return a default location based on user documents if non is set.
@@ -959,7 +959,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     if (item.Value.Contains("PowerToys_settings_", StringComparison.OrdinalIgnoreCase))
                     {
-                        // this is a temp backup and we want to clean based on the time it was created in the temp place, not the time the backup was made.
+                        // this is a temp backup and we want to clean based on the time it was created in the temp place, not the time that the backup was made.
                         var folderCreatedTime = new DirectoryInfo(item.Value).CreationTimeUtc;
 
                         if (folderCreatedTime > backupTime)

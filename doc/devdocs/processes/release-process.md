@@ -31,7 +31,7 @@ This document outlines the process for preparing and publishing PowerToys releas
 - Uses semantic versioning: `MAJOR.MINOR.PATCH`
 - MINOR version increases with regular releases (e.g., 0.89.0)
 - PATCH version increases for hotfixes (e.g., 0.87.0 → 0.87.1)
-- Each release version must be higher than the previous one for proper updating
+- Each release version must be greater than the previous one for proper updating
 
 ## Testing Process
 

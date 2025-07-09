@@ -42,7 +42,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
         _copyCommand.Name = string.IsNullOrWhiteSpace(query) ? string.Empty : Resources.calculator_copy_command_name;
         Title = result.Title;
 
-        // we have to make the subtitle the equation,
+        // we have to make the subtitle into an equation,
         // so that we will still string match the original query
         // Otherwise, something like 1+2 will have a title of "3" and not match
         Subtitle = query;
