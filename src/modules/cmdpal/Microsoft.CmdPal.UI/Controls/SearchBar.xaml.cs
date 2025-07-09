@@ -127,7 +127,7 @@ public sealed partial class SearchBar : UserControl,
         else if (ctrlPressed && e.Key == VirtualKey.K)
         {
             // ctrl+k
-            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>();
+            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.Escape)

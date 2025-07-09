@@ -209,6 +209,9 @@ public sealed partial class MainWindow : WindowEx,
     {
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
+        // Make sure our HWND is cloaked before any possible window manipulations
+        Cloak();
+
         // Remember, IsIconic == "minimized", which is entirely different state
         // from "show/hide"
         // If we're currently minimized, restore us first, before we reveal
@@ -222,16 +225,11 @@ public sealed partial class MainWindow : WindowEx,
         var display = GetScreen(hwnd, target);
         PositionCentered(display);
 
+        // Just to be sure, SHOW our hwnd.
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
 
-        // instead of showing the window, uncloak it from DWM
-        // This will make it visible to the user, without the animation or frames for
-        // loading XAML with composition
-        unsafe
-        {
-            BOOL value = false;
-            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
-        }
+        // Once we're done, uncloak to avoid all animations
+        Uncloak();
 
         PInvoke.SetForegroundWindow(hwnd);
         PInvoke.SetActiveWindow(hwnd);
@@ -290,7 +288,14 @@ public sealed partial class MainWindow : WindowEx,
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
-    public void Receive(HideWindowMessage message) => HideWindow();
+    public void Receive(HideWindowMessage message)
+    {
+        // This might come in off the UI thread. Make sure to hop back.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            HideWindow();
+        });
+    }
 
     public void Receive(QuitMessage message) =>
 
@@ -302,14 +307,37 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HideWindow()
     {
-        // Hide our window
+        // Cloak our HWND to avoid all animations.
+        Cloak();
 
-        // Instead of hiding the window, cloak it from DWM
-        // This will make it invisible to the user, such that we can show it again
-        // by uncloaking it, which avoids an unnecessary "flicker in" that XAML does
+        // Then hide our HWND, to make sure that the OS gives the FG / focus back to another app
+        // (there's no way for us to guess what the right hwnd might be, only the OS can do it right)
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+
+        // TRICKY: show our HWND again. This will trick XAML into painting our
+        // HWND again, so that we avoid the "flicker" caused by a WinUI3 app
+        // window being first shown
+        // SW_SHOWNA will prevent us for trying to fight the focus back
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNA);
+
+        // Intentionally leave the window cloaked. So our window is "visible",
+        // but also cloaked, so you can't see it.
+    }
+
+    private void Cloak()
+    {
         unsafe
         {
             BOOL value = true;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+        }
+    }
+
+    private void Uncloak()
+    {
+        unsafe
+        {
+            BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
         }
     }
@@ -536,6 +564,7 @@ public sealed partial class MainWindow : WindowEx,
         PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
         var isVisible = this.Visible;
+
         unsafe
         {
             // We need to check if our window is cloaked or not. A cloaked window is still
@@ -565,7 +594,9 @@ public sealed partial class MainWindow : WindowEx,
             {
                 // ... then manually hide our window. When debugged, we won't get the cool cloaking,
                 // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
-                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                Cloak();
+                this.Hide();
+
                 return;
             }
 
