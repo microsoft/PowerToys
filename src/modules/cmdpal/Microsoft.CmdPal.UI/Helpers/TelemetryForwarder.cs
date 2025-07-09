@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Events;
 using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.CmdPal.UI;

@@ -13,7 +13,8 @@
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -35,13 +36,13 @@
                 MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
                 TreeTemplate="{StaticResource TreeContentTemplate}" />
 
-            <DataTemplate x:Key="FormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
+            <DataTemplate x:Key="FormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
+            <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
                     <toolkit:MarkdownTextBlock
                         Background="Transparent"
@@ -53,13 +54,13 @@
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
+            <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid>
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="NestedMarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
+            <DataTemplate x:Key="NestedMarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
                 <Grid>
                     <toolkit:MarkdownTextBlock
                         Background="Transparent"
@@ -71,7 +72,7 @@
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="TreeContentTemplate" x:DataType="viewmodels:ContentTreeViewModel">
+            <DataTemplate x:Key="TreeContentTemplate" x:DataType="viewModels:ContentTreeViewModel">
                 <StackPanel
                     Margin="0,4,4,4"
                     Padding="12,8,8,8"

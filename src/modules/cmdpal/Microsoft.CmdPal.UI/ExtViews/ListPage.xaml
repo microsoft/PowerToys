@@ -11,6 +11,7 @@
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -27,7 +28,7 @@
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
 
-        <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
+        <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
             <cpcontrols:Tag
                 AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
                 BackgroundColor="{x:Bind Background, Mode=OneWay}"
@@ -39,7 +40,7 @@
         </DataTemplate>
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
-        <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
+        <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
             <Grid
                 Padding="0,12,0,12"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
