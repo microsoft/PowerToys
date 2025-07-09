@@ -149,7 +149,7 @@ jobs:
         platform: '$(TestPlatform)'
         useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
 
-  - ${{ if ne(length(parameters.specificTestDlls), 0) }}:
+  - ${{ if ne(length(parameters.uiTestModules), 0) }}:
     - ${{ each module in parameters.uiTestModules }}:
       - task: VSTest@3
         displayName: Run UI Test - ${{ module }}
