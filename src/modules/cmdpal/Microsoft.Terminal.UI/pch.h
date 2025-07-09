@@ -64,6 +64,8 @@
 
 // WIL
 #include <wil/com.h>
+#include <wil/resource.h>
+#include <wil/safecast.h>
 #include <wil/stl.h>
 #include <wil/filesystem.h>
 // Due to the use of RESOURCE_SUPPRESS_STL in result.h, we need to include resource.h first, which happens
@@ -90,6 +92,7 @@
 
 #include <winrt/Windows.ApplicationModel.Resources.h>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
 
 #include <winrt/Windows.Graphics.Imaging.h>
 #include <Windows.Graphics.Imaging.Interop.h>

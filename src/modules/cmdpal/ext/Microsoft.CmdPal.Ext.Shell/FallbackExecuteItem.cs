@@ -15,14 +15,16 @@ namespace Microsoft.CmdPal.Ext.Shell;
 
 internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDisposable
 {
+    private readonly Action<string>? _addToHistory;
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _currentUpdateTask;
 
-    public FallbackExecuteItem(SettingsManager settings)
+    public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory)
         : base(new NoOpCommand(), Resources.shell_command_display_title)
     {
         Title = string.Empty;
         Icon = Icons.RunV2;
+        _addToHistory = addToHistory;
     }
 
     public override void UpdateQuery(string query)
@@ -139,7 +141,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         if (exeExists)
         {
             // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath);
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, _addToHistory);
             Title = exeItem.Title;
             Subtitle = exeItem.Subtitle;
             Icon = exeItem.Icon;
@@ -148,7 +150,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
         else if (pathIsDir)
         {
-            var pathItem = new PathListItem(exe, query);
+            var pathItem = new PathListItem(exe, query, _addToHistory);
             Title = pathItem.Title;
             Subtitle = pathItem.Subtitle;
             Icon = pathItem.Icon;
@@ -157,7 +159,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
         else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
         {
-            Command = new OpenUrlCommand(searchText) { Result = CommandResult.Dismiss() };
+            Command = new OpenUrlWithHistoryCommand(searchText, _addToHistory) { Result = CommandResult.Dismiss() };
             Title = searchText;
         }
         else

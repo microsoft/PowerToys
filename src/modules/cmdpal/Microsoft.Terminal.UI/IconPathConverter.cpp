@@ -383,4 +383,5 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         icon.Height(targetSize);
         return icon;
     }
+
 }
