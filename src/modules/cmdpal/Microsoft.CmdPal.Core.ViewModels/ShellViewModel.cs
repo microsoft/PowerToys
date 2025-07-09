@@ -217,20 +217,22 @@ public partial class ShellViewModel : ObservableObject,
             // else just use the global one.
             CommandPaletteHost host;
 
-            // Top level items can come through without a Extension set on the
-            // message. In that case, the `Context` is actually the
-            // TopLevelViewModel itself, and we can use that to get at the
-            // extension object.
-            extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
-            if (extension == null && message.Context is TopLevelViewModel topLevelViewModel)
-            {
-                extension = topLevelViewModel.ExtensionHost?.Extension;
-                host = pageHost ?? messageHost ?? topLevelViewModel?.ExtensionHost ?? CommandPaletteHost.Instance;
-            }
-            else
-            {
-                host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
-            }
+            // TODO! we need a different way to get the current CommandPaletteHost out of the command.
+            //// Top level items can come through without a Extension set on the
+            //// message. In that case, the `Context` is actually the
+            //// TopLevelViewModel itself, and we can use that to get at the
+            //// extension object.
+            // extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
+            // if (extension == null && message.Context is TopLevelViewModel topLevelViewModel)
+            // {
+            //    extension = topLevelViewModel.ExtensionHost?.Extension;
+            //    host = pageHost ?? messageHost ?? topLevelViewModel?.ExtensionHost ?? CommandPaletteHost.Instance;
+            // }
+            // else
+            // {
+            //    host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            // }
+            host = CommandPaletteHost.Instance;
 
             if (extension != null)
             {

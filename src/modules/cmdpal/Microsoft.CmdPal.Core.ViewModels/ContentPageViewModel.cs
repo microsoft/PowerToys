@@ -92,14 +92,16 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
     public static ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
     {
-        ContentViewModel? viewModel = content switch
-        {
-            IFormContent form => new ContentFormViewModel(form, context),
-            IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
-            ITreeContent tree => new ContentTreeViewModel(tree, context),
-            _ => null,
-        };
-        return viewModel;
+        // TODO!
+        // ContentViewModel? viewModel = content switch
+        // {
+        //    IFormContent form => new ContentFormViewModel(form, context),
+        //    IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
+        //    ITreeContent tree => new ContentTreeViewModel(tree, context),
+        //    _ => null,
+        // };
+        // return viewModel;
+        return null;
     }
 
     public override void InitializeProperties()

@@ -26,13 +26,12 @@ public record PerformCommandMessage
         Context = null;
     }
 
-    public PerformCommandMessage(TopLevelViewModel topLevelCommand)
-    {
-        Command = topLevelCommand.CommandViewModel.Model;
-        Context = null;
-        ExtensionHost = topLevelCommand.ExtensionHost;
-    }
-
+    // public PerformCommandMessage(TopLevelViewModel topLevelCommand)
+    // {
+    //    Command = topLevelCommand.CommandViewModel.Model;
+    //    Context = null;
+    //    ExtensionHost = topLevelCommand.ExtensionHost;
+    // }
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context)
     {
         Command = command;
