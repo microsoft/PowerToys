@@ -28,7 +28,7 @@ parameters:
   - name: useCurrentBranchBuild
     type: boolean
     default: false
-  - name: specificTestDlls
+  - name: uiTestModules
     type: object
     default: []
 
@@ -73,6 +73,7 @@ stages:
                   demands: ImageOverride -equals SHINE-VS17-Preview
               buildPlatforms:
                 - ${{ platform }}
+              uiTestModules: ${{ parameters.uiTestModules }}
 
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win10
@@ -91,7 +92,7 @@ stages:
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
-                specificTestDlls: ${{ parameters.specificTestDlls }}
+                uiTestModules: ${{ parameters.uiTestModules }}
 
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win11
@@ -110,7 +111,7 @@ stages:
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
-                specificTestDlls: ${{ parameters.specificTestDlls }}
+                uiTestModules: ${{ parameters.uiTestModules }}
 
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
@@ -129,4 +130,4 @@ stages:
               useLatestWebView2: ${{ parameters.useLatestWebView2 }}
               useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
               useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
-              specificTestDlls: ${{ parameters.specificTestDlls }}
+              uiTestModules: ${{ parameters.uiTestModules }}

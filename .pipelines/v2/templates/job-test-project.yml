@@ -17,7 +17,7 @@ parameters:
   - name: useCurrentBranchBuild
     type: boolean
     default: false
-  - name: specificTestDlls
+  - name: uiTestModules
     type: object
     default: []
 
@@ -128,7 +128,7 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
-  - ${{ if eq(length(parameters.specificTestDlls), 0) }}:
+  - ${{ if eq(length(parameters.uiTestModules), 0) }}:
     - task: VSTest@3
       displayName: Run UI Tests
       inputs:
@@ -150,9 +150,9 @@ jobs:
         useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
 
   - ${{ if ne(length(parameters.specificTestDlls), 0) }}:
-    - ${{ each dll in parameters.specificTestDlls }}:
+    - ${{ each module in parameters.uiTestModules }}:
       - task: VSTest@3
-        displayName: Run UI Test - ${{ dll }}
+        displayName: Run UI Test - ${{ module }}
         inputs:
           platform: '$(BuildPlatform)'
           configuration: '$(BuildConfiguration)'
@@ -162,7 +162,7 @@ jobs:
           uiTests: true
           rerunFailedTests: true
           testAssemblyVer2: |
-            **\${{ dll }}
+            **\*${{ module }}*.dll
             !**\obj\**
             !**\ref\**
             !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
