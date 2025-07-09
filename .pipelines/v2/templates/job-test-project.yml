@@ -129,7 +129,6 @@ jobs:
       vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
-      useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
       # Since UITests-FancyZonesEditor.dll is generated in both UITests-FancyZonesEditor and UITests-FancyZones, removed one to avoid duplicate test runs
       testAssemblyVer2: |
         **\*UITest*.dll
@@ -140,3 +139,4 @@ jobs:
 
     env:
       platform: '$(TestPlatform)'
+      useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
