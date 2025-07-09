@@ -472,7 +472,7 @@ jobs:
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
-  # - All .pdbs from any static libs .libs (which were only used during linking)
+  # - All .pdb files from any static libs .libs (which were only used during linking)
   - pwsh: |-
       $binDir = '$(Build.SourcesDirectory)'
       $ImportLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.exp' | ForEach-Object { $_.FullName -Replace "exp$","lib" }

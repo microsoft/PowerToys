@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,14 +6,14 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="TagBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
-            <StaticResource x:Key="TagBorderBrush" ResourceKey="ControlStrokeColorSecondaryBrush" />
+            <StaticResource x:Key="TagBackground" ResourceKey="ControlFillColorSecondaryBrush" />
+            <StaticResource x:Key="TagBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="TagForeground" ResourceKey="TextFillColorTertiaryBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="TagBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
-            <StaticResource x:Key="TagBorderBrush" ResourceKey="ControlStrokeColorSecondaryBrush" />
+            <StaticResource x:Key="TagBackground" ResourceKey="ControlFillColorSecondaryBrush" />
+            <StaticResource x:Key="TagBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="TagForeground" ResourceKey="TextFillColorTertiaryBrush" />
         </ResourceDictionary>
 
