@@ -126,8 +126,12 @@ jobs:
           branchName: 'refs/heads/main'
         artifactName: 'build-$(BuildPlatform)-Release'
         targetPath: '$(Build.ArtifactStagingDirectory)'
-        patterns: |
-          **/PowerToys*.exe
+        ${{ if eq(parameters.installMode, 'peruser') }}:
+          patterns: |
+            **/PowerToysUserSetup*.exe
+        ${{ else }}:
+          patterns: |
+            **/PowerToysSetup*.exe
 
   - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
     - ${{ if eq(parameters.installMode, 'peruser') }}:
