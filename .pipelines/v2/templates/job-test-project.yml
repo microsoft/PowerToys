@@ -128,32 +128,44 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
-  - task: VSTest@3
-    displayName: Run UI Tests
-    inputs:
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      testSelector: 'testAssemblies'
-      searchFolder: '$(Pipeline.Workspace)\$(TestArtifactsName)'
-      vsTestVersion: 'toolsInstaller'
-      uiTests: true
-      rerunFailedTests: true
-      # Since UITests-FancyZonesEditor.dll is generated in both UITests-FancyZonesEditor and UITests-FancyZones, removed one to avoid duplicate test runs
-      ${{ if ne(length(parameters.specificTestDlls), 0) }}:
-        testAssemblyVer2: |
-          ${{ each dll in parameters.specificTestDlls }}:
-          **\${{ dll }}
-          ${{ endfor }}
-          !**\obj\**
-          !**\ref\**
-          !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
-      ${{ else }}:
+  - ${{ if eq(length(parameters.specificTestDlls), 0) }}:
+    - task: VSTest@3
+      displayName: Run UI Tests
+      inputs:
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        testSelector: 'testAssemblies'
+        searchFolder: '$(Pipeline.Workspace)\$(TestArtifactsName)'
+        vsTestVersion: 'toolsInstaller'
+        uiTests: true
+        rerunFailedTests: true
+        # Since UITests-FancyZonesEditor.dll is generated in both UITests-FancyZonesEditor and UITests-FancyZones, removed one to avoid duplicate test runs
         testAssemblyVer2: |
           **\*UITest*.dll
           !**\obj\**
           !**\ref\**
           !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
+      env:
+        platform: '$(TestPlatform)'
+        useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
 
-    env:
-      platform: '$(TestPlatform)'
-      useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
+  - ${{ if ne(length(parameters.specificTestDlls), 0) }}:
+    - ${{ each dll in parameters.specificTestDlls }}:
+      - task: VSTest@3
+        displayName: Run UI Test - ${{ dll }}
+        inputs:
+          platform: '$(BuildPlatform)'
+          configuration: '$(BuildConfiguration)'
+          testSelector: 'testAssemblies'
+          searchFolder: '$(Pipeline.Workspace)\$(TestArtifactsName)'
+          vsTestVersion: 'toolsInstaller'
+          uiTests: true
+          rerunFailedTests: true
+          testAssemblyVer2: |
+            **\${{ dll }}
+            !**\obj\**
+            !**\ref\**
+            !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
+        env:
+          platform: '$(TestPlatform)'
+          useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
