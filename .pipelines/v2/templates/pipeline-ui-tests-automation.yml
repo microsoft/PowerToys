@@ -46,6 +46,7 @@ stages:
             runTests: false
             buildTests: true
             useVSPreview: ${{ parameters.useVSPreview }}
+            timeoutInMinutes: 90
 
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win10
