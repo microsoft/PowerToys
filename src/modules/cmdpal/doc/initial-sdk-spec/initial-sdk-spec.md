@@ -266,7 +266,7 @@ As some examples:
   that once, we don't need to `CreateProcess` just to find that command title.
   This is a **frozen** extension.
 * Similarly for something like the GitHub extension - it's got multiple
-  top-level commands (My issues, Issue search, Repo search, etc), but these
+  top-level commands (My issues, Issue search, Repo search, etc.), but these
   top-level commands never change. This is a **frozen** extension.
 * The "Quick Links" extension has a dynamic list of top-level commands.
   This is a **fresh** extension.[^3]
@@ -392,7 +392,7 @@ command), we need to quickly load that app and get the command for it.
    1. If the cached command had an `id`, try to look up the command with
       `ICommandProvider.GetCommand(id)`, passing the `id`. If that returns an
       item, we can move on to the next stem
-   2. Otherwise (the command wasn't assigned an ID, or `GetCommand` returned
+   2. Otherwise, (the command wasn't assigned an ID, or `GetCommand` returned
       null): all `TopLevelItems` on that `CommandProvider`.
       * Search through all the returned commands with the same `id` or
         `icon/title/subtitle/name`, and return that one.
@@ -457,7 +457,7 @@ it be cheap from an engineering standpoint.
 
 ### From winget
 
-Winget on the other hand, does allow packages to specify arbitrary tags, and let
+WinGet on the other hand, does allow packages to specify arbitrary tags, and let
 apps query them easily. We can use that as a system to load a list of packages
 available via winget directly in DevPal. We'll specify a well-known tag that
 developers can use in their winget package manifest to specify that their
@@ -611,7 +611,7 @@ This will create a single command in DevPal that, when selected, will open
 Hacker News in the user's default web browser.
 
 Commands can also be `Page`s, which represent additional "nested" pages within
-DevPal. When the user selects an command that implements `IPage`, DevPal will
+DevPal. When the user selects a command that implements `IPage`, DevPal will
 navigate to a page for that command, rather than calling `Invoke` on it. Skip
 ahead to [Pages](#Pages) for more information on the different types of pages.
 
@@ -628,7 +628,7 @@ different types depending on where the command is being used:
 * `IListPage.GetItems`
   * Sender is the `IListItem` for the list item selected for that command
 * `ICommandItem.MoreCommands` (context menus)
-  * Sender is the `IListItem` which the command was attached to for a list page, or
+  * Sender is the `IListItem` which the command was attached to a list page, or
   * the `ICommandItem` of the top-level command (if this is a context item on a top level command)
 * `IContentPage.Commands`
   * Sender is the `IContentPage` itself
@@ -656,7 +656,7 @@ Use cases for each `CommandResultKind`:
 * `Dismiss` - Close DevPal after the action is executed. All current state
   is dismissed as well. On the next launch, DevPal will start from the main
   page with a blank query.
-  * Ex: An action that opens an application. The Puser doesn't need DevPal
+  * Ex: An action that opens an application. The user doesn't need DevPal
     open after the application is opened, nor do they need the query they used
     to find the action.
 * `GoHome` - Navigate back to the main page of DevPal, but keep it open.
@@ -752,7 +752,7 @@ which the user can quickly filter and search through.
 
 Lists can be either "static" or "dynamic":
 * A **static** list leaves devpal in charge of filtering the list of items,
-  based on the query the user typed.
+  based on the query that the user typed.
   * These are implementations of the default `IListPage`.
   * In this case, DevPal will use a fuzzy string match over the `Name` of the
     action, the `Subtitle`, and any `Text` on the `Tag`s.
@@ -959,7 +959,7 @@ as the user navigates the list.
 
 Consider the Windows Registry command. When the page is initially loaded, it
 displays only the top-level registry keys (`HKEY_CURRENT_USER`,
-`HKEY_LOCAL_MACHINE`, etc). If the user types `HKC`, the command will filter the
+`HKEY_LOCAL_MACHINE`, etc.). If the user types `HKC`, the command will filter the
 results down to just `HKEY_CURRENT_USER`, `HKEY_CLASSES_ROOT` and
 `HKEY_CURRENT_CONFIG`. However, if the user at this point taps the right-arrow
 key, DevPall will use the `TextToSuggest` from the `HKEY_CURRENT_USER`
@@ -1375,7 +1375,7 @@ app's icon.
 
 ![](https://miro.medium.com/v2/resize:fit:720/format:webp/1*Nd5fvJM8LUQ1w3DAWN-pvA.gif)
 
-(However, the buttons in the gif for "Open", "Uninstall", etc, are not part of
+(However, the buttons in the gif for "Open", "Uninstall", etc., are not part of
 the `Details`, they are part of the "more commands" dropdown. **It's a mockup**)
 
 <!-- This block needs to appear in the idl _before_ IListItem, but from a doc
@@ -1509,7 +1509,7 @@ settings for your extension being lost.
 
 Providers may also specify a set of `FallbackCommands`[^2]. These are special
 top-level items which allow extensions to have dynamic top-level items which
-respond to the text the user types on the main list page.
+respond to the text that the user types on the main list page.
 
 These are implemented with a special `IFallbackHandler` interface. This is an
 object that will be informed whenever the query changes in List page hosting it.
