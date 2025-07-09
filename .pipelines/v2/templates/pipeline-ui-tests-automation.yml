@@ -28,6 +28,9 @@ parameters:
   - name: useCurrentBranchBuild
     type: boolean
     default: false
+  - name: specificTestDlls
+    type: object
+    default: []
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
@@ -88,6 +91,7 @@ stages:
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                specificTestDlls: ${{ parameters.specificTestDlls }}
 
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win11
@@ -106,6 +110,7 @@ stages:
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                specificTestDlls: ${{ parameters.specificTestDlls }}
 
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
@@ -124,3 +129,4 @@ stages:
               useLatestWebView2: ${{ parameters.useLatestWebView2 }}
               useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
               useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+              specificTestDlls: ${{ parameters.specificTestDlls }}

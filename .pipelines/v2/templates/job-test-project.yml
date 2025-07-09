@@ -17,6 +17,9 @@ parameters:
   - name: useCurrentBranchBuild
     type: boolean
     default: false
+  - name: specificTestDlls
+    type: object
+    default: []
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}
@@ -136,12 +139,20 @@ jobs:
       uiTests: true
       rerunFailedTests: true
       # Since UITests-FancyZonesEditor.dll is generated in both UITests-FancyZonesEditor and UITests-FancyZones, removed one to avoid duplicate test runs
-      testAssemblyVer2: |
-        **\*UITest*.dll
-        !**\obj\**
-        !**\ref\**
-        !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
-
+      ${{ if ne(length(parameters.specificTestDlls), 0) }}:
+        testAssemblyVer2: |
+          ${{ each dll in parameters.specificTestDlls }}:
+          **\${{ dll }}
+          ${{ endfor }}
+          !**\obj\**
+          !**\ref\**
+          !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
+      ${{ else }}:
+        testAssemblyVer2: |
+          **\*UITest*.dll
+          !**\obj\**
+          !**\ref\**
+          !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
 
     env:
       platform: '$(TestPlatform)'
