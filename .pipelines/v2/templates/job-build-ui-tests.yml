@@ -95,7 +95,7 @@ jobs:
         /p:RestorePackagesConfig=true
         /p:BuildProjectReferences=true
         /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-${{ join('_',split(project, '/')) }}.binlog
+        /bl:$(LogOutputDirectory)\build-all-uitests.binlog
         $(NUGET_RESTORE_MSBUILD_ARGS)
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
