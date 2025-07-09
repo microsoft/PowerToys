@@ -236,7 +236,10 @@ public partial class ContextMenuViewModel : ObservableObject,
         OnPropertyChanging(nameof(CurrentContextMenu));
         OnPropertyChanged(nameof(CurrentContextMenu));
 
-        ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu!]);
+        if (CurrentContextMenu != null)
+        {
+            ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu!]);
+        }
     }
 
     public ContextKeybindingResult InvokeCommand(CommandItemViewModel? command)

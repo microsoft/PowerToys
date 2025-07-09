@@ -43,8 +43,11 @@
                 </Style.Setters>
             </Style>
 
-            <Flyout x:Name="ContextMenuFlyout" FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}">
-                <cpcontrols:ContextMenu />
+            <Flyout
+                x:Name="ContextMenuFlyout"
+                FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
+                Opened="ContextMenuFlyout_Opened">
+                <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
 
             <Style x:Key="HotkeyStyle" TargetType="Border">

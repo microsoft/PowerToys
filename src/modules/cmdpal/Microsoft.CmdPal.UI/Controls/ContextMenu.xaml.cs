@@ -216,6 +216,14 @@ public sealed partial class ContextMenu : UserControl,
         ContextFilterBox.Text = string.Empty;
         ViewModel?.SetSearchText(string.Empty);
         CommandsDropdown.SelectedIndex = 0;
+    }
+
+    /// <summary>
+    /// Manually focuses our search box. This needs to be called after we're actually
+    /// In the UI tree - if we're in a Flyout, that's not until Opened()
+    /// </summary>
+    internal void FocusSearchBox()
+    {
         ContextFilterBox.Focus(FocusState.Programmatic);
     }
 
