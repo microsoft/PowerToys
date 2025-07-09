@@ -32,7 +32,7 @@ parameters:
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
-  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}${{ if ne(parameters.jobSuffix, '') }} - ${{ parameters.installMode }}${{ endif }}
+  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}${{ parameters.jobSuffix }}
   timeoutInMinutes: 300
   variables:
     ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
