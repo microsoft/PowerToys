@@ -85,7 +85,7 @@ jobs:
 
   # Build only UI test projects
   - task: VSBuild@1
-    displayName: Build UI Test Project ${{ project }}
+    displayName: Build UI Test Projects
     inputs:
       solution: '**/*UITest*.csproj'
       vsVersion: 17.0
