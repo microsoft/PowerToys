@@ -70,7 +70,7 @@ public class ShellListPageHelpers
         var cmd = query;
         if (string.IsNullOrEmpty(cmd))
         {
-            results = ResultsFromlHistory();
+            results = ResultsFromHistory();
         }
         else
         {
@@ -90,16 +90,16 @@ public class ShellListPageHelpers
 
     public List<CommandContextItem> LoadContextMenus(ListItem listItem)
     {
-        var resultlist = new List<CommandContextItem>
+        var resultList = new List<CommandContextItem>
             {
                 new(new ExecuteItem(listItem.Title, _settings, RunAsType.Administrator)),
                 new(new ExecuteItem(listItem.Title, _settings, RunAsType.OtherUser )),
             };
 
-        return resultlist;
+        return resultList;
     }
 
-    private List<ListItem> ResultsFromlHistory()
+    private List<ListItem> ResultsFromHistory()
     {
         var history = _settings.Count.OrderByDescending(o => o.Value)
             .Select(m => new ListItem(new ExecuteItem(m.Key, _settings))

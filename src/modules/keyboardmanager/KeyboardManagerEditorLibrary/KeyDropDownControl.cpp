@@ -314,7 +314,7 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
             }
         }
 
-        // If the user searches for a key the selection handler gets invoked however if they click away it reverts back to the previous state. This can result in dangling references to added drop downs which were then reset.
+        // If the user searches for a key, the selection handler gets invoked; however if they click away it reverts back to the previous state. This can result in dangling references to added drop downs which were then reset.
         // We handle this by removing the drop down if it no longer a child of the parent
         for (long long i = keyDropDownControlObjects.size() - 1; i >= 0; i--)
         {

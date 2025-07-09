@@ -25,9 +25,9 @@ Find My Mouse:
 
 Mouse Highlighter:
   * Enable Mouse Highlighter. Then:
-    - [x] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
-    - [x] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [x] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [x] Press the activation shortcut and press left and right click somewhere, verifying the highlights are applied.
+    - [x] With left mouse button pressed, drag the mouse and verify the highlight is dragged with the pointer.
+    - [x] With right mouse button pressed, drag the mouse and verify the highlight is dragged with the pointer.
     - [x] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
     - [x] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
