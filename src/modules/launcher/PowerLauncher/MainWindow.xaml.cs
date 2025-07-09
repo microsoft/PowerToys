@@ -329,7 +329,7 @@ namespace PowerLauncher
             var result = ((FrameworkElement)e.OriginalSource).DataContext;
             if (result != null)
             {
-                // This may be null if the tapped item was one of the context buttons (run as admin etc).
+                // This may be null if the tapped item was one of the context buttons (run as admin, etc.).
                 if (result is ResultViewModel resultVM)
                 {
                     _viewModel.Results.SelectedItem = resultVM;
