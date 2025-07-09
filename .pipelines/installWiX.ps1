@@ -19,11 +19,7 @@ if($Hash -ne '6AC824E1642D6F7277D0ED7EA09411A508F6116BA6FAE0AA5F2C7DAA2FF43D31')
 }
 
 # Install WiX
-$Process = Start-Process -Wait -FilePath "$($ENV:Temp)\wix314.exe" -ArgumentList "/install /quiet"
-
-if ($Process.ExitCode -ne 0 -and $Process.ExitCode -ne 3010) {
-    throw "wix314 installation failed with exit code: $($Process.ExitCode)"
-}
+Start-Process -Wait -FilePath "$($ENV:Temp)\wix314.exe" -ArgumentList "/install /quiet"
 
 # Extract WiX binaries and copy wix.targets to the installed dir
 Expand-Archive -Path "$($ENV:Temp)\wix314-binaries.zip" -Force -DestinationPath "$($ENV:Temp)"
