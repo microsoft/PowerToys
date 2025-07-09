@@ -14,6 +14,9 @@ parameters:
   - name: useLatestOfficialBuild
     type: boolean
     default: true
+  - name: useCurrentBranchBuild
+    type: boolean
+    default: false
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}
@@ -103,8 +106,11 @@ jobs:
       buildType: 'specific'
       project: 'Dart'
       definition: '76541'
-      buildVersionToDownload: 'latest'
-      branchName: 'refs/heads/main'
+      buildVersionToDownload: 'latestFromBranch'
+      ${{ if eq(parameters.useCurrentBranchBuild, true) }}:
+        branchName: '$(Build.SourceBranch)'
+      ${{ else }}:
+        branchName: 'refs/heads/main'
       artifactName: 'build-$(BuildPlatform)-Release'
       targetPath: '$(Build.ArtifactStagingDirectory)'
       patterns: |

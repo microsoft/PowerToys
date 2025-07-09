@@ -25,6 +25,9 @@ parameters:
   - name: useLatestOfficialBuild
     type: boolean
     default: true
+  - name: useCurrentBranchBuild
+    type: boolean
+    default: false
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
@@ -84,6 +87,7 @@ stages:
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
+                useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
 
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win11
@@ -101,6 +105,7 @@ stages:
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
+                useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
 
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
@@ -118,3 +123,4 @@ stages:
               configuration: Release
               useLatestWebView2: ${{ parameters.useLatestWebView2 }}
               useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
+              useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
