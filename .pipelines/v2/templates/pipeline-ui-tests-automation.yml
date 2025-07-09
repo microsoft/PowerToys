@@ -25,6 +25,9 @@ parameters:
   - name: useLatestOfficialBuild
     type: boolean
     default: true
+  - name: testBothInstallModes
+    type: boolean
+    default: true
   - name: useCurrentBranchBuild
     type: boolean
     default: false
@@ -94,6 +97,18 @@ stages:
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
+            # Additional per-user installation test (when both modes are enabled)
+            - ${{ if and(eq(parameters.useLatestOfficialBuild, true), eq(parameters.testBothInstallModes, true)) }}:
+              - template: job-test-project.yml
+                parameters:
+                  platform: x64Win10
+                  configuration: Release
+                  useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+                  useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
+                  useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                  uiTestModules: ${{ parameters.uiTestModules }}
+                  installMode: 'peruser'
+
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win11
         displayName: Test x64Win11
@@ -113,6 +128,18 @@ stages:
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
+            # Additional per-user installation test (when both modes are enabled)
+            - ${{ if and(eq(parameters.useLatestOfficialBuild, true), eq(parameters.testBothInstallModes, true)) }}:
+              - template: job-test-project.yml
+                parameters:
+                  platform: x64Win11
+                  configuration: Release
+                  useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+                  useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
+                  useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                  uiTestModules: ${{ parameters.uiTestModules }}
+                  installMode: 'peruser'
+
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
         displayName: Test ${{ platform }}
@@ -131,3 +158,15 @@ stages:
               useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
               useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
               uiTestModules: ${{ parameters.uiTestModules }}
+
+          # Additional per-user installation test (when both modes are enabled)
+          - ${{ if and(eq(parameters.useLatestOfficialBuild, true), eq(parameters.testBothInstallModes, true)) }}:
+            - template: job-test-project.yml
+              parameters:
+                platform: ${{ platform }}
+                configuration: Release
+                useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+                useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
+                useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                uiTestModules: ${{ parameters.uiTestModules }}
+                installMode: 'peruser'

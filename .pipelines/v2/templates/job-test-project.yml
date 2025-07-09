@@ -20,6 +20,12 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: installMode
+    type: string
+    default: 'machine'
+    values:
+      - 'machine'
+      - 'peruser'
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}
@@ -104,24 +110,32 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  - task: DownloadPipelineArtifact@2
-    inputs:
-      buildType: 'specific'
-      project: 'Dart'
-      definition: '76541'
-      buildVersionToDownload: 'latestFromBranch'
-      ${{ if eq(parameters.useCurrentBranchBuild, true) }}:
-        branchName: '$(Build.SourceBranch)'
-      ${{ else }}:
-        branchName: 'refs/heads/main'
-      artifactName: 'build-$(BuildPlatform)-Release'
-      targetPath: '$(Build.ArtifactStagingDirectory)'
-      patterns: |
-        **/PowerToysSetup-*.exe
+  - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'specific'
+        project: 'Dart'
+        definition: '76541'
+        buildVersionToDownload: 'latestFromBranch'
+        ${{ if eq(parameters.useCurrentBranchBuild, true) }}:
+          branchName: '$(Build.SourceBranch)'
+        ${{ else }}:
+          branchName: 'refs/heads/main'
+        artifactName: 'build-$(BuildPlatform)-Release'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        patterns: |
+          **/PowerToys*.exe
 
-  - pwsh: |-
-      & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1"
-    displayName: Install PowerToys
+  - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+    - ${{ if eq(parameters.installMode, 'peruser') }}:
+      - pwsh: |-
+          & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "PerUser"
+        displayName: Install PowerToys (Per-User)
+
+    - ${{ if eq(parameters.installMode, 'machine') }}:
+      - pwsh: |-
+          & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine"
+        displayName: Install PowerToys (Machine-Level)
 
   - ${{ if ne(parameters.platform, 'arm64') }}:
     - task: ScreenResolutionUtility@1

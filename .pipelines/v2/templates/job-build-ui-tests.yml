@@ -117,7 +117,7 @@ jobs:
           configuration: $(BuildConfiguration)
           msbuildArchitecture: x64
           maximumCpuCount: true
-          
+
   # Stage test project outputs with directory structure
   - task: CopyFiles@2
     displayName: Stage UI Test Build Outputs

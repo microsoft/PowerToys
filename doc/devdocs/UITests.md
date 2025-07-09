@@ -26,11 +26,27 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 
 - **useCurrentBranchBuild**: When checked along with `useLatestOfficialBuild`, downloads the official build from the current branch instead of main.
 
-- **uiTestModules**: Specify which UI test modules to build and run. Examples:
-  - `UITests-FancyZones` - Only FancyZones UI tests
-  - `MouseUtils.UITests` - Only MouseUtils UI tests
+  **Default value**: `false` (downloads from main branch)
+  
+  **When to use this**:
+  - **Default scenario**: The pipeline tests against the latest signed PowerToys build from the `main` branch, regardless of which branch your test code changes are from
+  - **Custom branch testing**: Only specify `true` when:
+    - Your branch has produced its own signed PowerToys build via the official build pipeline
+    - You want to test against that specific branch's PowerToys build instead of main
+    - You are testing PowerToys functionality changes that are only available in your branch's build
+  
+  **Important notes**:
+  - The test pipeline itself runs from your specified branch, but by default tests against the main branch's PowerToys build
+  - Not all branches have signed builds available - only use this if you're certain your branch has a signed build
+  - If enabled but no build exists for your branch, the pipeline may fail or fall back to main
+
+- **uiTestModules**: Specify which UI test modules to build and run. This parameter controls both the `.csproj` projects to build and the `.dll` test assemblies to execute. Examples:
+  - `['UITests-FancyZones']` - Only FancyZones UI tests
+  - `['MouseUtils.UITests']` - Only MouseUtils UI tests
   - `['UITests-FancyZones', 'MouseUtils.UITests']` - Multiple specific modules
   - Leave empty to build and run all UI test modules
+
+  **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
 
 ### Build Modes
 

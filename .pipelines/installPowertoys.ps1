@@ -1,3 +1,9 @@
+param(
+    [Parameter()]
+    [ValidateSet("Machine", "PerUser")]
+    [string]$InstallMode = "Machine"
+)
+
 $ProgressPreference = 'SilentlyContinue'
 
 # Get artifact path
@@ -7,7 +13,7 @@ if (-not $ArtifactPath) {
 }
 
 # Since we only download PowerToysSetup-*.exe files, we can directly find it
-$Installer = Get-ChildItem -Path $ArtifactPath -Filter 'PowerToysSetup-*.exe' | Select-Object -First 1
+$Installer = Get-ChildItem -Path $ArtifactPath -Filter 'PowerToys*.exe' | Select-Object -First 1
 
 if (-not $Installer) {
     throw "PowerToys installer not found"
@@ -25,8 +31,16 @@ if ($Process.ExitCode -eq 0 -or $Process.ExitCode -eq 3010) {
 }
 
 # Verify installation
-if (Test-Path "${env:ProgramFiles}\PowerToys\PowerToys.exe") {
-    Write-Host "✅ PowerToys verified at: ${env:ProgramFiles}\PowerToys\PowerToys.exe"
+if ($InstallMode -eq "PerUser") {
+    if (Test-Path "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe") {
+        Write-Host "✅ PowerToys verified at: ${env:LOCALAPPDATA}\PowerToys\PowerToys.exe"
+    } else {
+        throw "PowerToys installation verification failed"
+    }
 } else {
-    throw "PowerToys installation verification failed"
+    if (Test-Path "${env:ProgramFiles}\PowerToys\PowerToys.exe") {
+        Write-Host "✅ PowerToys verified at: ${env:ProgramFiles}\PowerToys\PowerToys.exe"
+    } else {
+        throw "PowerToys installation verification failed"
+    }
 }
