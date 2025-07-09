@@ -164,7 +164,6 @@ namespace Microsoft.PowerToys.UITest
                 }
                 else
                 {
-                    // Log warning and fallback to development path
                     Console.WriteLine($"Warning: Installed module not found at {installedPath}, using development path");
                 }
             }
