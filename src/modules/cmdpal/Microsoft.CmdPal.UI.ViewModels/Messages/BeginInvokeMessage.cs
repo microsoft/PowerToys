@@ -4,7 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-// TODO! sticking these properties here feels like leaking the UI into the models
-public record GoHomeMessage(bool WithAnimation = true, bool FocusSearch = true)
-{
-}
+public record BeginInvokeMessage;
