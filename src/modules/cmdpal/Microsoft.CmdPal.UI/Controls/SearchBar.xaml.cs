@@ -162,10 +162,6 @@ public sealed partial class SearchBar : UserControl,
                 CurrentPageViewModel.Filter = FilterBox.Text;
             }
         }
-        else if (e.Key == VirtualKey.Left && altPressed)
-        {
-            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
-        }
 
         if (!e.Handled)
         {
@@ -209,6 +205,10 @@ public sealed partial class SearchBar : UserControl,
             WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
 
             e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.Left && e.KeyStatus.IsMenuKeyDown)
+        {
+            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
         }
     }
 
