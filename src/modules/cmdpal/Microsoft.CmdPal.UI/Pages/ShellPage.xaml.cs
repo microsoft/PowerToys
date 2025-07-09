@@ -286,6 +286,57 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void HandleGoToPageArgs(IGoToPageArgs args)
+    {
+        GoToPageArgsViewModel vm = new(args, new(ViewModel.CurrentPage));
+        var initializeDialogTask = Task.Run(() => { InitializeGoToPage(vm); });
+        initializeDialogTask.Wait();
+
+        var pageID = vm.PageId;
+        var navigationMode = vm.NavigationMode;
+
+        if (string.IsNullOrEmpty(pageID))
+        {
+            _toast.ShowToast("Invalid page id");
+            return;
+        }
+
+        var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        var toplevelCommand = tlcManager.LookupCommand(pageID);
+
+        if (toplevelCommand == null)
+        {
+            return;
+        }
+
+        switch (navigationMode)
+        {
+            case NavigationMode.Push:
+                break;
+
+            case NavigationMode.GoHome:
+                while (RootFrame.CanGoBack)
+                {
+                    GoBack(false, false);
+                }
+
+                break;
+
+            case NavigationMode.GoBack:
+                if (RootFrame.CanGoBack)
+                {
+                    GoBack(false, false);
+                }
+
+                break;
+        }
+
+        var msg = new PerformCommandMessage(toplevelCommand) { WithAnimation = true };
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
+
+        return;
+    }
+
     // This gets called from the UI thread
     private void HandleConfirmArgs(IConfirmationArgs args)
     {
@@ -338,6 +389,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     private void InitializeConfirmationDialog(ConfirmResultViewModel vm)
+    {
+        vm.SafeInitializePropertiesSynchronous();
+    }
+
+    private void InitializeGoToPage(GoToPageArgsViewModel vm)
     {
         vm.SafeInitializePropertiesSynchronous();
     }
@@ -403,6 +459,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                             {
                                 _toast.ShowToast(a.Message);
                                 HandleCommandResultOnUiThread(a.Result);
+                            }
+
+                            break;
+                        }
+
+                    case CommandResultKind.GoToPage:
+                        {
+                            if (result.Args is IGoToPageArgs a)
+                            {
+                                HandleGoToPageArgs(a);
                             }
 
                             break;
