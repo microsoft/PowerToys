@@ -141,7 +141,7 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError($"Couldn't add a waiter to wait for a process to exit. PID = {process.pid} and Name = {process.name}.", ex);
-                Processes.Remove(process); // If we couldn't get an handle to the process or it has exited in the meanwhile, don't show it.
+                Processes.Remove(process); // If we couldn't get a handle to the process or it has exited in the meanwhile, don't show it.
             }
         }
 
@@ -162,8 +162,8 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Couldn't get an handle to kill process {selectedProcess.name} with PID {selectedProcess.pid}. Likely has been killed already.", ex);
-                Processes.Remove(selectedProcess); // If we couldn't get an handle to the process, remove it from the list, since it's likely been killed already.
+                Logger.LogError($"Couldn't get a handle to kill process {selectedProcess.name} with PID {selectedProcess.pid}. Likely has been killed already.", ex);
+                Processes.Remove(selectedProcess); // If we couldn't get a handle to the process, remove it from the list, since it's likely been killed already.
             }
         }
 
