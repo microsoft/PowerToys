@@ -244,7 +244,7 @@ public sealed partial class SearchBar : UserControl,
         _debounceTimer.Debounce(
             () =>
             {
-                // Actually plumb Filtering to the viewmodel
+                // Actually plumb Filtering to the view model
                 if (CurrentPageViewModel != null)
                 {
                     CurrentPageViewModel.Filter = FilterBox.Text;
@@ -282,7 +282,7 @@ public sealed partial class SearchBar : UserControl,
             {
                 // GH #38712:
                 // The ListPage will notify us of the `InitialSearchText` when
-                // we first load the viewmodel. We can use that as an
+                // we first load the view model. We can use that as an
                 // opportunity to immediately select the search text. That lets
                 // the user start typing a new search without manually
                 // selecting the old one.

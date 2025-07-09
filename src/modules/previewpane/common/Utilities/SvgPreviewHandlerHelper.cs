@@ -58,7 +58,7 @@ namespace Common.Utilities
                     {
                         foundBlockedElement = true;
 
-                        // No need to iterate further since we are displaying info bar with condition of atleast one occurrence of blocked element is present.
+                        // No need to iterate further since we are displaying info bar with condition of at least one occurrence of blocked element is present.
                         break;
                     }
                 }
