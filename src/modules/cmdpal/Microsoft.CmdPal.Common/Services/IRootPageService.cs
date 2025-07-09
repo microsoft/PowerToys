@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading.Tasks;
+using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Common.Services;
 
@@ -34,4 +35,6 @@ public interface IRootPageService
     /// or ICommandContextItem that was used to invoke the command.
     /// </summary>
     void OnPerformTopLevelCommand(object? context);
+
+    void OnPerformAnyCommand(IExtensionHost? host, object? senderContext);
 }

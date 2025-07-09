@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -12,7 +10,6 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using WinRT;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -61,7 +58,6 @@ public partial class ShellViewModel : ObservableObject,
 
     private IPage? _rootPage;
 
-    private IExtensionWrapper? _activeExtension;
     private bool _isNested;
 
     public bool IsNested { get => _isNested; }
@@ -197,8 +193,7 @@ public partial class ShellViewModel : ObservableObject,
             PerformTopLevelCommand(message);
         }
 
-        IExtensionWrapper? extension = null;
-
+        // IExtensionWrapper? extension = null;
         try
         {
             // In the case that we're coming from a top-level command, the
@@ -215,7 +210,18 @@ public partial class ShellViewModel : ObservableObject,
             // Use the host from the current page if it has one, else use the
             // one specified in the PerformMessage for a top-level command,
             // else just use the global one.
-            CommandPaletteHost host;
+            var host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+
+            _rootPageService.OnPerformAnyCommand(pageHost, message.Context);
+
+            // We _could_
+            // have a service which does like, GetHostForCommand(pageHost, messageHost, context)
+            // and that does the below.
+            // But that also feels terrible? that's so much logic in that. and I hate all these `object as TLVM` calls, its so dirty
+            // maybe we don't need messageHost, and can just get the host out of page ?? (context.extensionHost). Or we can always stick the context in the message. That would be smart actually
+
+            // It should probably be like, HostService, and that has
+            //   IExtensionHost GetRootHost();
 
             // TODO! we need a different way to get the current CommandPaletteHost out of the command.
             //// Top level items can come through without a Extension set on the
@@ -232,22 +238,20 @@ public partial class ShellViewModel : ObservableObject,
             // {
             //    host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
             // }
-            host = CommandPaletteHost.Instance;
 
-            if (extension != null)
-            {
-                if (messageHost != null)
-                {
-                    Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
-                }
-                else
-                {
-                    Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
-                }
-            }
+            // if (extension != null)
+            // {
+            //     if (messageHost != null)
+            //     {
+            //         Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
+            //     }
+            //     else
+            //     {
+            //         Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
+            //     }
+            // }
 
-            SetActiveExtension(extension);
-
+            // SetActiveExtension(extension);
             if (command is IPage page)
             {
                 Logger.LogDebug($"Navigating to page");
@@ -401,61 +405,15 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    public void SetActiveExtension(IExtensionWrapper? extension)
-    {
-        if (extension != _activeExtension)
-        {
-            // There's not really a CoDisallowSetForegroundWindow, so we don't
-            // need to handle that
-            _activeExtension = extension;
-
-            var extensionWinRtObject = _activeExtension?.GetExtensionObject();
-            if (extensionWinRtObject != null)
-            {
-                try
-                {
-                    unsafe
-                    {
-                        var winrtObj = (IWinRTObject)extensionWinRtObject;
-                        var intPtr = winrtObj.NativeObject.ThisPtr;
-                        var hr = Native.CoAllowSetForegroundWindow(intPtr);
-                        if (hr != 0)
-                        {
-                            Logger.LogWarning($"Error giving foreground rights: 0x{hr.Value:X8}");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex.ToString());
-                }
-            }
-        }
-    }
-
     public void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
-        SetActiveExtension(null);
+        // SetActiveExtension(null);
         WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(withAnimation, focusSearch));
     }
 
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
         WeakReferenceMessenger.Default.Send<GoBackMessage>(new(withAnimation, focusSearch));
-    }
-
-    // You may ask yourself, why aren't we using CsWin32 for this?
-    // The CsWin32 projected version includes some object marshalling, like so:
-    //
-    // HRESULT CoAllowSetForegroundWindow([MarshalAs(UnmanagedType.IUnknown)] object pUnk,...)
-    //
-    // And if you do it like that, then the IForegroundTransfer interface isn't marshalled correctly
-    internal sealed class Native
-    {
-        [DllImport("OLE32.dll", ExactSpelling = true)]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        [SupportedOSPlatform("windows5.0")]
-        internal static extern unsafe global::Windows.Win32.Foundation.HRESULT CoAllowSetForegroundWindow(nint pUnk, [Optional] void* lpvReserved);
     }
 
     private void OnUIThread(Action action)
