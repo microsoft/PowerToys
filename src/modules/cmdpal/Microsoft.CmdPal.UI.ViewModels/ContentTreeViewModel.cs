@@ -38,7 +38,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         var root = model.RootContent;
         if (root != null)
         {
-            RootContent = ContentPageViewModel.ViewModelFromContent(root, PageContext);
+            RootContent = ViewModelFromContent(root, PageContext);
             RootContent?.InitializeProperties();
             UpdateProperty(nameof(RootContent));
             UpdateProperty(nameof(Root));
@@ -47,6 +47,20 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         FetchContent();
         model.PropChanged += Model_PropChanged;
         model.ItemsChanged += Model_ItemsChanged;
+    }
+
+    // Theoretically, we should unify this with the one in CommandPalettePageViewModelFactory
+    // and maybe just have a ContentViewModelFactory or something
+    public ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
+    {
+        ContentViewModel? viewModel = content switch
+        {
+            IFormContent form => new ContentFormViewModel(form, context),
+            IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
+            ITreeContent tree => new ContentTreeViewModel(tree, context),
+            _ => null,
+        };
+        return viewModel;
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
@@ -79,7 +93,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
                 var root = model.RootContent;
                 if (root != null)
                 {
-                    RootContent = ContentPageViewModel.ViewModelFromContent(root, PageContext);
+                    RootContent = ViewModelFromContent(root, PageContext);
                 }
                 else
                 {
@@ -104,7 +118,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
 
             foreach (var item in newItems)
             {
-                var viewModel = ContentPageViewModel.ViewModelFromContent(item, PageContext);
+                var viewModel = ViewModelFromContent(item, PageContext);
                 if (viewModel != null)
                 {
                     viewModel.InitializeProperties();

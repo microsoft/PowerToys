@@ -149,7 +149,7 @@ public partial class App : Application
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
-        services.AddSingleton<IPageViewModelFactoryService, PageViewModelFactory>();
+        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
 
         return services.BuildServiceProvider();
     }

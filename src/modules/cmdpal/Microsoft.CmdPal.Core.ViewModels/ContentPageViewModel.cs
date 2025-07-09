@@ -90,17 +90,11 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         });
     }
 
-    public static ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
+    public virtual ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
     {
-        // TODO!
-        // ContentViewModel? viewModel = content switch
-        // {
-        //    IFormContent form => new ContentFormViewModel(form, context),
-        //    IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
-        //    ITreeContent tree => new ContentTreeViewModel(tree, context),
-        //    _ => null,
-        // };
-        // return viewModel;
+        // The core ContentPageViewModel doesn't actually handle any content,
+        // so we just return null here.
+        // The real content is handled by the derived class CommandPaletteContentPageViewModel
         return null;
     }
 
