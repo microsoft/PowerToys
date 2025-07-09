@@ -16,6 +16,40 @@
 
 - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`).
 
+## Running tests in pipeline
+
+The PowerToys UI test pipeline provides flexible options for building and testing:
+
+### Pipeline Options
+
+- **useLatestOfficialBuild**: When checked, downloads the latest official PowerToys build and installs it for testing. This skips the full solution build and only builds UI test projects.
+
+- **useCurrentBranchBuild**: When checked along with `useLatestOfficialBuild`, downloads the official build from the current branch instead of main.
+
+- **uiTestModules**: Specify which UI test modules to build and run. Examples:
+  - `UITests-FancyZones` - Only FancyZones UI tests
+  - `MouseUtils.UITests` - Only MouseUtils UI tests
+  - `['UITests-FancyZones', 'MouseUtils.UITests']` - Multiple specific modules
+  - Leave empty to build and run all UI test modules
+
+### Build Modes
+
+1. **Official Build + Selective Testing** (`useLatestOfficialBuild = true`)
+   - Downloads and installs official PowerToys build
+   - Builds only specified UI test projects
+   - Runs specified UI tests against installed PowerToys
+   - Controlled by `uiTestModules` parameter
+
+2. **Full Build + Testing** (`useLatestOfficialBuild = false`)
+   - Builds entire PowerToys solution
+   - Builds UI test projects (all or specific based on `uiTestModules`)
+   - Runs UI tests (all or specific based on `uiTestModules`)
+   - Uses freshly built PowerToys for testing
+
+> **Note**: Both modes support the `uiTestModules` parameter to control which specific UI test modules to build and run.
+
+### Pipeline Access
+- Pipeline: https://microsoft.visualstudio.com/Dart/_build?definitionId=161438&_a=summary
 
 ## How to add the first UI tests for your modules
 
