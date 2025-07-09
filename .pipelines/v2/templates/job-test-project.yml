@@ -31,8 +31,8 @@ parameters:
     default: ''
 
 jobs:
-- job: Test${{ parameters.platform }}${{ parameters.configuration }} ${{ parameters.jobSuffix }}
-  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }} ${{ parameters.jobSuffix }}
+- job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
+  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}${{ if ne(parameters.jobSuffix, '') }} - ${{ parameters.installMode }}${{ endif }}
   timeoutInMinutes: 300
   variables:
     ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
