@@ -480,6 +480,8 @@ eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
+fesf
+fff
 FFFF
 FILEEXPLORER
 fileexploreraddons
@@ -523,6 +525,7 @@ frm
 FROMTOUCH
 fsanitize
 fsmgmt
+fxf
 fuzzingtesting
 FZE
 gacutil
