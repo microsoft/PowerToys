@@ -83,25 +83,81 @@ jobs:
       restoreSolution: PowerToys.sln
       restoreDirectory: '$(Build.SourcesDirectory)\packages'
 
+  - pwsh: |
+      Write-Host "##[section]Discovering UI Test Projects"
+      
+      # Search for all UITest project files
+      $uiTestProjects = Get-ChildItem -Path "$(Build.SourcesDirectory)" -Recurse -Filter "*UITest*.csproj" | 
+          Where-Object { 
+              $_.FullName -notlike "*\obj\*" -and 
+              $_.FullName -notlike "*UITestAutomation*" 
+          }
+      
+      Write-Host "##[command]Found $($uiTestProjects.Count) UI Test projects:"
+      foreach ($project in $uiTestProjects) {
+          $relativePath = $project.FullName.Replace("$(Build.SourcesDirectory)\", "").Replace("\", "/")
+          Write-Host "  - $relativePath"
+      }
+      
+      if ($uiTestProjects.Count -eq 0) {
+          Write-Host "##vso[task.logissue type=warning]No UI test projects found"
+          exit 0
+      }
+      
+      Write-Host "##[section]Building UI Test Projects"
+      
+      foreach ($project in $uiTestProjects) {
+          $relativePath = $project.FullName.Replace("$(Build.SourcesDirectory)\", "").Replace("\", "/")
+          $projectName = [System.IO.Path]::GetFileNameWithoutExtension($project.Name)
+          $logFileName = "build-$($projectName.Replace('/', '_').Replace('\', '_')).binlog"
+          
+          Write-Host "##[command]Building: $relativePath"
+          
+          $msbuildArgs = @(
+              $project.FullName,
+              "-restore",
+              "-graph",
+              "/p:RestorePackagesConfig=true",
+              "/p:BuildProjectReferences=true",
+              "/p:CIBuild=true",
+              "/bl:$(LogOutputDirectory)\$logFileName",
+              "/p:Platform=$(BuildPlatform)",
+              "/p:Configuration=$(BuildConfiguration)",
+              "$(NUGET_RESTORE_MSBUILD_ARGS)"
+          )
+          
+          & dotnet msbuild @msbuildArgs
+          
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "##vso[task.logissue type=error]Failed to build $relativePath"
+              exit $LASTEXITCODE
+          } else {
+              Write-Host "##[command]Successfully built: $relativePath"
+          }
+      }
+      
+      Write-Host "##[section]Build completed successfully for all UI test projects"
+    displayName: 'Discover and Build UI Test Projects'
+
   # Build only UI test projects
-  - ${{ each project in parameters.uiTestProjectsToBuild }}:
-    - task: VSBuild@1
-      displayName: Build UI Test Project ${{ project }}
-      inputs:
-        solution: ${{ project }}
-        vsVersion: 17.0
-        msbuildArgs: >-
-          -restore
-          -graph
-          /p:RestorePackagesConfig=true
-          /p:BuildProjectReferences=true
-          /p:CIBuild=true
-          /bl:$(LogOutputDirectory)\build-${{ join('_',split(project, '/')) }}.binlog
-          $(NUGET_RESTORE_MSBUILD_ARGS)
-        platform: $(BuildPlatform)
-        configuration: $(BuildConfiguration)
-        msbuildArchitecture: x64
-        maximumCpuCount: true
+  # - ${{ each project in parameters.uiTestProjectsToBuild }}:
+  #   - task: VSBuild@1
+  #     displayName: Build UI Test Project ${{ project }}
+  #     inputs:
+  #       solution: ${{ project }}
+  #       vsVersion: 17.0
+  #       msbuildArgs: >-
+  #         -restore
+  #         -graph
+  #         /p:RestorePackagesConfig=true
+  #         /p:BuildProjectReferences=true
+  #         /p:CIBuild=true
+  #         /bl:$(LogOutputDirectory)\build-${{ join('_',split(project, '/')) }}.binlog
+  #         $(NUGET_RESTORE_MSBUILD_ARGS)
+  #       platform: $(BuildPlatform)
+  #       configuration: $(BuildConfiguration)
+  #       msbuildArchitecture: x64
+  #       maximumCpuCount: true
 
   # Stage test project outputs with directory structure
   - task: CopyFiles@2
