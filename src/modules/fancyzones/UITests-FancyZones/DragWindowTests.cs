@@ -615,7 +615,7 @@ namespace UITests_FancyZones
             // test settings
             Microsoft.PowerToys.UITest.CheckBox useShiftCheckBox = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Hold Shift key to activate zones while dragging a window");
             Microsoft.PowerToys.UITest.CheckBox useNonPrimaryMouseCheckBox = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Use a non-primary mouse button to toggle zone activation");
-            Microsoft.PowerToys.UITest.CheckBox makeDraggedWindowTransparent = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Make dragged window transparent");
+            Microsoft.PowerToys.UITest.CheckBox makeDraggedWindowTransparent = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Make the dragged window transparent");
 
             Find<Microsoft.PowerToys.UITest.CheckBox>("Show zone number").SetCheck(false, 100);
             Find<Slider>("Opacity (%)").QuickSetValue(100); // make highlight color visible with opacity 100

@@ -339,7 +339,7 @@ HRESULT CPowerRenameItem::_Init(_In_ IShellItem* psi)
                 // Some items can be both folders and streams (ex: zip folders).
                 m_isFolder = (att & SFGAO_FOLDER) && !(att & SFGAO_STREAM);
                 // The shell lets us know if an item should not be renamed
-                // (ex: user profile director, windows dir, etc).
+                // (ex: user profile director, windows dir, etc.).
                 m_canRename = (att & SFGAO_CANRENAME);
             }
         }

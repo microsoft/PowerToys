@@ -50,7 +50,7 @@ For more details on the implementation approach, see the [Dual Registration sect
 Image Resizer dynamically determines when to show the context menu option:
 - `AppxManifest.xml` registers the extension for all file types (`Type="*"`)
 - The shell extension checks if the selected files are images using `AssocGetPerceivedType()`
-- The menu appears only for image files (returns `ECS_ENABLED`), otherwise it remains hidden (returns `ECS_HIDDEN`)
+- The menu appears only for image files (returns `ECS_ENABLED`); otherwise, it remains hidden (returns `ECS_HIDDEN`)
 
 This approach provides flexibility to support additional file types by modifying only the detection logic without changing the system-level registration.
 
