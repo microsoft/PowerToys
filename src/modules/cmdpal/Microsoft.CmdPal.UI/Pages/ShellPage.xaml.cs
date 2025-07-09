@@ -418,16 +418,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
-            // Also hide our details pane about here, if we had one
-            HideDetails();
-
-            if (_settingsWindow == null)
-            {
-                _settingsWindow = new SettingsWindow();
-            }
-
-            _settingsWindow.Activate();
+            OpenSettings();
         });
+    }
+
+    public void OpenSettings()
+    {
+        if (_settingsWindow == null)
+        {
+            _settingsWindow = new SettingsWindow();
+        }
+
+        _settingsWindow.Activate();
     }
 
     public void Receive(ShowDetailsMessage message)
@@ -625,6 +627,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             var requestedTheme = ActualTheme;
             var iconInfoVM = ViewModel.Details?.HeroImage;
             return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
+        }
+    }
+
+    private void Command_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model));
         }
     }
 }

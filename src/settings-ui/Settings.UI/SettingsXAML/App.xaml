@@ -39,6 +39,7 @@
 
             <tkconverters:StringFormatConverter x:Key="StringFormatConverter" />
             <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <x:Double x:Key="SettingsCardSpacing">2</x:Double>
 
             <!--  Overrides  -->
             <Thickness x:Key="InfoBarIconMargin">6,16,16,16</Thickness>

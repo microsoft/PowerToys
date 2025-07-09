@@ -190,7 +190,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             contextItem.SlowInitializeProperties();
         });
 
-        if (!string.IsNullOrEmpty(model.Command.Name))
+        if (!string.IsNullOrEmpty(model.Command?.Name))
         {
             _defaultCommandContextItem = new(new CommandContextItem(model.Command!), PageContext)
             {

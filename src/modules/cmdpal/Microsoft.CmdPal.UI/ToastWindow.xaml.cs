@@ -17,11 +17,12 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.WindowsAndMessaging;
+using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
-public sealed partial class ToastWindow : Window,
+public sealed partial class ToastWindow : WindowEx,
     IRecipient<QuitMessage>
 {
     private readonly HWND _hwnd;
@@ -34,7 +35,7 @@ public sealed partial class ToastWindow : Window,
     {
         this.InitializeComponent();
         AppWindow.Hide();
-        AppWindow.IsShownInSwitchers = false;
+        this.SetVisibilityInSwitchers(false);
         ExtendsContentIntoTitleBar = true;
         AppWindow.SetPresenter(AppWindowPresenterKind.CompactOverlay);
         this.SetIcon();
@@ -64,19 +65,7 @@ public sealed partial class ToastWindow : Window,
 
     private void PositionCentered()
     {
-        var intSize = new SizeInt32
-        {
-            Width = Convert.ToInt32(ToastText.ActualWidth),
-            Height = Convert.ToInt32(ToastText.ActualHeight),
-        };
-
-        var scaleAdjustment = GetScaleFactor(_hwnd);
-        var scaled = new SizeInt32
-        {
-            Width = (int)Math.Round(intSize.Width * scaleAdjustment),
-            Height = (int)Math.Round(intSize.Height * scaleAdjustment),
-        };
-        AppWindow.Resize(scaled);
+        this.SetWindowSize(ToastText.ActualWidth, ToastText.ActualHeight);
 
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
@@ -86,7 +75,7 @@ public sealed partial class ToastWindow : Window,
 
             var monitorHeight = displayArea.WorkArea.Height;
             var windowHeight = AppWindow.Size.Height;
-            centeredPosition.Y = monitorHeight - (windowHeight * 2);
+            centeredPosition.Y = monitorHeight - (windowHeight + 8); // Align with other shell toasts, like the volume indicator.
             AppWindow.Move(centeredPosition);
         }
     }

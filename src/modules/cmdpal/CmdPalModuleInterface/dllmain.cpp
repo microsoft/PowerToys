@@ -3,6 +3,7 @@
 
 #include <interface/powertoy_module_interface.h>
 
+#include <atomic>
 #include <common/logger/logger.h>
 #include <common/utils/logger_helper.h>
 #include <common/SettingsAPI/settings_helpers.h>
@@ -10,10 +11,11 @@
 #include <common/utils/resources.h>
 #include <common/utils/package.h>
 #include <common/utils/process_path.h>
+#include <common/utils/winapi_error.h>
 #include <common/interop/shared_constants.h>
 #include <Psapi.h>
 #include <TlHelp32.h>
-#include <common/utils/winapi_error.h>
+#include <thread>
 
 HINSTANCE g_hInst_cmdPal = 0;
 
@@ -37,8 +39,6 @@ BOOL APIENTRY DllMain(HMODULE hInstance,
 class CmdPal : public PowertoyModuleIface
 {
 private:
-    bool m_enabled = false;
-
     std::wstring app_name;
 
     //contains the non localized key of the powertoy
@@ -46,7 +46,10 @@ private:
 
     HANDLE m_hTerminateEvent;
 
-    void LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
+    // Track if this is the first call to enable
+    bool firstEnableCall = true;
+
+    static bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated, bool silentFail)
     {
         std::wstring dir = std::filesystem::path(appPath).parent_path();
 
@@ -54,6 +57,10 @@ private:
         sei.cbSize = sizeof(SHELLEXECUTEINFO);
         sei.hwnd = nullptr;
         sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
+        if (silentFail)
+        {
+            sei.fMask = sei.fMask | SEE_MASK_FLAG_NO_UI;
+        }
         sei.lpVerb = elevated ? L"runas" : L"open";
         sei.lpFile = appPath.c_str();
         sei.lpParameters = commandLineArgs.c_str();
@@ -64,7 +71,11 @@ private:
         {
             std::wstring error = get_last_error_or_default(GetLastError());
             Logger::error(L"Failed to launch process. {}", error);
+            return false;
         }
+
+        m_launched.store(true);
+        return true;
     }
 
     std::vector<DWORD> GetProcessesIdByName(const std::wstring& processName)
@@ -106,22 +117,27 @@ private:
 
         for (DWORD pid : processIds)
         {
-            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+            HANDLE hProcess = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, FALSE, pid);
 
             if (hProcess != NULL)
             {
                 SetEvent(m_hTerminateEvent);
 
-                // Wait for 1.5 seconds for the process to end correctly and stop etw tracer
-                WaitForSingleObject(hProcess, 1500);
+                // Wait for 1.5 seconds for the process to end correctly, allowing time for ETW tracer and extensions to stop
+                if (WaitForSingleObject(hProcess, 1500) == WAIT_TIMEOUT)
+                {
+                    TerminateProcess(hProcess, 0);
+                }
 
-                TerminateProcess(hProcess, 0);
                 CloseHandle(hProcess);
             }
         }
     }
 
 public:
+    static std::atomic<bool> m_enabled;
+    static std::atomic<bool> m_launched;
+
     CmdPal()
     {
         app_name = L"CmdPal";
@@ -133,10 +149,7 @@ public:
 
     ~CmdPal()
     {
-        if (m_enabled)
-        {
-        }
-        m_enabled = false;
+        CmdPal::m_enabled.store(false);
     }
 
     // Destroy the powertoy and free memory
@@ -203,15 +216,19 @@ public:
     {
         Logger::trace("CmdPal::enable()");
 
-        m_enabled = true;
+        CmdPal::m_enabled.store(true);
 
-        try
-        {
-            std::wstring packageName = L"Microsoft.CommandPalette";
+        std::wstring packageName = L"Microsoft.CommandPalette";
+        // Launch CmdPal as normal user using explorer
+        std::wstring launchPath = L"explorer.exe";
+        std::wstring launchArgs = L"x-cmdpal://background";
 #ifdef IS_DEV_BRANDING
-            packageName = L"Microsoft.CommandPalette.Dev";
+        packageName = L"Microsoft.CommandPalette.Dev";
 #endif
-            if (!package::GetRegisteredPackage(packageName, false).has_value())
+
+        if (!package::GetRegisteredPackage(packageName, false).has_value())
+        {
+            try
             {
                 Logger::info(L"CmdPal not installed. Installing...");
 
@@ -238,28 +255,34 @@ public:
                     }
                 }
             }
+            catch (std::exception& e)
+            {
+                std::string errorMessage{ "Exception thrown while trying to install CmdPal package: " };
+                errorMessage += e.what();
+                Logger::error(errorMessage);
+            }
         }
-        catch (std::exception& e)
+
+        if (!package::GetRegisteredPackage(packageName, false).has_value())
         {
-            std::string errorMessage{ "Exception thrown while trying to install CmdPal package: " };
-            errorMessage += e.what();
-            Logger::error(errorMessage);
+            Logger::error("Cmdpal is not registered, quit..");
+            return;
         }
-        try
+
+        if (!firstEnableCall)
         {
-#ifdef IS_DEV_BRANDING
-            LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App", L"RunFromPT", false);
-#else
-            LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette_8wekyb3d8bbwe!App", L"RunFromPT", false);
-#endif
+            Logger::trace("Not first attempt, try to launch");
+            LaunchApp(launchPath, launchArgs, false /*no elevated*/, false /*error pop up*/);
         }
-        catch (std::exception& e)
+        else
         {
-            std::string errorMessage{ "Exception thrown while trying to launch CmdPal: " };
-            errorMessage += e.what();
-            Logger::error(errorMessage);
-            throw;
+            // If first time enable, do retry launch.
+            Logger::trace("First attempt, try to launch");
+            std::thread launchThread(&CmdPal::RetryLaunch, launchPath, launchArgs);
+            launchThread.detach();
         }
+
+        firstEnableCall = false;
     }
 
     virtual void disable()
@@ -267,7 +290,44 @@ public:
         Logger::trace("CmdPal::disable()");
         TerminateCmdPal();
 
-        m_enabled = false;
+        CmdPal::m_enabled.store(false);
+    }
+
+    static void RetryLaunch(std::wstring path, std::wstring cmdArgs)
+    {
+        const int base_delay_milliseconds = 1000;
+        int max_retry = 9; // 2**9 - 1 seconds. Control total wait time within 10 min.
+        int retry = 0;
+        do
+        {
+            auto launch_result = LaunchApp(path, cmdArgs, false, retry < max_retry);
+            if (launch_result)
+            {
+                Logger::info(L"CmdPal launched successfully after {} retries.", retry);
+                return;
+            }
+            else
+            {
+                Logger::error(L"Retry {} launch CmdPal launch failed.", retry);
+            }
+
+            // When we got max retry, we don't need to wait for the next retry.
+            if (retry < max_retry)
+            {
+                int delay = base_delay_milliseconds * (1 << (retry));
+                std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+            }
+            ++retry;
+        } while (retry <= max_retry && m_enabled.load() && !m_launched.load());
+
+        if (!m_enabled.load() || m_launched.load())
+        {
+            Logger::error(L"Retry cancelled. CmdPal is disabled or already launched.");
+        }
+        else
+        {
+            Logger::error(L"CmdPal launch failed after {} attempts.", retry);
+        }
     }
 
     virtual bool on_hotkey(size_t) override
@@ -282,9 +342,12 @@ public:
 
     virtual bool is_enabled() override
     {
-        return m_enabled;
+        return CmdPal::m_enabled.load();
     }
 };
+
+std::atomic<bool> CmdPal::m_enabled{ false };
+std::atomic<bool> CmdPal::m_launched{ false };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

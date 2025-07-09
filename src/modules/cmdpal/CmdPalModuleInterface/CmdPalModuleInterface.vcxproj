@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <Import Project="..\Microsoft.CmdPal.UI\CmdPal.pre.props" Condition="Exists('..\Microsoft.CmdPal.UI\CmdPal.pre.prop')" />
+  <Import Project="..\Microsoft.CmdPal.UI\CmdPal.pre.props" Condition="Exists('..\Microsoft.CmdPal.UI\CmdPal.pre.props')" />
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -44,16 +44,12 @@
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\common\version\version.vcxproj">
-      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>
         EXAMPLEPOWERTOY_EXPORTS;_WINDOWS;_USRDLL;
         %(PreprocessorDefinitions);
-        $(CommandPaletteBranding)
       </PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'">
         IS_DEV_BRANDING;%(PreprocessorDefinitions)
@@ -67,16 +63,12 @@
 
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="CmdPalModuleInterface.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

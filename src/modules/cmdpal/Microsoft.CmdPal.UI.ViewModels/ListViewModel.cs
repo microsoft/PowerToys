@@ -61,6 +61,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private Task? _initializeItemsTask;
     private CancellationTokenSource? _cancellationTokenSource;
 
+    private ListItemViewModel? _lastSelectedItem;
+
     public override bool IsInitialized
     {
         get => base.IsInitialized; protected set
@@ -82,7 +84,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     protected override void OnFilterUpdated(string filter)
     {
-        //// TODO: Just temp testing, need to think about where we want to filter, as ACVS in View could be done, but then grouping need CVS, maybe we do grouping in view
+        //// TODO: Just temp testing, need to think about where we want to filter, as AdvancedCollectionView in View could be done, but then grouping need CollectionViewSource, maybe we do grouping in view
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
         //// Investigate if we re-use src\modules\cmdpal\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\ListHelpers.cs InPlaceUpdateList and FilterList?
 
@@ -328,7 +330,24 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     [RelayCommand]
-    private void UpdateSelectedItem(ListItemViewModel item)
+    private void UpdateSelectedItem(ListItemViewModel? item)
+    {
+        if (_lastSelectedItem != null)
+        {
+            _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
+        }
+
+        if (item != null)
+        {
+            SetSelectedItem(item);
+        }
+        else
+        {
+            ClearSelectedItem();
+        }
+    }
+
+    private void SetSelectedItem(ListItemViewModel item)
     {
         if (!item.SafeSlowInit())
         {
@@ -354,6 +373,60 @@ public partial class ListViewModel : PageViewModel, IDisposable
                }
 
                TextToSuggest = item.TextToSuggest;
+           });
+
+        _lastSelectedItem = item;
+        _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
+    }
+
+    private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var item = _lastSelectedItem;
+        if (item == null)
+        {
+            return;
+        }
+
+        // already on the UI thread here
+        switch (e.PropertyName)
+        {
+            case nameof(item.Command):
+            case nameof(item.SecondaryCommand):
+            case nameof(item.AllCommands):
+            case nameof(item.Name):
+                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
+                break;
+            case nameof(item.Details):
+                if (ShowDetails && item.HasDetails)
+                {
+                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
+                }
+                else
+                {
+                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                }
+
+                break;
+            case nameof(item.TextToSuggest):
+                TextToSuggest = item.TextToSuggest;
+                break;
+        }
+    }
+
+    private void ClearSelectedItem()
+    {
+        // GH #322:
+        // For inexplicable reasons, if you try updating the command bar and
+        // the details on the same UI thread tick as updating the list, we'll
+        // explode
+        DoOnUiThread(
+           () =>
+           {
+               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
+
+               WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+
+               TextToSuggest = string.Empty;
            });
     }
 

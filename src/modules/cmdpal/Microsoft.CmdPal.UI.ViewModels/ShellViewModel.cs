@@ -4,7 +4,6 @@
 
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -30,8 +29,30 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     [ObservableProperty]
     public partial bool IsDetailsVisible { get; set; }
 
-    [ObservableProperty]
-    public partial PageViewModel CurrentPage { get; set; } = new LoadingPageViewModel(null, _scheduler);
+    private PageViewModel _currentPage = new LoadingPageViewModel(null, _scheduler);
+
+    public PageViewModel CurrentPage
+    {
+        get => _currentPage;
+        set
+        {
+            var oldValue = _currentPage;
+            if (SetProperty(ref _currentPage, value))
+            {
+                if (oldValue is IDisposable disposable)
+                {
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex.ToString());
+                    }
+                }
+            }
+        }
+    }
 
     private MainListPage? _mainListPage;
 
@@ -111,8 +132,9 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
                     _ = Task.Factory.StartNew(
                         () =>
                         {
-                            var result = (bool)viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
-
+                            // bool f = await viewModel.InitializeCommand.ExecutionTask.;
+                            // var result = viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
+                            // var result = viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault<bool?>()!;
                             CurrentPage = viewModel; // result ? viewModel : null;
                             ////LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
                         },

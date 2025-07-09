@@ -21,6 +21,12 @@ namespace ColorPicker.Settings
 
         SettingItem<ColorPickerActivationAction> ActivationAction { get; }
 
+        SettingItem<ColorPickerClickAction> PrimaryClickAction { get; }
+
+        SettingItem<ColorPickerClickAction> MiddleClickAction { get; }
+
+        SettingItem<ColorPickerClickAction> SecondaryClickAction { get; }
+
         RangeObservableCollection<string> ColorHistory { get; }
 
         SettingItem<int> ColorHistoryLimit { get; }

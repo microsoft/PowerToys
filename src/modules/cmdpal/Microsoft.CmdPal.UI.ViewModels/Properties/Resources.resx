@@ -180,28 +180,19 @@
     <value>Once you're ready to test deploy the package locally with Visual Studio, then run the \"Reload\" command in the Command Palette to load your new extension.</value>
   </data>
   <data name="builtin_create_extension_page_title" xml:space="preserve">
-    <value>Create your new extension</value>
-  </data>
-  <data name="builtin_create_extension_page_text" xml:space="preserve">
-    <value>Use this page to create a new extension project.</value>
-  </data>
-  <data name="builtin_create_extension_name_header" xml:space="preserve">
-    <value>Extension name</value>
+    <value>Create a new extension</value>
   </data>
   <data name="builtin_create_extension_name_description" xml:space="preserve">
-    <value>This is the name of your new extension project. It should be a valid C# class name. Best practice is to also include the word 'Extension' in the name.</value>
+    <value>Enter a valid C# class name for the new extension project. It's recommended to include the word "Extension" in the name.</value>
   </data>
   <data name="builtin_create_extension_name_label" xml:space="preserve">
     <value>Extension name</value>
   </data>
   <data name="builtin_create_extension_name_required" xml:space="preserve">
-    <value>Extension name is required, without spaces</value>
-  </data>
-  <data name="builtin_create_extension_display_name_header" xml:space="preserve">
-    <value>Display name</value>
+    <value>Extension name is required and must be a valid C# identifier (start with a letter or underscore, followed by letters, numbers, or underscores)</value>
   </data>
   <data name="builtin_create_extension_display_name_description" xml:space="preserve">
-    <value>The name of your extension as users will see it.</value>
+    <value>The name of the extension as it will appear to users.</value>
   </data>
   <data name="builtin_create_extension_display_name_label" xml:space="preserve">
     <value>Display name</value>
@@ -209,11 +200,8 @@
   <data name="builtin_create_extension_display_name_required" xml:space="preserve">
     <value>Display name is required</value>
   </data>
-  <data name="builtin_create_extension_directory_header" xml:space="preserve">
-    <value>Output path</value>
-  </data>
   <data name="builtin_create_extension_directory_description" xml:space="preserve">
-    <value>Where should the new extension be created? This path will be created if it doesn't exist</value>
+    <value>Select the folder where the new extension will be created. The path will be created if it doesn't exist.</value>
   </data>
   <data name="builtin_create_extension_directory_label" xml:space="preserve">
     <value>Output path</value>

@@ -205,11 +205,20 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows System Command.
+        ///   Looks up a localized string similar to System Commands.
         /// </summary>
         public static string Microsoft_plugin_ext_system_page_name {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_ext_system_page_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows System Commands.
+        /// </summary>
+        public static string Microsoft_plugin_ext_system_page_title {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_ext_system_page_title", resourceCulture);
             }
         }
         
@@ -633,6 +642,42 @@ namespace Microsoft.CmdPal.Ext.System {
         public static string Microsoft_plugin_sys_restart_computer_description {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_restart_computer_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restart Windows Explorer.
+        /// </summary>
+        public static string Microsoft_plugin_sys_RestartShell {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RestartShell", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are about to restart Windows Explorer, are you sure?.
+        /// </summary>
+        public static string Microsoft_plugin_sys_RestartShell_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RestartShell_confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to End and restart the Windows Explorer shell process.
+        /// </summary>
+        public static string Microsoft_plugin_sys_RestartShell_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RestartShell_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restart.
+        /// </summary>
+        public static string Microsoft_plugin_sys_RestartShell_name {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RestartShell_name", resourceCulture);
             }
         }
         

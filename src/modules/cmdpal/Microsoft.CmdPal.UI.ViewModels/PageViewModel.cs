@@ -99,7 +99,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     //// Run on background thread from ListPage.xaml.cs
     [RelayCommand]
-    private Task<bool> InitializeAsync()
+    internal Task<bool> InitializeAsync()
     {
         // TODO: We may want a SemaphoreSlim lock here.
 
@@ -182,6 +182,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
             return; // throw?
         }
 
+        var updateProperty = true;
         switch (propertyName)
         {
             case nameof(Name):
@@ -198,9 +199,21 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
             case nameof(Icon):
                 this.Icon = new(model.Icon);
                 break;
+            default:
+                updateProperty = false;
+                break;
         }
 
-        UpdateProperty(propertyName);
+        // GH #38829: If we always UpdateProperty here, then there's a possible
+        // race condition, where we raise the PropertyChanged(SearchText)
+        // before the subclass actually retrieves the new SearchText from the
+        // model. In that race situation, if the UI thread handles the
+        // PropertyChanged before ListViewModel fetches the SearchText, it'll
+        // think that the old search text is the _new_ value.
+        if (updateProperty)
+        {
+            UpdateProperty(propertyName);
+        }
     }
 
     public new void ShowException(Exception ex, string? extensionHint = null)

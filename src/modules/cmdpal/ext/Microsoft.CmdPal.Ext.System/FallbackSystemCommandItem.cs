@@ -32,6 +32,7 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
     {
         if (string.IsNullOrWhiteSpace(query))
         {
+            Command = null;
             Title = string.Empty;
             Subtitle = string.Empty;
             return;
@@ -58,6 +59,7 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
 
         if (result == null)
         {
+            Command = null;
             Title = string.Empty;
             Subtitle = string.Empty;
 

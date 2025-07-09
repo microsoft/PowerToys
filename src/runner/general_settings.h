@@ -5,6 +5,7 @@
 struct GeneralSettings
 {
     bool isStartupEnabled;
+    bool showSystemTrayIcon;
     std::wstring startupDisabledReason;
     std::map<std::wstring, bool> isModulesEnabledMap;
     bool isElevated;

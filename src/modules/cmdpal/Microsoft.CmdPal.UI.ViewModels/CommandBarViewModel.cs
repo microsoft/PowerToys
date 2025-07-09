@@ -128,7 +128,7 @@ public partial class CommandBarViewModel : ObservableObject,
     // this comes in when the primary button is tapped
     public void InvokePrimaryCommand()
     {
-        PerformCommand(SecondaryCommand);
+        PerformCommand(PrimaryCommand);
     }
 
     // this comes in when the secondary button is tapped
@@ -155,6 +155,7 @@ public partial class CommandBarViewModel : ObservableObject,
             ContextMenuStack.Add(new ContextMenuStackViewModel(command));
             OnPropertyChanging(nameof(ContextMenu));
             OnPropertyChanged(nameof(ContextMenu));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
             return ContextKeybindingResult.KeepOpen;
         }
         else

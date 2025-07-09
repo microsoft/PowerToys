@@ -8,6 +8,31 @@
 # you might not want to check in code where you skip all the other tests.
 #\bfit\(
 
+# English does not use a hyphen between adverbs and nouns
+# https://twitter.com/nyttypos/status/1894815686192685239
+(?:^|\s)[A-Z]?[a-z]+ly-(?=[a-z]{3,})(?:[.,?!]?\s|$)
+
+# Smart quotes should match
+\s’[^.?!‘’]+’[^.?!‘’]+‘[^.?!‘’]+’|\s‘[^.?!‘’]+’[^.?!‘’]+’[^.?!‘’]+’|\s”[^.?!“”]+”[^.?!“”]+“[^.?!“”]+”|\s“[^.?!“”]+”[^.?!“”]+”[^.?!“”]+”
+
+# Don't use `requires that` + `to be`
+# https://twitter.com/nyttypos/status/1894816551435641027
+\brequires that \w+\b[^.]+to be\b
+
+# A fully parenthetical sentence’s period goes inside the parentheses, not outside.
+# https://twitter.com/nyttypos/status/1898844061873639490
+\([A-Z][a-z]{2,}(?: [a-z]+){3,}\)\.\s
+
+# Complete sentences shouldn't be in the middle of another sentence as a parenthetical.
+(?<!\.)(?<!\betc)\.\),
+
+# Complete sentences in parentheticals should not have a space before the period.
+\s\.\)(?!.*\}\})
+
+# This probably indicates Mojibake https://en.wikipedia.org/wiki/Mojibake
+# You probably should try to unbake this content
+Ã(?:Â[¤¶¥]|[£¢])|Ãƒ
+
 # Should be `HH:MM:SS`
 \bHH:SS:MM\b
 
@@ -24,17 +49,73 @@
 # Should be `a priori` or `and prior`
 (?i)(?<!posteriori)\sand priori\s
 
+# Should be `a`
+\san (?=(?:[b-df-gj-npqtv-xz]|h(?!our|tml|ttp)|r(?!c\b)|s(?!sh|vg))[a-z])
+
+# Articles generally shouldn't be used without a noun and a verb
+# - Perhaps you're missing a verb between the noun and the second article.
+# - Or, perhaps you should remove the first verb and treat the intervening word as a verb?
+# - In some cases you should add a `,` between the noun and the second article.
+\s(?:an?|the(?! action))\s(?!way|wh|how\b)[A-Za-z][a-z]+[a-qs-z]\s(?:a(?! bit)n?|the)\s
+
 # Should only be one of `a`, `an`, or `the`
 \b(?:(?:an?|the)\s+){2,}\b
+
+# Should be a list `something, a second thing, or a third thing` or `something, a thing to do a thing`
+# -- This rule is experimental, if you find it has a high false-positive rate, please let the maintainer know
+#(?:^|[?!.] )[^()?!;,.]+, a(?:\s+(?!to\b)\w+)+?\s+an?\b
+
+# Should only be `are` or `can`, not both
+\b(?:(?:are|can)\s+){2,}\b
+
+# Should probably be `ABCDEFGHIJKLMNOPQRSTUVWXYZ`
+(?i)(?!ABCDEFGHIJKLMNOPQRSTUVWXYZ)ABC[A-Z]{21}YZ
+
+# Should be `an`
+#(?<!\b[Ii] |\.)\bam\b
 
 # Should be `anymore`
 \bany more[,.]
 
+# Should be `Ask`
+(?:^|[.?]\s+)As\s+[A-Z][a-z]{2,}\s[^.?]*?(?:how|if|wh\w+)\b
+
+# Should be `at one fell swoop`
+# and only when talking about killing, not some other completion
+# Act 4 Scene 3, Macbeth
+# https://www.opensourceshakespeare.org/views/plays/play_view.php?WorkID=macbeth&Act=4&Scene=3&Scope=scene
+\bin one fell s[lw]?oop\b
+
 # Should be `'`
-(?i)\b(?:(?:i|s?he|they|what|who|you)"ll|(?:are|ca|did|do|does|ha[ds]|have|is|should|were|wo|would)n"t|(?:s?he|let|that|there|what|where|who)"s|(?:i|they|we|what|who|you)"ve)\b
+(?i)\b(?:(?:i|s?he|they|what|who|you)[`"]ll|(?:are|ca|did|do|does|ha[ds]|have|is|should|were|wo|would)n[`"]t|(?:s?he|let|that|there|what|where|who)[`"]s|(?:i|they|we|what|who|you)[`"]ve)\b
+
+# Should be `background` / `intro text` / `introduction` / `prologue` unless it's a brand or relates to _subterfuge_
+(?i)\bpretext\b
+
+# Should be `bearer`
+\b(?<=the )burden(?= of bad news\b)
+
+# Should be `bona`
+# unless talking about bones
+\bbone(?= fide\b)
+
+# Should be `branches`
+# ... unless it's really about the meal that replaces breakfast and lunch.
+\b[Bb]runches\b
 
 # Should be `briefcase`
 \bbrief-case\b
+
+# Should be `by far` or `far and away`
+\bby far and away\b
+
+# Should be `by and large`
+\bby in large\b
+
+# Should be `bytes`
+# unless talking about sports where a team gets to skip a game, or
+# saying `goodbyes` (even this is questionable)
+(?<!\\)\bbyes\b
 
 # Should be `can, not only ..., ... also...`
 \bcan not only.*can also\b
@@ -46,7 +127,10 @@
 # > In formal writing and where contractions are frowned upon, use `cannot`.
 # > It is possible to write `can not`, but you generally find it only as part of some other construction, such as `not only . . . but also.`
 # - if you encounter such a case, add a pattern for that case to patterns.txt.
-\b[Cc]an not\b
+\b[Cc]an not\b(?! only\b)
+
+# Should be `chart`
+(?i)\bhelm\b.*\bchard\b
 
 # Do not use `(click) here` links
 # For more information, see:
@@ -56,8 +140,32 @@
 # * https://heyoka.medium.com/dont-use-click-here-f32f445d1021
 (?i)(?:>|\[)(?:(?:click |)here|this(?=\]\([^\)]+:/)|link|(?:read |)more(?!</value))(?:</|\]\()
 
+# Including "image of" or "picture of" in alt text is unnecessary.
+\balt=['"](?:an? |)(?:image|picture) of
+
+# Alt text should be short
+\balt=(?:'[^']{126,}'|"[^"]{126,}")
+
+# Should be `effect`
+(?<=\btake )affect\b
+
+# Should be `-endian`
+\b(?i)(?<=big|little) endian\b
+
 # Should be `equals` to `is equal to`
 \bequals to\b
+
+# Should be `ECMA` 262 (JavaScript)
+(?i)\bTS\/EMCA\b|\bEMCA(?: \d|\s*Script)|\bEMCA\b(?=.*\bTS\b)
+
+# Should be `ECMA` 340 (Near Field Communications)
+(?i)EMCA[- ]340
+
+# Should be `fall back`
+\bfallback(?= to)\b
+
+# Should be `for`, `for, to` or `to`
+\b(?:for to|to for)\b
 
 # Should be `GitHub`
 (?<![&*.]|// |\b(?:from|import|type) )\bGithub\b(?![{()])
@@ -65,9 +173,15 @@
 # Should be `GitLab`
 (?<![&*.]|// |\b(?:from|import|type) )\bGitlab\b(?![{()])
 
+# Should be `heartrending` unless talking about drawing hearts
+\b(?i)heart[- ]rendering\b(?![^.?!]*(?:hearts|quirk))
+
 # Should probably be `https://`...
 # Markdown generally doesn't assume that links are to urls
 \]\(www\.\w
+
+# Should be `intents and purposes`
+(?<=[Ff]or all )intensive purposes\b
 
 # Should be `JavaScript`
 \bJavascript\b
@@ -84,11 +198,14 @@
 # Should be `RabbitMQ`
 \bRabbitmq\b
 
+# Should be `TensorFlow`
+\bTensorflow\b
+
 # Should be `TypeScript`
 \bTypescript\b
 
 # Should be `another`
-\ban[- ]other\b
+\ban[- ]other(?!-)\b
 
 # Should be `case-(in)sensitive`
 \bcase (?:in|)sensitive\b
@@ -108,11 +225,14 @@
 # Should be `here-in`, `the`, `them`, `this`, `these` or reworded in some other way
 \bthe here(?:\.|,| (?!and|defined))
 
-# Should be `greater than`
-\bhigher than\b
+# Should be `going to bed` or `going to a bad`
+\bgoing to bad(?!-)\b
 
-# Should be `ID`
-#\bId\b
+# Should be `greater than`
+#\bhigher than\b
+
+# Should be `ID` (unless it's a flag/property)
+#(?<![-\.])\bId\b(?![(])
 
 # Should be `in front of`
 \bin from of\b
@@ -125,14 +245,26 @@
 # Should be `use`
 \sin used by\b
 
+# Should be `in-depth` if used as an adjective (but `in depth` when used as an adverb)
+\bin depth\s(?!rather\b)\w{6,}
+
+# Should be `in-flight` or `on the fly` (unless actually talking about airline flights)
+\bon[- ]flight\b(?!=\s+(?:(?:\w{2}|)\d+|availability|booking|computer|data|delay|departure|management|performance|radar|reservation|scheduling|software|status|ticket|time|type|.*(?:hotel|taxi)))
+
 # Should be `is obsolete`
 \bis obsolescent\b
 
 # Should be `it's` or `its`
-\bits['’]
+(?<![.'])\bits['’]
 
 # Should be `its`
-\bit's(?= own\b)
+\bit's(?= (?:child|only purpose|own(?:er|)|parent|sibling)\b)
+
+# Should be `for its` (possessive) or `because it is`
+\bfor it(?:'s| is)\b
+
+# Should be `lends`
+\bleads(?= credence)
 
 # Should be `log in`
 \blogin to the
@@ -140,11 +272,33 @@
 # Should be `long-standing`
 \blong standing\b
 
+# Should be `lose`
+(?<=\bwill )loose\b
+
+# `apt-key` is deprecated
+# ... instead you should be writing a pair of files:
+# ... * the gpg key added to a distinct key ring file based on your project/distro/key...
+# ... * the sources.list in a district file -- not simply appended to `/etc/apt/sources.list` -- (there is a newer format [DEB822](https://manpages.debian.org/bookworm/dpkg-dev/deb822.5.en.html)) that references the gpg key.
+# Consider:
+# ````sh
+# curl http://download.something.example.com/$DISTRO/Release.key | \
+#     gpg --dearmor --yes --output /usr/share/keyrings/something-distro.gpg
+# echo "deb [signed-by=/usr/share/keyrings/something-distro.gpg] http://download.something.example.com/repositories/home:/$DISTRO ./" \
+#     >> /etc/apt/sources.list.d/something-distro.list
+# ````
+\bapt-key add\b
+
+# Should be `nearby`
+\bnear by\b
+
 # Should probably be a person named `Nick` or the abbreviation `NIC`
 \bNic\b
 
 # Should be `not supposed`
 \bsupposed not\b
+
+# Should be `Once this` or `On this` or even `One that`. Rarely `One, this`
+[?!.] One this\b
 
 # Should probably be `much more`
 \bmore much\b
@@ -153,7 +307,10 @@
 \bperform it's\b
 
 # Should be `opt-in`
-(?<!\scan|for)(?<!\sif)\sopt in\s
+(?<!\scan|for)(?<!\smust)(?<!\sif)\sopt in\s
+
+# Should be `out-of-date` if acting as an adjective before a noun
+\bout of date(?= \w{3,}\b)
 
 # Should be `less than`
 \bless then\b
@@ -170,23 +327,88 @@
 # Should be `on the other hand`
 \b(?i)on another hand\b
 
+# Reword to `on at runtime` or `enabled at launch`
+# The former if you mean it can be changed dynamically.
+# The latter if you mean that it can be changed without recompiling but not after the program starts.
+\bswitched on runtime\b
+
+# Should be `Of course,`
+[?.!]\s+Of course\s(?=[-\w\s]+[.?;!,])
+
 # Most people only have two hands. Reword.
 \b(?i)on the third hand\b
+
+# Should be `Open Graph`
+# unless talking about a specific Open Graph implementation:
+# - Java
+# - Node
+# - Py
+# - Ruby
+\bOpenGraph\b
+
+# Should be `OpenShift`
+\bOpenshift\b
 
 # Should be `otherwise`
 \bother[- ]wise\b
 
+# Should be `; otherwise` or `. Otherwise`
+# https://study.com/learn/lesson/otherwise-in-a-sentence.html
+, [Oo]therwise\b
+
+# Should probably be `Otherwise,`
+(?<=\. )Otherwise\s
+
 # Should be `or (more|less)`
 \bore (?:more|less)\b
+
+# Should be `or`
+\b(?i)true of .*false\b
+
+# Should be `pale`
+\b(?<=beyond the )pail\b
+
+# Should be reworded.
+# `passthrough` is an adjective
+# `pass-through` could be a noun
+# `pass through` would be a verb phrase
+\b(?i)passthrough(?= an?\b)
 
 # Should be `rather than`
 \brather then\b
 
+# Should be `Red Hat`
+\bRed[Hh]at\b
+
 # Should be `regardless, ...` or `regardless of (whether)`
 \b[Rr]egardless if you\b
 
+# Should be `self-signed`
+\bself signed\b
+
+# Should be `SendGrid`
+\bSendgrid\b
+
+# Should be `set up` (`setup` is a noun / `set up` is a verb)
+\b[Ss]etup(?= (?:an?|the)\b)
+
+# Should be `state`
+\bsate(?=\b|[A-Z])|(?<=[a-z])Sate(?=\b|[A-Z])|(?<=[A-Z]{2})Sate(?=\b|[A-Z])
+
+# Should be `this`
+\b[Tt]oday(?= morning\b)
+
+# Should be `let's` or `let us`
+\b[Ll]ets (?=throw\.)
+
 # Should be `no longer needed`
 \bno more needed\b(?! than\b)
+
+# Should be `<see|look> below for the`
+(?i)\bfind below the\b
+
+# Should be `then any` unless there's a comparison before the `,`
+, than any\b
 
 # Should be `did not exist`
 \bwere not existent\b
@@ -197,8 +419,17 @@
 # Should be `nonexistent`
 \b[Nn]o[nt][- ]existent\b
 
+# Should be `our`
+\bspending out time\b
+
 # Should be `@brief` / `@details` / `@param` / `@return` / `@retval`
 (?:^\s*|(?:\*|//|/*)\s+`)[\\@](?:breif|(?:detail|detials)|(?:params(?!\.)|prama?)|ret(?:uns?)|retvl)\b
+
+# Should be `more than` or `more, then`
+\bmore then\b
+
+# Should be `Pipeline`/`pipeline`
+(?:(?<=\b|[A-Z])p|P)ipeLine(?:\b|(?=[A-Z]))
 
 # Should be `preexisting`
 [Pp]re[- ]existing
@@ -215,6 +446,9 @@
 # Should be `prerequisite`
 [Pp]re[- ]requisite
 
+# Should be `QuickTime`
+\bQuicktime\b
+
 # Should be `recently changed` or `recent changes`
 [Rr]ecent changed
 
@@ -224,14 +458,30 @@
 # Should be `reentrant`
 [Rr]e[- ]entrant
 
+# Should be `room for`
+\brooms for (?!lease|rent|sale)
+
+# Should be `socioeconomic`
+# https://dictionary.cambridge.org/us/dictionary/english/socioeconomic
+socio-economic
+
 # Should be `strong suit`
 \b(?:my|his|her|their) strong suite\b
+
+# Should probably be `temperatures` unless actually talking about thermal drafts (things birds may fly on)
+\bthermals\b
+
+# Should be `there are` or `they are` (or `they're`)
+(?i)\btheir are\b
 
 # Should be `understand`
 \bunder stand\b
 
-# Should be `URI` or `uri` unless it refers to a person named `Uri`
-#(?<!\.)\bUri\b(?![(])
+# Should be `URI` or `uri` unless it refers to a person named `Uri` (or a flag)
+#(?<![-\.])\bUri\b(?![(])
+
+# Should be `true`
+(?i)(?<![\[\]()])\brue(?:= or false)
 
 # Should be `it uses is`
 /\bis uses is\b/
@@ -245,11 +495,42 @@
 # Should be `where`
 \bwere they are\b
 
+# Should be `why`
+, way(?= is [^.]*\?)
+
 # should be `vCenter`
 \bV[Cc]enter\b
 
 # Should be `VM`
 \bVm\b
+
+# Should be `walkthrough(s)`
+\bwalk-throughs?\b
+
+# Should be `want`
+\bdon't ant\b
+
+# Should be `we'll`
+\bwe 'll\b
+
+# Should be `week`
+# unless you're really talking about people or pointers
+\bevery weak[.,?!]
+
+# Should be `well`
+\b[Yy]ou(?:'re| are) doing good\b
+
+# Should be `whereas`
+\bwhere as\b
+
+# Should be `WinGet`
+\bWinget\b
+
+# Should be `without` (unless `out` is a modifier of the next word)
+\bwith out\b(?!-)
+
+# Should be `work around`
+\b[Ww]orkaround(?= an?\b)
 
 # Should be `workarounds`
 #\bwork[- ]arounds\b
@@ -267,15 +548,15 @@
 \b(?:coarse|fine) grained\b
 
 # Homoglyph (Cyrillic) should be `A`/`B`/`C`/`E`/`H`/`I`/`I`/`J`/`K`/`M`/`O`/`P`/`S`/`T`/`Y`
-# It's possible that your content is intentionally mixing Cyrllic and Latin scripts, but if it isn't, you definitely want to correct this.
+# It's possible that your content is intentionally mixing Cyrillic and Latin scripts, but if it isn't, you definitely want to correct this.
 (?<=[A-Z]{2})[АВСЕНІӀЈКМОРЅТУ]|[АВСЕНІӀЈКМОРЅТУ](?=[A-Z]+(?:\b|[a-z]+)|[a-z]+(?:[^a-z]|$))
 
-# Homoglyph (Cyrillic) should be `a`/`b`/`e`
-# It's possible that your content is intentionally mixing Cyrllic and Latin scripts, but if it isn't, you definitely want to correct this.
-[аве](?=[A-Za-z]{2,})|(?<=[A-Za-z]{2})[аве]|(?<=[A-Za-z])[аве](?=[A-Za-z])
+# Homoglyph (Cyrillic) should be `a`/`b`/`c`/`e`/`o`/`p`/`x`/`y`
+# It's possible that your content is intentionally mixing Cyrillic and Latin scripts, but if it isn't, you definitely want to correct this.
+[авсеорху](?=[A-Za-z]{2,})|(?<=[A-Za-z]{2})[авсеорху]|(?<=[A-Za-z])[авсеорху](?=[A-Za-z])
 
 # Should be `neither/nor` -- or reword
-#(?!<do )\bnot\b([^.?!"/(](?!neither|,.*?,))+\bnor\b
+#(?<!do )\bnot\b([^.?!"/(](?!neither|,.*?,))+\bnor\b
 
 # Should be `neither/nor` (plus rewording the beginning)
 # This is probably a double negative...

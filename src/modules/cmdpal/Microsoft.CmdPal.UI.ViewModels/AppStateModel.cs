@@ -21,7 +21,7 @@ public partial class AppStateModel : ObservableObject
 
     ///////////////////////////////////////////////////////////////////////////
     // STATE HERE
-    public RecentCommandsManager RecentCommands { get; private set; } = new();
+    public RecentCommandsManager RecentCommands { get; set; } = new();
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ public partial class AppStateModel : ObservableObject
             // Read the JSON content from the file
             var jsonContent = File.ReadAllText(FilePath);
 
-            var loaded = JsonSerializer.Deserialize<AppStateModel>(jsonContent, _deserializerOptions);
+            var loaded = JsonSerializer.Deserialize<AppStateModel>(jsonContent, JsonSerializationContext.Default.AppStateModel);
 
             Debug.WriteLine(loaded != null ? "Loaded settings file" : "Failed to parse");
 
@@ -73,7 +73,7 @@ public partial class AppStateModel : ObservableObject
         try
         {
             // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = JsonSerializer.Serialize(model, _serializerOptions);
+            var settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.AppStateModel);
 
             // Is it valid JSON?
             if (JsonNode.Parse(settingsJson) is JsonObject newSettings)
@@ -89,7 +89,7 @@ public partial class AppStateModel : ObservableObject
                         savedSettings[item.Key] = item.Value != null ? item.Value.DeepClone() : null;
                     }
 
-                    var serialized = savedSettings.ToJsonString(_serializerOptions);
+                    var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.AppStateModel.Options);
                     File.WriteAllText(FilePath, serialized);
 
                     // TODO: Instead of just raising the event here, we should
@@ -122,18 +122,19 @@ public partial class AppStateModel : ObservableObject
         return Path.Combine(directory, "state.json");
     }
 
-    private static readonly JsonSerializerOptions _serializerOptions = new()
-    {
-        WriteIndented = true,
-        Converters = { new JsonStringEnumConverter() },
-    };
+    // [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
+    // private static readonly JsonSerializerOptions _serializerOptions = new()
+    // {
+    //    WriteIndented = true,
+    //    Converters = { new JsonStringEnumConverter() },
+    // };
 
-    private static readonly JsonSerializerOptions _deserializerOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        IncludeFields = true,
-        AllowTrailingCommas = true,
-        PreferredObjectCreationHandling = JsonObjectCreationHandling.Populate,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-    };
+    // private static readonly JsonSerializerOptions _deserializerOptions = new()
+    // {
+    //    PropertyNameCaseInsensitive = true,
+    //    IncludeFields = true,
+    //    AllowTrailingCommas = true,
+    //    PreferredObjectCreationHandling = JsonObjectCreationHandling.Populate,
+    //    ReadCommentHandling = JsonCommentHandling.Skip,
+    // };
 }

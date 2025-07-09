@@ -138,6 +138,9 @@
   <data name="Indexer_Command_OpenWith" xml:space="preserve">
     <value>Open with</value>
   </data>
+  <data name="Indexer_Command_Actions" xml:space="preserve">
+    <value>Actions...</value>
+  </data>
   <data name="Indexer_Command_ShowInFolder" xml:space="preserve">
     <value>Show in folder</value>
   </data>
@@ -156,10 +159,25 @@
   <data name="Indexer_PlaceholderText" xml:space="preserve">
     <value>Search for files and folders...</value>
   </data>
+  <data name="Indexer_Settings_FallbackCommand_AlwaysOn" xml:space="preserve">
+    <value>Always on</value>
+  </data>
+  <data name="Indexer_Settings_FallbackCommand_Mode" xml:space="preserve">
+    <value>Shows file search results on the top-level search results</value>
+  </data>
+  <data name="Indexer_Settings_FallbackCommand_Off" xml:space="preserve">
+    <value>Always off</value>
+  </data>
+  <data name="Indexer_Settings_FallbackCommand_FilePathExist" xml:space="preserve">
+    <value>Only when file path exist</value>
+  </data>
   <data name="Indexer_Subtitle" xml:space="preserve">
     <value>Search files on this device</value>
   </data>
   <data name="Indexer_Title" xml:space="preserve">
     <value>Search files</value>
+  </data>
+  <data name="Indexer_fallback_searchPage_title" xml:space="preserve">
+    <value>Search for "{0}" in files</value>
   </data>
 </root>

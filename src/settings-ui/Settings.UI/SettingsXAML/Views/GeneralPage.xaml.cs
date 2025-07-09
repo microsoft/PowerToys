@@ -5,13 +5,15 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Flyout;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Data.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -85,6 +87,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
 
             ViewModel.InitializeReportBugLink();
+
+            // Register IPC handler for bug report status
+            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);            // Register cleanup on unload
+            this.Unloaded += GeneralPage_Unloaded;
+
+            CheckBugReportStatus();
 
             doRefreshBackupRestoreStatus(100);
         }
@@ -164,6 +172,65 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void ViewDiagnosticData_Click(object sender, RoutedEventArgs e)
         {
             await Task.Run(ViewModel.ViewDiagnosticData);
+        }
+
+        private void ExitPTItem_Tapped(object sender, RoutedEventArgs e)
+        {
+            const string ptTrayIconWindowClass = "PToyTrayIconWindow"; // Defined in runner/tray_icon.h
+            const nuint ID_EXIT_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
+
+            // Exit the XAML application
+            Application.Current.Exit();
+
+            // Invoke the exit command from the tray icon
+            IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
+            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
+        }
+
+        private void BugReportToolClicked(object sender, RoutedEventArgs e)
+        {
+            // Start bug report
+            var launchPage = new LaunchPage();
+            launchPage.ReportBugBtn_Click(sender, e);
+
+            ViewModel.IsBugReportRunning = true;
+
+            // No need to start timer - the observer pattern will notify us when it finishes
+        }
+
+        private void CheckBugReportStatus()
+        {
+            // Send one-time request to check current bug report status
+            string ipcMessage = "{ \"bug_report_status\": { } }";
+            ShellPage.SendDefaultIPCMessage(ipcMessage);
+        }
+
+        private void HandleBugReportStatusResponse(JsonObject response)
+        {
+            if (response.ContainsKey("bug_report_running"))
+            {
+                var isRunning = response.GetNamedBoolean("bug_report_running");
+
+                // Update UI on the UI thread
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.IsBugReportRunning = isRunning;
+                });
+            }
+        }
+
+        private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            CleanupBugReportHandlers();
+        }
+
+        private void CleanupBugReportHandlers()
+        {
+            // Remove IPC handler
+            if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
+            {
+                ShellPage.ShellHandler.IPCResponseHandleList.Remove(HandleBugReportStatusResponse);
+            }
         }
     }
 }

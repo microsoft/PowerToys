@@ -4,8 +4,8 @@
 
 using System;
 using System.Linq;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
-using Microsoft.CmdPal.Ext.Apps.Storage;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Windows.ApplicationModel;
 
@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Storage;
 /// A repository for storing packaged applications such as UWP apps or appx packaged desktop apps.
 /// This repository will also monitor for changes to the PackageCatalog and update the repository accordingly
 /// </summary>
-internal sealed class PackageRepository : ListRepository<UWPApplication>, IProgramRepository
+internal sealed partial class PackageRepository : ListRepository<UWPApplication>, IProgramRepository
 {
     private readonly IPackageCatalog _packageCatalog;
 
@@ -92,9 +92,10 @@ internal sealed class PackageRepository : ListRepository<UWPApplication>, IProgr
 
         // InitializeAppInfo will throw if there is no AppxManifest.xml for the package.
         // Note there are sometimes multiple packages per product and this doesn't necessarily mean that we haven't found the app.
-        // eg. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
-        catch (System.IO.FileNotFoundException)
+        // e.g. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
+        catch (System.IO.FileNotFoundException ex)
         {
+            Logger.LogError(ex.Message);
         }
     }
 

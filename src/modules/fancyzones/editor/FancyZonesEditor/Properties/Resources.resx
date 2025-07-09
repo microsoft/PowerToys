@@ -359,7 +359,7 @@
   </data>
   <data name="MergeName" xml:space="preserve">
     <value>Merge/Delete:</value>
-    <comment>Title for concept behind Merging two zones together or removing an zone</comment>
+    <comment>Title for concept behind Merging two zones together or removing a zone</comment>
   </data>
   <data name="KeyboardControlsName" xml:space="preserve">
     <value>Keyboard navigation:</value>
