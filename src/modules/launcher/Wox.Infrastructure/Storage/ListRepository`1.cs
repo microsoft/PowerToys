@@ -14,7 +14,7 @@ namespace Wox.Infrastructure.Storage
 {
     /// <summary>
     /// The intent of this class is to provide a basic subset of 'list' like operations, without exposing callers to the internal representation
-    /// of the data structure.  Currently this is implemented as a list for it's simplicity.
+    /// of the data structure.  Currently this is implemented as a list for its simplicity.
     /// </summary>
     /// <typeparam name="T">typeof</typeparam>
     public class ListRepository<T> : IRepository<T>, IEnumerable<T>

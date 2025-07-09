@@ -16,20 +16,20 @@ internal sealed partial class CopyCommand : InvokableCommand
     {
         _clipboardItem = clipboardItem;
         _clipboardFormat = clipboardFormat;
-        Name = "Copy";
+        Name = Properties.Resources.copy_command_name;
         if (clipboardFormat == ClipboardFormat.Text)
         {
-            Icon = new("\xE8C8"); // Copy icon
+            Icon = Icons.Copy;
         }
         else
         {
-            Icon = new("\xE8B9"); // Picture icon
+            Icon = Icons.Picture;
         }
     }
 
     public override CommandResult Invoke()
     {
         ClipboardHelper.SetClipboardContent(_clipboardItem, _clipboardFormat);
-        return CommandResult.ShowToast("Copied to clipboard");
+        return CommandResult.ShowToast(Properties.Resources.copied_toast_text);
     }
 }
