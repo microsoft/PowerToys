@@ -12,6 +12,7 @@
 
     <UserControl.Resources>
         <x:Double x:Key="PageMaxWidth">1000</x:Double>
+        <x:Double x:Key="PageHeaderMaxWidth">1020</x:Double>
         <tkconverters:DoubleToVisibilityConverter
             x:Name="doubleToVisibilityConverter"
             FalseValue="Collapsed"
@@ -26,7 +27,7 @@
         </Grid.RowDefinitions>
         <TextBlock
             x:Name="Header"
-            MaxWidth="{StaticResource PageMaxWidth}"
+            MaxWidth="{StaticResource PageHeaderMaxWidth}"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             AutomationProperties.HeadingLevel="1"

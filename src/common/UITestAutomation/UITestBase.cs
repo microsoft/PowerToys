@@ -4,18 +4,9 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Windows;
-using Windows.Devices.Display.Core;
-using Windows.Foundation.Metadata;
-using static Microsoft.PowerToys.UITest.UITestBase.NativeMethods;
-using static Microsoft.PowerToys.UITest.WindowHelper;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -35,11 +26,12 @@ namespace Microsoft.PowerToys.UITest
 
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
+        private readonly string[]? commandLineArgs;
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
         private string? screenshotDirectory;
 
-        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
+        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
         {
             this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
@@ -54,6 +46,7 @@ namespace Microsoft.PowerToys.UITest
 
             this.scope = scope;
             this.size = size;
+            this.commandLineArgs = commandLineArgs;
         }
 
         /// <summary>
@@ -75,18 +68,8 @@ namespace Microsoft.PowerToys.UITest
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
             }
 
-            this.sessionHelper = new SessionHelper(scope).Init();
+            this.sessionHelper = new SessionHelper(scope, commandLineArgs).Init();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
-
-            if (this.scope == PowerToysModule.PowerToysSettings)
-            {
-                // close Debug warning dialog if any
-                // Such debug warning dialog seems only appear in PowerToys Settings
-                if (this.FindAll("DEBUG").Count > 0)
-                {
-                    this.Find("DEBUG").Find<Button>("Close").Click();
-                }
-            }
         }
 
         /// <summary>
@@ -173,7 +156,7 @@ namespace Microsoft.PowerToys.UITest
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="by">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if only has one element, otherwise false.</returns>
+        /// <returns>True if only has one element; otherwise, false.</returns>
         public bool HasOne<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
@@ -185,7 +168,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="by">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if only has one element, otherwise false.</returns>
+        /// <returns>True if only has one element; otherwise, false.</returns>
         public bool HasOne(By by, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.HasOne<Element>(by, timeoutMS, global);
@@ -197,7 +180,7 @@ namespace Microsoft.PowerToys.UITest
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if only has one element, otherwise false.</returns>
+        /// <returns>True if only has one element; otherwise, false.</returns>
         public bool HasOne<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
@@ -209,7 +192,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if only has one element, otherwise false.</returns>
+        /// <returns>True if only has one element; otherwise, false.</returns>
         public bool HasOne(string name, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.HasOne<Element>(name, timeoutMS, global);
@@ -221,7 +204,7 @@ namespace Microsoft.PowerToys.UITest
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if  has one or more element, otherwise false.</returns>
+        /// <returns>True if  has one or more element; otherwise, false.</returns>
         public bool Has<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
@@ -233,7 +216,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if  has one or more element, otherwise false.</returns>
+        /// <returns>True if  has one or more element; otherwise, false.</returns>
         public bool Has(By by, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.Has<Element>(by, timeoutMS, global);
@@ -245,7 +228,7 @@ namespace Microsoft.PowerToys.UITest
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if  has one or more element, otherwise false.</returns>
+        /// <returns>True if  has one or more element; otherwise, false.</returns>
         public bool Has<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
@@ -257,7 +240,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if  has one or more element, otherwise false.</returns>
+        /// <returns>True if  has one or more element; otherwise, false.</returns>
         public bool Has(string name, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.Has<Element>(name, timeoutMS, global);

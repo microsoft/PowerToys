@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Xml;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
@@ -15,7 +13,6 @@ using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.Storage.Packaging.Appx;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
 using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
@@ -74,7 +71,7 @@ public class UWPApplication : IProgram
 
     public List<CommandContextItem> GetCommands()
     {
-        List<CommandContextItem> commands = new List<CommandContextItem>();
+        List<CommandContextItem> commands = [];
 
         if (CanRunElevated)
         {
@@ -226,6 +223,16 @@ public class UWPApplication : IProgram
                 parsedFallback = prefix + "///" + key;
             }
 
+            Span<char> outBuffer = stackalloc char[1024];
+            var source = $"@{{{packageFullName}? {parsed}}}";
+
+            var loaded = TryLoadIndirectString(source, outBuffer, resourceReference);
+
+            if (!string.IsNullOrEmpty(loaded))
+            {
+                return loaded;
+            }
+
             if (string.IsNullOrEmpty(parsedFallback))
             {
                 // https://github.com/Wox-launcher/Wox/issues/964
@@ -235,16 +242,6 @@ public class UWPApplication : IProgram
                 // Microsoft.MicrosoftOfficeHub_17.7608.23501.0_x64__8wekyb3d8bbwe: ms-resource://Microsoft.MicrosoftOfficeHub/officehubintl/AppManifest_GetOffice_Description
                 // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
                 return string.Empty;
-            }
-
-            Span<char> outBuffer = stackalloc char[1024];
-            var source = $"@{{{packageFullName}? {parsed}}}";
-
-            var loaded = TryLoadIndirectString(source, outBuffer, resourceReference);
-
-            if (!string.IsNullOrEmpty(loaded))
-            {
-                return loaded;
             }
 
             var sourceFallback = $"@{{{packageFullName}?{parsedFallback}}}";
@@ -472,7 +469,7 @@ public class UWPApplication : IProgram
         }
         else
         {
-            // for C:\Windows\MiracastView etc
+            // for C:\Windows\MiracastView, etc.
             path = Path.Combine(Package.Location, "Assets", uri);
         }
 

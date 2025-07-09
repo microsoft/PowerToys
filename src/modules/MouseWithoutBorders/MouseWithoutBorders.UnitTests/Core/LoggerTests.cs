@@ -50,7 +50,7 @@ public static class LoggerTests
                 var lines = log.Split("\r\n");
 
                 // some parts of the PrivateDump output are impossible to reproduce -
-                // e.g. random numbers, system timestamps, thread ids, etc, so we'll mask them
+                // e.g. random numbers, system timestamps, thread ids, etc., so we'll mask them
                 var maskPrefixes = new string[]
                 {
                     "----_s0 = ",
