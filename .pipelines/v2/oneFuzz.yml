@@ -24,27 +24,32 @@ parameters:
     default: false
 
 stages:
-  - stage: Download
-    displayName: Download From Release Pipeline
+  - stage: Build_${{ parameters.platform }}
+    displayName: Build ${{ parameters.platform }}
     jobs:
-      - job: Download
-        pool:
-          name: SHINE-INT-Testing-x64
-          demands: ImageOverride -equals SHINE-W11-Testing
-          os: windows
-        displayName: Download artifact from release pipeline and Fuzz
-        steps:
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'specific'
-              project: 'Dart'
-              definition: '76541'
-              buildVersionToDownload: 'latest'
-              branchName: 'refs/heads/main'
-              artifactName: 'build-x64-Release'
-              targetPath: '$(Build.ArtifactStagingDirectory)'
-              patterns: |
-                **/PowerToysSetup-*.exe
-          - pwsh: |-
-              & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1"
-            displayName: Install PowerToys
+      - template: templates/job-build-project.yml
+        parameters:
+          pool:
+            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+              name: SHINE-INT-L
+            ${{ else }}:
+              name: SHINE-OSS-L
+            ${{ if eq(parameters.useVSPreview, true) }}:
+              demands: ImageOverride -equals SHINE-VS17-Preview
+          buildPlatforms:
+            - ${{ parameters.platform }}
+          buildConfigurations: [Release]
+          enablePackageCaching: true
+          enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+          runTests: true
+          useVSPreview: ${{ parameters.useVSPreview }}
+
+  - stage: OneFuzz
+    displayName: Fuzz ${{ parameters.platform }}
+    dependsOn:
+      - Build_${{parameters.platform}}
+    jobs:
+      - template: templates/job-fuzz.yml
+        parameters:
+          platform: ${{ parameters.platform }}
+          configuration: Release
