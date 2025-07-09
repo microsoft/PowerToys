@@ -148,7 +148,7 @@ namespace Microsoft.PowerToys.UITest
 
             if (root != null)
             {
-                const int maxRetries = 3;
+                const int maxRetries = 5;
                 const int delayMs = 5000;
                 var windowName = "PowerToys Settings";
 
