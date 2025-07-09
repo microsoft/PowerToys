@@ -21,6 +21,7 @@ public partial class ShellViewModel : ObservableObject,
 {
     private readonly IRootPageService _rootPageService;
     private readonly TaskScheduler _scheduler;
+    private readonly IPageViewModelFactoryService _pageViewModelFactory;
     private readonly Lock _invokeLock = new();
     private Task? _handleInvokeTask;
 
@@ -65,8 +66,9 @@ public partial class ShellViewModel : ObservableObject,
 
     public bool IsNested { get => _isNested; }
 
-    public ShellViewModel(TaskScheduler scheduler, IRootPageService rootPageService)
+    public ShellViewModel(TaskScheduler scheduler, IRootPageService rootPageService, IPageViewModelFactoryService pageViewModelFactory)
     {
+        _pageViewModelFactory = pageViewModelFactory;
         _scheduler = scheduler;
         _rootPageService = rootPageService;
         _currentPage = new LoadingPageViewModel(null, _scheduler);
@@ -87,6 +89,7 @@ public partial class ShellViewModel : ObservableObject,
 
         // Now that the basics are set up, we can load the root page.
         _rootPage = _rootPageService.GetRootPage();
+
         // This sends a message to us to load the root page view model.
         WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
 
@@ -251,7 +254,7 @@ public partial class ShellViewModel : ObservableObject,
                 _isNested = !isMainPage;
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = GetViewModelForPage(page, _isNested, host);
+                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host);
                 if (pageViewModel == null)
                 {
                     Logger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
@@ -394,19 +397,6 @@ public partial class ShellViewModel : ObservableObject,
                     break;
                 }
         }
-    }
-
-    private PageViewModel? GetViewModelForPage(IPage page, bool nested, CommandPaletteHost host)
-    {
-        return page switch
-        {
-            IListPage listPage => new ListViewModel(listPage, _scheduler, host)
-            {
-                IsNested = nested,
-            },
-            IContentPage contentPage => new ContentPageViewModel(contentPage, _scheduler, host),
-            _ => null,
-        };
     }
 
     public void SetActiveExtension(IExtensionWrapper? extension)

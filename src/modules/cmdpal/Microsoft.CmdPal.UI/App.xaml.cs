@@ -148,6 +148,7 @@ public partial class App : Application
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<IPageViewModelFactoryService, PageViewModelFactory>();
 
         return services.BuildServiceProvider();
     }
