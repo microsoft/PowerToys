@@ -244,7 +244,7 @@ public sealed partial class ListPage : Page,
             }
             else if (e.NewValue == null)
             {
-                Logger.LogDebug("cleared viewmodel");
+                Logger.LogDebug("cleared view model");
             }
         }
     }
@@ -293,5 +293,32 @@ public sealed partial class ListPage : Page,
         }
 
         return null;
+    }
+
+    private void ItemsList_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if (e.OriginalSource is FrameworkElement element &&
+            element.DataContext is ListItemViewModel item)
+        {
+            if (ItemsList.SelectedItem != item)
+            {
+                ItemsList.SelectedItem = item;
+            }
+
+            ViewModel?.UpdateSelectedItemCommand.Execute(item);
+
+            var pos = e.GetPosition(element);
+
+            _ = DispatcherQueue.TryEnqueue(
+                () =>
+                    {
+                        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                            new OpenContextMenuMessage(
+                                element,
+                                Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                                pos,
+                                ContextMenuFilterLocation.Top));
+                    });
+        }
     }
 }

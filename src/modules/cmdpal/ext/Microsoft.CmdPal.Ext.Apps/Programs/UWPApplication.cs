@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Xml;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
@@ -15,7 +13,6 @@ using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.Storage.Packaging.Appx;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
 using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
@@ -74,7 +71,7 @@ public class UWPApplication : IProgram
 
     public List<CommandContextItem> GetCommands()
     {
-        List<CommandContextItem> commands = new List<CommandContextItem>();
+        List<CommandContextItem> commands = [];
 
         if (CanRunElevated)
         {
@@ -173,6 +170,25 @@ public class UWPApplication : IProgram
         return false;
     }
 
+    private static string TryLoadIndirectString(string source, Span<char> buffer, string errorContext)
+    {
+        try
+        {
+            PInvoke.SHLoadIndirectString(source, buffer).ThrowOnFailure();
+
+            var len = buffer.IndexOf('\0');
+            var loaded = len >= 0
+                ? buffer[..len].ToString()
+                : buffer.ToString();
+            return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Unable to load resource {source} : {errorContext} : {ex.Message}");
+            return string.Empty;
+        }
+    }
+
     internal unsafe string ResourceFromPri(string packageFullName, string resourceReference)
     {
         const string prefix = "ms-resource:";
@@ -207,6 +223,16 @@ public class UWPApplication : IProgram
                 parsedFallback = prefix + "///" + key;
             }
 
+            Span<char> outBuffer = stackalloc char[1024];
+            var source = $"@{{{packageFullName}? {parsed}}}";
+
+            var loaded = TryLoadIndirectString(source, outBuffer, resourceReference);
+
+            if (!string.IsNullOrEmpty(loaded))
+            {
+                return loaded;
+            }
+
             if (string.IsNullOrEmpty(parsedFallback))
             {
                 // https://github.com/Wox-launcher/Wox/issues/964
@@ -218,31 +244,8 @@ public class UWPApplication : IProgram
                 return string.Empty;
             }
 
-            Span<char> outBuffer = stackalloc char[1024];
-            var source = $"@{{{packageFullName}? {parsed}}}";
-
-            try
-            {
-                PInvoke.SHLoadIndirectString(source, outBuffer).ThrowOnFailure();
-
-                var loaded = outBuffer.ToString();
-                return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
-            }
-            catch (Exception)
-            {
-                try
-                {
-                    var sourceFallback = $"@{{{packageFullName}?{parsedFallback}}}";
-                    PInvoke.SHLoadIndirectString(sourceFallback, outBuffer).ThrowOnFailure();
-                    var loaded = outBuffer.ToString();
-                    return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
-                }
-                catch (Exception)
-                {
-                    // ProgramLogger.Exception($"Unable to load resource {resourceReference} from {packageFullName}", new InvalidOperationException(), GetType(), packageFullName);
-                    return string.Empty;
-                }
-            }
+            var sourceFallback = $"@{{{packageFullName}?{parsedFallback}}}";
+            return TryLoadIndirectString(sourceFallback, outBuffer, $"{resourceReference} (fallback)");
         }
         else
         {
@@ -466,7 +469,7 @@ public class UWPApplication : IProgram
         }
         else
         {
-            // for C:\Windows\MiracastView etc
+            // for C:\Windows\MiracastView, etc.
             path = Path.Combine(Package.Location, "Assets", uri);
         }
 

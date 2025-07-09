@@ -162,4 +162,4 @@ This can be done by adding the directory name of the project to [Product.wxs nea
 
 We should also ensure the new dlls are signed by the pipeline. Currently all dlls of the form [`*.resources.dll` are signed](https://github.com/microsoft/PowerToys/blob/f92bd6ffd38014c228544bb8d68d0937ce4c2b6d/.pipelines/pipeline.user.windows.yml#L68).
 
-**Note:** The resource dlls should be added to the MSI project only after the initial commit with the lcl files has been done by the Localization team. Otherwise the pipeline will fail as there wouldn't be any resx files to generate the dlls.
+**Note:** The resource dlls should be added to the MSI project only after the initial commit with the lcl files has been done by the Localization team. Otherwise, the pipeline will fail as there wouldn't be any resx files to generate the dlls.
