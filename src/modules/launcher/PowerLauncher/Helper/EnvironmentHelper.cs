@@ -15,7 +15,7 @@ using Stopwatch = Wox.Infrastructure.Stopwatch;
 namespace PowerLauncher.Helper
 {
     /// <Note>
-    /// On Windows operating system the name of environment variables is case-insensitive. This means if we have a user and machine variable with differences in their name casing (eg. test vs Test), the name casing from machine level is used and won't be overwritten by the user var.
+    /// On Windows operating system the name of environment variables is case-insensitive. This means if we have a user and machine variable with differences in their name casing (e.g. test vs Test), the name casing from machine level is used and won't be overwritten by the user var.
     /// Example for Window's behavior: test=ValueMachine (Machine level) + TEST=ValueUser (User level) => test=ValueUser (merged)
     /// To get the same behavior we use "StringComparer.OrdinalIgnoreCase" as compare property for the HashSet and Dictionaries where we merge machine and user variable names.
     /// </Note>

@@ -17,15 +17,15 @@ namespace KeyboardEventHandlers
         bool AnyChordStarted;
     };
 
-    // Function to a handle a single key remap
+    // Function to handle a single key remap
     intptr_t HandleSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
     /* This feature has not been enabled (code from proof of concept stage)
-        // Function to a change a key's behavior from toggle to modifier
+        // Function to change a key's behavior from toggle to modifier
         __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
     */
 
-    // Function to a handle a shortcut remap
+    // Function to handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp = std::nullopt) noexcept;
 
     // Function to reset chord matching
@@ -68,15 +68,15 @@ namespace KeyboardEventHandlers
     // Function to get just the file name from a fill path
     std::wstring GetFileNameFromPath(const std::wstring& fullPath);
 
-    // Function to a find and show a running program
+    // Function to find and show a running program
     bool ShowProgram(DWORD pid, std::wstring programName, bool isNewProcess, bool minimizeIfVisible, int retryCount);
 
     bool HideProgram(DWORD pid, std::wstring programName, int retryCount);
 
-    // Function to a handle an os-level shortcut remap
+    // Function to handle an os-level shortcut remap
     intptr_t HandleOSLevelShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
-    // Function to a handle an app-specific shortcut remap
+    // Function to handle an app-specific shortcut remap
     intptr_t HandleAppSpecificShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
     // Function to generate a unicode string in response to a single keypress

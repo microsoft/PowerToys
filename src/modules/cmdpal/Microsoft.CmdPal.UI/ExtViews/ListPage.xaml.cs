@@ -244,7 +244,7 @@ public sealed partial class ListPage : Page,
             }
             else if (e.NewValue == null)
             {
-                Logger.LogDebug("cleared viewmodel");
+                Logger.LogDebug("cleared view model");
             }
         }
     }

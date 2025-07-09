@@ -827,7 +827,7 @@ public class Win32Program : IProgram
             var paths = new HashSet<string>(defaultHashsetSize);
             var runCommandPaths = new HashSet<string>(defaultHashsetSize);
 
-            // Parallelize multiple sources, and priority based on paths which most likely contain .lnks which are formatted
+            // Parallelize multiple sources, and priority based on paths which most likely contain .lnk files which are formatted
             var sources = new (bool IsEnabled, Func<IEnumerable<string>> GetPaths)[]
             {
                 (true, () => CustomProgramPaths(settings.ProgramSources, settings.ProgramSuffixes)),
