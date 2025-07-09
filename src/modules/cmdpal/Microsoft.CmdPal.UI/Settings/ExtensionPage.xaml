@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.ExtensionPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -63,9 +63,7 @@
 
                                 <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                                <ItemsRepeater 
-                                    ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}"
-                                    Layout="{StaticResource VerticalStackLayout}">
+                                <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
                                             <controls:SettingsExpander
@@ -108,17 +106,18 @@
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>
 
-                                <TextBlock x:Uid="ExtensionFallbackCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Visibility="{x:Bind ViewModel.HasFallbackCommands}" />
+                                <TextBlock
+                                    x:Uid="ExtensionFallbackCommandsHeader"
+                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}" />
 
-                                <ItemsRepeater 
-                                    ItemsSource="{x:Bind ViewModel.FallbackCommands, Mode=OneWay}" 
-                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}"
-                                    Layout="{StaticResource VerticalStackLayout}">
+                                <ItemsRepeater
+                                    ItemsSource="{x:Bind ViewModel.FallbackCommands, Mode=OneWay}"
+                                    Layout="{StaticResource VerticalStackLayout}"
+                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
-                                            <controls:SettingsCard
-                                                DataContext="{x:Bind}"
-                                                Header="{x:Bind DisplayTitle, Mode=OneWay}">
+                                            <controls:SettingsCard DataContext="{x:Bind}" Header="{x:Bind DisplayTitle, Mode=OneWay}">
                                                 <controls:SettingsCard.HeaderIcon>
                                                     <cpcontrols:ContentIcon>
                                                         <cpcontrols:ContentIcon.Content>
@@ -133,7 +132,7 @@
                                                 </controls:SettingsCard.HeaderIcon>
 
                                                 <!--  Content goes here  -->
-                                                <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}"/>
+                                                <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
 
 
                                             </controls:SettingsCard>
