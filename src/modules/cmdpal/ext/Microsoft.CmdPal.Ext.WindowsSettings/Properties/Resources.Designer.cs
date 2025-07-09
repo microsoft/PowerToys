@@ -3841,6 +3841,42 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search Windows settings for this device.
+        /// </summary>
+        internal static string settings_fallback_subtitle {
+            get {
+                return ResourceManager.GetString("settings_fallback_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search for &quot;{0}&quot; in Windows settings.
+        /// </summary>
+        internal static string settings_fallback_title {
+            get {
+                return ResourceManager.GetString("settings_fallback_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Navigate to specific Windows settings.
+        /// </summary>
+        internal static string settings_subtitle {
+            get {
+                return ResourceManager.GetString("settings_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Settings.
+        /// </summary>
+        internal static string settings_title {
+            get {
+                return ResourceManager.GetString("settings_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Settings app.
         /// </summary>
         internal static string SettingsApp {

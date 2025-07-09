@@ -91,7 +91,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// Open the Windows registry editor and jump to registry key inside the given key (inside the <see cref="RegistryEntry"/>
         /// </summary>
         /// <param name="entry">The <see cref="RegistryEntry"/> to jump in</param>
-        /// <returns><see langword="true"/> if the registry editor was successful open, otherwise <see langword="false"/></returns>
+        /// <returns><see langword="true"/> if the registry editor was successful open; otherwise, <see langword="false"/></returns>
         internal static bool TryToOpenInRegistryEditor(in RegistryEntry entry)
         {
             try
@@ -119,7 +119,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// Copy the given text to the clipboard
         /// </summary>
         /// <param name="text">The text to copy to the clipboard</param>
-        /// <returns><see langword="true"/>The text successful copy to the clipboard, otherwise <see langword="false"/></returns>
+        /// <returns><see langword="true"/>The text successful copy to the clipboard; otherwise, <see langword="false"/></returns>
         private static bool TryToCopyToClipBoard(in string text)
         {
             try

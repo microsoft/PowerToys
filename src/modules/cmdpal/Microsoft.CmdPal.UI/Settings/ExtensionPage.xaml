@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.ExtensionPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -12,7 +12,7 @@
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -65,7 +65,7 @@
 
                                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
                                     <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
+                                        <DataTemplate x:DataType="viewModels:TopLevelViewModel">
                                             <controls:SettingsExpander
                                                 DataContext="{x:Bind}"
                                                 Description="{x:Bind Subtitle, Mode=OneWay}"
