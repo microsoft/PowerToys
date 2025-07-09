@@ -116,7 +116,7 @@
                                     Layout="{StaticResource VerticalStackLayout}"
                                     Visibility="{x:Bind ViewModel.HasFallbackCommands}">
                                     <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
+                                        <DataTemplate x:DataType="viewModels:TopLevelViewModel">
                                             <controls:SettingsCard DataContext="{x:Bind}" Header="{x:Bind DisplayTitle, Mode=OneWay}">
                                                 <controls:SettingsCard.HeaderIcon>
                                                     <cpcontrols:ContentIcon>
