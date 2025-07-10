@@ -60,6 +60,7 @@ public class FallbackTimeDateItemTests
             fallbackItem.UpdateQuery("time");
             fallbackItem.UpdateQuery("date");
             fallbackItem.UpdateQuery("now");
+            fallbackItem.UpdateQuery("week");
             fallbackItem.UpdateQuery(string.Empty);
             fallbackItem.UpdateQuery(null);
         }

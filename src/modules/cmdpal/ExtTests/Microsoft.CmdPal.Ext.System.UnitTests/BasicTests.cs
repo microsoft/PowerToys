@@ -25,13 +25,16 @@ public class BasicTests
     [TestMethod]
     public void IconsHelperTest()
     {
-        // Setup & Act
-        var shutdownIcon = Icons.ShutdownIcon;
-        var restartIcon = Icons.RestartIcon;
-
         // Assert
-        Assert.IsNotNull(shutdownIcon);
-        Assert.IsNotNull(restartIcon);
+        Assert.IsNotNull(Icons.FirmwareSettingsIcon);
+        Assert.IsNotNull(Icons.LockIcon);
+        Assert.IsNotNull(Icons.LogoffIcon);
+        Assert.IsNotNull(Icons.NetworkAdapterIcon);
+        Assert.IsNotNull(Icons.RecycleBinIcon);
+        Assert.IsNotNull(Icons.RestartIcon);
+        Assert.IsNotNull(Icons.RestartShellIcon);
+        Assert.IsNotNull(Icons.ShutdownIcon);
+        Assert.IsNotNull(Icons.SleepIcon);
     }
 
     [TestMethod]
