@@ -113,18 +113,22 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
+            var contentControl = new ShortcutConflictDialogContentControl
+            {
+                ConflictsData = AllHotkeyConflictsData,
+            };
+
             var conflictDialog = new ContentDialog
             {
-                // TODO: loalization support
-                Title = "Shortcut Conflicts",
-                Content = new ShortcutConflictDialogContentControl
-                {
-                    ConflictsData = AllHotkeyConflictsData,
-                },
-                CloseButtonText = "Close",
-                DefaultButton = ContentDialogButton.Close,
+                Content = contentControl,
                 XamlRoot = this.XamlRoot,
                 RequestedTheme = this.ActualTheme,
+            };
+
+            // Handle navigation request to close dialog
+            contentControl.DialogCloseRequested += (s, args) =>
+            {
+                conflictDialog.Hide();
             };
 
             await conflictDialog.ShowAsync();

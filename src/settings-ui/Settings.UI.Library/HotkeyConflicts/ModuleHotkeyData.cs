@@ -15,5 +15,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
         public string ModuleName { get; set; }
 
         public string HotkeyName { get; set; }
+
+        public HotkeySettings HotkeySettings { get; set; }
+
+        public bool IsSystemConflict { get; set; }
     }
 }
