@@ -1516,6 +1516,7 @@ SOFTWARE.
 - LazyCache 2.4.0
 - Mages 3.0.0
 - Markdig.Signed 0.34.0
+- MarkdownTextBlock 0.0.1
 - MessagePack 3.1.3
 - Microsoft.Bcl.AsyncInterfaces 9.0.7
 - Microsoft.Bot.AdaptiveExpressions.Core 4.23.0
