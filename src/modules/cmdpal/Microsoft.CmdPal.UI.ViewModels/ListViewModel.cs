@@ -380,7 +380,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                }
                else
                {
-                   WeakReferenceMessenger.Default.Send<UpdateParametersMessage>(null);
+                   WeakReferenceMessenger.Default.Send<UpdateParametersMessage>(new(null));
                }
            });
 
