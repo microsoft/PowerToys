@@ -133,6 +133,15 @@ namespace Microsoft.CmdPal.Ext.Shell.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy path.
+        /// </summary>
+        public static string copy_path_command_name {
+            get {
+                return ResourceManager.GetString("copy_path_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Find and run the executable file.
         /// </summary>
         public static string find_executable_file_and_run_it {
