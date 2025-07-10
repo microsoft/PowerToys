@@ -146,6 +146,7 @@ public partial class App : Application
         services.AddSingleton<TrayIconService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton(new TelemetryForwarder());
 
         // ViewModels

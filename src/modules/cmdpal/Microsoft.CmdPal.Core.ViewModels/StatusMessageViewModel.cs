@@ -15,8 +15,6 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
 
     public MessageState State { get; private set; } = MessageState.Info;
 
-    public string ExtensionPfn { get; set; } = string.Empty;
-
     public ProgressViewModel? Progress { get; private set; }
 
     public bool HasProgress => Progress != null;

@@ -20,6 +20,7 @@ public partial class ShellViewModel : ObservableObject,
     IRecipient<PerformCommandMessage>
 {
     private readonly IRootPageService _rootPageService;
+    private readonly IAppHostService _appHostService;
     private readonly TaskScheduler _scheduler;
     private readonly IPageViewModelFactoryService _pageViewModelFactory;
     private readonly Lock _invokeLock = new();
@@ -66,7 +67,8 @@ public partial class ShellViewModel : ObservableObject,
 
     public bool IsNested { get => _isNested; }
 
-    public ShellViewModel(TaskScheduler scheduler, IRootPageService rootPageService, IPageViewModelFactoryService pageViewModelFactory)
+    public ShellViewModel(
+        TaskScheduler scheduler, IRootPageService rootPageService, IPageViewModelFactoryService pageViewModelFactory, IAppHostService appHostService)
     {
         _pageViewModelFactory = pageViewModelFactory;
         _scheduler = scheduler;
@@ -75,6 +77,7 @@ public partial class ShellViewModel : ObservableObject,
 
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
+        _appHostService = appHostService;
     }
 
     [RelayCommand]
@@ -204,48 +207,47 @@ public partial class ShellViewModel : ObservableObject,
             // In the case that we're coming from a top-level command, the
             // current page's host is the global instance. We only really want
             // to use that as the host of last resort.
-            var pageHost = CurrentPage?.ExtensionHost;
-            if (pageHost == CommandPaletteHost.Instance)
-            {
-                pageHost = null;
-            }
-
-            var messageHost = message.ExtensionHost;
-
-            // Use the host from the current page if it has one, else use the
-            // one specified in the PerformMessage for a top-level command,
-            // else just use the global one.
-            CommandPaletteHost host;
-
-            // TODO! we need a different way to get the current CommandPaletteHost out of the command.
-            //// Top level items can come through without a Extension set on the
-            //// message. In that case, the `Context` is actually the
-            //// TopLevelViewModel itself, and we can use that to get at the
-            //// extension object.
-            // extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
-            // if (extension == null && message.Context is TopLevelViewModel topLevelViewModel)
+            // var pageHost = CurrentPage?.ExtensionHost;
+            // if (pageHost == CommandPaletteHost.Instance)
             // {
-            //    extension = topLevelViewModel.ExtensionHost?.Extension;
-            //    host = pageHost ?? messageHost ?? topLevelViewModel?.ExtensionHost ?? CommandPaletteHost.Instance;
+            //    pageHost = null;
             // }
-            // else
+
+            // var messageHost = message.ExtensionHost;
+
+            //// Use the host from the current page if it has one, else use the
+            //// one specified in the PerformMessage for a top-level command,
+            //// else just use the global one.
+            // CommandPaletteHost host;
+
+            //// TODO! we need a different way to get the current CommandPaletteHost out of the command.
+            ////// Top level items can come through without a Extension set on the
+            ////// message. In that case, the `Context` is actually the
+            ////// TopLevelViewModel itself, and we can use that to get at the
+            ////// extension object.
+            //// extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
+            //// if (extension == null && message.Context is TopLevelViewModel topLevelViewModel)
+            //// {
+            ////    extension = topLevelViewModel.ExtensionHost?.Extension;
+            ////    host = pageHost ?? messageHost ?? topLevelViewModel?.ExtensionHost ?? CommandPaletteHost.Instance;
+            //// }
+            //// else
+            //// {
+            ////    host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            //// }
+            // host = CommandPaletteHost.Instance;
+            // if (extension != null)
             // {
-            //    host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            //    if (messageHost != null)
+            //    {
+            //        Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
+            //    }
+            //    else
+            //    {
+            //        Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
+            //    }
             // }
-            host = CommandPaletteHost.Instance;
-
-            if (extension != null)
-            {
-                if (messageHost != null)
-                {
-                    Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
-                }
-                else
-                {
-                    Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
-                }
-            }
-
+            var host = _appHostService.GetHostForCommand(message.Context, CurrentPage?.ExtensionHost);
             SetActiveExtension(extension);
 
             if (command is IPage page)

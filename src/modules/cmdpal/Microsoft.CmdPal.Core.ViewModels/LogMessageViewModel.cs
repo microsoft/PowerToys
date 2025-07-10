@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -14,8 +13,7 @@ public partial class LogMessageViewModel : ExtensionObjectViewModel
 
     public string Message { get; private set; } = string.Empty;
 
-    public string ExtensionPfn { get; set; } = string.Empty;
-
+    // public string ExtensionPfn { get; set; } = string.Empty;
     public LogMessageViewModel(ILogMessage message, IPageContext context)
         : base(context)
     {

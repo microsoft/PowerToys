@@ -47,7 +47,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
-    public ContentPageViewModel(IContentPage model, TaskScheduler scheduler, CommandPaletteHost host)
+    public ContentPageViewModel(IContentPage model, TaskScheduler scheduler, AppExtensionHost host)
         : base(model, scheduler, host)
     {
         _model = new(model);
@@ -111,15 +111,15 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
         Commands = model.Commands
                 .ToList()
-                .Select(item =>
+                .Select<IContextItem, IContextItemViewModel>(item =>
                 {
                     if (item is CommandContextItem contextItem)
                     {
-                        return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
+                        return new CommandContextItemViewModel(contextItem, PageContext);
                     }
                     else
                     {
-                        return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                        return new SeparatorContextItemViewModel();
                     }
                 })
                 .ToList();
@@ -178,7 +178,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                                 }
                                 else
                                 {
-                                    return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                                    return new SeparatorContextItemViewModel();
                                 }
                             })
                             .ToList();
