@@ -3,9 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 
-namespace Microsoft.CmdPal.Core.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed partial class CommandPaletteHost : AppExtensionHost, IExtensionHost
 {

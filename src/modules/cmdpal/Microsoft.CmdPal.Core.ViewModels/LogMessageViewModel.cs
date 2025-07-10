@@ -13,7 +13,6 @@ public partial class LogMessageViewModel : ExtensionObjectViewModel
 
     public string Message { get; private set; } = string.Empty;
 
-    // public string ExtensionPfn { get; set; } = string.Empty;
     public LogMessageViewModel(ILogMessage message, IPageContext context)
         : base(context)
     {

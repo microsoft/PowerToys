@@ -68,16 +68,20 @@ public partial class ShellViewModel : ObservableObject,
     public bool IsNested { get => _isNested; }
 
     public ShellViewModel(
-        TaskScheduler scheduler, IRootPageService rootPageService, IPageViewModelFactoryService pageViewModelFactory, IAppHostService appHostService)
+        TaskScheduler scheduler,
+        IRootPageService rootPageService,
+        IPageViewModelFactoryService pageViewModelFactory,
+        IAppHostService appHostService)
     {
         _pageViewModelFactory = pageViewModelFactory;
         _scheduler = scheduler;
         _rootPageService = rootPageService;
-        _currentPage = new LoadingPageViewModel(null, _scheduler);
+        _appHostService = appHostService;
+
+        _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
 
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
-        _appHostService = appHostService;
     }
 
     [RelayCommand]
@@ -201,6 +205,7 @@ public partial class ShellViewModel : ObservableObject,
         }
 
         IExtensionWrapper? extension = null;
+        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage?.ExtensionHost);
 
         try
         {
@@ -247,7 +252,6 @@ public partial class ShellViewModel : ObservableObject,
             //        Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
             //    }
             // }
-            var host = _appHostService.GetHostForCommand(message.Context, CurrentPage?.ExtensionHost);
             SetActiveExtension(extension);
 
             if (command is IPage page)
@@ -278,18 +282,18 @@ public partial class ShellViewModel : ObservableObject,
                 Logger.LogDebug($"Invoking command");
 
                 WeakReferenceMessenger.Default.Send<BeginInvokeMessage>();
-                StartInvoke(message, invokable);
+                StartInvoke(message, invokable, host);
             }
         }
         catch (Exception ex)
         {
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
-            CommandPaletteHost.Instance.Log(ex.Message);
+            host?.Log(ex.Message);
         }
     }
 
-    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable)
+    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
     {
         // TODO GH #525 This needs more better locking.
         lock (_invokeLock)
@@ -302,13 +306,13 @@ public partial class ShellViewModel : ObservableObject,
             {
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable);
+                    SafeHandleInvokeCommandSynchronous(message, invokable, host);
                 });
             }
         }
     }
 
-    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable)
+    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
     {
         try
         {
@@ -328,7 +332,7 @@ public partial class ShellViewModel : ObservableObject,
 
             // TODO: It would be better to do this as a page exception, rather
             // than a silent log message.
-            CommandPaletteHost.Instance.Log(ex.Message);
+            host?.Log(ex.Message);
         }
     }
 

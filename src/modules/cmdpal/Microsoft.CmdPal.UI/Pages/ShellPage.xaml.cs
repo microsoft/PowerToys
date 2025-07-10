@@ -334,8 +334,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(message.Hwnd));
                     }
 
-                    // TODO! same thing about PerformCommandMessage and extension hosts here
-                    var msg = new PerformCommandMessage(topLevelCommand.CommandViewModel.Model) { WithAnimation = false };
+                    var msg = topLevelCommand.GetPerformCommandMessage();
+                    msg.WithAnimation = false;
                     WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
 
                     // we can't necessarily SelectSearch() here, because when the page is loaded,

@@ -170,5 +170,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
 public interface IAppHostService
 {
+    AppExtensionHost GetDefaultHost();
+
     AppExtensionHost GetHostForCommand(object? context, AppExtensionHost? currentHost);
 }
