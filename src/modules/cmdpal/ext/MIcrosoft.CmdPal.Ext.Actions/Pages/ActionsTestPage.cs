@@ -36,11 +36,7 @@ internal sealed partial class ActionsTestPage : ListPage
 
                 var tags = inputs.AsEnumerable().Select(input => new Tag(input.Name) { Icon = GetIconForInput(input)! }).ToList();
 
-                ICommandParameter[] commandParameters = inputs.AsEnumerable()
-                    .Select(input => new CommandParameter(input.Name))
-                    .ToArray();
-
-                items.Add(new ListItem(new DoActionCommand() { Parameters = commandParameters })
+                items.Add(new ListItem(new DoActionCommand(overload) { Name = "Invoke" })
                 {
                     Title = action.Description,
                     Subtitle = overload.DescriptionTemplate,
@@ -99,16 +95,38 @@ public abstract partial class InvokableWithParams : Command, IInvokableCommandWi
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
 public partial class DoActionCommand : InvokableWithParams
 {
+    private readonly ActionOverload _action;
+
     public override ICommandResult InvokeWithArgs(object sender, ICommandArgument[] args)
     {
-        var s = string.Empty;
+        if (args == null)
+        {
+            var error = new ToastStatusMessage("no args oops");
+            error.Show();
+            return CommandResult.KeepOpen();
+        }
+
+        var s = $"{_action.DescriptionTemplate}(";
         foreach (var arg in args)
         {
             s += $"{arg.Name}: {arg.Value.ToString()}";
         }
 
+        s += ")";
         var t = new ToastStatusMessage(s);
         t.Show();
         return CommandResult.KeepOpen();
+    }
+
+    public DoActionCommand(ActionOverload action)
+    {
+        _action = action;
+
+        var inputs = action.GetInputs();
+
+        ICommandParameter[] commandParameters = inputs.AsEnumerable()
+            .Select(input => new CommandParameter(input.Name))
+            .ToArray();
+        Parameters = commandParameters;
     }
 }

@@ -17,7 +17,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -233,8 +232,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             else if (command is IInvokableCommandWithParameters commandWithParams)
             {
                 Logger.LogDebug($"Invoking command with args");
-
-                // HandleInvokeCommand(message, commandWithParams);
+                PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());
+                HandleInvokeCommandWithArgs(message, commandWithParams);
             }
             else if (command is IInvokableCommand invokable)
             {
@@ -267,6 +266,47 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     try
                     {
                         var result = invokable.Invoke(message.Context);
+                        DispatcherQueue.TryEnqueue(() =>
+                        {
+                            try
+                            {
+                                HandleCommandResultOnUiThread(result);
+                            }
+                            finally
+                            {
+                                _handleInvokeTask = null;
+                            }
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        _handleInvokeTask = null;
+
+                        // TODO: It would be better to do this as a page exception, rather
+                        // than a silent log message.
+                        CommandPaletteHost.Instance.Log(ex.Message);
+                    }
+                });
+            }
+        }
+    }
+
+    private void HandleInvokeCommandWithArgs(PerformCommandMessage message, IInvokableCommandWithParameters invokable)
+    {
+        // TODO GH #525 This needs more better locking.
+        lock (_invokeLock)
+        {
+            if (_handleInvokeTask != null)
+            {
+                // do nothing - a command is already doing a thing
+            }
+            else
+            {
+                _handleInvokeTask = Task.Run(() =>
+                {
+                    try
+                    {
+                        var result = invokable.InvokeWithArgs(message.Context, message.Arguments);
                         DispatcherQueue.TryEnqueue(() =>
                         {
                             try

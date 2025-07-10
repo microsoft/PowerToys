@@ -20,6 +20,8 @@ public record PerformCommandMessage
 
     public CommandPaletteHost? ExtensionHost { get; private set; }
 
+    public ICommandArgument[] Arguments { get; set; } = [];
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;
