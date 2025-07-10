@@ -307,8 +307,14 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in on a background thread
         DispatcherQueue.TryEnqueue(() => Close());
 
-    public void Receive(DismissMessage message) =>
-        HideWindow();
+    public void Receive(DismissMessage message)
+    {
+        // This might come in off the UI thread. Make sure to hop back.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            HideWindow();
+        });
+    }
 
     private void HideWindow()
     {
