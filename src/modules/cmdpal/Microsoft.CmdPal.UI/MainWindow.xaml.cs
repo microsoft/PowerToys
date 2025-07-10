@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
@@ -450,30 +451,42 @@ public sealed partial class MainWindow : WindowEx,
             return;
         }
 
-        if (activatedEventArgs.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.Protocol)
+        try
         {
-            if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+            if (activatedEventArgs.Kind == ExtendedActivationKind.StartupTask)
             {
-                if (protocolArgs.Uri.ToString() is string uri)
-                {
-                    // was the URI "x-cmdpal://background" ?
-                    if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // we're running, we don't want to activate our window. bail
-                        return;
-                    }
-                    else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
-                    {
-                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
-                        return;
-                    }
-                }
-
                 return;
             }
+
+            if (activatedEventArgs.Kind == ExtendedActivationKind.Protocol)
+            {
+                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+                {
+                    if (protocolArgs.Uri.ToString() is string uri)
+                    {
+                        // was the URI "x-cmdpal://background" ?
+                        if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // we're running, we don't want to activate our window. bail
+                            return;
+                        }
+                        else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
+                        {
+                            WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        catch (COMException ex)
+        {
+            // Accessing properties activatedEventArgs.Kind and activatedEventArgs.Data might cause COMException
+            // if the args are not valid or not passed correctly.
+            Logger.LogError("COM exception when activating the application", ex);
         }
 
-        Activate();
+        Summon(string.Empty);
     }
 
     public void Summon(string commandId) =>
