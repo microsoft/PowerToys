@@ -206,10 +206,6 @@ public sealed partial class SearchBar : UserControl,
 
             e.Handled = true;
         }
-        else if (e.Key == VirtualKey.Left && e.KeyStatus.IsMenuKeyDown)
-        {
-            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
-        }
     }
 
     private void FilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)
