@@ -209,7 +209,7 @@ namespace powertoys_gpo
 
     inline std::optional<std::wstring> getPolicyListValue(const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
     {
-        // This function returns the value of an entry of an policy list. The user scope is only checked, if the list is not enabled for the machine to not mix the lists.
+        // This function returns the value of an entry of a policy list. The user scope is only checked, if the list is not enabled for the machine to not mix the lists.
 
         HKEY key{};
 
