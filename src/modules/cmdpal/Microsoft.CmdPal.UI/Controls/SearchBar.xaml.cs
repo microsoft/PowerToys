@@ -65,6 +65,11 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
+    public ArgumentsViewModel ArgumentsViewModel { get; private set; } = new ArgumentsViewModel();
+
+    public static readonly DependencyProperty ArgumentsViewModelProperty =
+        DependencyProperty.Register(nameof(ArgumentsViewModel), typeof(ArgumentsViewModel), typeof(SearchBar), new PropertyMetadata(null));
+
     public SearchBar()
     {
         this.InitializeComponent();
@@ -300,10 +305,13 @@ public sealed partial class SearchBar : UserControl,
     public void Receive(UpdateParametersMessage message)
     {
         ParametersPanel.Children.Clear();
+        ArgumentsViewModel.Arguments.Clear();
         if (message.Parameters != null)
         {
             foreach (var param in message.Parameters)
             {
+                var argVm = new ArgumentItemViewModel { Name = param.Name };
+                ArgumentsViewModel.Arguments.Add(argVm);
                 var textBox = new TextBox
                 {
                     MinHeight = 24,
@@ -312,6 +320,13 @@ public sealed partial class SearchBar : UserControl,
                     PlaceholderText = param.Name,
                     Margin = new Thickness(4, 0, 4, 0),
                 };
+                textBox.SetBinding(TextBox.TextProperty, new Microsoft.UI.Xaml.Data.Binding
+                {
+                    Source = argVm,
+                    Path = new PropertyPath("Value"),
+                    Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay,
+                    UpdateSourceTrigger = Microsoft.UI.Xaml.Data.UpdateSourceTrigger.PropertyChanged,
+                });
                 ParametersPanel.Children.Add(textBox);
             }
         }

@@ -33,7 +33,8 @@
         <!--  Disabled Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}" for now, needs more work  -->
 
         <StackPanel Orientation="Horizontal" x:Name="ParametersPanel">
-            <!-- Parameter text boxes will be added dynamically in code-behind -->
+            <!-- Parameter text boxes will be added dynamically in code-behind and bound to ArgumentsViewModel -->
         </StackPanel>
+        <!-- Add DataContext for ArgumentsViewModel if needed for future XAML binding -->
     </StackPanel>
 </UserControl>

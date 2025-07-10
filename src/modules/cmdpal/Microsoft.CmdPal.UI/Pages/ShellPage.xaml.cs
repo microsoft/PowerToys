@@ -232,6 +232,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             else if (command is IInvokableCommandWithParameters commandWithParams)
             {
                 Logger.LogDebug($"Invoking command with args");
+
+                var args = ArgumentsViewModel.Arguments;
+                var aa = args?.Select(a => (a as ICommandArgument)!).ToArray() ?? [];
+                message.Arguments = aa;
+
                 PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());
                 HandleInvokeCommandWithArgs(message, commandWithParams);
             }
@@ -599,6 +604,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
+
+    private ArgumentsViewModel ArgumentsViewModel => SearchBox.ArgumentsViewModel;
 
     private void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
