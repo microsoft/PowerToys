@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context) : CommandItemViewModel(new(contextItem), context)
+public partial class CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context) : CommandItemViewModel(new(contextItem), context), IContextItemViewModel
 {
     private readonly KeyChord nullKeyChord = new(0, 0, 0);
 

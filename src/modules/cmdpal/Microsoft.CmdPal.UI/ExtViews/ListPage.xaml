@@ -10,8 +10,8 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -119,22 +119,23 @@
                     ItemClick="ItemsList_ItemClick"
                     ItemTemplate="{StaticResource ListItemViewModelTemplate}"
                     ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                    RightTapped="ItemsList_RightTapped"
                     SelectionChanged="ItemsList_SelectionChanged">
                     <ListView.ItemContainerTransitions>
                         <TransitionCollection />
                     </ListView.ItemContainerTransitions>
                     <!--<ListView.GroupStyle>
-                    <GroupStyle HidesIfEmpty="True">
-                        <GroupStyle.HeaderTemplate>
-                            <DataTemplate>
-                                <TextBlock
-                                    Margin="0,16,0,0"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{Binding Key, Mode=OneWay}" />
-                            </DataTemplate>
-                        </GroupStyle.HeaderTemplate>
-                    </GroupStyle>
-                </ListView.GroupStyle>-->
+                        <GroupStyle HidesIfEmpty="True">
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Margin="0,16,0,0"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding Key, Mode=OneWay}" />
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>-->
                 </ListView>
             </controls:Case>
             <controls:Case Value="True">

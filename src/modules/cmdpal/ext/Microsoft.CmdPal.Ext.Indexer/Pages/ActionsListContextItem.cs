@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
-using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Data;

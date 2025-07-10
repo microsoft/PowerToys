@@ -33,7 +33,7 @@ public sealed partial class ToastWindow : WindowEx,
     {
         this.InitializeComponent();
         AppWindow.Hide();
-        AppWindow.IsShownInSwitchers = false;
+        this.SetVisibilityInSwitchers(false);
         ExtendsContentIntoTitleBar = true;
         AppWindow.SetPresenter(AppWindowPresenterKind.CompactOverlay);
         this.SetIcon();

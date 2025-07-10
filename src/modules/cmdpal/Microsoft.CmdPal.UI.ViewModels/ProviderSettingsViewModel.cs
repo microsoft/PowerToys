@@ -26,7 +26,11 @@ public partial class ProviderSettingsViewModel(
 
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? "Built-in";
 
-    public string ExtensionSubtext => IsEnabled ? $"{ExtensionName}, {TopLevelCommands.Count} commands" : Resources.builtin_disabled_extension;
+    public string ExtensionSubtext => IsEnabled ?
+        HasFallbackCommands ?
+            $"{ExtensionName}, {TopLevelCommands.Count} commands, {FallbackCommands.Count} fallback commands" :
+            $"{ExtensionName}, {TopLevelCommands.Count} commands" :
+        Resources.builtin_disabled_extension;
 
     [MemberNotNullWhen(true, nameof(Extension))]
     public bool IsFromExtension => _provider.Extension != null;
@@ -135,6 +139,31 @@ public partial class ProviderSettingsViewModel(
     {
         var thisProvider = _provider;
         var providersCommands = thisProvider.TopLevelItems;
+
+        // Remember! This comes in on the UI thread!
+        return [.. providersCommands];
+    }
+
+    [field: AllowNull]
+    public List<TopLevelViewModel> FallbackCommands
+    {
+        get
+        {
+            if (field == null)
+            {
+                field = BuildFallbackViewModels();
+            }
+
+            return field;
+        }
+    }
+
+    public bool HasFallbackCommands => _provider.FallbackItems?.Length > 0;
+
+    private List<TopLevelViewModel> BuildFallbackViewModels()
+    {
+        var thisProvider = _provider;
+        var providersCommands = thisProvider.FallbackItems;
 
         // Remember! This comes in on the UI thread!
         return [.. providersCommands];

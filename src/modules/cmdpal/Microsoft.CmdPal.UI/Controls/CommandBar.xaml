@@ -11,8 +11,7 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:coreViewmodels="using:Microsoft.CmdPal.Core.ViewModels"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
@@ -29,79 +28,39 @@
                 TrueValue="Collapsed" />
 
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
-            <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
 
             <StackLayout
                 x:Name="VerticalStackLayout"
                 Orientation="Vertical"
                 Spacing="4" />
 
-            <cmdpalUI:ContextItemTemplateSelector
-                x:Key="ContextItemTemplateSelector"
-                Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
-                Default="{StaticResource DefaultContextMenuViewModelTemplate}" />
+            <Style
+                x:Name="ContextMenuFlyoutStyle"
+                BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
+                TargetType="FlyoutPresenter">
+                <Style.Setters>
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Padding" Value="0" />
+                </Style.Setters>
+            </Style>
 
-            <!--  Template for context items in the context item menu  -->
-            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="coreViewmodels:CommandContextItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="32" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <cpcontrols:IconBox
-                        Width="16"
-                        Height="16"
-                        Margin="4,0,0,0"
-                        HorizontalAlignment="Left"
-                        SourceKey="{x:Bind Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-                    <TextBlock
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Text="{x:Bind Title, Mode=OneWay}" />
-                    <TextBlock
-                        Grid.Column="2"
-                        Margin="16,0,0,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
-                </Grid>
-            </DataTemplate>
+            <Flyout
+                x:Name="ContextMenuFlyout"
+                FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
+                Opened="ContextMenuFlyout_Opened">
+                <cpcontrols:ContextMenu x:Name="ContextControl" />
+            </Flyout>
 
-            <!--  Template for context items flagged as critical  -->
-            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="coreViewmodels:CommandContextItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="32" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <cpcontrols:IconBox
-                        Width="16"
-                        Height="16"
-                        Margin="4,0,0,0"
-                        HorizontalAlignment="Left"
-                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                        SourceKey="{x:Bind Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-                    <TextBlock
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
-                        Text="{x:Bind Title, Mode=OneWay}" />
-                    <TextBlock
-                        Grid.Column="2"
-                        Margin="16,0,0,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
-                </Grid>
-            </DataTemplate>
-
+            <Style x:Key="HotkeyStyle" TargetType="Border">
+                <Style.Setters>
+                    <Setter Property="Padding" Value="4" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="Background" Value="{ThemeResource ControlFillColorSecondaryBrush}" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="CornerRadius" Value="6" />
+                </Style.Setters>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -195,17 +154,12 @@
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
-                    <Border
-                        Padding="4"
-                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4">
+                    <Border Style="{StaticResource HotkeyStyle}">
                         <FontIcon
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             FontSize="10"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                             Glyph="&#xE751;" />
                     </Border>
                 </StackPanel>
@@ -223,32 +177,20 @@
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
-                    <StackPanel Orientation="Horizontal" Spacing="2">
-                        <Border
-                            Padding="4,2,4,2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
                             <TextBlock
                                 CharacterSpacing="4"
                                 FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                 Text="Ctrl" />
                         </Border>
-                        <Border
-                            Padding="4"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
+                        <Border Style="{StaticResource HotkeyStyle}">
                             <FontIcon
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                 Glyph="&#xE751;" />
                         </Border>
                     </StackPanel>
@@ -261,48 +203,9 @@
                 Content="{ui:FontIcon Glyph=&#xE712;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
+                Tapped="MoreCommandsButton_Tapped"
                 ToolTipService.ToolTip="Ctrl+K"
-                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
-                <Button.Flyout>
-                    <Flyout
-                        Closing="Flyout_Closing"
-                        Opened="Flyout_Opened"
-                        Placement="TopEdgeAlignedRight">
-                        <StackPanel>
-
-                            <ListView
-                                x:Name="CommandsDropdown"
-                                MinWidth="248"
-                                Margin="-16,-12,-16,-12"
-                                IsItemClickEnabled="True"
-                                ItemClick="CommandsDropdown_ItemClick"
-                                ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
-                                ItemsSource="{x:Bind ViewModel.ContextMenu.FilteredItems, Mode=OneWay}"
-                                KeyDown="CommandsDropdown_KeyDown"
-                                SelectionMode="Single">
-                                <ListView.ItemContainerStyle>
-                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                                        <Setter Property="MinHeight" Value="0" />
-                                        <Setter Property="Padding" Value="12,7,12,7" />
-                                    </Style>
-                                </ListView.ItemContainerStyle>
-                                <ListView.ItemContainerTransitions>
-                                    <TransitionCollection />
-                                </ListView.ItemContainerTransitions>
-                            </ListView>
-
-                            <TextBox
-                                x:Name="ContextFilterBox"
-                                x:Uid="ContextFilterBox"
-                                Margin="-12,12,-12,-12"
-                                KeyDown="ContextFilterBox_KeyDown"
-                                PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
-                                TextChanged="ContextFilterBox_TextChanged" />
-
-                        </StackPanel>
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
+                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}" />
         </StackPanel>
     </Grid>
 </UserControl>

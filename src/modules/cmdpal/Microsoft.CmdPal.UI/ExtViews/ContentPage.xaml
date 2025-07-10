@@ -109,7 +109,7 @@
 
         </ResourceDictionary>
     </Page.Resources>
-    <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+    <Grid>
         <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
             <ItemsRepeater
                 VerticalAlignment="Stretch"

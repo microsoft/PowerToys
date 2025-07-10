@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ContextMenu"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
+
+            <cmdpalUI:ContextItemTemplateSelector
+                x:Key="ContextItemTemplateSelector"
+                Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
+                Default="{StaticResource DefaultContextMenuViewModelTemplate}"
+                Separator="{StaticResource SeparatorContextMenuViewModelTemplate}" />
+
+            <!--  Template for context items in the context item menu  -->
+            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
+                <Grid AutomationProperties.Name="{x:Bind Title}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Height="16"
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Left"
+                        SourceKey="{x:Bind Icon}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Title}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="16,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind RequestedShortcut, Converter={StaticResource KeyChordToStringConverter}}" />
+                </Grid>
+            </DataTemplate>
+
+            <!--  Template for context items flagged as critical  -->
+            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
+                <Grid AutomationProperties.Name="{x:Bind Title}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Height="16"
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Left"
+                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                        SourceKey="{x:Bind Icon}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
+                        Text="{x:Bind Title}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="16,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
+                        Text="{x:Bind RequestedShortcut, Converter={StaticResource KeyChordToStringConverter}}" />
+                </Grid>
+            </DataTemplate>
+
+            <!--  Template for context item separators  -->
+            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="coreViewModels:SeparatorContextItemViewModel">
+                <Rectangle
+                    Height="1"
+                    Margin="-16,-12,-12,-12"
+                    Fill="{ThemeResource MenuFlyoutSeparatorThemeBrush}" />
+            </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid x:Name="ContextMenuGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <StackPanel x:Name="CommandsPanel">
+            <ListView
+                x:Name="CommandsDropdown"
+                MinWidth="248"
+                IsItemClickEnabled="True"
+                ItemClick="CommandsDropdown_ItemClick"
+                ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
+                ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                KeyDown="CommandsDropdown_KeyDown"
+                SelectionMode="Single">
+                <ListView.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                        <Setter Property="MinHeight" Value="0" />
+                        <Setter Property="Padding" Value="12,8" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemContainerTransitions>
+                    <TransitionCollection />
+                </ListView.ItemContainerTransitions>
+            </ListView>
+        </StackPanel>
+        <TextBox
+            x:Name="ContextFilterBox"
+            x:Uid="ContextFilterBox"
+            Margin="4"
+            KeyDown="ContextFilterBox_KeyDown"
+            PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
+            TextChanged="ContextFilterBox_TextChanged" />
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ContextMenuOrder">
+                <VisualState x:Name="FilterOnTop">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind ViewModel.FilterOnTop, Mode=OneWay}" To="True" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="CommandsPanel.(Grid.Row)" Value="1" />
+                        <Setter Target="ContextFilterBox.(Grid.Row)" Value="0" />
+                        <Setter Target="CommandsDropdown.Margin" Value="0, 0, 0, 4" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="FilterOnBottom">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind ViewModel.FilterOnTop, Mode=OneWay}" To="False" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="CommandsPanel.(Grid.Row)" Value="0" />
+                        <Setter Target="ContextFilterBox.(Grid.Row)" Value="1" />
+                        <Setter Target="CommandsDropdown.Margin" Value="0, 4, 0, 0" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</UserControl>

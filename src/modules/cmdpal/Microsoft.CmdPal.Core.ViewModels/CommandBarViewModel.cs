@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
@@ -47,11 +48,6 @@ public partial class CommandBarViewModel : ObservableObject,
 
     [ObservableProperty]
     public partial PageViewModel? CurrentPage { get; set; }
-
-    [ObservableProperty]
-    public partial ObservableCollection<ContextMenuStackViewModel> ContextMenuStack { get; set; } = [];
-
-    public ContextMenuStackViewModel? ContextMenu => ContextMenuStack.LastOrDefault();
 
     public CommandBarViewModel()
     {
@@ -101,18 +97,9 @@ public partial class CommandBarViewModel : ObservableObject,
 
         SecondaryCommand = SelectedItem.SecondaryCommand;
 
-        if (SelectedItem.MoreCommands.Count() > 1)
-        {
-            ShouldShowContextMenu = true;
-
-            ContextMenuStack.Clear();
-            ContextMenuStack.Add(new ContextMenuStackViewModel(SelectedItem));
-            OnPropertyChanged(nameof(ContextMenu));
-        }
-        else
-        {
-            ShouldShowContextMenu = false;
-        }
+        ShouldShowContextMenu = SelectedItem.MoreCommands
+            .OfType<CommandContextItemViewModel>()
+            .Count() > 1;
 
         OnPropertyChanged(nameof(HasSecondaryCommand));
         OnPropertyChanged(nameof(SecondaryCommand));
@@ -139,8 +126,18 @@ public partial class CommandBarViewModel : ObservableObject,
 
     public ContextKeybindingResult CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        var matchedItem = ContextMenu?.CheckKeybinding(ctrl, alt, shift, win, key);
-        return matchedItem != null ? PerformCommand(matchedItem) : ContextKeybindingResult.Unhandled;
+        var keybindings = SelectedItem?.Keybindings();
+        if (keybindings != null)
+        {
+            // Does the pressed key match any of the keybindings?
+            var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
+            if (keybindings.TryGetValue(pressedKeyChord, out var matchedItem))
+            {
+                return matchedItem != null ? PerformCommand(matchedItem) : ContextKeybindingResult.Unhandled;
+            }
+        }
+
+        return ContextKeybindingResult.Unhandled;
     }
 
     private ContextKeybindingResult PerformCommand(CommandItemViewModel? command)
@@ -152,10 +149,6 @@ public partial class CommandBarViewModel : ObservableObject,
 
         if (command.HasMoreCommands)
         {
-            ContextMenuStack.Add(new ContextMenuStackViewModel(command));
-            OnPropertyChanging(nameof(ContextMenu));
-            OnPropertyChanged(nameof(ContextMenu));
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
             return ContextKeybindingResult.KeepOpen;
         }
         else
@@ -163,33 +156,6 @@ public partial class CommandBarViewModel : ObservableObject,
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
             return ContextKeybindingResult.Hide;
         }
-    }
-
-    public bool CanPopContextStack()
-    {
-        return ContextMenuStack.Count > 1;
-    }
-
-    public void PopContextStack()
-    {
-        if (ContextMenuStack.Count > 1)
-        {
-            ContextMenuStack.RemoveAt(ContextMenuStack.Count - 1);
-        }
-
-        OnPropertyChanging(nameof(ContextMenu));
-        OnPropertyChanged(nameof(ContextMenu));
-    }
-
-    public void ClearContextStack()
-    {
-        while (ContextMenuStack.Count > 1)
-        {
-            ContextMenuStack.RemoveAt(ContextMenuStack.Count - 1);
-        }
-
-        OnPropertyChanging(nameof(ContextMenu));
-        OnPropertyChanged(nameof(ContextMenu));
     }
 }
 

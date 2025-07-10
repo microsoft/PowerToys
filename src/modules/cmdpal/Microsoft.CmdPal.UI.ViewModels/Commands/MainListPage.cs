@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CommandPalette.Extensions;
@@ -25,6 +26,8 @@ public partial class MainListPage : DynamicListPage,
 
     private readonly TopLevelCommandManager _tlcManager;
     private IEnumerable<IListItem>? _filteredItems;
+    private bool _includeApps;
+    private bool _filteredItemsIncludesApps;
 
     public MainListPage(IServiceProvider serviceProvider)
     {
@@ -64,7 +67,34 @@ public partial class MainListPage : DynamicListPage,
         }
     }
 
-    private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
+    private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
+        if (_includeApps != _filteredItemsIncludesApps)
+        {
+            ReapplySearchInBackground();
+        }
+        else
+        {
+            RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
+        }
+    }
+
+    private void ReapplySearchInBackground()
+    {
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                var currentSearchText = SearchText;
+                UpdateSearchText(currentSearchText, currentSearchText);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError("Failed to reload search", e);
+            }
+        });
+    }
 
     public override IListItem[] GetItems()
     {
@@ -119,12 +149,23 @@ public partial class MainListPage : DynamicListPage,
                 _filteredItems = null;
             }
 
+            // If the internal state has changed, reset _filteredItems to reset the list.
+            if (_filteredItemsIncludesApps != _includeApps)
+            {
+                _filteredItems = null;
+            }
+
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
             if (_filteredItems == null)
             {
-                IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
-                _filteredItems = commands.Concat(apps);
+                _filteredItems = commands;
+                _filteredItemsIncludesApps = _includeApps;
+                if (_includeApps)
+                {
+                    IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
+                    _filteredItems = _filteredItems.Concat(apps);
+                }
             }
 
             // Produce a list of everything that matches the current filter.
