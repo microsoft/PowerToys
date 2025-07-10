@@ -98,19 +98,28 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
+        var commands = await Task.Factory.StartNew(
+            () =>
+            {
+                List<TopLevelViewModel> commands = [];
+                foreach (var item in commandProvider.TopLevelItems)
+                {
+                    TopLevelCommands.Add(item);
+                }
 
-        List<TopLevelViewModel> commands = [];
+                foreach (var item in commandProvider.FallbackItems)
+                {
+                    if (item.IsEnabled)
+                    {
+                        TopLevelCommands.Add(item);
+                    }
+                }
 
-        foreach (var item in commandProvider.TopLevelItems)
-        {
-            commands.Add(item);
-        }
-
-        foreach (var item in commandProvider.FallbackItems)
-        {
-            commands.Add(item);
-        }
+                return commands;
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _taskScheduler);
 
         commandProvider.CommandsChanged -= CommandProvider_CommandsChanged;
         commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
@@ -176,7 +185,10 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         foreach (var i in sender.FallbackItems)
         {
-            newItems.Add(i);
+            if (i.IsEnabled)
+            {
+                newItems.Add(i);
+            }
         }
 
         // Slice out the old commands
