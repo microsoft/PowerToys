@@ -10,6 +10,13 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>Microsoft.CmdPal.Ext.Registry.pri</ProjectPriFileName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Microsoft.CmdPal.Ext.Registry.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
