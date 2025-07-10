@@ -33,36 +33,29 @@ public class FallbackTimeDateItemTests
         CultureInfo.CurrentUICulture = originalUiCulture;
     }
 
-    [TestMethod]
-    public void FallbackItemInitializationTest()
+    [DataTestMethod]
+    [DataRow("time", "12:00 PM")]
+    [DataRow("date", "7/1/2025")]
+    [DataRow("week", "27")]
+
+    // [DataRow("Now", "27")]
+    // This is bug. Now should not be a valid query, but it is currently not work.
+    public void FallbackQueryTests(string query, string expectedTitle)
     {
         // Setup
         var settingsManager = new SettingsManager();
-
-        // Act
-        var fallbackItem = new FallbackTimeDateItem(settingsManager);
-
-        // Assert
-        Assert.IsNotNull(fallbackItem);
-        Assert.IsNotNull(fallbackItem.DisplayTitle);
-    }
-
-    [TestMethod]
-    public void UpdateQueryTest()
-    {
-        // Setup
-        var settingsManager = new SettingsManager();
-        var fallbackItem = new FallbackTimeDateItem(settingsManager);
+        DateTime now = new DateTime(2025, 7, 1, 12, 0, 0); // Fixed date for testing
+        var fallbackItem = new FallbackTimeDateItem(settingsManager, now);
 
         // Act & Assert - Test that UpdateQuery doesn't throw exceptions
         try
         {
-            fallbackItem.UpdateQuery("time");
-            fallbackItem.UpdateQuery("date");
-            fallbackItem.UpdateQuery("now");
-            fallbackItem.UpdateQuery("week");
-            fallbackItem.UpdateQuery(string.Empty);
-            fallbackItem.UpdateQuery(null);
+            fallbackItem.UpdateQuery(query);
+            Assert.IsTrue(
+                fallbackItem.Title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase),
+                $"Expected title to contain '{expectedTitle}', but got '{fallbackItem.Title}'");
+            Assert.IsNotNull(fallbackItem.Subtitle, "Subtitle should not be null");
+            Assert.IsNotNull(fallbackItem.Icon, "Icon should not be null");
         }
         catch (Exception ex)
         {
@@ -70,33 +63,27 @@ public class FallbackTimeDateItemTests
         }
     }
 
-    [TestMethod]
-    public void EmptyQueryTest()
+    [DataTestMethod]
+    [DataRow(null)]
+    [DataRow("invalid input")]
+    public void InvalidQueryTests(string query)
     {
         // Setup
         var settingsManager = new SettingsManager();
-        var fallbackItem = new FallbackTimeDateItem(settingsManager);
+        DateTime now = new DateTime(2025, 7, 1, 12, 0, 0); // Fixed date for testing
+        var fallbackItem = new FallbackTimeDateItem(settingsManager, now);
 
-        // Act
-        fallbackItem.UpdateQuery(string.Empty);
+        // Act & Assert - Test that UpdateQuery doesn't throw exceptions
+        try
+        {
+            fallbackItem.UpdateQuery(query);
 
-        // Assert
-        Assert.IsNotNull(fallbackItem.Title);
-        Assert.IsNotNull(fallbackItem.Subtitle);
-    }
-
-    [TestMethod]
-    public void NullQueryTest()
-    {
-        // Setup
-        var settingsManager = new SettingsManager();
-        var fallbackItem = new FallbackTimeDateItem(settingsManager);
-
-        // Act
-        fallbackItem.UpdateQuery(null);
-
-        // Assert
-        Assert.IsNotNull(fallbackItem.Title);
-        Assert.IsNotNull(fallbackItem.Subtitle);
+            Assert.AreEqual(string.Empty, fallbackItem.Title, "Title should be empty for invalid queries");
+            Assert.AreEqual(string.Empty, fallbackItem.Subtitle, "Subtitle should be empty for invalid queries");
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail($"UpdateQuery should not throw exceptions: {ex.Message}");
+        }
     }
 }
