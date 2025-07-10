@@ -4,7 +4,9 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-// TODO! sticking these properties here feels like leaking the UI into the models
-public record GoHomeMessage(bool WithAnimation = true, bool FocusSearch = true)
+/// <summary>
+/// Used to announce that a context menu should close
+/// </summary>
+public record CloseContextMenuMessage
 {
 }
