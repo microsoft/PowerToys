@@ -65,7 +65,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Foreground="{StaticResource TextFillColorSecondaryBrush}"
-            Visibility="{x:Bind IsWarningMessageVisible(VideoPreviewer.MissingCodecName), Mode=OneWay}">
+            Visibility="{x:Bind IsWarningMessageVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
             <Paragraph>
                 <Run Text="{x:Bind GetWarningMessage(VideoPreviewer.MissingCodecName), Mode=OneWay}" />
                 <Hyperlink Click="CodecSearchHyperlink_Click">

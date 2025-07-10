@@ -17,6 +17,9 @@
 
 #include <common/Telemetry/EtwTrace/EtwTrace.h>
 
+#include <common/Themes/theme_helpers.h>
+#include <common/Themes/theme_listener.h>
+
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 namespace winrt
@@ -35,12 +38,31 @@ namespace util
 const std::wstring instanceMutexName = L"Local\\PowerToys_CropAndLock_InstanceMutex";
 bool m_running = true;
 
+// Theming
+ThemeListener theme_listener{};
+// Keep a list of our cropped windows
+std::vector<std::shared_ptr<CropAndLockWindow>> croppedWindows;
+
+void handleTheme()
+{
+    auto theme = theme_listener.AppTheme;
+    auto isDark = theme == Theme::Dark;
+    Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
+    for (auto&& croppedWindow : croppedWindows)
+    {
+        ThemeHelpers::SetImmersiveDarkMode(croppedWindow->Handle(), isDark);
+    }
+}
+
+
 int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _In_ int)
 {
     // Initialize COM
     winrt::init_apartment(winrt::apartment_type::single_threaded);
 
     Trace::CropAndLock::RegisterProvider();
+
+    theme_listener.AddChangedHandler(handleTheme);
 
     Shared::Trace::ETWTrace trace;
     trace.UpdateState(true);
@@ -107,8 +129,6 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
     // Create our overlay window
     std::unique_ptr<OverlayWindow> overlayWindow;
 
-    // Keep a list of our cropped windows
-    std::vector<std::shared_ptr<CropAndLockWindow>> croppedWindows;
 
     // Handles and thread for the events sent from runner
     HANDLE m_reparent_event_handle;
@@ -167,6 +187,7 @@ int WINAPI wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR lpCmdLine, _I
             croppedWindow->CropAndLock(targetWindow, cropRect);
             croppedWindow->OnClosed(removeWindowCallback);
             croppedWindows.push_back(croppedWindow);
+            handleTheme();
         };
 
         overlayWindow.reset();

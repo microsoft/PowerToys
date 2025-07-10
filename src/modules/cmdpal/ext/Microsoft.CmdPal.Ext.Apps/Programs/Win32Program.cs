@@ -22,6 +22,7 @@ using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
+using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -192,17 +193,35 @@ public class Win32Program : IProgram
         if (AppType != ApplicationType.InternetShortcutApplication && AppType != ApplicationType.Folder && AppType != ApplicationType.GenericFile)
         {
             commands.Add(new CommandContextItem(
-                    new RunAsAdminCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory, false)));
+                    new RunAsAdminCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory, false))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter),
+            });
 
             commands.Add(new CommandContextItem(
-                    new RunAsUserCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory)));
+                    new RunAsUserCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.U),
+            });
         }
 
         commands.Add(new CommandContextItem(
-                    new OpenPathCommand(ParentDirectory)));
+                    new CopyPathCommand(FullPath))
+        {
+            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
+        });
 
         commands.Add(new CommandContextItem(
-                    new OpenInConsoleCommand(ParentDirectory)));
+                    new OpenPathCommand(ParentDirectory))
+        {
+            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E),
+        });
+
+        commands.Add(new CommandContextItem(
+                    new OpenInConsoleCommand(ParentDirectory))
+        {
+            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
+        });
 
         return commands;
     }
@@ -824,7 +843,7 @@ public class Win32Program : IProgram
             var paths = new HashSet<string>(defaultHashsetSize);
             var runCommandPaths = new HashSet<string>(defaultHashsetSize);
 
-            // Parallelize multiple sources, and priority based on paths which most likely contain .lnks which are formatted
+            // Parallelize multiple sources, and priority based on paths which most likely contain .lnk files which are formatted
             var sources = new (bool IsEnabled, Func<IEnumerable<string>> GetPaths)[]
             {
                 (true, () => CustomProgramPaths(settings.ProgramSources, settings.ProgramSuffixes)),
