@@ -37,9 +37,6 @@ public class FallbackTimeDateItemTests
     [DataRow("time", "12:00 PM")]
     [DataRow("date", "7/1/2025")]
     [DataRow("week", "27")]
-
-    // [DataRow("Now", "27")]
-    // This is bug. Now should not be a valid query, but it is currently not work.
     public void FallbackQueryTests(string query, string expectedTitle)
     {
         // Setup
