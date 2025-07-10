@@ -6,6 +6,8 @@ SetForegroundWindow
 GetWindowRect
 GetCursorPos
 SetWindowPos
+HWND_TOPMOST
+HWND_BOTTOM
 IsIconic
 RegisterHotKey
 UnregisterHotKey
@@ -43,3 +45,7 @@ MessageBox
 DwmGetWindowAttribute
 DwmSetWindowAttribute
 DWM_CLOAKED_APP
+
+CoWaitForMultipleObjects
+INFINITE
+CWMO_FLAGS 
