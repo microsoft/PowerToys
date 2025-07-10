@@ -95,6 +95,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
                 foreach (var p in parameters)
                 {
                     var paramViewModel = new ParameterViewModel(p, PageContext);
+                    paramViewModel.InitializeProperties();
                     Parameters.Add(paramViewModel);
                 }
             }

@@ -33,16 +33,7 @@
         <!--  Disabled Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}" for now, needs more work  -->
 
         <StackPanel Orientation="Horizontal" x:Name="ParametersPanel">
-
-
-            <TextBox
-                MinHeight="24"
-                VerticalAlignment="Center"
-                VerticalContentAlignment="Stretch"
-                PlaceholderText="Test..."
-                BorderBrush="Red"
-                BorderThickness="1"
-                TextChanged="FilterBox_TextChanged" />
+            <!-- Parameter text boxes will be added dynamically in code-behind -->
         </StackPanel>
     </StackPanel>
 </UserControl>

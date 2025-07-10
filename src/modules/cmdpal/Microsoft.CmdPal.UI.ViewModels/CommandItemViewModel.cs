@@ -185,14 +185,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             MoreCommands = more
                 .Select(item =>
                 {
-                    if (item is ICommandContextItem contextItem)
-                    {
-                        return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
-                    }
-                    else
-                    {
-                        return new SeparatorContextItemViewModel() as IContextItemViewModel;
-                    }
+                    return item is ICommandContextItem contextItem
+                        ? new CommandContextItemViewModel(contextItem, PageContext)
+                        : new SeparatorContextItemViewModel() as IContextItemViewModel;
                 })
                 .ToList();
         }
@@ -342,14 +337,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                     var newContextMenu = more
                         .Select(item =>
                         {
-                            if (item is CommandContextItem contextItem)
-                            {
-                                return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
-                            }
-                            else
-                            {
-                                return new SeparatorContextItemViewModel() as IContextItemViewModel;
-                            }
+                            return item is CommandContextItem contextItem
+                                ? new CommandContextItemViewModel(contextItem, PageContext)
+                                : new SeparatorContextItemViewModel() as IContextItemViewModel;
                         })
                         .ToList();
                     lock (MoreCommands)

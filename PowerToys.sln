@@ -724,6 +724,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedCsWin32", "src\commo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerRenameUITest", "src\modules\powerrename\PowerRenameUITest\PowerRenameUITest.csproj", "{9D3F3793-EFE3-4525-8782-238015DABA62}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Actions", "src\modules\cmdpal\ext\MIcrosoft.CmdPal.Ext.Actions\Microsoft.CmdPal.Ext.Actions.csproj", "{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2666,6 +2668,14 @@ Global
 		{9D3F3793-EFE3-4525-8782-238015DABA62}.Release|ARM64.Build.0 = Release|ARM64
 		{9D3F3793-EFE3-4525-8782-238015DABA62}.Release|x64.ActiveCfg = Release|x64
 		{9D3F3793-EFE3-4525-8782-238015DABA62}.Release|x64.Build.0 = Release|x64
+		{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80}.Debug|ARM64.Build.0 = Debug|ARM64
+		{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80}.Debug|x64.ActiveCfg = Debug|x64
+		{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80}.Debug|x64.Build.0 = Debug|x64
+		{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80}.Release|ARM64.ActiveCfg = Release|ARM64
+		{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80}.Release|ARM64.Build.0 = Release|ARM64
+		{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80}.Release|x64.ActiveCfg = Release|x64
+		{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2945,6 +2955,7 @@ Global
 		{2CF78CF7-8FEB-4BE1-9591-55FA25B48FC6} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{14AFD976-B4D2-49D0-9E6C-AA93CC061B8A} = {1AFB6476-670D-4E80-A464-657E01DFF482}
 		{9D3F3793-EFE3-4525-8782-238015DABA62} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
+		{0A4D5CD7-C03D-63C6-E1C5-A8CB1BB4FD80} = {ECB8E0D1-7603-4E5C-AB10-D1E545E6F8E2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

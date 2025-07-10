@@ -21,6 +21,7 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class SearchBar : UserControl,
     IRecipient<GoHomeMessage>,
     IRecipient<FocusSearchBoxMessage>,
+    IRecipient<UpdateParametersMessage>,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -69,6 +70,7 @@ public sealed partial class SearchBar : UserControl,
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateParametersMessage>(this);
     }
 
     public void ClearSearch()
@@ -294,4 +296,24 @@ public sealed partial class SearchBar : UserControl,
     public void Receive(GoHomeMessage message) => ClearSearch();
 
     public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+
+    public void Receive(UpdateParametersMessage message)
+    {
+        ParametersPanel.Children.Clear();
+        if (message.Parameters != null)
+        {
+            foreach (var param in message.Parameters)
+            {
+                var textBox = new TextBox
+                {
+                    MinHeight = 24,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Stretch,
+                    PlaceholderText = param.Name,
+                    Margin = new Thickness(4, 0, 4, 0),
+                };
+                ParametersPanel.Children.Add(textBox);
+            }
+        }
+    }
 }
