@@ -3201,7 +3201,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Preview file</value>
   </data>
   <data name="Run_ShortDescription" xml:space="preserve">
-    <value>Launch Run</value>
+    <value>Open Run</value>
   </data>
   <data name="PowerAccent_ShortDescription" xml:space="preserve">
     <value>An alternative way to type accented characters</value>
