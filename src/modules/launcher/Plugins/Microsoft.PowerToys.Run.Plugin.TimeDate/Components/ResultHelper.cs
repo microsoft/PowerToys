@@ -44,7 +44,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// Copy the given text to the clipboard
         /// </summary>
         /// <param name="text">The text to copy to the clipboard</param>
-        /// <returns><see langword="true"/>The text successful copy to the clipboard, otherwise <see langword="false"/></returns>
+        /// <returns><see langword="true"/>The text successful copy to the clipboard; otherwise, <see langword="false"/></returns>
         /// <remarks>Code copied from TimeZone plugin</remarks>
         internal static bool CopyToClipBoard(in string text)
         {

@@ -16,13 +16,13 @@ public interface IRootPageService
 
     /// <summary>
     /// Pre-loads any necessary data or state before the root page is loaded.
-    /// This will be awaited before the root page and the user can do anything, 
+    /// This will be awaited before the root page and the user can do anything,
     /// so ideally it should be quick and not block the UI thread for long.
     /// </summary>
     Task PreLoadAsync();
 
     /// <summary>
-    /// Do any loading work that can be done after the root page is loaded and 
+    /// Do any loading work that can be done after the root page is loaded and
     /// displayed to the user.
     /// This is run asynchronously, on a background thread.
     /// </summary>

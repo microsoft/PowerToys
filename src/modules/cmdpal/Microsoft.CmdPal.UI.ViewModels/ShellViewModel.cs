@@ -87,6 +87,7 @@ public partial class ShellViewModel : ObservableObject,
 
         // Now that the basics are set up, we can load the root page.
         _rootPage = _rootPageService.GetRootPage();
+
         // This sends a message to us to load the root page view model.
         WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
 

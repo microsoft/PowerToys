@@ -2,11 +2,21 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Windows.Foundation;
+
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Used to perform a list item's secondary command when the user presses ctrl+enter in the search box
+/// Used to announce the context menu should open
 /// </summary>
-public record OpenContextMenuMessage
+public record OpenContextMenuMessage(FrameworkElement? Element, FlyoutPlacementMode? FlyoutPlacementMode, Point? Point, ContextMenuFilterLocation ContextMenuFilterLocation)
 {
+}
+
+public enum ContextMenuFilterLocation
+{
+    Top,
+    Bottom,
 }

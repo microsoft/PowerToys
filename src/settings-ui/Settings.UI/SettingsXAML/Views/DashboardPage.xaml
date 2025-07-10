@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
     mc:Ignorable="d">
@@ -60,7 +60,7 @@
             <controls:KeyVisual Content="{Binding}" VisualType="Small" />
         </DataTemplate>
 
-        <DataTemplate x:Key="ModuleItemTextTemplate" x:DataType="viewmodels:DashboardModuleTextItem">
+        <DataTemplate x:Key="ModuleItemTextTemplate" x:DataType="viewModels:DashboardModuleTextItem">
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
@@ -68,14 +68,14 @@
                 TextWrapping="WrapWholeWords" />
         </DataTemplate>
 
-        <DataTemplate x:Key="ModuleItemButtonTemplate" x:DataType="viewmodels:DashboardModuleButtonItem">
+        <DataTemplate x:Key="ModuleItemButtonTemplate" x:DataType="viewModels:DashboardModuleButtonItem">
             <Button
                 HorizontalAlignment="Stretch"
                 Click="{x:Bind ButtonClickHandler, Mode=OneWay}"
                 Content="{x:Bind ButtonTitle}" />
         </DataTemplate>
 
-        <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
+        <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewModels:DashboardModuleShortcutItem">
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -118,7 +118,7 @@
                     TextWrapping="WrapWholeWords" />
             </Grid>
         </DataTemplate>
-        <DataTemplate x:Key="ModuleItemKBMTemplate" x:DataType="viewmodels:DashboardModuleKBMItem">
+        <DataTemplate x:Key="ModuleItemKBMTemplate" x:DataType="viewModels:DashboardModuleKBMItem">
             <Button x:Uid="DashboardKBMShowMappingsButton" HorizontalAlignment="Stretch">
                 <Button.Flyout>
                     <Flyout
@@ -320,7 +320,7 @@
                             RowSpacing="8" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:DashboardListItem">
+                        <DataTemplate x:DataType="viewModels:DashboardListItem">
                             <Button
                                 Padding="0"
                                 HorizontalAlignment="Stretch"
@@ -426,7 +426,7 @@
                             RowSpacing="8" />
                     </ItemsRepeater.Layout>
                     <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:DashboardListItem">
+                        <DataTemplate x:DataType="viewModels:DashboardListItem">
                             <Button
                                 Padding="0"
                                 HorizontalAlignment="Stretch"
