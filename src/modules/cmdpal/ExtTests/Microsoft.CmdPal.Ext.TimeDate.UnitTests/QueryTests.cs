@@ -243,9 +243,7 @@ public class QueryTests
     [DataRow("date", "date", true)] // Full word match should work
     [DataRow("now", "now", true)] // Full word match should work
     [DataRow("year", "year", true)] // Full word match should work
-
-    // [DataRow("ime", "", false)] // Partial match should not work
-    // OK, we need to investigate why ime case does not work
+    [DataRow("ime", "", false)] // Partial match should not work
     [DataRow("abcdefg", "", false)] // Invalid query should return error
     public void ValidateBehaviorOnSearchQueries(string query, string expectedMatchTerm, bool shouldHaveValidResults)
     {
