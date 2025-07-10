@@ -25,6 +25,7 @@
     <OutputName>PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
+    <HarvestDirectoryAdditionalOptions>-generate payloadgroup</HarvestDirectoryAdditionalOptions>
     <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
     <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetupVNext-$(Version)-$(Platform)</OutputName>
     <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
@@ -33,6 +34,13 @@
     <IntermediateOutputPath Condition=" '$(PerUser)' == 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\UserSetup</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <BindInputPaths Include="$(MSBuildThisFileDirectory)\Bootstrapper\bin\publish" />
+    <HarvestDirectory Include="$(MSBuildThisFileDirectory)Bootstrapper\bin\publish">
+      <DirectoryRefId>BA.publish</DirectoryRefId>
+      <Transforms>ba.xslt</Transforms>
+    </HarvestDirectory>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="PowerToys.wxs" />
   </ItemGroup>
   <ItemGroup>
@@ -40,6 +48,7 @@
     <PackageReference Include="WixToolset.UI.wixext" />
     <PackageReference Include="WixToolset.NetFx.wixext" />
     <PackageReference Include="WixToolset.Bal.wixext" />
+    <PackageReference Include="WixToolset.Heat" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomDialogs" />
@@ -51,4 +60,12 @@
     </ItemGroup>
   </Target>
   <Target Name="Restore" />
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Message Text="== running dotnet publish for Bootstrapper ==" Importance="high" />
+    <Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)\Bootstrapper\Bootstrapper.csproj&quot; -o &quot;$(MSBuildThisFileDirectory)\Bootstrapper\bin\publish&quot; -c $(Configuration) --self-contained true" />
+  </Target>
+  <PropertyGroup>
+    <BootstrapperPublishDir>$(MSBuildThisFileDirectory)Bootstrapper\bin\publish\</BootstrapperPublishDir>
+    <DefineConstants>$(DefineConstants);Bootstrapper.TargetDir=$(BootstrapperPublishDir)</DefineConstants>
+  </PropertyGroup>
 </Project>

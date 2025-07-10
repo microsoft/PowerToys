@@ -1,0 +1,20 @@
+﻿<UserControl
+  x:Class="Bootstrapper.Views.ProgressView"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:vm="clr-namespace:Bootstrapper.ViewModels"
+  mc:Ignorable="d" 
+  d:DesignWidth="300"
+  d:DataContext="{d:DesignInstance vm:ProgressViewModel}"
+  >
+
+  <DockPanel Margin="0,10,0,0">
+    <ProgressBar Orientation="Horizontal" Value="{Binding Progress}" Height="15" DockPanel.Dock="Top"/>
+    <DockPanel DockPanel.Dock="Bottom">
+      <TextBlock Text="{Binding Package}" DockPanel.Dock="Left"/>
+      <TextBlock Text="{Binding Message}" HorizontalAlignment="Right" DockPanel.Dock="Right"/>
+    </DockPanel>
+  </DockPanel>
+</UserControl>

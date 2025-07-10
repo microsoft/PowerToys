@@ -1,14 +1,13 @@
 ﻿<?define UpgradeCode="6341382d-c0a9-4238-9188-be9607e3fab2"?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
-
     <?include $(sys.CURRENTDIR)\Common.wxi?>
 
     <Bundle Name="PowerToys (Preview) $(var.PowerToysPlatform)" Version="$(var.Version)" Manufacturer="Microsoft Corporation" IconSourceFile="$(var.BinDir)svgs\icon.ico" UpgradeCode="$(var.UpgradeCode)">
-        <BootstrapperApplication>
-            <bal:WixStandardBootstrapperApplication LicenseFile="$(var.RepoDir)\installer\License.rtf" LogoFile="$(var.RepoDir)\installer\PowerToysSetupVNext\Images\logo44.png" SuppressOptionsUI="no" SuppressRepair="yes" Theme="rtfLicense" />
-        </BootstrapperApplication>
-
+    <BootstrapperApplication SourceFile="$(var.Bootstrapper.TargetDir)Bootstrapper.exe" bal:CommandLineVariables="caseInsensitive">
+      <PayloadGroupRef Id="BA.publish" />
+    </BootstrapperApplication>
+    
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
@@ -18,7 +17,7 @@
             <Variable Name="InstallFolder" Type="formatted" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes" />
         <?endif?>
 
-        <Variable Name="MsiLogFolder" Type="formatted" Value="[LocalAppDataFolder]\Microsoft\PowerToys\" /> 
+        <Variable Name="MsiLogFolder" Type="formatted" Value="[LocalAppDataFolder]\Microsoft\PowerToys\" />
         <Log Disable="no" Prefix="powertoys-bootstrapper-msi-$(var.Version)" Extension=".log" />
 
       <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSI (before WiX bootstrapper was used) -->
@@ -42,13 +41,13 @@
       <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0" />
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Variable="DetectedWindowsBuildNumber" />
       <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher." Condition="DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled" />
-    
+
         <Chain>
             <ExePackage DisplayName="Closing PowerToys application" Name="terminate_powertoys.cmd" Cache="remove" Compressed="yes" Id="TerminatePowerToys" SourceFile="terminate_powertoys.cmd" Permanent="yes" PerMachine="$(var.PerMachineYesNo)" Vital="no">
             </ExePackage>
             <ExePackage DisplayName="Microsoft Edge WebView2" Name="MicrosoftEdgeWebview2Setup.exe" Compressed="yes" Id="WebView2" DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser" SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe" Permanent="yes" PerMachine="$(var.PerMachineYesNo)" InstallArguments="/silent /install" RepairArguments="/repair /passive" UninstallArguments="/silent /uninstall">
             </ExePackage>
-            <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" >
+            <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" bal:DisplayInternalUICondition="false">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
             </MsiPackage>
         </Chain>

@@ -1,0 +1,168 @@
+﻿<Window
+  x:Class="Bootstrapper.Views.ShellView"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:view="clr-namespace:Bootstrapper.Views"
+  xmlns:util="clr-namespace:Bootstrapper.ViewModels.Util"
+  xmlns:vm="clr-namespace:Bootstrapper.ViewModels"
+  Title="HelloWorld Install"
+  WindowStyle="None"
+  ShowInTaskbar="True"
+  AllowsTransparency="True"
+  Background="Transparent"
+  WindowStartupLocation="CenterScreen"
+  Topmost="False"
+  SizeToContent="Height"
+  Width="600"
+  Icon="pack://application:,,,/Bootstrapper;component/Assets/Icon.ico"
+  mc:Ignorable="d"
+  d:DataContext="{d:DesignInstance vm:ShellViewModel}"
+  >
+
+  <Border MouseLeftButtonDown="OnMouseLeftButtonDown" Background="White" BorderBrush="Black" BorderThickness="1">
+    <DockPanel Margin="20,40,20,10">
+      
+      <TextBlock Text="Hello World" FontSize="14" HorizontalAlignment="Center" DockPanel.Dock="Top"/>
+      <TextBlock Text="{Binding Message, Mode=OneWay}" FontSize="10" HorizontalAlignment="Center" DockPanel.Dock="Bottom" Margin="0,10,0,0"/>
+      
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" DockPanel.Dock="Bottom" Height="30" Margin="0,0,0,10" Panel.ZIndex="0">
+        <StackPanel Orientation="Horizontal">
+          
+          <Button Command="{Binding CancelCommand}" IsCancel="True" Width="95" Margin="0,0,10,0">Cancel</Button>
+          
+          <Grid Visibility="{Binding IsPassive, Converter={util:BooleanVisibilityConverter Negate=True}}">
+            
+            <Button
+              x:Name="RepairButton"
+              Command="{Binding RepairCommand}"
+              Visibility="{Binding IsRepairAvailable, Converter={util:BooleanVisibilityConverter}}"
+              IsDefault="False"
+              Width="95"
+              Margin="10,0,10,0"
+              >
+
+              <StackPanel Orientation="Horizontal">
+                <Image Height="16" x:Name="RepairShieldIcon" Margin="0,0,5,0"/>
+                <TextBlock Foreground="{Binding Foreground, ElementName=RepairButton}" VerticalAlignment="Center">Repair</TextBlock>
+              </StackPanel>
+            </Button>
+
+          </Grid>
+          
+          <Button
+            x:Name="ApplyButton"
+            Command="{Binding ExecuteCommand}"
+            Visibility="{Binding IsPassive, Converter={util:BooleanVisibilityConverter Negate=True}}"
+            IsDefault="True"
+            Width="95"
+            Margin="10,0,10,0"
+            >
+            <StackPanel Orientation="Horizontal">
+              <Image Height="16" x:Name="ApplyShieldIcon" Margin="0,0,5,0"/>
+              <TextBlock Text="{Binding ExecuteDescription}" Foreground="{Binding Foreground, ElementName=ApplyButton}" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+
+        </StackPanel>
+      
+        <Button
+          Command="{Binding ExitCommand}"
+          Visibility="{Binding IsPassive, Converter={util:BooleanVisibilityConverter Negate=True}}"
+          Width="95"
+          Margin="10,0,0,0"
+          >
+          Exit
+        </Button>
+
+      </StackPanel>
+
+      <TextBlock
+        Visibility="{Binding IsPassive, Converter={util:BooleanVisibilityConverter Negate=True}}"
+        DockPanel.Dock="Bottom"
+        HorizontalAlignment="Right"
+        Panel.ZIndex="2"
+        Margin="0,0,0,5"
+        >
+        <Hyperlink Command="{Binding ShowLogCommand}">Log</Hyperlink>
+      </TextBlock>
+      
+      <view:ProgressView DataContext="{Binding ProgressVm}" DockPanel.Dock="Bottom" Margin="0,0,0,10"/>
+
+      <Grid
+        IsEnabled="{Binding IsWaiting}"
+        Visibility="{Binding IsPassive, Converter={util:BooleanVisibilityConverter Negate=True}}"
+        Panel.ZIndex="1" 
+        Margin="0,20,0,10"
+        DockPanel.Dock="Top"
+        >
+        <view:ConfigView DataContext="{Binding ConfigVm}" HorizontalAlignment="Center"/>
+      </Grid>
+
+    </DockPanel>
+  </Border>
+</Window>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
