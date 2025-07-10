@@ -259,7 +259,7 @@
     </policy>
     <policy name="ConfigureEnabledUtilityFileExplorerBgcodeThumbnails" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerBgcodeThumbnails)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerBgcodeThumbnails">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_93_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
