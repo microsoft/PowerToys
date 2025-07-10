@@ -3214,7 +3214,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Start measurement</value>
   </data>
   <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
-    <value>Launch Shortcut Guide</value>
+    <value>Open Shortcut Guide</value>
     <comment>{Locked="Windows"}</comment>
   </data>
   <data name="PowerOcr_ShortDescription" xml:space="preserve">
