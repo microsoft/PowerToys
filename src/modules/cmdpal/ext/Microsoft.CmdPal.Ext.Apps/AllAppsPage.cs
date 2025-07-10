@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -27,6 +29,9 @@ public sealed partial class AllAppsPage : ListPage
         this.ShowDetails = true;
         this.IsLoading = true;
         this.PlaceholderText = Resources.search_installed_apps_placeholder;
+
+        // Subscribe to pin state changes to refresh the command provider
+        PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
 
         Task.Run(() =>
         {
@@ -100,10 +105,16 @@ public sealed partial class AllAppsPage : ListPage
                     ExePath = !string.IsNullOrEmpty(app.LnkFilePath) ? app.LnkFilePath : app.FullPath,
                     DirPath = app.Location,
                     Commands = app.GetCommands(),
+                    AppIdentifier = app.GetAppIdentifier(),
                 };
             });
 
-        return uwpResults.Concat(win32Results).OrderBy(app => app.Name).ToList();
+        var allApps = uwpResults.Concat(win32Results).ToList();
+
+        // Sort with pinned apps first, then alphabetically
+        return allApps.OrderBy(app => !PinnedAppsManager.Instance.IsAppPinned(app.AppIdentifier))
+                      .ThenBy(app => app.Name)
+                      .ToList();
     }
 
     private AppItem UwpToAppItem(UWPApplication app)
@@ -119,7 +130,16 @@ public sealed partial class AllAppsPage : ListPage
             UserModelId = app.UserModelId,
             IsPackaged = true,
             Commands = app.GetCommands(),
+            AppIdentifier = app.GetAppIdentifier(),
         };
         return item;
+    }
+
+    private void OnPinStateChanged(object? sender, System.EventArgs e)
+    {
+        // Emptying this list so the BuildList attempts to recreate the list of
+        // AppItems with updated order for pinned apps & updated context menus
+        allAppsSection = [];
+        RaiseItemsChanged(0);
     }
 }

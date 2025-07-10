@@ -10,7 +10,9 @@ using System.Xml;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
 using Windows.Win32.Storage.Packaging.Appx;
@@ -69,9 +71,15 @@ public class UWPApplication : IProgram
         return Resources.packaged_application;
     }
 
-    public List<CommandContextItem> GetCommands()
+    public string GetAppIdentifier()
     {
-        List<CommandContextItem> commands = [];
+        // Use UserModelId for UWP apps as it's unique
+        return UserModelId;
+    }
+
+    public List<IContextItem> GetCommands()
+    {
+        List<IContextItem> commands = [];
 
         if (CanRunElevated)
         {
@@ -97,6 +105,29 @@ public class UWPApplication : IProgram
         commands.Add(
         new CommandContextItem(
             new OpenInConsoleCommand(Package.Location)));
+
+        commands.Add(new SeparatorContextItem());
+
+        // Add pin/unpin command first - check current state dynamically
+        var appIdentifier = GetAppIdentifier();
+        if (PinnedAppsManager.Instance.IsAppPinned(appIdentifier))
+        {
+            commands.Add(
+                new CommandContextItem(
+                    new UnpinAppCommand(appIdentifier))
+                {
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0),
+                });
+        }
+        else
+        {
+            commands.Add(
+                new CommandContextItem(
+                    new PinAppCommand(appIdentifier))
+                {
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0),
+                });
+        }
 
         return commands;
     }

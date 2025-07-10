@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps;
@@ -26,7 +28,9 @@ internal sealed class AppItem
 
     public bool IsPackaged { get; set; }
 
-    public List<CommandContextItem>? Commands { get; set; }
+    public List<IContextItem>? Commands { get; set; }
+
+    public string AppIdentifier { get; set; } = string.Empty;
 
     public AppItem()
     {

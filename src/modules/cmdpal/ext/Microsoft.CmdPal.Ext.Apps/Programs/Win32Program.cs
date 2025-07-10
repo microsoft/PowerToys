@@ -19,7 +19,9 @@ using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
 
@@ -185,9 +187,9 @@ public class Win32Program : IProgram
         return true;
     }
 
-    public List<CommandContextItem> GetCommands()
+    public List<IContextItem> GetCommands()
     {
-        List<CommandContextItem> commands = new List<CommandContextItem>();
+        List<IContextItem> commands = new List<IContextItem>();
 
         if (AppType != ApplicationType.InternetShortcutApplication && AppType != ApplicationType.Folder && AppType != ApplicationType.GenericFile)
         {
@@ -207,12 +209,41 @@ public class Win32Program : IProgram
         commands.Add(new CommandContextItem(
                     new OpenInConsoleCommand(ParentDirectory)));
 
+        commands.Add(new SeparatorContextItem());
+
+        // Add pin/unpin command first - check current state dynamically
+        var appIdentifier = GetAppIdentifier();
+        if (PinnedAppsManager.Instance.IsAppPinned(appIdentifier))
+        {
+            commands.Add(
+                new CommandContextItem(
+                    new UnpinAppCommand(appIdentifier))
+                    {
+                        RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0),
+                    });
+        }
+        else
+        {
+            commands.Add(
+                new CommandContextItem(
+                    new PinAppCommand(appIdentifier))
+                    {
+                        RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0),
+                    });
+        }
+
         return commands;
     }
 
     public override string ToString()
     {
         return ExecutableName;
+    }
+
+    public string GetAppIdentifier()
+    {
+        // Use a combination of name and path to create a unique identifier
+        return $"{Name}|{FullPath}";
     }
 
     private static Win32Program CreateWin32Program(string path)
