@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.PowerToys.UITest
 {
-    internal static class WindowHelper
+    public static class WindowHelper
     {
         internal const string AdministratorPrefix = "Administrator: ";
 
