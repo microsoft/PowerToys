@@ -16,6 +16,56 @@
 
 - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`).
 
+## Running tests in pipeline
+
+The PowerToys UI test pipeline provides flexible options for building and testing:
+
+### Pipeline Options
+
+- **useLatestOfficialBuild**: When checked, downloads the latest official PowerToys build and installs it for testing. This skips the full solution build and only builds UI test projects.
+
+- **useCurrentBranchBuild**: When checked along with `useLatestOfficialBuild`, downloads the official build from the current branch instead of main.
+
+  **Default value**: `false` (downloads from main branch)
+  
+  **When to use this**:
+  - **Default scenario**: The pipeline tests against the latest signed PowerToys build from the `main` branch, regardless of which branch your test code changes are from
+  - **Custom branch testing**: Only specify `true` when:
+    - Your branch has produced its own signed PowerToys build via the official build pipeline
+    - You want to test against that specific branch's PowerToys build instead of main
+    - You are testing PowerToys functionality changes that are only available in your branch's build
+  
+  **Important notes**:
+  - The test pipeline itself runs from your specified branch, but by default tests against the main branch's PowerToys build
+  - Not all branches have signed builds available - only use this if you're certain your branch has a signed build
+  - If enabled but no build exists for your branch, the pipeline may fail or fall back to main
+
+- **uiTestModules**: Specify which UI test modules to build and run. This parameter controls both the `.csproj` projects to build and the `.dll` test assemblies to execute. Examples:
+  - `['UITests-FancyZones']` - Only FancyZones UI tests
+  - `['MouseUtils.UITests']` - Only MouseUtils UI tests
+  - `['UITests-FancyZones', 'MouseUtils.UITests']` - Multiple specific modules
+  - Leave empty to build and run all UI test modules
+
+  **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
+
+### Build Modes
+
+1. **Official Build + Selective Testing** (`useLatestOfficialBuild = true`)
+   - Downloads and installs official PowerToys build
+   - Builds only specified UI test projects
+   - Runs specified UI tests against installed PowerToys
+   - Controlled by `uiTestModules` parameter
+
+2. **Full Build + Testing** (`useLatestOfficialBuild = false`)
+   - Builds entire PowerToys solution
+   - Builds UI test projects (all or specific based on `uiTestModules`)
+   - Runs UI tests (all or specific based on `uiTestModules`)
+   - Uses freshly built PowerToys for testing
+
+> **Note**: Both modes support the `uiTestModules` parameter to control which specific UI test modules to build and run.
+
+### Pipeline Access
+- Pipeline: https://microsoft.visualstudio.com/Dart/_build?definitionId=161438&_a=summary
 
 ## How to add the first UI tests for your modules
 
