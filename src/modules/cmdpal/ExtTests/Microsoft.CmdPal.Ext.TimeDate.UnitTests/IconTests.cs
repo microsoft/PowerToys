@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
@@ -84,23 +85,29 @@ public class IconTests
         }
     }
 
-    [TestMethod]
-    public void ResultHelper_CreateListItem_PreservesIcon()
+    [DataTestMethod]
+    [DataRow(ResultIconType.Time, "\uE823")]
+    [DataRow(ResultIconType.Date, "\uE787")]
+    [DataRow(ResultIconType.DateTime, "\uEC92")]
+    public void ResultHelper_CreateListItem_PreservesIcon(ResultIconType resultIconType, string expectedIcon)
     {
         // Setup
         var availableResult = new AvailableResult
         {
             Label = "Test Label",
             Value = "Test Value",
-            IconType = ResultIconType.Time,
+            IconType = resultIconType,
         };
 
         // Act
         var listItem = availableResult.ToListItem();
 
+        var icon = listItem.Icon;
+
         // Assert
         Assert.IsNotNull(listItem);
         Assert.IsNotNull(listItem.Icon, "ListItem should preserve the icon from AvailableResult");
+        Assert.AreEqual(expectedIcon, icon.Dark.Icon, $"Icon for {resultIconType} should match expected value");
     }
 
     [TestMethod]
