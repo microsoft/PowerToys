@@ -99,10 +99,6 @@ public abstract partial class AppExtensionHost : IExtensionHost
         var vm = new LogMessageViewModel(message, _globalLogPageContext);
         vm.SafeInitializePropertiesSynchronous();
 
-        // if (Extension != null)
-        // {
-        //    vm.ExtensionPfn = Extension.PackageFamilyName;
-        // }
         Task.Factory.StartNew(
             () =>
             {
@@ -134,10 +130,6 @@ public abstract partial class AppExtensionHost : IExtensionHost
         var vm = new StatusMessageViewModel(message, new(_globalLogPageContext));
         vm.SafeInitializePropertiesSynchronous();
 
-        // if (Extension != null)
-        // {
-        //    vm.ExtensionPfn = Extension.PackageFamilyName;
-        // }
         Task.Factory.StartNew(
             () =>
             {
