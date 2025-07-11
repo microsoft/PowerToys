@@ -16,6 +16,8 @@ namespace HostsUILib.Settings
 
         public HostsEncoding Encoding { get; }
 
+        public bool AddLeadingWhitespace { get; }
+
         event EventHandler LoopbackDuplicatesChanged;
 
         public delegate void OpenSettingsFunction();
