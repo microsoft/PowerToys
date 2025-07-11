@@ -247,6 +247,9 @@ public sealed partial class MainWindow : WindowEx,
 
         PInvoke.SetForegroundWindow(hwnd);
         PInvoke.SetActiveWindow(hwnd);
+
+        var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        Logger.LogInfo($"ShowHwnd complete. ts {currentTimestamp}");
     }
 
     private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
