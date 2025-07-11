@@ -342,4 +342,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
         return false;
     }
+
+    public PerformCommandMessage GetPerformCommandMessage()
+    {
+        return new PerformCommandMessage(this.CommandViewModel.Model, new Core.ViewModels.Models.ExtensionObject<IListItem>(this));
+    }
 }

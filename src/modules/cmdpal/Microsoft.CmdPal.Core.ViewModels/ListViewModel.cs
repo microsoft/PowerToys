@@ -72,7 +72,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, CommandPaletteHost host)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host)
         : base(model, scheduler, host)
     {
         _model = new(model);
@@ -158,10 +158,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             // Cancel any ongoing search
-            if (_cancellationTokenSource != null)
-            {
-                _cancellationTokenSource.Cancel();
-            }
+            _cancellationTokenSource?.Cancel();
 
             lock (_listLock)
             {

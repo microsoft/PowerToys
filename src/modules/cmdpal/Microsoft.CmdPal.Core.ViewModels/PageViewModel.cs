@@ -43,7 +43,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public bool ShowSuggestion => !string.IsNullOrEmpty(TextToSuggest) && TextToSuggest != Filter;
 
     [ObservableProperty]
-    public partial CommandPaletteHost ExtensionHost { get; private set; }
+    public partial AppExtensionHost ExtensionHost { get; private set; }
 
     public bool HasStatusMessage => MostRecentStatusMessage != null;
 
@@ -69,7 +69,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public IconInfoViewModel Icon { get; protected set; }
 
-    public PageViewModel(IPage? model, TaskScheduler scheduler, CommandPaletteHost extensionHost)
+    public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost)
         : base((IPageContext?)null)
     {
         _pageModel = new(model);
@@ -220,7 +220,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     {
         // Set the extensionHint to the Page Title (if we have one, and one not provided).
         // extensionHint ??= _pageModel?.Unsafe?.Title;
-        extensionHint ??= ExtensionHost.Extension?.ExtensionDisplayName ?? Title;
+        extensionHint ??= ExtensionHost.GetExtensionDisplayName() ?? Title;
         Task.Factory.StartNew(
             () =>
         {
@@ -263,5 +263,5 @@ public interface IPageViewModelFactoryService
     /// <param name="nested">Indicates whether the page is not the top-level page.</param>
     /// <param name="host">The command palette host that will host the page (for status messages)</param>
     /// <returns>A new instance of the page view model.</returns>
-    PageViewModel? TryCreatePageViewModel(IPage page, bool nested, CommandPaletteHost host);
+    PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host);
 }

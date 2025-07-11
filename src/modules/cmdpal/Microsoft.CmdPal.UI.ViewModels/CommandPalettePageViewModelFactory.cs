@@ -17,7 +17,7 @@ public class CommandPalettePageViewModelFactory
         _scheduler = scheduler;
     }
 
-    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, CommandPaletteHost host)
+    public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host)
     {
         return page switch
         {

@@ -12,8 +12,7 @@ using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
 
-// [assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
-namespace Microsoft.CmdPal.Core.ViewModels.Models;
+namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 public class ExtensionWrapper : IExtensionWrapper
 {

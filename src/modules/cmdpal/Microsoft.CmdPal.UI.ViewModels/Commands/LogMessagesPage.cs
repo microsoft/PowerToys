@@ -32,7 +32,6 @@ public partial class LogMessagesPage : ListPage
                     var li = new ListItem(new NoOpCommand())
                     {
                         Title = logMessageViewModel.Message,
-                        Subtitle = logMessageViewModel.ExtensionPfn,
                     };
                     _listItems.Insert(0, li);
                 }

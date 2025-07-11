@@ -1,68 +1,37 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public sealed partial class CommandPaletteHost : IExtensionHost
+public abstract partial class AppExtensionHost : IExtensionHost
 {
-    // Static singleton, so that we can access this from anywhere
-    // Post MVVM - this should probably be like, a dependency injection thing.
-    public static CommandPaletteHost Instance { get; } = new();
-
     private static readonly GlobalLogPageContext _globalLogPageContext = new();
 
     private static ulong _hostingHwnd;
+
+    public static ObservableCollection<LogMessageViewModel> LogMessages { get; } = [];
 
     public ulong HostingHwnd => _hostingHwnd;
 
     public string LanguageOverride => string.Empty;
 
-    public static ObservableCollection<LogMessageViewModel> LogMessages { get; } = [];
-
     public ObservableCollection<StatusMessageViewModel> StatusMessages { get; } = [];
 
-    public IExtensionWrapper? Extension { get; }
+    public static void SetHostHwnd(ulong hostHwnd) => _hostingHwnd = hostHwnd;
 
-    private readonly ICommandProvider? _builtInProvider;
-
-    private CommandPaletteHost()
+    public void DebugLog(string message)
     {
-    }
-
-    public CommandPaletteHost(IExtensionWrapper source)
-    {
-        Extension = source;
-    }
-
-    public CommandPaletteHost(ICommandProvider builtInProvider)
-    {
-        _builtInProvider = builtInProvider;
-    }
-
-    public IAsyncAction ShowStatus(IStatusMessage? message, StatusContext context)
-    {
-        if (message == null)
-        {
-            return Task.CompletedTask.AsAsyncAction();
-        }
-
-        Debug.WriteLine(message.Message);
-
-        _ = Task.Run(() =>
-        {
-            ProcessStatusMessage(message, context);
-        });
-
-        return Task.CompletedTask.AsAsyncAction();
+#if DEBUG
+        this.ProcessLogMessage(new LogMessage(message));
+#endif
     }
 
     public IAsyncAction HideStatus(IStatusMessage? message)
@@ -77,6 +46,11 @@ public sealed partial class CommandPaletteHost : IExtensionHost
             ProcessHideStatusMessage(message);
         });
         return Task.CompletedTask.AsAsyncAction();
+    }
+
+    public void Log(string message)
+    {
+        this.ProcessLogMessage(new LogMessage(message));
     }
 
     public IAsyncAction LogMessage(ILogMessage? message)
@@ -98,15 +72,32 @@ public sealed partial class CommandPaletteHost : IExtensionHost
         return Task.CompletedTask.AsAsyncAction();
     }
 
+    public void ProcessHideStatusMessage(IStatusMessage message)
+    {
+        Task.Factory.StartNew(
+            () =>
+            {
+                try
+                {
+                    var vm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
+                    if (vm != null)
+                    {
+                        StatusMessages.Remove(vm);
+                    }
+                }
+                catch
+                {
+                }
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _globalLogPageContext.Scheduler);
+    }
+
     public void ProcessLogMessage(ILogMessage message)
     {
         var vm = new LogMessageViewModel(message, _globalLogPageContext);
         vm.SafeInitializePropertiesSynchronous();
-
-        if (Extension != null)
-        {
-            vm.ExtensionPfn = Extension.PackageFamilyName;
-        }
 
         Task.Factory.StartNew(
             () =>
@@ -139,11 +130,6 @@ public sealed partial class CommandPaletteHost : IExtensionHost
         var vm = new StatusMessageViewModel(message, new(_globalLogPageContext));
         vm.SafeInitializePropertiesSynchronous();
 
-        if (Extension != null)
-        {
-            vm.ExtensionPfn = Extension.PackageFamilyName;
-        }
-
         Task.Factory.StartNew(
             () =>
             {
@@ -154,39 +140,29 @@ public sealed partial class CommandPaletteHost : IExtensionHost
             _globalLogPageContext.Scheduler);
     }
 
-    public void ProcessHideStatusMessage(IStatusMessage message)
+    public IAsyncAction ShowStatus(IStatusMessage? message, StatusContext context)
     {
-        Task.Factory.StartNew(
-            () =>
-            {
-                try
-                {
-                    var vm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
-                    if (vm != null)
-                    {
-                        StatusMessages.Remove(vm);
-                    }
-                }
-                catch
-                {
-                }
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            _globalLogPageContext.Scheduler);
+        if (message == null)
+        {
+            return Task.CompletedTask.AsAsyncAction();
+        }
+
+        Debug.WriteLine(message.Message);
+
+        _ = Task.Run(() =>
+        {
+            ProcessStatusMessage(message, context);
+        });
+
+        return Task.CompletedTask.AsAsyncAction();
     }
 
-    public static void SetHostHwnd(ulong hostHwnd) => _hostingHwnd = hostHwnd;
+    public abstract string? GetExtensionDisplayName();
+}
 
-    public void DebugLog(string message)
-    {
-#if DEBUG
-        this.ProcessLogMessage(new LogMessage(message));
-#endif
-    }
+public interface IAppHostService
+{
+    AppExtensionHost GetDefaultHost();
 
-    public void Log(string message)
-    {
-        this.ProcessLogMessage(new LogMessage(message));
-    }
+    AppExtensionHost GetHostForCommand(object? context, AppExtensionHost? currentHost);
 }

@@ -39,11 +39,7 @@ public partial class AliasManager : ObservableObject
                 {
                     WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
 
-                    // TODO! We used to be able to pass a TopLevelViewModel in directly, to be able to stash the
-                    // topLevelCommand.ExtensionHost too. Can't do that trivially anymore
-                    // WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(topLevelCommand));
-                    // WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(topLevelCommand.CommandViewModel.Model) { ExtensionHost = topLevelCommand.ExtensionHost });
-                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(topLevelCommand.CommandViewModel.Model));
+                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
                     return true;
                 }
             }
