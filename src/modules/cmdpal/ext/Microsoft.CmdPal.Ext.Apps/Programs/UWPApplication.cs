@@ -529,6 +529,25 @@ public class UWPApplication : IProgram
         }
     }
 
+    internal AppItem ToAppItem()
+    {
+        var app = this;
+        var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;
+        var item = new AppItem()
+        {
+            Name = app.Name,
+            Subtitle = app.Description,
+            Type = UWPApplication.Type(),
+            IcoPath = iconPath,
+            DirPath = app.Location,
+            UserModelId = app.UserModelId,
+            IsPackaged = true,
+            Commands = app.GetCommands(),
+            AppIdentifier = app.GetAppIdentifier(),
+        };
+        return item;
+    }
+
     /*
     public ImageSource Logo()
     {

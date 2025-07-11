@@ -23,10 +23,13 @@ internal sealed partial class AppListItem : ListItem
 
     public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
 
+    public string AppIdentifier { get; private set; }
+
     public AppListItem(AppItem app, bool useThumbnails)
         : base(new AppCommand(app))
     {
         _app = app;
+        AppIdentifier = app.AppIdentifier;
         Title = app.Name;
         Subtitle = app.Subtitle;
         Tags = [_appTag];

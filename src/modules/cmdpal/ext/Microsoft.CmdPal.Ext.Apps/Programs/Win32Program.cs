@@ -948,4 +948,29 @@ public class Win32Program : IProgram
             return Array.Empty<Win32Program>();
         }
     }
+
+    internal AppItem ToAppItem()
+    {
+        var app = this;
+        var icoPath = string.IsNullOrEmpty(app.IcoPath) ?
+            (app.AppType == Win32Program.ApplicationType.InternetShortcutApplication ?
+                app.IcoPath :
+                app.FullPath) :
+            app.IcoPath;
+
+        icoPath = icoPath.EndsWith(".lnk", System.StringComparison.InvariantCultureIgnoreCase) ?
+            app.FullPath :
+            icoPath;
+        return new AppItem()
+        {
+            Name = app.Name,
+            Subtitle = app.Description,
+            Type = app.Type(),
+            IcoPath = icoPath,
+            ExePath = !string.IsNullOrEmpty(app.LnkFilePath) ? app.LnkFilePath : app.FullPath,
+            DirPath = app.Location,
+            Commands = app.GetCommands(),
+            AppIdentifier = app.GetAppIdentifier(),
+        };
+    }
 }

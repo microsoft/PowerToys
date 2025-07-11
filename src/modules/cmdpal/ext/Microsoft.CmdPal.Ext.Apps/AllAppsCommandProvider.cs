@@ -2,8 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -27,9 +31,12 @@ public partial class AllAppsCommandProvider : CommandProvider
             Subtitle = Resources.search_installed_apps,
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
         };
+
+        // Subscribe to pin state changes to refresh the command provider
+        PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem];
+    public override ICommandItem[] TopLevelCommands() => [_listItem, ..GetPinnedApps()];
 
     public ICommandItem? LookupApp(string displayName)
     {
@@ -59,5 +66,22 @@ public partial class AllAppsCommandProvider : CommandProvider
         }
 
         return null;
+    }
+
+    private AppListItem[] GetPinnedApps()
+    {
+        var pinnedApps = PinnedAppsManager.Instance.GetPinnedAppIdentifiers().ToList();
+
+        var apps = Page.GetPrograms()
+                        .Where(app => pinnedApps.Contains(app.AppIdentifier))
+                        .Select(appItem => new AppListItem(appItem, true))
+                        .ToArray();
+
+        return apps;
+    }
+
+    private void OnPinStateChanged(object? sender, System.EventArgs e)
+    {
+        RaiseItemsChanged(0);
     }
 }

@@ -45,6 +45,11 @@ public sealed class PinnedAppsManager
         }
     }
 
+    public string[] GetPinnedAppIdentifiers()
+    {
+        return _pinnedApps.PinnedAppIdentifiers.ToArray();
+    }
+
     public void UnpinApp(string appIdentifier)
     {
         var removed = _pinnedApps.PinnedAppIdentifiers.RemoveAll(id =>

@@ -79,34 +79,11 @@ public sealed partial class AllAppsPage : ListPage
     {
         var uwpResults = AppCache.Instance.Value.UWPs
             .Where((application) => application.Enabled)
-            .Select(UwpToAppItem);
+            .Select(app => app.ToAppItem());
 
         var win32Results = AppCache.Instance.Value.Win32s
             .Where((application) => application.Enabled && application.Valid)
-            .Select(app =>
-            {
-                var icoPath = string.IsNullOrEmpty(app.IcoPath) ?
-                    (app.AppType == Win32Program.ApplicationType.InternetShortcutApplication ?
-                        app.IcoPath :
-                        app.FullPath) :
-                    app.IcoPath;
-
-                // icoPath = icoPath.EndsWith(".lnk", System.StringComparison.InvariantCultureIgnoreCase) ? (icoPath + ",0") : icoPath;
-                icoPath = icoPath.EndsWith(".lnk", System.StringComparison.InvariantCultureIgnoreCase) ?
-                    app.FullPath :
-                    icoPath;
-                return new AppItem()
-                {
-                    Name = app.Name,
-                    Subtitle = app.Description,
-                    Type = app.Type(),
-                    IcoPath = icoPath,
-                    ExePath = !string.IsNullOrEmpty(app.LnkFilePath) ? app.LnkFilePath : app.FullPath,
-                    DirPath = app.Location,
-                    Commands = app.GetCommands(),
-                    AppIdentifier = app.GetAppIdentifier(),
-                };
-            });
+            .Select(app => app.ToAppItem());
 
         var allApps = uwpResults.Concat(win32Results).ToList();
 
@@ -114,24 +91,6 @@ public sealed partial class AllAppsPage : ListPage
         return allApps.OrderBy(app => !PinnedAppsManager.Instance.IsAppPinned(app.AppIdentifier))
                       .ThenBy(app => app.Name)
                       .ToList();
-    }
-
-    private AppItem UwpToAppItem(UWPApplication app)
-    {
-        var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;
-        var item = new AppItem()
-        {
-            Name = app.Name,
-            Subtitle = app.Description,
-            Type = UWPApplication.Type(),
-            IcoPath = iconPath,
-            DirPath = app.Location,
-            UserModelId = app.UserModelId,
-            IsPackaged = true,
-            Commands = app.GetCommands(),
-            AppIdentifier = app.GetAppIdentifier(),
-        };
-        return item;
     }
 
     private void OnPinStateChanged(object? sender, System.EventArgs e)
