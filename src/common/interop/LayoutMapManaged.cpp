@@ -12,7 +12,7 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return _map->GetKeyFromName(std::wstring(name));
     }
-    void LayoutMapManaged::Updatelayout()
+    void LayoutMapManaged::UpdateLayout()
     {
         _map->UpdateLayout();
     }

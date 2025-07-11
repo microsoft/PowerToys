@@ -18,8 +18,14 @@ using WinRT;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskScheduler _scheduler) : ObservableObject
+public partial class ShellViewModel : ObservableObject,
+    IRecipient<PerformCommandMessage>
 {
+    private readonly IServiceProvider _serviceProvider;
+    private readonly TaskScheduler _scheduler;
+    private readonly Lock _invokeLock = new();
+    private Task? _handleInvokeTask;
+
     [ObservableProperty]
     public partial bool IsLoaded { get; set; } = false;
 
@@ -29,7 +35,7 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     [ObservableProperty]
     public partial bool IsDetailsVisible { get; set; }
 
-    private PageViewModel _currentPage = new LoadingPageViewModel(null, _scheduler);
+    private PageViewModel _currentPage;
 
     public PageViewModel CurrentPage
     {
@@ -57,6 +63,19 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     private MainListPage? _mainListPage;
 
     private IExtensionWrapper? _activeExtension;
+    private bool _isNested;
+
+    public bool IsNested { get => _isNested; }
+
+    public ShellViewModel(IServiceProvider serviceProvider, TaskScheduler scheduler)
+    {
+        _serviceProvider = serviceProvider;
+        _scheduler = scheduler;
+        _currentPage = new LoadingPageViewModel(null, _scheduler);
+
+        // Register to receive messages
+        WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
+    }
 
     [RelayCommand]
     public async Task<bool> LoadAsync()
@@ -164,6 +183,241 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
         }
     }
 
+    public void Receive(PerformCommandMessage message)
+    {
+        PerformCommand(message);
+    }
+
+    private void PerformCommand(PerformCommandMessage message)
+    {
+        var command = message.Command.Unsafe;
+        if (command == null)
+        {
+            return;
+        }
+
+        if (!CurrentPage.IsNested)
+        {
+            // on the main page here
+            PerformTopLevelCommand(message);
+        }
+
+        IExtensionWrapper? extension = null;
+
+        try
+        {
+            // In the case that we're coming from a top-level command, the
+            // current page's host is the global instance. We only really want
+            // to use that as the host of last resort.
+            var pageHost = CurrentPage?.ExtensionHost;
+            if (pageHost == CommandPaletteHost.Instance)
+            {
+                pageHost = null;
+            }
+
+            var messageHost = message.ExtensionHost;
+
+            // Use the host from the current page if it has one, else use the
+            // one specified in the PerformMessage for a top-level command,
+            // else just use the global one.
+            CommandPaletteHost host;
+
+            // Top level items can come through without a Extension set on the
+            // message. In that case, the `Context` is actually the
+            // TopLevelViewModel itself, and we can use that to get at the
+            // extension object.
+            extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
+            if (extension == null && message.Context is TopLevelViewModel topLevelViewModel)
+            {
+                extension = topLevelViewModel.ExtensionHost?.Extension;
+                host = pageHost ?? messageHost ?? topLevelViewModel?.ExtensionHost ?? CommandPaletteHost.Instance;
+            }
+            else
+            {
+                host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            }
+
+            if (extension != null)
+            {
+                if (messageHost != null)
+                {
+                    Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
+                }
+                else
+                {
+                    Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
+                }
+            }
+
+            SetActiveExtension(extension);
+
+            if (command is IPage page)
+            {
+                Logger.LogDebug($"Navigating to page");
+
+                var isMainPage = command is MainListPage;
+
+                // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
+                var pageViewModel = GetViewModelForPage(page, !isMainPage, host);
+                if (pageViewModel == null)
+                {
+                    Logger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
+                    throw new NotSupportedException();
+                }
+
+                // Kick off async loading of our ViewModel
+                LoadPageViewModel(pageViewModel);
+                _isNested = !isMainPage;
+
+                OnUIThread(() => { WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)); });
+                WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation));
+
+                // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
+                // See RootFrame_Navigated event handler.
+            }
+            else if (command is IInvokableCommand invokable)
+            {
+                Logger.LogDebug($"Invoking command");
+
+                WeakReferenceMessenger.Default.Send<BeginInvokeMessage>();
+                StartInvoke(message, invokable);
+            }
+        }
+        catch (Exception ex)
+        {
+            // TODO: It would be better to do this as a page exception, rather
+            // than a silent log message.
+            CommandPaletteHost.Instance.Log(ex.Message);
+        }
+    }
+
+    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable)
+    {
+        // TODO GH #525 This needs more better locking.
+        lock (_invokeLock)
+        {
+            if (_handleInvokeTask != null)
+            {
+                // do nothing - a command is already doing a thing
+            }
+            else
+            {
+                _handleInvokeTask = Task.Run(() =>
+                {
+                    SafeHandleInvokeCommandSynchronous(message, invokable);
+                });
+            }
+        }
+    }
+
+    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable)
+    {
+        try
+        {
+            // Call out to extension process.
+            // * May fail!
+            // * May never return!
+            var result = invokable.Invoke(message.Context);
+
+            // But if it did succeed, we need to handle the result.
+            UnsafeHandleCommandResult(result);
+
+            _handleInvokeTask = null;
+        }
+        catch (Exception ex)
+        {
+            _handleInvokeTask = null;
+
+            // TODO: It would be better to do this as a page exception, rather
+            // than a silent log message.
+            CommandPaletteHost.Instance.Log(ex.Message);
+        }
+    }
+
+    private void UnsafeHandleCommandResult(ICommandResult? result)
+    {
+        if (result == null)
+        {
+            // No result, nothing to do.
+            return;
+        }
+
+        var kind = result.Kind;
+        Logger.LogDebug($"handling {kind.ToString()}");
+
+        WeakReferenceMessenger.Default.Send<CmdPalInvokeResultMessage>(new(kind));
+        switch (kind)
+        {
+            case CommandResultKind.Dismiss:
+                {
+                    // Reset the palette to the main page and dismiss
+                    GoHome(withAnimation: false, focusSearch: false);
+                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    break;
+                }
+
+            case CommandResultKind.GoHome:
+                {
+                    // Go back to the main page, but keep it open
+                    GoHome();
+                    break;
+                }
+
+            case CommandResultKind.GoBack:
+                {
+                    GoBack();
+                    break;
+                }
+
+            case CommandResultKind.Hide:
+                {
+                    // Keep this page open, but hide the palette.
+                    WeakReferenceMessenger.Default.Send<DismissMessage>();
+                    break;
+                }
+
+            case CommandResultKind.KeepOpen:
+                {
+                    // Do nothing.
+                    break;
+                }
+
+            case CommandResultKind.Confirm:
+                {
+                    if (result.Args is IConfirmationArgs a)
+                    {
+                        WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
+                    }
+
+                    break;
+                }
+
+            case CommandResultKind.ShowToast:
+                {
+                    if (result.Args is IToastArgs a)
+                    {
+                        WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
+                        UnsafeHandleCommandResult(a.Result);
+                    }
+
+                    break;
+                }
+        }
+    }
+
+    private PageViewModel? GetViewModelForPage(IPage page, bool nested, CommandPaletteHost host)
+    {
+        return page switch
+        {
+            IListPage listPage => new ListViewModel(listPage, _scheduler, host)
+            {
+                IsNested = nested,
+            },
+            IContentPage contentPage => new ContentPageViewModel(contentPage, _scheduler, host),
+            _ => null,
+        };
+    }
+
     public void SetActiveExtension(IExtensionWrapper? extension)
     {
         if (extension != _activeExtension)
@@ -196,9 +450,15 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
         }
     }
 
-    public void GoHome()
+    public void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
         SetActiveExtension(null);
+        WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(withAnimation, focusSearch));
+    }
+
+    public void GoBack(bool withAnimation = true, bool focusSearch = true)
+    {
+        WeakReferenceMessenger.Default.Send<GoBackMessage>(new(withAnimation, focusSearch));
     }
 
     // You may ask yourself, why aren't we using CsWin32 for this?
@@ -213,5 +473,14 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [SupportedOSPlatform("windows5.0")]
         internal static extern unsafe global::Windows.Win32.Foundation.HRESULT CoAllowSetForegroundWindow(nint pUnk, [Optional] void* lpvReserved);
+    }
+
+    private void OnUIThread(Action action)
+    {
+        _ = Task.Factory.StartNew(
+            action,
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _scheduler);
     }
 }
