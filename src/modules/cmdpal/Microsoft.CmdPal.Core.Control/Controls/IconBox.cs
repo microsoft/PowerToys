@@ -2,14 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Core.Control.Deferred;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.UI.Deferred;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 
-namespace Microsoft.CmdPal.UI.Controls;
+namespace Microsoft.CmdPal.Core.Control.Controls;
 
 /// <summary>
 /// A helper control which takes an <see cref="IconSource"/> and creates the corresponding <see cref="IconElement"/>.

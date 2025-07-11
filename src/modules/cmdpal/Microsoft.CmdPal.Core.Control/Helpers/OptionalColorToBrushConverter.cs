@@ -7,7 +7,7 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml.Media;
 using Color = Windows.UI.Color;
 
-namespace Microsoft.CmdPal.UI.Helpers;
+namespace Microsoft.CmdPal.Core.Control.Helpers;
 
 public static partial class OptionalColorBrushCacheProvider
 {

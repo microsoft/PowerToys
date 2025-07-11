@@ -8,7 +8,7 @@ using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.CmdPal.UI.Controls;
+namespace Microsoft.CmdPal.Core.Control.Controls;
 
 /// <summary>
 /// A helper control which takes an <see cref="IconSource"/> and creates the corresponding <see cref="IconElement"/>.

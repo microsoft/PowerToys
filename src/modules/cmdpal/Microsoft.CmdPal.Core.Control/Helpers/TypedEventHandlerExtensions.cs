@@ -6,7 +6,7 @@ using CommunityToolkit.Common.Deferred;
 using Windows.Foundation;
 
 // Pilfered from CommunityToolkit.WinUI.Deferred
-namespace Microsoft.CmdPal.UI.Deferred;
+namespace Microsoft.CmdPal.Core.Control.Deferred;
 
 /// <summary>
 /// Extensions to <see cref="TypedEventHandler{TSender, TResult}"/> for Deferred Events.

@@ -4,7 +4,7 @@
 
 using Microsoft.CmdPal.Core.ViewModels;
 
-namespace Microsoft.CmdPal.UI.Views;
+namespace Microsoft.CmdPal.Core.Control.Views;
 
 public interface ICurrentPageAware
 {

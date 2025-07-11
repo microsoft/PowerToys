@@ -6,7 +6,7 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 
-namespace Microsoft.CmdPal.UI;
+namespace Microsoft.CmdPal.Core.Control;
 
 public partial class MessageStateToSeverityConverter : IValueConverter
 {

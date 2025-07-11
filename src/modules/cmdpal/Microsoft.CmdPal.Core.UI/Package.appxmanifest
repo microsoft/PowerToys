@@ -19,7 +19,7 @@
   IgnorableNamespaces="uap mp rescap uap3 uap17 desktop6 virtualization">
 
   <Identity
-    Name="Microsoft.CommandPalette"
+    Name="Microsoft.CommandPalette.Core"
     Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="0.0.1.0" />
 
@@ -27,7 +27,7 @@
 
   <Properties>
     <DisplayName>ms-resource:AppName</DisplayName>
-    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
+    <PublisherDisplayName>A Lone Developer</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <desktop6:RegistryWriteVirtualization>disabled</desktop6:RegistryWriteVirtualization>
   </Properties>
@@ -57,7 +57,7 @@
 
       <Extensions>
 
-        <uap3:Extension Category="windows.appExtensionHost">
+        <!-- <uap3:Extension Category="windows.appExtensionHost">
           <uap3:AppExtensionHost>
             <uap3:Name>com.microsoft.commandpalette</uap3:Name>
           </uap3:AppExtensionHost>
@@ -68,15 +68,15 @@
             TaskId="CmdPalStartup"
             Enabled="false"
             DisplayName="ms-resource:StartupTaskName" />
-        </uap5:Extension>
+        </uap5:Extension> -->
 
 
-        <uap:Extension Category="windows.protocol">
+        <!-- <uap:Extension Category="windows.protocol">
           <uap:Protocol Name="x-cmdpal">
             <uap:Logo>Assets\StoreLogo.png</uap:Logo>
             <uap:DisplayName>Command Palette URI scheme</uap:DisplayName>
           </uap:Protocol>
-        </uap:Extension>
+        </uap:Extension> -->
 
       </Extensions>
 

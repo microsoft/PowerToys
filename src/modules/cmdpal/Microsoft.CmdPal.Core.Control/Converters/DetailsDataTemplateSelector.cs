@@ -6,7 +6,7 @@ using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.CmdPal.UI;
+namespace Microsoft.CmdPal.Core.Control;
 
 public partial class DetailsDataTemplateSelector : DataTemplateSelector
 {

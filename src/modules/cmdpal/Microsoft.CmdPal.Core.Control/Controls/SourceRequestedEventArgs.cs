@@ -6,7 +6,7 @@ using CommunityToolkit.Common.Deferred;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.CmdPal.UI.Controls;
+namespace Microsoft.CmdPal.Core.Control.Controls;
 
 /// <summary>
 /// See <see cref="IconBox.SourceRequested"/> event.

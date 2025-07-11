@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 
-namespace Microsoft.CmdPal.UI;
+namespace Microsoft.CmdPal.Core.Control;
 
 internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
 {

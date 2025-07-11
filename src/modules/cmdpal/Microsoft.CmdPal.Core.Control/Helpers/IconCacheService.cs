@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Storage.Streams;
 
-namespace Microsoft.CmdPal.UI.Helpers;
+namespace Microsoft.CmdPal.Core.Control.Helpers;
 
 public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
 {

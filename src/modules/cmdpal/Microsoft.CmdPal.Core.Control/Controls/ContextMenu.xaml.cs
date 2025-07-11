@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Input;
 using Windows.System;
 using Windows.UI.Core;
 
-namespace Microsoft.CmdPal.UI.Controls;
+namespace Microsoft.CmdPal.Core.Control.Controls;
 
 public sealed partial class ContextMenu : UserControl,
     IRecipient<OpenContextMenuMessage>,

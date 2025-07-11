@@ -2,11 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Core.Control.Controls;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.UI.Controls;
-using Microsoft.CmdPal.UI.Helpers;
 
-namespace Microsoft.CmdPal.UI.Helpers;
+namespace Microsoft.CmdPal.Core.Control.Helpers;
 
 /// <summary>
 /// Common async event handler provides the cache lookup function for the <see cref="IconBox.SourceRequested"/> deferred event.

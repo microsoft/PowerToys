@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.CmdPal.UI;
+namespace Microsoft.CmdPal.Core.Control;
 
 public static class CleanupHelper
 {

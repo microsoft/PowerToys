@@ -5,7 +5,7 @@
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace Microsoft.CmdPal.UI.Helpers;
+namespace Microsoft.CmdPal.Core.Control.Helpers;
 
 [SuppressUnmanagedCodeSecurity]
 internal static class NativeMethods

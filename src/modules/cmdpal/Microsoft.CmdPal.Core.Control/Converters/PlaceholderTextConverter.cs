@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.UI.Xaml.Data;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
+using RS_ = Microsoft.CmdPal.Core.Control.Helpers.ResourceLoaderInstance;
 
-namespace Microsoft.CmdPal.UI;
+namespace Microsoft.CmdPal.Core.Control;
 
 public partial class PlaceholderTextConverter : IValueConverter
 {

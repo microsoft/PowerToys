@@ -7,7 +7,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
-namespace Microsoft.CmdPal.UI.Pages;
+namespace Microsoft.CmdPal.Core.Control.Pages;
 
 /// <summary>
 /// We use this page to do initialization of our extensions and cache loading to hydrate our ViewModels.

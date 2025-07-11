@@ -20,22 +20,17 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
-namespace Microsoft.CmdPal.UI.Pages;
+namespace Microsoft.CmdPal.Core.Control.Pages;
 
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
 public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<NavigateBackMessage>,
-
-    // IRecipient<OpenSettingsMessage>,
-    // IRecipient<HotkeySummonMessage>,
     IRecipient<ShowDetailsMessage>,
     IRecipient<HideDetailsMessage>,
     IRecipient<ClearSearchMessage>,
     IRecipient<LaunchUriMessage>,
-
-    // IRecipient<SettingsWindowClosedMessage>,
     IRecipient<GoHomeMessage>,
     IRecipient<GoBackMessage>,
     IRecipient<ShowConfirmationMessage>,
@@ -52,15 +47,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly SlideNavigationTransitionInfo _slideRightTransition = new() { Effect = SlideNavigationTransitionEffect.FromRight };
     private readonly SuppressNavigationTransitionInfo _noAnimation = new();
 
-    // private readonly ToastWindow _toast = new();
-
-    // private SettingsWindow? _settingsWindow;
-
-    // public ShellViewModel ViewModel { get; private set; }// = App.Current.Services.GetService<ShellViewModel>()!;
-    private ShellViewModel? ViewModel
+    public ShellViewModel? ViewModel
     {
         get => (ShellViewModel?)GetValue(ViewModelProperty);
-        set => SetValue(ViewModelProperty, value);
+        set
+        {
+            SetValue(ViewModelProperty, value);
+            RootFrame.Navigate(typeof(LoadingPage), ViewModel);
+        }
     }
 
     // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
@@ -92,8 +86,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
-
-        RootFrame.Navigate(typeof(LoadingPage), ViewModel);
     }
 
     // protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -202,7 +194,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
         await initializeDialogTask;
 
-        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
+        var resourceLoader = Microsoft.CmdPal.Core.Control.Helpers.ResourceLoaderInstance.ResourceLoader;
         var confirmText = resourceLoader.GetString("ConfirmationDialog_ConfirmButtonText");
         var cancelText = resourceLoader.GetString("ConfirmationDialog_CancelButtonText");
 

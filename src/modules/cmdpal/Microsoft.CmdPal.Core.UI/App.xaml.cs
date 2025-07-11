@@ -2,37 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Ext.Apps;
-using Microsoft.CmdPal.Ext.Bookmarks;
-using Microsoft.CmdPal.Ext.Calc;
-using Microsoft.CmdPal.Ext.ClipboardHistory;
-using Microsoft.CmdPal.Ext.Indexer;
-using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.Shell;
-using Microsoft.CmdPal.Ext.System;
-using Microsoft.CmdPal.Ext.TimeDate;
-using Microsoft.CmdPal.Ext.WebSearch;
-using Microsoft.CmdPal.Ext.WindowsServices;
-using Microsoft.CmdPal.Ext.WindowsSettings;
-using Microsoft.CmdPal.Ext.WindowsTerminal;
-using Microsoft.CmdPal.Ext.WindowWalker;
-using Microsoft.CmdPal.Ext.WinGet;
-using Microsoft.CmdPal.UI.Helpers;
-using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
-using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
-namespace Microsoft.CmdPal.UI;
+namespace Microsoft.CmdPal.Core.UI;
 
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
@@ -45,8 +23,6 @@ public partial class App : Application
     public static new App Current => (App)Application.Current;
 
     public Window? AppWindow { get; private set; }
-
-    public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
 
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
@@ -62,20 +38,7 @@ public partial class App : Application
     {
         Services = ConfigureServices();
 
-        this.InitializeComponent();
-
-        NativeEventWaiter.WaitForEventLoop(
-            "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
-            {
-                EtwTrace?.Dispose();
-                AppWindow?.Close();
-                Environment.Exit(0);
-            });
-
-        // Connect the PT logging to the core project's logging.
-        // This way, log statements from the core project will be captured by the PT logs
-        var logWrapper = new LogWrapper();
-        CoreLogger.InitializeLogger(logWrapper);
+        InitializeComponent();
     }
 
     /// <summary>
@@ -84,10 +47,11 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        AppWindow = new MainWindow();
+        AppWindow = new MainWindow(Services);
 
-        var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
-        ((MainWindow)AppWindow).HandleLaunch(activatedEventArgs);
+        // var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        // ((MainWindow)AppWindow).HandleLaunch(activatedEventArgs);
+        AppWindow.Activate();
     }
 
     /// <summary>
@@ -102,62 +66,95 @@ public partial class App : Application
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
-        var allApps = new AllAppsCommandProvider();
-        services.AddSingleton<ICommandProvider>(allApps);
-        services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
-        services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
-        services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
-
-        services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
-        services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
-
-        // GH #38440: Users might not have WinGet installed! Or they might have
-        // a ridiculously old version. Or might be running as admin.
-        // We shouldn't explode in the App ctor if we fail to instantiate an
-        // instance of PackageManager, which will happen in the static ctor
-        // for WinGetStatics
-        try
-        {
-            var winget = new WinGetExtensionCommandsProvider();
-            var callback = allApps.LookupApp;
-            winget.SetAllLookup(callback);
-            services.AddSingleton<ICommandProvider>(winget);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Couldn't load winget");
-            Logger.LogError(ex.ToString());
-        }
-
-        services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
-        services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
-        services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
-        services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
-        services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
+        services.AddSingleton<ICommandProvider, ShellCommandsProvider>(); // TODO! test
 
         // Models
-        services.AddSingleton<TopLevelCommandManager>();
-        services.AddSingleton<AliasManager>();
-        services.AddSingleton<HotkeyManager>();
-        var sm = SettingsModel.LoadSettings();
-        services.AddSingleton(sm);
-        var state = AppStateModel.LoadState();
-        services.AddSingleton(state);
-        services.AddSingleton<IExtensionService, ExtensionService>();
-        services.AddSingleton<TrayIconService>();
 
-        services.AddSingleton<IRootPageService, PowerToysRootPageService>();
-        services.AddSingleton<IAppHostService, PowerToysAppHostService>();
-        services.AddSingleton(new TelemetryForwarder());
+        // TODO!
+        services.AddSingleton<IRootPageService, CoreRootPageService>();
+
+        services.AddSingleton<IAppHostService, DummyAppHostService>();
+
+        // services.AddSingleton(new TelemetryForwarder());
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
-        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
 
+        // TODO!
+        services.AddSingleton<IPageViewModelFactoryService, CoreViewModelFactory>();
         return services.BuildServiceProvider();
+    }
+
+    internal sealed class CoreRootPageService : IRootPageService, IDisposable
+    {
+        private readonly ShellCommandsProvider _shellCommandsProvider = new();
+
+        public CoreRootPageService()
+        {
+        }
+
+        public IPage GetRootPage()
+        {
+            var commands = _shellCommandsProvider.TopLevelCommands();
+            var commandItem = commands[0];
+            return (commandItem.Command as IPage)!;
+        }
+
+        public void GoHome()
+        {
+        }
+
+        public void OnPerformCommand(object? context, bool topLevel, AppExtensionHost? currentHost)
+        {
+        }
+
+        public Task PostLoadRootPageAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task PreLoadAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal sealed partial class DummyAppHost : AppExtensionHost
+    {
+        public override string? GetExtensionDisplayName() => "This is test code fool";
+    }
+
+    internal sealed class DummyAppHostService : IAppHostService
+    {
+        private readonly DummyAppHost _host = new();
+
+        public AppExtensionHost GetDefaultHost() => _host;
+
+        public AppExtensionHost GetHostForCommand(object? context, AppExtensionHost? currentHost) => _host;
+    }
+
+    internal sealed class CoreViewModelFactory : IPageViewModelFactoryService
+    {
+        private readonly TaskScheduler _scheduler;
+
+        public CoreViewModelFactory(TaskScheduler scheduler)
+        {
+            _scheduler = scheduler;
+        }
+
+        public PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host)
+        {
+            return page switch
+            {
+                IListPage listPage => new ListViewModel(listPage, _scheduler, host) { IsNested = nested },
+                IContentPage contentPage => new ContentPageViewModel(contentPage, _scheduler, host),
+                _ => null,
+            };
+        }
     }
 }

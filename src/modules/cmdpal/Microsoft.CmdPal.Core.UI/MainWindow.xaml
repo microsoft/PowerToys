@@ -1,18 +1,11 @@
-﻿<winuiex:WindowEx
-    x:Class="Microsoft.CmdPal.UI.MainWindow"
+﻿<Window
+    x:Class="Microsoft.CmdPal.Core.UI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:pages="using:Microsoft.CmdPal.UI.Pages"
-    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
-    xmlns:winuiex="using:WinUIEx"
-    Width="800"
-    Height="480"
-    MinWidth="320"
-    MinHeight="240"
-    Activated="MainWindow_Activated"
-    Closed="MainWindow_Closed"
+    xmlns:pages="using:Microsoft.CmdPal.Core.Control.Pages"
+    xmlns:viewModels="using:Microsoft.CmdPal.Core.ViewModels"
     mc:Ignorable="d">
-    <pages:ShellPage x:Name="RootShellPage" />
-</winuiex:WindowEx>
+    <pages:ShellPage x:Name="RootShellPage" ViewModel="{x:Bind ShellViewModel, Mode=OneWay}" />
+</Window>

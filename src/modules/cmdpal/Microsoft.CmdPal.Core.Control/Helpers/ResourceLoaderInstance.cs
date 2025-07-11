@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using Microsoft.Windows.ApplicationModel.Resources;
 
-namespace Microsoft.CmdPal.UI.Helpers;
+namespace Microsoft.CmdPal.Core.Control.Helpers;
 
 internal static class ResourceLoaderInstance
 {

@@ -2,18 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Core.Control.Helpers;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.CmdPal.UI.Controls;
+namespace Microsoft.CmdPal.Core.Control.Controls;
 
 [TemplatePart(Name = TagIconBox, Type = typeof(IconBox))]
 
-public partial class Tag : Control
+public partial class Tag : Microsoft.UI.Xaml.Controls.Control
 {
     internal const string TagIconBox = "PART_Icon";
 
