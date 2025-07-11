@@ -36,7 +36,7 @@ public partial class OpenInConsoleCommand : InvokableCommand
             }
             catch (Win32Exception ex)
             {
-                Logger.LogError($"Unable to open '{_path}'", ex);
+                CoreLogger.LogError($"Unable to open '{_path}'", ex);
             }
         }
 

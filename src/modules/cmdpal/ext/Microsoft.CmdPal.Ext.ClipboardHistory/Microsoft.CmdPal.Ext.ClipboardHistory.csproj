@@ -10,7 +10,7 @@
 	  <Nullable>enable</Nullable> 
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
+    <ProjectReference Include="..\..\Core\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />

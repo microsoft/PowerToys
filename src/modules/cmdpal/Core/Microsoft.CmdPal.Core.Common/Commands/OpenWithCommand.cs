@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
-using ManagedCsWin32;
 using Microsoft.CmdPal.Core.Common.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32.UI.WindowsAndMessaging;

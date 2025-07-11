@@ -4,8 +4,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using ManagedCommon;
-using ManagedCsWin32;
 using Microsoft.CmdPal.Core.Common.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -58,7 +56,7 @@ public partial class OpenPropertiesCommand : InvokableCommand
         }
         catch (Exception ex)
         {
-            Logger.LogError("Error showing file properties: ", ex);
+            CoreLogger.LogError("Error showing file properties: ", ex);
         }
 
         return CommandResult.Dismiss();

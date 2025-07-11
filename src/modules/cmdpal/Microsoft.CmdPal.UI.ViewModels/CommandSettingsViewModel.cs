@@ -44,7 +44,7 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to load settings page", ex: ex);
+            CoreLogger.LogError($"Failed to load settings page", ex: ex);
         }
 
         Initialized = true;

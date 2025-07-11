@@ -117,7 +117,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex.ToString());
+                    ManagedCommon.Logger.LogError(ex.ToString());
                 }
             }
         }
