@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using ManagedCommon;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -84,7 +83,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Logger.LogDebug(ex.ToString());
+            CoreLogger.LogDebug(ex.ToString());
         }
     }
 }

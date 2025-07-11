@@ -5,7 +5,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -49,7 +48,7 @@ public partial class ShellViewModel : ObservableObject,
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex.ToString());
+                        CoreLogger.LogError(ex.ToString());
                     }
                 }
             }
@@ -139,7 +138,7 @@ public partial class ShellViewModel : ObservableObject,
                     // TODO: Handle failure case
                     if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
                     {
-                        Logger.LogError(ex.ToString());
+                        CoreLogger.LogError(ex.ToString());
                     }
 
                     // TODO GH #239 switch back when using the new MD text block
@@ -196,7 +195,7 @@ public partial class ShellViewModel : ObservableObject,
         {
             if (command is IPage page)
             {
-                Logger.LogDebug($"Navigating to page");
+                CoreLogger.LogDebug($"Navigating to page");
 
                 var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
@@ -205,7 +204,7 @@ public partial class ShellViewModel : ObservableObject,
                 var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host);
                 if (pageViewModel == null)
                 {
-                    Logger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
+                    CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
                     throw new NotSupportedException();
                 }
 
@@ -219,7 +218,7 @@ public partial class ShellViewModel : ObservableObject,
             }
             else if (command is IInvokableCommand invokable)
             {
-                Logger.LogDebug($"Invoking command");
+                CoreLogger.LogDebug($"Invoking command");
 
                 WeakReferenceMessenger.Default.Send<BeginInvokeMessage>();
                 StartInvoke(message, invokable, host);
@@ -285,7 +284,7 @@ public partial class ShellViewModel : ObservableObject,
         }
 
         var kind = result.Kind;
-        Logger.LogDebug($"handling {kind.ToString()}");
+        CoreLogger.LogDebug($"handling {kind.ToString()}");
 
         WeakReferenceMessenger.Default.Send<CmdPalInvokeResultMessage>(new(kind));
         switch (kind)

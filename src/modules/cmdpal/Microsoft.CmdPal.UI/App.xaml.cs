@@ -71,6 +71,11 @@ public partial class App : Application
                 AppWindow?.Close();
                 Environment.Exit(0);
             });
+
+        // Connect the PT logging to the core project's logging.
+        // This way, log statements from the core project will be captured by the PT logs
+        var logWrapper = new LogWrapper();
+        CoreLogger.InitializeLogger(logWrapper);
     }
 
     /// <summary>

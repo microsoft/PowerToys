@@ -4,7 +4,6 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -60,7 +59,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
             return Task.CompletedTask.AsAsyncAction();
         }
 
-        Logger.LogDebug(message.Message);
+        CoreLogger.LogDebug(message.Message);
 
         _ = Task.Run(() =>
         {

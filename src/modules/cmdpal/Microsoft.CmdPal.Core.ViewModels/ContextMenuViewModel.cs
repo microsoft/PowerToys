@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Diagnostics.Utilities;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Core.ViewModels;

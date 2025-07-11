@@ -34,7 +34,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
-    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,17 +43,5 @@
       <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
-
-
-  <!-- Just mark it as AOT compatible. Do not publish with AOT now. We need fully test before we really publish it as AOT enabled-->
-  <!--<PropertyGroup>
-    <SelfContained>true</SelfContained>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <PublishTrimmed>true</PublishTrimmed>
-    <PublishSingleFile>true</PublishSingleFile>
-    --><!-- <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling> --><!--
-    <PublishAot>true</PublishAot>
-	<EnableMsixTooling>true</EnableMsixTooling>
-  </PropertyGroup>-->
 
 </Project>
