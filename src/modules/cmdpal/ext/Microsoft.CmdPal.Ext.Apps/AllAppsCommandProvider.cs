@@ -36,7 +36,7 @@ public partial class AllAppsCommandProvider : CommandProvider
         PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem, ..GetPinnedApps()];
+    public override ICommandItem[] TopLevelCommands() => [_listItem, ..Page.GetPinnedApps()];
 
     public ICommandItem? LookupApp(string displayName)
     {
@@ -66,18 +66,6 @@ public partial class AllAppsCommandProvider : CommandProvider
         }
 
         return null;
-    }
-
-    private AppListItem[] GetPinnedApps()
-    {
-        var pinnedApps = PinnedAppsManager.Instance.GetPinnedAppIdentifiers().ToList();
-
-        var apps = Page.GetPrograms()
-                        .Where(app => pinnedApps.Contains(app.AppIdentifier))
-                        .Select(appItem => new AppListItem(appItem, true))
-                        .ToArray();
-
-        return apps;
     }
 
     private void OnPinStateChanged(object? sender, System.EventArgs e)

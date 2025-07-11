@@ -106,29 +106,6 @@ public class UWPApplication : IProgram
         new CommandContextItem(
             new OpenInConsoleCommand(Package.Location)));
 
-        commands.Add(new SeparatorContextItem());
-
-        // Add pin/unpin command first - check current state dynamically
-        var appIdentifier = GetAppIdentifier();
-        if (PinnedAppsManager.Instance.IsAppPinned(appIdentifier))
-        {
-            commands.Add(
-                new CommandContextItem(
-                    new UnpinAppCommand(appIdentifier))
-                {
-                    RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0),
-                });
-        }
-        else
-        {
-            commands.Add(
-                new CommandContextItem(
-                    new PinAppCommand(appIdentifier))
-                {
-                    RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0),
-                });
-        }
-
         return commands;
     }
 

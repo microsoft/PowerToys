@@ -29,7 +29,6 @@ internal sealed partial class AppListItem : ListItem
         : base(new AppCommand(app))
     {
         _app = app;
-        AppIdentifier = app.AppIdentifier;
         Title = app.Name;
         Subtitle = app.Subtitle;
         Tags = [_appTag];

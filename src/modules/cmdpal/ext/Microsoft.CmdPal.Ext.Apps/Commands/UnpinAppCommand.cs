@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -16,7 +17,7 @@ internal sealed partial class UnpinAppCommand : InvokableCommand
     {
         _appIdentifier = appIdentifier;
         Name = Resources.unpin_app;
-        Icon = new IconInfo("\uE77A"); // Unpin icon
+        Icon = Icons.UnpinIcon;
     }
 
     public override CommandResult Invoke()

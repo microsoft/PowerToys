@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -17,7 +18,7 @@ internal sealed partial class PinAppCommand : InvokableCommand
     {
         _appIdentifier = appIdentifier;
         Name = Resources.pin_app;
-        Icon = new IconInfo("\uE840"); // Pin icon
+        Icon = Icons.PinIcon;
     }
 
     public override CommandResult Invoke()

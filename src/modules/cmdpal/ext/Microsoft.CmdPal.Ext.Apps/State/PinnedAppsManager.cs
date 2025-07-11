@@ -65,27 +65,12 @@ public sealed class PinnedAppsManager
 
     private void LoadPinnedApps()
     {
-        try
-        {
-            _pinnedApps = PinnedApps.ReadFromFile(_pinnedAppsFilePath);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to load pinned apps: {ex.Message}");
-            _pinnedApps = new PinnedApps();
-        }
+        _pinnedApps = PinnedApps.ReadFromFile(_pinnedAppsFilePath);
     }
 
     private void SavePinnedApps()
     {
-        try
-        {
-            PinnedApps.WriteToFile(_pinnedAppsFilePath, _pinnedApps);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to save pinned apps: {ex.Message}");
-        }
+        PinnedApps.WriteToFile(_pinnedAppsFilePath, _pinnedApps);
     }
 
     private static string GetPinnedAppsFilePath()
