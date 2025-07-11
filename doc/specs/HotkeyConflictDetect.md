@@ -10,26 +10,6 @@ This feature aims to:
 - Improve reliability and user experience in hotkey customization.
 
 ---
-
-## Goals and Non-goals
-
-### Goals
-
-- Detect conflicts between:
-  - Hotkeys assigned to different PowerToys modules.
-  - Hotkeys assigned to multiple functions within the same module.
-  - Hotkeys that overlap with system/global reserved hotkeys.
-- Provide real-time feedback to users in the Settings UI as they configure hotkeys.
-- Persist and expose conflict information for current hotkey assignments.
-
-### Non-goals
-
-- Detect hotkey conflicts with third-party applications (only system-level and PowerToys-internal).
-- Automatically resolve or reassign conflicting hotkeys (user intervention required).
-- Change or refactor existing hotkey assignment UI/UX beyond adding conflict warnings.
-
----
-
 ## Requirements
 
 ### Functional Requirements
@@ -39,19 +19,16 @@ This feature aims to:
      - Existing global or module-specific assignments.
      - System/global reserved hotkeys.
 
-2. **Conflict Information Storage**
-   - All detected conflicts are logged in a structured JSON file (`hotkey_conflicts.json`) under the PowerToys data directory.
-
-3. **Settings UI Integration**
+2. **Settings UI Integration**
    - When the user enters a new hotkey in the Settings UI:
      - An IPC request is sent to check for conflicts.
      - The UI displays a warning (icon, tooltip, details) if a conflict is found.
 
-4. **Conflict Types**
+3. **Conflict Types**
    - In-app conflict: Two PowerToys modules/functions assigned the same hotkey.
    - System conflict: The hotkey is reserved or registered by Windows/global OS.
 
-5. **Hotkey Uniqueness**
+4. **Hotkey Uniqueness**
    - Every hotkey is tagged with a unique name and module owner, persisted in config and runtime.
 
 ### Non-functional Requirements
@@ -98,7 +75,6 @@ This feature aims to:
 
 1. **PowerToys Runner Startup**
    - Runner process initializes and creates HotkeyConflictManager singleton instance
-   - Attempts to load existing conflict data from `hotkey_conflicts.json` file (creates empty structure if file doesn't exist)
    - Initializes internal data structures: `m_registeredHotkeys` map and conflict tracking collections
 
 2. **Module Registration Phase**
@@ -113,11 +89,6 @@ This feature aims to:
      - Internal `m_registeredHotkeys` map for duplicate combinations (in-app conflicts)
      - System hotkey registry via Windows API calls (system conflicts)
    - Conflicts are detected but don't block module initialization
-
-4. **Conflict Persistence**
-   - After conflict detection, results are written to `hotkey_conflicts.json`
-   - JSON structure includes `inAppConflicts` and `sysConflicts` arrays
-   - Runtime conflict state maintained in memory for fast IPC queries
 
 #### 2. Module Settings Page Real-time Conflict Detection
 <div align="center">
@@ -149,21 +120,19 @@ This feature aims to:
    - **Conflict detected:**
      - Warning icon appears in ShortcutControl
      - Tooltip displays conflict details (module name + hotkey name)
-     - Save operation is prevented
    - **No conflict:**
-     - UI shows normal state, allows saving
+     - UI shows normal state
 
 #### 3. Global Conflict Overview Dashboard
 <div align="center">
-<img src="../images/hotkeyConflict/AllConflictsDisplayPage.png" alt="Comprehensive conflict summary displayed on general settings page" width="280px">
+<img src="../images/hotkeyConflict/AllConflictsDisplayPage.png" alt="Comprehensive conflict summary displayed on general settings page" width="480px">
 </div>
 
 **System-wide conflict management interface (Future Implementation):**
 
-1. **Conflict Data Loading**
-   - General settings page reads from `hotkey_conflicts.json`
-   - Displays both in-app and system conflicts in categorized sections
-   - Real-time updates when conflicts are resolved
+1. **Get all conflict data via IPC call**
+   - Settings UI sends `check_hotkey_conflict` IPC message to Runner.
+   - Runner send responsed IPC to settings which includes all the hotkey conflict data.
 
 2. **Conflict Display Structure**
    - **In-App Conflicts Section:**
@@ -177,18 +146,12 @@ This feature aims to:
 3. **Conflict Resolution Tools**
    - Navigation links to affected module settings pages
 
-**Demo page**
-<div align="center">
-<img src="../images/hotkeyConflict/GeneralPageDemoUI.jpg" width="800px">
-</div>
-
 **Actual Data Flow Implementation:**
 ```
 Settings UI Input → IPC Request (check_hotkey_conflict) → 
 HotkeyConflictManager::CheckHotkeyConflict() → 
-Registry Check + System API Check → 
-JSON Response → UI Feedback → 
-hotkey_conflicts.json Update (on actual registration)
+Hotkey record map Check + System API Check → 
+JSON IPC Response → UI Feedback
 ```
 
 **Key Implementation Details from PR:**
@@ -203,7 +166,7 @@ hotkey_conflicts.json Update (on actual registration)
 - **HotkeyConfig**
   - key, modifiers, hotkeyName, ownerModuleName
 
-- **hotkey_conflicts.json**
+- **IPC response JSON format example**
   ```json
   {
     "inAppConflicts": [
@@ -255,11 +218,10 @@ hotkey_conflicts.json Update (on actual registration)
 - Assign the same hotkey to two different modules, verify conflict is detected and shown.
 - Assign a hotkey that matches a known system-reserved combination, verify system conflict is detected.
 - Remove a conflicting hotkey, verify the conflict warning disappears for the remaining one.
-- Hotkey conflict info should persist in `hotkey_conflicts.json`.
 - UI should always reflect the latest conflict status after any change.
 
 ---
 
 ## Appendix
 
-- **Related Issues/PRs:** [PR #6 Shawn/hotkey conflict detect](https://github.com/shuaiyuanxx/PowerToys/pull/6)
+- **Related Issues/PRs:** [PowerToys hotkey conflict detection](https://github.com/microsoft/PowerToys/pull/40457)
