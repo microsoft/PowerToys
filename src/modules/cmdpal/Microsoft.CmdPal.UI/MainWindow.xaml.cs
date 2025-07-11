@@ -235,6 +235,10 @@ public sealed partial class MainWindow : WindowEx,
 
         PInvoke.SetForegroundWindow(hwnd);
         PInvoke.SetActiveWindow(hwnd);
+
+        // Push our window to the top of the Z-order and make it the topmost, so that it appears above all other windows.
+        // We want to remove the topmost status when we hide the window (because we cloak it instead of hiding it).
+        PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
 
     private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
@@ -304,8 +308,14 @@ public sealed partial class MainWindow : WindowEx,
         // This might come in on a background thread
         DispatcherQueue.TryEnqueue(() => Close());
 
-    public void Receive(DismissMessage message) =>
-        HideWindow();
+    public void Receive(DismissMessage message)
+    {
+        // This might come in off the UI thread. Make sure to hop back.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            HideWindow();
+        });
+    }
 
     private void HideWindow()
     {
@@ -333,6 +343,10 @@ public sealed partial class MainWindow : WindowEx,
             BOOL value = true;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
         }
+
+        // Because we're only cloaking the window, bury it at the bottom in case something can
+        // see it - e.g. some accessibility helper (note: this also removes the top-most status).
+        PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
 
     private void Uncloak()

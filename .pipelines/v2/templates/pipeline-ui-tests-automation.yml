@@ -3,9 +3,6 @@ variables:
     value: false
   - name: EnablePipelineCache
     value: true
-  - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-    - name: EnablePipelineCache
-      value: true
 
 parameters:
   - name: buildPlatforms
@@ -59,6 +56,7 @@ stages:
               runTests: false
               buildTests: true
               useVSPreview: ${{ parameters.useVSPreview }}
+              timeoutInMinutes: 90
 
     - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
       - stage: BuildUITests_${{ platform }}
