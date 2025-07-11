@@ -49,4 +49,3 @@ extends:
     enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
     useVSPreview: ${{ parameters.useVSPreview }}
-    timeoutInMinutes: 90
