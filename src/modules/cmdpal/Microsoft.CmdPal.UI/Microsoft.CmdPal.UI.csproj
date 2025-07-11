@@ -25,13 +25,13 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
-	    <SelfContained>true</SelfContained>
-	    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-	    <PublishTrimmed>true</PublishTrimmed>
-	    <PublishSingleFile>false</PublishSingleFile>
-	    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
-	    <PublishAot>true</PublishAot>
-	    <EnableMsixTooling>true</EnableMsixTooling>
+    <SelfContained>true</SelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishSingleFile>false</PublishSingleFile>
+    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+    <PublishAot>true</PublishAot>
+    <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
