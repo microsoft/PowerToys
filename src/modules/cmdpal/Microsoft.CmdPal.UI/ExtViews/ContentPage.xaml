@@ -14,6 +14,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 

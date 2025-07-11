@@ -12,6 +12,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -87,7 +88,7 @@
                         ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
                         Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="viewModels:StatusMessageViewModel">
+                            <DataTemplate x:DataType="coreViewModels:StatusMessageViewModel">
                                 <StackPanel
                                     Grid.Row="0"
                                     Margin="0"

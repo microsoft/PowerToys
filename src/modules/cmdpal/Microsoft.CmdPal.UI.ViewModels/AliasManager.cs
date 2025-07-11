@@ -4,7 +4,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -38,7 +38,12 @@ public partial class AliasManager : ObservableObject
                 if (topLevelCommand != null)
                 {
                     WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
-                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(topLevelCommand));
+
+                    // TODO! We used to be able to pass a TopLevelViewModel in directly, to be able to stash the
+                    // topLevelCommand.ExtensionHost too. Can't do that trivially anymore
+                    // WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(topLevelCommand));
+                    // WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(topLevelCommand.CommandViewModel.Model) { ExtensionHost = topLevelCommand.ExtensionHost });
+                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(topLevelCommand.CommandViewModel.Model));
                     return true;
                 }
             }
