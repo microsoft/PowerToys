@@ -85,6 +85,10 @@ internal sealed class PowerToysRootPageService : IRootPageService
         {
             SetActiveExtension(host.Extension);
         }
+        else
+        {
+            throw new InvalidOperationException("This must be a programming error - everything in Command Palette should have a CommandPaletteHost");
+        }
     }
 
     public void SetActiveExtension(IExtensionWrapper? extension)
