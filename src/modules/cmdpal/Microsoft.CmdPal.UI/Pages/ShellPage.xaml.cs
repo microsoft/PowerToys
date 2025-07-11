@@ -14,8 +14,10 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -78,6 +80,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
+
+        AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
 
         RootFrame.Navigate(typeof(LoadingPage), ViewModel);
     }
@@ -440,6 +444,26 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model));
+        }
+    }
+
+    private void ShellPage_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        try
+        {
+            var ptr = e.Pointer;
+            if (ptr.PointerDeviceType == PointerDeviceType.Mouse)
+            {
+                var ptrPt = e.GetCurrentPoint(this);
+                if (ptrPt.Properties.IsXButton1Pressed)
+                {
+                    WeakReferenceMessenger.Default.Send(new NavigateBackMessage());
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error handling mouse button press event", ex);
         }
     }
 }

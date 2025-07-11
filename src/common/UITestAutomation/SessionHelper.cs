@@ -37,13 +37,18 @@ namespace Microsoft.PowerToys.UITest
         private PowerToysModule scope;
         private string[]? commandLineArgs;
 
+        private bool UseInstallerForTest { get; }
+
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper(PowerToysModule scope, string[]? commandLineArgs = null)
         {
             this.scope = scope;
             this.commandLineArgs = commandLineArgs;
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
-            this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string? useInstallerForTestEnv =
+                Environment.GetEnvironmentVariable("useInstallerForTest") ?? Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
+            UseInstallerForTest = !string.IsNullOrEmpty(useInstallerForTestEnv) && bool.TryParse(useInstallerForTestEnv, out bool result) && result;
+            this.locationPath = UseInstallerForTest ? string.Empty : Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             CheckWinAppDriverAndRoot();
         }
@@ -156,7 +161,7 @@ namespace Microsoft.PowerToys.UITest
 
             if (root != null)
             {
-                const int maxRetries = 3;
+                const int maxRetries = 5;
                 const int delayMs = 5000;
                 var windowName = "PowerToys Settings";
 

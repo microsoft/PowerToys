@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
@@ -233,6 +234,10 @@ public sealed partial class MainWindow : WindowEx,
 
         PInvoke.SetForegroundWindow(hwnd);
         PInvoke.SetActiveWindow(hwnd);
+
+        // Push our window to the top of the Z-order and make it the topmost, so that it appears above all other windows.
+        // We want to remove the topmost status when we hide the window (because we cloak it instead of hiding it).
+        PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
 
     private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
@@ -331,6 +336,10 @@ public sealed partial class MainWindow : WindowEx,
             BOOL value = true;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
         }
+
+        // Because we're only cloaking the window, bury it at the bottom in case something can
+        // see it - e.g. some accessibility helper (note: this also removes the top-most status).
+        PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
 
     private void Uncloak()
@@ -450,30 +459,42 @@ public sealed partial class MainWindow : WindowEx,
             return;
         }
 
-        if (activatedEventArgs.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.Protocol)
+        try
         {
-            if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+            if (activatedEventArgs.Kind == ExtendedActivationKind.StartupTask)
             {
-                if (protocolArgs.Uri.ToString() is string uri)
-                {
-                    // was the URI "x-cmdpal://background" ?
-                    if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // we're running, we don't want to activate our window. bail
-                        return;
-                    }
-                    else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
-                    {
-                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
-                        return;
-                    }
-                }
-
                 return;
             }
+
+            if (activatedEventArgs.Kind == ExtendedActivationKind.Protocol)
+            {
+                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+                {
+                    if (protocolArgs.Uri.ToString() is string uri)
+                    {
+                        // was the URI "x-cmdpal://background" ?
+                        if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // we're running, we don't want to activate our window. bail
+                            return;
+                        }
+                        else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
+                        {
+                            WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        catch (COMException ex)
+        {
+            // Accessing properties activatedEventArgs.Kind and activatedEventArgs.Data might cause COMException
+            // if the args are not valid or not passed correctly.
+            Logger.LogError("COM exception when activating the application", ex);
         }
 
-        Activate();
+        Summon(string.Empty);
     }
 
     public void Summon(string commandId) =>
