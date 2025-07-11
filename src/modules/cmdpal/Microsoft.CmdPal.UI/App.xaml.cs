@@ -144,6 +144,7 @@ public partial class App : Application
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<TrayIconService>();
 
+        services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton(new TelemetryForwarder());
 
         // ViewModels
