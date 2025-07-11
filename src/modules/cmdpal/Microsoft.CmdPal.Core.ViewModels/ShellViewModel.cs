@@ -2,17 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using WinRT;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -62,7 +58,6 @@ public partial class ShellViewModel : ObservableObject,
 
     private IPage? _rootPage;
 
-    private IExtensionWrapper? _activeExtension;
     private bool _isNested;
 
     public bool IsNested { get => _isNested; }
@@ -180,11 +175,10 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    public void PerformTopLevelCommand(PerformCommandMessage message)
-    {
-        _rootPageService.OnPerformTopLevelCommand(message.Context);
-    }
-
+    // public void PerformTopLevelCommand(PerformCommandMessage message)
+    // {
+    //    _rootPageService.OnPerformTopLevelCommand(message.Context);
+    // }
     public void Receive(PerformCommandMessage message)
     {
         PerformCommand(message);
@@ -198,14 +192,9 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        if (!CurrentPage.IsNested)
-        {
-            // on the main page here
-            PerformTopLevelCommand(message);
-        }
+        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
 
-        IExtensionWrapper? extension = null;
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage?.ExtensionHost);
+        _rootPageService.OnPerformCommand(message.Context, !CurrentPage.IsNested, host);
 
         try
         {
@@ -252,8 +241,7 @@ public partial class ShellViewModel : ObservableObject,
             //        Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
             //    }
             // }
-            SetActiveExtension(extension);
-
+            // SetActiveExtension(extension);
             if (command is IPage page)
             {
                 Logger.LogDebug($"Navigating to page");
@@ -407,61 +395,15 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    public void SetActiveExtension(IExtensionWrapper? extension)
-    {
-        if (extension != _activeExtension)
-        {
-            // There's not really a CoDisallowSetForegroundWindow, so we don't
-            // need to handle that
-            _activeExtension = extension;
-
-            var extensionWinRtObject = _activeExtension?.GetExtensionObject();
-            if (extensionWinRtObject != null)
-            {
-                try
-                {
-                    unsafe
-                    {
-                        var winrtObj = (IWinRTObject)extensionWinRtObject;
-                        var intPtr = winrtObj.NativeObject.ThisPtr;
-                        var hr = Native.CoAllowSetForegroundWindow(intPtr);
-                        if (hr != 0)
-                        {
-                            Logger.LogWarning($"Error giving foreground rights: 0x{hr.Value:X8}");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex.ToString());
-                }
-            }
-        }
-    }
-
     public void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
-        SetActiveExtension(null);
+        _rootPageService.GoHome();
         WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(withAnimation, focusSearch));
     }
 
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
         WeakReferenceMessenger.Default.Send<GoBackMessage>(new(withAnimation, focusSearch));
-    }
-
-    // You may ask yourself, why aren't we using CsWin32 for this?
-    // The CsWin32 projected version includes some object marshalling, like so:
-    //
-    // HRESULT CoAllowSetForegroundWindow([MarshalAs(UnmanagedType.IUnknown)] object pUnk,...)
-    //
-    // And if you do it like that, then the IForegroundTransfer interface isn't marshalled correctly
-    internal sealed class Native
-    {
-        [DllImport("OLE32.dll", ExactSpelling = true)]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        [SupportedOSPlatform("windows5.0")]
-        internal static extern unsafe global::Windows.Win32.Foundation.HRESULT CoAllowSetForegroundWindow(nint pUnk, [Optional] void* lpvReserved);
     }
 
     private void OnUIThread(Action action)
