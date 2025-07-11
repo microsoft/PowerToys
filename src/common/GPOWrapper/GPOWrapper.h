@@ -21,9 +21,11 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMouseWithoutBordersEnabledValue();
         static GpoRuleConfigured GetConfiguredPdfPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredGcodePreviewEnabledValue();
+        static GpoRuleConfigured GetConfiguredBgcodePreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredSvgThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredPdfThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredGcodeThumbnailsEnabledValue();
+        static GpoRuleConfigured GetConfiguredBgcodeThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredStlThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredHostsFileEditorEnabledValue();
         static GpoRuleConfigured GetConfiguredImageResizerEnabledValue();

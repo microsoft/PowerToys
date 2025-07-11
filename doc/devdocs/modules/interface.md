@@ -86,7 +86,7 @@ Returns true if successful.
 virtual void set_config(const wchar_t* config)
 ```
 
-After the user has changed the module settings in the Settings editor, the runner calls this method to pass to the module the updated values. It's a good place to save the settings as well.
+After the user has changed the module settings in the Settings editor, the runner calls this method to pass the updated values to the module. It's a good place to save the settings as well.
 
 ## call_custom_action
 

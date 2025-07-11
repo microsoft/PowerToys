@@ -31,6 +31,7 @@ namespace Microsoft.PowerToys.UITest
         Hosts,
         Runner,
         Workspaces,
+        PowerRename,
     }
 
     /// <summary>
@@ -76,7 +77,7 @@ namespace Microsoft.PowerToys.UITest
 
     internal class ModuleConfigData
     {
-        private Dictionary<PowerToysModule, string> ModulePath { get; }
+        private Dictionary<PowerToysModule, ModuleInfo> ModuleInfo { get; }
 
         // Singleton instance of ModuleConfigData.
         private static readonly Lazy<ModuleConfigData> SingletonInstance = new Lazy<ModuleConfigData>(() => new ModuleConfigData());
@@ -85,35 +86,74 @@ namespace Microsoft.PowerToys.UITest
 
         public const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
 
-        public Dictionary<PowerToysModule, string> ModuleWindowName { get; }
+        private bool UseInstallerForTest { get; }
 
         private ModuleConfigData()
         {
-            // The exe window name for each module.
-            ModuleWindowName = new Dictionary<PowerToysModule, string>
-            {
-                [PowerToysModule.PowerToysSettings] = "PowerToys Settings",
-                [PowerToysModule.FancyZone] = "FancyZones Layout",
-                [PowerToysModule.Hosts] = "Hosts File Editor",
-                [PowerToysModule.Runner] = "PowerToys",
-                [PowerToysModule.Workspaces] = "Workspaces Editor",
-            };
+            // Check if we should use installer paths from environment variable
+            string? useInstallerForTestEnv =
+                            Environment.GetEnvironmentVariable("useInstallerForTest") ?? Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
+            UseInstallerForTest = !string.IsNullOrEmpty(useInstallerForTestEnv) && bool.TryParse(useInstallerForTestEnv, out bool result) && result;
 
-            // Exe start path for the module if it exists.
-            ModulePath = new Dictionary<PowerToysModule, string>
+            // Module information including executable name, window name, and optional subdirectory
+            ModuleInfo = new Dictionary<PowerToysModule, ModuleInfo>
             {
-                [PowerToysModule.PowerToysSettings] = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe",
-                [PowerToysModule.FancyZone] = @"\..\..\..\PowerToys.FancyZonesEditor.exe",
-                [PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe",
-                [PowerToysModule.Runner] = @"\..\..\..\PowerToys.exe",
-                [PowerToysModule.Workspaces] = @"\..\..\..\PowerToys.WorkspacesEditor.exe",
+                [PowerToysModule.PowerToysSettings] = new ModuleInfo("PowerToys.Settings.exe", "PowerToys Settings", "WinUI3Apps"),
+                [PowerToysModule.FancyZone] = new ModuleInfo("PowerToys.FancyZonesEditor.exe", "FancyZones Layout"),
+                [PowerToysModule.Hosts] = new ModuleInfo("PowerToys.Hosts.exe", "Hosts File Editor", "WinUI3Apps"),
+                [PowerToysModule.Runner] = new ModuleInfo("PowerToys.exe", "PowerToys"),
+                [PowerToysModule.Workspaces] = new ModuleInfo("PowerToys.WorkspacesEditor.exe", "Workspaces Editor"),
+                [PowerToysModule.PowerRename] = new ModuleInfo("PowerToys.PowerRename.exe", "PowerRename", "WinUI3Apps"),
             };
         }
 
-        public string GetModulePath(PowerToysModule scope) => ModulePath[scope];
+        private string GetPowerToysInstallPath()
+        {
+            // Try common installation paths
+            string[] possiblePaths =
+            {
+                @"C:\Program Files\PowerToys",
+                @"C:\Program Files (x86)\PowerToys",
+                Environment.ExpandEnvironmentVariables(@"%LocalAppData%\PowerToys"),
+                Environment.ExpandEnvironmentVariables(@"%ProgramFiles%\PowerToys"),
+            };
+
+            foreach (string path in possiblePaths)
+            {
+                if (Directory.Exists(path) && File.Exists(Path.Combine(path, "PowerToys.exe")))
+                {
+                    return path;
+                }
+            }
+
+            // Fallback to Program Files if not found
+            return @"C:\Program Files\PowerToys";
+        }
+
+        public string GetModulePath(PowerToysModule scope)
+        {
+            var moduleInfo = ModuleInfo[scope];
+
+            if (UseInstallerForTest)
+            {
+                string powerToysInstallPath = GetPowerToysInstallPath();
+                string installedPath = moduleInfo.GetInstalledPath(powerToysInstallPath);
+
+                if (File.Exists(installedPath))
+                {
+                    return installedPath;
+                }
+                else
+                {
+                    Console.WriteLine($"Warning: Installed module not found at {installedPath}, using development path");
+                }
+            }
+
+            return moduleInfo.GetDevelopmentPath();
+        }
 
         public string GetWindowsApplicationDriverUrl() => WindowsApplicationDriverUrl;
 
-        public string GetModuleWindowName(PowerToysModule scope) => ModuleWindowName[scope];
+        public string GetModuleWindowName(PowerToysModule scope) => ModuleInfo[scope].WindowName;
     }
 }

@@ -103,9 +103,9 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
 
-        services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
+        services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
 
         // GH #38440: Users might not have WinGet installed! Or they might have
         // a ridiculously old version. Or might be running as admin.
@@ -143,6 +143,9 @@ public partial class App : Application
         services.AddSingleton(state);
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<TrayIconService>();
+
+        services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton(new TelemetryForwarder());
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
