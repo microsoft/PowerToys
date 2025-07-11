@@ -233,15 +233,6 @@
         </RegistryKey>
         <File Id="GcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.GcodePreviewHandler.resources.dll" />
       </Component>
-      <Component
-          Id="BgcodePreviewHandler_$(var.IdSafeLanguage)_Component"
-          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
-          Guid="$(var.CompGUIDPrefix)07">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="BgcodePreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
-        </RegistryKey>
-        <File Id="BgcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.BgcodePreviewHandler.resources.dll" />
-      </Component>
       <!-- PowerToys Run aka Launcher plugin resources -->
       <Component
           Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component"
@@ -466,6 +457,15 @@
           <RegistryValue Type="string" Name="WorkspacesEditor_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Id="WorkspacesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.WorkspacesEditor.resources.dll" />
+      </Component>
+      <Component
+          Id="BgcodePreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)22">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="BgcodePreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="BgcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.BgcodePreviewHandler.resources.dll" />
       </Component>
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>

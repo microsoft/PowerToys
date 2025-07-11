@@ -6,6 +6,8 @@ SetForegroundWindow
 GetWindowRect
 GetCursorPos
 SetWindowPos
+HWND_TOPMOST
+HWND_BOTTOM
 IsIconic
 RegisterHotKey
 UnregisterHotKey
