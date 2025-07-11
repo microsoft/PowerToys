@@ -17,13 +17,20 @@ Specifies the target platform for the build (e.g., 'arm64', 'x64'). Default is '
 .PARAMETER Configuration
 Specifies the build configuration (e.g., 'Debug', 'Release'). Default is 'Release'.
 
+.PARAMETER PerUser
+Specifies whether to build a per-user installer (true) or machine-wide installer (false). Default is true (per-user).
+
 .EXAMPLE
 .\build-installer.ps1
 Runs the installer build pipeline for ARM64 Release (default).
 
 .EXAMPLE
 .\build-installer.ps1 -Platform x64 -Configuration Release
-Runs the pipeline for x64 Debug.
+Runs the pipeline for x64 Release.
+
+.EXAMPLE
+.\build-installer.ps1 -Platform x64 -Configuration Release -PerUser $false
+Runs the pipeline for x64 Release with machine-wide installer.
 
 .NOTES
 - Requires MSBuild, WiX Toolset, and Git to be installed and accessible from your environment.
@@ -38,12 +45,33 @@ Runs the pipeline for x64 Debug.
 
 
 param (
-    [string]$Platform = 'arm64',
-    [string]$Configuration = 'Release'
+    [string]$Platform = 'x64',
+    [string]$Configuration = 'Release',
+    [bool]$PerUser = $true
 )
 
-$repoRoot = Resolve-Path "$PSScriptRoot\..\.."
-Set-Location $repoRoot
+# Find the PowerToys repository root automatically
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$repoRoot = $scriptDir
+
+# Navigate up from the script location to find the repo root
+# Script is typically in tools\build, so go up two levels
+while ($repoRoot -and -not (Test-Path (Join-Path $repoRoot "PowerToys.sln"))) {
+    $parentDir = Split-Path -Parent $repoRoot
+    if ($parentDir -eq $repoRoot) {
+        # Reached the root of the drive, PowerToys.sln not found
+        Write-Error "Could not find PowerToys repository root. Make sure this script is in the PowerToys repository."
+        exit 1
+    }
+    $repoRoot = $parentDir
+}
+
+if (-not $repoRoot -or -not (Test-Path (Join-Path $repoRoot "PowerToys.sln"))) {
+    Write-Error "Could not locate PowerToys.sln. Please ensure this script is run from within the PowerToys repository."
+    exit 1
+}
+
+Write-Host "PowerToys repository root detected: $repoRoot"
 
 function RunMSBuild {
     param (
@@ -55,6 +83,7 @@ function RunMSBuild {
         $Solution
         "/p:Platform=`"$Platform`""
         "/p:Configuration=$Configuration"
+        "/p:CIBuild=true"
         '/verbosity:normal'
         '/clp:Summary;PerformanceSummary;ErrorsOnly;WarningsOnly'
         '/nologo'
@@ -62,13 +91,18 @@ function RunMSBuild {
 
     $cmd = $base + ($ExtraArgs -split ' ')
     Write-Host ("[MSBUILD] {0} {1}" -f $Solution, ($cmd -join ' '))
-    & msbuild.exe @cmd
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error ("Build failed: {0}  {1}" -f $Solution, $ExtraArgs)
-        exit $LASTEXITCODE
+    
+    # Run MSBuild from the repository root directory
+    Push-Location $repoRoot
+    try {
+        & msbuild.exe @cmd
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error ("Build failed: {0}  {1}" -f $Solution, $ExtraArgs)
+            exit $LASTEXITCODE
+        }
+    } finally {
+        Pop-Location
     }
-
 }
 
 function RestoreThenBuild {
@@ -81,9 +115,9 @@ function RestoreThenBuild {
 }
 
 Write-Host ("Make sure wix is installed and available")
-& "$PSScriptRoot\ensure-wix.ps1"
+& (Join-Path $PSScriptRoot "ensure-wix.ps1")
 
-Write-Host ("[PIPELINE] Start | Platform={0} Configuration={1}" -f $Platform, $Configuration)
+Write-Host ("[PIPELINE] Start | Platform={0} Configuration={1} PerUser={2}" -f $Platform, $Configuration, $PerUser)
 Write-Host ''
 
 $cmdpalOutputPath = Join-Path $repoRoot "$Platform\$Configuration\WinUI3Apps\CmdPal"
@@ -93,7 +127,7 @@ if (Test-Path $cmdpalOutputPath) {
     Remove-Item $cmdpalOutputPath -Recurse -Force -ErrorAction Ignore
 }
 
-RestoreThenBuild '.\PowerToys.sln'
+RestoreThenBuild 'PowerToys.sln'
 
 $msixSearchRoot = Join-Path $repoRoot "$Platform\$Configuration"
 $msixFiles = Get-ChildItem -Path $msixSearchRoot -Recurse -Filter *.msix |
@@ -101,22 +135,27 @@ Select-Object -ExpandProperty FullName
 
 if ($msixFiles.Count) {
     Write-Host ("[SIGN] .msix file(s): {0}" -f ($msixFiles -join '; '))
-    & "$PSScriptRoot\cert-sign-package.ps1" -TargetPaths $msixFiles
+    & (Join-Path $PSScriptRoot "cert-sign-package.ps1") -TargetPaths $msixFiles
 }
 else {
     Write-Warning "[SIGN] No .msix files found in $msixSearchRoot"
 }
 
-RestoreThenBuild '.\tools\BugReportTool\BugReportTool.sln'
-RestoreThenBuild '.\tools\StylesReportTool\StylesReportTool.sln'
+RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln'
+RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln'
 
 Write-Host '[CLEAN] installer (keep *.exe)'
-git clean -xfd -e '*.exe' -- .\installer\ | Out-Null
+Push-Location $repoRoot
+try {
+    git clean -xfd -e '*.exe' -- .\installer\ | Out-Null
+} finally {
+    Pop-Location
+}
 
-RunMSBuild  '.\installer\PowerToysSetup.sln' '/t:restore /p:RestorePackagesConfig=true'
+RunMSBuild 'installer\PowerToysSetup.sln' '/t:restore /p:RestorePackagesConfig=true'
 
-RunMSBuild '.\installer\PowerToysSetup.sln' '/m /t:PowerToysInstaller /p:PerUser=true'
+RunMSBuild 'installer\PowerToysSetup.sln' "/m /t:PowerToysInstaller /p:PerUser=$PerUser"
 
-RunMSBuild '.\installer\PowerToysSetup.sln' '/m /t:PowerToysBootstrapper /p:PerUser=true'
+RunMSBuild 'installer\PowerToysSetup.sln' "/m /t:PowerToysBootstrapper /p:PerUser=$PerUser"
 
 Write-Host '[PIPELINE] Completed'
