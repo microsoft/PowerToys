@@ -102,6 +102,7 @@ altdown
 BUTTONUP
 CTRLALTDEL
 Ctrls
+Editbox
 EXSEL
 HOLDENTER
 HOLDESC
@@ -136,6 +137,7 @@ RCONTROL
 RCtrl
 RIGHTDOWN
 RIGHTUP
+Richedit
 thmutil
 VKTAB
 winkey
