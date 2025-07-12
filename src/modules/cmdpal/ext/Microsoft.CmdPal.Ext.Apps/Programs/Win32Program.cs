@@ -19,7 +19,9 @@ using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
 using Windows.System;
@@ -186,9 +188,9 @@ public class Win32Program : IProgram
         return true;
     }
 
-    public List<CommandContextItem> GetCommands()
+    public List<IContextItem> GetCommands()
     {
-        List<CommandContextItem> commands = new List<CommandContextItem>();
+        List<IContextItem> commands = new List<IContextItem>();
 
         if (AppType != ApplicationType.InternetShortcutApplication && AppType != ApplicationType.Folder && AppType != ApplicationType.GenericFile)
         {
@@ -229,6 +231,12 @@ public class Win32Program : IProgram
     public override string ToString()
     {
         return ExecutableName;
+    }
+
+    public string GetAppIdentifier()
+    {
+        // Use a combination of name and path to create a unique identifier
+        return $"{Name}|{FullPath}";
     }
 
     private static Win32Program CreateWin32Program(string path)
@@ -932,5 +940,30 @@ public class Win32Program : IProgram
             Logger.LogError(e.Message);
             return Array.Empty<Win32Program>();
         }
+    }
+
+    internal AppItem ToAppItem()
+    {
+        var app = this;
+        var icoPath = string.IsNullOrEmpty(app.IcoPath) ?
+            (app.AppType == Win32Program.ApplicationType.InternetShortcutApplication ?
+                app.IcoPath :
+                app.FullPath) :
+            app.IcoPath;
+
+        icoPath = icoPath.EndsWith(".lnk", System.StringComparison.InvariantCultureIgnoreCase) ?
+            app.FullPath :
+            icoPath;
+        return new AppItem()
+        {
+            Name = app.Name,
+            Subtitle = app.Description,
+            Type = app.Type(),
+            IcoPath = icoPath,
+            ExePath = !string.IsNullOrEmpty(app.LnkFilePath) ? app.LnkFilePath : app.FullPath,
+            DirPath = app.Location,
+            Commands = app.GetCommands(),
+            AppIdentifier = app.GetAppIdentifier(),
+        };
     }
 }
