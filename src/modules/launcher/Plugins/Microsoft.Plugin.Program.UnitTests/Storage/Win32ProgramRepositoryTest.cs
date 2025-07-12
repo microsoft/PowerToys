@@ -363,7 +363,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             RenamedEventArgs e = new RenamedEventArgs(WatcherChangeTypes.Renamed, directory, path, oldpath);
 
             string oldFullPath = directory + "\\" + oldpath;
-            string fullPath = directory + "\\" + path;
+            string newFullPath = directory + "\\" + path;
             string linkingTo = Directory.GetCurrentDirectory();
 
             // ShellLinkHelper must be mocked for lnk applications
@@ -372,19 +372,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             Win32Program.ShellLinkHelper = mockShellLink.Object;
 
             // old item and new item are the actual items when they are in existence
-            Win32Program olditem = new Win32Program
-            {
-                Name = "oldpath",
-                ExecutableName = oldpath,
-                FullPath = linkingTo,
-            };
-
-            Win32Program newitem = new Win32Program
-            {
-                Name = "path",
-                ExecutableName = path,
-                FullPath = linkingTo,
-            };
+            Win32Program olditem = Win32Program.GetAppFromPath(oldFullPath);
+            Win32Program newitem = Win32Program.GetAppFromPath(newFullPath);
 
             win32ProgramRepository.Add(olditem);
 

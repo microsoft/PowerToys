@@ -59,10 +59,10 @@ internal static class ClipboardHelper
             output.SetText(text);
             try
             {
-                // Clipboard.SetContentWithOptions(output, null);
                 ClipboardThreadQueue.EnqueueTask(() =>
                 {
                     Clipboard.SetContent(output);
+
                     Flush();
                     ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
                 });
@@ -87,7 +87,7 @@ internal static class ClipboardHelper
             {
                 try
                 {
-                    Task.Run(Clipboard.Flush).Wait();
+                    Clipboard.Flush();
                     return;
                 }
                 catch (Exception ex)

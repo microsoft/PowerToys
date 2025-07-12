@@ -38,7 +38,7 @@ public sealed class AdaptiveCardsConfig
       "fontFamily": "'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
       "fontSizes": {
         "small": 12,
-        "default": 12,
+        "default": 14,
         "medium": 14,
         "large": 20,
         "extraLarge": 26
@@ -199,7 +199,7 @@ public sealed class AdaptiveCardsConfig
       "fontFamily": "'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
       "fontSizes": {
         "small": 12,
-        "default": 12,
+        "default": 14,
         "medium": 14,
         "large": 20,
         "extraLarge": 26

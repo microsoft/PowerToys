@@ -14,6 +14,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Data;
 
 internal sealed partial class IndexerListItem : ListItem
 {
+    internal static readonly bool IsActionsFeatureEnabled = GetFeatureFlag();
+
+    private static bool GetFeatureFlag()
+    {
+        var env = System.Environment.GetEnvironmentVariable("CMDPAL_ENABLE_ACTIONS_LIST");
+        return !string.IsNullOrEmpty(env) &&
+           (env == "1" || env.Equals("true", System.StringComparison.OrdinalIgnoreCase));
+    }
+
     internal string FilePath { get; private set; }
 
     public IndexerListItem(
@@ -45,7 +54,7 @@ internal sealed partial class IndexerListItem : ListItem
             ..context,
             new CommandContextItem(new OpenWithCommand(indexerItem))];
 
-        if (ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
+        if (IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {
             var actionsListContextItem = new ActionsListContextItem(indexerItem.FullPath);
             if (actionsListContextItem.AnyActions())
