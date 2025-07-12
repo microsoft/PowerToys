@@ -30,8 +30,11 @@
 	  <Compile Include="..\HostsUILib\Models\Entry.cs" Link="Entry.cs" />
 	  <Compile Include="..\HostsUILib\Models\HostsData.cs" Link="HostsData.cs" />
 	  <Compile Include="..\HostsUILib\Settings\HostsAdditionalLinesPosition.cs" Link="HostsAdditionalLinesPosition.cs" />
+	  <Compile Include="..\HostsUILib\Settings\HostsDeleteBackupMode.cs" Link="HostsDeleteBackupMode.cs" />
 	  <Compile Include="..\HostsUILib\Settings\HostsEncoding.cs" Link="HostsEncoding.cs" />
 	  <Compile Include="..\HostsUILib\Settings\IUserSettings.cs" Link="IUserSettings.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\IBackupManager.cs" Link="IBackupManager.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\BackupManager.cs" Link="BackupManager.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

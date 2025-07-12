@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
 using System.Text.Json.Serialization;
-
-using Settings.UI.Library.Attributes;
 using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -24,6 +24,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public HostsEncoding Encoding { get; set; }
 
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool BackupHosts { get; set; }
+
+        public string BackupPath { get; set; }
+
+        public HostsDeleteBackupMode DeleteBackupsMode { get; set; }
+
+        public int DeleteBackupsDays { get; set; }
+
+        public int DeleteBackupsCount { get; set; }
+
         public HostsProperties()
         {
             ShowStartupWarning = true;
@@ -31,6 +42,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
+            BackupHosts = true;
+            BackupPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\drivers\etc");
+            DeleteBackupsMode = HostsDeleteBackupMode.Age;
+            DeleteBackupsDays = 15;
+            DeleteBackupsCount = 5;
         }
     }
 }
