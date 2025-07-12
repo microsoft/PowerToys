@@ -405,13 +405,19 @@ public:
         {
             ResetEvent(m_hInvokeEvent);
             SetEvent(m_hTerminateEvent);
-            WaitForSingleObject(m_hProcess, 1500);
-            auto result = TerminateProcess(m_hProcess, 1);
-            if (result == 0)
+
+            HANDLE hProcess = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, FALSE, m_processPid);
+            if (WaitForSingleObject(hProcess, 1500) == WAIT_TIMEOUT)
             {
-                int error = GetLastError();
-                Logger::trace("Couldn't terminate the process. Last error: {}", error);
+                auto result = TerminateProcess(hProcess, 1);
+                if (result == 0)
+                {
+                    int error = GetLastError();
+                    Logger::trace("Couldn't terminate the process. Last error: {}", error);
+                }
             }
+
+            CloseHandle(hProcess);
             CloseHandle(m_hProcess);
             m_hProcess = 0;
             m_processPid = 0;
