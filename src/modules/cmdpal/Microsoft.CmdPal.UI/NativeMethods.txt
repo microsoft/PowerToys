@@ -22,7 +22,6 @@ SetActiveWindow
 MonitorFromWindow
 GetMonitorInfo
 GetDpiForMonitor
-CoAllowSetForegroundWindow
 WM_HOTKEY
 WM_NCLBUTTONDBLCLK
 
