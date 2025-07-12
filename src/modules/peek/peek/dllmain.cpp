@@ -418,6 +418,7 @@ public:
             }
 
             CloseHandle(hProcess);
+            CloseHandle(m_hProcess);
             m_hProcess = 0;
             m_processPid = 0;
         }

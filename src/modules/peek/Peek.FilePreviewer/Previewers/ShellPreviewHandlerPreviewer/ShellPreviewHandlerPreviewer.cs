@@ -215,7 +215,13 @@ namespace Peek.FilePreviewer.Previewers
         {
             foreach (var factory in HandlerFactories.Values)
             {
-                Marshal.FinalReleaseComObject(factory);
+                try
+                {
+                    Marshal.FinalReleaseComObject(factory);
+                }
+                catch
+                {
+                }
             }
         }
 
