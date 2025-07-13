@@ -44,7 +44,9 @@
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
-                        Text="{x:Bind Title}" />
+                        Text="{x:Bind Title}"
+                        MaxWidth="200"
+                        TextTrimming="WordEllipsis" />
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
@@ -75,8 +77,10 @@
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
-                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
-                        Text="{x:Bind Title}" />
+                        MaxWidth="200"
+                        Text="{x:Bind Title}" 
+                        TextTrimming="WordEllipsis"
+                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"/>
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
@@ -130,7 +134,8 @@
             Margin="4"
             KeyDown="ContextFilterBox_KeyDown"
             PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
-            TextChanged="ContextFilterBox_TextChanged" />
+            TextChanged="ContextFilterBox_TextChanged"
+            IsTextScaleFactorEnabled="True" />
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="ContextMenuOrder">
                 <VisualState x:Name="FilterOnTop">

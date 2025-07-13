@@ -209,7 +209,7 @@ public sealed partial class ContextMenu : UserControl,
             while (
                 newIndex >= 0 &&
                 IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                newIndex != CommandsDropdown.SelectedIndex) // Ensure we don't loop indefinitely
+                newIndex != CommandsDropdown.SelectedIndex)
             {
                 newIndex--;
             }
@@ -221,7 +221,7 @@ public sealed partial class ContextMenu : UserControl,
                 while (
                     newIndex >= 0 &&
                     IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                    newIndex != CommandsDropdown.SelectedIndex) // Ensure we don't loop indefinitely
+                    newIndex != CommandsDropdown.SelectedIndex)
                 {
                     newIndex--;
                 }
@@ -250,7 +250,7 @@ public sealed partial class ContextMenu : UserControl,
             while (
                 newIndex < CommandsDropdown.Items.Count &&
                 IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                newIndex != CommandsDropdown.SelectedIndex) // Ensure we don't loop indefinitely
+                newIndex != CommandsDropdown.SelectedIndex)
             {
                 newIndex++;
             }
@@ -262,7 +262,7 @@ public sealed partial class ContextMenu : UserControl,
                 while (
                     newIndex < CommandsDropdown.Items.Count &&
                     IsSeparator(CommandsDropdown.Items[newIndex]) &&
-                    newIndex != CommandsDropdown.SelectedIndex) // Ensure we don't loop indefinitely
+                    newIndex != CommandsDropdown.SelectedIndex)
                 {
                     newIndex++;
                 }
