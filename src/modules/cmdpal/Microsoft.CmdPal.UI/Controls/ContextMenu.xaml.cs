@@ -206,7 +206,10 @@ public sealed partial class ContextMenu : UserControl,
         {
             newIndex--;
 
-            while (newIndex >= 0 && IsSeparator(CommandsDropdown.Items[newIndex]))
+            while (
+                newIndex >= 0 &&
+                IsSeparator(CommandsDropdown.Items[newIndex]) &&
+                newIndex != CommandsDropdown.SelectedIndex) // Ensure we don't loop indefinitely
             {
                 newIndex--;
             }
@@ -215,7 +218,10 @@ public sealed partial class ContextMenu : UserControl,
             {
                 newIndex = CommandsDropdown.Items.Count - 1;
 
-                while (newIndex >= 0 && IsSeparator(CommandsDropdown.Items[newIndex]))
+                while (
+                    newIndex >= 0 &&
+                    IsSeparator(CommandsDropdown.Items[newIndex]) &&
+                    newIndex != CommandsDropdown.SelectedIndex) // Ensure we don't loop indefinitely
                 {
                     newIndex--;
                 }
@@ -241,7 +247,10 @@ public sealed partial class ContextMenu : UserControl,
         {
             newIndex++;
 
-            while (newIndex < CommandsDropdown.Items.Count && IsSeparator(CommandsDropdown.Items[newIndex]))
+            while (
+                newIndex < CommandsDropdown.Items.Count &&
+                IsSeparator(CommandsDropdown.Items[newIndex]) &&
+                newIndex != CommandsDropdown.SelectedIndex) // Ensure we don't loop indefinitely
             {
                 newIndex++;
             }
@@ -250,7 +259,10 @@ public sealed partial class ContextMenu : UserControl,
             {
                 newIndex = 0;
 
-                while (newIndex < CommandsDropdown.Items.Count && IsSeparator(CommandsDropdown.Items[newIndex]))
+                while (
+                    newIndex < CommandsDropdown.Items.Count &&
+                    IsSeparator(CommandsDropdown.Items[newIndex]) &&
+                    newIndex != CommandsDropdown.SelectedIndex) // Ensure we don't loop indefinitely
                 {
                     newIndex++;
                 }
