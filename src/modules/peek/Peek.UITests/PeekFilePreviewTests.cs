@@ -63,7 +63,7 @@ public class PeekFilePreviewTests : UITestBase
             {
                 // Perform visual assertion with file-specific scenario name
                 string scenarioName = $"TestAssets_{Path.GetFileNameWithoutExtension(fileName)}_{fileExtension.Replace(".", string.Empty)}";
-                TestFilePreviewWithVisualComparison(testFile, scenarioName, 1000);
+                TestFilePreviewWithVisualComparison(testFile, scenarioName);
 
                 Console.WriteLine($"✓ Successfully tested {fileName}");
             }
@@ -96,7 +96,7 @@ public class PeekFilePreviewTests : UITestBase
         Session.StartExe("explorer.exe", $"/select,\"{fullPath}\"");
 
         // Wait a moment for Explorer to open
-        Task.Delay(500).Wait();
+        Task.Delay(1000).Wait();
 
         SendKeys(Key.LCtrl, Key.Space);
 
@@ -110,17 +110,13 @@ public class PeekFilePreviewTests : UITestBase
     /// </summary>
     /// <param name="filePath">Full path to the file to preview</param>
     /// <param name="scenarioName">Unique scenario name for baseline image matching</param>
-    /// <param name="delayMs">Delay in milliseconds to allow preview to load</param>
-    private void TestFilePreviewWithVisualComparison(string filePath, string scenarioName, int delayMs = 1500)
+    private void TestFilePreviewWithVisualComparison(string filePath, string scenarioName)
     {
         string fileName = Path.GetFileName(filePath);
         string peekWindowTitle = $"{fileName} - Peek";
 
         // Open file with Peek
         OpenAndPeekFile(filePath, peekWindowTitle);
-
-        // Allow time for preview to load - different file types may need different loading times
-        Task.Delay(delayMs).Wait();
 
         // Get the preview window for comparison
         var previewWindow = Find(peekWindowTitle, 2000, true);
