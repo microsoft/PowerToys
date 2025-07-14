@@ -131,6 +131,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
 
+            var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            Logger.LogInfo($"NavigateToPageMessage. ts {currentTimestamp}.");
+
             // Refocus on the Search for continual typing on the next search request
             SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 

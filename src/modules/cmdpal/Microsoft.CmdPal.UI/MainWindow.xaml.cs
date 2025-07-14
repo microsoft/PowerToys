@@ -238,6 +238,9 @@ public sealed partial class MainWindow : WindowEx,
         // Push our window to the top of the Z-order and make it the topmost, so that it appears above all other windows.
         // We want to remove the topmost status when we hide the window (because we cloak it instead of hiding it).
         PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+
+        var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        Logger.LogInfo($"ShowHwnd complete. ts {currentTimestamp}");
     }
 
     private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)

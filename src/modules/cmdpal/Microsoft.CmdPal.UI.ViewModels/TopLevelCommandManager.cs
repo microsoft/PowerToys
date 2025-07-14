@@ -88,6 +88,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         Logger.LogDebug($"Loading built-ins took {s.ElapsedMilliseconds}ms");
 
+        var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        Logger.LogInfo($"LoadBuiltinsAsync complete. ts {currentTimestamp}. took {s.ElapsedMilliseconds}");
+
         return true;
     }
 
