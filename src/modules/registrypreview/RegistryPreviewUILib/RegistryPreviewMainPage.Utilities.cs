@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Input;
@@ -24,7 +25,10 @@ namespace RegistryPreviewUILib
     {
         private const string NEWFILEHEADER = "Windows Registry Editor Version 5.00\r\n\r\n";
 
+        private static readonly string _unsavedFileIndicator = "* ";
+        private static readonly char[] _unsavedFileIndicatorChars = [' ', '*'];
         private static SemaphoreSlim _dialogSemaphore = new(1);
+
         private string lastKeyPath;
 
         public delegate void UpdateWindowTitleFunction(string title);
@@ -115,7 +119,7 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// Method that re-opens and processes the filename the app already knows about; expected to not be a first time open
+        /// Method that re-opens and processes the filename that the app already knows about; expected to not be a first time open
         /// </summary>
         private void RefreshRegistryFile()
         {
@@ -503,6 +507,7 @@ namespace RegistryPreviewUILib
                         case "REG_NONE":
                             if (value.Length <= 0)
                             {
+                                registryValue.IsEmptyBinary = true;
                                 value = resourceLoader.GetString("ZeroLength");
                             }
                             else
@@ -831,42 +836,66 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void HandleDirtyClosing(string title, string content, string primaryButtonText, string secondaryButtonText, string closeButtonText)
         {
-            ContentDialog contentDialog = new ContentDialog()
+            if (_dialogSemaphore.CurrentCount == 0)
             {
-                Title = title,
-                Content = content,
-                PrimaryButtonText = primaryButtonText,
-                SecondaryButtonText = secondaryButtonText,
-                CloseButtonText = closeButtonText,
-                DefaultButton = ContentDialogButton.Primary,
-            };
-
-            // Use this code to associate the dialog to the appropriate AppWindow by setting
-            // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
-            if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
-            {
-                contentDialog.XamlRoot = this.Content.XamlRoot;
+                return;
             }
 
-            ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
-
-            switch (contentDialogResult)
+            try
             {
-                case ContentDialogResult.Primary:
-                    // Save, then close
-                    SaveFile();
-                    break;
-                case ContentDialogResult.Secondary:
-                    // Don't save, and then close!
-                    saveButton.IsEnabled = false;
-                    break;
-                default:
-                    // Cancel closing!
-                    return;
-            }
+                await _dialogSemaphore.WaitAsync();
 
-            // if we got here, we should try to close again
-            Application.Current.Exit();
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = title,
+                    Content = content,
+                    PrimaryButtonText = primaryButtonText,
+                    SecondaryButtonText = secondaryButtonText,
+                    CloseButtonText = closeButtonText,
+                    DefaultButton = ContentDialogButton.Primary,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
+
+                switch (contentDialogResult)
+                {
+                    case ContentDialogResult.Primary:
+                        // Save, then close
+                        if (!AskFileName(string.Empty) ||
+                            !SaveFile())
+                        {
+                            return;
+                        }
+
+                        break;
+                    case ContentDialogResult.Secondary:
+                        // Don't save, and then close!
+                        UpdateUnsavedFileState(false);
+                        break;
+                    default:
+                        // Cancel closing!
+                        return;
+                }
+
+                // if we got here, we should try to close again
+                Application.Current.Exit();
+            }
+            catch
+            {
+                // Normally nothing to catch here.
+                // But for safety the try-catch ensures that we always release the content dialog lock and exit correctly.
+            }
+            finally
+            {
+                _dialogSemaphore.Release();
+            }
         }
 
         /// <summary>
@@ -926,11 +955,71 @@ namespace RegistryPreviewUILib
             type.InvokeMember("ProtectedCursor", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.SetProperty | BindingFlags.Instance, null, uiElement, new object[] { cursor }, CultureInfo.InvariantCulture);
         }
 
+        public void UpdateUnsavedFileState(bool unsavedChanges)
+        {
+            // get, cut and analyze the current title
+            string currentTitle = Regex.Replace(_mainWindow.Title, APPNAME + @"$|\s-\s" + APPNAME + @"$", string.Empty);
+            bool titleContainsIndicator = currentTitle.StartsWith(_unsavedFileIndicator, StringComparison.CurrentCultureIgnoreCase);
+
+            // update window title and save button state
+            if (unsavedChanges)
+            {
+                saveButton.IsEnabled = true;
+
+                if (!titleContainsIndicator)
+                {
+                    _updateWindowTitleFunction(_unsavedFileIndicator + currentTitle);
+                }
+            }
+            else
+            {
+                saveButton.IsEnabled = false;
+
+                if (titleContainsIndicator)
+                {
+                    _updateWindowTitleFunction(currentTitle.TrimStart(_unsavedFileIndicatorChars));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ask the user for the file path if it is unknown because of an unsaved file
+        /// </summary>
+        /// <param name="fileName">If not empty always ask for a file path and use the value as name.</param>
+        /// <returns>Returns true if user selected a path; otherwise, false</returns>
+        public bool AskFileName(string fileName)
+        {
+            if (string.IsNullOrEmpty(_appFileName) || !string.IsNullOrEmpty(fileName) )
+            {
+                string fName = string.IsNullOrEmpty(fileName) ? resourceLoader.GetString("SuggestFileName") : fileName;
+
+                // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
+                // called while running as admin
+                IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
+                string filename = SaveFilePicker.ShowDialog(
+                    windowHandle,
+                    fName,
+                    resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
+                    resourceLoader.GetString("SaveDialogTitle"));
+
+                if (filename == string.Empty)
+                {
+                    return false;
+                }
+
+                _appFileName = filename;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Wrapper method that saves the current file in place, using the current text in editor.
         /// </summary>
-        private void SaveFile()
+        private bool SaveFile()
         {
+            bool saveSuccess = true;
+
             ChangeCursor(gridPreview, true);
 
             // set up the FileStream for all writing
@@ -954,10 +1043,13 @@ namespace RegistryPreviewUILib
                 streamWriter.Close();
 
                 // only change when the save is successful
-                saveButton.IsEnabled = false;
+                UpdateUnsavedFileState(false);
+                _updateWindowTitleFunction(_appFileName);
             }
             catch (UnauthorizedAccessException ex)
             {
+                saveSuccess = false;
+
                 // this exception is thrown if the file is there but marked as read only
                 ShowMessageBox(
                     resourceLoader.GetString("ErrorDialogTitle"),
@@ -966,6 +1058,8 @@ namespace RegistryPreviewUILib
             }
             catch
             {
+                saveSuccess = false;
+
                 // this catch handles all other exceptions thrown when trying to write the file out
                 ShowMessageBox(
                     resourceLoader.GetString("ErrorDialogTitle"),
@@ -983,6 +1077,8 @@ namespace RegistryPreviewUILib
 
             // restore the cursor
             ChangeCursor(gridPreview, false);
+
+            return saveSuccess;
         }
 
         /// <summary>

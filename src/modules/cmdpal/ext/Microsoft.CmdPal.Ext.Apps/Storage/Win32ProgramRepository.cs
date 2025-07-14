@@ -6,8 +6,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Abstractions;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -15,11 +15,9 @@ using Win32Program = Microsoft.CmdPal.Ext.Apps.Programs.Win32Program;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 internal sealed partial class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
 {
-    private static readonly IFileSystem FileSystem = new FileSystem();
-    private static readonly IPath Path = FileSystem.Path;
-
     private const string LnkExtension = ".lnk";
     private const string UrlExtension = ".url";
 
@@ -109,7 +107,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
 
         // fix for https://github.com/microsoft/PowerToys/issues/34391
         // the msi installer creates a shortcut, which is detected by the PT Run and ends up in calling this OnAppRenamed method
-        // the thread needs to be halted for a short time to avoid locking the new shortcut file as we read it, otherwise the lock causes
+        // the thread needs to be halted for a short time to avoid locking the new shortcut file as we read it; otherwise, the lock causes
         // in the issue scenario that a warning is popping up during the msi install process.
         await Task.Delay(1000).ConfigureAwait(false);
 
@@ -207,12 +205,12 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
     }
 
     // When a URL application is deleted, we can no longer get the HashCode directly from the path because the FullPath a Url app is the URL obtained from reading the file
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since application names could be dependent on currentculture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since application names could be dependent on current culture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190")]
     private Win32Program? GetAppWithSameNameAndExecutable(string name, string executableName)
     {
         foreach (Win32Program app in Items)
         {
-            // Using CurrentCultureIgnoreCase since application names could be dependent on currentculture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190
+            // Using CurrentCultureIgnoreCase since application names could be dependent on current culture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190
             if (name.Equals(app.Name, StringComparison.CurrentCultureIgnoreCase) && executableName.Equals(app.ExecutableName, StringComparison.CurrentCultureIgnoreCase))
             {
                 return app;

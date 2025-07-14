@@ -21,9 +21,9 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     [ObservableProperty]
     public partial ObservableCollection<ContentViewModel> Content { get; set; } = [];
 
-    public List<CommandContextItemViewModel> Commands { get; private set; } = [];
+    public List<IContextItemViewModel> Commands { get; private set; } = [];
 
-    public bool HasCommands => Commands.Count > 0;
+    public bool HasCommands => ActualCommands.Count > 0;
 
     public DetailsViewModel? Details { get; private set; }
 
@@ -31,18 +31,19 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     public bool HasDetails => Details != null;
 
     /////// ICommandBarContext ///////
-    public IEnumerable<CommandContextItemViewModel> MoreCommands => Commands.Skip(1);
+    public IEnumerable<IContextItemViewModel> MoreCommands => Commands.Skip(1);
 
-    public bool HasMoreCommands => Commands.Count > 1;
+    private List<CommandContextItemViewModel> ActualCommands => Commands.OfType<CommandContextItemViewModel>().ToList();
+
+    public bool HasMoreCommands => ActualCommands.Count > 1;
 
     public string SecondaryCommandName => SecondaryCommand?.Name ?? string.Empty;
 
-    public CommandItemViewModel? PrimaryCommand => HasCommands ? Commands[0] : null;
+    public CommandItemViewModel? PrimaryCommand => HasCommands ? ActualCommands[0] : null;
 
-    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? Commands[1] : null;
+    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? ActualCommands[1] : null;
 
-    public List<CommandContextItemViewModel> AllCommands => Commands;
-    /////// /ICommandBarContext ///////
+    public List<IContextItemViewModel> AllCommands => Commands;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -79,6 +80,9 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             throw;
         }
 
+        var oneContent = newContent.Count == 1;
+        newContent.ForEach(c => c.OnlyControlOnPage = oneContent);
+
         // Now, back to a UI thread to update the observable collection
         DoOnUiThread(
         () =>
@@ -110,14 +114,27 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         }
 
         Commands = model.Commands
-            .Where(contextItem => contextItem is ICommandContextItem)
-            .Select(contextItem => (contextItem as ICommandContextItem)!)
-            .Select(contextItem => new CommandContextItemViewModel(contextItem, PageContext))
-            .ToList();
-        Commands.ForEach(contextItem =>
-        {
-            contextItem.InitializeProperties();
-        });
+                .ToList()
+                .Select(item =>
+                {
+                    if (item is CommandContextItem contextItem)
+                    {
+                        return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
+                    }
+                    else
+                    {
+                        return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                    }
+                })
+                .ToList();
+
+        Commands
+            .OfType<CommandContextItemViewModel>()
+            .ToList()
+            .ForEach(contextItem =>
+            {
+                contextItem.InitializeProperties();
+            });
 
         var extensionDetails = model.Details;
         if (extensionDetails != null)
@@ -156,19 +173,32 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 if (more != null)
                 {
                     var newContextMenu = more
-                        .Where(contextItem => contextItem is ICommandContextItem)
-                        .Select(contextItem => (contextItem as ICommandContextItem)!)
-                        .Select(contextItem => new CommandContextItemViewModel(contextItem, PageContext))
-                        .ToList();
+                            .ToList()
+                            .Select(item =>
+                            {
+                                if (item is CommandContextItem contextItem)
+                                {
+                                    return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
+                                }
+                                else
+                                {
+                                    return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                                }
+                            })
+                            .ToList();
+
                     lock (Commands)
                     {
                         ListHelpers.InPlaceUpdateList(Commands, newContextMenu);
                     }
 
-                    Commands.ForEach(contextItem =>
-                    {
-                        contextItem.SlowInitializeProperties();
-                    });
+                    Commands
+                        .OfType<CommandContextItemViewModel>()
+                        .ToList()
+                        .ForEach(contextItem =>
+                        {
+                            contextItem.SlowInitializeProperties();
+                        });
                 }
                 else
                 {
@@ -243,10 +273,11 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         base.UnsafeCleanup();
 
         Details?.SafeCleanup();
-        foreach (var item in Commands)
-        {
-            item.SafeCleanup();
-        }
+
+        Commands
+            .OfType<CommandContextItemViewModel>()
+            .ToList()
+            .ForEach(item => item.SafeCleanup());
 
         Commands.Clear();
 

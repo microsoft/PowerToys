@@ -241,6 +241,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Commands</value>
     <comment>A section header for information about the app</comment>
   </data>
+  <data name="ExtensionFallbackCommandsHeader.Text" xml:space="preserve">
+    <value>Fallback commands</value>
+    <comment>A section header for information about the commands presented to the user when the search text doesn't exactly match the name of a command.</comment>
+  </data>
   <data name="ExtensionDisabledHeader.Text" xml:space="preserve">
     <value>This extension is disabled</value>
     <comment>A header to inform the user that an extension is not currently active</comment>
@@ -411,5 +415,17 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More</value>
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TrayMenu_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Indirect</value>
   </data>
 </root>

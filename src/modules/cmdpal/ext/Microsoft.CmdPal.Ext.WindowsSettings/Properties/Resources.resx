@@ -2085,4 +2085,16 @@
   <data name="WindowsSettingsProvider_DisplayName" xml:space="preserve">
     <value>Windows Settings</value>
   </data>
+  <data name="settings_title" xml:space="preserve">
+    <value>Windows Settings</value>
+  </data>
+  <data name="settings_subtitle" xml:space="preserve">
+    <value>Navigate to specific Windows settings</value>
+  </data>
+  <data name="settings_fallback_title" xml:space="preserve">
+    <value>Search for "{0}" in Windows settings</value>
+  </data>
+  <data name="settings_fallback_subtitle" xml:space="preserve">
+    <value>Search Windows settings for this device</value>
+  </data>
 </root>
