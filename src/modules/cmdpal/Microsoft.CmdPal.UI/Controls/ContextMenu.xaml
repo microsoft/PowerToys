@@ -19,7 +19,8 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
-
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            
             <cmdpalUI:ContextItemTemplateSelector
                 x:Key="ContextItemTemplateSelector"
                 Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
@@ -42,11 +43,16 @@
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
+                        x:Name="TitleTextBlock"
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         Text="{x:Bind Title}"
                         MaxWidth="200"
-                        TextTrimming="WordEllipsis" />
+                        TextTrimming="WordEllipsis">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </ToolTipService.ToolTip>
+                    </TextBlock>
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
@@ -75,12 +81,17 @@
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
+                        x:Name="TitleTextBlock"
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         MaxWidth="200"
                         Text="{x:Bind Title}" 
                         TextTrimming="WordEllipsis"
-                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"/>
+                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </ToolTipService.ToolTip>
+                    </TextBlock>
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
