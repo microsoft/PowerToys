@@ -24,7 +24,8 @@ public class PeekFilePreviewTests : UITestBase
     {
         string folderFullPath = Path.GetFullPath(@".\TestAssets");
 
-        OpenAndPeekFile(folderFullPath, "TestAssets - Peek");
+        OpenAndPeekFile(folderFullPath);
+
         Assert.IsTrue(FindAll<TextBlock>("File Type: File folder", 500, true).Count > 0, "Should show folder detail in Peek File Preview");
     }
 
@@ -89,7 +90,7 @@ public class PeekFilePreviewTests : UITestBase
         Console.WriteLine($"Successfully completed visual comparison tests for {testFiles.Count} files");
     }
 
-    private void OpenAndPeekFile(string fullPath, string peekWindowTitle)
+    private void OpenAndPeekFile(string fullPath)
     {
         SendKeys(Key.Enter);
 
@@ -102,7 +103,7 @@ public class PeekFilePreviewTests : UITestBase
 
         Task.Delay(1000).Wait();
 
-        Session.Attach(peekWindowTitle);
+        // Don't attach here, let the calling method handle window detection and attachment
     }
 
     /// <summary>
@@ -113,13 +114,39 @@ public class PeekFilePreviewTests : UITestBase
     private void TestFilePreviewWithVisualComparison(string filePath, string scenarioName)
     {
         string fileName = Path.GetFileName(filePath);
-        string peekWindowTitle = $"{fileName} - Peek";
+        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
+
+        // Try both window title formats since Windows may show or hide file extensions
+        string peekWindowTitleWithExt = $"{fileName} - Peek";
+        string peekWindowTitleWithoutExt = $"{fileNameWithoutExt} - Peek";
 
         // Open file with Peek
-        OpenAndPeekFile(filePath, peekWindowTitle);
+        OpenAndPeekFile(filePath);
 
-        // Get the preview window for comparison
-        var previewWindow = Find(peekWindowTitle, 2000, true);
+        // Try to attach to the correct window title
+        Element? previewWindow = null;
+
+        try
+        {
+            // First try to find the window with extension
+            previewWindow = Find(peekWindowTitleWithExt, 1000, true);
+            Session.Attach(peekWindowTitleWithExt);
+        }
+        catch
+        {
+            try
+            {
+                // Then try without extension
+                previewWindow = Find(peekWindowTitleWithoutExt, 1000, true);
+                Session.Attach(peekWindowTitleWithoutExt);
+            }
+            catch
+            {
+                // If neither works, let it fail with a clear message
+                Assert.Fail($"Could not find and attach to Peek window with title '{peekWindowTitleWithExt}' or '{peekWindowTitleWithoutExt}' for file {fileName}");
+            }
+        }
+
         Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileName}");
 
         // Perform visual assertion
