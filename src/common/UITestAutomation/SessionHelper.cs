@@ -122,26 +122,34 @@ namespace Microsoft.PowerToys.UITest
         public void StartExe(string appPath, string[]? args = null)
         {
             var opts = new AppiumOptions();
-            opts.AddAdditionalCapability("app", appPath);
 
-            if (args != null && args.Length > 0)
+            if (scope == PowerToysModule.PowerToysSettings)
             {
-                // Build command line arguments string
-                string argsString = string.Join(" ", args.Select(arg =>
+                TryLaunchPowerToysSettings(opts);
+            }
+            else
+            {
+                opts.AddAdditionalCapability("app", appPath);
+
+                if (args != null && args.Length > 0)
                 {
-                    // Quote arguments that contain spaces
-                    if (arg.Contains(' '))
+                    // Build command line arguments string
+                    string argsString = string.Join(" ", args.Select(arg =>
                     {
-                        return $"\"{arg}\"";
-                    }
+                        // Quote arguments that contain spaces
+                        if (arg.Contains(' '))
+                        {
+                            return $"\"{arg}\"";
+                        }
 
-                    return arg;
-                }));
+                        return arg;
+                    }));
 
-                opts.AddAdditionalCapability("appArguments", argsString);
+                    opts.AddAdditionalCapability("appArguments", argsString);
+                }
             }
 
-            this.Driver = NewWindowsDriver(opts);
+            Driver = NewWindowsDriver(opts);
         }
 
         private void TryLaunchPowerToysSettings(AppiumOptions opts)
