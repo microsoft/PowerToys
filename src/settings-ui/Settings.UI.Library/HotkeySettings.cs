@@ -120,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             if (Shift)
             {
-                shortcutList.Add(16); // The Shift key or button.
+                shortcutList.Add("Shift"); // We used to have 16 which is the shift key button. But this broke accessibility, setting broken unicode to an automation name in KeyVisual.
             }
 
             if (Code > 0)

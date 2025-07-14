@@ -35,7 +35,7 @@
                         Glyph="&#xE895;" />
                 </Border>
                 <StackPanel Grid.Column="1" Orientation="Vertical">
-                    <TextBlock x:Uid="UpdateAvailable" FontWeight="SemiBold" />
+                    <TextBlock x:Uid="UpdateAvailableTextBlock" FontWeight="SemiBold" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
                         <Run x:Uid="GeneralVersion" />
                         <Run Text="{x:Bind UpdateSettingsConfig.NewVersion, Mode=OneWay}" />
