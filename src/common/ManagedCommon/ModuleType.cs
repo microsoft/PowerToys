@@ -34,5 +34,6 @@ namespace ManagedCommon
         PowerOCR,
         Workspaces,
         ZoomIt,
+        ClipPing,
     }
 }

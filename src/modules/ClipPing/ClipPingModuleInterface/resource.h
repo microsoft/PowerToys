@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by MouseWithoutBorders.rc
+// Used by ClipPingModuleInterface.rc
 //
 #define IDS_CLIPPING_NAME 101
 
