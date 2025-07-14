@@ -77,6 +77,9 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+        var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        Logger.LogInfo($"OnLaunched ts {currentTimestamp}");
+
         AppWindow = new MainWindow();
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();

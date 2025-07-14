@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
@@ -231,6 +232,9 @@ public sealed partial class MainWindow : WindowEx,
 
         PInvoke.SetForegroundWindow(hwnd);
         PInvoke.SetActiveWindow(hwnd);
+
+        var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        Logger.LogInfo($"ShowHwnd complete. ts {currentTimestamp}");
     }
 
     private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)

@@ -38,7 +38,7 @@ Runs the pipeline for x64 Debug.
 
 
 param (
-    [string]$Platform = 'arm64',
+    [string]$Platform = 'x64',
     [string]$Configuration = 'Release'
 )
 
