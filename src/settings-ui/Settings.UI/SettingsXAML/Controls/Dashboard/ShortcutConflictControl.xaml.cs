@@ -106,32 +106,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             Visibility = HasConflicts ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private async void ShortcutConflictBtn_Click(object sender, RoutedEventArgs e)
+        private void ShortcutConflictBtn_Click(object sender, RoutedEventArgs e)
         {
             if (AllHotkeyConflictsData == null || !HasConflicts)
             {
                 return;
             }
 
-            var contentControl = new ShortcutConflictDialogContentControl
-            {
-                ConflictsData = AllHotkeyConflictsData,
-            };
+            // Create and show the new window instead of dialog
+            var conflictWindow = new ShortcutConflictWindow();
 
-            var conflictDialog = new ContentDialog
-            {
-                Content = contentControl,
-                XamlRoot = this.XamlRoot,
-                RequestedTheme = this.ActualTheme,
-            };
-
-            // Handle navigation request to close dialog
-            contentControl.DialogCloseRequested += (s, args) =>
-            {
-                conflictDialog.Hide();
-            };
-
-            await conflictDialog.ShowAsync();
+            // Show the window
+            conflictWindow.Activate();
         }
     }
 }
