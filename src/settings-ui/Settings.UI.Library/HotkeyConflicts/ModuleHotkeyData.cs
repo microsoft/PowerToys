@@ -4,20 +4,75 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
 {
-    public class ModuleHotkeyData
+    public class ModuleHotkeyData : INotifyPropertyChanged
     {
-        public string ModuleName { get; set; }
+        private string _moduleName;
+        private string _hotkeyName;
+        private HotkeySettings _hotkeySettings;
+        private bool _isSystemConflict;
 
-        public string HotkeyName { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        public HotkeySettings HotkeySettings { get; set; }
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
-        public bool IsSystemConflict { get; set; }
+        public string ModuleName
+        {
+            get => _moduleName;
+            set
+            {
+                if (_moduleName != value)
+                {
+                    _moduleName = value;
+                }
+            }
+        }
+
+        public string HotkeyName
+        {
+            get => _hotkeyName;
+            set
+            {
+                if (_hotkeyName != value)
+                {
+                    _hotkeyName = value;
+                }
+            }
+        }
+
+        public HotkeySettings HotkeySettings
+        {
+            get => _hotkeySettings;
+            set
+            {
+                if (_hotkeySettings != value)
+                {
+                    _hotkeySettings = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsSystemConflict
+        {
+            get => _isSystemConflict;
+            set
+            {
+                if (_isSystemConflict != value)
+                {
+                    _isSystemConflict = value;
+                }
+            }
+        }
     }
 }
