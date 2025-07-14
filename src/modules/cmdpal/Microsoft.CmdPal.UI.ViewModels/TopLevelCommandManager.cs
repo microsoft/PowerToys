@@ -104,14 +104,14 @@ public partial class TopLevelCommandManager : ObservableObject,
                 List<TopLevelViewModel> commands = [];
                 foreach (var item in commandProvider.TopLevelItems)
                 {
-                    TopLevelCommands.Add(item);
+                    commands.Add(item);
                 }
 
                 foreach (var item in commandProvider.FallbackItems)
                 {
                     if (item.IsEnabled)
                     {
-                        TopLevelCommands.Add(item);
+                        commands.Add(item);
                     }
                 }
 
