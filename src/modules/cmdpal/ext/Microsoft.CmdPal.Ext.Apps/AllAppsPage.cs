@@ -2,9 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,6 +74,7 @@ public sealed partial class AllAppsPage : ListPage
                 stopwatch.Start();
 
                 var apps = GetPrograms();
+                this.allApps = apps.AllApps;
                 this.pinnedApps = apps.PinnedItems;
                 this.unpinnedApps = apps.UnpinnedItems;
 
@@ -85,27 +88,30 @@ public sealed partial class AllAppsPage : ListPage
         }
     }
 
-    internal (AppItem[] AllApps, AppListItem[] PinnedItems, AppListItem[] UnpinnedItems) GetPrograms()
+    private AppItem[] GetAllApps()
     {
         var uwpResults = AppCache.Instance.Value.UWPs
-            .Where((application) => application.Enabled)
-            .Select(app => app.ToAppItem());
+           .Where((application) => application.Enabled)
+           .Select(app => app.ToAppItem());
 
         var win32Results = AppCache.Instance.Value.Win32s
             .Where((application) => application.Enabled && application.Valid)
             .Select(app => app.ToAppItem());
 
-        var allApps = uwpResults.Concat(win32Results).ToList();
+        var allApps = uwpResults.Concat(win32Results).ToArray();
+        return allApps;
+    }
 
+    internal (AppItem[] AllApps, AppListItem[] PinnedItems, AppListItem[] UnpinnedItems) GetPrograms()
+    {
+        var allApps = GetAllApps();
         var pinned = new List<AppListItem>();
         var unpinned = new List<AppListItem>();
 
         foreach (var app in allApps)
         {
             var isPinned = PinnedAppsManager.Instance.IsAppPinned(app.AppIdentifier);
-            app.Commands?.AddRange(AddPinCommands(app, isPinned));
-
-            var appListItem = new AppListItem(app, true);
+            var appListItem = new AppListItem(app, true, isPinned);
 
             if (isPinned)
             {
@@ -131,71 +137,51 @@ public sealed partial class AllAppsPage : ListPage
                     .ToArray());
     }
 
-    private void OnPinStateChanged(object? sender, System.EventArgs e)
+    private void OnPinStateChanged(object? sender, PinStateChangedEventArgs e)
     {
         /*
          * Rebuilding all the lists is pretty expensive.
          * So, instead, we'll just compare pinned items to move existing
          * items between the two lists.
         */
+        var existingAppItem = allApps.FirstOrDefault(f => f.AppIdentifier == e.AppIdentifier);
 
-        var pinnedIds = PinnedAppsManager.Instance.GetPinnedAppIdentifiers();
-
-        var pinnedApps = allApps
-                            .Where(w => pinnedIds.Contains(w.AppIdentifier))
-                            .Select(app =>
-                            {
-                                app.Commands?.AddRange(AddPinCommands(app, true));
-                                return new AppListItem(app, true);
-                            })
-                            .OrderBy(o => o.Title)
-                            .ToArray();
-
-        var unpinnedApps = allApps
-                            .Where(app => !pinnedIds.Contains(app.AppIdentifier))
-                            .Select(app =>
-                            {
-                                app.Commands?.AddRange(AddPinCommands(app, false));
-                                return new AppListItem(app, true);
-                            })
-                            .OrderBy(o => o.Title)
-                            .ToArray();
-
-        this.pinnedApps = pinnedApps;
-        this.unpinnedApps = unpinnedApps;
-
-        RaiseItemsChanged(0);
-    }
-
-    private List<IContextItem> AddPinCommands(AppItem app, bool isPinned)
-    {
-        var commands = new List<IContextItem>();
-
-        commands.Add(new SeparatorContextItem());
-
-        // 0x50 = P
-        // Full key chord would be Ctrl+P
-        var pinKeyChord = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0);
-
-        if (isPinned)
+        if (existingAppItem != null)
         {
-            commands.Add(
-                new CommandContextItem(
-                    new UnpinAppCommand(app.AppIdentifier))
-                {
-                    RequestedShortcut = pinKeyChord,
-                });
-        }
-        else
-        {
-            commands.Add(
-                new CommandContextItem(
-                    new PinAppCommand(app.AppIdentifier))
-                {
-                    RequestedShortcut = pinKeyChord,
-                });
-        }
+            var appListItem = new AppListItem(existingAppItem, true, e.IsPinned);
 
-        return commands;
+            if (e.IsPinned)
+            {
+                // Remove it from the unpinned apps array
+                this.unpinnedApps = this.unpinnedApps
+                                            .Where(app => app.AppIdentifier != existingAppItem.AppIdentifier)
+                                            .OrderBy(app => app.Title)
+                                            .ToArray();
+
+                var newPinned = this.pinnedApps.ToList();
+                newPinned.Add(appListItem);
+
+                this.pinnedApps = newPinned
+                                        .OrderBy(app => app.Title)
+                                        .ToArray();
+            }
+            else
+            {
+                // Remove it from the pinned apps array
+                this.pinnedApps = this.pinnedApps
+                                            .Where(app => app.AppIdentifier != existingAppItem.AppIdentifier)
+                                            .OrderBy(app => app.Title)
+                                            .ToArray();
+
+                var newUnpinned = this.unpinnedApps.ToList();
+                newUnpinned.Add(appListItem);
+
+                this.unpinnedApps = newUnpinned
+                                        .OrderBy(app => app.Title)
+                                        .ToArray();
+            }
+
+            RaiseItemsChanged(0);
+        }
     }
 }

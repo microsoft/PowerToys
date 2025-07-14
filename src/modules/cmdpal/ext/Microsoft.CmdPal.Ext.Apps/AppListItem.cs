@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
@@ -25,14 +26,15 @@ internal sealed partial class AppListItem : ListItem
 
     public string AppIdentifier => _app.AppIdentifier;
 
-    public AppListItem(AppItem app, bool useThumbnails)
+    public AppListItem(AppItem app, bool useThumbnails, bool isPinned)
         : base(new AppCommand(app))
     {
         _app = app;
         Title = app.Name;
         Subtitle = app.Subtitle;
         Tags = [_appTag];
-        MoreCommands = _app.Commands!.ToArray();
+
+        MoreCommands = AddPinCommands(_app.Commands!, isPinned);
 
         _details = new Lazy<Details>(() =>
         {
@@ -122,5 +124,38 @@ internal sealed partial class AppListItem : ListItem
         }
 
         return icon;
+    }
+
+    private IContextItem[] AddPinCommands(List<IContextItem> commands, bool isPinned)
+    {
+        var newCommands = new List<IContextItem>();
+        newCommands.AddRange(commands);
+
+        newCommands.Add(new SeparatorContextItem());
+
+        // 0x50 = P
+        // Full key chord would be Ctrl+P
+        var pinKeyChord = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0);
+
+        if (isPinned)
+        {
+            newCommands.Add(
+                new CommandContextItem(
+                    new UnpinAppCommand(this.AppIdentifier))
+                {
+                    RequestedShortcut = pinKeyChord,
+                });
+        }
+        else
+        {
+            newCommands.Add(
+                new CommandContextItem(
+                    new PinAppCommand(this.AppIdentifier))
+                {
+                    RequestedShortcut = pinKeyChord,
+                });
+        }
+
+        return newCommands.ToArray();
     }
 }

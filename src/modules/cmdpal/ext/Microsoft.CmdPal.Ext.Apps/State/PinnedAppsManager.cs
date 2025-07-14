@@ -21,7 +21,7 @@ public sealed class PinnedAppsManager
     private PinnedApps _pinnedApps = new();
 
     // Add event for when pinning state changes
-    public event EventHandler? PinStateChanged;
+    public event EventHandler<PinStateChangedEventArgs>? PinStateChanged;
 
     private PinnedAppsManager()
     {
@@ -41,7 +41,7 @@ public sealed class PinnedAppsManager
             _pinnedApps.PinnedAppIdentifiers.Add(appIdentifier);
             SavePinnedApps();
             Logger.LogTrace($"Pinned app: {appIdentifier}");
-            PinStateChanged?.Invoke(this, EventArgs.Empty);
+            PinStateChanged?.Invoke(this, new PinStateChangedEventArgs(appIdentifier, true));
         }
     }
 
@@ -59,7 +59,7 @@ public sealed class PinnedAppsManager
         {
             SavePinnedApps();
             Logger.LogTrace($"Unpinned app: {appIdentifier}");
-            PinStateChanged?.Invoke(this, EventArgs.Empty);
+            PinStateChanged?.Invoke(this, new PinStateChangedEventArgs(appIdentifier, false));
         }
     }
 
