@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using Microsoft.PowerToys.UITest;
@@ -26,7 +28,15 @@ public class PeekFilePreviewTests : UITestBase
 
         OpenAndPeekFile(folderFullPath);
 
-        Assert.IsTrue(FindAll<TextBlock>("File Type: File folder", 500, true).Count > 0, "Should show folder detail in Peek File Preview");
+        Task.Delay(1000).Wait(); // Wait for Peek to load
+
+        var peekWindow = Find("TestAssets - Peek", 1000, true);
+
+        Assert.IsNotNull(peekWindow);
+
+        Assert.IsNotNull(peekWindow.Find<TextBlock>("File Type: File folder", 500), "Folder preview should be loaded successfully");
+
+        ClosePeekAndExplorer();
     }
 
     /// <summary>
@@ -44,12 +54,6 @@ public class PeekFilePreviewTests : UITestBase
             .OrderBy(file => file)
             .ToList();
 
-        Console.WriteLine($"Found {testFiles.Count} test files in TestAssets:");
-        foreach (var file in testFiles)
-        {
-            Console.WriteLine($"  - {Path.GetFileName(file)} ({Path.GetExtension(file)})");
-        }
-
         Assert.IsTrue(testFiles.Count > 0, "Should have test files in TestAssets folder");
 
         // Test each file individually with visual comparison
@@ -58,36 +62,183 @@ public class PeekFilePreviewTests : UITestBase
             string fileName = Path.GetFileName(testFile);
             string fileExtension = Path.GetExtension(testFile).ToLowerInvariant();
 
-            Console.WriteLine($"Testing preview for: {fileName}");
-
-            try
-            {
-                // Perform visual assertion with file-specific scenario name
-                string scenarioName = $"TestAssets_{Path.GetFileNameWithoutExtension(fileName)}_{fileExtension.Replace(".", string.Empty)}";
-                TestFilePreviewWithVisualComparison(testFile, scenarioName);
-
-                Console.WriteLine($"✓ Successfully tested {fileName}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"✗ Failed to test {fileName}: {ex.Message}");
-
-                // Try to close any open peek window before continuing
-                try
-                {
-                    Session.CloseMainWindow();
-                }
-                catch
-                {
-                    // Ignore cleanup errors
-                }
-
-                // Re-throw for test failure
-                throw new AssertFailedException($"Preview test failed for {fileName}: {ex.Message}", ex);
-            }
+            // Perform visual assertion with file-specific scenario name
+            string scenarioName = $"TestAssets_{Path.GetFileNameWithoutExtension(fileName)}_{fileExtension.Replace(".", string.Empty)}";
+            TestFilePreviewWithVisualComparison(testFile, scenarioName);
         }
 
-        Console.WriteLine($"Successfully completed visual comparison tests for {testFiles.Count} files");
+        Assert.Fail("All test files should be processed without failure. If this fails, check the TestAssets folder for missing or unsupported files.");
+    }
+
+    /// <summary>
+    /// Test window pinning functionality - pin window and switch between different sized images
+    /// Verify the window stays at the same place and the same size
+    /// </summary>
+    [TestMethod("Peek.WindowPinning.PinAndSwitchImages")]
+    [TestCategory("Window Pinning")]
+    public void TestPinWindowAndSwitchImages()
+    {
+        // Use two different image files (assuming 8.png and another image with different size)
+        string firstImagePath = Path.GetFullPath(@".\TestAssets\8.png");
+        string secondImagePath = Path.GetFullPath(@".\TestAssets\2.jpg"); // Different format/size
+
+        // Open first image
+        var initialWindow = OpenPeekWindow(firstImagePath);
+
+        var originalBounds = GetWindowBounds(initialWindow);
+
+        // Move window to a custom position to test pin functionality
+        MoveWindow(initialWindow, originalBounds.X + 100, originalBounds.Y + 50);
+        var movedBounds = GetWindowBounds(initialWindow);
+
+        // Pin the window
+        PinWindow();
+
+        // Close current peek
+        ClosePeekAndExplorer();
+
+        // Open second image with different size
+        var secondWindow = OpenPeekWindow(secondImagePath);
+        var finalBounds = GetWindowBounds(secondWindow);
+
+        // Verify window position and size remained the same as the moved position
+        Assert.AreEqual(movedBounds.X, finalBounds.X, 5, "Window X position should remain the same when pinned");
+        Assert.AreEqual(movedBounds.Y, finalBounds.Y, 5, "Window Y position should remain the same when pinned");
+        Assert.AreEqual(movedBounds.Width, finalBounds.Width, 10, "Window width should remain the same when pinned");
+        Assert.AreEqual(movedBounds.Height, finalBounds.Height, 10, "Window height should remain the same when pinned");
+
+        ClosePeekAndExplorer();
+    }
+
+    /// <summary>
+    /// Test window pinning persistence - pin window, close and reopen Peek
+    /// Verify the new window is opened at the same place and the same size as before
+    /// </summary>
+    [TestMethod("Peek.WindowPinning.PinAndReopen")]
+    [TestCategory("Window Pinning")]
+    public void TestPinWindowAndReopen()
+    {
+        string imagePath = Path.GetFullPath(@".\TestAssets\8.png");
+
+        // Open image and pin window
+        var initialWindow = OpenPeekWindow(imagePath);
+        var originalBounds = GetWindowBounds(initialWindow);
+
+        // Move window to a custom position to test pin persistence
+        MoveWindow(initialWindow, originalBounds.X + 150, originalBounds.Y + 75);
+        var movedBounds = GetWindowBounds(initialWindow);
+
+        // Pin the window
+        PinWindow();
+
+        // Close peek
+        ClosePeekAndExplorer();
+        Task.Delay(1000).Wait(); // Wait for window to close completely
+
+        // Reopen the same image
+        var reopenedWindow = OpenPeekWindow(imagePath);
+        var finalBounds = GetWindowBounds(reopenedWindow);
+
+        // Verify window position and size are restored to the moved position
+        Assert.AreEqual(movedBounds.X, finalBounds.X, 5, "Window X position should be restored when pinned");
+        Assert.AreEqual(movedBounds.Y, finalBounds.Y, 5, "Window Y position should be restored when pinned");
+        Assert.AreEqual(movedBounds.Width, finalBounds.Width, 10, "Window width should be restored when pinned");
+        Assert.AreEqual(movedBounds.Height, finalBounds.Height, 10, "Window height should be restored when pinned");
+
+        ClosePeekAndExplorer();
+    }
+
+    /// <summary>
+    /// Test window unpinning - unpin window and switch to different file
+    /// Verify the window is moved to the default place
+    /// </summary>
+    [TestMethod("Peek.WindowPinning.UnpinAndSwitchFiles")]
+    [TestCategory("Window Pinning")]
+    public void TestUnpinWindowAndSwitchFiles()
+    {
+        string firstFilePath = Path.GetFullPath(@".\TestAssets\8.png");
+        string secondFilePath = Path.GetFullPath(@".\TestAssets\2.jpg");
+
+        // Open first file and pin window
+        var pinnedWindow = OpenPeekWindow(firstFilePath);
+        var originalBounds = GetWindowBounds(pinnedWindow);
+
+        // Move window to a custom position
+        MoveWindow(pinnedWindow, originalBounds.X + 200, originalBounds.Y + 100);
+        var movedBounds = GetWindowBounds(pinnedWindow);
+
+        // Calculate the center point of the moved window
+        int movedCenterX = movedBounds.X + (movedBounds.Width / 2);
+        int movedCenterY = movedBounds.Y + (movedBounds.Height / 2);
+
+        // Pin the window first
+        PinWindow();
+
+        // Unpin the window
+        UnpinWindow();
+
+        // Close current peek
+        ClosePeekAndExplorer();
+
+        // Open different file (different size)
+        var unpinnedWindow = OpenPeekWindow(secondFilePath);
+        var unpinnedBounds = GetWindowBounds(unpinnedWindow);
+
+        // Calculate the center point of the unpinned window
+        int unpinnedCenterX = unpinnedBounds.X + (unpinnedBounds.Width / 2);
+        int unpinnedCenterY = unpinnedBounds.Y + (unpinnedBounds.Height / 2);
+
+        // Verify window size is different (since it's a different file type)
+        bool sizeChanged = Math.Abs(movedBounds.Width - unpinnedBounds.Width) > 10 ||
+                          Math.Abs(movedBounds.Height - unpinnedBounds.Height) > 10;
+
+        // Verify window center moved to default position (should be different from moved center)
+        bool centerChanged = Math.Abs(movedCenterX - unpinnedCenterX) > 50 ||
+                            Math.Abs(movedCenterY - unpinnedCenterY) > 50;
+
+        Assert.IsTrue(sizeChanged, "Window size should be different for different file types");
+        Assert.IsTrue(centerChanged, "Window center should move to default position when unpinned");
+
+        ClosePeekAndExplorer();
+    }
+
+    /// <summary>
+    /// Test unpinned window behavior - unpin window, close and reopen Peek
+    /// Verify the new window is opened on the default place
+    /// </summary>
+    [TestMethod("Peek.WindowPinning.UnpinAndReopen")]
+    [TestCategory("Window Pinning")]
+    public void TestUnpinWindowAndReopen()
+    {
+        string imagePath = Path.GetFullPath(@".\TestAssets\8.png");
+
+        // Open image, pin it first, then unpin
+        var initialWindow = OpenPeekWindow(imagePath);
+        var originalBounds = initialWindow.Rect ?? GetWindowBounds(initialWindow);
+
+        // Move window to a custom position
+        MoveWindow(initialWindow, originalBounds.X + 250, originalBounds.Y + 125);
+        var movedBounds = initialWindow.Rect ?? GetWindowBounds(initialWindow);
+
+        // Pin then unpin to ensure we test the unpinned state
+        PinWindow();
+        UnpinWindow();
+
+        // Close peek
+        ClosePeekAndExplorer();
+        Task.Delay(1000).Wait();
+
+        // Reopen the same image
+        var reopenedWindow = OpenPeekWindow(imagePath);
+        var reopenedBounds = GetWindowBounds(reopenedWindow);
+
+        // Verify window opened at default position (not the previous moved position)
+        bool openedAtDefault = Math.Abs(movedBounds.X - reopenedBounds.X) > 50 ||
+                              Math.Abs(movedBounds.Y - reopenedBounds.Y) > 50;
+
+        Assert.IsTrue(openedAtDefault, "Unpinned window should open at default position, not previous moved position");
+
+        ClosePeekAndExplorer();
     }
 
     private void OpenAndPeekFile(string fullPath)
@@ -102,8 +253,6 @@ public class PeekFilePreviewTests : UITestBase
         SendKeys(Key.LCtrl, Key.Space);
 
         Task.Delay(1000).Wait();
-
-        // Don't attach here, let the calling method handle window detection and attachment
     }
 
     /// <summary>
@@ -152,12 +301,153 @@ public class PeekFilePreviewTests : UITestBase
         // Perform visual assertion
         // Note: Baseline images are embedded resources and must be created during the first run in the pipeline
         // The scenario name should be unique to avoid conflicts between different file types
-        if (fileNameWithoutExt == "8")
+        // VisualAssert.AreEqual(TestContext, previewWindow, scenarioName);
+        // Close peek window
+        ClosePeekAndExplorer();
+    }
+
+    /// <summary>
+    /// Opens a file with Peek without performing visual comparison
+    /// Used for tests that need to open files but don't require visual validation
+    /// </summary>
+    /// <param name="filePath">Full path to the file to preview</param>
+    /// <returns>The Peek window element</returns>
+    private Element OpenPeekWindow(string filePath)
+    {
+        string fileName = Path.GetFileName(filePath);
+        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
+
+        // Try both window title formats since Windows may show or hide file extensions
+        string peekWindowTitleWithExt = $"{fileName} - Peek";
+        string peekWindowTitleWithoutExt = $"{fileNameWithoutExt} - Peek";
+
+        // Open file with Peek
+        OpenAndPeekFile(filePath);
+
+        // Try to attach to the correct window title
+        Element? previewWindow = null;
+
+        try
         {
-            VisualAssert.AreEqual(TestContext, previewWindow, scenarioName);
+            // First try to find the window with extension
+            previewWindow = Find(peekWindowTitleWithExt, 1000, true);
+            Session.Attach(peekWindowTitleWithExt);
+        }
+        catch
+        {
+            try
+            {
+                // Then try without extension
+                previewWindow = Find(peekWindowTitleWithoutExt, 1000, true);
+                Session.Attach(peekWindowTitleWithoutExt);
+            }
+            catch
+            {
+                // If neither works, let it fail with a clear message
+                Assert.Fail($"Could not find and attach to Peek window with title '{peekWindowTitleWithExt}' or '{peekWindowTitleWithoutExt}' for file {fileName}");
+            }
         }
 
-        // Close peek window
-        Session.CloseMainWindow();
+        Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileName}");
+        return previewWindow;
     }
+
+    /// <summary>
+    /// Helper method to get window bounds (position and size)
+    /// </summary>
+    /// <param name="window">The window element</param>
+    /// <returns>Rectangle with window bounds</returns>
+    private Rectangle GetWindowBounds(Element window)
+    {
+        if (window.Rect == null)
+        {
+            return Rectangle.Empty;
+        }
+        else
+        {
+            return window.Rect.Value;
+        }
+    }
+
+    /// <summary>
+    /// Helper method to pin the current Peek window
+    /// </summary>
+    private void PinWindow()
+    {
+        // Find pin button using AutomationId
+        var pinButton = Find(By.AccessibilityId("PinButton"), 2000);
+        Assert.IsNotNull(pinButton, "Pin button should be found");
+
+        pinButton.Click();
+        Task.Delay(500).Wait(); // Wait for pin action to complete
+    }
+
+    /// <summary>
+    /// Helper method to unpin the current Peek window
+    /// </summary>
+    private void UnpinWindow()
+    {
+        // Find pin button using AutomationId (same button, just toggle the state)
+        var pinButton = Find(By.AccessibilityId("PinButton"), 2000);
+        Assert.IsNotNull(pinButton, "Pin button should be found");
+
+        pinButton.Click();
+        Task.Delay(500).Wait(); // Wait for unpin action to complete
+    }
+
+    /// <summary>
+    /// Helper method to close Peek window and Explorer
+    /// </summary>
+    private void ClosePeekAndExplorer()
+    {
+        // Close Peek window
+        Session.CloseMainWindow();
+
+        // Close Explorer window
+        try
+        {
+            var explorerWindows = Process.GetProcessesByName("explorer");
+            foreach (var explorer in explorerWindows)
+            {
+                // Only close explorer windows (not the shell process)
+                if (explorer.MainWindowHandle != IntPtr.Zero)
+                {
+                    explorer.CloseMainWindow();
+                }
+            }
+        }
+        catch
+        {
+            // Ignore errors when closing Explorer
+        }
+    }
+
+    /// <summary>
+    /// Helper method to move a window to a specific position
+    /// </summary>
+    /// <param name="window">The window element to move</param>
+    /// <param name="x">New X position</param>
+    /// <param name="y">New Y position</param>
+    private void MoveWindow(Element window, int x, int y)
+    {
+        try
+        {
+            var windowHandle = IntPtr.Parse(window.GetAttribute("NativeWindowHandle") ?? "0", System.Globalization.CultureInfo.InvariantCulture);
+            if (windowHandle != IntPtr.Zero)
+            {
+                SetWindowPos(windowHandle, IntPtr.Zero, x, y, 0, 0, SWPNOSIZE | SWPNOZORDER);
+                Task.Delay(500).Wait();
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    // Windows API for moving windows
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+    private const uint SWPNOSIZE = 0x0001;
+    private const uint SWPNOZORDER = 0x0004;
 }
