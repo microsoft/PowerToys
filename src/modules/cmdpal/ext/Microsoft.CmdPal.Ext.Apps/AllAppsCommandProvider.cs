@@ -2,8 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -11,13 +15,15 @@ namespace Microsoft.CmdPal.Ext.Apps;
 
 public partial class AllAppsCommandProvider : CommandProvider
 {
+    public const string WellKnownId = "AllApps";
+
     public static readonly AllAppsPage Page = new();
 
     private readonly CommandItem _listItem;
 
     public AllAppsCommandProvider()
     {
-        Id = "AllApps";
+        Id = WellKnownId;
         DisplayName = Resources.installed_apps;
         Icon = IconHelpers.FromRelativePath("Assets\\AllApps.svg");
         Settings = AllAppsSettings.Instance.Settings;
@@ -27,9 +33,12 @@ public partial class AllAppsCommandProvider : CommandProvider
             Subtitle = Resources.search_installed_apps,
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
         };
+
+        // Subscribe to pin state changes to refresh the command provider
+        PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem];
+    public override ICommandItem[] TopLevelCommands() => [_listItem, ..Page.GetPinnedApps()];
 
     public ICommandItem? LookupApp(string displayName)
     {
@@ -59,5 +68,10 @@ public partial class AllAppsCommandProvider : CommandProvider
         }
 
         return null;
+    }
+
+    private void OnPinStateChanged(object? sender, System.EventArgs e)
+    {
+        RaiseItemsChanged(0);
     }
 }
