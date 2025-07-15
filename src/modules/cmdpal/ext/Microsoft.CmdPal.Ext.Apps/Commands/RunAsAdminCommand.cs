@@ -13,8 +13,6 @@ namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
 internal sealed partial class RunAsAdminCommand : InvokableCommand
 {
-    private static readonly IconInfo TheIcon = new("\uE7EF");
-
     private readonly string _target;
     private readonly string _parentDir;
     private readonly bool _packaged;
@@ -22,7 +20,7 @@ internal sealed partial class RunAsAdminCommand : InvokableCommand
     public RunAsAdminCommand(string target, string parentDir, bool packaged)
     {
         Name = Resources.run_as_administrator;
-        Icon = TheIcon;
+        Icon = Icons.AdminIcon;
 
         _target = target;
         _parentDir = parentDir;

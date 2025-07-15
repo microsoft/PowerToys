@@ -23,7 +23,7 @@ public sealed partial class AllAppsPage : ListPage
     public AllAppsPage()
     {
         this.Name = Resources.all_apps;
-        this.Icon = IconHelpers.FromRelativePath("Assets\\AllApps.svg");
+        this.Icon = Icons.AllAppsIcon;
         this.ShowDetails = true;
         this.IsLoading = true;
         this.PlaceholderText = Resources.search_installed_apps_placeholder;

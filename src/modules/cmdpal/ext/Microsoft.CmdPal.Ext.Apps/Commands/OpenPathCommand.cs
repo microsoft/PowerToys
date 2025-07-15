@@ -11,14 +11,12 @@ namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
 internal sealed partial class OpenPathCommand : InvokableCommand
 {
-    private static readonly IconInfo TheIcon = new("\ue838");
-
     private readonly string _target;
 
     public OpenPathCommand(string target)
     {
         Name = Resources.open_location;
-        Icon = TheIcon;
+        Icon = Icons.OpenPathIcon;
 
         _target = target;
     }

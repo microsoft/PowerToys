@@ -98,7 +98,6 @@ public class UWPApplication : IProgram
                 new OpenPathCommand(Location)
                 {
                     Name = Resources.open_containing_folder,
-                    Icon = new("\ue838"),
                 })
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E),

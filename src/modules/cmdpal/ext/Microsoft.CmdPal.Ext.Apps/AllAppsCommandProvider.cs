@@ -21,7 +21,7 @@ public partial class AllAppsCommandProvider : CommandProvider
     {
         Id = WellKnownId;
         DisplayName = Resources.installed_apps;
-        Icon = IconHelpers.FromRelativePath("Assets\\AllApps.svg");
+        Icon = Icons.AllAppsIcon;
         Settings = AllAppsSettings.Instance.Settings;
 
         _listItem = new(Page)

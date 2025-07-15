@@ -13,15 +13,13 @@ namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
 internal sealed partial class RunAsUserCommand : InvokableCommand
 {
-    private static readonly IconInfo TheIcon = new("\uE7EE");
-
     private readonly string _target;
     private readonly string _parentDir;
 
     public RunAsUserCommand(string target, string parentDir)
     {
         Name = Resources.run_as_different_user;
-        Icon = TheIcon;
+        Icon = Icons.OtherUserIcon;
 
         _target = target;
         _parentDir = parentDir;
