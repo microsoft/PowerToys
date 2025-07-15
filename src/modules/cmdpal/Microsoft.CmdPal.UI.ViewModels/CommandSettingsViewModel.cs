@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions;
 
-namespace Microsoft.CmdPal.UI.ViewModels;
+namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings, CommandProviderWrapper provider, TaskScheduler mainThread)
 {
