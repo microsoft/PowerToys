@@ -3,10 +3,20 @@ Param(
     [Parameter(Mandatory = $True, Position = 1)]
     [string]$monacoWxsFile
 )
+echo !!!!!!!!!!!!!!!!!!!!!!
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$monacoBackupFile = Join-Path (Split-Path $monacoWxsFile) "MonacoBackup.wxs"
-$fileWxs = Get-Content $monacoBackupFile;
-Set-Content -Path $monacoWxsFile -Value $fileWxs
+$HeatPath = "C:\.tools\.nuget\packages\wixtoolset.heat\5.0.2\tools\net472\x64"
+$SourceDir = Join-Path $scriptDir "..\..\src\Monaco\monacoSRC"  # Now relative to script location
+$OutputFile = Join-Path $scriptDir "MonacoSRC.wxs"
+$ComponentGroup = "MonacoSRCHeatGenerated"
+$DirectoryRef = "MonacoPreviewHandlerMonacoSRCFolder"
+$Variable = "var.MonacoSRCHarvestPath"
+
+# 执行命令
+& "$HeatPath\heat.exe" dir "$SourceDir" -out "$OutputFile" -cg "$ComponentGroup" -dr "$DirectoryRef" -var "$Variable" -gg -srd -nologo
+
+echo !!!!!!!!!!!!!!!!!!!!!!!!!!>>>>>>>>>>>>>>
 
 $fileWxs = Get-Content $monacoWxsFile;
 
