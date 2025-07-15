@@ -22,6 +22,8 @@ namespace Microsoft.PowerToys.UITest
 
         public bool IsInPipeline { get; }
 
+        public string? ScreenshotDirectory { get; set; }
+
         public static MonitorInfoData.ParamsWrapper MonitorInfoData { get; set; } = new MonitorInfoData.ParamsWrapper() { Monitors = new List<MonitorInfoData.MonitorInfoDataWrapper>() };
 
         private readonly PowerToysModule scope;
@@ -29,13 +31,12 @@ namespace Microsoft.PowerToys.UITest
         private readonly string[]? commandLineArgs;
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
-        private string? screenshotDirectory;
 
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
         {
             this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
-            if (IsInPipeline)
+            if (!IsInPipeline)
             {
                 NativeMethods.ChangeDisplayResolution(1920, 1080);
                 NativeMethods.GetMonitorInfo();
@@ -58,11 +59,11 @@ namespace Microsoft.PowerToys.UITest
             CloseOtherApplications();
             if (IsInPipeline)
             {
-                screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
-                Directory.CreateDirectory(screenshotDirectory);
+                ScreenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
+                Directory.CreateDirectory(ScreenshotDirectory);
 
                 // Take screenshot every 1 second
-                screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+                screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, ScreenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
 
                 // Escape Popups before starting
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
@@ -415,9 +416,9 @@ namespace Microsoft.PowerToys.UITest
 
         protected void AddScreenShotsToTestResultsDirectory()
         {
-            if (screenshotDirectory != null)
+            if (ScreenshotDirectory != null)
             {
-                foreach (string file in Directory.GetFiles(screenshotDirectory))
+                foreach (string file in Directory.GetFiles(ScreenshotDirectory))
                 {
                     this.TestContext.AddResultFile(file);
                 }

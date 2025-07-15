@@ -297,6 +297,7 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileName}");
+        previewWindow.SaveToPngFile(Path.Combine(ScreenshotDirectory ?? string.Empty, $"{scenarioName}.png"));
 
         // Perform visual assertion
         // Note: Baseline images are embedded resources and must be created during the first run in the pipeline
