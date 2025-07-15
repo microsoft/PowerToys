@@ -55,7 +55,7 @@ public class ShellListPageHelpers
 
                     // Using CurrentCulture since this is user facing
                     Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value),
-                    Icon = new IconInfo("\uE81C"),
+                    Icon = Icons.HistoryIcon,
                 };
                 return ret;
             }).Where(o => o != null).Take(4);
@@ -108,7 +108,7 @@ public class ShellListPageHelpers
 
                 // Using CurrentCulture since this is user facing
                 Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value),
-                Icon = new IconInfo("\uE81C"),
+                Icon = Icons.HistoryIcon,
             }).Take(5);
 
         return history.ToList();
