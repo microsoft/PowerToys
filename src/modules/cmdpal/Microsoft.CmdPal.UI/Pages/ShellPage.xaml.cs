@@ -21,6 +21,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Pages;
 
@@ -82,6 +83,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
+        AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
 
         RootFrame.Navigate(typeof(LoadingPage), ViewModel);
@@ -446,6 +448,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model));
+        }
+    }
+
+    private void ShellPage_OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Left && e.KeyStatus.IsMenuKeyDown)
+        {
+            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
         }
     }
 

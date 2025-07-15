@@ -32,6 +32,8 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
     {
         if (!IsValidUrl(query))
         {
+            _executeItem.Url = string.Empty;
+            _executeItem.Name = string.Empty;
             Title = string.Empty;
             Subtitle = string.Empty;
             return;
