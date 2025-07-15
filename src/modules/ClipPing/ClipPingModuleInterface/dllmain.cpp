@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
 
@@ -7,7 +8,10 @@
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
 
+#include <shellapi.h>
+
 #include "trace.h"
+#include "common/interop/shared_constants.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -62,6 +66,9 @@ private:
     std::wstring app_name;
     std::wstring app_key; //contains the non localized key of the powertoy
 
+    HANDLE m_hProcess = nullptr;
+    HANDLE m_exit_event_handle = nullptr;
+
 public:
     // Constructor
     ClipPingModuleInterface()
@@ -70,12 +77,14 @@ public:
         app_name = L"ClipPing";
         app_key = L"ClipPing";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "ClipPing");
+        m_exit_event_handle = CreateDefaultEvent(CommonSharedConstants::CLIPPING_EXIT_EVENT);
         init_settings();
     };
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        Disable(false);
         delete this;
     }
 
@@ -214,18 +223,72 @@ public:
     virtual void enable()
     {
         m_enabled = true;
+
+        // Log telemetry
+        Trace::Enable(true);
+
+        ResetEvent(m_exit_event_handle);
+
+        unsigned long powertoys_pid = GetCurrentProcessId();
+        std::wstring executable_args;
+        executable_args.append(std::to_wstring(powertoys_pid));
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"WinUI3Apps\\Powertoys.ClipPing.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei) == false)
+        {
+            Logger::error(L"Failed to start ClipPing");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
+        else
+        {
+            m_hProcess = sei.hProcess;
+        }
+
     }
 
     // Disable the powertoy
     virtual void disable()
     {
         m_enabled = false;
+        Disable(true);
     }
 
     // Returns if the powertoys is enabled
     virtual bool is_enabled() override
     {
         return m_enabled;
+    }
+
+    void Disable(bool const traceEvent)
+    {
+        m_enabled = false;
+
+        // Log telemetry
+        if (traceEvent)
+        {
+            Trace::Enable(false);
+        }
+
+        // Tell the ClipPing process to exit.
+        SetEvent(m_exit_event_handle);
+
+        // Wait for 1.5 seconds for the process to end correctly and stop etw tracer
+        WaitForSingleObject(m_hProcess, 1500);
+
+        // If process is still running, terminate it
+        if (m_hProcess)
+        {
+            TerminateProcess(m_hProcess, 0);
+            m_hProcess = nullptr;
+        }
     }
 };
 
