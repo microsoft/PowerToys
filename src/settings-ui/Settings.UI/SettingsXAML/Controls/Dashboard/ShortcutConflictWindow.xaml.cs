@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
+using System.Windows.Forms;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -12,8 +14,10 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
+using Windows.Web.AtomPub;
 
 namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 {
@@ -33,6 +37,9 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
             DataContext = ViewModel;
             InitializeComponent();
+
+            // Set up the custom action name delegate for LocalizationHelper
+            LocalizationHelper.GetCustomActionNameDelegate = GetCustomActionName;
 
             // Set localized window title
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
@@ -59,7 +66,12 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
             ViewModel.OnPageLoaded();
 
-            Closed += (s, e) => ViewModel?.Dispose();
+            Closed += (s, e) =>
+            {
+                // Clean up the delegate when window is closed
+                LocalizationHelper.GetCustomActionNameDelegate = null;
+                ViewModel?.Dispose();
+            };
         }
 
         private void CenterOnScreen()
@@ -97,12 +109,32 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             if (sender is SettingsCard card && card.DataContext is ModuleHotkeyData moduleData)
             {
                 var iconPath = GetModuleIconPath(moduleData.ModuleName);
+
+                // Setup header for SettingsCard
+                card.Header = LocalizationHelper.GetLocalizedHotkeyHeader(moduleData.ModuleName, moduleData.HotkeyName);
+
                 card.HeaderIcon = new BitmapIcon
                 {
                     UriSource = new Uri(iconPath),
                     ShowAsMonochrome = false,
                 };
             }
+        }
+
+        /// <summary>
+        /// Gets the custom action name for AdvancedPaste
+        /// </summary>
+        /// <param name="moduleName">The module name</param>
+        /// <param name="actionId">The custom action ID</param>
+        /// <returns>The custom action name, or null if not found</returns>
+        private string GetCustomActionName(string moduleName, int actionId)
+        {
+            if (!moduleName.Equals("advancedpaste", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            return ViewModel?.GetAdvancedPasteCustomActionName(actionId);
         }
 
         private string GetModuleIconPath(string moduleName)
@@ -125,6 +157,9 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
                 "powerocr" => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
                 "workspaces" => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
                 "cmdpal" => "ms-appx:///Assets/Settings/Icons/CmdPal.png",
+                "mousewithoutborders" => "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png",
+                "zoomit" => "ms-appx:///Assets/Settings/Icons/ZoomIt.png",
+                "measure tool" => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
                 _ => "ms-appx:///Assets/Settings/Icons/PowerToys.png",
             };
         }
