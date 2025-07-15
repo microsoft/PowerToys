@@ -462,6 +462,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             .Where(tuple => tuple.Item2 != null)
             .Select(tuple => (tuple.h, tuple.Item2!))
             .ToList();
+        _historyItems.Clear();
 
         // Add all the history items to the _historyItems dictionary
         foreach (var (h, item) in histItems)

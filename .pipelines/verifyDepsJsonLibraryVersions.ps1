@@ -19,7 +19,7 @@ Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude *UITest*,MouseJum
     # Temporarily exclude All UI-Test, Fuzzer-Test projects because of Appium.WebDriver dependencies
     $depsJsonFullFileName = $_.FullName
 
-    if ($depsJsonFullFileName -like "*CmdPal*") {
+    if ($depsJsonFullFileName -like "*CmdPal*" -or $depsJsonFullFileName -like "*CommandPalette*") {
         return
     }
 

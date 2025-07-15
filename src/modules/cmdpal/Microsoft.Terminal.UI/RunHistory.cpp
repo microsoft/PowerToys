@@ -48,17 +48,17 @@ namespace winrt::Microsoft::Terminal::UI::implementation
             // since this is a GLOBAL MRU
         };
 
-        if (const auto hmru = _createMRUList(&mi))
+        if (const auto hMruList = _createMRUList(&mi))
         {
             auto freeMRUList = wil::scope_exit([=]() {
-                _freeMRUList(hmru);
+                _freeMRUList(hMruList);
             });
 
-            for (int nMax = _enumMRUList(hmru, -1, NULL, 0), i = 0; i < nMax; ++i)
+            for (int nMax = _enumMRUList(hMruList, -1, NULL, 0), i = 0; i < nMax; ++i)
             {
                 WCHAR szCommand[MAX_PATH + 2];
 
-                const auto length = _enumMRUList(hmru, i, szCommand, ARRAYSIZE(szCommand));
+                const auto length = _enumMRUList(hMruList, i, szCommand, ARRAYSIZE(szCommand));
                 if (length > 1)
                 {
                     // clip off the null-terminator
