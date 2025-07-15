@@ -7,12 +7,12 @@
     xmlns:cmdpalUI="using:Microsoft.CmdPal.Core.Control"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:cpcontrols="using:Microsoft.CmdPal.Core.Control.Controls"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.Core.Control.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.Core.Control.ViewModels"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
