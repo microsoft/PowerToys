@@ -1497,6 +1497,7 @@ SOFTWARE.
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.17
 - CommunityToolkit.Common 8.4.0
+- CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock 0.1.250703-build.2173
 - CommunityToolkit.Mvvm 8.4.0
 - CommunityToolkit.WinUI.Animations 8.2.250402
 - CommunityToolkit.WinUI.Collections 8.2.250402
@@ -1516,7 +1517,6 @@ SOFTWARE.
 - LazyCache 2.4.0
 - Mages 3.0.0
 - Markdig.Signed 0.34.0
-- CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock 0.1.250703-build.2173
 - MessagePack 3.1.3
 - Microsoft.Bcl.AsyncInterfaces 9.0.7
 - Microsoft.Bot.AdaptiveExpressions.Core 4.23.0
