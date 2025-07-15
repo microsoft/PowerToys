@@ -10,11 +10,15 @@ internal sealed class Icons
 {
     internal static IconInfo AllAppsIcon => IconHelpers.FromRelativePath("Assets\\AllApps.svg");
 
-    internal static IconInfo OtherUserIcon => new("\uE7EE"); // OtherUser icon
+    internal static IconInfo RunAsUserIcon => new("\uE7EE"); // OtherUser icon
 
-    internal static IconInfo AdminIcon => new("\uE7EF"); // Admin icon
+    internal static IconInfo RunAsAdminIcon => new("\uE7EF"); // Admin icon
 
     internal static IconInfo OpenPathIcon => new("\ue838"); // Folder Open icon
 
     internal static IconInfo CopyIcon => new("\ue8c8"); // Copy icon
+
+    public static IconInfo UnpinIcon { get; } = new("\uE77A"); // Unpin icon
+
+    public static IconInfo PinIcon { get; } = new("\uE840"); // Pin icon
 }

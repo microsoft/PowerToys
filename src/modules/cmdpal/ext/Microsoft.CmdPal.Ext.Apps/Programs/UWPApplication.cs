@@ -10,7 +10,9 @@ using System.Xml;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 using Windows.Win32;
@@ -70,9 +72,15 @@ public class UWPApplication : IProgram
         return Resources.packaged_application;
     }
 
-    public List<CommandContextItem> GetCommands()
+    public string GetAppIdentifier()
     {
-        List<CommandContextItem> commands = [];
+        // Use UserModelId for UWP apps as it's unique
+        return UserModelId;
+    }
+
+    public List<IContextItem> GetCommands()
+    {
+        List<IContextItem> commands = [];
 
         if (CanRunElevated)
         {
@@ -508,6 +516,25 @@ public class UWPApplication : IProgram
             LogoPath = string.Empty;
             LogoType = LogoType.Error;
         }
+    }
+
+    internal AppItem ToAppItem()
+    {
+        var app = this;
+        var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;
+        var item = new AppItem()
+        {
+            Name = app.Name,
+            Subtitle = app.Description,
+            Type = UWPApplication.Type(),
+            IcoPath = iconPath,
+            DirPath = app.Location,
+            UserModelId = app.UserModelId,
+            IsPackaged = true,
+            Commands = app.GetCommands(),
+            AppIdentifier = app.GetAppIdentifier(),
+        };
+        return item;
     }
 
     /*

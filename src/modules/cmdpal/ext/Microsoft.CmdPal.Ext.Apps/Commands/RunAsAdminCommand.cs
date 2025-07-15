@@ -20,7 +20,7 @@ internal sealed partial class RunAsAdminCommand : InvokableCommand
     public RunAsAdminCommand(string target, string parentDir, bool packaged)
     {
         Name = Resources.run_as_administrator;
-        Icon = Icons.AdminIcon;
+        Icon = Icons.RunAsAdminIcon;
 
         _target = target;
         _parentDir = parentDir;
