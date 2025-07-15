@@ -9,11 +9,9 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using WinRT;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -21,7 +19,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ShellViewModel : ObservableObject,
     IRecipient<PerformCommandMessage>
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IRootPageService _rootPageService;
     private readonly TaskScheduler _scheduler;
     private readonly Lock _invokeLock = new();
     private Task? _handleInvokeTask;
@@ -60,17 +58,17 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private MainListPage? _mainListPage;
+    private IPage? _rootPage;
 
     private IExtensionWrapper? _activeExtension;
     private bool _isNested;
 
     public bool IsNested { get => _isNested; }
 
-    public ShellViewModel(IServiceProvider serviceProvider, TaskScheduler scheduler)
+    public ShellViewModel(TaskScheduler scheduler, IRootPageService rootPageService)
     {
-        _serviceProvider = serviceProvider;
         _scheduler = scheduler;
+        _rootPageService = rootPageService;
         _currentPage = new LoadingPageViewModel(null, _scheduler);
 
         // Register to receive messages
@@ -80,24 +78,27 @@ public partial class ShellViewModel : ObservableObject,
     [RelayCommand]
     public async Task<bool> LoadAsync()
     {
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>();
-        await tlcManager!.LoadBuiltinsAsync();
+        // First, do any loading that the root page service needs to do before we can
+        // display the root page. For example, this might include loading
+        // the built-in commands, or loading the settings.
+        await _rootPageService.PreLoadAsync();
+
         IsLoaded = true;
 
-        // Built-ins have loaded. We can display our page at this point.
-        _mainListPage = new MainListPage(_serviceProvider);
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_mainListPage)));
+        // Now that the basics are set up, we can load the root page.
+        _rootPage = _rootPageService.GetRootPage();
 
+        // This sends a message to us to load the root page view model.
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+
+        // Now that the root page is loaded, do any post-load work that the root page service needs to do.
+        // This runs asynchronously, on a background thread.
+        // This might include starting extensions, for example.
+        // Note: We don't await this, so that we can return immediately.
+        // This is important because we don't want to block the UI thread.
         _ = Task.Run(async () =>
         {
-            // After loading built-ins, and starting navigation, kick off a thread to load extensions.
-            tlcManager.LoadExtensionsCommand.Execute(null);
-
-            await tlcManager.LoadExtensionsCommand.ExecutionTask!;
-            if (tlcManager.LoadExtensionsCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
-            {
-                // TODO: Handle failure case
-            }
+            await _rootPageService.PostLoadRootPageAsync();
         });
 
         return true;
@@ -172,15 +173,7 @@ public partial class ShellViewModel : ObservableObject,
 
     public void PerformTopLevelCommand(PerformCommandMessage message)
     {
-        if (_mainListPage == null)
-        {
-            return;
-        }
-
-        if (message.Context is IListItem listItem)
-        {
-            _mainListPage.UpdateHistory(listItem);
-        }
+        _rootPageService.OnPerformTopLevelCommand(message.Context);
     }
 
     public void Receive(PerformCommandMessage message)
@@ -255,10 +248,11 @@ public partial class ShellViewModel : ObservableObject,
             {
                 Logger.LogDebug($"Navigating to page");
 
-                var isMainPage = command is MainListPage;
+                var isMainPage = command == _rootPage;
+                _isNested = !isMainPage;
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = GetViewModelForPage(page, !isMainPage, host);
+                var pageViewModel = GetViewModelForPage(page, _isNested, host);
                 if (pageViewModel == null)
                 {
                     Logger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
@@ -267,8 +261,6 @@ public partial class ShellViewModel : ObservableObject,
 
                 // Kick off async loading of our ViewModel
                 LoadPageViewModel(pageViewModel);
-                _isNested = !isMainPage;
-
                 OnUIThread(() => { WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)); });
                 WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation));
 

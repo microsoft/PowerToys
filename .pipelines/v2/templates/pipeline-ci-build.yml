@@ -58,3 +58,4 @@ stages:
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
               useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+            timeoutInMinutes: 90
