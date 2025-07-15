@@ -214,6 +214,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pin.
+        /// </summary>
+        internal static string pin_app {
+            get {
+                return ResourceManager.GetString("pin_app", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Run as administrator.
         /// </summary>
         internal static string run_as_administrator {
@@ -264,6 +273,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string search_installed_apps_placeholder {
             get {
                 return ResourceManager.GetString("search_installed_apps_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unpin.
+        /// </summary>
+        internal static string unpin_app {
+            get {
+                return ResourceManager.GetString("unpin_app", resourceCulture);
             }
         }
         

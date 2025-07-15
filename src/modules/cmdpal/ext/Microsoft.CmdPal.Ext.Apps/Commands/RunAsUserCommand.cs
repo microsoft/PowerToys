@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -13,21 +14,19 @@ namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
 internal sealed partial class RunAsUserCommand : InvokableCommand
 {
-    private static readonly IconInfo TheIcon = new("\uE7EE");
-
     private readonly string _target;
     private readonly string _parentDir;
 
     public RunAsUserCommand(string target, string parentDir)
     {
         Name = Resources.run_as_different_user;
-        Icon = TheIcon;
+        Icon = Icons.RunAsUserIcon;
 
         _target = target;
         _parentDir = parentDir;
     }
 
-    internal static async Task RunAsAdmin(string target, string parentDir)
+    internal static async Task RunAsUser(string target, string parentDir)
     {
         await Task.Run(() =>
         {
@@ -39,7 +38,7 @@ internal sealed partial class RunAsUserCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        _ = RunAsAdmin(_target, _parentDir).ConfigureAwait(false);
+        _ = RunAsUser(_target, _parentDir).ConfigureAwait(false);
 
         return CommandResult.Dismiss();
     }

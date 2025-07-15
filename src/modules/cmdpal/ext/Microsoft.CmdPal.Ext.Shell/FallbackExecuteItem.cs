@@ -19,7 +19,9 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     private Task? _currentUpdateTask;
 
     public FallbackExecuteItem(SettingsManager settings)
-        : base(new NoOpCommand(), Resources.shell_command_display_title)
+        : base(
+            new NoOpCommand() { Id = "com.microsoft.run.fallback" },
+            Resources.shell_command_display_title)
     {
         Title = string.Empty;
         Icon = Icons.RunV2;

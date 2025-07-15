@@ -12,7 +12,9 @@ internal sealed partial class FallbackReloadItem : FallbackCommandItem
     private readonly ReloadExtensionsCommand _reloadCommand;
 
     public FallbackReloadItem()
-        : base(new ReloadExtensionsCommand(), Properties.Resources.builtin_reload_display_title)
+        : base(
+            new ReloadExtensionsCommand() { Id = "com.microsoft.cmdpal.reload" },
+            Properties.Resources.builtin_reload_display_title)
     {
         _reloadCommand = (ReloadExtensionsCommand)Command!;
         Title = string.Empty;
