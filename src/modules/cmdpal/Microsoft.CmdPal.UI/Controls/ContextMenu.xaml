@@ -46,8 +46,10 @@
                         x:Name="TitleTextBlock"
                         Grid.Column="1"
                         VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
                         Text="{x:Bind Title}"
                         MaxWidth="200"
+                        TextWrapping="NoWrap"
                         TextTrimming="WordEllipsis">
                         <ToolTipService.ToolTip>
                             <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}"/>
@@ -84,9 +86,11 @@
                         x:Name="TitleTextBlock"
                         Grid.Column="1"
                         VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
                         MaxWidth="200"
                         Text="{x:Bind Title}" 
                         TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap"
                         Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}">
                         <ToolTipService.ToolTip>
                             <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}"/>
