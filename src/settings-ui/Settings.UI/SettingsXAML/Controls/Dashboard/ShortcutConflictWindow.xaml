@@ -102,7 +102,6 @@
                                                     Margin="0,0,0,4"
                                                     Click="SettingsCard_Click"
                                                     Description="{x:Bind ModuleName}"
-                                                    Header="{x:Bind HotkeyName}"
                                                     HeaderIcon="{ui:BitmapIcon}"
                                                     IsClickEnabled="True"
                                                     Loaded="SettingsCard_Loaded">
