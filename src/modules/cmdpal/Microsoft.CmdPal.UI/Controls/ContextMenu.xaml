@@ -19,8 +19,8 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
-            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-            
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
             <cmdpalUI:ContextItemTemplateSelector
                 x:Key="ContextItemTemplateSelector"
                 Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
@@ -45,14 +45,14 @@
                     <TextBlock
                         x:Name="TitleTextBlock"
                         Grid.Column="1"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left"
-                        Text="{x:Bind Title}"
                         MaxWidth="200"
-                        TextWrapping="NoWrap"
-                        TextTrimming="WordEllipsis">
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Title}"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </ToolTipService.ToolTip>
                     </TextBlock>
                     <TextBlock
@@ -85,15 +85,15 @@
                     <TextBlock
                         x:Name="TitleTextBlock"
                         Grid.Column="1"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left"
                         MaxWidth="200"
-                        Text="{x:Bind Title}" 
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
+                        Text="{x:Bind Title}"
                         TextTrimming="WordEllipsis"
-                        TextWrapping="NoWrap"
-                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}">
+                        TextWrapping="NoWrap">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </ToolTipService.ToolTip>
                     </TextBlock>
                     <TextBlock
@@ -147,10 +147,10 @@
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
             Margin="4"
+            IsTextScaleFactorEnabled="True"
             KeyDown="ContextFilterBox_KeyDown"
             PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
-            TextChanged="ContextFilterBox_TextChanged"
-            IsTextScaleFactorEnabled="True" />
+            TextChanged="ContextFilterBox_TextChanged" />
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="ContextMenuOrder">
                 <VisualState x:Name="FilterOnTop">
