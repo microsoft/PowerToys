@@ -252,7 +252,7 @@ public class PeekFilePreviewTests : UITestBase
 
         SendKeys(Key.LCtrl, Key.Space);
 
-        Task.Delay(1000).Wait();
+        Task.Delay(2000).Wait();
     }
 
     /// <summary>
