@@ -277,7 +277,7 @@ public sealed partial class ListPage : Page,
         }
     }
 
-    [DynamicWindowsRuntimeCast(typeof(ScrollViewer))]
+    // [DynamicWindowsRuntimeCast(typeof(ScrollViewer))]
     private ScrollViewer? FindScrollViewer(DependencyObject parent)
     {
         if (parent is ScrollViewer)
@@ -298,7 +298,7 @@ public sealed partial class ListPage : Page,
         return null;
     }
 
-    [DynamicWindowsRuntimeCast(typeof(FrameworkElement))]
+    // [DynamicWindowsRuntimeCast(typeof(FrameworkElement))]
     private void ItemsList_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
         if (e.OriginalSource is FrameworkElement element &&

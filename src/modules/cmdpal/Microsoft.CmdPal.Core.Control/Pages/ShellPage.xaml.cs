@@ -467,6 +467,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    // [DynamicWindowsRuntimeCast(typeof(Button))]
     private void Command_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)

@@ -49,8 +49,8 @@ public partial class IconBox : ContentControl
     /// </summary>
     public event TypedEventHandler<IconBox, SourceRequestedEventArgs>? SourceRequested;
 
-    [DynamicWindowsRuntimeCast(typeof(FontIconSource))]
-    [DynamicWindowsRuntimeCast(typeof(IconSource))]
+    // [DynamicWindowsRuntimeCast(typeof(FontIconSource))]
+    // [DynamicWindowsRuntimeCast(typeof(IconSource))]
     private static void OnSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is IconBox @this)
@@ -81,7 +81,7 @@ public partial class IconBox : ContentControl
         }
     }
 
-    [DynamicWindowsRuntimeCast(typeof(FontIconSource))]
+    // [DynamicWindowsRuntimeCast(typeof(FontIconSource))]
     private static void OnSourceKeyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is IconBox @this)

@@ -18,7 +18,7 @@ internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
 
     public DataTemplate? Separator { get; set; }
 
-    [DynamicWindowsRuntimeCast(typeof(ListViewItem))]
+    // [DynamicWindowsRuntimeCast(typeof(ListViewItem))]
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
         DataTemplate? dataTemplate = Default;

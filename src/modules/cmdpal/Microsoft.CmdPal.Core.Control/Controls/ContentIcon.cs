@@ -17,7 +17,7 @@ public partial class ContentIcon : FontIcon
 {
     public UIElement Content
     {
-        [DynamicWindowsRuntimeCast(typeof(UIElement))]
+        // [DynamicWindowsRuntimeCast(typeof(UIElement))]
         get => (UIElement)GetValue(ContentProperty);
         set => SetValue(ContentProperty, value);
     }

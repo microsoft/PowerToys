@@ -10,11 +10,10 @@ namespace Microsoft.CmdPal.Core.Control;
 
 public static class CleanupHelper
 {
-    
-    [DynamicWindowsRuntimeCast(typeof(ItemsControl))]
-    [DynamicWindowsRuntimeCast(typeof(FrameworkElement))]
-    [DynamicWindowsRuntimeCast(typeof(ItemsRepeater))]
-    [DynamicWindowsRuntimeCast(typeof(TabView))]
+    // [DynamicWindowsRuntimeCast(typeof(ItemsControl))]
+    // [DynamicWindowsRuntimeCast(typeof(FrameworkElement))]
+    // [DynamicWindowsRuntimeCast(typeof(ItemsRepeater))]
+    // [DynamicWindowsRuntimeCast(typeof(TabView))]
     public static void Cleanup(FrameworkElement element)
     {
         var count = VisualTreeHelper.GetChildrenCount(element);

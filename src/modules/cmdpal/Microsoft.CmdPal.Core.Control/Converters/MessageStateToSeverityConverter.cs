@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.Core.Control;
 
 public partial class MessageStateToSeverityConverter : IValueConverter
 {
-    [DynamicWindowsRuntimeCast(typeof(MessageState))]
+    // [DynamicWindowsRuntimeCast(typeof(MessageState))]
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         if (value is MessageState state)
