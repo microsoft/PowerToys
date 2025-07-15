@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Threading.Tasks;
-
-namespace Microsoft.CmdPal.Common.Services;
+namespace Microsoft.CmdPal.Core.ViewModels;
 
 public interface IRootPageService
 {
@@ -29,9 +27,11 @@ public interface IRootPageService
     Task PostLoadRootPageAsync();
 
     /// <summary>
-    /// Called when a top-level command is performed. The context is the
+    /// Called when a command is performed. The context is the
     /// sender context for the invoked command. This is typically the IListItem
     /// or ICommandContextItem that was used to invoke the command.
     /// </summary>
-    void OnPerformTopLevelCommand(object? context);
+    void OnPerformCommand(object? context, bool topLevel, AppExtensionHost? currentHost);
+
+    void GoHome();
 }

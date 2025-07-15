@@ -9,7 +9,7 @@ using Windows.ApplicationModel.AppExtensions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-namespace Microsoft.CmdPal.Core.ViewModels.Models;
+namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 public partial class ExtensionService : IExtensionService, IDisposable
 {
