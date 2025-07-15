@@ -1,12 +1,21 @@
 [CmdletBinding()]
 Param(
     [Parameter(Mandatory = $True, Position = 1)]
-    [string]$monacoWxsFile
+    [string]$monacoWxsFile,
+    [Parameter(Mandatory = $True, Position = 2)]
+    [string]$platform,
+    [Parameter(Mandatory = $True, Position = 3)]
+    [string]$nugetHeatPath
 )
 echo !!!!!!!!!!!!!!!!!!!!!!
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$HeatPath = "C:\.tools\.nuget\packages\wixtoolset.heat\5.0.2\tools\net472\x64"
+if ($platform -eq "x64") {
+    $HeatPath = Join-Path $nugetHeatPath "tools\net472\x64"
+} else {
+    $HeatPath = Join-Path $nugetHeatPath "tools\net472\x86"
+}
+
 $SourceDir = Join-Path $scriptDir "..\..\src\Monaco\monacoSRC"  # Now relative to script location
 $OutputFile = Join-Path $scriptDir "MonacoSRC.wxs"
 $ComponentGroup = "MonacoSRCHeatGenerated"
