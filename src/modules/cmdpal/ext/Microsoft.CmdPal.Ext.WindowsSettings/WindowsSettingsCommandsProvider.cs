@@ -24,7 +24,7 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
     {
         Id = "Windows.Settings";
         DisplayName = Resources.WindowsSettingsProvider_DisplayName;
-        Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
+        Icon = Icons.WindowsSettingsIcon;
 
         _windowsSettings = JsonSettingsListHelper.ReadAllPossibleSettings();
         _searchSettingsListItem = new CommandItem(new WindowsSettingsListPage(_windowsSettings))

@@ -5,7 +5,6 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -21,7 +20,7 @@ internal sealed partial class RunAsAdminCommand : InvokableCommand
     public RunAsAdminCommand(string target, string parentDir, bool packaged)
     {
         Name = Resources.run_as_administrator;
-        Icon = Icons.RunAsIcon;
+        Icon = Icons.RunAsAdminIcon;
 
         _target = target;
         _parentDir = parentDir;

@@ -12,7 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;

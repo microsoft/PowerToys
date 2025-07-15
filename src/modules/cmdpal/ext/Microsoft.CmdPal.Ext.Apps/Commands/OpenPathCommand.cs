@@ -4,7 +4,6 @@
 
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
