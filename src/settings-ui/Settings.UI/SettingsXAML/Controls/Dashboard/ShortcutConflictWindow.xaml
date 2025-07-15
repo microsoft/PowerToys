@@ -9,7 +9,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    Title="PowerToys Shortcut Conflicts"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
@@ -23,14 +22,9 @@
         </Grid.RowDefinitions>
 
         <!--  Title Bar Area  -->
-        <Grid
-            Grid.Row="0"
-            Padding="8,8,8,8"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+        <Grid Grid.Row="0" Padding="6,6,6,6">
 
-            <TextBlock
-                VerticalAlignment="Center"
-                Text="PowerToys Shortcut Conflicts" />
+            <TextBlock x:Uid="ShortcutConflictWindow_Title" VerticalAlignment="Center" />
         </Grid>
 
         <!--  Main Content Area  -->
@@ -48,41 +42,54 @@
 
                 <!--  Description text  -->
                 <TextBlock
+                    x:Uid="ShortcutConflictWindow_Description"
                     Grid.Row="0"
                     Margin="0,0,0,24"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource BodyTextBlockStyle}"
-                    Text="Some PowerToys shortcuts conflict with system or other module shortcuts that may cause unexpected behavior. You can modify shortcuts directly or click on a module card to navigate to its settings."
                     TextWrapping="Wrap" />
 
                 <!--  Conflicts List  -->
-                <ItemsControl x:Name="ConflictItemsControl" Grid.Row="1" ItemsSource="{x:Bind ViewModel.ConflictItems, Mode=OneWay}">
+                <ItemsControl
+                    x:Name="ConflictItemsControl"
+                    Grid.Row="1"
+                    ItemsSource="{x:Bind ViewModel.ConflictItems, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="hotkeyConflicts:HotkeyConflictGroupData">
                             <StackPanel Margin="0,0,0,32">
                                 <!--  Conflict Header  -->
                                 <StackPanel Margin="0,0,0,12">
                                     <!--  Hotkey Header  -->
-                                    <Border
+                                    <ItemsControl
                                         Margin="0,0,0,8"
-                                        Padding="12,6"
                                         HorizontalAlignment="Left"
-                                        Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                        CornerRadius="4">
-                                        <TextBlock
-                                            FontFamily="Cascadia Code, Consolas, monospace"
-                                            FontSize="14"
-                                            FontWeight="SemiBold"
-                                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                                            Text="{x:Bind Hotkey.ToString()}" />
-                                    </Border>
+                                        ItemsSource="{x:Bind Hotkey.GetKeysList()}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <controls:KeyVisual
+                                                    Height="30"
+                                                    Padding="12,4,12,4"
+                                                    VerticalAlignment="Center"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    Content="{Binding}"
+                                                    FontWeight="ExtraBold"
+                                                    IsEnabled="True"
+                                                    Style="{StaticResource DefaultKeyVisualStyle}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
 
                                     <!--  Instruction text  -->
                                     <TextBlock
+                                        x:Uid="ShortcutConflictWindow_ModulesUsingShortcut"
                                         FontSize="13"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Style="{StaticResource BodyTextBlockStyle}"
-                                        Text="The following modules are using this shortcut:" />
+                                        Style="{StaticResource BodyTextBlockStyle}" />
                                 </StackPanel>
 
                                 <!--  Module Cards and System Conflict Card  -->
@@ -94,8 +101,8 @@
                                                 <tkcontrols:SettingsCard
                                                     Margin="0,0,0,4"
                                                     Click="SettingsCard_Click"
-                                                    Description="{x:Bind HotkeyName}"
-                                                    Header="{x:Bind ModuleName}"
+                                                    Description="{x:Bind ModuleName}"
+                                                    Header="{x:Bind HotkeyName}"
                                                     HeaderIcon="{ui:BitmapIcon}"
                                                     IsClickEnabled="True"
                                                     Loaded="SettingsCard_Loaded">
@@ -106,8 +113,8 @@
                                                         MinWidth="140"
                                                         Margin="2"
                                                         VerticalAlignment="Center"
-                                                        HotkeySettings="{x:Bind HotkeySettings, Mode=TwoWay}"
                                                         HasConflict="True"
+                                                        HotkeySettings="{x:Bind HotkeySettings, Mode=TwoWay}"
                                                         IsEnabled="True" />
 
                                                     <!--  Tooltip for the entire card  -->
@@ -121,25 +128,24 @@
 
                                     <!--  System Conflict Card (only show if it's a system conflict)  -->
                                     <tkcontrols:SettingsCard
+                                        x:Uid="ShortcutConflictWindow_SystemCard"
                                         Margin="0,0,0,4"
-                                        Description="Windows system shortcut"
-                                        Header="System"
                                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Windows.png}"
                                         IsClickEnabled="False"
                                         Visibility="{x:Bind IsSystemConflict}">
 
                                         <!--  System shortcut message  -->
                                         <TextBlock
+                                            x:Uid="ShortcutConflictWindow_SystemShortcutMessage"
                                             VerticalAlignment="Center"
                                             FontSize="14"
                                             FontStyle="Italic"
                                             FontWeight="SemiBold"
-                                            Foreground="{ThemeResource TextFillColorDisabledBrush}"
-                                            Text="This shortcut cannot be changed." />
+                                            Foreground="{ThemeResource TextFillColorDisabledBrush}" />
 
                                         <!--  Tooltip for system conflict  -->
                                         <ToolTipService.ToolTip>
-                                            <ToolTip Content="This shortcut is reserved by Windows and cannot be modified." />
+                                            <ToolTip x:Uid="ShortcutConflictWindow_SystemShortcutTooltip" />
                                         </ToolTipService.ToolTip>
                                     </tkcontrols:SettingsCard>
                                 </StackPanel>
@@ -163,16 +169,16 @@
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Glyph="&#xE73E;" />
                     <TextBlock
+                        x:Uid="ShortcutConflictWindow_NoConflictsTitle"
                         HorizontalAlignment="Center"
                         FontSize="16"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="No conflicts detected" />
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock
+                        x:Uid="ShortcutConflictWindow_NoConflictsDescription"
                         Margin="0,4,0,0"
                         HorizontalAlignment="Center"
                         FontSize="14"
-                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                        Text="All shortcuts are working properly" />
+                        Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>

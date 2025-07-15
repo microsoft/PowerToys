@@ -34,6 +34,17 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             DataContext = ViewModel;
             InitializeComponent();
 
+            // Set localized window title
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            this.Title = resourceLoader.GetString("ShortcutConflictWindow_Title/Text");
+
+            // Configure window presenter to disable maximize button
+            if (this.AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
+            {
+                overlappedPresenter.IsMaximizable = false;
+                overlappedPresenter.IsMinimizable = false;
+            }
+
             // Set window size using AppWindow API
             this.AppWindow.Resize(new SizeInt32(900, 1200));
 
