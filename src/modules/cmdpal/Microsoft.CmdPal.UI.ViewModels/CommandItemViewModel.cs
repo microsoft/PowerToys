@@ -187,7 +187,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                     }
                     else
                     {
-                        return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                        return new SeparatorViewModel() as IContextItemViewModel;
                     }
                 })
                 .ToList();
@@ -344,7 +344,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                             }
                             else
                             {
-                                return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                                return new SeparatorViewModel() as IContextItemViewModel;
                             }
                         })
                         .ToList();

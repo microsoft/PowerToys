@@ -7,6 +7,9 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SeparatorContextItemViewModel() : IContextItemViewModel, ISeparatorContextItem
+public partial class SeparatorViewModel() :
+    IContextItemViewModel,
+    ISeparatorContextItem,
+    ISeparatorFilterItem
 {
 }
