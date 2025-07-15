@@ -1518,65 +1518,21 @@ SOFTWARE.
 - Mages
 - Markdig.Signed
 - MessagePack
-- Microsoft.Bcl.AsyncInterfaces
-- Microsoft.Bot.AdaptiveExpressions.Core
-- Microsoft.CodeAnalysis.NetAnalyzers
-- Microsoft.Data.Sqlite
-- Microsoft.Diagnostics.Tracing.TraceEvent
-- Microsoft.DotNet.ILCompiler (A)
-- Microsoft.Extensions.DependencyInjection
-- Microsoft.Extensions.Hosting
-- Microsoft.Extensions.Hosting.WindowsServices
-- Microsoft.Extensions.Logging
-- Microsoft.Extensions.Logging.Abstractions
-- Microsoft.NET.ILLink.Tasks (A)
-- Microsoft.SemanticKernel
-- Microsoft.Toolkit.Uwp.Notifications
-- Microsoft.Web.WebView2
-- Microsoft.Win32.SystemEvents
-- Microsoft.Windows.Compatibility
-- Microsoft.Windows.CsWin32
-- Microsoft.Windows.CsWinRT 2.2.0
-- Microsoft.Windows.SDK.BuildTools 10.0.26100.4188
-- Microsoft.WindowsAppSDK 1.7.250513003
-- Microsoft.WindowsPackageManager.ComInterop 1.10.340
-- Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
-- Microsoft.Xaml.Behaviors.Wpf 1.1.39
-- ModernWpfUI 0.9.4
-- Moq 4.18.4
-- MSTest 3.8.3
-- NLog.Extensions.Logging 5.3.8
-- NLog.Schema 5.2.8
-- OpenAI 2.0.0
-- ReverseMarkdown 4.1.0
-- ScipBe.Common.Office.OneNote 3.0.1
-- SharpCompress 0.37.2
-- SkiaSharp.Views.WinUI 2.88.9
-- StreamJsonRpc 2.21.69
-- StyleCop.Analyzers 1.2.0-beta.556
-- System.CodeDom 9.0.7
-- System.CommandLine 2.0.0-beta4.22272.1
-- System.ComponentModel.Composition 9.0.7
-- System.Configuration.ConfigurationManager 9.0.7
-- System.Data.OleDb 9.0.7
-- System.Data.SqlClient 4.9.0
-- System.Diagnostics.EventLog 9.0.7
-- System.Diagnostics.PerformanceCounter 9.0.7
-- System.Drawing.Common 9.0.7
-- System.IO.Abstractions 22.0.13
-- System.IO.Abstractions.TestingHelpers 22.0.13
-- System.Management 9.0.7
-- System.Net.Http 4.3.4
-- System.Private.Uri 4.3.2
-- System.Reactive 6.0.1
-- System.Runtime.Caching 9.0.7
-- System.ServiceProcess.ServiceController 9.0.7
-- System.Text.Encoding.CodePages 9.0.7
-- System.Text.Json 9.0.7
-- System.Text.RegularExpressions 4.3.1
-- UnicodeInformation 2.6.0
-- UnitsNet 5.56.0
-- UTF.Unknown 2.5.1
-- WinUIEx 2.2.0
-- WPF-UI 3.0.5
-- WyHash 1.0.5
+- ModernWpfUI
+- Moq
+- MSTest
+- NLog.Extensions.Logging
+- NLog.Schema
+- OpenAI
+- ReverseMarkdown
+- ScipBe.Common.Office.OneNote
+- SharpCompress
+- SkiaSharp.Views.WinUI
+- StreamJsonRpc
+- StyleCop.Analyzers
+- UnicodeInformation
+- UnitsNet
+- UTF.Unknown
+- WinUIEx
+- WPF-UI
+- WyHash
