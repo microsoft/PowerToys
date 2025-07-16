@@ -149,6 +149,7 @@ public partial class CommandBarViewModel : ObservableObject,
 
         if (command.HasMoreCommands)
         {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
             return ContextKeybindingResult.KeepOpen;
         }
         else
