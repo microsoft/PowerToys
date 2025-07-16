@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -15,6 +16,18 @@ namespace Peek.UITests;
 [TestClass]
 public class PeekFilePreviewTests : UITestBase
 {
+    // Timeout constants for better maintainability
+    private const int ExplorerOpenTimeoutSeconds = 15;
+    private const int PeekWindowTimeoutSeconds = 10;
+    private const int ExplorerLoadDelayMs = 1000;
+    private const int ExplorerCheckIntervalMs = 500;
+    private const int PeekCheckIntervalMs = 200;
+    private const int PeekInitializeDelayMs = 1000;
+    private const int MaxRetryAttempts = 3;
+    private const int RetryDelayMs = 1000;
+    private const int WindowMoveDelayMs = 500;
+    private const int PinActionDelayMs = 500;
+
     public PeekFilePreviewTests()
         : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical)
     {
@@ -245,12 +258,151 @@ public class PeekFilePreviewTests : UITestBase
 
         Session.StartExe("explorer.exe", $"/select,\"{fullPath}\"");
 
-        // Wait a moment for Explorer to open
-        Task.Delay(5000).Wait();
+        // Wait for Explorer to open and become ready
+        WaitForExplorerWindow(fullPath);
 
-        SendKeys(Key.LCtrl, Key.Space);
+        // Send Peek hotkey with retry mechanism
+        SendPeekHotkeyWithRetry();
+    }
 
-        Task.Delay(5000).Wait();
+    /// <summary>
+    /// Waits for Explorer window to open and become ready
+    /// </summary>
+    /// <param name="filePath">The file path being opened</param>
+    private void WaitForExplorerWindow(string filePath)
+    {
+        WaitForCondition(
+            condition: () =>
+            {
+                // Check if Explorer window is open and responsive
+                var explorerProcesses = Process.GetProcessesByName("explorer")
+                    .Where(p => p.MainWindowHandle != IntPtr.Zero)
+                    .ToList();
+
+                if (explorerProcesses.Count != 0)
+                {
+                    // Give Explorer a moment to fully load the file selection
+                    Task.Delay(ExplorerLoadDelayMs).Wait();
+
+                    // Verify the file is accessible
+                    return File.Exists(filePath) || Directory.Exists(filePath);
+                }
+
+                return false;
+            },
+            timeoutSeconds: ExplorerOpenTimeoutSeconds,
+            checkIntervalMs: ExplorerCheckIntervalMs,
+            timeoutMessage: $"Explorer window did not open for file: {filePath}");
+    }
+
+    /// <summary>
+    /// Sends Peek hotkey with retry mechanism
+    /// </summary>
+    private void SendPeekHotkeyWithRetry()
+    {
+        for (int attempt = 1; attempt <= MaxRetryAttempts; attempt++)
+        {
+            try
+            {
+                // Send the Peek hotkey
+                SendKeys(Key.LCtrl, Key.Space);
+
+                // Wait for Peek window to appear
+                if (WaitForPeekWindow())
+                {
+                    return; // Success
+                }
+            }
+            catch (Exception ex)
+            {
+                if (attempt == MaxRetryAttempts)
+                {
+                    throw new InvalidOperationException($"Failed to open Peek after {MaxRetryAttempts} attempts. Last error: {ex.Message}", ex);
+                }
+            }
+
+            // Wait before retry
+            Task.Delay(RetryDelayMs).Wait();
+        }
+    }
+
+    /// <summary>
+    /// Waits for Peek window to appear
+    /// </summary>
+    /// <param name="throwOnTimeout">Whether to throw exception on timeout</param>
+    /// <returns>True if Peek window appeared, false otherwise</returns>
+    private bool WaitForPeekWindow()
+    {
+        WaitForCondition(
+            condition: () =>
+            {
+                if (TryFindPeekWindow())
+                {
+                    // Give Peek a moment to fully initialize
+                    Task.Delay(PeekInitializeDelayMs).Wait();
+                    return true;
+                }
+
+                return false;
+            },
+            timeoutSeconds: PeekWindowTimeoutSeconds,
+            checkIntervalMs: PeekCheckIntervalMs,
+            timeoutMessage: "Peek window did not appear");
+        return true;
+    }
+
+    /// <summary>
+    /// Generic timeout waiting mechanism with custom condition checking
+    /// </summary>
+    /// <param name="condition">Function that returns true when condition is met</param>
+    /// <param name="timeoutSeconds">Timeout in seconds</param>
+    /// <param name="checkIntervalMs">Check interval in milliseconds</param>
+    /// <param name="timeoutMessage">Custom timeout error message</param>
+    /// <returns>True if condition was met within timeout</returns>
+    private bool WaitForCondition(Func<bool> condition, int timeoutSeconds, int checkIntervalMs, string timeoutMessage)
+    {
+        var timeout = TimeSpan.FromSeconds(timeoutSeconds);
+        var startTime = DateTime.Now;
+
+        while (DateTime.Now - startTime < timeout)
+        {
+            try
+            {
+                if (condition())
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // Continue waiting on errors
+            }
+
+            Task.Delay(checkIntervalMs).Wait();
+        }
+
+        throw new TimeoutException($"{timeoutMessage} (timeout: {timeoutSeconds}s)");
+    }
+
+    /// <summary>
+    /// Tries to find a Peek window using process detection
+    /// </summary>
+    /// <returns>True if a Peek window is found</returns>
+    private bool TryFindPeekWindow()
+    {
+        try
+        {
+            // Check for Peek process
+            var peekProcesses = Process.GetProcessesByName("PowerToys.Peek.UI")
+                .Where(p => p.MainWindowHandle != IntPtr.Zero);
+
+            return peekProcesses.Any();
+        }
+        catch
+        {
+            // Ignore all errors in detection
+            return false;
+        }
     }
 
     /// <summary>
@@ -341,7 +493,7 @@ public class PeekFilePreviewTests : UITestBase
         Assert.IsNotNull(pinButton, "Pin button should be found");
 
         pinButton.Click();
-        Task.Delay(500).Wait(); // Wait for pin action to complete
+        Task.Delay(PinActionDelayMs).Wait(); // Wait for pin action to complete
     }
 
     /// <summary>
@@ -354,7 +506,7 @@ public class PeekFilePreviewTests : UITestBase
         Assert.IsNotNull(pinButton, "Pin button should be found");
 
         pinButton.Click();
-        Task.Delay(500).Wait(); // Wait for unpin action to complete
+        Task.Delay(PinActionDelayMs).Wait(); // Wait for unpin action to complete
     }
 
     /// <summary>
@@ -398,7 +550,7 @@ public class PeekFilePreviewTests : UITestBase
             if (windowHandle != IntPtr.Zero)
             {
                 SetWindowPos(windowHandle, IntPtr.Zero, x, y, 0, 0, SWPNOSIZE | SWPNOZORDER);
-                Task.Delay(500).Wait();
+                Task.Delay(WindowMoveDelayMs).Wait();
             }
         }
         catch
