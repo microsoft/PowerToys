@@ -16,8 +16,8 @@ internal sealed partial class PathListItem : ListItem
 
     public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
 
-    public PathListItem(string path, string originalDir)
-        : base(new OpenUrlCommand(path))
+    public PathListItem(string path, string originalDir, Action<string>? addToHistory)
+        : base(new OpenUrlWithHistoryCommand(path, addToHistory))
     {
         var fileName = Path.GetFileName(path);
         _isDirectory = Directory.Exists(path);
@@ -50,6 +50,7 @@ internal sealed partial class PathListItem : ListItem
             new CommandContextItem(new CopyTextCommand(path) { Name = Properties.Resources.copy_path_command_name }) { }
         ];
 
+        // TODO: Follow-up during 0.4. Add the indexer commands here.
         // MoreCommands = [
         //    new CommandContextItem(new OpenWithCommand(indexerItem)),
         //    new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath) { Name = Resources.Indexer_Command_ShowInFolder }),
