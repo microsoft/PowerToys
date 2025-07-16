@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#pragma warning disable WinUIEx1001
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

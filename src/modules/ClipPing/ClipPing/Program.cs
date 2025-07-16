@@ -29,15 +29,13 @@ public static class Program
 
         var instanceKey = AppInstance.FindOrRegisterForKey("PowerToys_ClipPing_Instance");
 
-        var cts = new CancellationTokenSource();
-
         if (instanceKey.IsCurrent)
         {
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
                 var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(context);
-                _ = new App(cts.Token);
+                _ = new App();
             });
         }
         else

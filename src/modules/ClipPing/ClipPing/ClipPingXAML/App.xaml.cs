@@ -4,9 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
-using System.Threading;
 using ClipPing.Overlays;
-using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
@@ -21,20 +19,18 @@ namespace ClipPing;
 /// </summary>
 public partial class App : Application, IDisposable
 {
-    private readonly CancellationToken _cancellationToken;
     private IOverlay? _overlay;
-    private ETWTrace? etwTrace = new ETWTrace();
+    private ETWTrace? _etwTrace = new ETWTrace();
 
-    public App(CancellationToken cancellationToken)
+    public App()
     {
-        _cancellationToken = cancellationToken;
         InitializeComponent();
     }
 
     public void Dispose()
     {
-        etwTrace?.Dispose();
-        etwTrace = null;
+        _etwTrace?.Dispose();
+        _etwTrace = null;
         GC.SuppressFinalize(this);
     }
 
@@ -49,12 +45,12 @@ public partial class App : Application, IDisposable
         {
             if (int.TryParse(cmdArgs[^1], out var powerToysRunnerPid))
             {
-                Logger.LogInfo($"EnvironmentVariables started from the PowerToys Runner. Runner pid={powerToysRunnerPid}.");
+                Logger.LogInfo($"ClipPing started from the PowerToys Runner. Runner pid={powerToysRunnerPid}.");
 
                 var dispatcher = DispatcherQueue.GetForCurrentThread();
                 RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                 {
-                    Logger.LogInfo("PowerToys Runner exited. Exiting EnvironmentVariables");
+                    Logger.LogInfo("PowerToys Runner exited. Exiting ClipPing");
                     dispatcher.TryEnqueue(App.Current.Exit);
                 });
 
@@ -64,17 +60,15 @@ public partial class App : Application, IDisposable
                     Constants.ClipPingExitEvent(),
                     () =>
                     {
-                        application.etwTrace?.Dispose();
-                        application.etwTrace = null;
+                        application._etwTrace?.Dispose();
+                        application._etwTrace = null;
                         dispatcher.TryEnqueue(App.Current.Exit);
-                    },
-                    System.Windows.Application.Current.Dispatcher,
-                    _cancellationToken);
+                    });
             }
         }
         else
         {
-            Logger.LogInfo($"EnvironmentVariables started detached from PowerToys Runner.");
+            Logger.LogInfo("ClipPing started detached from PowerToys Runner.");
         }
 
         PowerToysTelemetry.Log.WriteEvent(new Telemetry.ClipPingOpenedEvent());

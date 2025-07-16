@@ -33,7 +33,7 @@ BOOL APIENTRY DllMain(HMODULE /* hModule*/, DWORD ul_reason_for_call, LPVOID /*l
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"$projectname$";
+const static wchar_t* MODULE_NAME = L"ClipPing";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
 
@@ -70,10 +70,8 @@ private:
     HANDLE m_exit_event_handle = nullptr;
 
 public:
-    // Constructor
     ClipPingModuleInterface()
     {
-        // TODO: localization?
         app_name = L"ClipPing";
         app_key = L"ClipPing";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "ClipPing");
