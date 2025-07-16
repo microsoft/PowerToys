@@ -4,10 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,58 +36,6 @@ public class ShellListPageHelpers
         return result;
     }
 
-    private List<ListItem> GetHistoryCmds(string cmd, ListItem result)
-    {
-        var history = _settings.Count.Where(o => o.Key.Contains(cmd, StringComparison.CurrentCultureIgnoreCase))
-            .OrderByDescending(o => o.Value)
-            .Select(m =>
-            {
-                if (m.Key == cmd)
-                {
-                    // Using CurrentCulture since this is user facing
-                    result.Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value);
-                    return null;
-                }
-
-                var ret = new ListItem(new ExecuteItem(m.Key, _settings))
-                {
-                    Title = m.Key,
-
-                    // Using CurrentCulture since this is user facing
-                    Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value),
-                    Icon = new IconInfo("\uE81C"),
-                };
-                return ret;
-            }).Where(o => o != null).Take(4);
-        return history.Select(o => o!).ToList();
-    }
-
-    public List<ListItem> Query(string query)
-    {
-        ArgumentNullException.ThrowIfNull(query);
-
-        var results = new List<ListItem>();
-        var cmd = query;
-        if (string.IsNullOrEmpty(cmd))
-        {
-            results = ResultsFromHistory();
-        }
-        else
-        {
-            var queryCmd = GetCurrentCmd(cmd);
-            results.Add(queryCmd);
-            var history = GetHistoryCmds(cmd, queryCmd);
-            results.AddRange(history);
-        }
-
-        foreach (var currItem in results)
-        {
-            currItem.MoreCommands = LoadContextMenus(currItem).ToArray();
-        }
-
-        return results;
-    }
-
     public List<CommandContextItem> LoadContextMenus(ListItem listItem)
     {
         var resultList = new List<CommandContextItem>
@@ -100,21 +45,6 @@ public class ShellListPageHelpers
             };
 
         return resultList;
-    }
-
-    private List<ListItem> ResultsFromHistory()
-    {
-        var history = _settings.Count.OrderByDescending(o => o.Value)
-            .Select(m => new ListItem(new ExecuteItem(m.Key, _settings))
-            {
-                Title = m.Key,
-
-                // Using CurrentCulture since this is user facing
-                Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value),
-                Icon = new IconInfo("\uE81C"),
-            }).Take(5);
-
-        return history.ToList();
     }
 
     internal static bool FileExistInPath(string filename)
@@ -165,10 +95,7 @@ public class ShellListPageHelpers
         }
         catch (OperationCanceledException)
         {
-            Debug.WriteLine("Operation was canceled.");
         }
-
-        Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
 
         if (exeExists)
         {

@@ -26,7 +26,7 @@ public partial class ShellCommandsProvider : CommandProvider
 
         Id = "Run";
         DisplayName = Resources.cmd_plugin_name;
-        Icon = Icons.RunV2;
+        Icon = Icons.RunV2Icon;
         Settings = _settingsManager.Settings;
 
         _shellListPage = new ShellListPage(_settingsManager, _historyService);
@@ -35,7 +35,7 @@ public partial class ShellCommandsProvider : CommandProvider
 
         _shellPageItem = new CommandItem(_shellListPage)
         {
-            Icon = Icons.RunV2,
+            Icon = Icons.RunV2Icon,
             Title = Resources.shell_command_name,
             Subtitle = Resources.cmd_plugin_description,
             MoreCommands = [

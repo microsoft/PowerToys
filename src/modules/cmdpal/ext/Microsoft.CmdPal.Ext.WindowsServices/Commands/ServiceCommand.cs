@@ -28,11 +28,11 @@ internal sealed partial class ServiceCommand : InvokableCommand
         Name = action.ToString();
         if (serviceResult.IsRunning)
         {
-            Icon = new IconInfo("\xE71A"); // Stop icon
+            Icon = Icons.StopIcon;
         }
         else
         {
-            Icon = new IconInfo("\xEDB5"); // PlayBadge12 icon
+            Icon = Icons.PlayIcon;
         }
     }
 

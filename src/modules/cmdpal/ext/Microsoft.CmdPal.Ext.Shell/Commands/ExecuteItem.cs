@@ -26,17 +26,17 @@ internal sealed partial class ExecuteItem : InvokableCommand
         if (type == RunAsType.Administrator)
         {
             Name = Properties.Resources.cmd_run_as_administrator;
-            Icon = Icons.RunAsAdmin;
+            Icon = Icons.AdminIcon;
         }
         else if (type == RunAsType.OtherUser)
         {
             Name = Properties.Resources.cmd_run_as_user;
-            Icon = Icons.RunAsUser;
+            Icon = Icons.UserIcon;
         }
         else
         {
             Name = Properties.Resources.generic_run_command;
-            Icon = Icons.RunV2;
+            Icon = Icons.RunV2Icon;
         }
 
         Cmd = cmd;

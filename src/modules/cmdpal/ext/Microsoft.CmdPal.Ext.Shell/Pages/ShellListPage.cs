@@ -37,7 +37,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     public ShellListPage(SettingsManager settingsManager, IRunHistoryService runHistoryService, bool addBuiltins = false)
     {
-        Icon = Icons.RunV2;
+        Icon = Icons.RunV2Icon;
         Id = "com.microsoft.cmdpal.shell";
         Name = Resources.cmd_plugin_name;
         PlaceholderText = Resources.list_placeholder_text;
@@ -47,7 +47,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         EmptyContent = new CommandItem()
         {
             Title = Resources.cmd_plugin_name,
-            Icon = Icons.RunV2,
+            Icon = Icons.RunV2Icon,
             Subtitle = Resources.list_placeholder_text,
         };
 
