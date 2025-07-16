@@ -68,6 +68,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
       <DisableSpecificWarnings>4100;4091;4245</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>..\..\..\;$(MSBuildThisFileDirectory)..\..\..\common\sysinternals;%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -78,6 +79,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x602;NDEBUG;_WIN32_WINNT=0x602;_WIN32_WINDOWS=0x501;WIN32;_WINDOWS;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -100,6 +102,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x602;NDEBUG;_WIN32_WINNT=0x602;_WIN32_WINDOWS=0x501;WIN32;_WINDOWS;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -123,6 +126,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x602;NDEBUG;_WIN32_WINNT=0x602;_WIN32_WINDOWS=0x501;WIN32;_WINDOWS;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -145,6 +149,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x0602;_DEBUG;_WIN32_WINNT=0x602.MSVC6;_WIN32_WINDOWS=0x600;WIN32;_WINDOWS;_WIN32_WINNT=0x602;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -166,6 +171,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x0602;_DEBUG;_WIN32_WINNT=0x602.MSVC6;_WIN32_WINDOWS=0x600;WIN32;_WINDOWS;_WIN32_WINNT=0x602;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -188,6 +194,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>__ZOOMIT_POWERTOYS__;_UNICODE;UNICODE;WINVER=0x0602;_DEBUG;_WIN32_WINNT=0x602.MSVC6;_WIN32_WINDOWS=0x600;WIN32;_WINDOWS;_WIN32_WINNT=0x602;MSVC6=1;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
