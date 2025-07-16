@@ -19,7 +19,7 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
 
     public WindowsSettingsListPage(Classes.WindowsSettings windowsSettings)
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
+        Icon = Icons.WindowsSettingsIcon;
         Name = Resources.settings_title;
         Id = "com.microsoft.cmdpal.windowsSettings";
         _windowsSettings = windowsSettings;
