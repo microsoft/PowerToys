@@ -19,6 +19,8 @@
   </PropertyGroup>
 	
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    
     <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
 
