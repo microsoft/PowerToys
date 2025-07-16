@@ -24,7 +24,7 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
     public FallbackWindowsSettingsItem(Classes.WindowsSettings windowsSettings)
         : base(new NoOpCommand(), Resources.settings_title)
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
+        Icon = Icons.WindowsSettingsIcon;
         _windowsSettings = windowsSettings;
     }
 
@@ -59,10 +59,10 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
 
             Title = setting.Name;
             Subtitle = setting.JoinedFullSettingsPath;
-            Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
+            Icon = Icons.WindowsSettingsIcon;
             Command = new OpenSettingsCommand(setting)
             {
-                Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg"),
+                Icon = Icons.WindowsSettingsIcon,
                 Name = setting.Name,
             };
 
@@ -80,7 +80,7 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
         // us to the Windows Settings search page, prepopulated with this search.
         var settingsPage = new WindowsSettingsListPage(_windowsSettings, query);
         Title = string.Format(CultureInfo.CurrentCulture, _title, query);
-        Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
+        Icon = Icons.WindowsSettingsIcon;
         Subtitle = _subtitle;
         Command = settingsPage;
 

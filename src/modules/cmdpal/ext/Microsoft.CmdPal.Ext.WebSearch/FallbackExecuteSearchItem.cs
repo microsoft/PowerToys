@@ -26,7 +26,7 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
         Subtitle = string.Empty;
         _executeItem.Name = string.Empty;
         _title = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
-        Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
+        Icon = Icons.WebSearch;
     }
 
     public override void UpdateQuery(string query)
