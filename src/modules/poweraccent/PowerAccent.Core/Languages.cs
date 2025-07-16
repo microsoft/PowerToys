@@ -844,10 +844,14 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
+                LetterKey.VK_A => new[] { "à" },
                 LetterKey.VK_C => new[] { "ċ" },
-                LetterKey.VK_E => new[] { "€" },
+                LetterKey.VK_E => new[] { "è", "€" },
                 LetterKey.VK_G => new[] { "ġ" },
                 LetterKey.VK_H => new[] { "ħ" },
+                LetterKey.VK_I => new[] { "ì" },
+                LetterKey.VK_O => new[] { "ò" },
+                LetterKey.VK_U => new[] { "ù" },
                 LetterKey.VK_Z => new[] { "ż" },
                 _ => Array.Empty<string>(),
             };
