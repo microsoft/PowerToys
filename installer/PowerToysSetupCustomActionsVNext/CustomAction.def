@@ -16,7 +16,6 @@ EXPORTS
 	TelemetryLogRepairCancelCA
 	TelemetryLogRepairFailCA
 	TerminateProcessesCA
-	TerminateOccupiedProcessesCA
 	InstallEmbeddedMSIXCA
 	InstallDSCModuleCA
 	InstallCmdPalPackageCA

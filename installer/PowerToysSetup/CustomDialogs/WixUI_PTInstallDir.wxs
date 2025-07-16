@@ -37,7 +37,6 @@ Patch dialog sequence:
             <DialogRef Id="DiskCostDlg" />
             <DialogRef Id="ErrorDlg" />
             <DialogRef Id="FatalError" />
-            <DialogRef Id="FilesInUse" />
             <DialogRef Id="MsiRMFilesInUse" />
             <DialogRef Id="PrepareDlg" />
             <DialogRef Id="ProgressDlg" />

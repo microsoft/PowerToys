@@ -103,6 +103,7 @@
     <SetProperty Action="SetINSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER" Id="INSTALLFOLDER" Value="[BOOTSTRAPPERINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute" Condition="BOOTSTRAPPERINSTALLFOLDER &lt;&gt; DEFAULTBOOTSTRAPPERINSTALLFOLDER OR PREVIOUSINSTALLFOLDER = &quot;&quot;" />
 
     <SetProperty Id="InstallScope" Value="$(var.InstallScope)" Before="DetectPrevInstallPath" Sequence="execute"></SetProperty>
+
     <InstallExecuteSequence>
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
@@ -159,9 +160,7 @@
     <CustomAction Id="LaunchPowerToys" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="LaunchPowerToysCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="TerminateProcesses" Return="ignore" Execute="immediate" DllEntry="TerminateProcessesCA" BinaryRef="PTCustomActions" />
-    
-    <CustomAction Id="TerminateOccupiedProcesses" Return="ignore" Execute="immediate" DllEntry="TerminateOccupiedProcessesCA" BinaryRef="PTCustomActions" />
-    
+        
     <CustomAction Id="SetApplyModulesRegistryChangeSetsParam" Property="ApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetUnApplyModulesRegistryChangeSetsParam" Property="UnApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
