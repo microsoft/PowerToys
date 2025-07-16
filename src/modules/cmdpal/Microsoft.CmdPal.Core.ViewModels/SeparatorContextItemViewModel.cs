@@ -2,11 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class SeparatorContextItemViewModel() : IContextItemViewModel, ISeparatorContextItem
+// DANGER: Make sure that this is derived from a WinRT class. If not, it'll fail with AOT at runtime, in any bindings.
+public partial class SeparatorContextItemViewModel() : ObservableObject, IContextItemViewModel, ISeparatorContextItem
 {
 }

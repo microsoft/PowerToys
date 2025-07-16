@@ -89,7 +89,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             return;
         }
 
-        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
 
         // Check for cancellation before file system operations
         cancellationToken.ThrowIfCancellationRequested();
@@ -191,7 +191,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             return false;
         }
 
-        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
         var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
         var pathIsDir = Directory.Exists(exe);
 

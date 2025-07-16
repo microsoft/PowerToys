@@ -148,6 +148,9 @@
   <data name="bookmarks_form_open" xml:space="preserve">
     <value>Open</value>
   </data>
+  <data name="bookmarks_command_name_open" xml:space="preserve">
+    <value>Open</value>
+  </data>
   <data name="bookmarks_form_name_required" xml:space="preserve">
     <value>Name is required</value>
   </data>

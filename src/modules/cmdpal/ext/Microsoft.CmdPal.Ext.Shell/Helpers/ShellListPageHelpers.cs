@@ -54,47 +54,8 @@ public class ShellListPageHelpers
 
     internal static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
     {
-        fullPath = string.Empty;
-
-        if (File.Exists(filename))
-        {
-            token?.ThrowIfCancellationRequested();
-            fullPath = Path.GetFullPath(filename);
-            return true;
-        }
-        else
-        {
-            var values = Environment.GetEnvironmentVariable("PATH");
-            if (values != null)
-            {
-                foreach (var path in values.Split(';'))
-                {
-                    var path1 = Path.Combine(path, filename);
-                    if (File.Exists(path1))
-                    {
-                        fullPath = Path.GetFullPath(path1);
-                        return true;
-                    }
-
-                    token?.ThrowIfCancellationRequested();
-
-                    var path2 = Path.Combine(path, filename + ".exe");
-                    if (File.Exists(path2))
-                    {
-                        fullPath = Path.GetFullPath(path2);
-                        return true;
-                    }
-
-                    token?.ThrowIfCancellationRequested();
-                }
-
-                return false;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        // TODO! remove this method and just use ShellHelpers.FileExistInPath directly
+        return ShellHelpers.FileExistInPath(filename, out fullPath, token ?? CancellationToken.None);
     }
 
     internal static ListItem? ListItemForCommandString(string query, Action<string>? addToHistory)
@@ -109,7 +70,7 @@ public class ShellListPageHelpers
             return null;
         }
 
-        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
 
         var exeExists = false;
         var pathIsDir = false;

@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using ManagedCommon;
@@ -35,10 +34,7 @@ public partial class BookmarksCommandProvider : CommandProvider
     private void AddNewCommand_AddedCommand(object sender, BookmarkData args)
     {
         ExtensionHost.LogMessage($"Adding bookmark ({args.Name},{args.Bookmark})");
-        if (_bookmarks != null)
-        {
-            _bookmarks.Data.Add(args);
-        }
+        _bookmarks?.Data.Add(args);
 
         SaveAndUpdateCommands();
     }
@@ -116,7 +112,7 @@ public partial class BookmarksCommandProvider : CommandProvider
         // Add commands for folder types
         if (command is UrlCommand urlCommand)
         {
-            if (urlCommand.Type == "folder")
+            if (!bookmark.IsWebUrl())
             {
                 contextMenu.Add(
                     new CommandContextItem(new DirectoryPage(urlCommand.Url)));
@@ -124,9 +120,10 @@ public partial class BookmarksCommandProvider : CommandProvider
                 contextMenu.Add(
                     new CommandContextItem(new OpenInTerminalCommand(urlCommand.Url)));
             }
-
-            listItem.Subtitle = urlCommand.Url;
         }
+
+        listItem.Title = bookmark.Name;
+        listItem.Subtitle = bookmark.Bookmark;
 
         var edit = new AddBookmarkPage(bookmark) { Icon = Icons.EditIcon };
         edit.AddedCommand += Edit_AddedCommand;
