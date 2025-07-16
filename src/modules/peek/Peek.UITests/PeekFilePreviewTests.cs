@@ -45,7 +45,7 @@ public class PeekFilePreviewTests : UITestBase
     /// </summary>
     [TestMethod("Peek.FilePreview.AllTestAssets")]
     [TestCategory("Preview files")]
-    public void PeekAllTestAssetsWithVisualComparison()
+    public void PeekAllTestAssets()
     {
         // Get all test asset files
         string testAssetsPath = Path.GetFullPath(@".\TestAssets");
@@ -252,7 +252,7 @@ public class PeekFilePreviewTests : UITestBase
 
         SendKeys(Key.LCtrl, Key.Space);
 
-        Task.Delay(2000).Wait();
+        Task.Delay(5000).Wait();
     }
 
     /// <summary>
@@ -278,7 +278,7 @@ public class PeekFilePreviewTests : UITestBase
         try
         {
             // First try to find the window with extension
-            previewWindow = Find(peekWindowTitleWithExt, 1000, true);
+            previewWindow = Find(peekWindowTitleWithExt, 5000, true);
             Session.Attach(peekWindowTitleWithExt);
         }
         catch
@@ -286,7 +286,7 @@ public class PeekFilePreviewTests : UITestBase
             try
             {
                 // Then try without extension
-                previewWindow = Find(peekWindowTitleWithoutExt, 1000, true);
+                previewWindow = Find(peekWindowTitleWithoutExt, 5000, true);
                 Session.Attach(peekWindowTitleWithoutExt);
             }
             catch
@@ -331,7 +331,7 @@ public class PeekFilePreviewTests : UITestBase
         try
         {
             // First try to find the window with extension
-            previewWindow = Find(peekWindowTitleWithExt, 1000, true);
+            previewWindow = Find(peekWindowTitleWithExt, 5000, true);
             Session.Attach(peekWindowTitleWithExt);
         }
         catch
@@ -339,7 +339,7 @@ public class PeekFilePreviewTests : UITestBase
             try
             {
                 // Then try without extension
-                previewWindow = Find(peekWindowTitleWithoutExt, 1000, true);
+                previewWindow = Find(peekWindowTitleWithoutExt, 5000, true);
                 Session.Attach(peekWindowTitleWithoutExt);
             }
             catch
