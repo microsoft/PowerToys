@@ -138,6 +138,7 @@ RCtrl
 RIGHTDOWN
 RIGHTUP
 Richedit
+srd
 thmutil
 VKTAB
 winkey
