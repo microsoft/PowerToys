@@ -48,19 +48,16 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>

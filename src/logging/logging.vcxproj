@@ -48,7 +48,6 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DebugInformationFormat>None</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>

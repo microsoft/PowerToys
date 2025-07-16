@@ -90,7 +90,6 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>inc;..\..\src\;..\..\src\common\Telemetry;telemetry;$(WixSdkPath)VS2017\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/await /Zc:twoPhase- /Wv:18 %(AdditionalOptions)</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
@@ -103,7 +102,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -112,7 +110,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -126,7 +123,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>

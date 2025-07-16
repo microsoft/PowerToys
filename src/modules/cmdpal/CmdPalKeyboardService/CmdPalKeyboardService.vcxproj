@@ -75,7 +75,6 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
@@ -92,13 +91,11 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -155,7 +152,6 @@
   -->
   <ItemDefinitionGroup Condition="'$(EnableHybridCRT)'=='true' and '$(Configuration)'=='Debug'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <!-- We use MultiThreadedDebug, rather than MultiThreadedDebugDLL, to avoid DLL dependencies on VCRUNTIME140d.dll and MSVCP140d.dll. -->
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -170,7 +166,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(EnableHybridCRT)'=='true' and ('$(Configuration)'=='Release' or '$(Configuration)'=='AuditMode')">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
       <!-- We use MultiThreaded, rather than MultiThreadedDLL, to avoid DLL dependencies on VCRUNTIME140.dll and MSVCP140.dll. -->
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
