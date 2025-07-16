@@ -21,15 +21,8 @@ public partial class ContextMenuViewModel : ObservableObject,
         get => field;
         set
         {
-            if (field != null)
-            {
-                field.PropertyChanged -= SelectedItemPropertyChanged;
-            }
-
             field = value;
-            SetSelectedItem(value);
-
-            OnPropertyChanged(nameof(SelectedItem));
+            UpdateContextItems();
         }
     }
 
@@ -65,33 +58,6 @@ public partial class ContextMenuViewModel : ObservableObject,
 
         OnPropertyChanging(nameof(FilterOnTop));
         OnPropertyChanged(nameof(FilterOnTop));
-    }
-
-    private void SetSelectedItem(ICommandBarContext? value)
-    {
-        if (value != null)
-        {
-            value.PropertyChanged += SelectedItemPropertyChanged;
-        }
-        else
-        {
-            if (SelectedItem != null)
-            {
-                SelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
-            }
-        }
-
-        UpdateContextItems();
-    }
-
-    private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        switch (e.PropertyName)
-        {
-            case nameof(SelectedItem.HasMoreCommands):
-                UpdateContextItems();
-                break;
-        }
     }
 
     public void UpdateContextItems()
