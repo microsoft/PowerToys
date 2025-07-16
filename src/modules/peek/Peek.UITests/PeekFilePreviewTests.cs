@@ -246,7 +246,7 @@ public class PeekFilePreviewTests : UITestBase
         Session.StartExe("explorer.exe", $"/select,\"{fullPath}\"");
 
         // Wait a moment for Explorer to open
-        Task.Delay(1000).Wait();
+        Task.Delay(5000).Wait();
 
         SendKeys(Key.LCtrl, Key.Space);
 

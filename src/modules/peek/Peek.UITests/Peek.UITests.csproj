@@ -17,6 +17,22 @@
   </ItemGroup>
 
   <ItemGroup>
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_2_x64Win10.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_3_x64Win10.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_4_x64Win10.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_5_x64Win10.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_6_x64Win10.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_7_x64Win10.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_8_x64Win10.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_2_arm64.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_3_arm64.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_4_arm64.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_5_arm64.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_6_arm64.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_7_arm64.png" />
+	<EmbeddedResource Include="PeekFilePreviewTests_PeekAllTestAssets_8_arm64.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="TestAssets\**\*">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
