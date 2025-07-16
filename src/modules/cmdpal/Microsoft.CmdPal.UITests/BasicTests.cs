@@ -78,4 +78,74 @@ public class BasicTests : UITestBase
 
         Assert.IsNotNull(this.Find<NavigationViewItem>("2025"));
     }
+
+    [TestMethod]
+    public void BasicWindowsTerminalTest()
+    {
+        SetSearchBox("Windows Terminal");
+
+        var searchFileItem = this.Find<NavigationViewItem>("Open Windows Terminal Profiles");
+        Assert.AreEqual(searchFileItem.Name, "Open Windows Terminal Profiles");
+        searchFileItem.DoubleClick();
+
+        SetSearchBox("PowerShell");
+
+        Assert.IsNotNull(this.Find<NavigationViewItem>("PowerShell"));
+    }
+
+    [TestMethod]
+    public void BasicWindowsSettingsTest()
+    {
+        SetSearchBox("Windows Settings");
+
+        var searchFileItem = this.Find<NavigationViewItem>("Windows Settings");
+        Assert.AreEqual(searchFileItem.Name, "Windows Settings");
+        searchFileItem.DoubleClick();
+
+        SetSearchBox("power");
+
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Power and sleep"));
+    }
+
+    [TestMethod]
+    public void BasicRegistryTest()
+    {
+        SetSearchBox("Registry");
+
+        var searchFileItem = this.Find<NavigationViewItem>("Registry");
+        Assert.AreEqual(searchFileItem.Name, "Registry");
+        searchFileItem.DoubleClick();
+
+        SetSearchBox("HKEY_LOCAL_MACHINE");
+
+        Assert.IsNotNull(this.Find<NavigationViewItem>("HKEY_LOCAL_MACHINE\\SECURITY"));
+    }
+
+    [TestMethod]
+    public void BasicWindowsServicesTest()
+    {
+        SetSearchBox("Windows Services");
+
+        var searchFileItem = this.Find<NavigationViewItem>("Windows Services");
+        Assert.AreEqual(searchFileItem.Name, "Windows Services");
+        searchFileItem.DoubleClick();
+
+        SetSearchBox("hyper-v");
+
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Hyper-V Heartbeat Service"));
+    }
+
+    [TestMethod]
+    public void BasicWindowsSystemCommandsTest()
+    {
+        SetSearchBox("Windows System Commands");
+
+        var searchFileItem = this.Find<NavigationViewItem>("Windows System Commands");
+        Assert.AreEqual(searchFileItem.Name, "Windows System Commands");
+        searchFileItem.DoubleClick();
+
+        SetSearchBox("Sleep");
+
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Sleep"));
+    }
 }
