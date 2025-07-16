@@ -78,7 +78,7 @@ public class PeekFilePreviewTests : UITestBase
             TestFilePreviewWithVisualComparison(testFile);
         }
 
-        Assert.Fail("All test files should be processed without failure. If this fails, check the TestAssets folder for missing or unsupported files.");
+        // Assert.Fail("All test files should be processed without failure. If this fails, check the TestAssets folder for missing or unsupported files.");
     }
 
     /// <summary>
@@ -265,10 +265,6 @@ public class PeekFilePreviewTests : UITestBase
         SendPeekHotkeyWithRetry();
     }
 
-    /// <summary>
-    /// Waits for Explorer window to open and become ready
-    /// </summary>
-    /// <param name="filePath">The file path being opened</param>
     private void WaitForExplorerWindow(string filePath)
     {
         WaitForCondition(
@@ -295,9 +291,6 @@ public class PeekFilePreviewTests : UITestBase
             timeoutMessage: $"Explorer window did not open for file: {filePath}");
     }
 
-    /// <summary>
-    /// Sends Peek hotkey with retry mechanism
-    /// </summary>
     private void SendPeekHotkeyWithRetry()
     {
         for (int attempt = 1; attempt <= MaxRetryAttempts; attempt++)
@@ -326,11 +319,6 @@ public class PeekFilePreviewTests : UITestBase
         }
     }
 
-    /// <summary>
-    /// Waits for Peek window to appear
-    /// </summary>
-    /// <param name="throwOnTimeout">Whether to throw exception on timeout</param>
-    /// <returns>True if Peek window appeared, false otherwise</returns>
     private bool WaitForPeekWindow()
     {
         WaitForCondition(
@@ -351,14 +339,6 @@ public class PeekFilePreviewTests : UITestBase
         return true;
     }
 
-    /// <summary>
-    /// Generic timeout waiting mechanism with custom condition checking
-    /// </summary>
-    /// <param name="condition">Function that returns true when condition is met</param>
-    /// <param name="timeoutSeconds">Timeout in seconds</param>
-    /// <param name="checkIntervalMs">Check interval in milliseconds</param>
-    /// <param name="timeoutMessage">Custom timeout error message</param>
-    /// <returns>True if condition was met within timeout</returns>
     private bool WaitForCondition(Func<bool> condition, int timeoutSeconds, int checkIntervalMs, string timeoutMessage)
     {
         var timeout = TimeSpan.FromSeconds(timeoutSeconds);
@@ -384,10 +364,6 @@ public class PeekFilePreviewTests : UITestBase
         throw new TimeoutException($"{timeoutMessage} (timeout: {timeoutSeconds}s)");
     }
 
-    /// <summary>
-    /// Tries to find a Peek window using process detection
-    /// </summary>
-    /// <returns>True if a Peek window is found</returns>
     private bool TryFindPeekWindow()
     {
         try
@@ -405,12 +381,6 @@ public class PeekFilePreviewTests : UITestBase
         }
     }
 
-    /// <summary>
-    /// Opens a file with Peek without performing visual comparison
-    /// Used for tests that need to open files but don't require visual validation
-    /// </summary>
-    /// <param name="filePath">Full path to the file to preview</param>
-    /// <returns>The Peek window element</returns>
     private Element OpenPeekWindow(string filePath)
     {
         string fileName = Path.GetFileName(filePath);
@@ -459,18 +429,13 @@ public class PeekFilePreviewTests : UITestBase
 
         Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileNameWithoutExt}");
 
-        previewWindow.SaveToPngFile(Path.Combine(ScreenshotDirectory ?? string.Empty, $"{fileNameWithoutExt}.png"));
+        // previewWindow.SaveToPngFile(Path.Combine(ScreenshotDirectory ?? string.Empty, $"{fileNameWithoutExt}.png"));
+        VisualAssert.AreEqual(TestContext, previewWindow, fileNameWithoutExt );
 
-        // VisualAssert.AreEqual(TestContext, previewWindow, fileNameWithoutExt );
         // Close peek window
         ClosePeekAndExplorer();
     }
 
-    /// <summary>
-    /// Helper method to get window bounds (position and size)
-    /// </summary>
-    /// <param name="window">The window element</param>
-    /// <returns>Rectangle with window bounds</returns>
     private Rectangle GetWindowBounds(Element window)
     {
         if (window.Rect == null)
@@ -483,9 +448,6 @@ public class PeekFilePreviewTests : UITestBase
         }
     }
 
-    /// <summary>
-    /// Helper method to pin the current Peek window
-    /// </summary>
     private void PinWindow()
     {
         // Find pin button using AutomationId
@@ -496,9 +458,6 @@ public class PeekFilePreviewTests : UITestBase
         Task.Delay(PinActionDelayMs).Wait(); // Wait for pin action to complete
     }
 
-    /// <summary>
-    /// Helper method to unpin the current Peek window
-    /// </summary>
     private void UnpinWindow()
     {
         // Find pin button using AutomationId (same button, just toggle the state)
@@ -509,9 +468,6 @@ public class PeekFilePreviewTests : UITestBase
         Task.Delay(PinActionDelayMs).Wait(); // Wait for unpin action to complete
     }
 
-    /// <summary>
-    /// Helper method to close Peek window and Explorer
-    /// </summary>
     private void ClosePeekAndExplorer()
     {
         // Close Peek window
@@ -523,7 +479,7 @@ public class PeekFilePreviewTests : UITestBase
             var explorerWindows = Process.GetProcessesByName("explorer");
             foreach (var explorer in explorerWindows)
             {
-                // Only close explorer windows (not the shell process)
+                // Only close explorer windows
                 if (explorer.MainWindowHandle != IntPtr.Zero)
                 {
                     explorer.CloseMainWindow();
@@ -536,12 +492,6 @@ public class PeekFilePreviewTests : UITestBase
         }
     }
 
-    /// <summary>
-    /// Helper method to move a window to a specific position
-    /// </summary>
-    /// <param name="window">The window element to move</param>
-    /// <param name="x">New X position</param>
-    /// <param name="y">New Y position</param>
     private void MoveWindow(Element window, int x, int y)
     {
         try
