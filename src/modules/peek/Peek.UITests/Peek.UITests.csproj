@@ -17,27 +17,27 @@
   </ItemGroup>
 
   <ItemGroup>
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_2_arm64.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_3_arm64.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_4_arm64.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_5_arm64.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_6_arm64.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_7_arm64.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_8_arm64.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_2_x64Win11.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_3_x64Win11.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_4_x64Win11.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_5_x64Win11.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_6_x64Win11.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_7_x64Win11.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_8_x64Win11.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_2_x64Win10.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_3_x64Win10.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_4_x64Win10.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_5_x64Win10.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_6_x64Win10.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_7_x64Win10.png" />
-	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_PeekAllTestAssets_8_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_2_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_3_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_4_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_5_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_6_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_7_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_8_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_2_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_3_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_4_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_5_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_6_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_7_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_8_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_2_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_3_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_4_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_5_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_6_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_7_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestFilePreviewWithVisualComparison_8_x64Win10.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestAssets\**\*">
