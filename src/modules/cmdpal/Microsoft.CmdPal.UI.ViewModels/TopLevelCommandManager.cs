@@ -10,7 +10,8 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -104,14 +105,14 @@ public partial class TopLevelCommandManager : ObservableObject,
                 List<TopLevelViewModel> commands = [];
                 foreach (var item in commandProvider.TopLevelItems)
                 {
-                    TopLevelCommands.Add(item);
+                    commands.Add(item);
                 }
 
                 foreach (var item in commandProvider.FallbackItems)
                 {
                     if (item.IsEnabled)
                     {
-                        TopLevelCommands.Add(item);
+                        commands.Add(item);
                     }
                 }
 

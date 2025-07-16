@@ -21,7 +21,7 @@ internal sealed partial class EndTaskCommand : InvokableCommand
 
     public EndTaskCommand(Window window)
     {
-        Icon = new IconInfo("\uF140");
+        Icon = Icons.EndTask;
         Name = $"{Resources.windowwalker_Kill}";
         _window = window;
     }

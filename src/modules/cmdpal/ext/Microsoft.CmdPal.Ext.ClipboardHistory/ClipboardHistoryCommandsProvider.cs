@@ -18,11 +18,11 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
         {
             Title = Properties.Resources.list_item_title,
             Subtitle = Properties.Resources.list_item_subtitle,
-            Icon = Icons.ClipboardList,
+            Icon = Icons.ClipboardListIcon,
         };
 
         DisplayName = Properties.Resources.provider_display_name;
-        Icon = Icons.ClipboardList;
+        Icon = Icons.ClipboardListIcon;
         Id = "Windows.ClipboardHistory";
     }
 
