@@ -191,6 +191,7 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
+claude
 clickable
 clickonce
 CLIENTEDGE
@@ -505,6 +506,8 @@ Filetime
 FILEVERSION
 FILTERMODE
 findfast
+finetune
+Fira
 findmymouse
 FIXEDFILEINFO
 FIXEDSYS
@@ -540,6 +543,8 @@ gdi
 gdiplus
 GDIPVER
 GDISCALED
+GEmoji
+generativelanguage
 GETCLIENTAREAANIMATION
 GETCURSEL
 GETDESKWALLPAPER
