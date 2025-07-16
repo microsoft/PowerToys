@@ -36,7 +36,7 @@ We've also got samples, so that you can see how the APIs in-action.
 
 ### Load & Build
 
-1. In Visual Studio, Confirm that all of the files/projects in `src\modules\CommandPalette` and `src\common\CalculatorEngineCommon` do not have `(unloaded)` by the files
+1. In Visual Studio, in the Solution Explorer Pane, confirm that all of the files/projects in `src\modules\CommandPalette` and `src\common\CalculatorEngineCommon` do not have `(unloaded)` on the right side
     1. If any file has `(unloaded)`, right click on file and select `Reload Project`
 1. Now you can right click on one of the project below to `Build` and then `Deploy`:
 
