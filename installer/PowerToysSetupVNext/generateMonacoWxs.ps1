@@ -7,7 +7,7 @@ Param(
     [Parameter(Mandatory = $True, Position = 3)]
     [string]$nugetHeatPath
 )
-echo !!!!!!!!!!!!!!!!!!!!!!
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 if ($platform -eq "x64") {
@@ -22,10 +22,7 @@ $ComponentGroup = "MonacoSRCHeatGenerated"
 $DirectoryRef = "MonacoPreviewHandlerMonacoSRCFolder"
 $Variable = "var.MonacoSRCHarvestPath"
 
-# 执行命令
 & "$HeatPath\heat.exe" dir "$SourceDir" -out "$OutputFile" -cg "$ComponentGroup" -dr "$DirectoryRef" -var "$Variable" -gg -srd -nologo
-
-echo !!!!!!!!!!!!!!!!!!!!!!!!!!>>>>>>>>>>>>>>
 
 $fileWxs = Get-Content $monacoWxsFile;
 
