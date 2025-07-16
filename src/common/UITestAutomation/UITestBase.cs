@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.UITest
         {
             this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
-            if (!IsInPipeline)
+            if (IsInPipeline)
             {
                 NativeMethods.ChangeDisplayResolution(1920, 1080);
                 NativeMethods.GetMonitorInfo();

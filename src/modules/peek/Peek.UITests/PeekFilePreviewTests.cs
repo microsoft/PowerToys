@@ -19,12 +19,12 @@ public class PeekFilePreviewTests : UITestBase
     // Timeout constants for better maintainability
     private const int ExplorerOpenTimeoutSeconds = 15;
     private const int PeekWindowTimeoutSeconds = 10;
-    private const int ExplorerLoadDelayMs = 1000;
-    private const int ExplorerCheckIntervalMs = 500;
-    private const int PeekCheckIntervalMs = 200;
-    private const int PeekInitializeDelayMs = 1000;
+    private const int ExplorerLoadDelayMs = 3000;
+    private const int ExplorerCheckIntervalMs = 1000;
+    private const int PeekCheckIntervalMs = 1000;
+    private const int PeekInitializeDelayMs = 3000;
     private const int MaxRetryAttempts = 3;
-    private const int RetryDelayMs = 1000;
+    private const int RetryDelayMs = 3000;
     private const int WindowMoveDelayMs = 500;
     private const int PinActionDelayMs = 500;
 
