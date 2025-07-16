@@ -3,14 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
-
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events
 {
     [EventData]
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
     public class OobeVariantAssignmentEvent : EventBase, IEvent
     {
         public string AssignmentContext { get; set; }

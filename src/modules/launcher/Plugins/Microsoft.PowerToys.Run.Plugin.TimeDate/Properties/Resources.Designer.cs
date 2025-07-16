@@ -466,7 +466,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to for; and; nor; but; or; so.
+        ///   Looks up a localized string similar to "for; and; nor; but; or; so".
         /// </summary>
         internal static string Microsoft_plugin_timedate_Search_ConjunctionList {
             get {

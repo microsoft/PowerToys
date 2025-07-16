@@ -30,3 +30,13 @@ void Trace::StartHighlightingSession() noexcept
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+// Log that spotlight mode is enabled
+void Trace::StartSpotlightSession() noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "MouseHighlighter_StartSpotlightSession",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}

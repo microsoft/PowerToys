@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <AssemblyTitle>UnitTests-BgcodePreviewHandler</AssemblyTitle>
+    <AssemblyDescription>PowerToys UnitTests-BgcodePreviewHandler</AssemblyDescription>
+    <Description>PowerToys UnitTests-BgcodePreviewHandler</Description>
+    <ProjectGuid>{99CA1509-FB73-456E-AFAF-AB89C017BD72}</ProjectGuid>
+    <RootNamespace>BgcodePreviewHandlerUnitTests</RootNamespace>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
+    <IsCodedUITest>False</IsCodedUITest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="HelperFiles\sample.bgcode" />
+    <None Remove="HelperFiles\sample_JPG.bgcode" />
+    <None Remove="HelperFiles\sample_QOI.bgcode" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
+    <ProjectReference Include="..\BgcodePreviewHandler\BgcodePreviewHandler.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="HelperFiles\sample.bgcode">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -17,13 +17,13 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
     private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
 
     public FallbackExecuteSearchItem(SettingsManager settings)
-        : base(new SearchWebCommand(string.Empty, settings), Resources.command_item_title)
+        : base(new SearchWebCommand(string.Empty, settings) { Id = "com.microsoft.websearch.fallback" }, Resources.command_item_title)
     {
         _executeItem = (SearchWebCommand)this.Command!;
         Title = string.Empty;
         _executeItem.Name = string.Empty;
         Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
-        Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
+        Icon = Icons.WebSearch;
     }
 
     public override void UpdateQuery(string query)

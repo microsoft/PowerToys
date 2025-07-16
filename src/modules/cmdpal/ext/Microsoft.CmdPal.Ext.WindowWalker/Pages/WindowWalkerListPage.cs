@@ -19,7 +19,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
 
     public WindowWalkerListPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\WindowWalker.svg");
+        Icon = Icons.WindowWalkerIcon;
         Name = Resources.windowwalker_name;
         Id = "com.microsoft.cmdpal.windowwalker";
         PlaceholderText = Resources.windowwalker_PlaceholderText;

@@ -179,7 +179,7 @@ Generate-FileList -fileDepsJson "" -fileListName HostsAssetsFiles -wxsFilePath $
 Generate-FileComponents -fileListName "HostsAssetsFiles" -wxsFilePath $PSScriptRoot\Hosts.wxs -regroot $registryroot
 
 #ImageResizer
-Generate-FileList -fileDepsJson "" -fileListName ImageResizerAssetsFiles -wxsFilePath $PSScriptRoot\ImageResizer.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\ImageResizer"
+Generate-FileList -fileDepsJson "" -fileListName ImageResizerAssetsFiles -wxsFilePath $PSScriptRoot\ImageResizer.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ImageResizer"
 Generate-FileComponents -fileListName "ImageResizerAssetsFiles" -wxsFilePath $PSScriptRoot\ImageResizer.wxs -regroot $registryroot
 
 #New+

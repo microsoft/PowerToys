@@ -20,7 +20,7 @@ internal sealed partial class CloseWindowCommand : InvokableCommand
 
     public CloseWindowCommand(Window window)
     {
-        Icon = new IconInfo("\xE8BB");
+        Icon = Icons.CloseWindow;
         Name = $"{Resources.windowwalker_Close}";
         _window = window;
     }

@@ -19,7 +19,7 @@ internal sealed partial class OpenFileCommand : InvokableCommand
     {
         this._item = item;
         this.Name = Resources.Indexer_Command_OpenFile;
-        this.Icon = Icons.OpenFile;
+        this.Icon = Icons.OpenFileIcon;
     }
 
     public override CommandResult Invoke()

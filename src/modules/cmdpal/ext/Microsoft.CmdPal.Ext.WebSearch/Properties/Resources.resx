@@ -178,4 +178,7 @@
   <data name="settings_page_name" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="open_url_fallback_title" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
 </root>

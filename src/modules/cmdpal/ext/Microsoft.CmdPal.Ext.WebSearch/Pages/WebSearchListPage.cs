@@ -23,28 +23,31 @@ internal sealed partial class WebSearchListPage : DynamicListPage
     private readonly SettingsManager _settingsManager;
     private static readonly CompositeFormat PluginInBrowserName = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_in_browser_name);
     private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
-    private List<ListItem> allItems;
+    private List<ListItem> _allItems;
 
     public WebSearchListPage(SettingsManager settingsManager)
     {
         Name = Resources.command_item_title;
         Title = Resources.command_item_title;
-        PlaceholderText = Resources.plugin_description;
         Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
-        allItems = [new(new NoOpCommand())
-        {
-            Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png"),
-            Title = Properties.Resources.plugin_description,
-            Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
-        }
-        ];
+        _allItems = [];
         Id = "com.microsoft.cmdpal.websearch";
         _settingsManager = settingsManager;
         _historyItems = _settingsManager.ShowHistory != Resources.history_none ? _settingsManager.LoadHistory() : null;
         if (_historyItems != null)
         {
-            allItems.AddRange(_historyItems);
+            _allItems.AddRange(_historyItems);
         }
+
+        // It just looks viewer to have string twice on the page, and default placeholder is good enough
+        PlaceholderText = _allItems.Count > 0 ? Resources.plugin_description : string.Empty;
+
+        EmptyContent = new CommandItem(new NoOpCommand())
+        {
+            Icon = Icon,
+            Title = Properties.Resources.plugin_description,
+            Subtitle = string.Format(CultureInfo.CurrentCulture, PluginInBrowserName, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
+        };
     }
 
     public List<ListItem> Query(string query)
@@ -59,17 +62,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage
 
         var results = new List<ListItem>();
 
-        // empty query
-        if (string.IsNullOrEmpty(query))
-        {
-            results.Add(new ListItem(new SearchWebCommand(string.Empty, _settingsManager))
-            {
-                Title = Properties.Resources.plugin_description,
-                Subtitle = string.Format(CultureInfo.CurrentCulture, PluginInBrowserName, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
-                Icon = new IconInfo(_iconPath),
-            });
-        }
-        else
+        if (!string.IsNullOrEmpty(query))
         {
             var searchTerm = query;
             var result = new ListItem(new SearchWebCommand(searchTerm, _settingsManager))
@@ -91,9 +84,9 @@ internal sealed partial class WebSearchListPage : DynamicListPage
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        allItems = [.. Query(newSearch)];
+        _allItems = [.. Query(newSearch)];
         RaiseItemsChanged(0);
     }
 
-    public override IListItem[] GetItems() => [.. allItems];
+    public override IListItem[] GetItems() => [.. _allItems];
 }

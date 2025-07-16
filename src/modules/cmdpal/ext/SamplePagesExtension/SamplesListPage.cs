@@ -32,6 +32,11 @@ public partial class SamplesListPage : ListPage
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
         },
+        new ListItem(new OnLoadPage())
+        {
+            Title = "Demo of OnLoad/OnUnload",
+            Subtitle = "Changes the list of items every time the page is opened / closed",
+        },
 
         // Content pages
         new ListItem(new SampleContentPage())

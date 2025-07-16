@@ -68,7 +68,7 @@ jobs:
       pwsh: true
       ScriptType: InlineScript
       Inline: |-
-        $AzToken = (Get-AzAccessToken -ResourceUrl api://30471ccf-0966-45b9-a979-065dbedb24c1).Token
+        $AzToken = (Get-AzAccessToken -AsSecureString -ResourceUrl api://30471ccf-0966-45b9-a979-065dbedb24c1).Token | ConvertFrom-SecureString -AsPlainText
         Write-Host "##vso[task.setvariable variable=SymbolAccessToken;issecret=true]$AzToken"
 
 

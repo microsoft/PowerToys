@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Text;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
-using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using BrowserInfo = Microsoft.CmdPal.Ext.WebSearch.Helpers.DefaultBrowserInfo;
 
@@ -20,19 +19,21 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
     private static readonly CompositeFormat PluginOpenUrlInBrowser = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url_in_browser);
 
     public FallbackOpenURLItem(SettingsManager settings)
-        : base(new OpenURLCommand(string.Empty, settings), string.Empty)
+        : base(new OpenURLCommand(string.Empty), Properties.Resources.open_url_fallback_title)
     {
         _executeItem = (OpenURLCommand)this.Command!;
         Title = string.Empty;
         _executeItem.Name = string.Empty;
         Subtitle = string.Empty;
-        Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
+        Icon = Icons.WebSearch;
     }
 
     public override void UpdateQuery(string query)
     {
         if (!IsValidUrl(query))
         {
+            _executeItem.Url = string.Empty;
+            _executeItem.Name = string.Empty;
             Title = string.Empty;
             Subtitle = string.Empty;
             return;

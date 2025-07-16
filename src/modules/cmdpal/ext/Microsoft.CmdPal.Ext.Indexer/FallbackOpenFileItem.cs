@@ -15,6 +15,8 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System.IDisposable
 {
+    private static readonly NoOpCommand _baseCommandWithId = new() { Id = "com.microsoft.indexer.fallback" };
+
     private readonly CompositeFormat fallbackItemSearchPageTitleCompositeFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
 
     private readonly SearchEngine _searchEngine = new();
@@ -22,10 +24,11 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     private uint _queryCookie = 10;
 
     public FallbackOpenFileItem()
-        : base(new NoOpCommand(), Resources.Indexer_Find_Path_fallback_display_title)
+        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title)
     {
         Title = string.Empty;
         Subtitle = string.Empty;
+        Icon = Icons.FileExplorerIcon;
     }
 
     public override void UpdateQuery(string query)
@@ -103,7 +106,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 // us to the file search page, prepopulated with this search.
                 var indexerPage = new IndexerPage(query, _searchEngine, _queryCookie, results);
                 Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
-                Icon = Icons.FileExplorer;
+                Icon = Icons.FileExplorerIcon;
                 Subtitle = Resources.Indexer_Subtitle;
                 Command = indexerPage;
 

@@ -4,7 +4,8 @@
 
 using System.Windows;
 using System.Windows.Controls;
-
+using System.Windows.Controls.Primitives;
+using ManagedCommon;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.ViewModels;
 
@@ -42,15 +43,26 @@ namespace WorkspacesEditor
             e.Handled = true;
             Button button = sender as Button;
             Project selectedProject = button.DataContext as Project;
+            selectedProject.IsPopupVisible = false;
+
             _mainViewModel.DeleteProject(selectedProject);
         }
 
         private void MoreButton_Click(object sender, RoutedEventArgs e)
         {
+            _mainViewModel.CloseAllPopups();
             e.Handled = true;
             Button button = sender as Button;
             Project project = button.DataContext as Project;
             project.IsPopupVisible = true;
+        }
+
+        private void PopupClosed(object sender, object e)
+        {
+            if (sender is Popup p && p.DataContext is Project proj)
+            {
+                proj.IsPopupVisible = false;
+            }
         }
 
         private void LaunchButton_Click(object sender, RoutedEventArgs e)

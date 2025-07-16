@@ -24,7 +24,7 @@ internal sealed partial class ProfilesListPage : ListPage
 
     public ProfilesListPage(SettingsManager terminalSettings)
     {
-        Icon = WindowsTerminalCommandsProvider.TerminalIcon;
+        Icon = Icons.TerminalIcon;
         Name = Resources.profiles_list_page_name;
         _terminalSettings = terminalSettings;
     }

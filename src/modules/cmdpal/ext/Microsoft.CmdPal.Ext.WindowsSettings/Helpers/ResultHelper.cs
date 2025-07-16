@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-
 using Microsoft.CmdPal.Ext.WindowsSettings.Commands;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
@@ -22,8 +21,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings;
 internal static class ResultHelper
 {
     internal static List<ListItem> GetResultList(
-        in IEnumerable<Classes.WindowsSetting> list,
-        string query)
+        in IEnumerable<Classes.WindowsSetting> list)
     {
         var resultList = new List<ListItem>(list.Count());
 
@@ -31,7 +29,7 @@ internal static class ResultHelper
         {
             var result = new ListItem(new OpenSettingsCommand(entry))
             {
-                Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg"),
+                Icon = Icons.WindowsSettingsIcon,
                 Subtitle = entry.JoinedFullSettingsPath,
                 Title = entry.Name,
                 MoreCommands = ContextMenuHelper.GetContextMenu(entry).ToArray(),

@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.UnitTests.Mocks
         /// This mock is specific to a given module, and is verifiable that the stub file was read.
         /// </summary>
         /// <param name="savePath">The path to the stub settings file</param>
-        /// <param name="filterExpression">The substring in the path that identifies the module eg. Microsoft\\PowerToys\\ColorPicker</param>
+        /// <param name="filterExpression">The substring in the path that identifies the module e.g. Microsoft\\PowerToys\\ColorPicker</param>
         /// <returns>Mocked IFile</returns>
         internal static Mock<IFile> GetMockIOReadWithStubFile(string savePath, Expression<Func<string, bool>> filterExpression)
         {

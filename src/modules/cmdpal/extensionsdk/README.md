@@ -12,4 +12,4 @@ To view the full docs, you can head over to [our docs site](https://go.microsoft
 There are samples of just about everything you can do in [the samples project].
 Head over there to see basic usage of the APIs.
 
-[the samples project]: https://github.com/microsoft/PowerToys/tree/main/src/modules/cmdpal/Exts/SamplePagesExtension 
+[the samples project]: https://github.com/microsoft/PowerToys/tree/main/src/modules/cmdpal/ext/SamplePagesExtension

@@ -2,7 +2,7 @@
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
@@ -39,10 +39,17 @@
             Margin="48,0,0,0"
             VerticalAlignment="Top"
             IsHitTestVisible="True">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftTitleBarColumn" Width="*" />
+                <ColumnDefinition x:Name="RightTitleBarColumn" Width="Auto" />
+            </Grid.ColumnDefinitions>
             <animations:Implicit.Animations>
                 <animations:OffsetAnimation Duration="0:0:0.3" />
             </animations:Implicit.Animations>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel
+                Grid.Column="0"
+                HorizontalAlignment="Left"
+                Orientation="Horizontal">
                 <Image
                     Width="16"
                     Height="16"
@@ -63,6 +70,24 @@
                     Text="Debug"
                     TextWrapping="NoWrap"
                     Visibility="Collapsed" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                Margin="0,0,148,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button
+                    x:Name="ShutDownBtn"
+                    Height="48"
+                    Click="ExitPTItem_Tapped"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon FontSize="16" Glyph="&#xE7E8;" />
+                    <ToolTipService.ToolTip>
+                        <ToolTip>
+                            <TextBlock x:Uid="AppTitleBarShutDown_Tooltip" />
+                        </ToolTip>
+                    </ToolTipService.ToolTip>
+                </Button>
             </StackPanel>
         </Grid>
         <NavigationView
@@ -95,7 +120,7 @@
                     <NavigationViewItem.Icon>
                         <AnimatedIcon>
                             <AnimatedIcon.Source>
-                                <animatedvisuals:AnimatedSettingsVisualSource />
+                                <animatedVisuals:AnimatedSettingsVisualSource />
                             </AnimatedIcon.Source>
                             <AnimatedIcon.FallbackIconSource>
                                 <SymbolIconSource Symbol="Setting" />

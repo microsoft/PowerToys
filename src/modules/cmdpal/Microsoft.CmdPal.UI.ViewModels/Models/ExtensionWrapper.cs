@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,7 +12,6 @@ using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
 
-// [assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 public class ExtensionWrapper : IExtensionWrapper
@@ -107,49 +106,40 @@ public class ExtensionWrapper : IExtensionWrapper
                 {
                     Logger.LogDebug($"Starting {ExtensionDisplayName} ({ExtensionClassId})");
 
-                    var extensionPtr = nint.Zero;
-                    try
+                    unsafe
                     {
-                        // -2147024809: E_INVALIDARG
-                        // -2147467262: E_NOINTERFACE
-                        // -2147024893: E_PATH_NOT_FOUND
-                        var guid = typeof(IExtension).GUID;
-
-                        unsafe
+                        var extensionPtr = (void*)nint.Zero;
+                        try
                         {
-                            var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out var extensionObj);
+                            // -2147024809: E_INVALIDARG
+                            // -2147467262: E_NOINTERFACE
+                            // -2147024893: E_PATH_NOT_FOUND
+                            var guid = typeof(IExtension).GUID;
+
+                            var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out extensionPtr);
 
                             if (hr.Value == -2147024893)
                             {
-                                Logger.LogDebug($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
+                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
 
                                 // We don't really need to throw this exception.
                                 // We'll just return out nothing.
                                 return;
                             }
 
-                            extensionPtr = Marshal.GetIUnknownForObject((nint)extensionObj);
-                            if (hr < 0)
-                            {
-                                Logger.LogDebug($"Failed to instantiate {ExtensionDisplayName}: {hr}");
-                                Marshal.ThrowExceptionForHR(hr);
-                            }
-
-                            // extensionPtr = Marshal.GetIUnknownForObject(extensionObj);
-                            extensionPtr = (nint)extensionObj;
-                            if (hr < 0)
-                            {
-                                Marshal.ThrowExceptionForHR(hr);
-                            }
-
-                            _extensionObject = MarshalInterface<IExtension>.FromAbi(extensionPtr);
+                            // Marshal.ThrowExceptionForHR(hr);
+                            _extensionObject = MarshalInterface<IExtension>.FromAbi((nint)extensionPtr);
                         }
-                    }
-                    finally
-                    {
-                        if (extensionPtr != nint.Zero)
+                        catch (Exception e)
                         {
-                            Marshal.Release(extensionPtr);
+                            Logger.LogDebug($"Failed to start {ExtensionDisplayName}. ex: {e.Message}");
+                        }
+                        finally
+                        {
+                            if ((nint)extensionPtr != nint.Zero)
+                            {
+                                Marshal.Release((nint)extensionPtr);
+                            }
                         }
                     }
                 }

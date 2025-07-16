@@ -17,7 +17,7 @@ public sealed class PasteActionModeratedException : PasteActionException
     }
 
     /// <summary>
-    /// Non-localized error description for logs, reports, telemetry etc.
+    /// Non-localized error description for logs, reports, telemetry, etc.
     /// </summary>
     public const string ErrorDescription = "Paste operation moderated";
 }

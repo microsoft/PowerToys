@@ -152,6 +152,7 @@
   </data>
   <data name="ClipboardHistoryImage" xml:space="preserve">
     <value>Image data</value>
+    <comment>Label used to represent an image in the clipboard history</comment>
   </data>
   <data name="ClipboardHistoryItemMoreOptionsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More options</value>
@@ -194,15 +195,19 @@
   </data>
   <data name="TranscodeToMp3" xml:space="preserve">
     <value>Transcode to .mp3</value>
+    <comment>Option to transcode audio files to MP3 format</comment>
   </data>  
   <data name="TranscodeToMp4" xml:space="preserve">
     <value>Transcode to .mp4 (H.264/AAC)</value>
+    <comment>Option to transcode video files to MP4 format with H.264 video codec and AAC audio codec</comment>
   </data>
   <data name="TranscodeErrorGeneral" xml:space="preserve">
     <value>An error occurred while transcoding media file</value>
+    <comment>Error message displayed when media conversion fails for an unknown or general reason</comment>
   </data>
   <data name="TranscodeErrorUnsupportedCodec" xml:space="preserve">
     <value>The media file contains an unsupported codec</value>
+    <comment>Error message displayed when media conversion fails due to an unsupported codec in the source file</comment>
   </data>
   <data name="PasteButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Paste</value>

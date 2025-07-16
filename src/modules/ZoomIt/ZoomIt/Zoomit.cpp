@@ -323,7 +323,7 @@ void RestoreForeground()
     // If the main window is not visible, move foreground to the next window.
     if( !IsWindowVisible( g_hWndMain ) ) {
 
-        // Activate the next window by unhiding and hiding the main window.
+        // Activate the next window by showing and hiding the main window.
         MoveWindow( g_hWndMain, 0, 0, 0, 0, FALSE );
         ShowWindow( g_hWndMain, SW_SHOWNA );
         ShowWindow( g_hWndMain, SW_HIDE );
@@ -5547,7 +5547,7 @@ LRESULT APIENTRY MainWndProc(
                 }
                 prevPt = currentPt;
 
-                // In liveDraw we an miss the mouse up
+                // In liveDraw we miss the mouse up
                 if( GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
 
                     if((GetAsyncKeyState(VK_LBUTTON) & 0x8000) == 0) {

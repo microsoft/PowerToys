@@ -472,9 +472,9 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     deleteShortcut.SetValue(Automation::AutomationProperties::NameProperty(), box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
 
     // Add tooltip for delete button which would appear on hover
-    ToolTip deleteShortcuttoolTip;
-    deleteShortcuttoolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
-    ToolTipService::SetToolTip(deleteShortcut, deleteShortcuttoolTip);
+    ToolTip deleteShortcutToolTip;
+    deleteShortcutToolTip.Content(box_value(GET_RESOURCE_STRING(IDS_DELETE_REMAPPING_BUTTON)));
+    ToolTipService::SetToolTip(deleteShortcut, deleteShortcutToolTip);
 
     StackPanel deleteShortcutContainer = StackPanel();
     deleteShortcutContainer.Name(L"deleteShortcutContainer");

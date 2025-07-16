@@ -5,9 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text;
-
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
@@ -61,9 +63,11 @@ public class VirtualDesktopHelper
     /// <param name="desktopListUpdate">Setting to configure if the list of available desktops should update automatically or only when calling <see cref="UpdateDesktopList"/>. Per default this is set to manual update (false) to have less registry queries.</param>
     public VirtualDesktopHelper(bool desktopListUpdate = false)
     {
+        var cw = new StrategyBasedComWrappers();
+
         try
         {
-            _virtualDesktopManager = (IVirtualDesktopManager)new CVirtualDesktopManager();
+            _virtualDesktopManager = ComHelper.CreateComInstance<IVirtualDesktopManager>(ref Unsafe.AsRef(in CLSID.VirtualDesktopManager), CLSCTX.InProcServer);
         }
         catch (COMException ex)
         {
@@ -99,7 +103,7 @@ public class VirtualDesktopHelper
             var allDeskValue = (byte[]?)virtualDesktopKey.GetValue("VirtualDesktopIDs", null) ?? Array.Empty<byte>();
             if (allDeskValue != null)
             {
-                // We clear only, if we can read from registry. Otherwise we keep the existing values.
+                // We clear only, if we can read from registry. Otherwise, we keep the existing values.
                 _availableDesktops.Clear();
 
                 // Each guid has a length of 16 elements
@@ -130,7 +134,7 @@ public class VirtualDesktopHelper
             else
             {
                 // The registry value is missing when the user hasn't switched the desktop at least one time before reading the registry. In this case we can set it to desktop one.
-                // We can only set it to desktop one, if we have at least one desktop in the desktops list. Otherwise we keep the existing value.
+                // We can only set it to desktop one, if we have at least one desktop in the desktops list. Otherwise, we keep the existing value.
                 ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.UpdateDesktopList() failed to read the id for the current desktop form registry." });
                 _currentDesktop = _availableDesktops.Count >= 1 ? _availableDesktops[0] : _currentDesktop;
             }
@@ -232,7 +236,7 @@ public class VirtualDesktopHelper
     /// Returns the number (position) of a desktop.
     /// </summary>
     /// <param name="desktop">The guid of the desktop.</param>
-    /// <returns>Number of the desktop, if found. Otherwise a value of zero.</returns>
+    /// <returns>Number of the desktop, if found. Otherwise, a value of zero.</returns>
     public int GetDesktopNumber(Guid desktop)
     {
         if (_desktopListAutoUpdate)
@@ -409,7 +413,7 @@ public class VirtualDesktopHelper
     /// <param name="hWindow">Handle of the top level window.</param>
     /// <param name="desktopId">Guid of the target desktop.</param>
     /// <returns><see langword="True"/> on success and <see langword="false"/> on failure.</returns>
-    public bool MoveWindowToDesktop(IntPtr hWindow, in Guid desktopId)
+    public bool MoveWindowToDesktop(IntPtr hWindow, ref Guid desktopId)
     {
         if (_virtualDesktopManager == null)
         {
@@ -417,7 +421,7 @@ public class VirtualDesktopHelper
             return false;
         }
 
-        var hr = _virtualDesktopManager.MoveWindowToDesktop(hWindow, desktopId);
+        var hr = _virtualDesktopManager.MoveWindowToDesktop(hWindow, ref desktopId);
         if (hr != (int)HRESULT.S_OK)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.MoveWindowToDesktop() failed: An exception was thrown when moving the window ({hWindow}) to another desktop ({desktopId})." });
@@ -455,7 +459,7 @@ public class VirtualDesktopHelper
         }
 
         Guid newDesktop = _availableDesktops[windowDesktopNumber - 1];
-        return MoveWindowToDesktop(hWindow, newDesktop);
+        return MoveWindowToDesktop(hWindow, ref newDesktop);
     }
 
     /// <summary>
@@ -486,7 +490,7 @@ public class VirtualDesktopHelper
         }
 
         Guid newDesktop = _availableDesktops[windowDesktopNumber + 1];
-        return MoveWindowToDesktop(hWindow, newDesktop);
+        return MoveWindowToDesktop(hWindow, ref newDesktop);
     }
 
     /// <summary>

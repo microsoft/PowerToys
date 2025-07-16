@@ -190,7 +190,7 @@ public partial class InstallPackageListItem : ListItem
             CommandContextItem uninstallContextItem = new(installCommand)
             {
                 IsCritical = true,
-                Icon = InstallPackageCommand.DeleteIcon,
+                Icon = Icons.DeleteIcon,
             };
 
             if (WinGetStatics.AppSearchCallback != null)

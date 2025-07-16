@@ -81,6 +81,7 @@ internal sealed partial class SampleListPage : ListPage
                         Title = "I'm a second command",
                         RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
                     },
+                    new SeparatorContextItem(),
                     new CommandContextItem(
                         new ToastCommand("Third command invoked", MessageState.Error) { Name = "Do 3", Icon = new IconInfo("\uF148") }) // dial 3
                     {
@@ -98,7 +99,7 @@ internal sealed partial class SampleListPage : ListPage
                             new CommandContextItem(
                                 new ToastCommand("Nested B invoked") { Name = "Do it", Icon = new IconInfo("B") })
                             {
-                                Title = "Nested B...",
+                                Title = "Nested B with a really, really long title that should be trimmed",
                                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
                                 MoreCommands = [
                                     new CommandContextItem(

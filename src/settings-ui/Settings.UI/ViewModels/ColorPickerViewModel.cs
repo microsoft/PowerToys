@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private bool disposedValue;
 
-        // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it, otherwise we schedule saving it after this interval
+        // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it; otherwise, we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -177,6 +177,51 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _colorPickerSettings.Properties.ActivationAction = (ColorPickerActivationAction)value;
                     OnPropertyChanged(nameof(ActivationBehavior));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int PrimaryClickBehavior
+        {
+            get => (int)_colorPickerSettings.Properties.PrimaryClickAction;
+
+            set
+            {
+                if (value != (int)_colorPickerSettings.Properties.PrimaryClickAction)
+                {
+                    _colorPickerSettings.Properties.PrimaryClickAction = (ColorPickerClickAction)value;
+                    OnPropertyChanged(nameof(PrimaryClickBehavior));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int MiddleClickBehavior
+        {
+            get => (int)_colorPickerSettings.Properties.MiddleClickAction;
+
+            set
+            {
+                if (value != (int)_colorPickerSettings.Properties.MiddleClickAction)
+                {
+                    _colorPickerSettings.Properties.MiddleClickAction = (ColorPickerClickAction)value;
+                    OnPropertyChanged(nameof(MiddleClickBehavior));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int SecondaryClickBehavior
+        {
+            get => (int)_colorPickerSettings.Properties.SecondaryClickAction;
+
+            set
+            {
+                if (value != (int)_colorPickerSettings.Properties.SecondaryClickAction)
+                {
+                    _colorPickerSettings.Properties.SecondaryClickAction = (ColorPickerClickAction)value;
+                    OnPropertyChanged(nameof(SecondaryClickBehavior));
                     NotifySettingsChanged();
                 }
             }

@@ -14,7 +14,7 @@ public partial class TerminalTopLevelCommandItem : CommandItem
     public TerminalTopLevelCommandItem(SettingsManager settingsManager)
         : base(new ProfilesListPage(settingsManager))
     {
-        Icon = WindowsTerminalCommandsProvider.TerminalIcon;
+        Icon = Icons.TerminalIcon;
         Title = Resources.list_item_title;
     }
 }

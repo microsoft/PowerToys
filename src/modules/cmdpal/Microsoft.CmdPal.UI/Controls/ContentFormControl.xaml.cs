@@ -5,7 +5,9 @@
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -16,7 +18,7 @@ public sealed partial class ContentFormControl : UserControl
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
     // then the GC might clean it up sometime, even while the card is in the UI
-    // tree. If this gets GC'd, then it'll revoke our Action handler, and the
+    // tree. If this gets GC'ed, then it'll revoke our Action handler, and the
     // form will do seemingly nothing.
     private RenderedAdaptiveCard? _renderedCard;
 
@@ -96,9 +98,63 @@ public sealed partial class ContentFormControl : UserControl
         if (_renderedCard.FrameworkElement != null)
         {
             ContentGrid.Children.Add(_renderedCard.FrameworkElement);
+
+            // Use the Loaded event to ensure we focus after the card is in the visual tree
+            _renderedCard.FrameworkElement.Loaded += OnFrameworkElementLoaded;
         }
 
         _renderedCard.Action += Rendered_Action;
+    }
+
+    private void OnFrameworkElementLoaded(object sender, RoutedEventArgs e)
+    {
+        // Unhook the event handler to avoid multiple registrations
+        if (sender is FrameworkElement element)
+        {
+            element.Loaded -= OnFrameworkElementLoaded;
+
+            if (!ViewModel?.OnlyControlOnPage ?? true)
+            {
+                return;
+            }
+
+            // Focus on the first focusable element asynchronously to ensure the visual tree is fully built
+            element.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+            {
+                var focusableElement = FindFirstFocusableElement(element);
+                focusableElement?.Focus(FocusState.Programmatic);
+            });
+        }
+    }
+
+    private Control? FindFirstFocusableElement(DependencyObject parent)
+    {
+        var childCount = VisualTreeHelper.GetChildrenCount(parent);
+
+        // Process children first (depth-first search)
+        for (var i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+
+            // If the child is a focusable control like TextBox, ComboBox, etc.
+            if (child is Control control &&
+                control.IsEnabled &&
+                control.IsTabStop &&
+                control.Visibility == Visibility.Visible &&
+                control.AllowFocusOnInteraction)
+            {
+                return control;
+            }
+
+            // Recursively check children
+            var result = FindFirstFocusableElement(child);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        return null;
     }
 
     private void Rendered_Action(RenderedAdaptiveCard sender, AdaptiveActionEventArgs args) =>

@@ -133,6 +133,15 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open URL.
+        /// </summary>
+        public static string open_url_fallback_title {
+            get {
+                return ResourceManager.GetString("open_url_fallback_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to the default browser.
         /// </summary>
         public static string plugin_browser {

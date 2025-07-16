@@ -11,6 +11,7 @@
 
 #include <WorkspacesLib/AppUtils.h>
 #include <WorkspacesLib/PwaHelper.h>
+#include <WorkspacesLib/WindowUtils.h>
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
 
 #include "Generated Files/resource.h"
@@ -139,7 +140,7 @@ namespace SnapshotUtils
             bool isChrome = appData.IsChrome();
             if (isEdge || isChrome)
             {
-                auto windowAumid = pwaHelper.GetAUMIDFromWindow(window);
+                auto windowAumid = Utils::GetAUMIDFromWindow(window);
                 std::optional<std::wstring> pwaAppId{};
 
                 if (isEdge)
@@ -158,6 +159,8 @@ namespace SnapshotUtils
 
                     appData.pwaAppId = pwaAppId.value();
                     appData.name = pwaName + L" (" + appData.name + L")";
+                    // If it's pwa app, appUserModelId should be their own pwa id.
+                    appData.appUserModelId = windowAumid;
                 }
             }
 
@@ -185,6 +188,7 @@ namespace SnapshotUtils
                 .appUserModelId = appData.appUserModelId,
                 .pwaAppId = appData.pwaAppId,
                 .commandLineArgs = L"",
+                .version = L"1",
                 .isElevated = IsProcessElevated(pid),
                 .canLaunchElevated = appData.canLaunchElevated,
                 .isMinimized = isMinimized,

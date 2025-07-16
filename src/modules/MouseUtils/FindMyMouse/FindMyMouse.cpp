@@ -427,7 +427,7 @@ void SuperSonar<D>::DetectShake()
         return;
     }
 
-    // Size of the rectangle the pointer moved in.
+    // Size of the rectangle that the pointer moved in.
     double rectangleWidth =  static_cast<double>(maxX) - minX;
     double rectangleHeight =  static_cast<double>(maxY) - minY;
 
@@ -521,7 +521,7 @@ void SuperSonar<D>::StartSonar()
     Logger::info("Focusing the sonar on the mouse cursor.");
     Trace::MousePointerFocused();
     // Cover the entire virtual screen.
-    // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
+    // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
     m_sonarPos = ptNowhere;
     OnMouseTimer();

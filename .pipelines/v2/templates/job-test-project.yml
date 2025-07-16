@@ -11,24 +11,51 @@ parameters:
   - name: useLatestWebView2
     type: boolean
     default: false
+  - name: useLatestOfficialBuild
+    type: boolean
+    default: true
+  - name: useCurrentBranchBuild
+    type: boolean
+    default: false
+  - name: uiTestModules
+    type: object
+    default: []
+  - name: installMode
+    type: string
+    default: 'machine'
+    values:
+      - 'machine'
+      - 'peruser'
+  - name: jobSuffix
+    type: string
+    default: ''
 
 jobs:
-- job: Test${{ parameters.platform }}${{ parameters.configuration }}
-  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}
+- job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
+  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}${{ parameters.jobSuffix }}
+  timeoutInMinutes: 300
   variables:
-    BuildPlatform: ${{ parameters.platform }}
+    ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
+      BuildPlatform: x64
+    ${{ else }}:
+      BuildPlatform: ${{ parameters.platform }}
+    TestPlatform: ${{ parameters.platform }}
     BuildConfiguration: ${{ parameters.configuration }}
     SrcPath: $(Build.Repository.LocalPath)
-    TestArtifactsName: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+    TestArtifactsName: build-${{ variables.BuildPlatform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
   pool:
     ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
       ${{ if ne(parameters.platform, 'ARM64') }}:
         name: SHINE-INT-Testing-x64
+        ${{ if eq(parameters.platform, 'x64Win11') }}:
+          demands: ImageOverride -equals SHINE-W11-Testing
       ${{ else }}:
         name: SHINE-INT-Testing-arm64
     ${{ else }}:
       ${{ if ne(parameters.platform, 'ARM64') }}:
         name: SHINE-OSS-Testing-x64
+        ${{ if eq(parameters.platform, 'x64Win11') }}:
+          demands: ImageOverride -equals SHINE-W11-Testing
       ${{ else }}:
         name: SHINE-OSS-Testing-arm64
   steps:
@@ -86,23 +113,82 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
+  - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'specific'
+        project: 'Dart'
+        definition: '76541'
+        buildVersionToDownload: 'latestFromBranch'
+        ${{ if eq(parameters.useCurrentBranchBuild, true) }}:
+          branchName: '$(Build.SourceBranch)'
+        ${{ else }}:
+          branchName: 'refs/heads/main'
+        artifactName: 'build-$(BuildPlatform)-Release'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        ${{ if eq(parameters.installMode, 'peruser') }}:
+          patterns: |
+            **/PowerToysUserSetup*.exe
+        ${{ else }}:
+          patterns: |
+            **/PowerToysSetup*.exe
+
+  - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+    - ${{ if eq(parameters.installMode, 'peruser') }}:
+      - pwsh: |-
+          & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "PerUser"
+        displayName: Install PowerToys (Per-User)
+
+    - ${{ if eq(parameters.installMode, 'machine') }}:
+      - pwsh: |-
+          & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine"
+        displayName: Install PowerToys (Machine-Level)
+
   - ${{ if ne(parameters.platform, 'arm64') }}:
     - task: ScreenResolutionUtility@1
       inputs:
         displaySettings: 'optimal'
 
-  - task: VSTest@3
-    displayName: Run UI Tests
-    inputs:
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      testSelector: 'testAssemblies'
-      searchFolder: '$(Pipeline.Workspace)\$(TestArtifactsName)'
-      vsTestVersion: 'toolsInstaller'
-      uiTests: true
-      rerunFailedTests: true
-      testAssemblyVer2: |
-        **\UITests-FancyZones.dll
-        **\UITests-FancyZonesEditor.dll
-        !**\obj\**
-        !**\ref\**
+  - ${{ if eq(length(parameters.uiTestModules), 0) }}:
+    - task: VSTest@3
+      displayName: Run UI Tests
+      inputs:
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        testSelector: 'testAssemblies'
+        searchFolder: '$(Pipeline.Workspace)\$(TestArtifactsName)'
+        vsTestVersion: 'toolsInstaller'
+        uiTests: true
+        rerunFailedTests: true
+        testRunTitle: 'UITests_${{ parameters.platform }}_${{ parameters.installMode }}'
+        # Since UITests-FancyZonesEditor.dll is generated in both UITests-FancyZonesEditor and UITests-FancyZones, removed one to avoid duplicate test runs
+        testAssemblyVer2: |
+          **\*UITest*.dll
+          !**\obj\**
+          !**\ref\**
+          !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
+      env:
+        platform: '$(TestPlatform)'
+        useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
+
+  - ${{ if ne(length(parameters.uiTestModules), 0) }}:
+    - ${{ each module in parameters.uiTestModules }}:
+      - task: VSTest@3
+        displayName: Run UI Test - ${{ module }}
+        inputs:
+          platform: '$(BuildPlatform)'
+          configuration: '$(BuildConfiguration)'
+          testSelector: 'testAssemblies'
+          searchFolder: '$(Pipeline.Workspace)\$(TestArtifactsName)'
+          vsTestVersion: 'toolsInstaller'
+          uiTests: true
+          rerunFailedTests: true
+          testRunTitle: 'UITests_${{ parameters.platform }}_${{ parameters.installMode }}'
+          testAssemblyVer2: |
+            **\*${{ module }}*.dll
+            !**\obj\**
+            !**\ref\**
+            !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
+        env:
+          platform: '$(TestPlatform)'
+          useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}

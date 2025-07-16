@@ -56,12 +56,28 @@ IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
+IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* time)
 {
     CSRWSharedAutoLock lock(&m_lock);
     HRESULT hr = E_FAIL;
+    PowerRenameFlags parsedTimeType;
 
-    if (m_isTimeParsed)
+    // Get Time by PowerRenameFlags
+    if (flags & PowerRenameFlags::ModificationTime)
+    {
+        parsedTimeType = PowerRenameFlags::ModificationTime;
+    }
+    else if (flags & PowerRenameFlags::AccessTime)
+    {
+        parsedTimeType = PowerRenameFlags::AccessTime;
+    }
+    else
+    {
+        // Default to modification time if no specific flag is set
+        parsedTimeType = PowerRenameFlags::CreationTime;
+    }
+
+    if (m_isTimeParsed && parsedTimeType == m_parsedTimeType)
     {
         hr = S_OK;
     }
@@ -70,21 +86,43 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
         HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
         {
-            FILETIME CreationTime;
-            if (GetFileTime(hFile, &CreationTime, NULL, NULL))
+            FILETIME FileTime;
+            bool success = false;
+
+            // Get Time by PowerRenameFlags
+            switch (parsedTimeType)
+            {
+            case PowerRenameFlags::CreationTime:
+                success = GetFileTime(hFile, &FileTime, NULL, NULL);
+                break;
+            case PowerRenameFlags::ModificationTime:
+                success = GetFileTime(hFile, NULL, NULL, &FileTime);
+                break;
+            case PowerRenameFlags::AccessTime:
+                success = GetFileTime(hFile, NULL, &FileTime, NULL);
+                break;
+            default:
+                // Default to modification time if no specific flag is set
+                success = GetFileTime(hFile, NULL, NULL, &FileTime);
+                break;
+            }
+
+            if (success)
             {
                 SYSTEMTIME SystemTime, LocalTime;
-                if (FileTimeToSystemTime(&CreationTime, &SystemTime))
+                if (FileTimeToSystemTime(&FileTime, &SystemTime))
                 {
                     if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
                     {
                         m_time = LocalTime;
                         m_isTimeParsed = true;
+                        m_parsedTimeType = parsedTimeType;
                         hr = S_OK;
                     }
                 }
             }
         }
+
         CloseHandle(hFile);
     }
     *time = m_time;
@@ -301,7 +339,7 @@ HRESULT CPowerRenameItem::_Init(_In_ IShellItem* psi)
                 // Some items can be both folders and streams (ex: zip folders).
                 m_isFolder = (att & SFGAO_FOLDER) && !(att & SFGAO_STREAM);
                 // The shell lets us know if an item should not be renamed
-                // (ex: user profile director, windows dir, etc).
+                // (ex: user profile director, windows dir, etc.).
                 m_canRename = (att & SFGAO_CANRENAME);
             }
         }

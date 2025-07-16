@@ -436,6 +436,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "KBM": return typeof(KeyboardManagerPage);
                 case "MouseUtils": return typeof(MouseUtilsPage);
                 case "MouseWithoutBorders": return typeof(MouseWithoutBordersPage);
+                case "Peek": return typeof(PeekPage);
+                case "PowerAccent": return typeof(PowerAccentPage);
+                case "PowerLauncher": return typeof(PowerLauncherPage);
+                case "PowerPreview": return typeof(PowerPreviewPage);
                 case "PowerRename": return typeof(PowerRenamePage);
                 case "QuickAccent": return typeof(PowerAccentPage);
                 case "FileExplorer": return typeof(PowerPreviewPage);
@@ -444,7 +448,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
-                case "Peek": return typeof(PeekPage);
                 case "CropAndLock": return typeof(CropAndLockPage);
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
                 case "NewPlus": return typeof(NewPlusPage);

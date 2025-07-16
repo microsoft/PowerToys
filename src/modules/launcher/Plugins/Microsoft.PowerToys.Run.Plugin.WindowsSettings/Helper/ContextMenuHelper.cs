@@ -53,7 +53,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// Copy the given text to the clipboard
         /// </summary>
         /// <param name="text">The text to copy to the clipboard</param>
-        /// <returns><see langword="true"/>The text successful copy to the clipboard, otherwise <see langword="false"/></returns>
+        /// <returns><see langword="true"/>The text successful copy to the clipboard; otherwise, <see langword="false"/></returns>
         private static bool TryToCopyToClipBoard(in string text)
         {
             try

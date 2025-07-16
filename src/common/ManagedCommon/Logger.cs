@@ -6,9 +6,10 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-
+using System.Threading.Tasks;
 using PowerToys.Interop;
 
 namespace ManagedCommon
@@ -21,16 +22,7 @@ namespace ManagedCommon
         private static readonly string Debug = "Debug";
         private static readonly string TraceFlag = "Trace";
 
-        private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
-
-        /*
-         * Please pay more attention!
-         * If you want to publish it with Native AOT enabled (or publish as a single file).
-         * You need to find another way to remove Assembly.Location usage.
-         */
-#pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
-        private static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
-#pragma warning restore IL3000 // Avoid accessing Assembly file path when publishing as a single file
+        private static readonly string Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "Unknown";
 
         /// <summary>
         /// Initializes the logger and sets the path for logging.
@@ -40,25 +32,72 @@ namespace ManagedCommon
         /// <param name="isLocalLow">If the process using Logger is a low-privilege process.</param>
         public static void InitializeLogger(string applicationLogPath, bool isLocalLow = false)
         {
+            string basePath;
             if (isLocalLow)
             {
-                applicationLogPath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\LocalLow\\Microsoft\\PowerToys" + applicationLogPath + "\\" + Version;
+                basePath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\LocalLow\\Microsoft\\PowerToys" + applicationLogPath;
             }
             else
             {
-                applicationLogPath = Constants.AppDataPath() + applicationLogPath + "\\" + Version;
+                basePath = Constants.AppDataPath() + applicationLogPath;
             }
 
-            if (!Directory.Exists(applicationLogPath))
+            string versionedPath = Path.Combine(basePath, Version);
+
+            if (!Directory.Exists(versionedPath))
             {
-                Directory.CreateDirectory(applicationLogPath);
+                Directory.CreateDirectory(versionedPath);
             }
 
-            var logFilePath = Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
+            var logFilePath = Path.Combine(versionedPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
             Trace.AutoFlush = true;
+
+            // Clean up old version log folders
+            Task.Run(() => DeleteOldVersionLogFolders(basePath, versionedPath));
+        }
+
+        /// <summary>
+        /// Deletes old version log folders, keeping only the current version's folder.
+        /// </summary>
+        /// <param name="basePath">The base path to the log files folder.</param>
+        /// <param name="currentVersionPath">The path to the current version's log folder.</param>
+        private static void DeleteOldVersionLogFolders(string basePath, string currentVersionPath)
+        {
+            try
+            {
+                if (!Directory.Exists(basePath))
+                {
+                    return;
+                }
+
+                var dirs = Directory.GetDirectories(basePath)
+                    .Select(d => new DirectoryInfo(d))
+                    .OrderBy(d => d.CreationTime)
+                    .Where(d => !string.Equals(d.FullName, currentVersionPath, StringComparison.OrdinalIgnoreCase))
+                    .Take(3)
+                    .ToList();
+
+                foreach (var directory in dirs)
+                {
+                    try
+                    {
+                        Directory.Delete(directory.FullName, true);
+                        LogInfo($"Deleted old log directory: {directory.FullName}");
+                        Task.Delay(500).Wait();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError($"Failed to delete old log directory: {directory.FullName}", ex);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError("Error cleaning up old log folders", ex);
+            }
         }
 
         public static void LogError(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)

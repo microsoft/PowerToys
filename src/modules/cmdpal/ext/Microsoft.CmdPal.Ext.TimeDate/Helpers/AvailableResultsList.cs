@@ -104,7 +104,7 @@ internal static class AvailableResultsList
                             dtObject = dateTimeNowUtc;
                         }
 
-                        // Get formated date
+                        // Get formatted date
                         var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
                         try
                         {

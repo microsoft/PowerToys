@@ -35,7 +35,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
             text = text.ToLower(CultureInfo.CurrentCulture);
 
             // Create a grid to march matches like
-            // eg.
+            // e.g.
             //   a b c a d e c f g
             // a x     x
             // c     x       x

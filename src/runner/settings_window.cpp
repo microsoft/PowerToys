@@ -227,6 +227,14 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         {
             launch_bug_report();
         }
+        else if (name == L"bug_report_status")
+        {
+            json::JsonObject result;
+            result.SetNamedValue(L"bug_report_running", winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(is_bug_report_running()));
+            std::unique_lock lock{ ipc_mutex };
+            if (current_settings_ipc)
+                current_settings_ipc->send(result.Stringify().c_str());
+        }
         else if (name == L"killrunner")
         {
             const auto pt_main_window = FindWindowW(pt_tray_icon_window_class, nullptr);
@@ -488,7 +496,18 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
         std::unique_lock lock{ ipc_mutex };
         current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
         current_settings_ipc->start(hToken);
+
+        // Register callback for bug report status changes
+        BugReportManager::instance().register_callback([](bool isRunning) {
+            json::JsonObject result;
+            result.SetNamedValue(L"bug_report_running", winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(isRunning));
+
+            std::unique_lock lock{ ipc_mutex };
+            if (current_settings_ipc)
+                current_settings_ipc->send(result.Stringify().c_str());
+        });
     }
+
     g_settings_process_id = process_info.dwProcessId;
 
     if (process_info.hProcess)
@@ -652,14 +671,22 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
 {
     switch (value)
     {
+    case ESettingsWindowNames::Dashboard:
+        return "Dashboard";
     case ESettingsWindowNames::Overview:
         return "Overview";
+    case ESettingsWindowNames::AlwaysOnTop:
+        return "AlwaysOnTop";
     case ESettingsWindowNames::Awake:
         return "Awake";
     case ESettingsWindowNames::ColorPicker:
         return "ColorPicker";
+    case ESettingsWindowNames::CmdNotFound:
+        return "CmdNotFound";
     case ESettingsWindowNames::FancyZones:
         return "FancyZones";
+    case ESettingsWindowNames::FileLocksmith:
+        return "FileLocksmith";
     case ESettingsWindowNames::Run:
         return "Run";
     case ESettingsWindowNames::ImageResizer:
@@ -668,6 +695,16 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "KBM";
     case ESettingsWindowNames::MouseUtils:
         return "MouseUtils";
+    case ESettingsWindowNames::MouseWithoutBorders:
+        return "MouseWithoutBorders";
+    case ESettingsWindowNames::Peek:
+        return "Peek";
+    case ESettingsWindowNames::PowerAccent:
+        return "PowerAccent";
+    case ESettingsWindowNames::PowerLauncher:
+        return "PowerLauncher";
+    case ESettingsWindowNames::PowerPreview:
+        return "PowerPreview";
     case ESettingsWindowNames::PowerRename:
         return "PowerRename";
     case ESettingsWindowNames::FileExplorer:
@@ -688,8 +725,6 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "CropAndLock";
     case ESettingsWindowNames::EnvironmentVariables:
         return "EnvironmentVariables";
-    case ESettingsWindowNames::Dashboard:
-        return "Dashboard";
     case ESettingsWindowNames::AdvancedPaste:
         return "AdvancedPaste";
     case ESettingsWindowNames::NewPlus:
@@ -709,9 +744,17 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
 
 ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
 {
-    if (value == "Overview")
+    if (value == "Dashboard")
+    {
+        return ESettingsWindowNames::Dashboard;
+    }
+    else if (value == "Overview")
     {
         return ESettingsWindowNames::Overview;
+    }
+    else if (value == "AlwaysOnTop")
+    {
+        return ESettingsWindowNames::AlwaysOnTop;
     }
     else if (value == "Awake")
     {
@@ -721,9 +764,17 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     {
         return ESettingsWindowNames::ColorPicker;
     }
+    else if (value == "CmdNotFound")
+    {
+        return ESettingsWindowNames::CmdNotFound;
+    }
     else if (value == "FancyZones")
     {
         return ESettingsWindowNames::FancyZones;
+    }
+    else if (value == "FileLocksmith")
+    {
+        return ESettingsWindowNames::FileLocksmith;
     }
     else if (value == "Run")
     {
@@ -740,6 +791,26 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "MouseUtils")
     {
         return ESettingsWindowNames::MouseUtils;
+    }
+    else if (value == "MouseWithoutBorders")
+    {
+        return ESettingsWindowNames::MouseWithoutBorders;
+    }
+    else if (value == "Peek")
+    {
+        return ESettingsWindowNames::Peek;
+    }
+    else if (value == "PowerAccent")
+    {
+        return ESettingsWindowNames::PowerAccent;
+    }
+    else if (value == "PowerLauncher")
+    {
+        return ESettingsWindowNames::PowerLauncher;
+    }
+    else if (value == "PowerPreview")
+    {
+        return ESettingsWindowNames::PowerPreview;
     }
     else if (value == "PowerRename")
     {
@@ -780,10 +851,6 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "EnvironmentVariables")
     {
         return ESettingsWindowNames::EnvironmentVariables;
-    }
-    else if (value == "Dashboard")
-    {
-        return ESettingsWindowNames::Dashboard;
     }
     else if (value == "AdvancedPaste")
     {

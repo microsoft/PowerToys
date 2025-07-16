@@ -14,7 +14,7 @@ public partial class RegistryCommandsProvider : CommandProvider
     {
         Id = "Windows.Registry";
         DisplayName = Resources.RegistryProvider_DisplayName;
-        Icon = IconHelpers.FromRelativePath("Assets\\Registry.svg");
+        Icon = Icons.RegistryIcon;
     }
 
     public override ICommandItem[] TopLevelCommands()

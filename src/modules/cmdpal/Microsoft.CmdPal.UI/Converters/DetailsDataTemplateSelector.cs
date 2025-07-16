@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -18,6 +18,8 @@ public partial class DetailsDataTemplateSelector : DataTemplateSelector
 
     public DataTemplate? TagTemplate { get; set; }
 
+    public DataTemplate? CommandTemplate { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item)
     {
         if (item is DetailsElementViewModel element)
@@ -27,6 +29,7 @@ public partial class DetailsDataTemplateSelector : DataTemplateSelector
             {
                 DetailsSeparatorViewModel => SeparatorTemplate,
                 DetailsLinkViewModel => LinkTemplate,
+                DetailsCommandsViewModel => CommandTemplate,
                 DetailsTagsViewModel => TagTemplate,
                 _ => null,
             };

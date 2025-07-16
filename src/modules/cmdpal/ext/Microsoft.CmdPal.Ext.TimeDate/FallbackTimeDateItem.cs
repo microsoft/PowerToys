@@ -68,6 +68,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
             Title = result.Title;
             Subtitle = result.Subtitle;
             Icon = result.Icon;
+            Command = result.Command;
         }
         else
         {

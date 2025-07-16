@@ -1048,7 +1048,7 @@ namespace Wox.Plugin.Common.Win32
 
         /// <summary>
         /// The window has generic "right-aligned" properties. This depends on the window class. This style has
-        /// an effect only if the shell language supports reading-order alignment, otherwise is ignored.
+        /// an effect only if the shell language supports reading-order alignment; otherwise, is ignored.
         /// </summary>
         WS_EX_RIGHT = 0x1000,
 

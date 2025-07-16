@@ -83,7 +83,7 @@ namespace winrt::PowerToys::Interop::implementation
                     ev.key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->vkCode;
                     ev.dwExtraInfo = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam)->dwExtraInfo;
 
-                    // Ignore the keyboard hook if the FilterkeyboardEvent returns false.
+                    // Ignore the keyboard hook if the FilterKeyboardEvent returns false.
                     if ((s_instance->filterKeyboardEvent != nullptr && !s_instance->filterKeyboardEvent(ev)))
                     {
                         continue;

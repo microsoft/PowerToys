@@ -79,6 +79,33 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copied to clipboard!.
+        /// </summary>
+        internal static string copied_to_clipboard {
+            get {
+                return ResourceManager.GetString("copied_to_clipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy failed ({0}). Please try again..
+        /// </summary>
+        internal static string copy_failed {
+            get {
+                return ResourceManager.GetString("copy_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy path.
+        /// </summary>
+        internal static string copy_path {
+            get {
+                return ResourceManager.GetString("copy_path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Include apps found on the desktop.
         /// </summary>
         internal static string enable_desktop_source {
@@ -187,6 +214,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pin.
+        /// </summary>
+        internal static string pin_app {
+            get {
+                return ResourceManager.GetString("pin_app", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Run as administrator.
         /// </summary>
         internal static string run_as_administrator {
@@ -237,6 +273,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string search_installed_apps_placeholder {
             get {
                 return ResourceManager.GetString("search_installed_apps_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unpin.
+        /// </summary>
+        internal static string unpin_app {
+            get {
+                return ResourceManager.GetString("unpin_app", resourceCulture);
             }
         }
         

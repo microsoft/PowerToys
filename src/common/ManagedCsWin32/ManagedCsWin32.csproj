@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\.\Common.Dotnet.CsWinRT.props" />
+
+	<PropertyGroup>
+		<Description>PowerToys ManagedCsWin32</Description>
+		<AssemblyName>PowerToys.ManagedCsWin32</AssemblyName>
+	</PropertyGroup>
+</Project>

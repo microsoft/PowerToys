@@ -1,6 +1,6 @@
 # ![cmdpal logo](./Microsoft.CmdPal.UI/Assets/Stable/StoreLogo.scale-100.png) Command Palette
 
-Windows Command Palette ("CmdPal") is the next iteration of PowerToys Run. With extensibility at it's core, the Command Palette is your one-stop launcher to start _anything_.
+Windows Command Palette ("CmdPal") is the next iteration of PowerToys Run. With extensibility at its core, the Command Palette is your one-stop launcher to start _anything_.
 
 By default, CmdPal is bound to <kbd>Win+Alt+Space</kbd>. 
 
@@ -39,8 +39,8 @@ Projects of interest are:
 
 
 [Initial SDK Spec]: ./doc/initial-sdk-spec/initial-sdk-spec.md
-[generic samples]: ./Exts/SamplePagesExtension 
-[real samples]: ./Exts/ProcessMonitorExtension
+[generic samples]: ./ext/SamplePagesExtension 
+[real samples]: ./ext/ProcessMonitorExtension
 [real extensions that we've "shipped" already]: https://github.com/zadjii/CmdPalExtensions/blob/main/src/extensions
 
 

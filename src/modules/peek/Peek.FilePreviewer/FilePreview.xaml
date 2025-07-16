@@ -60,6 +60,21 @@
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
 
+        <RichTextBlock
+            x:Name="VideoWarningMessage"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="{StaticResource TextFillColorSecondaryBrush}"
+            Visibility="{x:Bind IsWarningMessageVisible(VideoPreviewer, Previewer.State), Mode=OneWay}">
+            <Paragraph>
+                <Run Text="{x:Bind GetWarningMessage(VideoPreviewer.MissingCodecName), Mode=OneWay}" />
+                <Hyperlink Click="CodecSearchHyperlink_Click">
+                    <Run x:Uid="VideoCodecStoreLink" />
+                </Hyperlink>
+            </Paragraph>
+        </RichTextBlock>
+
+
         <controls:AudioControl
             x:Name="AudioPreview"
             Source="{x:Bind AudioPreviewer.Preview, Mode=OneWay}"

@@ -67,6 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             new PowerAccentLanguageModel("SR_CYRL", "QuickAccent_SelectedLanguage_Serbian_Cyrillic", LanguageGroup),
             new PowerAccentLanguageModel("SV", "QuickAccent_SelectedLanguage_Swedish", LanguageGroup),
             new PowerAccentLanguageModel("TK", "QuickAccent_SelectedLanguage_Turkish", LanguageGroup),
+            new PowerAccentLanguageModel("VI", "QuickAccent_SelectedLanguage_Vietnamese", LanguageGroup),
             new PowerAccentLanguageModel("CY", "QuickAccent_SelectedLanguage_Welsh", LanguageGroup),
         ];
 

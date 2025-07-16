@@ -21,12 +21,12 @@ internal sealed partial class RegistryListPage : DynamicListPage
 
     public RegistryListPage()
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\Registry.svg");
+        Icon = Icons.RegistryIcon;
         Name = Title = Resources.Registry_Page_Title;
         Id = "com.microsoft.cmdpal.registry";
         _emptyMessage = new CommandItem()
         {
-            Icon = IconHelpers.FromRelativePath("Assets\\Registry.svg"),
+            Icon = Icons.RegistryIcon,
             Title = Resources.Registry_Key_Not_Found,
             Subtitle = SearchText,
         };

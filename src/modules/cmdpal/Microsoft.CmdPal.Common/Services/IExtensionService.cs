@@ -19,13 +19,13 @@ public interface IExtensionService
 
     Task SignalStopExtensionsAsync();
 
-    public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionAdded;
+    event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionAdded;
 
-    public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionRemoved;
+    event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionRemoved;
 
-    public void EnableExtension(string extensionUniqueId);
+    void EnableExtension(string extensionUniqueId);
 
-    public void DisableExtension(string extensionUniqueId);
+    void DisableExtension(string extensionUniqueId);
 
     ///// <summary>
     ///// Gets a boolean indicating whether the extension was disabled due to the corresponding Windows optional feature

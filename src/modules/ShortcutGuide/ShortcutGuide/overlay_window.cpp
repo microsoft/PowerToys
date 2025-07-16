@@ -808,7 +808,7 @@ void D2DOverlayWindow::render(ID2D1DeviceContext5* d2d_device_context)
                 d2d_device_context->FillRectangle(monitor_rect, brush.get());
             }
         }
-        // Finalize the overlay - dimm the buttons if no thumbnail is present and show "No active window"
+        // Finalize the overlay - dim the buttons if no thumbnail is present and show "No active window"
         use_overlay->toggle_window_group(miniature_shown || window_state == MINIMIZED);
         if (!miniature_shown && window_state != MINIMIZED)
         {

@@ -4,16 +4,15 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using ManagedCommon;
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
+using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
-using Microsoft.CmdPal.Ext.Indexer.Native;
-using Windows.Win32;
-using Windows.Win32.System.Com;
-using Windows.Win32.System.Search;
-using Windows.Win32.UI.Shell.PropertiesSystem;
+using static Microsoft.CmdPal.Ext.Indexer.Indexer.Utils.NativeHelpers;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -120,11 +119,6 @@ internal sealed partial class SearchQuery : IDisposable
                 // We need to generate a search query string with the search text the user entered above
                 if (currentRowset != null)
                 {
-                    if (reuseRowset != null)
-                    {
-                        Marshal.ReleaseComObject(reuseRowset);
-                    }
-
                     // We have a previous rowset, this means the user is typing and we should store this
                     // recapture the where ID from this so the next ExecuteSync call will be faster
                     reuseRowset = currentRowset;
@@ -148,13 +142,10 @@ internal sealed partial class SearchQuery : IDisposable
 
     private bool HandleRow(IGetRow getRow, nuint rowHandle)
     {
-        object propertyStorePtr = null;
-
         try
         {
-            getRow.GetRowFromHROW(null, rowHandle, typeof(IPropertyStore).GUID, out propertyStorePtr);
+            getRow.GetRowFromHROW(null, rowHandle, ref Unsafe.AsRef(in IID.IPropertyStore), out var propertyStore);
 
-            var propertyStore = (IPropertyStore)propertyStorePtr;
             if (propertyStore == null)
             {
                 Logger.LogError("Failed to get IPropertyStore interface");
@@ -176,14 +167,6 @@ internal sealed partial class SearchQuery : IDisposable
             Logger.LogError("Error handling row", ex);
             return false;
         }
-        finally
-        {
-            // Ensure the COM object is released if not returned
-            if (propertyStorePtr != null)
-            {
-                Marshal.ReleaseComObject(propertyStorePtr);
-            }
-        }
     }
 
     public bool FetchRows(int offset, int limit)
@@ -194,16 +177,17 @@ internal sealed partial class SearchQuery : IDisposable
             return false;
         }
 
-        if (currentRowset is not IGetRow)
+        IGetRow getRow = null;
+
+        try
+        {
+            getRow = (IGetRow)currentRowset;
+        }
+        catch (Exception)
         {
             Logger.LogInfo("Reset the current rowset");
             ExecuteSyncInternal();
-        }
-
-        if (currentRowset is not IGetRow getRow)
-        {
-            Logger.LogError("Rowset does not support IGetRow interface");
-            return false;
+            getRow = (IGetRow)currentRowset;
         }
 
         uint rowCountReturned;
@@ -211,12 +195,7 @@ internal sealed partial class SearchQuery : IDisposable
 
         try
         {
-            var res = currentRowset.GetNextRows(IntPtr.Zero, offset, limit, out rowCountReturned, out prghRows);
-            if (res < 0)
-            {
-                Logger.LogError($"Error fetching rows: {res}");
-                return false;
-            }
+            currentRowset.GetNextRows(IntPtr.Zero, offset, limit, out rowCountReturned, out prghRows);
 
             if (rowCountReturned == 0)
             {
@@ -237,11 +216,7 @@ internal sealed partial class SearchQuery : IDisposable
                 }
             }
 
-            res = currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
-            if (res != 0)
-            {
-                Logger.LogError($"Error releasing rows: {res}");
-            }
+            currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
 
             Marshal.FreeCoTaskMem(prghRows);
             prghRows = IntPtr.Zero;
@@ -268,11 +243,6 @@ internal sealed partial class SearchQuery : IDisposable
         var rowset = ExecuteCommand(queryStr);
         if (rowset != null)
         {
-            if (reuseRowset != null)
-            {
-                Marshal.ReleaseComObject(reuseRowset);
-            }
-
             reuseRowset = rowset;
             reuseWhereID = GetReuseWhereId(reuseRowset);
         }
@@ -280,110 +250,50 @@ internal sealed partial class SearchQuery : IDisposable
 
     private unsafe IRowset ExecuteCommand(string queryStr)
     {
-        object sessionPtr = null;
-        object commandPtr = null;
+        if (string.IsNullOrEmpty(queryStr))
+        {
+            return null;
+        }
 
         try
         {
             var session = (IDBCreateSession)DataSourceManager.GetDataSource();
-            session.CreateSession(null, typeof(IDBCreateCommand).GUID, out sessionPtr);
-            if (sessionPtr == null)
+            var guid = typeof(IDBCreateCommand).GUID;
+            session.CreateSession(IntPtr.Zero, ref guid, out var ppDBSession);
+
+            if (ppDBSession == null)
             {
                 Logger.LogError("CreateSession failed");
                 return null;
             }
 
-            var createCommand = (IDBCreateCommand)sessionPtr;
-            createCommand.CreateCommand(null, typeof(ICommandText).GUID, out commandPtr);
-            if (commandPtr == null)
-            {
-                Logger.LogError("CreateCommand failed");
-                return null;
-            }
+            var createCommand = (IDBCreateCommand)ppDBSession;
+            guid = typeof(ICommandText).GUID;
+            createCommand.CreateCommand(IntPtr.Zero, ref guid, out ICommandText commandText);
 
-            var commandText = (ICommandText)commandPtr;
             if (commandText == null)
             {
                 Logger.LogError("Failed to get ICommandText interface");
                 return null;
             }
 
-            commandText.SetCommandText(in NativeHelpers.OleDb.DbGuidDefault, queryStr);
-            commandText.Execute(null, typeof(IRowset).GUID, null, null, out var rowsetPointer);
+            var riid = NativeHelpers.OleDb.DbGuidDefault;
 
-            return rowsetPointer as IRowset;
+            var irowSetRiid = typeof(IRowset).GUID;
+
+            commandText.SetCommandText(ref riid, queryStr);
+            commandText.Execute(null, ref irowSetRiid, null, out var pcRowsAffected, out var rowsetPointer);
+
+            return rowsetPointer;
         }
         catch (Exception ex)
         {
             Logger.LogError("Unexpected error.", ex);
             return null;
         }
-        finally
-        {
-            // Release the command pointer
-            if (commandPtr != null)
-            {
-                Marshal.ReleaseComObject(commandPtr);
-            }
-
-            // Release the session pointer
-            if (sessionPtr != null)
-            {
-                Marshal.ReleaseComObject(sessionPtr);
-            }
-        }
     }
 
-    private IRowsetInfo GetRowsetInfo(IRowset rowset)
-    {
-        if (rowset == null)
-        {
-            return null;
-        }
-
-        var rowsetPtr = IntPtr.Zero;
-        var rowsetInfoPtr = IntPtr.Zero;
-
-        try
-        {
-            // Get the IUnknown pointer for the IRowset object
-            rowsetPtr = Marshal.GetIUnknownForObject(rowset);
-
-            // Query for IRowsetInfo interface
-            var rowsetInfoGuid = typeof(IRowsetInfo).GUID;
-            var res = Marshal.QueryInterface(rowsetPtr, in rowsetInfoGuid, out rowsetInfoPtr);
-            if (res != 0)
-            {
-                Logger.LogError($"Error getting IRowsetInfo interface: {res}");
-                return null;
-            }
-
-            // Marshal the interface pointer to the actual IRowsetInfo object
-            var rowsetInfo = (IRowsetInfo)Marshal.GetObjectForIUnknown(rowsetInfoPtr);
-            return rowsetInfo;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Exception occurred while getting IRowsetInfo. ", ex);
-            return null;
-        }
-        finally
-        {
-            // Release the IRowsetInfo pointer if it was obtained
-            if (rowsetInfoPtr != IntPtr.Zero)
-            {
-                Marshal.Release(rowsetInfoPtr); // Release the IRowsetInfo pointer
-            }
-
-            // Release the IUnknown pointer for the IRowset object
-            if (rowsetPtr != IntPtr.Zero)
-            {
-                Marshal.Release(rowsetPtr);
-            }
-        }
-    }
-
-    private DBPROP? GetPropset(IRowsetInfo rowsetInfo)
+    private unsafe DBPROP? GetPropset(IRowsetInfo rowsetInfo)
     {
         var prgPropSetsPtr = IntPtr.Zero;
 
@@ -403,16 +313,15 @@ internal sealed partial class SearchQuery : IDisposable
                 return null;
             }
 
-            var firstPropSetPtr = new IntPtr(prgPropSetsPtr.ToInt64());
-            var propSet = Marshal.PtrToStructure<DBPROPSET>(firstPropSetPtr);
+            var firstPropSetPtr = (DBPROPSET*)prgPropSetsPtr.ToInt64();
+            var propSet = *firstPropSetPtr;
             if (propSet.cProperties == 0 || propSet.rgProperties == IntPtr.Zero)
             {
                 return null;
             }
 
-            var propPtr = new IntPtr(propSet.rgProperties.ToInt64());
-            var prop = Marshal.PtrToStructure<DBPROP>(propPtr);
-            return prop;
+            var propPtr = (DBPROP*)propSet.rgProperties.ToInt64();
+            return *propPtr;
         }
         catch (Exception ex)
         {
@@ -431,7 +340,8 @@ internal sealed partial class SearchQuery : IDisposable
 
     private uint GetReuseWhereId(IRowset rowset)
     {
-        var rowsetInfo = GetRowsetInfo(rowset);
+        var rowsetInfo = (IRowsetInfo)rowset;
+
         if (rowsetInfo == null)
         {
             return 0;
@@ -443,9 +353,9 @@ internal sealed partial class SearchQuery : IDisposable
             return 0;
         }
 
-        if (prop?.vValue.Anonymous.Anonymous.vt == VARENUM.VT_UI4)
+        if (prop?.vValue.VarType == VarEnum.VT_UI4)
         {
-            var value = prop?.vValue.Anonymous.Anonymous.Anonymous.ulVal;
+            var value = prop?.vValue._ulong;
             return (uint)value;
         }
 
@@ -460,18 +370,6 @@ internal sealed partial class SearchQuery : IDisposable
         if (dbPropIdSet.rgPropertyIDs != IntPtr.Zero)
         {
             Marshal.FreeCoTaskMem(dbPropIdSet.rgPropertyIDs);
-        }
-
-        if (reuseRowset != null)
-        {
-            Marshal.ReleaseComObject(reuseRowset);
-            reuseRowset = null;
-        }
-
-        if (currentRowset != null)
-        {
-            Marshal.ReleaseComObject(currentRowset);
-            currentRowset = null;
         }
 
         queryCompletedEvent?.Dispose();

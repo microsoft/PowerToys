@@ -24,14 +24,6 @@ public partial class InstallPackageCommand : InvokableCommand
 
     public PackageInstallCommandState InstallCommandState { get; private set; }
 
-    public static IconInfo CompletedIcon { get; } = new("\uE930"); // Completed
-
-    public static IconInfo UpdateIcon { get; } = new("\uE74A"); // Up
-
-    public static IconInfo DownloadIcon { get; } = new("\uE896"); // Download
-
-    public static IconInfo DeleteIcon { get; } = new("\uE74D"); // Delete
-
     public event EventHandler<InstallPackageCommand>? InstallStateChanged;
 
     private static readonly CompositeFormat UninstallingPackage = System.Text.CompositeFormat.Parse(Properties.Resources.winget_uninstalling_package);
@@ -69,9 +61,9 @@ public partial class InstallPackageCommand : InvokableCommand
     {
         Icon = InstallCommandState switch
         {
-            PackageInstallCommandState.Install => DownloadIcon,
-            PackageInstallCommandState.Update => UpdateIcon,
-            PackageInstallCommandState.Uninstall => CompletedIcon,
+            PackageInstallCommandState.Install => Icons.DownloadIcon,
+            PackageInstallCommandState.Update => Icons.UpdateIcon,
+            PackageInstallCommandState.Uninstall => Icons.CompletedIcon,
             _ => throw new NotImplementedException(),
         };
         Name = InstallCommandState switch

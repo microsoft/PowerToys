@@ -47,7 +47,7 @@ internal static class ErrorHandler
         {
             Title = Properties.Resources.calculator_calculation_failed_title,
             Subtitle = errorMessage,
-            Icon = CalculatorIcons.ErrorIcon,
+            Icon = Icons.ErrorIcon,
         };
     }
 }

@@ -133,6 +133,15 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please enter an expression.
+        /// </summary>
+        public static string calculator_expression_empty {
+            get {
+                return ResourceManager.GetString("calculator_expression_empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Expression wrong or incomplete.
         /// </summary>
         public static string calculator_expression_not_complete {

@@ -41,6 +41,7 @@ namespace WorkspacesEditor.Models
             Maximized = other.Maximized;
             Position = other.Position;
             MonitorNumber = other.MonitorNumber;
+            Version = other.Version;
 
             Parent = other.Parent;
             IsNotFound = other.IsNotFound;
@@ -274,5 +275,7 @@ namespace WorkspacesEditor.Models
             CommandLineArguments = newCommandLineValue;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
         }
+
+        public string Version { get; set; }
     }
 }

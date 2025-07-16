@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="WorkspacesEditor.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -172,7 +172,7 @@
             VerticalContentAlignment="Stretch"
             VerticalScrollBarVisibility="Auto"
             Visibility="{Binding IsWorkspacesViewEmpty, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}, UpdateSourceTrigger=PropertyChanged}">
-            <ItemsControl ItemsSource="{Binding WorkspacesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+            <ItemsControl x:Name="WorkspacesItemsControl" ItemsSource="{Binding WorkspacesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel
@@ -235,7 +235,10 @@
                                         Grid.Column="1"
                                         Margin="12,12,12,12"
                                         Orientation="Vertical">
-                                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                                        <StackPanel
+                                            x:Name="WorkspaceActionGroup"
+                                            HorizontalAlignment="Right"
+                                            Orientation="Horizontal">
                                             <Button
                                                 x:Name="MoreButton"
                                                 HorizontalAlignment="Right"
@@ -248,7 +251,8 @@
                                             </Button>
                                             <Popup
                                                 AllowsTransparency="True"
-                                                IsOpen="{Binding IsPopupVisible, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Closed="PopupClosed"
+                                                IsOpen="{Binding IsPopupVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Placement="Left"
                                                 PlacementTarget="{Binding ElementName=MoreButton}"
                                                 StaysOpen="False">

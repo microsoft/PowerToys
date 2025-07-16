@@ -16,7 +16,7 @@
   On the received object, the runner will call:
     - get_key() to get the non localized ID of the PowerToy,
     - enable() to initialize the PowerToy.
-    - get_hotkeys() to register the hotkeys the PowerToy uses.
+    - get_hotkeys() to register the hotkeys that the PowerToy uses.
 
   While running, the runner might call the following methods between create_powertoy()
   and destroy():

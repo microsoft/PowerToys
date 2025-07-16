@@ -10,4 +10,7 @@ public:
 
     // Log that the user activated the module by starting a highlighting session
     static void StartHighlightingSession() noexcept;
+
+    // Log that spotlight mode is enabled
+    static void StartSpotlightSession() noexcept;
 };

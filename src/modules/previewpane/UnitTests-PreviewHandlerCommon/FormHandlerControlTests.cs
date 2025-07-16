@@ -146,7 +146,7 @@ namespace PreviewHandlerCommonUnitTests
         }
 
         [TestMethod]
-        public void FormHandlerControlShouldSetVisibletrueWhenDoPreviewCalled()
+        public void FormHandlerControlShouldSetVisibleTrueWhenDoPreviewCalled()
         {
             // Arrange
             using (var testFormHandlerControl = new TestFormControl())

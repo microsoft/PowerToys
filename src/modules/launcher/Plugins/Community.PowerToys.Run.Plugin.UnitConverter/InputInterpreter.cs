@@ -44,7 +44,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
         }
 
         /// <summary>
-        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2" etc) to 'x foot in cm'.
+        /// Replaces a split input array with shorthand feet/inch notation (1', 1'2", etc.) to 'x foot in cm'.
         /// </summary>
         public static void ShorthandFeetInchHandler(ref string[] split, CultureInfo culture)
         {

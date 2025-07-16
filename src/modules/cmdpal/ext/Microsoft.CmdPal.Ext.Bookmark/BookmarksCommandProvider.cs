@@ -23,15 +23,11 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private Bookmarks? _bookmarks;
 
-    public static IconInfo DeleteIcon { get; private set; } = new("\uE74D"); // Delete
-
-    public static IconInfo EditIcon { get; private set; } = new("\uE70F"); // Edit
-
     public BookmarksCommandProvider()
     {
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
-        Icon = new IconInfo("\uE718"); // Pin
+        Icon = Icons.PinIcon;
 
         _addNewCommand.AddedCommand += AddNewCommand_AddedCommand;
     }
@@ -132,7 +128,7 @@ public partial class BookmarksCommandProvider : CommandProvider
             listItem.Subtitle = urlCommand.Url;
         }
 
-        var edit = new AddBookmarkPage(bookmark) { Icon = EditIcon };
+        var edit = new AddBookmarkPage(bookmark) { Icon = Icons.EditIcon };
         edit.AddedCommand += Edit_AddedCommand;
         contextMenu.Add(new CommandContextItem(edit));
 
@@ -153,7 +149,7 @@ public partial class BookmarksCommandProvider : CommandProvider
             result: CommandResult.KeepOpen())
         {
             IsCritical = true,
-            Icon = DeleteIcon,
+            Icon = Icons.DeleteIcon,
         };
         contextMenu.Add(delete);
 

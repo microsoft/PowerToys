@@ -4,13 +4,25 @@
 
 using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Indexer.Commands;
+using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation.Metadata;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Data;
 
 internal sealed partial class IndexerListItem : ListItem
 {
+    internal static readonly bool IsActionsFeatureEnabled = GetFeatureFlag();
+
+    private static bool GetFeatureFlag()
+    {
+        var env = System.Environment.GetEnvironmentVariable("CMDPAL_ENABLE_ACTIONS_LIST");
+        return !string.IsNullOrEmpty(env) &&
+           (env == "1" || env.Equals("true", System.StringComparison.OrdinalIgnoreCase));
+    }
+
     internal string FilePath { get; private set; }
 
     public IndexerListItem(
@@ -38,9 +50,24 @@ internal sealed partial class IndexerListItem : ListItem
             }
         }
 
-        MoreCommands = [
+        IContextItem[] moreCommands = [
             ..context,
-            new CommandContextItem(new OpenWithCommand(indexerItem)),
+            new CommandContextItem(new OpenWithCommand(indexerItem))];
+
+        if (IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
+        {
+            var actionsListContextItem = new ActionsListContextItem(indexerItem.FullPath);
+            if (actionsListContextItem.AnyActions())
+            {
+                moreCommands = [
+                    .. moreCommands,
+                    actionsListContextItem
+                ];
+            }
+        }
+
+        MoreCommands = [
+            .. moreCommands,
             new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath) { Name = Resources.Indexer_Command_ShowInFolder }),
             new CommandContextItem(new CopyPathCommand(indexerItem)),
             new CommandContextItem(new OpenInConsoleCommand(indexerItem)),

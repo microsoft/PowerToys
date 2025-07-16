@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
 using Peek.Common.Extensions;
 using Peek.FilePreviewer.Models;
+using Peek.FilePreviewer.Previewers;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
 using Peek.UI.Telemetry.Events;
@@ -204,6 +205,8 @@ namespace Peek.UI
             ViewModel.ScalingFactor = 1;
 
             this.Content.KeyUp -= Content_KeyUp;
+
+            ShellPreviewHandlerPreviewer.ReleaseHandlerFactories();
         }
 
         /// <summary>
@@ -213,7 +216,7 @@ namespace Peek.UI
         /// <param name="e">PreviewSizeChangedArgs</param>
         private void FilePreviewer_PreviewSizeChanged(object sender, PreviewSizeChangedArgs e)
         {
-            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+            var foregroundWindowHandle = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
 
             var monitorSize = foregroundWindowHandle.GetMonitorSize();
             var monitorScale = foregroundWindowHandle.GetMonitorScale();

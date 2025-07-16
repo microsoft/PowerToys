@@ -35,7 +35,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
     public CalculatorListPage(SettingsManager settings)
     {
         _settingsManager = settings;
-        Icon = CalculatorIcons.ProviderIcon;
+        Icon = Icons.CalculatorIcon;
         Name = Resources.calculator_title;
         PlaceholderText = Resources.calculator_placeholder_text;
         Id = "com.microsoft.cmdpal.calculator";
@@ -43,11 +43,11 @@ public sealed partial class CalculatorListPage : DynamicListPage
         _emptyItem = new ListItem(new NoOpCommand())
         {
             Title = Resources.calculator_placeholder_text,
-            Icon = CalculatorIcons.ResultIcon,
+            Icon = Icons.ResultIcon,
         };
         EmptyContent = new CommandItem(new NoOpCommand())
         {
-            Icon = CalculatorIcons.ProviderIcon,
+            Icon = Icons.CalculatorIcon,
             Title = Resources.calculator_placeholder_text,
         };
 

@@ -42,10 +42,10 @@ internal sealed class AvailableResult
     {
         return IconType switch
         {
-            ResultIconType.Time => ResultHelper.TimeIcon,
-            ResultIconType.Date => ResultHelper.CalendarIcon,
-            ResultIconType.DateTime => ResultHelper.TimeDateIcon,
-            ResultIconType.Error => ResultHelper.ErrorIcon,
+            ResultIconType.Time => Icons.TimeIcon,
+            ResultIconType.Date => Icons.CalendarIcon,
+            ResultIconType.DateTime => Icons.TimeDateIcon,
+            ResultIconType.Error => Icons.ErrorIcon,
             _ => null,
         };
     }

@@ -158,7 +158,7 @@ internal static class TimeAndDateHelper
     /// <param name="input">String with date/time</param>
     /// <param name="timestamp">The new <see cref="DateTime"/> object</param>
     /// <param name="inputParsingErrorMsg">Error message shown to the user</param>
-    /// <returns>True on success, otherwise false</returns>
+    /// <returns>True on success; otherwise, false</returns>
     internal static bool ParseStringAsDateTime(in string input, out DateTime timestamp, out string inputParsingErrorMsg)
     {
         inputParsingErrorMsg = string.Empty;
@@ -309,7 +309,7 @@ internal static class TimeAndDateHelper
     /// Test if input is special parsing for Unix time, Unix time in milliseconds, file time, ...
     /// </summary>
     /// <param name="input">String with date/time</param>
-    /// <returns>True if yes, otherwise false</returns>
+    /// <returns>True if yes; otherwise, false</returns>
     internal static bool IsSpecialInputParsing(string input)
     {
         return _regexSpecialInputFormats.IsMatch(input);

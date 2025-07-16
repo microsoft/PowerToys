@@ -16,7 +16,7 @@
            1) Per-Monitor for >= Windows 10 Anniversary Update
            2) System < Windows 10 Anniversary Update
            -->
-			<dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2, PerMonitor</dpiAwareness>
+			<dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
 		</windowsSettings>
 	</application>
 </assembly>

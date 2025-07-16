@@ -21,19 +21,19 @@ internal sealed partial class CopyRegistryInfoCommand : InvokableCommand
         if (typeToCopy == CopyType.Key)
         {
             Name = Resources.CopyKeyNamePath;
-            Icon = new IconInfo("\xE8C8"); // Copy Icon
+            Icon = Icons.CopyIcon;
             _stringToCopy = entry.GetRegistryKey();
         }
         else if (typeToCopy == CopyType.ValueData)
         {
             Name = Resources.CopyValueData;
-            Icon = new IconInfo("\xF413"); // CopyTo Icon
+            Icon = Icons.CopyToIcon;
             _stringToCopy = entry.GetValueData();
         }
         else if (typeToCopy == CopyType.ValueName)
         {
             Name = Resources.CopyValueName;
-            Icon = new IconInfo("\xE8C8"); // Copy Icon
+            Icon = Icons.CopyIcon;
             _stringToCopy = entry.GetValueNameWithKey();
         }
 

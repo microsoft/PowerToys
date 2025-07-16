@@ -35,7 +35,7 @@ public static class CalculateHelper
     {
         if (string.IsNullOrWhiteSpace(input))
         {
-            throw new ArgumentNullException(paramName: nameof(input));
+            return false;
         }
 
         if (!RegValidExpressChar.IsMatch(input))
@@ -73,7 +73,7 @@ public static class CalculateHelper
     private static string CheckScientificNotation(string input)
     {
         /**
-         * NOTE: By the time the expression gets to us, it's already in English format.
+         * NOTE: By the time that the expression gets to us, it's already in English format.
          *
          * Regex explanation:
          * (-?(\d+({0}\d*)?)|-?({0}\d+)): Used to capture one of two types:

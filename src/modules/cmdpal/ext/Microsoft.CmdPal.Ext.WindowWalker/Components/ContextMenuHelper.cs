@@ -33,9 +33,10 @@ internal sealed class ContextMenuHelper
         if (!windowData.Process.IsShellProcess && !(windowData.Process.IsUwpApp && string.Equals(windowData.Process.Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase))
             && !(windowData.Process.IsFullAccessDenied && SettingsManager.Instance.HideKillProcessOnElevatedProcesses))
         {
-            contextMenu.Add(new CommandContextItem(new KillProcessCommand(windowData))
+            contextMenu.Add(new CommandContextItem(new EndTaskCommand(windowData))
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.Delete, 0),
+                IsCritical = true,
             });
         }
 
