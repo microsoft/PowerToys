@@ -62,9 +62,7 @@ public class PeekFilePreviewTests : UITestBase
             string fileName = Path.GetFileName(testFile);
             string fileExtension = Path.GetExtension(testFile).ToLowerInvariant();
 
-            // Perform visual assertion with file-specific scenario name
-            string scenarioName = $"TestAssets_{Path.GetFileNameWithoutExtension(fileName)}_{fileExtension.Replace(".", string.Empty)}";
-            TestFilePreviewWithVisualComparison(testFile, scenarioName);
+            TestFilePreviewWithVisualComparison(testFile);
         }
 
         Assert.Fail("All test files should be processed without failure. If this fails, check the TestAssets folder for missing or unsupported files.");
@@ -256,58 +254,6 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
-    /// Opens a file with Peek and performs visual comparison with baseline image
-    /// </summary>
-    /// <param name="filePath">Full path to the file to preview</param>
-    /// <param name="scenarioName">Unique scenario name for baseline image matching</param>
-    private void TestFilePreviewWithVisualComparison(string filePath, string scenarioName)
-    {
-        string fileName = Path.GetFileName(filePath);
-        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
-
-        // Try both window title formats since Windows may show or hide file extensions
-        string peekWindowTitleWithExt = $"{fileName} - Peek";
-        string peekWindowTitleWithoutExt = $"{fileNameWithoutExt} - Peek";
-
-        // Open file with Peek
-        OpenAndPeekFile(filePath);
-
-        // Try to attach to the correct window title
-        Element? previewWindow = null;
-
-        try
-        {
-            // First try to find the window with extension
-            previewWindow = Find(peekWindowTitleWithExt, 5000, true);
-            Session.Attach(peekWindowTitleWithExt);
-        }
-        catch
-        {
-            try
-            {
-                // Then try without extension
-                previewWindow = Find(peekWindowTitleWithoutExt, 5000, true);
-                Session.Attach(peekWindowTitleWithoutExt);
-            }
-            catch
-            {
-                // If neither works, let it fail with a clear message
-                Assert.Fail($"Could not find and attach to Peek window with title '{peekWindowTitleWithExt}' or '{peekWindowTitleWithoutExt}' for file {fileName}");
-            }
-        }
-
-        Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileName}");
-        previewWindow.SaveToPngFile(Path.Combine(ScreenshotDirectory ?? string.Empty, $"{scenarioName}.png"));
-
-        // Perform visual assertion
-        // Note: Baseline images are embedded resources and must be created during the first run in the pipeline
-        // The scenario name should be unique to avoid conflicts between different file types
-        // VisualAssert.AreEqual(TestContext, previewWindow, scenarioName);
-        // Close peek window
-        ClosePeekAndExplorer();
-    }
-
-    /// <summary>
     /// Opens a file with Peek without performing visual comparison
     /// Used for tests that need to open files but don't require visual validation
     /// </summary>
@@ -351,6 +297,21 @@ public class PeekFilePreviewTests : UITestBase
 
         Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileName}");
         return previewWindow;
+    }
+
+    private void TestFilePreviewWithVisualComparison(string filePath)
+    {
+        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
+
+        Element previewWindow = OpenPeekWindow(filePath);
+
+        Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileNameWithoutExt}");
+
+        previewWindow.SaveToPngFile(Path.Combine(ScreenshotDirectory ?? string.Empty, $"{fileNameWithoutExt}.png"));
+
+        // VisualAssert.AreEqual(TestContext, previewWindow, fileNameWithoutExt );
+        // Close peek window
+        ClosePeekAndExplorer();
     }
 
     /// <summary>
