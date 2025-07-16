@@ -14,6 +14,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
+      <EnableControlFlowGuard>true</EnableControlFlowGuard>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>

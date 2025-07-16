@@ -12,6 +12,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>
+      <EnableControlFlowGuard>true</EnableControlFlowGuard>
   </PropertyGroup>
   <PropertyGroup>
     <ConfigurationType>Application</ConfigurationType>

@@ -14,6 +14,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <TargetName>PowerToys.PowerRenameExt</TargetName>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+      <EnableControlFlowGuard>true</EnableControlFlowGuard>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <PlatformToolset>v143</PlatformToolset>

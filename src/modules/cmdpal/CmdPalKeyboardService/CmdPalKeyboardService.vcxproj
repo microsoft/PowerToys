@@ -15,6 +15,7 @@
   <PropertyGroup Label="Configuration">
     <EnableHybridCRT>true</EnableHybridCRT>
     <UseCrtSDKReferenceStaticWarning Condition="'$(EnableHybridCRT)'=='true'">false</UseCrtSDKReferenceStaticWarning>
+      <EnableControlFlowGuard>true</EnableControlFlowGuard>
   </PropertyGroup>
   <!-- END common.build.pre.props -->
   <!-- BEGIN cppwinrt.build.pre.props -->
