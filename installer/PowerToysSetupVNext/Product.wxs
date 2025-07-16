@@ -159,7 +159,9 @@
     <CustomAction Id="LaunchPowerToys" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="LaunchPowerToysCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="TerminateProcesses" Return="ignore" Execute="immediate" DllEntry="TerminateProcessesCA" BinaryRef="PTCustomActions" />
-
+    
+    <CustomAction Id="TerminateOccupiedProcesses" Return="ignore" Execute="immediate" DllEntry="TerminateOccupiedProcessesCA" BinaryRef="PTCustomActions" />
+    
     <CustomAction Id="SetApplyModulesRegistryChangeSetsParam" Property="ApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetUnApplyModulesRegistryChangeSetsParam" Property="UnApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
