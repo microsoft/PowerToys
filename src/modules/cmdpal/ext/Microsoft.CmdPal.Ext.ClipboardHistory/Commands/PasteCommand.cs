@@ -20,7 +20,7 @@ internal sealed partial class PasteCommand : InvokableCommand
         _clipboardItem = clipboardItem;
         _clipboardFormat = clipboardFormat;
         Name = Properties.Resources.paste_command_name;
-        Icon = Icons.Paste;
+        Icon = Icons.PasteIcon;
     }
 
     private void HideWindow()

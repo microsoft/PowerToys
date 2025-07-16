@@ -48,13 +48,13 @@ internal sealed partial class RunExeItem : ListItem
                 new AnonymousCommand(RunAsAdmin)
             {
                 Name = Properties.Resources.cmd_run_as_administrator,
-                Icon = Icons.RunAsAdmin,
+                Icon = Icons.AdminIcon,
             }),
             new CommandContextItem(
                 new AnonymousCommand(RunAsOther)
             {
                 Name = Properties.Resources.cmd_run_as_user,
-                Icon = Icons.RunAsUser,
+                Icon = Icons.UserIcon,
             }),
         ];
     }

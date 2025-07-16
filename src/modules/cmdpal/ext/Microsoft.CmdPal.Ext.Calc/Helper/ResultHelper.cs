@@ -35,7 +35,7 @@ public static class ResultHelper
         return new ListItem(saveCommand)
         {
             // Using CurrentCulture since this is user facing
-            Icon = CalculatorIcons.ResultIcon,
+            Icon = Icons.ResultIcon,
             Title = result,
             Subtitle = query,
             MoreCommands = [

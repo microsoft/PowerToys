@@ -24,7 +24,8 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             Resources.shell_command_display_title)
     {
         Title = string.Empty;
-        Icon = Icons.RunV2;
+        Subtitle = Properties.Resources.generic_run_command;
+        Icon = Icons.RunV2Icon; // Defined in Icons.cs and contains the execute command icon.
     }
 
     public override void UpdateQuery(string query)

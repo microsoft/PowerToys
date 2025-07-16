@@ -27,7 +27,7 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
         : base(new NoOpCommand())
     {
         Title = Resources.Indexer_Command_Actions;
-        Icon = Icons.Actions;
+        Icon = Icons.ActionsIcon;
         RequestedShortcut = KeyChordHelpers.FromModifiers(alt: true, vkey: VirtualKey.A);
         this.fullPath = fullPath;
         UpdateMoreCommands();

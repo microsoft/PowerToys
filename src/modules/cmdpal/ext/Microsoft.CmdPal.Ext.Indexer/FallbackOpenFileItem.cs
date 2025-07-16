@@ -30,7 +30,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     {
         Title = string.Empty;
         Subtitle = string.Empty;
-        Icon = Icons.FileExplorer;
+        Icon = Icons.FileExplorerIcon;
     }
 
     public override void UpdateQuery(string query)
@@ -119,7 +119,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 // us to the file search page, prepopulated with this search.
                 var indexerPage = new IndexerPage(query, _searchEngine, _queryCookie, results);
                 Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
-                Icon = Icons.FileExplorer;
+                Icon = Icons.FileExplorerIcon;
                 Subtitle = Resources.Indexer_Subtitle;
                 Command = indexerPage;
 

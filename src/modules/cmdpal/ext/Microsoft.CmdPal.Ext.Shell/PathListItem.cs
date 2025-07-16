@@ -61,7 +61,7 @@ internal sealed partial class PathListItem : ListItem
         {
             var iconStream = ThumbnailHelper.GetThumbnail(path).Result;
             var icon = iconStream != null ? IconInfo.FromStream(iconStream) :
-             _isDirectory ? Icons.Folder : Icons.RunV2;
+             _isDirectory ? Icons.FolderIcon : Icons.RunV2Icon;
             return icon;
         });
     }

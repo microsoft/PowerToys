@@ -19,7 +19,7 @@ public partial class IndexerCommandsProvider : CommandProvider
     {
         Id = "Files";
         DisplayName = Resources.IndexerCommandsProvider_DisplayName;
-        Icon = Icons.FileExplorer;
+        Icon = Icons.FileExplorerIcon;
 
         if (IndexerListItem.IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {

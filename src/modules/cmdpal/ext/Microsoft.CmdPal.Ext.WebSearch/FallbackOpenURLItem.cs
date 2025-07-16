@@ -19,13 +19,13 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
     private static readonly CompositeFormat PluginOpenUrlInBrowser = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url_in_browser);
 
     public FallbackOpenURLItem(SettingsManager settings)
-        : base(new OpenURLCommand(string.Empty, settings), Properties.Resources.open_url_fallback_title)
+        : base(new OpenURLCommand(string.Empty), Properties.Resources.open_url_fallback_title)
     {
         _executeItem = (OpenURLCommand)this.Command!;
         Title = string.Empty;
         _executeItem.Name = string.Empty;
         Subtitle = string.Empty;
-        Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
+        Icon = Icons.WebSearch;
     }
 
     public override void UpdateQuery(string query)
