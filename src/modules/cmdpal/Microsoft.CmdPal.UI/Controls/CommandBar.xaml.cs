@@ -115,13 +115,13 @@ public sealed partial class CommandBar : UserControl,
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void PrimaryButton_Tapped(object sender, TappedRoutedEventArgs e)
+    private void PrimaryButton_Clicked(object sender, RoutedEventArgs e)
     {
         ViewModel.InvokePrimaryCommand();
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void SecondaryButton_Tapped(object sender, TappedRoutedEventArgs e)
+    private void SecondaryButton_Clicked(object sender, RoutedEventArgs e)
     {
         ViewModel.InvokeSecondaryCommand();
     }
@@ -136,13 +136,12 @@ public sealed partial class CommandBar : UserControl,
         }
     }
 
-    private void SettingsIcon_Tapped(object sender, TappedRoutedEventArgs e)
+    private void SettingsIcon_Clicked(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
-        e.Handled = true;
     }
 
-    private void MoreCommandsButton_Tapped(object sender, TappedRoutedEventArgs e)
+    private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
     }

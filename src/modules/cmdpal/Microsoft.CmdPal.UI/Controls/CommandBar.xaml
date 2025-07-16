@@ -113,7 +113,7 @@
             x:Name="SettingsIconButton"
             x:Uid="SettingsButton"
             Style="{StaticResource SubtleButtonStyle}"
-            Tapped="SettingsIcon_Tapped"
+            Click="SettingsIcon_Clicked"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <FontIcon
@@ -147,7 +147,7 @@
                 AutomationProperties.Name="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
                 Background="Transparent"
                 Style="{StaticResource SubtleButtonStyle}"
-                Tapped="PrimaryButton_Tapped"
+                Click="PrimaryButton_Clicked"
                 Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
@@ -170,7 +170,7 @@
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 AutomationProperties.Name="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
                 Style="{StaticResource SubtleButtonStyle}"
-                Tapped="SecondaryButton_Tapped"
+                Click="SecondaryButton_Clicked"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
@@ -203,7 +203,7 @@
                 Content="{ui:FontIcon Glyph=&#xE712;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
-                Tapped="MoreCommandsButton_Tapped"
+                Click="MoreCommandsButton_Clicked"
                 ToolTipService.ToolTip="Ctrl+K"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}" />
         </StackPanel>

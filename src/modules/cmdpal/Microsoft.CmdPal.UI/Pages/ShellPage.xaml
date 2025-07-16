@@ -229,7 +229,7 @@
                                               FontSize=14}"
                         FontSize="16"
                         Style="{StaticResource SubtleButtonStyle}"
-                        Tapped="BackButton_Tapped"
+                        Click="BackButton_Clicked"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
