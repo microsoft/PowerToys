@@ -8,5 +8,13 @@ namespace Microsoft.CmdPal.Ext.Shell;
 
 internal sealed class Icons
 {
-    internal static IconInfo RunV2 { get; } = IconHelpers.FromRelativePath("Assets\\Run.svg");
+    internal static IconInfo RunV2Icon { get; } = IconHelpers.FromRelativePath("Assets\\Run.svg");
+
+    internal static IconInfo HistoryIcon { get; } = new IconInfo("\uE81C"); // History
+
+    internal static IconInfo AdminIcon { get; } = new IconInfo("\xE7EF"); // Admin Icon
+
+    internal static IconInfo UserIcon { get; } = new IconInfo("\xE7EE"); // User Icon
+
+    internal static IconInfo ReturnIcon { get; } = new IconInfo("\uE751"); // Return Key Icon
 }

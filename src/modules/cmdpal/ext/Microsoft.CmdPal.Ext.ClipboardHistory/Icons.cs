@@ -8,11 +8,11 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory;
 
 internal sealed class Icons
 {
-    internal static IconInfo Copy { get; } = new("\xE8C8");
+    internal static IconInfo CopyIcon { get; } = new("\xE8C8");
 
-    internal static IconInfo Picture { get; } = new("\xE8B9");
+    internal static IconInfo PictureIcon { get; } = new("\xE8B9");
 
-    internal static IconInfo Paste { get; } = new("\uE77F");
+    internal static IconInfo PasteIcon { get; } = new("\uE77F");
 
-    internal static IconInfo ClipboardList { get; } = new("\uF0E3");
+    internal static IconInfo ClipboardListIcon { get; } = new("\uF0E3");
 }

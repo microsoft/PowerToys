@@ -19,11 +19,11 @@ internal sealed partial class CopyCommand : InvokableCommand
         Name = Properties.Resources.copy_command_name;
         if (clipboardFormat == ClipboardFormat.Text)
         {
-            Icon = Icons.Copy;
+            Icon = Icons.CopyIcon;
         }
         else
         {
-            Icon = Icons.Picture;
+            Icon = Icons.PictureIcon;
         }
     }
 

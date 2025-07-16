@@ -52,6 +52,7 @@ namespace PowerAccent.Core
         SR_CYRL,
         SV,
         TK,
+        VI,
     }
 
     internal sealed class Languages
@@ -115,6 +116,7 @@ namespace PowerAccent.Core
                     Language.SR_CYRL => GetDefaultLetterKeySRCyrillic(letter), // Serbian Cyrillic
                     Language.SV => GetDefaultLetterKeySV(letter), // Swedish
                     Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
+                    Language.VI => GetDefaultLetterKeyVI(letter), // Vietnamese
                     _ => throw new ArgumentException("The language {0} is not known in this context", lang.ToString()),
                 });
             }
@@ -171,6 +173,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeySRCyrillic(letter))
                 .Union(GetDefaultLetterKeySV(letter))
                 .Union(GetDefaultLetterKeyTK(letter))
+                .Union(GetDefaultLetterKeyVI(letter))
                 .Union(GetDefaultLetterKeySPECIAL(letter))
                 .ToArray();
 
@@ -907,6 +910,22 @@ namespace PowerAccent.Core
                 LetterKey.VK_E => new[] { "€" },
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_Z => new[] { "ž" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Vietnamese
+        private static string[] GetDefaultLetterKeyVI(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "à", "ả", "ã", "á", "ạ", "ă", "ằ", "ẳ", "ẵ", "ắ", "ặ", "â", "ầ", "ẩ", "ẫ", "ấ", "ậ" },
+                LetterKey.VK_D => new[] { "đ" },
+                LetterKey.VK_E => new[] { "è", "ẻ", "ẽ", "é", "ẹ", "ê", "ề", "ể", "ễ", "ế", "ệ" },
+                LetterKey.VK_I => new[] { "ì", "ỉ", "ĩ", "í", "ị" },
+                LetterKey.VK_O => new[] { "ò", "ỏ", "õ", "ó", "ọ", "ô", "ồ", "ổ", "ỗ", "ố", "ộ", "ơ", "ờ", "ở", "ỡ", "ớ", "ợ" },
+                LetterKey.VK_U => new[] { "ù", "ủ", "ũ", "ú", "ụ", "ư", "ừ", "ử", "ữ", "ứ", "ự" },
+                LetterKey.VK_Y => new[] { "ỳ", "ỷ", "ỹ", "ý", "ỵ" },
                 _ => Array.Empty<string>(),
             };
         }

@@ -2,17 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
-using Microsoft.CmdPal.Ext.System;
-using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CmdPal.UI.Views;
+using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
 using Windows.UI.Core;
@@ -183,32 +178,95 @@ public sealed partial class ContextMenu : UserControl,
     {
         if (e.Key == VirtualKey.Up)
         {
-            // navigate previous
-            if (CommandsDropdown.SelectedIndex > 0)
-            {
-                CommandsDropdown.SelectedIndex--;
-            }
-            else
-            {
-                CommandsDropdown.SelectedIndex = CommandsDropdown.Items.Count - 1;
-            }
+            NavigateUp();
 
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.Down)
         {
-            // navigate next
-            if (CommandsDropdown.SelectedIndex < CommandsDropdown.Items.Count - 1)
-            {
-                CommandsDropdown.SelectedIndex++;
-            }
-            else
-            {
-                CommandsDropdown.SelectedIndex = 0;
-            }
+            NavigateDown();
 
             e.Handled = true;
         }
+    }
+
+    private void NavigateUp()
+    {
+        var newIndex = CommandsDropdown.SelectedIndex;
+
+        if (CommandsDropdown.SelectedIndex > 0)
+        {
+            newIndex--;
+
+            while (
+                newIndex >= 0 &&
+                IsSeparator(CommandsDropdown.Items[newIndex]) &&
+                newIndex != CommandsDropdown.SelectedIndex)
+            {
+                newIndex--;
+            }
+
+            if (newIndex < 0)
+            {
+                newIndex = CommandsDropdown.Items.Count - 1;
+
+                while (
+                    newIndex >= 0 &&
+                    IsSeparator(CommandsDropdown.Items[newIndex]) &&
+                    newIndex != CommandsDropdown.SelectedIndex)
+                {
+                    newIndex--;
+                }
+            }
+        }
+        else
+        {
+            newIndex = CommandsDropdown.Items.Count - 1;
+        }
+
+        CommandsDropdown.SelectedIndex = newIndex;
+    }
+
+    private void NavigateDown()
+    {
+        var newIndex = CommandsDropdown.SelectedIndex;
+
+        if (CommandsDropdown.SelectedIndex == CommandsDropdown.Items.Count - 1)
+        {
+            newIndex = 0;
+        }
+        else
+        {
+            newIndex++;
+
+            while (
+                newIndex < CommandsDropdown.Items.Count &&
+                IsSeparator(CommandsDropdown.Items[newIndex]) &&
+                newIndex != CommandsDropdown.SelectedIndex)
+            {
+                newIndex++;
+            }
+
+            if (newIndex >= CommandsDropdown.Items.Count)
+            {
+                newIndex = 0;
+
+                while (
+                    newIndex < CommandsDropdown.Items.Count &&
+                    IsSeparator(CommandsDropdown.Items[newIndex]) &&
+                    newIndex != CommandsDropdown.SelectedIndex)
+                {
+                    newIndex++;
+                }
+            }
+        }
+
+        CommandsDropdown.SelectedIndex = newIndex;
+    }
+
+    private bool IsSeparator(object item)
+    {
+        return item is SeparatorContextItemViewModel;
     }
 
     private void UpdateUiForStackChange()

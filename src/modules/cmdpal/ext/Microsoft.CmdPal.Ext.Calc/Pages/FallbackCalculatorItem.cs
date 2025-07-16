@@ -20,7 +20,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
         _copyCommand.Name = string.Empty;
         Title = string.Empty;
         Subtitle = Resources.calculator_placeholder_text;
-        Icon = CalculatorIcons.ProviderIcon;
+        Icon = Icons.CalculatorIcon;
         _settings = settings;
     }
 
