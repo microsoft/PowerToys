@@ -91,15 +91,12 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Exit a exe.
+        /// Exit a exe by Name.
         /// </summary>
-        /// <param name="appPath">The path to the application executable.</param>
-        public void ExitExe(string appPath)
+        /// <param name="processName">The path to the application executable.</param>
+        public void ExitExeByName(string processName)
         {
-            // Exit Exe
-            string exeName = Path.GetFileNameWithoutExtension(appPath);
-
-            Process[] processes = Process.GetProcessesByName(exeName);
+            Process[] processes = Process.GetProcessesByName(processName);
             foreach (Process process in processes)
             {
                 try
@@ -112,6 +109,18 @@ namespace Microsoft.PowerToys.UITest
                     Assert.Fail($"Failed to terminate process {process.ProcessName} (ID: {process.Id}): {ex.Message}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Exit a exe.
+        /// </summary>
+        /// <param name="appPath">The path to the application executable.</param>
+        public void ExitExe(string appPath)
+        {
+            // Exit Exe
+            string exeName = Path.GetFileNameWithoutExtension(appPath);
+
+            ExitExeByName(exeName);
         }
 
         /// <summary>
@@ -158,13 +167,13 @@ namespace Microsoft.PowerToys.UITest
 
             var runnerProcessInfo = new ProcessStartInfo
             {
-                FileName = locationPath + this.runnerPath,
+                FileName = locationPath + runnerPath,
                 Verb = "runas",
                 Arguments = "--open-settings",
             };
 
-            this.ExitExe(runnerProcessInfo.FileName);
-            this.runner = Process.Start(runnerProcessInfo);
+            ExitExe(runnerProcessInfo.FileName);
+            runner = Process.Start(runnerProcessInfo);
             Thread.Sleep(5000);
 
             if (root != null)
@@ -176,7 +185,7 @@ namespace Microsoft.PowerToys.UITest
                 for (int attempt = 1; attempt <= maxRetries; attempt++)
                 {
                     var settingsWindow = ApiHelper.FindDesktopWindowHandler(
-                        new[] { windowName, AdministratorPrefix + windowName });
+                        [windowName, AdministratorPrefix + windowName]);
 
                     if (settingsWindow.Count > 0)
                     {
@@ -195,6 +204,9 @@ namespace Microsoft.PowerToys.UITest
                     }
                 }
             }
+
+            // Exit CmdPal UI before launching new process if use installer for test
+            ExitExeByName("Microsoft.CmdPal.UI");
         }
 
         /// <summary>
