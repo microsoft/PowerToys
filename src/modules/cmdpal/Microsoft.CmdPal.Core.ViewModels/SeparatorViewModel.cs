@@ -9,6 +9,7 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class SeparatorViewModel() :
     IContextItemViewModel,
+    IFilterItemViewModel,
     ISeparatorContextItem,
     ISeparatorFilterItem
 {
