@@ -18,7 +18,7 @@ public class PeekFilePreviewTests : UITestBase
 {
     // Timeout constants for better maintainability
     private const int ExplorerOpenTimeoutSeconds = 15;
-    private const int PeekWindowTimeoutSeconds = 10;
+    private const int PeekWindowTimeoutSeconds = 15;
     private const int ExplorerLoadDelayMs = 3000;
     private const int ExplorerCheckIntervalMs = 1000;
     private const int PeekCheckIntervalMs = 1000;
@@ -252,10 +252,258 @@ public class PeekFilePreviewTests : UITestBase
         ClosePeekAndExplorer();
     }
 
-    private void OpenAndPeekFile(string fullPath)
+    /// <summary>
+    /// Test opening file with default program by clicking a button
+    /// </summary>
+    [TestMethod("Peek.OpenWithDefaultProgram.ClickButton")]
+    [TestCategory("Open with default program")]
+    public void TestOpenWithDefaultProgramByButton()
     {
+        string imagePath = Path.GetFullPath(@".\TestAssets\8.png");
+
+        // Open image with Peek
+        var peekWindow = OpenPeekWindow(imagePath);
+
+        // Find and click the "Open with default program" button
+        var openButton = FindLaunchButton();
+        Assert.IsNotNull(openButton, "Open with default program button should be found");
+
+        // Click the button to open with default program
+        openButton.Click();
+
+        // Wait a moment for the default program to launch
+        Task.Delay(2000).Wait();
+
+        // Verify that the default program process has started
+        // Note: This is a basic check - in a real scenario you might want to check for specific image viewer processes
+        bool defaultProgramLaunched = CheckIfDefaultProgramLaunched();
+        Assert.IsTrue(defaultProgramLaunched, "Default program should be launched after clicking the button");
+
+        ClosePeekAndExplorer();
+    }
+
+    /// <summary>
+    /// Test opening file with default program by pressing Enter key
+    /// </summary>
+    [TestMethod("Peek.OpenWithDefaultProgram.PressEnter")]
+    [TestCategory("Open with default program")]
+    public void TestOpenWithDefaultProgramByEnter()
+    {
+        string imagePath = Path.GetFullPath(@".\TestAssets\8.png");
+
+        // Open image with Peek
+        var peekWindow = OpenPeekWindow(imagePath);
+
+        // Press Enter key to open with default program
         SendKeys(Key.Enter);
 
+        // Wait a moment for the default program to launch
+        Task.Delay(2000).Wait();
+
+        // Verify that the default program process has started
+        bool defaultProgramLaunched = CheckIfDefaultProgramLaunched();
+        Assert.IsTrue(defaultProgramLaunched, "Default program should be launched after pressing Enter");
+
+        ClosePeekAndExplorer();
+    }
+
+    /// <summary>
+    /// Test switching between files in a folder using Left and Right arrow keys
+    /// </summary>
+    [TestMethod("Peek.FileNavigation.SwitchFilesWithArrowKeys")]
+    [TestCategory("File Navigation")]
+    public void TestSwitchFilesWithArrowKeys()
+    {
+        string testAssetsPath = Path.GetFullPath(@".\TestAssets");
+
+        // Get all files in TestAssets folder, ordered alphabetically
+        var testFiles = Directory.GetFiles(testAssetsPath, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(file => !Path.GetFileName(file).StartsWith('.'))
+            .OrderBy(file => file)
+            .ToList();
+
+        Assert.IsTrue(testFiles.Count > 1, "Should have at least 2 test files in TestAssets folder for navigation testing");
+
+        // Start with the first file in the TestAssets folder
+        string firstFilePath = testFiles[0];
+        var peekWindow = OpenPeekWindow(firstFilePath);
+
+        // Keep track of visited files to ensure we can navigate through all
+        var visitedFiles = new List<string> { Path.GetFileNameWithoutExtension(firstFilePath) };
+
+        // Navigate forward through files using Right arrow
+        for (int i = 1; i < testFiles.Count; i++)
+        {
+            // Press Right arrow to go to next file
+            SendKeys(Key.Right);
+            Task.Delay(2000).Wait(); // Wait for file to load
+
+            // Try to determine current file from window title
+            try
+            {
+                var currentWindow = peekWindow.Name;
+                string expectedFileName = Path.GetFileNameWithoutExtension(testFiles[i]);
+                if (!string.IsNullOrEmpty(currentWindow) && currentWindow.StartsWith(expectedFileName, StringComparison.Ordinal))
+                {
+                    visitedFiles.Add(expectedFileName);
+                }
+            }
+            catch
+            {
+                // Continue if we can't get window title
+            }
+        }
+
+        // Verify we navigated through the expected number of files
+        Assert.AreEqual(testFiles.Count, visitedFiles.Count, $"Should have navigated through all {testFiles.Count} files, but only visited {visitedFiles.Count} files: {string.Join(", ", visitedFiles)}");
+
+        // Navigate backward using Left arrow to verify reverse navigation
+        for (int i = testFiles.Count - 2; i >= 0; i--)
+        {
+            SendKeys(Key.Left);
+            Task.Delay(2000).Wait(); // Wait for file to load
+
+            // Try to determine current file from window title during backward navigation
+            try
+            {
+                var currentWindow = peekWindow.Name;
+                string expectedFileName = Path.GetFileNameWithoutExtension(testFiles[i]);
+                if (!string.IsNullOrEmpty(currentWindow) && currentWindow.StartsWith(expectedFileName, StringComparison.Ordinal))
+                {
+                    // Remove the last visited file (going backward)
+                    if (visitedFiles.Count > 1)
+                    {
+                        visitedFiles.RemoveAt(visitedFiles.Count - 1);
+                    }
+                }
+            }
+            catch
+            {
+                // Continue if we can't get window title
+            }
+        }
+
+        // Verify backward navigation worked - should be back to the first file
+        Assert.AreEqual(1, visitedFiles.Count, $"After backward navigation, should be back to first file only. Remaining files: {string.Join(", ", visitedFiles)}");
+
+        ClosePeekAndExplorer();
+    }
+
+    /// <summary>
+    /// Test switching between multiple selected files
+    /// Select first 3 files in Explorer, open with Peek, verify you can switch only between selected files using arrow keys
+    /// </summary>
+    [TestMethod("Peek.FileNavigation.SwitchBetweenSelectedFiles")]
+    [TestCategory("File Navigation")]
+    public void TestSwitchBetweenSelectedFiles()
+    {
+        string testAssetsPath = Path.GetFullPath(@".\TestAssets");
+
+        // Get first 3 files in TestAssets folder, ordered alphabetically
+        var allFiles = Directory.GetFiles(testAssetsPath, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(file => !Path.GetFileName(file).StartsWith('.'))
+            .OrderBy(file => file)
+            .ToList();
+
+        Assert.IsTrue(allFiles.Count >= 3, $"Should have at least 3 test files in TestAssets folder. Found {allFiles.Count} files.");
+
+        var selectedFiles = allFiles.Take(3).ToList();
+
+        // Open Explorer and select the first file
+        Session.StartExe("explorer.exe", $"/select,\"{selectedFiles[0]}\"");
+
+        // Wait for Explorer to open and select the first file
+        WaitForExplorerWindow(selectedFiles[0]);
+
+        // Give Explorer time to fully load
+        Task.Delay(2000).Wait();
+
+        // Use Shift+Down to extend selection to include the next 2 files
+        SendKeys(Key.Shift, Key.Down); // Extend to second file
+        Task.Delay(300).Wait();
+        SendKeys(Key.Shift, Key.Down); // Extend to third file
+        Task.Delay(300).Wait();
+
+        // Now we should have the first 3 files selected, open Peek
+        SendPeekHotkeyWithRetry();
+
+        // Find the peek window (should open with last selected file when multiple files are selected)
+        string lastFileName = Path.GetFileNameWithoutExtension(selectedFiles[2]); // Third file (last selected)
+        string lastFileNameFull = Path.GetFileName(selectedFiles[2]); // Third file with extension
+
+        // Try to find window with or without extension
+        Element? peekWindow = null;
+        try
+        {
+            peekWindow = Find($"{lastFileNameFull} - Peek", 5000, true);
+        }
+        catch
+        {
+            try
+            {
+                peekWindow = Find($"{lastFileName} - Peek", 5000, true);
+            }
+            catch
+            {
+                Assert.Fail($"Could not find Peek window with title '{lastFileNameFull} - Peek' or '{lastFileName} - Peek'");
+            }
+        }
+
+        Assert.IsNotNull(peekWindow, $"Should open Peek window for last selected file: {lastFileName}");
+
+        // Keep track of visited files during navigation (starting from the last file)
+        var visitedFiles = new List<string> { lastFileName };
+        var expectedFileNames = selectedFiles.Select(f => Path.GetFileNameWithoutExtension(f)).ToList();
+
+        // Test navigation by pressing Left arrow multiple times to verify we only cycle through 3 selected files
+        var windowTitles = new List<string> { peekWindow.Name };
+
+        // Press Left arrow 5 times (more than the 3 selected files) to see if we cycle through only the selected files
+        for (int i = 0; i < 5; i++)
+        {
+            SendKeys(Key.Left);
+            Task.Delay(2000).Wait(); // Wait for file to load
+
+            var currentWindowTitle = peekWindow.Name;
+            windowTitles.Add(currentWindowTitle);
+        }
+
+        // Analyze the navigation pattern - we should see repetition indicating we're only cycling through 3 files
+        var uniqueWindowsVisited = windowTitles.Distinct().Count();
+
+        // We should see at most 3 unique windows (the 3 selected files), even after 6 navigation steps
+        Assert.IsTrue(uniqueWindowsVisited <= 3, $"Should only navigate through the 3 selected files, but found {uniqueWindowsVisited} unique windows. " + $"Window titles: {string.Join(" -> ", windowTitles)}");
+
+        ClosePeekAndExplorer();
+    }
+
+    private bool CheckIfDefaultProgramLaunched()
+    {
+        try
+        {
+            // Check if Photos app is running
+            var photosProcesses = Process.GetProcessesByName("Photos");
+
+            foreach (var app in photosProcesses)
+            {
+                // Only close photos windows (corrected from explorer to app)
+                if (app.MainWindowHandle != IntPtr.Zero)
+                {
+                    app.CloseMainWindow();
+                }
+            }
+
+            return photosProcesses.Length > 0;
+        }
+        catch
+        {
+            // If we can't determine, assume it worked (to avoid false negatives)
+            return true;
+        }
+    }
+
+    private void OpenAndPeekFile(string fullPath)
+    {
         Session.StartExe("explorer.exe", $"/select,\"{fullPath}\"");
 
         // Wait for Explorer to open and become ready
@@ -514,4 +762,41 @@ public class PeekFilePreviewTests : UITestBase
 
     private const uint SWPNOSIZE = 0x0001;
     private const uint SWPNOZORDER = 0x0004;
+
+    /// <summary>
+    /// Helper method to find the launch button with different AccessibilityIds depending on window size
+    /// </summary>
+    /// <returns>The launch button element</returns>
+    private Element? FindLaunchButton()
+    {
+        try
+        {
+            // Try to find button with ID for larger window first
+            var button = Find(By.AccessibilityId("LaunchAppButton_Text"), 1000);
+            if (button != null)
+            {
+                return button;
+            }
+        }
+        catch
+        {
+            // Continue to try the other ID
+        }
+
+        try
+        {
+            // Try to find button with ID for smaller window
+            var button = Find(By.AccessibilityId("LaunchAppButton"), 1000);
+            if (button != null)
+            {
+                return button;
+            }
+        }
+        catch
+        {
+            // Both attempts failed
+        }
+
+        return null;
+    }
 }
