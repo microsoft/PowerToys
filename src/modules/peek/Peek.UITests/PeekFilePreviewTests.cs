@@ -33,6 +33,12 @@ public class PeekFilePreviewTests : UITestBase
     {
     }
 
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        Session.CloseMainWindow();
+    }
+
     [TestMethod("Peek.FilePreview.Folder")]
     [TestCategory("Preview files")]
     public void PeekFolderFilePreview()
