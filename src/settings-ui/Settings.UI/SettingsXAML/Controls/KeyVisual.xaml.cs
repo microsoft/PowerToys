@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
@@ -36,6 +37,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty IsInvalidProperty = DependencyProperty.Register(nameof(IsInvalid), typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnIsInvalidChanged));
 
+        public string AccessibleName
+        {
+            get => (string)GetValue(AccessibleNameProperty);
+            set => SetValue(AccessibleNameProperty, value);
+        }
+
+        public static readonly DependencyProperty AccessibleNameProperty = DependencyProperty.Register(nameof(AccessibleName), typeof(string), typeof(KeyVisual), new PropertyMetadata(string.Empty, OnAccessibleNameChanged));
+
         public KeyVisual()
         {
             this.DefaultStyleKey = typeof(KeyVisual);
@@ -62,6 +71,15 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             ((KeyVisual)d).SetVisualStates();
         }
 
+        private static void OnAccessibleNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = (KeyVisual)d;
+            if (control._keyPresenter != null)
+            {
+                AutomationProperties.SetName(control._keyPresenter, (string)e.NewValue);
+            }
+        }
+
         private void SetVisualStates()
         {
             if (_keyVisual != null)
@@ -85,50 +103,103 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             if (_keyVisual != null && _keyVisual.Content != null)
             {
+                FrameworkElement contentElement = null;
+                string accessibleName = string.Empty;
+
                 if (_keyVisual.Content.GetType() == typeof(string))
                 {
+                    // For plain strings, set directly
                     _keyVisual._keyPresenter.Content = _keyVisual.Content;
                     _keyVisual._keyPresenter.Margin = new Thickness(0, -1, 0, 0);
+                    AutomationProperties.SetName(_keyVisual._keyPresenter, _keyVisual.Content.ToString());
+                    return;
                 }
-                else
+
+                switch ((int)_keyVisual.Content)
                 {
-                    _keyVisual._keyPresenter.FontSize = _keyVisual.FontSize * 0.8;
-                    _keyVisual._keyPresenter.FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets");
-                    switch ((int)_keyVisual.Content)
-                    {
-                        case 13: // The Enter key or button.
-                            _keyVisual._keyPresenter.Content = "\uE751"; break;
+                    case 13: // Enter key
+                        accessibleName = "Enter key";
+                        contentElement = CreateGlyphTextBlock("\uE751", accessibleName);
+                        break;
 
-                        case 8: // The Back key or button.
-                            _keyVisual._keyPresenter.Content = "\uE750"; break;
+                    case 8: // Back key
+                        accessibleName = "Back key";
+                        contentElement = CreateGlyphTextBlock("\uE750", accessibleName);
+                        break;
 
-                        case 16: // The right Shift key or button.
-                        case 160: // The left Shift key or button.
-                        case 161: // The Shift key or button.
-                            _keyVisual._keyPresenter.Content = "\uE752"; break;
+                    case 16: // Right Shift
+                    case 160: // Left Shift
+                    case 161: // Shift key
+                        accessibleName = "Shift key";
+                        contentElement = CreateGlyphTextBlock("\uE752", accessibleName);
+                        break;
 
-                        case 38: _keyVisual._keyPresenter.Content = "\uE0E4"; break; // The Up Arrow key or button.
-                        case 40: _keyVisual._keyPresenter.Content = "\uE0E5"; break; // The Down Arrow key or button.
-                        case 37: _keyVisual._keyPresenter.Content = "\uE0E2"; break; // The Left Arrow key or button.
-                        case 39: _keyVisual._keyPresenter.Content = "\uE0E3"; break; // The Right Arrow key or button.
+                    case 38: // Up arrow
+                        accessibleName = "Up arrow key";
+                        contentElement = CreateGlyphTextBlock("\uE0E4", accessibleName);
+                        break;
 
-                        case 91: // The left Windows key
-                        case 92: // The right Windows key
-                            PathIcon winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M896 896H0V0h896v896zm1024 0h-896V0h896v896zM896 1920H0v-896h896v896zm1024 0h-896v-896h896v896z"" />") as PathIcon;
-                            Viewbox winIconContainer = new Viewbox();
-                            winIconContainer.Child = winIcon;
-                            winIconContainer.HorizontalAlignment = HorizontalAlignment.Center;
-                            winIconContainer.VerticalAlignment = VerticalAlignment.Center;
+                    case 40: // Down arrow
+                        accessibleName = "Down arrow key";
+                        contentElement = CreateGlyphTextBlock("\uE0E5", accessibleName);
+                        break;
 
-                            double iconDimensions = _keyVisual.FontSize * 0.8; // Adjust the size of the icon based on the font size
-                            winIconContainer.Height = iconDimensions;
-                            winIconContainer.Width = iconDimensions;
-                            _keyVisual._keyPresenter.Content = winIconContainer;
-                            break;
-                        default: _keyVisual._keyPresenter.Content = ((VirtualKey)_keyVisual.Content).ToString(); break;
-                    }
+                    case 37: // Left arrow
+                        accessibleName = "Left arrow key";
+                        contentElement = CreateGlyphTextBlock("\uE0E2", accessibleName);
+                        break;
+
+                    case 39: // Right arrow
+                        accessibleName = "Right arrow key";
+                        contentElement = CreateGlyphTextBlock("\uE0E3", accessibleName);
+                        break;
+
+                    case 91: // Left Windows key
+                    case 92: // Right Windows key
+                        accessibleName = "Windows key";
+                        PathIcon winIcon = XamlReader.Load(
+                            @"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" 
+                    Data=""M896 896H0V0h896v896zm1024 0h-896V0h896v896zM896 1920H0v-896h896v896zm1024 0h-896v-896h896v896z"" />") as PathIcon;
+
+                        Viewbox winIconContainer = new Viewbox
+                        {
+                            Child = winIcon,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Height = _keyVisual.FontSize * 0.8,
+                            Width = _keyVisual.FontSize * 0.8,
+                        };
+
+                        AutomationProperties.SetName(winIconContainer, accessibleName);
+                        contentElement = winIconContainer;
+                        break;
+
+                    default:
+                        accessibleName = ((VirtualKey)_keyVisual.Content).ToString();
+                        contentElement = new TextBlock
+                        {
+                            Text = accessibleName,
+                            FontSize = _keyVisual.FontSize * 0.8,
+                        };
+                        AutomationProperties.SetName(contentElement, accessibleName);
+                        break;
                 }
+
+                _keyVisual._keyPresenter.Content = contentElement;
+                AccessibleName = accessibleName;
             }
+        }
+
+        private TextBlock CreateGlyphTextBlock(string glyph, string accessibleName)
+        {
+            var tb = new TextBlock
+            {
+                Text = glyph,
+                FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"),
+                FontSize = _keyVisual.FontSize * 0.8,
+            };
+            AutomationProperties.SetName(tb, accessibleName);
+            return tb;
         }
 
         private void KeyVisual_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)

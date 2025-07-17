@@ -120,16 +120,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             if (Shift)
             {
-                shortcutList.Add("Shift");
-
-                // shortcutList.Add(16); // The Shift key or button. Creates accessibility issues.
+                shortcutList.Add(16); // The Shift key or button.
             }
 
             if (Code > 0)
             {
                 switch (Code)
                 {
-                    // using these also creates accessibility issues
                     // https://learn.microsoft.com/uwp/api/windows.system.virtualkey?view=winrt-20348
                     case 38: // The Up Arrow key or button.
                     case 40: // The Down Arrow key or button.
