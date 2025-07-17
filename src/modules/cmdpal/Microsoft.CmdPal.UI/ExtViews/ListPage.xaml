@@ -113,8 +113,8 @@
                 <ListView
                     x:Name="ItemsList"
                     Padding="0,2,0,0"
-                    ContextRequested="ItemsList_OnContextRequested"
                     ContextCanceled="ItemsList_OnContextCanceled"
+                    ContextRequested="ItemsList_OnContextRequested"
                     DoubleTapped="ItemsList_DoubleTapped"
                     IsDoubleTapEnabled="True"
                     IsItemClickEnabled="True"
