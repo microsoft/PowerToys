@@ -2111,9 +2111,7 @@ for highly complex action chaining.
 
 I had originally started to spec this out as:
 
-```c#
-
-
+```cs
 enum ParameterType
 {
     Text,
@@ -2147,6 +2145,47 @@ interface IInvokableCommandWithParameters requires ICommand {
 };
 
 ```
+
+TODO! Mike:
+We should add like, a `CustomPicker` parameter type, which would allow
+extensions to define their own custom pickers for parameters. Then when we go to fill the argument, we'd call something like `ShowPickerAsync(ICommandParameter param)` and let them fill in the value. We don't care what the value is.
+
+So it'd be more like 
+
+```c#
+enum ParameterType
+{
+    Text,
+    // File,
+    // Files,
+    Enum,
+    Custom
+};
+
+// interface IArgumentEnumValue requires INotifyPropChanged
+// {
+//     String Name { get; };
+//     IIconInfo Icon { get; };
+// }
+interface ICommandArgument requires INotifyPropChanged
+{
+    ParameterType Type { get; };
+    String Name { get; };
+    Boolean Required{ get; };
+
+    Object Value { get; set; };
+
+    void ShowPicker(UInt64 hostHwnd);
+    // todo
+    // IArgumentEnumValue[] GetValues();
+};
+
+interface IInvokableCommandWithParameters requires ICommand {
+    ICommandParameter[] Parameters { get; };
+    ICommandResult InvokeWithArgs(Object sender, ICommandArgument[] args);
+};
+```
+
 
 And `CommandParameters` would be a set of `{ type, name, required }` structs,
 which would specify the parameters that the action needs. Simple types would be
