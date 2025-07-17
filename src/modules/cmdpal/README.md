@@ -21,18 +21,9 @@ We've also got samples, so that you can see how the APIs in-action.
 
 ## Building CmdPal
 
-### Install Visual Studio dependencies
+### Install & Build PowerToys
 
-1. Clone [PowerToys Repo](https://github.com/microsoft/PowerToys)
-1. In Visual Studio, open `Project or solution`
-1. From PowerToys' project root, select `PowerToys.sln`
-1. If you see a dialog that says `install extra components` in the Solution Explorer Pane, click `install`
-
-### Get Submodules to compile
-
-1. Open a terminal
-1. Navigate to the folder you cloned PowerToys to.
-1. Run `git submodule update --init --recursive`
+1. Follow the install and build instructions for [PowerToys](https://github.com/microsoft/PowerToys/tree/main/doc/devdocs#compiling-powertoys)
 
 ### Load & Build
 
