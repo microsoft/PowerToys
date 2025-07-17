@@ -126,16 +126,6 @@ public sealed partial class CommandBar : UserControl,
         ViewModel.InvokeSecondaryCommand();
     }
 
-    private void PageIcon_Tapped(object sender, TappedRoutedEventArgs e)
-    {
-        if (CurrentPageViewModel?.StatusMessages.Count > 0)
-        {
-            StatusMessagesFlyout.ShowAt(
-                placementTarget: IconRoot,
-                showOptions: new FlyoutShowOptions() { ShowMode = FlyoutShowMode.Standard });
-        }
-    }
-
     private void SettingsIcon_Clicked(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();

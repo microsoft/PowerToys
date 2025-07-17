@@ -77,37 +77,43 @@
         <Grid
             x:Name="IconRoot"
             Margin="8,0,0,0"
-            Tapped="PageIcon_Tapped"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}">
-            <InfoBadge Visibility="{x:Bind CurrentPageViewModel.HasStatusMessage, Mode=OneWay}" Value="{x:Bind CurrentPageViewModel.StatusMessages.Count, Mode=OneWay}" />
-            <Grid.ContextFlyout>
-                <Flyout x:Name="StatusMessagesFlyout" Placement="TopEdgeAlignedLeft">
-                    <ItemsRepeater
-                        x:Name="MessagesDropdown"
-                        Margin="-8"
-                        ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
-                        Layout="{StaticResource VerticalStackLayout}">
-                        <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="coreViewModels:StatusMessageViewModel">
-                                <StackPanel
-                                    Grid.Row="0"
-                                    Margin="0"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Bottom"
-                                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-                                    CornerRadius="0">
-                                    <InfoBar
-                                        CornerRadius="{ThemeResource ControlCornerRadius}"
-                                        IsClosable="False"
-                                        IsOpen="True"
-                                        Message="{x:Bind Message, Mode=OneWay}"
-                                        Severity="{x:Bind State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
-                </Flyout>
-            </Grid.ContextFlyout>
+            <Button
+                x:Name="StatusMessagesButton"
+                x:Uid="StatusMessagesButton"
+                Padding="4"
+                Style="{StaticResource SubtleButtonStyle}"
+                Visibility="{x:Bind CurrentPageViewModel.HasStatusMessage, Mode=OneWay}">
+                <InfoBadge Value="{x:Bind CurrentPageViewModel.StatusMessages.Count, Mode=OneWay}" />
+                <Button.Flyout>
+                    <Flyout x:Name="StatusMessagesFlyout" Placement="TopEdgeAlignedLeft">
+                        <ItemsRepeater
+                            x:Name="MessagesDropdown"
+                            Margin="-8"
+                            ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
+                            Layout="{StaticResource VerticalStackLayout}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="coreViewModels:StatusMessageViewModel">
+                                    <StackPanel
+                                        Grid.Row="0"
+                                        Margin="0"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Bottom"
+                                        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                                        CornerRadius="0">
+                                        <InfoBar
+                                            CornerRadius="{ThemeResource ControlCornerRadius}"
+                                            IsClosable="False"
+                                            IsOpen="True"
+                                            Message="{x:Bind Message, Mode=OneWay}"
+                                            Severity="{x:Bind State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
         </Grid>
         <Button
             x:Name="SettingsIconButton"
