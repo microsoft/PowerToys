@@ -24,14 +24,14 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
+  <PropertyGroup>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>false</PublishSingleFile>
     <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
     <PublishAot>true</PublishAot>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+  <PropertyGroup>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 
