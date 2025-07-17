@@ -18,15 +18,15 @@
 
     <!--  Search box  -->
     <TextBox
-        x:Name="FilterBox"
+        x:Name="SearchBox"
         MinHeight="32"
         VerticalAlignment="Stretch"
         VerticalContentAlignment="Stretch"
-        KeyDown="FilterBox_KeyDown"
+        KeyDown="SearchBox_KeyDown"
         PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Converter={StaticResource PlaceholderTextConverter}, Mode=OneWay}"
-        PreviewKeyDown="FilterBox_PreviewKeyDown"
-        PreviewKeyUp="FilterBox_PreviewKeyUp"
+        PreviewKeyDown="SearchBox_PreviewKeyDown"
+        PreviewKeyUp="SearchBox_PreviewKeyUp"
         Style="{StaticResource SearchTextBoxStyle}"
-        TextChanged="FilterBox_TextChanged" />
+        TextChanged="SearchBox_TextChanged" />
     <!--  Disabled Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}" for now, needs more work  -->
 </UserControl>

@@ -176,6 +176,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <!--  Back button  -->
@@ -313,6 +314,17 @@
                     <cpcontrols:SearchBar
                         x:Name="SearchBox"
                         HorizontalAlignment="Stretch"
+                        CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+                    <Grid.Transitions>
+                        <TransitionCollection>
+                            <RepositionThemeTransition />
+                        </TransitionCollection>
+                    </Grid.Transitions>
+                </Grid>
+                <Grid Grid.Column="2" HorizontalAlignment="Right">
+                    <cpcontrols:Filter
+                        x:Name="Filters"
+                        HorizontalAlignment="Right"
                         CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
                     <Grid.Transitions>
                         <TransitionCollection>

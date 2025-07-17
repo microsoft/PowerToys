@@ -16,6 +16,7 @@ internal sealed partial class ServicesListPage : DynamicListPage
     {
         Icon = Icons.ServicesIcon;
         Name = "Windows Services";
+        Filters = new ServiceFilters();
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged(0);

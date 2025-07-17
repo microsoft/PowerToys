@@ -27,6 +27,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
+    [ObservableProperty]
+    public partial FiltersViewModel Filters { get; set; } = new();
+
     private readonly ExtensionObject<IListPage> _model;
 
     private readonly Lock _listLock = new();
@@ -49,8 +52,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private string _modelPlaceholderText = string.Empty;
 
     public override string PlaceholderText => _modelPlaceholderText;
-
-    public string SearchText { get; private set; } = string.Empty;
 
     public string InitialSearchText { get; private set; } = string.Empty;
 
@@ -77,12 +78,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
+        Filters = new(model.Filters);
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
 
-    protected override void OnFilterUpdated(string filter)
+    protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
         //// TODO: Just temp testing, need to think about where we want to filter, as AdvancedCollectionView in View could be done, but then grouping need CollectionViewSource, maybe we do grouping in view
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
@@ -100,7 +102,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     if (_model.Unsafe is IDynamicListPage dynamic)
                     {
-                        dynamic.SearchText = filter;
+                        dynamic.SearchText = searchTextBox;
                     }
                 }
                 catch (Exception ex)
@@ -253,7 +255,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// Apply our current filter text to the list of items, and update
     /// FilteredItems to match the results.
     /// </summary>
-    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, Filter));
+    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, SearchTextBox));
 
     /// <summary>
     /// Helper to generate a weighting for a given list item, based on title,
@@ -445,8 +447,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
-        InitialSearchText = SearchText = model.SearchText;
-        UpdateProperty(nameof(SearchText));
+        InitialSearchText = SearchTextBox = model.SearchText;
+        UpdateProperty(nameof(SearchTextBox));
         UpdateProperty(nameof(InitialSearchText));
 
         EmptyContent = new(new(model.EmptyContent), PageContext);
@@ -499,8 +501,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(PlaceholderText):
                 this._modelPlaceholderText = model.PlaceholderText;
                 break;
-            case nameof(SearchText):
-                this.SearchText = model.SearchText;
+            case nameof(SearchTextBox):
+                this.SearchTextBox = model.SearchText;
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);

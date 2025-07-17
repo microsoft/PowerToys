@@ -8,11 +8,9 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.CmdPal.UI;
 
-internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
+internal sealed partial class FilterTemplateSelector : DataTemplateSelector
 {
     public DataTemplate? Default { get; set; }
-
-    public DataTemplate? Critical { get; set; }
 
     public DataTemplate? Separator { get; set; }
 
@@ -30,10 +28,6 @@ internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
                 li.AllowFocusWhenDisabled = false;
                 li.AllowFocusOnInteraction = false;
                 dataTemplate = Separator;
-            }
-            else
-            {
-                dataTemplate = ((CommandContextItemViewModel)item).IsCritical ? Critical : Default;
             }
         }
 
