@@ -9,13 +9,16 @@ using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
+using Newtonsoft.Json.Linq;
 using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
@@ -452,11 +455,27 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         }
 
                         c.HasConflict = true;
+
+                        // Log telemetry
+                        PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictTestedEvent()
+                        {
+                            ConflictFound = true,
+                            ModuleName = settings?.OwnerModuleName ?? "Unknown",
+                            HotkeyName = settings?.HotkeyName ?? "Unknown",
+                        });
                     }
                     else
                     {
                         c.ConflictMessage = string.Empty;
                         c.HasConflict = false;
+
+                        // Log telemetry
+                        PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictTestedEvent()
+                        {
+                            ConflictFound = false,
+                            ModuleName = settings?.OwnerModuleName ?? "Unknown",
+                            HotkeyName = settings?.HotkeyName ?? "Unknown",
+                        });
                     }
                 });
             }
@@ -580,6 +599,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     lastValidSettings = lastValidSettings with { HasConflict = false };
                 }
+
+                PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictResolvedEvent()
+                {
+                    HasConflict = c.HasConflict,
+                    ModuleName = lastValidSettings.OwnerModuleName,
+                    HotkeyName = lastValidSettings.HotkeyName,
+                });
 
                 HotkeySettings = lastValidSettings;
             }

@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
@@ -112,6 +114,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 return;
             }
+
+            // Log telemetry event when user clicks the shortcut conflict button
+            PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictControlClickedEvent()
+            {
+                ConflictCount = this.ConflictCount,
+            });
 
             // Create and show the new window instead of dialog
             var conflictWindow = new ShortcutConflictWindow();
