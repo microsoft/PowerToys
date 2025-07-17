@@ -628,6 +628,23 @@ namespace Microsoft.PowerToys.UITest
                     Console.WriteLine($"Failed to change display resolution. Error code: {result}");
                 }
             }
+
+            // Windows API for moving windows
+            [DllImport("user32.dll")]
+            private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+            private const uint SWPNOSIZE = 0x0001;
+            private const uint SWPNOZORDER = 0x0004;
+
+            public static void MoveWindow(Element window, int x, int y)
+            {
+                var windowHandle = IntPtr.Parse(window.GetAttribute("NativeWindowHandle") ?? "0", System.Globalization.CultureInfo.InvariantCulture);
+                if (windowHandle != IntPtr.Zero)
+                {
+                    SetWindowPos(windowHandle, IntPtr.Zero, x, y, 0, 0, SWPNOSIZE | SWPNOZORDER);
+                    Task.Delay(500).Wait();
+                }
+            }
         }
     }
 }

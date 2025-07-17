@@ -25,7 +25,6 @@ public class PeekFilePreviewTests : UITestBase
     private const int PeekInitializeDelayMs = 3000;
     private const int MaxRetryAttempts = 3;
     private const int RetryDelayMs = 3000;
-    private const int WindowMoveDelayMs = 500;
     private const int PinActionDelayMs = 500;
 
     public PeekFilePreviewTests()
@@ -64,11 +63,7 @@ public class PeekFilePreviewTests : UITestBase
     public void PeekAllTestAssets()
     {
         // Get all test asset files
-        string testAssetsPath = Path.GetFullPath(@".\TestAssets");
-        var testFiles = Directory.GetFiles(testAssetsPath, "*.*", SearchOption.TopDirectoryOnly)
-            .Where(file => !Path.GetFileName(file).StartsWith('.'))
-            .OrderBy(file => file)
-            .ToList();
+        var testFiles = GetTestAssetFiles();
 
         Assert.IsTrue(testFiles.Count > 0, "Should have test files in TestAssets folder");
 
@@ -92,7 +87,7 @@ public class PeekFilePreviewTests : UITestBase
     [TestCategory("Window Pinning")]
     public void TestPinWindowAndSwitchImages()
     {
-        // Use two different image files (assuming 8.png and another image with different size)
+        // Use two different image files with different size
         string firstImagePath = Path.GetFullPath(@".\TestAssets\8.png");
         string secondImagePath = Path.GetFullPath(@".\TestAssets\2.jpg"); // Different format/size
 
@@ -102,7 +97,7 @@ public class PeekFilePreviewTests : UITestBase
         var originalBounds = GetWindowBounds(initialWindow);
 
         // Move window to a custom position to test pin functionality
-        MoveWindow(initialWindow, originalBounds.X + 100, originalBounds.Y + 50);
+        NativeMethods.MoveWindow(initialWindow, originalBounds.X + 100, originalBounds.Y + 50);
         var movedBounds = GetWindowBounds(initialWindow);
 
         // Pin the window
@@ -139,7 +134,7 @@ public class PeekFilePreviewTests : UITestBase
         var originalBounds = GetWindowBounds(initialWindow);
 
         // Move window to a custom position to test pin persistence
-        MoveWindow(initialWindow, originalBounds.X + 150, originalBounds.Y + 75);
+        NativeMethods.MoveWindow(initialWindow, originalBounds.X + 150, originalBounds.Y + 75);
         var movedBounds = GetWindowBounds(initialWindow);
 
         // Pin the window
@@ -178,12 +173,11 @@ public class PeekFilePreviewTests : UITestBase
         var originalBounds = GetWindowBounds(pinnedWindow);
 
         // Move window to a custom position
-        MoveWindow(pinnedWindow, originalBounds.X + 200, originalBounds.Y + 100);
+        NativeMethods.MoveWindow(pinnedWindow, originalBounds.X + 200, originalBounds.Y + 100);
         var movedBounds = GetWindowBounds(pinnedWindow);
 
         // Calculate the center point of the moved window
-        int movedCenterX = movedBounds.X + (movedBounds.Width / 2);
-        int movedCenterY = movedBounds.Y + (movedBounds.Height / 2);
+        var movedCenter = Session.GetMainWindowCenter();
 
         // Pin the window first
         PinWindow();
@@ -199,16 +193,15 @@ public class PeekFilePreviewTests : UITestBase
         var unpinnedBounds = GetWindowBounds(unpinnedWindow);
 
         // Calculate the center point of the unpinned window
-        int unpinnedCenterX = unpinnedBounds.X + (unpinnedBounds.Width / 2);
-        int unpinnedCenterY = unpinnedBounds.Y + (unpinnedBounds.Height / 2);
+        var unpinnedCenter = Session.GetMainWindowCenter();
 
         // Verify window size is different (since it's a different file type)
         bool sizeChanged = Math.Abs(movedBounds.Width - unpinnedBounds.Width) > 10 ||
                           Math.Abs(movedBounds.Height - unpinnedBounds.Height) > 10;
 
         // Verify window center moved to default position (should be different from moved center)
-        bool centerChanged = Math.Abs(movedCenterX - unpinnedCenterX) > 50 ||
-                            Math.Abs(movedCenterY - unpinnedCenterY) > 50;
+        bool centerChanged = Math.Abs(movedCenter.CenterX - unpinnedCenter.CenterX) > 50 ||
+                            Math.Abs(movedCenter.CenterY - unpinnedCenter.CenterY) > 50;
 
         Assert.IsTrue(sizeChanged, "Window size should be different for different file types");
         Assert.IsTrue(centerChanged, "Window center should move to default position when unpinned");
@@ -228,11 +221,11 @@ public class PeekFilePreviewTests : UITestBase
 
         // Open image, pin it first, then unpin
         var initialWindow = OpenPeekWindow(imagePath);
-        var originalBounds = initialWindow.Rect ?? GetWindowBounds(initialWindow);
+        var originalBounds = GetWindowBounds(initialWindow);
 
         // Move window to a custom position
-        MoveWindow(initialWindow, originalBounds.X + 250, originalBounds.Y + 125);
-        var movedBounds = initialWindow.Rect ?? GetWindowBounds(initialWindow);
+        NativeMethods.MoveWindow(initialWindow, originalBounds.X + 250, originalBounds.Y + 125);
+        var movedBounds = GetWindowBounds(initialWindow);
 
         // Pin then unpin to ensure we test the unpinned state
         PinWindow();
@@ -240,7 +233,6 @@ public class PeekFilePreviewTests : UITestBase
 
         // Close peek
         ClosePeekAndExplorer();
-        Task.Delay(1000).Wait();
 
         // Reopen the same image
         var reopenedWindow = OpenPeekWindow(imagePath);
@@ -278,7 +270,6 @@ public class PeekFilePreviewTests : UITestBase
         Task.Delay(2000).Wait();
 
         // Verify that the default program process has started
-        // Note: This is a basic check - in a real scenario you might want to check for specific image viewer processes
         bool defaultProgramLaunched = CheckIfDefaultProgramLaunched();
         Assert.IsTrue(defaultProgramLaunched, "Default program should be launched after clicking the button");
 
@@ -317,15 +308,8 @@ public class PeekFilePreviewTests : UITestBase
     [TestCategory("File Navigation")]
     public void TestSwitchFilesWithArrowKeys()
     {
-        string testAssetsPath = Path.GetFullPath(@".\TestAssets");
-
         // Get all files in TestAssets folder, ordered alphabetically
-        var testFiles = Directory.GetFiles(testAssetsPath, "*.*", SearchOption.TopDirectoryOnly)
-            .Where(file => !Path.GetFileName(file).StartsWith('.'))
-            .OrderBy(file => file)
-            .ToList();
-
-        Assert.IsTrue(testFiles.Count > 1, "Should have at least 2 test files in TestAssets folder for navigation testing");
+        var testFiles = GetTestAssetFiles();
 
         // Start with the first file in the TestAssets folder
         string firstFilePath = testFiles[0];
@@ -339,21 +323,16 @@ public class PeekFilePreviewTests : UITestBase
         {
             // Press Right arrow to go to next file
             SendKeys(Key.Right);
-            Task.Delay(2000).Wait(); // Wait for file to load
+
+            // Wait for file to load
+            Task.Delay(2000).Wait();
 
             // Try to determine current file from window title
-            try
+            var currentWindow = peekWindow.Name;
+            string expectedFileName = Path.GetFileNameWithoutExtension(testFiles[i]);
+            if (!string.IsNullOrEmpty(currentWindow) && currentWindow.StartsWith(expectedFileName, StringComparison.Ordinal))
             {
-                var currentWindow = peekWindow.Name;
-                string expectedFileName = Path.GetFileNameWithoutExtension(testFiles[i]);
-                if (!string.IsNullOrEmpty(currentWindow) && currentWindow.StartsWith(expectedFileName, StringComparison.Ordinal))
-                {
-                    visitedFiles.Add(expectedFileName);
-                }
-            }
-            catch
-            {
-                // Continue if we can't get window title
+                visitedFiles.Add(expectedFileName);
             }
         }
 
@@ -364,25 +343,20 @@ public class PeekFilePreviewTests : UITestBase
         for (int i = testFiles.Count - 2; i >= 0; i--)
         {
             SendKeys(Key.Left);
-            Task.Delay(2000).Wait(); // Wait for file to load
+
+            // Wait for file to load
+            Task.Delay(2000).Wait();
 
             // Try to determine current file from window title during backward navigation
-            try
+            var currentWindow = peekWindow.Name;
+            string expectedFileName = Path.GetFileNameWithoutExtension(testFiles[i]);
+            if (!string.IsNullOrEmpty(currentWindow) && currentWindow.StartsWith(expectedFileName, StringComparison.Ordinal))
             {
-                var currentWindow = peekWindow.Name;
-                string expectedFileName = Path.GetFileNameWithoutExtension(testFiles[i]);
-                if (!string.IsNullOrEmpty(currentWindow) && currentWindow.StartsWith(expectedFileName, StringComparison.Ordinal))
+                // Remove the last visited file (going backward)
+                if (visitedFiles.Count > 1)
                 {
-                    // Remove the last visited file (going backward)
-                    if (visitedFiles.Count > 1)
-                    {
-                        visitedFiles.RemoveAt(visitedFiles.Count - 1);
-                    }
+                    visitedFiles.RemoveAt(visitedFiles.Count - 1);
                 }
-            }
-            catch
-            {
-                // Continue if we can't get window title
             }
         }
 
@@ -400,16 +374,8 @@ public class PeekFilePreviewTests : UITestBase
     [TestCategory("File Navigation")]
     public void TestSwitchBetweenSelectedFiles()
     {
-        string testAssetsPath = Path.GetFullPath(@".\TestAssets");
-
         // Get first 3 files in TestAssets folder, ordered alphabetically
-        var allFiles = Directory.GetFiles(testAssetsPath, "*.*", SearchOption.TopDirectoryOnly)
-            .Where(file => !Path.GetFileName(file).StartsWith('.'))
-            .OrderBy(file => file)
-            .ToList();
-
-        Assert.IsTrue(allFiles.Count >= 3, $"Should have at least 3 test files in TestAssets folder. Found {allFiles.Count} files.");
-
+        var allFiles = GetTestAssetFiles();
         var selectedFiles = allFiles.Take(3).ToList();
 
         // Open Explorer and select the first file
@@ -431,28 +397,8 @@ public class PeekFilePreviewTests : UITestBase
         SendPeekHotkeyWithRetry();
 
         // Find the peek window (should open with last selected file when multiple files are selected)
-        string lastFileName = Path.GetFileNameWithoutExtension(selectedFiles[2]); // Third file (last selected)
-        string lastFileNameFull = Path.GetFileName(selectedFiles[2]); // Third file with extension
-
-        // Try to find window with or without extension
-        Element? peekWindow = null;
-        try
-        {
-            peekWindow = Find($"{lastFileNameFull} - Peek", 5000, true);
-        }
-        catch
-        {
-            try
-            {
-                peekWindow = Find($"{lastFileName} - Peek", 5000, true);
-            }
-            catch
-            {
-                Assert.Fail($"Could not find Peek window with title '{lastFileNameFull} - Peek' or '{lastFileName} - Peek'");
-            }
-        }
-
-        Assert.IsNotNull(peekWindow, $"Should open Peek window for last selected file: {lastFileName}");
+        var peekWindow = FindPeekWindow(selectedFiles[2]); // Third file (last selected)
+        string lastFileName = Path.GetFileNameWithoutExtension(selectedFiles[2]);
 
         // Keep track of visited files during navigation (starting from the last file)
         var visitedFiles = new List<string> { lastFileName };
@@ -634,42 +580,16 @@ public class PeekFilePreviewTests : UITestBase
 
     private Element OpenPeekWindow(string filePath)
     {
-        string fileName = Path.GetFileName(filePath);
-        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
-
-        // Try both window title formats since Windows may show or hide file extensions
-        string peekWindowTitleWithExt = $"{fileName} - Peek";
-        string peekWindowTitleWithoutExt = $"{fileNameWithoutExt} - Peek";
-
         // Open file with Peek
         OpenAndPeekFile(filePath);
 
-        // Try to attach to the correct window title
-        Element? previewWindow = null;
+        // Find the Peek window using the common method
+        var peekWindow = FindPeekWindow(filePath);
 
-        try
-        {
-            // First try to find the window with extension
-            previewWindow = Find(peekWindowTitleWithExt, 5000, true);
-            Session.Attach(peekWindowTitleWithExt);
-        }
-        catch
-        {
-            try
-            {
-                // Then try without extension
-                previewWindow = Find(peekWindowTitleWithoutExt, 5000, true);
-                Session.Attach(peekWindowTitleWithoutExt);
-            }
-            catch
-            {
-                // If neither works, let it fail with a clear message
-                Assert.Fail($"Could not find and attach to Peek window with title '{peekWindowTitleWithExt}' or '{peekWindowTitleWithoutExt}' for file {fileName}");
-            }
-        }
+        // Attach to the found window
+        Session.Attach(peekWindow.Name);
 
-        Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileName}");
-        return previewWindow;
+        return peekWindow;
     }
 
     private void TestFilePreviewWithVisualComparison(string filePath)
@@ -724,16 +644,26 @@ public class PeekFilePreviewTests : UITestBase
         // Close Peek window
         Session.CloseMainWindow();
 
-        // Close Explorer window
+        // More safely close Explorer windows - only close file browser windows, not system Explorer process
         try
         {
-            var explorerWindows = Process.GetProcessesByName("explorer");
-            foreach (var explorer in explorerWindows)
+            // Only close explorer windows that are file browser windows, not the system desktop process
+            var explorerProcesses = Process.GetProcessesByName("explorer")
+                .Where(p => p.MainWindowHandle != IntPtr.Zero &&
+                           !string.IsNullOrEmpty(p.MainWindowTitle))
+                .ToList();
+
+            foreach (var explorer in explorerProcesses)
             {
-                // Only close explorer windows
-                if (explorer.MainWindowHandle != IntPtr.Zero)
+                // Check if this is a file browser window rather than system desktop process
+                // Look for indicators that this is a file browser window
+                if (explorer.MainWindowTitle.Contains("TestAssets") ||
+                    explorer.MainWindowTitle.Contains("File Explorer"))
                 {
                     explorer.CloseMainWindow();
+
+                    // Give time for the window to close before continuing
+                    Task.Delay(500).Wait();
                 }
             }
         }
@@ -743,28 +673,59 @@ public class PeekFilePreviewTests : UITestBase
         }
     }
 
-    private void MoveWindow(Element window, int x, int y)
+    /// <summary>
+    /// Get all files in TestAssets folder, ordered alphabetically, excluding hidden files
+    /// </summary>
+    /// <returns>List of file paths in alphabetical order</returns>
+    private List<string> GetTestAssetFiles()
     {
+        string testAssetsPath = Path.GetFullPath(@".\TestAssets");
+        return Directory.GetFiles(testAssetsPath, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(file => !Path.GetFileName(file).StartsWith('.'))
+            .OrderBy(file => file)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Find Peek window by trying both filename with and without extension
+    /// </summary>
+    /// <param name="filePath">Full path to the file</param>
+    /// <param name="timeout">Timeout in milliseconds</param>
+    /// <returns>The found Peek window element</returns>
+    private Element FindPeekWindow(string filePath, int timeout = 5000)
+    {
+        string fileName = Path.GetFileName(filePath);
+        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
+
+        // Try both window title formats since Windows may show or hide file extensions
+        string peekWindowTitleWithExt = $"{fileName} - Peek";
+        string peekWindowTitleWithoutExt = $"{fileNameWithoutExt} - Peek";
+
+        Element? peekWindow = null;
+
         try
         {
-            var windowHandle = IntPtr.Parse(window.GetAttribute("NativeWindowHandle") ?? "0", System.Globalization.CultureInfo.InvariantCulture);
-            if (windowHandle != IntPtr.Zero)
-            {
-                SetWindowPos(windowHandle, IntPtr.Zero, x, y, 0, 0, SWPNOSIZE | SWPNOZORDER);
-                Task.Delay(WindowMoveDelayMs).Wait();
-            }
+            // First try to find the window with extension
+            peekWindow = Find(peekWindowTitleWithoutExt, timeout, true);
         }
         catch
         {
+            try
+            {
+                // Then try without extension
+                peekWindow = Find(peekWindowTitleWithExt, timeout, true);
+            }
+            catch
+            {
+                // If neither works, let it fail with a clear message
+                Assert.Fail($"Could not find Peek window with title '{peekWindowTitleWithExt}' or '{peekWindowTitleWithoutExt}'");
+            }
         }
+
+        Assert.IsNotNull(peekWindow, $"Should find Peek window for file: {Path.GetFileName(filePath)}");
+
+        return peekWindow;
     }
-
-    // Windows API for moving windows
-    [System.Runtime.InteropServices.DllImport("user32.dll")]
-    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
-
-    private const uint SWPNOSIZE = 0x0001;
-    private const uint SWPNOZORDER = 0x0004;
 
     /// <summary>
     /// Helper method to find the launch button with different AccessibilityIds depending on window size
