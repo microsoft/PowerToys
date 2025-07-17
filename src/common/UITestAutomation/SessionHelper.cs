@@ -5,7 +5,9 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -33,13 +35,20 @@ namespace Microsoft.PowerToys.UITest
         private Process? runner;
 
         private PowerToysModule scope;
+        private string[]? commandLineArgs;
+
+        private bool UseInstallerForTest { get; }
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
-        public SessionHelper(PowerToysModule scope)
+        public SessionHelper(PowerToysModule scope, string[]? commandLineArgs = null)
         {
             this.scope = scope;
+            this.commandLineArgs = commandLineArgs;
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
-            this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string? useInstallerForTestEnv =
+                Environment.GetEnvironmentVariable("useInstallerForTest") ?? Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
+            UseInstallerForTest = !string.IsNullOrEmpty(useInstallerForTestEnv) && bool.TryParse(useInstallerForTestEnv, out bool result) && result;
+            this.locationPath = UseInstallerForTest ? string.Empty : Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             CheckWinAppDriverAndRoot();
         }
@@ -66,7 +75,7 @@ namespace Microsoft.PowerToys.UITest
         {
             this.ExitExe(this.locationPath + this.sessionPath);
 
-            this.StartExe(this.locationPath + this.sessionPath);
+            this.StartExe(this.locationPath + this.sessionPath, this.commandLineArgs);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
 
@@ -109,18 +118,27 @@ namespace Microsoft.PowerToys.UITest
         /// Starts a new exe and takes control of it.
         /// </summary>
         /// <param name="appPath">The path to the application executable.</param>
-        public void StartExe(string appPath)
+        /// <param name="args">Optional command line arguments to pass to the application.</param>
+        public void StartExe(string appPath, string[]? args = null)
         {
             var opts = new AppiumOptions();
+            opts.AddAdditionalCapability("app", appPath);
 
-            // if we want to start settings, we need to use the runner exe to open settings
-            if (scope == PowerToysModule.PowerToysSettings)
+            if (args != null && args.Length > 0)
             {
-                TryLaunchPowerToysSettings(opts);
-            }
-            else
-            {
-                opts.AddAdditionalCapability("app", appPath);
+                // Build command line arguments string
+                string argsString = string.Join(" ", args.Select(arg =>
+                {
+                    // Quote arguments that contain spaces
+                    if (arg.Contains(' '))
+                    {
+                        return $"\"{arg}\"";
+                    }
+
+                    return arg;
+                }));
+
+                opts.AddAdditionalCapability("appArguments", argsString);
             }
 
             this.Driver = NewWindowsDriver(opts);
@@ -143,7 +161,7 @@ namespace Microsoft.PowerToys.UITest
 
             if (root != null)
             {
-                const int maxRetries = 3;
+                const int maxRetries = 5;
                 const int delayMs = 5000;
                 var windowName = "PowerToys Settings";
 
@@ -174,7 +192,7 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Starts a new exe and takes control of it.
         /// </summary>
-        /// <param name="info">The path to the application executable.</param>
+        /// <param name="info">The AppiumOptions for the application.</param>
         private WindowsDriver<WindowsElement> NewWindowsDriver(AppiumOptions info)
         {
             // Create driver with retry
@@ -229,7 +247,7 @@ namespace Microsoft.PowerToys.UITest
         public void RestartScopeExe()
         {
             ExitScopeExe();
-            StartExe(locationPath + sessionPath);
+            StartExe(locationPath + sessionPath, this.commandLineArgs);
         }
 
         public WindowsDriver<WindowsElement> GetRoot()

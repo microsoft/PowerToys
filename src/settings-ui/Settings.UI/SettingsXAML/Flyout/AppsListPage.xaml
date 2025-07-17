@@ -8,7 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d">
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
         <Grid.RowDefinitions>
@@ -52,7 +52,7 @@
             </ListView.ItemsPanel>
 
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="viewmodels:FlyoutMenuItem">
+                <DataTemplate x:DataType="viewModels:FlyoutMenuItem">
                     <Grid Height="40" Padding="24,0,24,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />

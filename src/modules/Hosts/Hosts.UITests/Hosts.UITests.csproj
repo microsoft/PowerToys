@@ -15,7 +15,7 @@
       <RunVSTest>false</RunVSTest>
     </PropertyGroup>
     <PropertyGroup>
-      <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Hosts.UITests\</OutputPath>
+      <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\Hosts.UITests\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
       <EmbeddedResource Include="Baseline\HostModuleTests_TestAddingEntry_arm64.png" />

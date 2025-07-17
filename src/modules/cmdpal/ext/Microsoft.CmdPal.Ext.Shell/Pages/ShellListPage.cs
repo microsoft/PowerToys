@@ -15,7 +15,7 @@ internal sealed partial class ShellListPage : DynamicListPage
 
     public ShellListPage(SettingsManager settingsManager)
     {
-        Icon = Icons.RunV2;
+        Icon = Icons.RunV2Icon;
         Id = "com.microsoft.cmdpal.shell";
         Name = Resources.cmd_plugin_name;
         PlaceholderText = Resources.list_placeholder_text;

@@ -2005,7 +2005,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>File Locksmith lists which processes are using the selected files or directories and allows closing those processes.</value>
   </data>
   <data name="Oobe_FileExplorer.Description" xml:space="preserve">
-    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), STL (.stl), G-code (.gcode) and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
+    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), STL (.stl), G-code (.gcode), Binary G-code (.bgcode), and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
   </data>
   <data name="Oobe_ImageResizer.Description" xml:space="preserve">
     <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>
@@ -2645,7 +2645,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>First part of the default name of new sizes that can be added in PT's settings ui.</comment>
   </data>
   <data name="Awake_IntervalSettingsCard.Header" xml:space="preserve">
-    <value>Interval before returning to the previous awakeness state</value>
+    <value>Interval before returning to the previous awake state</value>
   </data>
   <data name="Awake_ExpirationSettingsExpander.Header" xml:space="preserve">
     <value>End date and time</value>
@@ -3574,6 +3574,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Turkish" xml:space="preserve">
     <value>Turkish</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Vietnamese" xml:space="preserve">
+    <value>Vietnamese</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Icelandic" xml:space="preserve">
     <value>Icelandic</value>
@@ -5029,6 +5032,18 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_BGCODE.Header" xml:space="preserve">
+    <value>Binary Geometric Code</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_BGCODE.Description" xml:space="preserve">
+    <value>.bgcode</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE.Description" xml:space="preserve">
+    <value>.bgcode</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE.Header" xml:space="preserve">
+    <value>Binary Geometric Code</value>
   </data>
   <data name="YoureUpToDate.Text" xml:space="preserve">
     <value>You're up to date</value>
