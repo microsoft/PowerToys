@@ -580,6 +580,8 @@ public class PeekFilePreviewTests : UITestBase
 
     private Element OpenPeekWindow(string filePath)
     {
+        SendKeys(Key.Enter);
+
         // Open file with Peek
         OpenAndPeekFile(filePath);
 
@@ -744,21 +746,12 @@ public class PeekFilePreviewTests : UITestBase
         }
         catch
         {
-            // Continue to try the other ID
-        }
-
-        try
-        {
             // Try to find button with ID for smaller window
             var button = Find(By.AccessibilityId("LaunchAppButton"), 1000);
             if (button != null)
             {
                 return button;
             }
-        }
-        catch
-        {
-            // Both attempts failed
         }
 
         return null;
