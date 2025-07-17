@@ -165,9 +165,7 @@
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="viewmodels:DashboardListItem">
                                         <Grid>
-                                            <ItemsControl
-                                                IsTabStop="False"
-                                                ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
+                                            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate x:DataType="viewmodels:DashboardModuleButtonItem">
                                                         <controls:FlyoutMenuButton AutomationProperties.Name="{x:Bind ButtonTitle}" Click="{x:Bind ButtonClickHandler}">
