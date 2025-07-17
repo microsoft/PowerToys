@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
@@ -17,6 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     public sealed partial class ShortcutConflictControl : UserControl, INotifyPropertyChanged
     {
         private static readonly ResourceLoader ResourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+
+        // Track previous conflict count for telemetry
+        private int _previousConflictCount;
 
         public static readonly DependencyProperty AllHotkeyConflictsDataProperty =
             DependencyProperty.Register(
@@ -86,12 +91,46 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void UpdateProperties()
         {
+            var currentConflictCount = ConflictCount;
+
+            // Check if conflicts have been reduced and send telemetry
+            if (_previousConflictCount > 0 && currentConflictCount < _previousConflictCount)
+            {
+                var conflictsResolved = _previousConflictCount - currentConflictCount > 0;
+
+                // Send telemetry for conflicts reduction
+                PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictsResolvedInConflictWindowEvent()
+                {
+                    PreviousConflictCount = _previousConflictCount,
+                    CurrentConflictCount = currentConflictCount,
+                    ConflictsResolved = conflictsResolved,
+                    Source = "ConflictWindow",
+                });
+
+                System.Diagnostics.Debug.WriteLine($"Conflicts reduced: {_previousConflictCount} -> {currentConflictCount} (resolved: {conflictsResolved})");
+            }
+
+            // Update the previous count for next comparison
+            _previousConflictCount = currentConflictCount;
+
             OnPropertyChanged(nameof(ConflictCount));
             OnPropertyChanged(nameof(ConflictText));
             OnPropertyChanged(nameof(HasConflicts));
 
             // Update visibility based on conflict count
             Visibility = HasConflicts ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void OnShortcutConflictControlLoaded(object sender, RoutedEventArgs e)
+        {
+            if (HasConflicts)
+            {
+                // Log telemetry event when conflicts are detected
+                PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictDetectedEvent()
+                {
+                    ConflictCount = ConflictCount,
+                });
+            }
         }
 
         private void OnPropertyChanged(string propertyName)
@@ -104,6 +143,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             InitializeComponent();
             DataContext = this;
 
+            // Initialize previous conflict count
+            _previousConflictCount = ConflictCount;
+
             // Initially hide the control if no conflicts
             Visibility = HasConflicts ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -114,6 +156,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 return;
             }
+
+            // Log telemetry event when user clicks the shortcut conflict button
+            PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictControlClickedEvent()
+            {
+                ConflictCount = this.ConflictCount,
+            });
 
             // Create and show the new window instead of dialog
             var conflictWindow = new ShortcutConflictWindow();

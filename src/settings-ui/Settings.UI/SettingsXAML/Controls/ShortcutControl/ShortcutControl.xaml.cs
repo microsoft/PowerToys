@@ -10,17 +10,26 @@ using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
+using Newtonsoft.Json.Linq;
 using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
+    public enum ShortcutControlSource
+    {
+        SettingsPage,
+        ConflictWindow,
+    }
+
     public sealed partial class ShortcutControl : UserControl, IDisposable
     {
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
@@ -42,6 +51,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
         public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnHasConflictChanged));
         public static readonly DependencyProperty TooltipProperty = DependencyProperty.Register("Tooltip", typeof(string), typeof(ShortcutControl), new PropertyMetadata(null, OnTooltipChanged));
+
+        // Dependency property to track the source/context of the ShortcutControl
+        public static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(ShortcutControlSource), typeof(ShortcutControl), new PropertyMetadata(ShortcutControlSource.SettingsPage));
 
         private static ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
@@ -74,6 +86,20 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             control.UpdateKeyVisualStyles();
+
+            // Check if conflict was resolved (had conflict before, no conflict now)
+            var oldValue = (bool)(e.OldValue ?? false);
+            var newValue = (bool)(e.NewValue ?? false);
+
+            // General conflict resolution telemetry (for all sources)
+            if (oldValue && !newValue)
+            {
+                // Conflict was resolved - send general telemetry
+                PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictResolvedEvent()
+                {
+                    Source = control.Source.ToString(),
+                });
+            }
         }
 
         private static void OnTooltipChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -106,6 +132,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get => (string)GetValue(TooltipProperty);
             set => SetValue(TooltipProperty, value);
+        }
+
+        public ShortcutControlSource Source
+        {
+            get => (ShortcutControlSource)GetValue(SourceProperty);
+            set => SetValue(SourceProperty, value);
         }
 
         public bool Enabled
@@ -504,11 +536,23 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         }
 
                         c.HasConflict = true;
+
+                        // Log telemetry
+                        PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictTestedEvent()
+                        {
+                            ConflictFound = true,
+                        });
                     }
                     else
                     {
                         c.ConflictMessage = string.Empty;
                         c.HasConflict = false;
+
+                        // Log telemetry
+                        PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictTestedEvent()
+                        {
+                            ConflictFound = false,
+                        });
                     }
                 });
             }
@@ -595,6 +639,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             c.HasConflict = hotkeySettings.HasConflict;
             c.ConflictMessage = hotkeySettings.ConflictDescription;
+
+            // Log telemetry when shortcut control is clicked, especially if there's a conflict
+            PowerToysTelemetry.Log.WriteEvent(new ShortcutControlClickedEvent()
+            {
+                HasConflict = HasConflict,
+                Source = Source.ToString(),
+            });
 
             // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
             // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
