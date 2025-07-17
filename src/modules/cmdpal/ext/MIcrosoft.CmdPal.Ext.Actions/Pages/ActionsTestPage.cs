@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.AI.Actions;
@@ -36,7 +38,7 @@ internal sealed partial class ActionsTestPage : ListPage
 
                 var tags = inputs.AsEnumerable().Select(input => new Tag(input.Name) { Icon = GetIconForInput(input)! }).ToList();
 
-                items.Add(new ListItem(new DoActionCommand(overload) { Name = "Invoke" })
+                items.Add(new ListItem(new DoActionCommand(action.Id, overload, _actionRuntime) { Name = "Invoke" })
                 {
                     Title = action.Description,
                     Subtitle = overload.DescriptionTemplate,
@@ -96,6 +98,8 @@ public abstract partial class InvokableWithParams : Command, IInvokableCommandWi
 public partial class DoActionCommand : InvokableWithParams
 {
     private readonly ActionOverload _action;
+    private readonly ActionRuntime _actionRuntime;
+    private readonly string _id;
 
     public override ICommandResult InvokeWithArgs(object sender, ICommandArgument[] args)
     {
@@ -113,17 +117,43 @@ public partial class DoActionCommand : InvokableWithParams
         }
 
         s += ")";
-        var t = new ToastStatusMessage(s);
-        t.Show();
+
+        // var t = new ToastStatusMessage(s);
+        // t.Show();
+        _ = Task.Run(async () =>
+        {
+            var c = _actionRuntime.CreateInvocationContext(actionId: _id);
+            var f = _actionRuntime.EntityFactory;
+            foreach (var i in args)
+            {
+                var v = f.CreatePhotoEntity(i.Value as string);
+                c.SetInputEntity(i.Name, v);
+            }
+
+            var task = _action.InvokeAsync(c);
+            await task;
+            var status = task.Status;
+            var statusType = c.Result switch
+            {
+                ActionInvocationResult.Success => MessageState.Success,
+                _ => MessageState.Error,
+            };
+            var text = $"{c.Result.ToString()}: tion{c.ExtendedError}";
+            var resultToast = new ToastStatusMessage(text);
+            resultToast.Show();
+        });
+
         return CommandResult.KeepOpen();
     }
 
-    public DoActionCommand(ActionOverload action)
+    public DoActionCommand(string actionId, ActionOverload action, ActionRuntime actionRuntime)
     {
         _action = action;
 
         var inputs = action.GetInputs();
 
+        _actionRuntime = actionRuntime;
+        _id = actionId;
         ICommandParameter[] commandParameters = inputs.AsEnumerable()
             .Select(input => new CommandParameter(input.Name))
             .ToArray();
