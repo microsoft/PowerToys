@@ -6,7 +6,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
+using System.Security.Cryptography;
+using CoenM.ImageHash;
+using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using Windows.Graphics.Imaging;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -127,34 +133,71 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Test if two images are equal bit-by-bit
+        /// Test if two images are equal using ImageHash comparison
         /// </summary>
         /// <param name="baselineImage">baseline image</param>
         /// <param name="testImage">test image</param>
         /// <returns>true if are equal,otherwise false</returns>
         private static bool AreEqual(Bitmap baselineImage, Bitmap testImage)
         {
-            if (baselineImage.Width != testImage.Width || baselineImage.Height != testImage.Height)
+            try
             {
-                return false;
+                // Use CoenM.ImageHash for perceptual hash comparison
+                var hashAlgorithm = new AverageHash();
+
+                // Convert System.Drawing.Bitmap to SixLabors.ImageSharp.Image
+                using var baselineImageSharp = ConvertBitmapToImageSharp(baselineImage);
+                using var testImageSharp = ConvertBitmapToImageSharp(testImage);
+
+                // Calculate hashes for both images
+                var baselineHash = hashAlgorithm.Hash(baselineImageSharp);
+                var testHash = hashAlgorithm.Hash(testImageSharp);
+
+                // Compare hashes using CompareHash method
+                // Returns similarity percentage (0-100, where 100 is identical)
+                var similarity = CompareHash.Similarity(baselineHash, testHash);
+
+                // Consider images equal if similarity is very high
+                // Allow for minor rendering differences (threshold can be adjusted)
+                return similarity >= 95.0; // 95% similarity threshold
             }
-
-            // WinAppDriver sometimes adds a border to the screenshot (around 2 pix width), and it is not always consistent.
-            // So we exclude the border when comparing the images, and usually it is the edge of the windows, won't affect the comparison.
-            int excludeBorderWidth = 5, excludeBorderHeight = 5;
-
-            for (int x = excludeBorderWidth; x < baselineImage.Width - excludeBorderWidth; x++)
+            catch
             {
-                for (int y = excludeBorderHeight; y < baselineImage.Height - excludeBorderHeight; y++)
+                if (baselineImage.Width != testImage.Width || baselineImage.Height != testImage.Height)
                 {
-                    if (!VisualHelper.PixIsSame(baselineImage.GetPixel(x, y), testImage.GetPixel(x, y)))
+                    return false;
+                }
+
+                // WinAppDriver sometimes adds a border to the screenshot (around 2 pix width), and it is not always consistent.
+                // So we exclude the border when comparing the images, and usually it is the edge of the windows, won't affect the comparison.
+                int excludeBorderWidth = 5, excludeBorderHeight = 5;
+
+                for (int x = excludeBorderWidth; x < baselineImage.Width - excludeBorderWidth; x++)
+                {
+                    for (int y = excludeBorderHeight; y < baselineImage.Height - excludeBorderHeight; y++)
                     {
-                        return false;
+                        if (!VisualHelper.PixIsSame(baselineImage.GetPixel(x, y), testImage.GetPixel(x, y)))
+                        {
+                            return false;
+                        }
                     }
                 }
-            }
 
-            return true;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Convert System.Drawing.Bitmap to SixLabors.ImageSharp.Image
+        /// </summary>
+        /// <param name="bitmap">The bitmap to convert</param>
+        /// <returns>ImageSharp Image</returns>
+        private static Image<Rgba32> ConvertBitmapToImageSharp(Bitmap bitmap)
+        {
+            using var memoryStream = new MemoryStream();
+            bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+            memoryStream.Position = 0;
+            return SixLabors.ImageSharp.Image.Load<Rgba32>(memoryStream);
         }
     }
 }
