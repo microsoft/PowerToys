@@ -235,41 +235,39 @@ namespace Microsoft.CommandPalette.Extensions
         Windows.Foundation.IAsyncAction LogMessage(ILogMessage message);
     };
     
-    
-    
     enum ParameterType
     {
         Text,
-        File,
-        Files,
+        // File,
+        // Files,
         Enum,
-        Entity
+        Custom
     };
     
+    // interface IArgumentEnumValue requires INotifyPropChanged
+    // {
+    //     String Name { get; };
+    //     IIconInfo Icon { get; };
+    // }
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ICommandParameter
+    interface ICommandArgument requires INotifyPropChanged
     {
         ParameterType Type { get; };
         String Name { get; };
         Boolean Required{ get; };
-        // TODO! values for enums?
-        // TODO! dynamic values for enums? like GetValues(string query)
-        // TODO! files might want to restrict types? but now we're a file picker and need that whole API
-    };
     
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ICommandArgument
-    {
-        String Name { get; };
-        Object Value { get; };
+        Object Value { get; set; };
+    
+        void ShowPicker(UInt64 hostHwnd);
+        // todo
+        // IArgumentEnumValue[] GetValues();
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IInvokableCommandWithParameters requires ICommand {
-        ICommandParameter[] Parameters { get; };
+        ICommandArgument[] Parameters { get; };
         ICommandResult InvokeWithArgs(Object sender, ICommandArgument[] args);
     };
-    
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IPage requires ICommand {

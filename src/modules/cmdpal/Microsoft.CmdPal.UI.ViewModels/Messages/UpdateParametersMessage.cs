@@ -4,6 +4,6 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record UpdateParametersMessage(IEnumerable<ParameterViewModel>? Parameters)
+public record UpdateParametersMessage(IEnumerable<ArgumentItemViewModel>? Parameters)
 {
 }

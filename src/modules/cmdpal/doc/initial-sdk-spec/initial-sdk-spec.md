@@ -2181,7 +2181,7 @@ interface ICommandArgument requires INotifyPropChanged
 };
 
 interface IInvokableCommandWithParameters requires ICommand {
-    ICommandParameter[] Parameters { get; };
+    ICommandArgument[] Parameters { get; };
     ICommandResult InvokeWithArgs(Object sender, ICommandArgument[] args);
 };
 ```

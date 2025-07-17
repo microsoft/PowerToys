@@ -64,7 +64,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public bool HasParameters => Command.HasParameters;
 
-    public List<ParameterViewModel> Parameters => Command.Parameters;
+    public List<ArgumentItemViewModel> Parameters => Command.Parameters;
 
     public List<IContextItemViewModel> AllCommands
     {

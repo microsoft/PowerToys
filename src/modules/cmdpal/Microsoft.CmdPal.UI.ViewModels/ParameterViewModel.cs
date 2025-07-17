@@ -2,45 +2,42 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI.ViewModels.Models;
-using Microsoft.CommandPalette.Extensions;
-
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ParameterViewModel : ExtensionObjectViewModel
-{
-    public ExtensionObject<ICommandParameter> Model { get; private set; } = new(null);
+// public partial class ParameterViewModel : ExtensionObjectViewModel
+// {
+//    public ExtensionObject<ICommandParameter> Model { get; private set; } = new(null);
 
-    protected bool IsInitialized { get; private set; }
+// protected bool IsInitialized { get; private set; }
 
-    // values from ICommandParameter
-    public string Name { get; private set; } = string.Empty;
+// // values from ICommandParameter
+//    public string Name { get; private set; } = string.Empty;
 
-    public ParameterType Type { get; private set; } = ParameterType.Text;
+// public ParameterType Type { get; private set; } = ParameterType.Text;
 
-    public bool Required { get; private set; } = true;
+// public bool Required { get; private set; } = true;
 
-    public ParameterViewModel(ICommandParameter? parameter, WeakReference<IPageContext> pageContext)
-        : base(pageContext)
-    {
-        Model = new(parameter);
-    }
+// public ParameterViewModel(ICommandParameter? parameter, WeakReference<IPageContext> pageContext)
+//        : base(pageContext)
+//    {
+//        Model = new(parameter);
+//    }
 
-    public override void InitializeProperties()
-    {
-        if (IsInitialized)
-        {
-            return;
-        }
+// public override void InitializeProperties()
+//    {
+//        if (IsInitialized)
+//        {
+//            return;
+//        }
 
-        var model = Model.Unsafe;
-        if (model == null)
-        {
-            return;
-        }
+// var model = Model.Unsafe;
+//        if (model == null)
+//        {
+//            return;
+//        }
 
-        Name = model.Name ?? string.Empty;
-        Type = model.Type;
-        Required = model.Required;
-    }
-}
+// Name = model.Name ?? string.Empty;
+//        Type = model.Type;
+//        Required = model.Required;
+//    }
+// }

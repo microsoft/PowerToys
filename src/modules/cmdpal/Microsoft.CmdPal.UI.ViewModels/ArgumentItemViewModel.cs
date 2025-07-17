@@ -2,43 +2,111 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ArgumentItemViewModel : INotifyPropertyChanged, ICommandArgument
+public partial class ArgumentItemViewModel : ExtensionObjectViewModel
 {
-    private string _name = string.Empty;
-    private string? _value;
+    public ExtensionObject<ICommandArgument> Model => _model;
 
-    public string Name
+    private readonly ExtensionObject<ICommandArgument> _model = new(null);
+
+    public ParameterType Type { get; private set; }
+
+    public string Name { get; private set; } = string.Empty;
+
+    public bool Required { get; private set; }
+
+    public object? Value
     {
-        get => _name;
-        set
+        get; set
         {
-            _name = value;
-            OnPropertyChanged();
+            field = value;
+            SafeSetValue(value);
         }
     }
 
-    public string? Value
+    public ArgumentItemViewModel(ExtensionObject<ICommandArgument> model, WeakReference<IPageContext> pageContext)
+        : base(pageContext)
     {
-        get => _value;
-        set
+        _model = model;
+    }
+
+    public override void InitializeProperties()
+    {
+        var model = _model.Unsafe;
+        if (model == null)
         {
-            _value = value;
-            OnPropertyChanged();
+            return;
+        }
+
+        Type = model.Type;
+        Name = model.Name;
+        Required = model.Required;
+        Value = model.Value;
+
+        // Register for property changes
+        model.PropChanged += Model_PropChanged;
+    }
+
+    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
+    {
+        try
+        {
+            FetchProperty(args.PropertyName);
+        }
+        catch (Exception ex)
+        {
+            ShowException(ex);
         }
     }
 
-    object? ICommandArgument.Value => _value;
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    protected virtual void FetchProperty(string propertyName)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        var model = this._model.Unsafe;
+        if (model == null)
+        {
+            return; // throw?
+        }
+
+        switch (propertyName)
+        {
+            case nameof(ICommandArgument.Type):
+                Type = model.Type;
+                break;
+            case nameof(ICommandArgument.Name):
+                Name = model.Name;
+                break;
+            case nameof(ICommandArgument.Required):
+                Required = model.Required;
+                break;
+            case nameof(ICommandArgument.Value):
+                Value = model.Value;
+                break;
+        }
+    }
+
+    private void SafeSetValue(object? value)
+    {
+        _ = Task.Run(() => SafeSetValueSynchronous(value));
+    }
+
+    private void SafeSetValueSynchronous(object? value)
+    {
+        try
+        {
+            var model = _model.Unsafe;
+            if (model == null)
+            {
+                return;
+            }
+
+            model.Value = value;
+        }
+        catch
+        {
+        }
     }
 }

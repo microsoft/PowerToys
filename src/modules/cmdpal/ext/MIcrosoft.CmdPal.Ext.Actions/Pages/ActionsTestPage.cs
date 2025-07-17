@@ -70,13 +70,19 @@ internal sealed partial class ActionsTestPage : ListPage
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
-public partial class CommandParameter : ICommandParameter
+public partial class CommandParameter : BaseObservable, ICommandArgument
 {
     public string Name { get; set; }
 
     public bool Required { get; set; }
 
     public ParameterType Type { get; set; }
+
+    public object? Value { get; set; }
+
+    public void ShowPicker(ulong hostHwnd)
+    {
+    }
 
     public CommandParameter(string name = "", bool required = true, ParameterType type = ParameterType.Text)
     {
@@ -89,7 +95,7 @@ public partial class CommandParameter : ICommandParameter
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
 public abstract partial class InvokableWithParams : Command, IInvokableCommandWithParameters
 {
-    public ICommandParameter[] Parameters { get; set; } = [];
+    public ICommandArgument[] Parameters { get; set; } = [];
 
     public abstract ICommandResult InvokeWithArgs(object sender, ICommandArgument[] args);
 }
@@ -154,7 +160,7 @@ public partial class DoActionCommand : InvokableWithParams
 
         _actionRuntime = actionRuntime;
         _id = actionId;
-        ICommandParameter[] commandParameters = inputs.AsEnumerable()
+        ICommandArgument[] commandParameters = inputs.AsEnumerable()
             .Select(input => new CommandParameter(input.Name))
             .ToArray();
         Parameters = commandParameters;

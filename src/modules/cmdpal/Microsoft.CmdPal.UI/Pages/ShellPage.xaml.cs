@@ -234,7 +234,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 Logger.LogDebug($"Invoking command with args");
 
                 var args = ArgumentsViewModel.Arguments;
-                var aa = args?.Select(a => (a as ICommandArgument)!).ToArray() ?? [];
+                var aa = args.Select(a => a.Model.Unsafe).ToArray() ?? [];
+
+                // var aa = args?.Select(a => (a as ICommandArgument)!).ToArray() ?? [];
                 message.Arguments = aa;
 
                 PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());

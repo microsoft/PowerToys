@@ -49,7 +49,7 @@ public partial class BuiltInsCommandProvider : CommandProvider
 
     internal sealed partial class CommandWithParams : InvokableCommand, IInvokableCommandWithParameters
     {
-        public ICommandParameter[] Parameters => [new TextParam("Test")];
+        public ICommandArgument[] Parameters => [new TextParam("Test")];
 
         public ICommandResult InvokeWithArgs(object sender, ICommandArgument[] args)
         {
@@ -70,12 +70,18 @@ public partial class BuiltInsCommandProvider : CommandProvider
         }
     }
 
-    internal sealed partial class TextParam(string name, bool required = true) : ICommandParameter
+    internal sealed partial class TextParam(string name, bool required = true) : BaseObservable, ICommandArgument
     {
         public string Name => name;
 
         public bool Required => required;
 
         public ParameterType Type => ParameterType.Text;
+
+        public object? Value { get; set; }
+
+        public void ShowPicker(ulong hostHwnd)
+        {
+        }
     }
 }

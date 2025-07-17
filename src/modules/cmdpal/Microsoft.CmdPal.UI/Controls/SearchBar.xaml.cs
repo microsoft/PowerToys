@@ -310,8 +310,8 @@ public sealed partial class SearchBar : UserControl,
         {
             foreach (var param in message.Parameters)
             {
-                var argVm = new ArgumentItemViewModel { Name = param.Name };
-                ArgumentsViewModel.Arguments.Add(argVm);
+                // var argVm = new ArgumentItemViewModel { Name = param.Name };
+                ArgumentsViewModel.Arguments.Add(param);
                 var textBox = new TextBox
                 {
                     MinHeight = 24,
@@ -322,7 +322,7 @@ public sealed partial class SearchBar : UserControl,
                 };
                 textBox.SetBinding(TextBox.TextProperty, new Microsoft.UI.Xaml.Data.Binding
                 {
-                    Source = argVm,
+                    Source = param,
                     Path = new PropertyPath("Value"),
                     Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay,
                     UpdateSourceTrigger = Microsoft.UI.Xaml.Data.UpdateSourceTrigger.PropertyChanged,

@@ -31,7 +31,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public bool HasParameters { get; set; }
 
-    public List<ParameterViewModel> Parameters { get; private set; } = [];
+    public List<ArgumentItemViewModel> Parameters { get; private set; } = [];
 
     public CommandViewModel(ICommand? command, WeakReference<IPageContext> pageContext)
         : base(pageContext)
@@ -90,11 +90,11 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         {
             HasParameters = true;
 
-            if (withParams.Parameters is ICommandParameter[] parameters)
+            if (withParams.Parameters is ICommandArgument[] parameters)
             {
                 foreach (var p in parameters)
                 {
-                    var paramViewModel = new ParameterViewModel(p, PageContext);
+                    var paramViewModel = new ArgumentItemViewModel(new(p), PageContext);
                     paramViewModel.InitializeProperties();
                     Parameters.Add(paramViewModel);
                 }
