@@ -37,6 +37,7 @@ public class PeekFilePreviewTests : UITestBase
     public void TestInitialize()
     {
         Session.CloseMainWindow();
+        SendKeys(Key.Win, Key.D);
     }
 
     [TestMethod("Peek.FilePreview.Folder")]
@@ -45,11 +46,7 @@ public class PeekFilePreviewTests : UITestBase
     {
         string folderFullPath = Path.GetFullPath(@".\TestAssets");
 
-        OpenAndPeekFile(folderFullPath);
-
-        Task.Delay(1000).Wait(); // Wait for Peek to load
-
-        var peekWindow = Find("TestAssets - Peek", 1000, true);
+        var peekWindow = OpenPeekWindow(folderFullPath);
 
         Assert.IsNotNull(peekWindow);
 
