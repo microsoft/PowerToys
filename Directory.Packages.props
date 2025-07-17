@@ -64,6 +64,7 @@
     <!-- Moq to stay below v4.20 due to behavior change. need to be sure fixed -->
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="MSTest" Version="3.8.3" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="NLog" Version="5.2.8" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
