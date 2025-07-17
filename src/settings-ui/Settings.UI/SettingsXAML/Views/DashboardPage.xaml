@@ -166,7 +166,6 @@
                                     <DataTemplate x:DataType="viewmodels:DashboardListItem">
                                         <Grid>
                                             <ItemsControl
-                                                Grid.Column="1"
                                                 IsTabStop="False"
                                                 ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                                                 <ItemsControl.ItemTemplate>
