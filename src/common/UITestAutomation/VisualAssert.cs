@@ -6,13 +6,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
-using System.Security.Cryptography;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using Windows.Graphics.Imaging;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -142,6 +140,9 @@ namespace Microsoft.PowerToys.UITest
         {
             try
             {
+                // Define a threshold for similarity percentage
+                const int SimilarityThreshold = 95;
+
                 // Use CoenM.ImageHash for perceptual hash comparison
                 var hashAlgorithm = new AverageHash();
 
@@ -159,10 +160,11 @@ namespace Microsoft.PowerToys.UITest
 
                 // Consider images equal if similarity is very high
                 // Allow for minor rendering differences (threshold can be adjusted)
-                return similarity >= 95.0; // 95% similarity threshold
+                return similarity >= SimilarityThreshold; // 95% similarity threshold
             }
             catch
             {
+                // Fallback to pixel-by-pixel comparison if hash comparison fails
                 if (baselineImage.Width != testImage.Width || baselineImage.Height != testImage.Height)
                 {
                     return false;
