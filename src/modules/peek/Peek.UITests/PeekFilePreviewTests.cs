@@ -254,10 +254,10 @@ public class PeekFilePreviewTests : UITestBase
     [TestCategory("Open with default program")]
     public void TestOpenWithDefaultProgramByButton()
     {
-        string imagePath = Path.GetFullPath(@".\TestAssets\8.png");
+        string zipPath = Path.GetFullPath(@".\TestAssets\7.zip");
 
-        // Open image with Peek
-        var peekWindow = OpenPeekWindow(imagePath);
+        // Open zip file with Peek
+        var peekWindow = OpenPeekWindow(zipPath);
 
         // Find and click the "Open with default program" button
         var openButton = FindLaunchButton();
@@ -269,9 +269,9 @@ public class PeekFilePreviewTests : UITestBase
         // Wait a moment for the default program to launch
         Task.Delay(2000).Wait();
 
-        // Verify that the default program process has started
-        bool defaultProgramLaunched = CheckIfDefaultProgramLaunched();
-        Assert.IsTrue(defaultProgramLaunched, "Default program should be launched after clicking the button");
+        // Verify that the default program process has started (check for Explorer opening 7-zip)
+        bool defaultProgramLaunched = CheckIfExplorerLaunched();
+        Assert.IsTrue(defaultProgramLaunched, "Default program (Explorer/7-zip) should be launched after clicking the button");
 
         ClosePeekAndExplorer();
     }
@@ -283,10 +283,10 @@ public class PeekFilePreviewTests : UITestBase
     [TestCategory("Open with default program")]
     public void TestOpenWithDefaultProgramByEnter()
     {
-        string imagePath = Path.GetFullPath(@".\TestAssets\8.png");
+        string zipPath = Path.GetFullPath(@".\TestAssets\7.zip");
 
-        // Open image with Peek
-        var peekWindow = OpenPeekWindow(imagePath);
+        // Open zip file with Peek
+        var peekWindow = OpenPeekWindow(zipPath);
 
         // Press Enter key to open with default program
         SendKeys(Key.Enter);
@@ -294,9 +294,9 @@ public class PeekFilePreviewTests : UITestBase
         // Wait a moment for the default program to launch
         Task.Delay(2000).Wait();
 
-        // Verify that the default program process has started
-        bool defaultProgramLaunched = CheckIfDefaultProgramLaunched();
-        Assert.IsTrue(defaultProgramLaunched, "Default program should be launched after pressing Enter");
+        // Verify that the default program process has started (check for Explorer opening 7-zip)
+        bool defaultProgramLaunched = CheckIfExplorerLaunched();
+        Assert.IsTrue(defaultProgramLaunched, "Default program (Explorer/7-zip) should be launched after pressing Enter");
 
         ClosePeekAndExplorer();
     }
@@ -426,29 +426,31 @@ public class PeekFilePreviewTests : UITestBase
         ClosePeekAndExplorer();
     }
 
-    private bool CheckIfDefaultProgramLaunched()
+    private bool CheckIfExplorerLaunched()
     {
-        try
+        var possibleTitles = new[]
         {
-            // Check if Photos app is running
-            var photosProcesses = Process.GetProcessesByName("Photos");
+            "7.zip - File Explorer",
+            "7 - File Explorer",
+        };
 
-            foreach (var app in photosProcesses)
+        foreach (var title in possibleTitles)
+        {
+            try
             {
-                // Only close photos windows (corrected from explorer to app)
-                if (app.MainWindowHandle != IntPtr.Zero)
+                var explorerWindow = Find(title, 5000, true);
+                if (explorerWindow != null)
                 {
-                    app.CloseMainWindow();
+                    return true;
                 }
             }
+            catch
+            {
+                // Continue to next title
+            }
+        }
 
-            return photosProcesses.Length > 0;
-        }
-        catch
-        {
-            // If we can't determine, assume it worked (to avoid false negatives)
-            return true;
-        }
+        return false;
     }
 
     private void OpenAndPeekFile(string fullPath)
@@ -646,27 +648,20 @@ public class PeekFilePreviewTests : UITestBase
         // Close Peek window
         Session.CloseMainWindow();
 
-        // More safely close Explorer windows - only close file browser windows, not system Explorer process
+        // Close all Explorer windows that have a main window handle
         try
         {
-            // Only close explorer windows that are file browser windows, not the system desktop process
+            // Get all explorer processes that have a window (HasWindow=True)
             var explorerProcesses = Process.GetProcessesByName("explorer")
-                .Where(p => p.MainWindowHandle != IntPtr.Zero &&
-                           !string.IsNullOrEmpty(p.MainWindowTitle))
+                .Where(p => p.MainWindowHandle != IntPtr.Zero)
                 .ToList();
 
             foreach (var explorer in explorerProcesses)
             {
-                // Check if this is a file browser window rather than system desktop process
-                // Look for indicators that this is a file browser window
-                if (explorer.MainWindowTitle.Contains("TestAssets") ||
-                    explorer.MainWindowTitle.Contains("File Explorer"))
-                {
-                    explorer.CloseMainWindow();
+                explorer.CloseMainWindow();
 
-                    // Give time for the window to close before continuing
-                    Task.Delay(500).Wait();
-                }
+                // Give time for the window to close before continuing
+                Task.Delay(500).Wait();
             }
         }
         catch
