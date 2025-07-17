@@ -18,7 +18,7 @@ public partial class FilterItemViewModel : IFilterItemViewModel
 
     public string Name { get; set; }
 
-    public IIconInfo Icon { get; set; }
+    public IconInfoViewModel Icon { get; set; }
 
     public bool IsSelected { get; set; }
 
@@ -26,6 +26,6 @@ public partial class FilterItemViewModel : IFilterItemViewModel
     {
         Id = filter.Id;
         Name = filter.Name;
-        Icon = filter.Icon;
+        Icon = new(filter.Icon);
     }
 }

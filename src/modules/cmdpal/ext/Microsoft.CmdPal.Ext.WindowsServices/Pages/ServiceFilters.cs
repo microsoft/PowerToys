@@ -24,6 +24,7 @@ public partial class ServiceFilters : BaseObservable, IFilters
     {
         return [
             new Filter() { Id = "all", Name = "All Services" },
+            new Separator(),
             new Filter() { Id = "running", Name = "Running", Icon = Icons.GreenCircleIcon },
             new Filter() { Id = "stopped", Name = "Stopped", Icon = Icons.RedCircleIcon },
         ];

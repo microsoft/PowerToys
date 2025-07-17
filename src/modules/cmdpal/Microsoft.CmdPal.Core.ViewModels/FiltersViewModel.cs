@@ -34,8 +34,8 @@ public partial class FiltersViewModel : ObservableObject
         get
         {
             var item = Filters
-                               .OfType<FilterItemViewModel>()
-                               .FirstOrDefault(f => f.Id == CurrentFilterId);
+                            .OfType<FilterItemViewModel>()
+                            .FirstOrDefault(f => f.Id == CurrentFilterId);
 
             return item?.Name ?? string.Empty;
         }

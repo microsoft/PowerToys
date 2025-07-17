@@ -6,6 +6,7 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using Microsoft.Bot.AdaptiveExpressions.Core;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
@@ -66,10 +67,33 @@ public sealed partial class Filter : UserControl,
 
     private void FiltersDropdown_ItemClick(object sender, ItemClickEventArgs e)
     {
+        if (e.ClickedItem is FilterItemViewModel filterItem)
+        {
+            ViewModel.CurrentFilterId = filterItem.Id;
+        }
+
+        FilterButton.Flyout.Hide();
     }
 
     private void FiltersDropdown_KeyDown(object sender, KeyRoutedEventArgs e)
     {
+        if (e.Handled)
+        {
+            return;
+        }
+
+        if (e.Key == VirtualKey.Enter)
+        {
+            if (FiltersDropdown.SelectedIndex > 0 &&
+                ViewModel.Filters.Length > FiltersDropdown.SelectedIndex)
+            {
+                var item = ViewModel.Filters[FiltersDropdown.SelectedIndex]! as FilterItemViewModel;
+                ViewModel.CurrentFilterId = item!.Id;
+
+                FilterButton.Flyout.Hide();
+                e.Handled = true;
+            }
+        }
     }
 
     private void FilterButton_Tapped(object sender, TappedRoutedEventArgs e)

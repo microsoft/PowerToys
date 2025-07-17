@@ -21,6 +21,16 @@
                 Default="{StaticResource FilterItemViewModelTemplate}"
                 Separator="{StaticResource SeparatorViewModelTemplate}" />
 
+            <Style
+                x:Name="FilterFlyoutStyle"
+                BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
+                TargetType="FlyoutPresenter">
+                <Style.Setters>
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Padding" Value="0" />
+                </Style.Setters>
+            </Style>
+
             <!--  Template for the filter items  -->
             <DataTemplate x:Key="FilterItemViewModelTemplate" x:DataType="coreViewModels:FilterItemViewModel">
                 <Grid AutomationProperties.Name="{x:Bind Name}">
@@ -31,7 +41,7 @@
                     <cpcontrols:IconBox
                         Width="16"
                         Height="16"
-                        Margin="4,0,0,0"
+                        Margin="0,0,0,0"
                         HorizontalAlignment="Left"
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
@@ -53,17 +63,33 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel>
+    <StackPanel
+        VerticalAlignment="Center"
+        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+        >
         <Button
             Name="FilterButton"
             x:Uid="FilterButton"
-            Padding="4"
-            Content="{x:Bind ViewModel.SelectedFilter, Mode=OneWay}"
-            Style="{StaticResource SubtleButtonStyle}"
+            Style="{StaticResource FilterButtonStyle}"
             Tapped="FilterButton_Tapped"
             >
+            <StackPanel
+                Orientation="Horizontal"
+                VerticalAlignment="Center"
+                >
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Text="{x:Bind ViewModel.SelectedFilter, Mode=OneWay}"/>
+                <FontIcon
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="8,0,0,0"
+                    FontSize="{ThemeResource AppBarButtonSubItemChevronFontSize}"
+                    Glyph="&#xE70D;" />
+            </StackPanel>
             <Button.Flyout>
-                <Flyout>
+                <Flyout
+                    FlyoutPresenterStyle="{StaticResource FilterFlyoutStyle}">
                     <ListView
                         x:Name="FiltersDropdown"
                         MinWidth="248"
