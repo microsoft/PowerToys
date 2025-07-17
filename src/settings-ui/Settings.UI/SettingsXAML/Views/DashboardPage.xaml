@@ -1,24 +1,23 @@
 ﻿<Page
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.DashboardPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    AutomationProperties.LandmarkType="Main"
-    DataContext="DashboardViewModel"
-    mc:Ignorable="d">
-
+  x:Class="Microsoft.PowerToys.Settings.UI.Views.DashboardPage"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
+  xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+  xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+  xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+  xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+  AutomationProperties.LandmarkType="Main"
+  DataContext="DashboardViewModel"
+  mc:Ignorable="d">
   <Page.Resources>
     <converters:ModuleItemTemplateSelector
-            x:Key="ModuleItemTemplateSelector"
-            ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
-            ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}" />
+      x:Key="ModuleItemTemplateSelector"
+      ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
+      ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}" />
     <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
       <Grid MinHeight="36" ColumnSpacing="12">
         <Grid.ColumnDefinitions>
@@ -26,11 +25,11 @@
           <ColumnDefinition Width="Auto" MinWidth="140" />
         </Grid.ColumnDefinitions>
         <ItemsControl
-                    Grid.Column="1"
-                    HorizontalAlignment="Left"
-                    AutomationProperties.AccessibilityView="Raw"
-                    IsTabStop="False"
-                    ItemsSource="{x:Bind Shortcut, Mode=OneWay}">
+          Grid.Column="1"
+          HorizontalAlignment="Left"
+          AutomationProperties.AccessibilityView="Raw"
+          IsTabStop="False"
+          ItemsSource="{x:Bind Shortcut, Mode=OneWay}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
               <StackPanel Orientation="Horizontal" Spacing="4" />
@@ -39,22 +38,21 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <controls:KeyVisual
-                                VerticalAlignment="Center"
-                                AutomationProperties.AccessibilityView="Raw"
-                                Content="{Binding}"
-                                FontSize="12"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                IsTabStop="False" />
+                VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
+                Content="{Binding}"
+                FontSize="12"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                IsTabStop="False" />
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
         <TextBlock
-                    VerticalAlignment="Center"
-                    Text="{x:Bind Label, Mode=OneWay}"
-                    TextWrapping="WrapWholeWords" />
+          VerticalAlignment="Center"
+          Text="{x:Bind Label, Mode=OneWay}"
+          TextWrapping="WrapWholeWords" />
       </Grid>
     </DataTemplate>
-
     <DataTemplate x:Key="ModuleItemActivationTemplate" x:DataType="viewmodels:DashboardModuleActivationItem">
       <Grid MinHeight="36" ColumnSpacing="12">
         <Grid.ColumnDefinitions>
@@ -62,38 +60,36 @@
           <ColumnDefinition Width="Auto" MinWidth="140" />
         </Grid.ColumnDefinitions>
         <TextBlock
-                    VerticalAlignment="Center"
-                    Text="{x:Bind Label, Mode=OneWay}"
-                    TextWrapping="WrapWholeWords" />
+          VerticalAlignment="Center"
+          Text="{x:Bind Label, Mode=OneWay}"
+          TextWrapping="WrapWholeWords" />
         <TextBlock
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    FontSize="12"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind Activation, Mode=OneWay}"
-                    TextWrapping="WrapWholeWords" />
+          Grid.Column="1"
+          VerticalAlignment="Center"
+          FontSize="12"
+          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+          Text="{x:Bind Activation, Mode=OneWay}"
+          TextWrapping="WrapWholeWords" />
       </Grid>
     </DataTemplate>
   </Page.Resources>
-
   <Grid Margin="16,0,0,0" RowSpacing="12">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-
     <TextBlock
-            x:Uid="DashboardTitle"
-            MaxWidth="{StaticResource PageMaxWidth}"
-            Margin="1,0,0,0"
-            VerticalAlignment="Center"
-            Style="{StaticResource TitleTextBlockStyle}" />
+      x:Uid="DashboardTitle"
+      MaxWidth="{StaticResource PageMaxWidth}"
+      Margin="1,0,0,0"
+      VerticalAlignment="Center"
+      Style="{StaticResource TitleTextBlockStyle}" />
     <Grid
-            Grid.Row="1"
-            MaxWidth="{StaticResource PageMaxWidth}"
-            Padding="0,0,20,0"
-            ColumnSpacing="16">
+      Grid.Row="1"
+      MaxWidth="{StaticResource PageMaxWidth}"
+      Padding="0,0,20,0"
+      ColumnSpacing="16">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="Auto" />
@@ -104,9 +100,9 @@
       </Grid.RowDefinitions>
       <Button
         AutomationProperties.Name="WhatsNewButton"
-                Padding="0,0,8,0"
-                Click="WhatsNewButton_Click"
-                Style="{StaticResource SubtleButtonStyle}">
+          Padding="0,0,8,0"
+          Click="WhatsNewButton_Click"
+          Style="{StaticResource SubtleButtonStyle}">
         <Grid ColumnSpacing="16">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -114,41 +110,40 @@
           </Grid.ColumnDefinitions>
           <Grid CornerRadius="{StaticResource OverlayCornerRadius}">
             <Image
-                            Width="120"
-                            AutomationProperties.AccessibilityView="Raw"
-                            Source="ms-appx:///Assets/Settings/Modules/PT.png" />
+              Width="120"
+              AutomationProperties.AccessibilityView="Raw"
+              Source="ms-appx:///Assets/Settings/Modules/PT.png" />
             <Grid Background="{ThemeResource SmokeFillColorDefaultBrush}" />
           </Grid>
           <StackPanel
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Orientation="Vertical">
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Orientation="Vertical">
             <TextBlock x:Uid="LearnWhatsNew" FontWeight="SemiBold" />
             <TextBlock
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" />
+              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+              Style="{StaticResource CaptionTextBlockStyle}"
+              Text="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" />
           </StackPanel>
         </Grid>
       </Button>
       <StackPanel
-                x:Name="TopButtonPanel"
-                Grid.Column="1"
-                Orientation="Horizontal"
-                Spacing="16">
+        x:Name="TopButtonPanel"
+        Grid.Column="1"
+        Orientation="Horizontal"
+        Spacing="16">
         <!--<controls:ShortcutConflictControl/>-->
         <controls:CheckUpdateControl />
       </StackPanel>
     </Grid>
-
     <ScrollViewer x:Name="MainScrollViewer" Grid.Row="2">
       <Grid>
         <!--  This grid is required to ensure that the content is horizontally aligned  -->
         <Grid
-                    MaxWidth="{StaticResource PageMaxWidth}"
-                    Padding="0,0,20,48"
-                    ColumnSpacing="16"
-                    RowSpacing="16">
+          MaxWidth="{StaticResource PageMaxWidth}"
+          Padding="0,0,20,48"
+          ColumnSpacing="16"
+          RowSpacing="16">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
@@ -161,9 +156,9 @@
           <controls:Card x:Uid="QuickAccessTitle" VerticalAlignment="Top">
             <Grid>
               <ItemsRepeater
-                                Margin="8,0,12,12"
-                                ItemsSource="{x:Bind ViewModel.ActionModules, Mode=OneWay}"
-                                Visibility="{x:Bind ViewModel.ActionModules.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}">
+                Margin="8,0,12,12"
+                ItemsSource="{x:Bind ViewModel.ActionModules, Mode=OneWay}"
+                Visibility="{x:Bind ViewModel.ActionModules.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}">
                 <ItemsRepeater.Layout>
                   <tkcontrols:WrapLayout HorizontalSpacing="16" VerticalSpacing="24" />
                 </ItemsRepeater.Layout>
@@ -171,18 +166,18 @@
                   <DataTemplate x:DataType="viewmodels:DashboardListItem">
                     <Grid>
                       <ItemsControl
-                                                Grid.Column="1"
-                                                IsTabStop="False"
-                                                ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
+                        Grid.Column="1"
+                        IsTabStop="False"
+                        ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                           <DataTemplate x:DataType="viewmodels:DashboardModuleButtonItem">
                             <controls:FlyoutMenuButton AutomationProperties.Name="{x:Bind ButtonTitle}" Click="{x:Bind ButtonClickHandler}">
                               <controls:FlyoutMenuButton.Content>
                                 <TextBlock
-                                                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                                                    Text="{x:Bind ButtonTitle}"
-                                                                    TextAlignment="Center"
-                                                                    TextWrapping="Wrap" />
+                                  Style="{StaticResource CaptionTextBlockStyle}"
+                                  Text="{x:Bind ButtonTitle}"
+                                  TextAlignment="Center"
+                                  TextWrapping="Wrap" />
                               </controls:FlyoutMenuButton.Content>
                               <controls:FlyoutMenuButton.Icon>
                                 <Image Width="24">
@@ -208,22 +203,22 @@
                 </ItemsRepeater.ItemTemplate>
               </ItemsRepeater>
               <TextBlock
-                                x:Uid="NoActionsToShow"
-                                Margin="12"
-                                HorizontalAlignment="Left"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Visibility="{x:Bind ViewModel.ActionModules.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+                x:Uid="NoActionsToShow"
+                Margin="12"
+                HorizontalAlignment="Left"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Visibility="{x:Bind ViewModel.ActionModules.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
             </Grid>
           </controls:Card>
           <controls:Card
-                        x:Uid="ShortcutsOverview"
-                        Grid.Row="1"
-                        VerticalAlignment="Top">
+            x:Uid="ShortcutsOverview"
+            Grid.Row="1"
+            VerticalAlignment="Top">
             <Grid>
               <ItemsRepeater
-                                Grid.Row="2"
-                                Margin="8,0,0,0"
-                                ItemsSource="{x:Bind ViewModel.ShortcutModules, Mode=OneWay}">
+                Grid.Row="2"
+                Margin="8,0,0,0"
+                ItemsSource="{x:Bind ViewModel.ShortcutModules, Mode=OneWay}">
                 <ItemsRepeater.Layout>
                   <StackLayout Orientation="Vertical" Spacing="0" />
                 </ItemsRepeater.Layout>
@@ -235,18 +230,18 @@
                         <ColumnDefinition Width="*" />
                       </Grid.ColumnDefinitions>
                       <Image
-                                                Width="16"
-                                                Margin="0,10,0,0"
-                                                HorizontalAlignment="Left"
-                                                VerticalAlignment="Top"
-                                                AutomationProperties.AccessibilityView="Raw"
-                                                Source="{x:Bind Icon, Mode=OneWay}"
-                                                ToolTipService.ToolTip="{x:Bind Label}" />
+                        Width="16"
+                        Margin="0,10,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Source="{x:Bind Icon, Mode=OneWay}"
+                        ToolTipService.ToolTip="{x:Bind Label}" />
                       <ItemsControl
-                                                Grid.Column="1"
-                                                IsTabStop="False"
-                                                ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
-                                                ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
+                        Grid.Column="1"
+                        IsTabStop="False"
+                        ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
+                        ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                         <ItemsControl.ItemsPanel>
                           <ItemsPanelTemplate>
                             <StackPanel Spacing="0" />
@@ -258,42 +253,42 @@
                 </ItemsRepeater.ItemTemplate>
               </ItemsRepeater>
               <TextBlock
-                                x:Uid="NoShortcutsToShow"
-                                Margin="12"
-                                HorizontalAlignment="Left"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Visibility="{x:Bind ViewModel.ShortcutModules.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+                x:Uid="NoShortcutsToShow"
+                Margin="12"
+                HorizontalAlignment="Left"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Visibility="{x:Bind ViewModel.ShortcutModules.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
             </Grid>
           </controls:Card>
           <controls:Card
-                        x:Name="ModulesCard"
-                        Title="Modules"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        MinWidth="400"
-                        Padding="0"
-                        VerticalAlignment="Top"
-                        DividerVisibility="Collapsed">
+            x:Name="ModulesCard"
+            Title="Modules"
+            Grid.RowSpan="2"
+            Grid.Column="1"
+            MinWidth="400"
+            Padding="0"
+            VerticalAlignment="Top"
+            DividerVisibility="Collapsed">
             <ItemsRepeater
-                            x:Name="DashboardView"
-                            Grid.Row="2"
-                            ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}">
+              x:Name="DashboardView"
+              Grid.Row="2"
+              ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}">
               <ItemsRepeater.Layout>
                 <StackLayout Orientation="Vertical" Spacing="0" />
               </ItemsRepeater.Layout>
               <ItemsRepeater.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:DashboardListItem">
                   <tkcontrols:SettingsCard
-                                        MinHeight="0"
-                                        Padding="12,4,12,4"
-                                        AutomationProperties.Name="{x:Bind Label}"
-                                        Background="Transparent"
-                                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                                        BorderThickness="0,1,0,0"
-                                        Click="DashboardListItemClick"
-                                        CornerRadius="0"
-                                        IsClickEnabled="True"
-                                        Tag="{x:Bind Tag}">
+                    MinHeight="0"
+                    Padding="12,4,12,4"
+                    AutomationProperties.Name="{x:Bind Label}"
+                    Background="Transparent"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    BorderThickness="0,1,0,0"
+                    Click="DashboardListItemClick"
+                    CornerRadius="0"
+                    IsClickEnabled="True"
+                    Tag="{x:Bind Tag}">
                     <tkcontrols:SettingsCard.Resources>
                       <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
                       <x:Double x:Key="SettingsCardHeaderIconMaxSize">16</x:Double>
@@ -302,16 +297,16 @@
                       <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{x:Bind Label}" />
                         <InfoBadge
-                                                    Margin="4,0,0,0"
-                                                    Style="{StaticResource NewInfoBadge}"
-                                                    Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}}" />
+                          Margin="4,0,0,0"
+                          Style="{StaticResource NewInfoBadge}"
+                          Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}}" />
                         <FontIcon
-                                                    Grid.Column="2"
-                                                    Width="20"
-                                                    Margin="0,0,-12,0"
-                                                    FontSize="16"
-                                                    Glyph="&#xE72E;"
-                                                    Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}">
+                          Grid.Column="2"
+                          Width="20"
+                          Margin="0,0,-12,0"
+                          FontSize="16"
+                          Glyph="&#xE72E;"
+                          Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}">
                           <ToolTipService.ToolTip>
                             <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
                           </ToolTipService.ToolTip>
@@ -326,11 +321,11 @@
                       </ImageIcon>
                     </tkcontrols:SettingsCard.HeaderIcon>
                     <ToggleSwitch
-                                            IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
-                                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                                            OffContent=""
-                                            OnContent=""
-                                            AutomationProperties.Name="{x:Bind Label}" />
+                      IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
+                      IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                      OffContent=""
+                      OnContent=""
+                      AutomationProperties.Name="{x:Bind Label}" />
                   </tkcontrols:SettingsCard>
                 </DataTemplate>
               </ItemsRepeater.ItemTemplate>
@@ -339,7 +334,6 @@
         </Grid>
       </Grid>
     </ScrollViewer>
-
     <VisualStateManager.VisualStateGroups>
       <VisualStateGroup>
         <VisualState>
