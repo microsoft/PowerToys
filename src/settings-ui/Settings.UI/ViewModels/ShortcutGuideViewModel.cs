@@ -35,7 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _disabledApps;
 
         public ShortcutGuideViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
-            : base(ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -76,8 +75,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case "light": _themeIndex = 1; break;
                 case "system": _themeIndex = 2; break;
             }
-
-            RegisterHotkeySettings(OpenShortcutGuide);
         }
 
         private void InitializeEnabledValue()

@@ -134,19 +134,6 @@ private:
     bool run_in_service_mode = false;
     PROCESS_INFORMATION p_info = {};
 
-    // Helper function to convert HotkeyObject to Hotkey struct
-    Hotkey ConvertHotkeyObjectToHotkey(const PowerToysSettings::HotkeyObject& hotkeyObj, const wchar_t* name)
-    {
-        Hotkey hotkey;
-        hotkey.win = hotkeyObj.win_pressed();
-        hotkey.ctrl = hotkeyObj.ctrl_pressed();
-        hotkey.alt = hotkeyObj.alt_pressed();
-        hotkey.shift = hotkeyObj.shift_pressed();
-        hotkey.key = static_cast<unsigned char>(hotkeyObj.get_code());
-        hotkey.name = name;
-        return hotkey;
-    }
-
     // Helper function to create a default disabled hotkey
     Hotkey CreateDisabledHotkey(const wchar_t* name)
     {

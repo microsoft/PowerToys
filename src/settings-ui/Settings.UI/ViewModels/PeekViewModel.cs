@@ -53,7 +53,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
             DispatcherQueue dispatcherQueue)
-            : base(ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
@@ -80,9 +79,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
 
             SendConfigMSG = ipcMSGCallBackFunc;
-
-            // Register hotkey settings for conflict detection
-            RegisterHotkeySettings(ActivationShortcut);
         }
 
         /// <summary>

@@ -80,7 +80,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<PowerOcrSettings> powerOcrsettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
@@ -111,9 +110,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Interval = SaveSettingsDelayInMs;
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
-
-            // Register hotkey settings for conflict detection
-            RegisterHotkeySettings(ActivationShortcut);
         }
 
         private void InitializeEnabledValue()
@@ -236,9 +232,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     _settingsUtils.SaveSettings(_powerOcrSettings.ToJsonString(), PowerOcrSettings.ModuleName);
                     NotifySettingsChanged();
-
-                    // Update hotkey settings for conflict detection
-                    RegisterHotkeySettings(ActivationShortcut);
                 }
             }
         }

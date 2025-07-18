@@ -67,7 +67,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
         public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             dispatcher = Dispatcher.CurrentDispatcher;
             _settingsRepository = settingsRepository;

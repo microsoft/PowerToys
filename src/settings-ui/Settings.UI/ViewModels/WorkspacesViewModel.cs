@@ -36,7 +36,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
 
         public WorkspacesViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<WorkspacesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -66,9 +65,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
 
             LaunchEditorEventHandler = new ButtonClickCommand(LaunchEditor);
-
-            // Register hotkey settings for conflict detection
-            RegisterHotkeySettings(Hotkey);
         }
 
         private void LaunchEditor()

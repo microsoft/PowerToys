@@ -55,7 +55,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<ColorPickerSettings> colorPickerSettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             // Obtain the general PowerToy settings configurations
             ArgumentNullException.ThrowIfNull(settingsRepository);
@@ -84,9 +83,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.AutoReset = false;
 
             InitializeColorFormats();
-
-            // Register hotkey settings for conflict detection
-            RegisterHotkeySettings(ActivationShortcut);
 
             // Initialize conflict properties
             InitializeConflictPropertiesDefaults();

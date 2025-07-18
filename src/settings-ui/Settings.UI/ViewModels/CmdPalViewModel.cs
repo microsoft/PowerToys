@@ -43,7 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         public CmdPalViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, DispatcherQueue uiDispatcherQueue)
-            : base(ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
