@@ -36,7 +36,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         public AlwaysOnTopViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -70,8 +69,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-
-            RegisterHotkeySettings(Hotkey);
         }
 
         private void InitializeEnabledValue()

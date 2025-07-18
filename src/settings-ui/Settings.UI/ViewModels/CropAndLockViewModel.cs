@@ -36,7 +36,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         public CropAndLockViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<CropAndLockSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -72,9 +71,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-
-            // Register hotkey settings for conflict detection
-            RegisterHotkeySettings(ReparentActivationShortcut, ThumbnailActivationShortcut);
         }
 
         private void InitializeEnabledValue()

@@ -40,7 +40,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             dispatcher = Dispatcher.CurrentDispatcher;
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));

@@ -76,7 +76,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<AdvancedPasteSettings> advancedPasteSettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
@@ -136,8 +135,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _customActions.CollectionChanged += OnCustomActionsCollectionChanged;
             UpdateCustomActionsCanMoveUpDown();
-
-            RegisterHotkeySettings(AdvancedPasteUIShortcut, PasteAsPlainTextShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut);
 
             InitializeConflictPropertiesDefaults();
         }

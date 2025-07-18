@@ -1,4 +1,4 @@
-// dllmain.cpp : Defines the entry point for the DLL application.
+﻿// dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
 #include "AdvancedPasteConstants.h"
@@ -80,7 +80,25 @@ namespace
     const wchar_t TRANSCODE_TO_MP3_HOTKEY_NAME[] = L"TranscodeToMp3Shortcut";
     const wchar_t TRANSCODE_TO_MP4_HOTKEY_NAME[] = L"TranscodeToMp4Shortcut";
 
-    
+    const std::unordered_map<std::wstring, const wchar_t*> g_hotkey_name_map = {
+        { JSON_KEY_PASTE_AS_PLAIN_HOTKEY, PASTE_AS_PLAIN_HOTKEY_NAME },
+        { JSON_KEY_ADVANCED_PASTE_UI_HOTKEY, ADVANCED_PASTE_UI_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY, PASTE_AS_MARKDOWN_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_JSON_HOTKEY, PASTE_AS_JSON_HOTKEY_NAME },
+
+        { JSON_KEY_IMAGE_TO_TEXT_HOTKEY, IMAGE_TO_TEXT_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_TXT_FILE_HOTKEY, PASTE_AS_TXT_FILE_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_PNG_FILE_HOTKEY, PASTE_AS_PNG_FILE_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_HTML_FILE_HOTKEY, PASTE_AS_HTML_FILE_HOTKEY_NAME },
+        { JSON_KEY_TRANSCODE_TO_MP3_HOTKEY, TRANSCODE_TO_MP3_HOTKEY_NAME },
+        { JSON_KEY_TRANSCODE_TO_MP4_HOTKEY, TRANSCODE_TO_MP4_HOTKEY_NAME },
+    };
+
+    const wchar_t* get_hotkey_name(const std::wstring& key)
+    {
+        auto it = g_hotkey_name_map.find(key);
+        return it != g_hotkey_name_map.end() ? it->second : nullptr;
+    }
 }
 
 class AdvancedPaste : public PowertoyModuleIface
@@ -136,38 +154,6 @@ private:
         return {};
     }
 
-    const wchar_t* get_hotkey_name(const wchar_t* name)
-    {
-        if (wcscmp(name, JSON_KEY_PASTE_AS_PLAIN_HOTKEY) == 0)
-            return PASTE_AS_PLAIN_HOTKEY_NAME;
-        if (wcscmp(name, JSON_KEY_ADVANCED_PASTE_UI_HOTKEY) == 0)
-            return ADVANCED_PASTE_UI_HOTKEY_NAME;
-        if (wcscmp(name, JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY) == 0)
-            return PASTE_AS_MARKDOWN_HOTKEY_NAME;
-        if (wcscmp(name, JSON_KEY_PASTE_AS_JSON_HOTKEY) == 0)
-            return PASTE_AS_JSON_HOTKEY_NAME;
-
-        return nullptr;
-    }
-
-    const wchar_t* get_additional_action_hotkey_name(std::wstring name)
-    {
-        if (name == JSON_KEY_IMAGE_TO_TEXT_HOTKEY)
-            return IMAGE_TO_TEXT_HOTKEY_NAME;
-        if (name == JSON_KEY_PASTE_AS_TXT_FILE_HOTKEY)
-            return PASTE_AS_TXT_FILE_HOTKEY_NAME;
-        if (name == JSON_KEY_PASTE_AS_PNG_FILE_HOTKEY)
-            return PASTE_AS_PNG_FILE_HOTKEY_NAME;
-        if (name == JSON_KEY_PASTE_AS_HTML_FILE_HOTKEY)
-            return PASTE_AS_HTML_FILE_HOTKEY_NAME;
-        if (name == JSON_KEY_TRANSCODE_TO_MP3_HOTKEY)
-            return TRANSCODE_TO_MP3_HOTKEY_NAME;
-        if (name == JSON_KEY_TRANSCODE_TO_MP4_HOTKEY)
-            return TRANSCODE_TO_MP4_HOTKEY_NAME;
-
-        return nullptr;
-    }
-
     static Hotkey parse_single_hotkey(const winrt::Windows::Data::Json::JsonObject& jsonHotkeyObject)
     {
         try
@@ -178,7 +164,6 @@ private:
             hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
             hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
             hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
-            hotkey.name = jsonHotkeyObject.GetNamedString(JSON_KEY_NAME).c_str();
             return hotkey;
         }
         catch (...)
@@ -311,7 +296,7 @@ private:
                 parse_single_hotkey(action.GetNamedObject(JSON_KEY_SHORTCUT))
             };
 
-            additionalAction.hotkey.name = get_additional_action_hotkey_name(additionalAction.id);
+            additionalAction.hotkey.name = get_hotkey_name(additionalAction.id);
             m_additional_actions.push_back(additionalAction);
         }
         else
