@@ -124,7 +124,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
 
-            // Setup the hotkey names
+            // Set the hotkey names
             if (string.IsNullOrEmpty(MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut.HotkeyName))
             {
                 MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
