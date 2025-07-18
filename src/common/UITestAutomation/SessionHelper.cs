@@ -176,6 +176,9 @@ namespace Microsoft.PowerToys.UITest
             runner = Process.Start(runnerProcessInfo);
             Thread.Sleep(5000);
 
+            // Exit CmdPal UI before launching new process if use installer for test
+            ExitExeByName("Microsoft.CmdPal.UI");
+
             if (root != null)
             {
                 const int maxRetries = 5;
@@ -204,9 +207,6 @@ namespace Microsoft.PowerToys.UITest
                     }
                 }
             }
-
-            // Exit CmdPal UI before launching new process if use installer for test
-            ExitExeByName("Microsoft.CmdPal.UI");
         }
 
         /// <summary>
