@@ -29,8 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private AllHotkeyConflictsData _conflictsData = new();
         private ObservableCollection<HotkeyConflictGroupData> _conflictItems = new();
-        private bool _hasModifications;
-        private bool _hasConflicts;
 
         private PowerLauncherSettings powerLauncherSettings;
 
@@ -71,19 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             private set => Set(ref _conflictItems, value);
         }
 
-        public bool HasModifications
-        {
-            get => _hasModifications;
-            private set => Set(ref _hasModifications, value);
-        }
-
-        public bool HasConflicts
-        {
-            get => _hasConflicts;
-            private set => Set(ref _hasConflicts, value);
-        }
-
-        protected override string ModuleName => "ShortcutConflicts";
+        protected override string ModuleName => "ShortcutConflictsWindow";
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -269,7 +255,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             ConflictItems = items;
-            HasConflicts = items.Count > 0;
             OnPropertyChanged(nameof(ConflictItems));
         }
 
@@ -290,7 +275,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Set conflict properties
                     module.HotkeySettings.HasConflict = true;
                     module.HotkeySettings.IsSystemConflict = isSystemConflict;
-                    module.HotkeySettings.ConflictDescription = GetConflictDescription(conflict, module, isSystemConflict);
+
+                    // module.HotkeySettings.ConflictDescription = GetConflictDescription(conflict, module, isSystemConflict);
                 }
 
                 module.IsSystemConflict = isSystemConflict;
@@ -301,8 +287,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (sender is ModuleHotkeyData moduleData && e.PropertyName == nameof(ModuleHotkeyData.HotkeySettings))
             {
-                var key = $"{moduleData.ModuleName}_{moduleData.HotkeyName}";
-
                 UpdateModuleViewModelHotkeySettings(moduleData.ModuleName, moduleData.HotkeyName, moduleData.HotkeySettings);
             }
         }
@@ -807,54 +791,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                    settings1.Code == settings2.Code;
         }
 
-        private void UpdateHotkeySettingsProperties(HotkeySettings target, HotkeySettings source)
-        {
-            if (target == null || source == null)
-            {
-                return;
-            }
-
-            target.Win = source.Win;
-            target.Ctrl = source.Ctrl;
-            target.Alt = source.Alt;
-            target.Shift = source.Shift;
-            target.Code = source.Code;
-            target.Key = source.Key;
-        }
-
-        private ModuleHotkeyData FindModuleDataForHotkeySettings(HotkeySettings hotkeySettings)
-        {
-            foreach (var conflictGroup in ConflictItems)
-            {
-                foreach (var module in conflictGroup.Modules)
-                {
-                    if (ReferenceEquals(module.HotkeySettings, hotkeySettings))
-                    {
-                        return module;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private ModuleHotkeyData FindModuleDataByKey(string moduleName, string hotkeyName)
-        {
-            foreach (var conflictGroup in ConflictItems)
-            {
-                foreach (var module in conflictGroup.Modules)
-                {
-                    if (module.ModuleName.Equals(moduleName, StringComparison.OrdinalIgnoreCase) &&
-                        module.HotkeyName.Equals(hotkeyName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return module;
-                    }
-                }
-            }
-
-            return null;
-        }
-
         private HotkeySettings GetHotkeySettingsFromViewModel(string moduleName, string hotkeyName)
         {
             try
@@ -928,16 +864,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             return hotkeyName?.ToLowerInvariant() switch
             {
-                "advancedpasteui" or "advancedpasteuishortcut" or "activation_shortcut" => viewModel.AdvancedPasteUIShortcut,
-                "pasteasplaintext" or "pasteasplaintextshortcut" => viewModel.PasteAsPlainTextShortcut,
-                "pasteasmarkdown" or "pasteasmarkdownshortcut" => viewModel.PasteAsMarkdownShortcut,
-                "pasteasjson" or "pasteasjsonshortcut" => viewModel.PasteAsJsonShortcut,
-                "imagetotext" or "imagetotextshortcut" => GetAdditionalActionShortcut(viewModel, "ImageToText"),
-                "pasteastxtfile" or "pasteastxtfileshortcut" => GetAdditionalActionShortcut(viewModel, "PasteAsTxtFile"),
-                "pasteaspngfile" or "pasteaspngfileshortcut" => GetAdditionalActionShortcut(viewModel, "PasteAsPngFile"),
-                "pasteashtmlfile" or "pasteashtmlfileshortcut" => GetAdditionalActionShortcut(viewModel, "PasteAsHtmlFile"),
-                "transcodetomp3" or "transcodetomp3shortcut" => GetAdditionalActionShortcut(viewModel, "TranscodeToMp3"),
-                "transcodetomp4" or "transcodetomp4shortcut" => GetAdditionalActionShortcut(viewModel, "TranscodeToMp4"),
+                "advancedpasteuishortcut" => viewModel.AdvancedPasteUIShortcut,
+                "pasteasplaintextshortcut" => viewModel.PasteAsPlainTextShortcut,
+                "pasteasmarkdownshortcut" => viewModel.PasteAsMarkdownShortcut,
+                "pasteasjsonshortcut" => viewModel.PasteAsJsonShortcut,
+                "imagetotextshortcut" => GetAdditionalActionShortcut(viewModel, "ImageToText"),
+                "pasteastxtfileshortcut" => GetAdditionalActionShortcut(viewModel, "PasteAsTxtFile"),
+                "pasteaspngfileshortcut" => GetAdditionalActionShortcut(viewModel, "PasteAsPngFile"),
+                "pasteashtmlfileshortcut" => GetAdditionalActionShortcut(viewModel, "PasteAsHtmlFile"),
+                "transcodetomp3shortcut" => GetAdditionalActionShortcut(viewModel, "TranscodeToMp3"),
+                "transcodetomp4shortcut" => GetAdditionalActionShortcut(viewModel, "TranscodeToMp4"),
                 _ when hotkeyName.StartsWith("customaction_", StringComparison.OrdinalIgnoreCase) => GetCustomActionShortcut(viewModel, hotkeyName),
                 _ => null,
             };

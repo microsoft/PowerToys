@@ -116,10 +116,6 @@
                                                         HotkeySettings="{x:Bind HotkeySettings, Mode=TwoWay}"
                                                         IsEnabled="True" />
 
-                                                    <!--  Tooltip for the entire card  -->
-                                                    <ToolTipService.ToolTip>
-                                                        <ToolTip Content="{x:Bind HotkeySettings.ConflictDescription, Mode=OneWay}" />
-                                                    </ToolTipService.ToolTip>
                                                 </tkcontrols:SettingsCard>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
