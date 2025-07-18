@@ -96,8 +96,7 @@
                                 <DataTemplate x:DataType="coreViewModels:StatusMessageViewModel">
                                     <StackPanel
                                         HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Bottom"
-                                        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                                        VerticalAlignment="Bottom">
                                         <InfoBar
                                             CornerRadius="{ThemeResource ControlCornerRadius}"
                                             IsClosable="False"
