@@ -76,7 +76,7 @@
 
         <Grid
             x:Name="IconRoot"
-            Margin="8,0,0,0"
+            Margin="3,0,-5,0"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}">
             <Button
                 x:Name="StatusMessagesButton"
