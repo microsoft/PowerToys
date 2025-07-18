@@ -39,25 +39,7 @@ public class PeekFilePreviewTests : UITestBase
     public void TestInitialize()
     {
         Session.CloseMainWindow();
-        SendKeys(Key.Win, Key.D);
-    }
-
-    [TestCleanup]
-    public void PeekTestCleanup()
-    {
-        try
-        {
-            // Ensure all test resources are cleaned up
-            ClosePeekAndExplorer();
-
-            // Force garbage collection to help with resource cleanup
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"TestCleanup failed: {ex.Message}");
-        }
+        SendKeys(Key.Win, Key.M);
     }
 
     [TestMethod("Peek.FilePreview.Folder")]
@@ -76,28 +58,80 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
-    /// Comprehensive test for all files in TestAssets with visual comparison
-    /// Tests all supported file types and validates preview rendering with image comparison
+    /// Test JPEG image preview
     /// </summary>
-    [TestMethod("Peek.FilePreview.AllTestAssets")]
+    [TestMethod("Peek.FilePreview.JPEGImage")]
     [TestCategory("Preview files")]
-    public void PeekAllTestAssets()
+    public void PeekJPEGImagePreview()
     {
-        // Get all test asset files
-        var testFiles = GetTestAssetFiles();
+        string imagePath = Path.GetFullPath(@".\TestAssets\2.jpg");
+        TestSingleFilePreview(imagePath, "2");
+    }
 
-        Assert.IsTrue(testFiles.Count > 0, "Should have test files in TestAssets folder");
+    /// <summary>
+    /// Test PDF document preview
+    /// </summary>
+    [TestMethod("Peek.FilePreview.PDFDocument")]
+    [TestCategory("Preview files")]
+    public void PeekPDFDocumentPreview()
+    {
+        string pdfPath = Path.GetFullPath(@".\TestAssets\3.pdf");
+        TestSingleFilePreview(pdfPath, "3");
+    }
 
-        // Test each file individually with visual comparison
-        foreach (var testFile in testFiles)
-        {
-            string fileName = Path.GetFileName(testFile);
-            string fileExtension = Path.GetExtension(testFile).ToLowerInvariant();
+    /// <summary>
+    /// Test QOI image preview
+    /// </summary>
+    [TestMethod("Peek.FilePreview.QOIImage")]
+    [TestCategory("Preview files")]
+    public void PeekQOIImagePreview()
+    {
+        string qoiPath = Path.GetFullPath(@".\TestAssets\4.qoi");
+        TestSingleFilePreview(qoiPath, "4");
+    }
 
-            TestFilePreviewWithVisualComparison(testFile);
-        }
+    /// <summary>
+    /// Test C++ source code preview
+    /// </summary>
+    [TestMethod("Peek.FilePreview.CPPSourceCode")]
+    [TestCategory("Preview files")]
+    public void PeekCPPSourceCodePreview()
+    {
+        string cppPath = Path.GetFullPath(@".\TestAssets\5.cpp");
+        TestSingleFilePreview(cppPath, "5");
+    }
 
-        // Assert.Fail("All test files should be processed without failure. If this fails, check the TestAssets folder for missing or unsupported files.");
+    /// <summary>
+    /// Test Markdown document preview
+    /// </summary>
+    [TestMethod("Peek.FilePreview.MarkdownDocument")]
+    [TestCategory("Preview files")]
+    public void PeekMarkdownDocumentPreview()
+    {
+        string markdownPath = Path.GetFullPath(@".\TestAssets\6.md");
+        TestSingleFilePreview(markdownPath, "6");
+    }
+
+    /// <summary>
+    /// Test ZIP archive preview
+    /// </summary>
+    [TestMethod("Peek.FilePreview.ZIPArchive")]
+    [TestCategory("Preview files")]
+    public void PeekZIPArchivePreview()
+    {
+        string zipPath = Path.GetFullPath(@".\TestAssets\7.zip");
+        TestSingleFilePreview(zipPath, "7");
+    }
+
+    /// <summary>
+    /// Test PNG image preview
+    /// </summary>
+    [TestMethod("Peek.FilePreview.PNGImage")]
+    [TestCategory("Preview files")]
+    public void PeekPNGImagePreview()
+    {
+        string pngPath = Path.GetFullPath(@".\TestAssets\8.png");
+        TestSingleFilePreview(pngPath, "8");
     }
 
     /// <summary>
@@ -665,19 +699,32 @@ public class PeekFilePreviewTests : UITestBase
         }
     }
 
-    private void TestFilePreviewWithVisualComparison(string filePath)
+    /// <summary>
+    /// Test a single file preview with visual comparison
+    /// </summary>
+    /// <param name="filePath">Full path to the file to test</param>
+    /// <param name="expectedFileName">Expected file name for visual comparison</param>
+    private void TestSingleFilePreview(string filePath, string expectedFileName)
     {
-        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
+        Element? previewWindow = null;
 
-        Element previewWindow = OpenPeekWindow(filePath);
+        try
+        {
+            Debug.WriteLine($"Testing file preview: {Path.GetFileName(filePath)}");
 
-        Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileNameWithoutExt}");
+            previewWindow = OpenPeekWindow(filePath);
+            Assert.IsNotNull(previewWindow, $"Should open Peek window for {Path.GetFileName(filePath)}");
 
-        // previewWindow.SaveToPngFile(Path.Combine(ScreenshotDirectory ?? string.Empty, $"{fileNameWithoutExt}.png"));
-        VisualAssert.AreEqual(TestContext, previewWindow, fileNameWithoutExt );
+            // Perform visual comparison
+            VisualAssert.AreEqual(TestContext, previewWindow, expectedFileName);
 
-        // Close peek window
-        ClosePeekAndExplorer();
+            Debug.WriteLine($"Successfully tested: {Path.GetFileName(filePath)}");
+        }
+        finally
+        {
+            // Always cleanup in finally block
+            ClosePeekAndExplorer();
+        }
     }
 
     private Rectangle GetWindowBounds(Element window)
@@ -718,45 +765,24 @@ public class PeekFilePreviewTests : UITestBase
         {
             // Close Peek window
             Session.CloseMainWindow();
-            Thread.Sleep(500); // Wait for window to close
+            Thread.Sleep(500);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error closing Peek window: {ex.Message}");
         }
 
-        // Close all Explorer windows that have a main window handle
+        // Close Explorer windows
         try
         {
-            // Get all explorer processes that have a window (HasWindow=True)
             var explorerProcesses = Process.GetProcessesByName("explorer")
                 .Where(p => p.MainWindowHandle != IntPtr.Zero)
                 .ToList();
 
             foreach (var explorer in explorerProcesses)
             {
-                try
-                {
-                    explorer.CloseMainWindow();
-
-                    // Give time for the window to close before continuing
-                    Thread.Sleep(500);
-
-                    // Force kill if still running after graceful close
-                    if (!explorer.HasExited)
-                    {
-                        explorer.Kill();
-                        explorer.WaitForExit(2000); // Wait up to 2 seconds for exit
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error closing Explorer process {explorer.Id}: {ex.Message}");
-                }
-                finally
-                {
-                    explorer.Dispose();
-                }
+                explorer.CloseMainWindow();
+                Thread.Sleep(500);
             }
         }
         catch (Exception ex)
