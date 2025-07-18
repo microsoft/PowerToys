@@ -8,12 +8,12 @@ public partial class CopyTextCommand : InvokableCommand
 {
     public virtual string Text { get; set; }
 
-    public virtual CommandResult Result { get; set; } = CommandResult.ShowToast("Copied to clipboard");
+    public virtual CommandResult Result { get; set; } = CommandResult.ShowToast(Properties.Resources.CopyTextCommand_CopiedToClipboard);
 
     public CopyTextCommand(string text)
     {
         Text = text;
-        Name = "Copy";
+        Name = Properties.Resources.CopyTextCommand_Copy;
         Icon = new IconInfo("\uE8C8");
     }
 
