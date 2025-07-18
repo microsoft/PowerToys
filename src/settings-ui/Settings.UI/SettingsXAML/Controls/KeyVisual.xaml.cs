@@ -2,12 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
 using Windows.System;
+using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -157,11 +161,21 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     case 91: // Left Windows key
                     case 92: // Right Windows key
                         accessibleName = "Windows key";
-                        PathIcon winIcon = XamlReader.Load(
-                            @"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" 
-                    Data=""M896 896H0V0h896v896zm1024 0h-896V0h896v896zM896 1920H0v-896h896v896zm1024 0h-896v-896h896v896z"" />") as PathIcon;
 
-                        Viewbox winIconContainer = new Viewbox
+                        Geometry geometry = GetGeometryFromAppResources("WindowsLogoData");
+
+                        var brush = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"];
+
+                        Path winIcon = new()
+                        {
+                            Data = geometry,
+                            Fill = brush,
+                            Stretch = Stretch.Uniform,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                        };
+
+                        Viewbox winIconContainer = new()
                         {
                             Child = winIcon,
                             HorizontalAlignment = HorizontalAlignment.Center,
@@ -200,6 +214,21 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             };
             AutomationProperties.SetName(tb, accessibleName);
             return tb;
+        }
+
+        private Geometry GetGeometryFromAppResources(string key)
+        {
+            if (Application.Current.Resources.TryGetValue(key, out var value) && value is string pathData)
+            {
+                return GetGeometryFromString(pathData);
+            }
+
+            throw new InvalidOperationException($"Resource with key '{key}' not found or not a string.");
+        }
+
+        private Geometry GetGeometryFromString(string pathData)
+        {
+            return (Geometry)XamlBindingHelper.ConvertValue(typeof(Geometry), pathData);
         }
 
         private void KeyVisual_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)

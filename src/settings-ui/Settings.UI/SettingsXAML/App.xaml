@@ -67,7 +67,6 @@
             </Style>
 
             <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="controls:CheckBoxWithDescriptionControl" />
-            <!--  Other app resources here  -->
 
             <TransitionCollection x:Key="SettingsCardsAnimations">
                 <EntranceThemeTransition FromVerticalOffset="50" />
@@ -75,6 +74,12 @@
                 <RepositionThemeTransition IsStaggeringEnabled="False" />
                 <!--  Smoothly animates individual cards upon whenever Expanders are expanded/collapsed  -->
             </TransitionCollection>
+
+            <!-- Windows Icon -->
+            <x:String x:Key="WindowsLogoData">M683 1229H0V546h683v683zm819 0H819V546h683v683zm-819 819H0v-683h683v683zm819 0H819v-683h683v683z</x:String>
+
+            <!-- Additional resources or settings can be added here -->
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
