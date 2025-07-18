@@ -95,12 +95,9 @@
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="coreViewModels:StatusMessageViewModel">
                                     <StackPanel
-                                        Grid.Row="0"
-                                        Margin="0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Bottom"
-                                        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-                                        CornerRadius="0">
+                                        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                                         <InfoBar
                                             CornerRadius="{ThemeResource ControlCornerRadius}"
                                             IsClosable="False"
