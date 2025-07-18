@@ -6,19 +6,21 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <ResourceDictionary>
             <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
             <cmdpalUI:ContextItemTemplateSelector
                 x:Key="ContextItemTemplateSelector"
@@ -27,7 +29,7 @@
                 Separator="{StaticResource SeparatorContextMenuViewModelTemplate}" />
 
             <!--  Template for context items in the context item menu  -->
-            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
+            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
                 <Grid AutomationProperties.Name="{x:Bind Title}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -42,9 +44,18 @@
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
+                        x:Name="TitleTextBlock"
                         Grid.Column="1"
+                        MaxWidth="200"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
-                        Text="{x:Bind Title}" />
+                        Text="{x:Bind Title}"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </ToolTipService.ToolTip>
+                    </TextBlock>
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
@@ -57,7 +68,7 @@
             </DataTemplate>
 
             <!--  Template for context items flagged as critical  -->
-            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
+            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
                 <Grid AutomationProperties.Name="{x:Bind Title}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
@@ -73,10 +84,19 @@
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
+                        x:Name="TitleTextBlock"
                         Grid.Column="1"
+                        MaxWidth="200"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
-                        Text="{x:Bind Title}" />
+                        Text="{x:Bind Title}"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </ToolTipService.ToolTip>
+                    </TextBlock>
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
@@ -88,7 +108,7 @@
             </DataTemplate>
 
             <!--  Template for context item separators  -->
-            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="viewmodels:SeparatorContextItemViewModel">
+            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="coreViewModels:SeparatorContextItemViewModel">
                 <Rectangle
                     Height="1"
                     Margin="-16,-12,-12,-12"
@@ -128,6 +148,7 @@
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
             Margin="4"
+            IsTextScaleFactorEnabled="True"
             KeyDown="ContextFilterBox_KeyDown"
             PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
             TextChanged="ContextFilterBox_TextChanged" />

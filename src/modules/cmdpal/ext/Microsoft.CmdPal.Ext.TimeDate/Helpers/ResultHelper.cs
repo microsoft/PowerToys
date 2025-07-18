@@ -26,14 +26,6 @@ internal static class ResultHelper
                 : Resources.ResourceManager.GetString(stringId + "Now", CultureInfo.CurrentUICulture) ?? string.Empty;
     }
 
-    public static IconInfo TimeIcon { get; } = new IconInfo("\uE823");
-
-    public static IconInfo CalendarIcon { get; } = new IconInfo("\uE787");
-
-    public static IconInfo TimeDateIcon { get; } = new IconInfo("\uEC92");
-
-    public static IconInfo ErrorIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png");
-
     /// <summary>
     /// Gets a result with an error message that input can't be parsed
     /// </summary>
@@ -42,7 +34,7 @@ internal static class ResultHelper
     internal static ListItem CreateInvalidInputErrorResult() => new ListItem(new NoOpCommand())
     {
         Title = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle,
-        Icon = ErrorIcon,
+        Icon = Icons.ErrorIcon,
         Details = new Details()
         {
             Title = Resources.Microsoft_plugin_timedate_InvalidInput_DetailsHeader,

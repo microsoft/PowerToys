@@ -218,6 +218,7 @@ coclass
 CODENAME
 codereview
 Codespaces
+Coen
 COINIT
 colid
 colorconv
@@ -1383,6 +1384,7 @@ RIGHTSCROLLBAR
 riid
 RKey
 RNumber
+Rns
 rop
 ROUNDSMALL
 ROWSETEXT
