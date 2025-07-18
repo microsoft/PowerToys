@@ -63,6 +63,7 @@ CSettings::CSettings()
 void CSettings::Save()
 {
     json::JsonObject jsonData;
+    jsonData.SetNamedValue(L"extendedContextMenuOnly", json::value(settings.extendedContextMenuOnly));
 
     json::to_file(jsonFilePath, jsonData);
     GetSystemTimeAsFileTime(&lastLoadedTime);
@@ -133,6 +134,7 @@ void CSettings::ParseJson()
         try
         {
             // NB: add any new settings here
+            json::get(jsonSettings, L"extendedContextMenuOnly", settings.extendedContextMenuOnly, false);
         }
         catch (const winrt::hresult_error&)
         {
