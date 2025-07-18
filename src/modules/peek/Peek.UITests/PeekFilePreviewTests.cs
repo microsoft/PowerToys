@@ -454,7 +454,7 @@ public class PeekFilePreviewTests : UITestBase
             "7.zip - File Explorer",
             "7 - File Explorer",
             "7",
-            "7.zip"
+            "7.zip",
         };
 
         foreach (var title in possibleTitles)
