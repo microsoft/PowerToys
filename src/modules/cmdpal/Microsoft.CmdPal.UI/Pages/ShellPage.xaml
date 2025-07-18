@@ -225,11 +225,11 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        Click="BackButton_Clicked"
                         Content="{ui:FontIcon Glyph=&#xE76B;,
                                               FontSize=14}"
                         FontSize="16"
                         Style="{StaticResource SubtleButtonStyle}"
-                        Tapped="BackButton_Tapped"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation

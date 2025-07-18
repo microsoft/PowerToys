@@ -428,4 +428,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OffContent" xml:space="preserve">
     <value>Indirect</value>
   </data>
+  <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Show status messages</value>
+  </data>
+  <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show status messages</value>
+  </data>
 </root>

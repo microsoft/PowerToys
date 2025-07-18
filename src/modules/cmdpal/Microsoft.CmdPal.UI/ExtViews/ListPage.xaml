@@ -113,13 +113,14 @@
                 <ListView
                     x:Name="ItemsList"
                     Padding="0,2,0,0"
+                    ContextCanceled="ItemsList_OnContextCanceled"
+                    ContextRequested="ItemsList_OnContextRequested"
                     DoubleTapped="ItemsList_DoubleTapped"
                     IsDoubleTapEnabled="True"
                     IsItemClickEnabled="True"
                     ItemClick="ItemsList_ItemClick"
                     ItemTemplate="{StaticResource ListItemViewModelTemplate}"
                     ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-                    RightTapped="ItemsList_RightTapped"
                     SelectionChanged="ItemsList_SelectionChanged">
                     <ListView.ItemContainerTransitions>
                         <TransitionCollection />
