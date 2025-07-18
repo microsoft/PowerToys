@@ -35,36 +35,42 @@ public sealed partial class Filter : UserControl,
     public static readonly DependencyProperty CurrentPageViewModelProperty =
         DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(Filter), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
 
-    public FiltersViewModel ViewModel
-    {
-        get => (FiltersViewModel)GetValue(ViewModelProperty);
-        set => SetValue(ViewModelProperty, value);
-    }
-
-    // Using a DependencyProperty as the backing store for ViewModel
-    public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register(nameof(ViewModel), typeof(FiltersViewModel), typeof(Filter), new PropertyMetadata(new FiltersViewModel()));
-
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var @this = (Filter)d;
 
-        if (@this != null)
+        if (@this != null
+            && e.OldValue is PageViewModel old)
         {
-            if (e.NewValue is ListViewModel listViewModel)
-            {
-                @this.SetValue(ViewModelProperty, listViewModel.Filters);
-            }
-            else
-            {
-                @this.SetValue(ViewModelProperty, new FiltersViewModel());
-            }
+            old.PropertyChanged -= @this.Page_PropertyChanged;
+        }
+
+        if (@this != null
+            && e.NewValue is PageViewModel page)
+        {
+            page.PropertyChanged += @this.Page_PropertyChanged;
         }
     }
+
+    public FiltersViewModel ViewModel { get; } = new();
 
     public Filter()
     {
         this.InitializeComponent();
+    }
+
+    // Used to handle the case when a ListPage's `Filters` may have changed
+    private void Page_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var property = e.PropertyName;
+
+        if (CurrentPageViewModel is ListViewModel list)
+        {
+            if (property == nameof(ListViewModel.Filters))
+            {
+                WeakReferenceMessenger.Default.Send(new UpdateFiltersMessage(list.));
+            }
+        }
     }
 
     private void FilterButton_Click(object sender, RoutedEventArgs e)

@@ -27,9 +27,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
-    [ObservableProperty]
-    public partial FiltersViewModel Filters { get; set; } = new();
-
     private readonly ExtensionObject<IListPage> _model;
 
     private readonly Lock _listLock = new();
@@ -78,6 +75,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
+
+        WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(new(model.Filters));
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
@@ -475,9 +474,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
         UpdateProperty(nameof(SearchTextBox));
         UpdateProperty(nameof(InitialSearchText));
 
-        Filters = new(model.Filters);
-        UpdateProperty(nameof(Filters));
-
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
 
@@ -530,9 +526,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(SearchTextBox):
                 this.SearchTextBox = model.SearchText;
-                break;
-            case nameof(Filters):
-                this.Filters = new(model.Filters);
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);

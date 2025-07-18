@@ -8,118 +8,77 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class FiltersViewModel : ObservableObject
+public partial class FiltersViewModel : ObservableObject,
+    IRecipient<UpdateFiltersMessage>,
+    IRecipient<UpdateCurrentFilterIdsMessage>
 {
     [ObservableProperty]
-    public partial bool MultipleSelectionsEnabled { get; set; } = false;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FilterItems))]
     [NotifyPropertyChangedFor(nameof(ShouldShowFilters))]
-    [NotifyPropertyChangedFor(nameof(SelectedFilterIcon))]
-    [NotifyPropertyChangedFor(nameof(SelectedFilterName))]
-    public partial IFilterItem[] Filters { get; set; } = [];
+    public partial IFilterItemViewModel[] Filters { get; set; } = [];
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(SelectedFilterIcon))]
-    [NotifyPropertyChangedFor(nameof(SelectedFilterName))]
     public partial string[] CurrentFilterIds { get; set; } = [];
 
-    public IFilterItemViewModel[] FilterItems
-    {
-        get
-        {
-            return Filters.Select(item =>
-                            {
-                                if (item is IFilter filterItem)
-                                {
-                                    return new FilterItemViewModel(filterItem)
-                                    {
-                                        IsSelected = CurrentFilterIds.Any(c => c == filterItem.Id),
-                                    }
+    [ObservableProperty]
+    public partial bool MultipleSelectionsEnabled { get; set; }
 
-                                    as IFilterItemViewModel;
-                                }
-
-                                return new SeparatorViewModel();
-                            })
-                            .ToArray();
-        }
-    }
-
-    public bool ShouldShowFilters
-    {
-        get
-        {
-            return Filters
-                        .OfType<Filter>()
-                        .Any();
-        }
-    }
-
-    public IconInfoViewModel? SelectedFilterIcon
-    {
-        get
-        {
-            if (CurrentFilterIds.Length == 1)
-            {
-                var item = FilterItems
-                                .OfType<FilterItemViewModel>()
-                                .FirstOrDefault(f => f.Id == CurrentFilterIds[0]);
-
-                return item?.Icon ?? null;
-            }
-
-            return null;
-        }
-    }
-
-    public string SelectedFilterName
-    {
-        get
-        {
-            if (CurrentFilterIds.Length == 1)
-            {
-                var item = Filters
-                                .OfType<Filter>()
-                                .FirstOrDefault(f => f.Id == CurrentFilterIds[0]);
-
-                return item?.Name ?? string.Empty;
-            }
-            else
-            {
-                var selected = Filters
-                                .OfType<Filter>()
-                                .Where(f => CurrentFilterIds.Any(c => c == f.Id))
-                                .Select(item => item.Name)
-                                .ToList();
-                var label = string.Join(", ", selected);
-
-                if (label.Length > 15)
-                {
-                    label = $"{selected[0]} & {selected.Count - 1} more";
-                }
-
-                return label;
-            }
-        }
-    }
+    public bool ShouldShowFilters => Filters is not null && Filters.Length > 0;
 
     public FiltersViewModel()
     {
+        WeakReferenceMessenger.Default.Register<UpdateFiltersMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateCurrentFilterIdsMessage>(this);
     }
 
-    public FiltersViewModel(IFilters? filters)
+    public void Receive(UpdateFiltersMessage message)
     {
-        if (filters != null)
+        IFilterItemViewModel[] newFilters = [];
+        string[] newSelectedFilterIds = [];
+
+        var multiSelectEnabled = false;
+
+        if (message.Filters is not null)
         {
-            CurrentFilterIds = filters.CurrentFilterIds;
-            Filters = filters.GetFilters();
+            var filters = message.Filters.GetFilters();
+
+            if (message.Filters is MultiSelectFilters)
+            {
+                multiSelectEnabled = true;
+            }
+
+            if (filters is not null)
+            {
+                newFilters = filters.Select(filter =>
+                                    {
+                                        if (filter is IFilter filterItem)
+                                        {
+                                            return new FilterItemViewModel(filterItem) as IFilterItemViewModel;
+                                        }
+                                        else
+                                        {
+                                            return new SeparatorViewModel();
+                                        }
+                                    })
+                                    .ToArray();
+            }
+
+            newSelectedFilterIds = message.Filters.CurrentFilterIds;
         }
+
+        Filters = newFilters;
+        CurrentFilterIds = newSelectedFilterIds;
+        MultipleSelectionsEnabled = multiSelectEnabled;
+    }
+
+    public void Receive(UpdateCurrentFilterIdsMessage message)
+    {
+        CurrentFilterIds = message.CurrentFilterIds;
     }
 }

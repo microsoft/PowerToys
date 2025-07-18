@@ -78,16 +78,9 @@
                 Orientation="Horizontal"
                 VerticalAlignment="Center"
                 >
-                <cpcontrols:IconBox
-                    Width="16"
-                    Height="16"
-                    Margin="0,0,0,0"
-                    HorizontalAlignment="Left"
-                    SourceKey="{x:Bind ViewModel.SelectedFilterIcon}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                 <TextBlock
                     VerticalAlignment="Center"
-                    Text="{x:Bind ViewModel.SelectedFilterName, Mode=OneWay}"/>
+                    Text="Test"/>
                 <FontIcon
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -103,7 +96,7 @@
                         MinWidth="248"
                         IsItemClickEnabled="True"
                         ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
-                        ItemsSource="{x:Bind ViewModel.FilterItems, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
                         ItemClick="FiltersDropdown_ItemClick"
                         SelectionChanged="FiltersDropdown_SelectionChanged"
                         SelectionMode="{x:Bind ViewModel.MultipleSelectionsEnabled, Mode=OneWay, Converter={StaticResource BoolToSelectionModeConverter}}">
