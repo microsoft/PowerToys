@@ -78,13 +78,25 @@
                 Orientation="Horizontal"
                 VerticalAlignment="Center"
                 >
+                <cpcontrols:IconBox
+                    Width="12"
+                    Height="12"
+                    Margin="0,4,8,0"
+                    Visibility="{x:Bind ViewModel.HasIcon(ViewModel.SelectedFilterIcon), Mode=OneWay}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    SourceKey="{x:Bind ViewModel.SelectedFilterIcon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                 <TextBlock
                     VerticalAlignment="Center"
-                    Text="Test"/>
+                    FontSize="12"
+                    Foreground="{ThemeResource ComboBoxDisabledForegroundThemeBrush}"
+                    Text="{x:Bind ViewModel.SelectedFilterName, Mode=OneWay}"/>
                 <FontIcon
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Margin="8,0,0,0"
+                    Foreground="{ThemeResource ComboBoxArrowDisabledForegroundThemeBrush}"
                     FontSize="{ThemeResource AppBarButtonSubItemChevronFontSize}"
                     Glyph="&#xE70D;" />
             </StackPanel>

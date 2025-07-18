@@ -23,6 +23,7 @@ using VirtualKey = Windows.System.VirtualKey;
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class Filter : UserControl,
+    IRecipient<UpdateCurrentFilterIdsMessage>,
     ICurrentPageAware
 {
     public PageViewModel? CurrentPageViewModel
@@ -39,16 +40,15 @@ public sealed partial class Filter : UserControl,
     {
         var @this = (Filter)d;
 
-        if (@this != null
-            && e.OldValue is PageViewModel old)
+        // If the new page is a ListViewModel we'll get an UpdateFiltersMessage
+        // with that lists filters. However, if it's just a PageViewModel, we
+        // need to let the FilterViewModel know to clear its filters/currentfilterids
+        if (e.NewValue is PageViewModel page)
         {
-            old.PropertyChanged -= @this.Page_PropertyChanged;
-        }
-
-        if (@this != null
-            && e.NewValue is PageViewModel page)
-        {
-            page.PropertyChanged += @this.Page_PropertyChanged;
+            if (page is not ListViewModel list || !list.HasFilters)
+            {
+                WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(new([], [], false));
+            }
         }
     }
 
@@ -57,18 +57,18 @@ public sealed partial class Filter : UserControl,
     public Filter()
     {
         this.InitializeComponent();
+
+        WeakReferenceMessenger.Default.Register<UpdateCurrentFilterIdsMessage>(this);
     }
 
-    // Used to handle the case when a ListPage's `Filters` may have changed
-    private void Page_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    public void Receive(UpdateCurrentFilterIdsMessage message)
     {
-        var property = e.PropertyName;
-
-        if (CurrentPageViewModel is ListViewModel list)
+        if (ViewModel.MultipleSelectionsEnabled)
         {
-            if (property == nameof(ListViewModel.Filters))
+            FiltersDropdown.SelectedItems.Clear();
+            foreach (var item in ViewModel.SelectedFilters)
             {
-                WeakReferenceMessenger.Default.Send(new UpdateFiltersMessage(list.));
+                FiltersDropdown.SelectedItems.Add(item);
             }
         }
     }
@@ -82,28 +82,24 @@ public sealed partial class Filter : UserControl,
     {
         if (CurrentPageViewModel is ListViewModel listViewModel)
         {
-            var filterIds = FiltersDropdown.SelectedItems
-                                            .OfType<FilterItemViewModel>()
-                                            .Select(item => item.Id)
-                                            .ToArray();
+            var newItems = e.AddedItems.OfType<FilterItemViewModel>().Select(s => s.Name).ToArray();
+            var removedItems = e.RemovedItems.OfType<FilterItemViewModel>().Select(s => s.Name).ToArray();
 
-            listViewModel.UpdateCurrentFilterIds(ViewModel.CurrentFilterIds);
+            ViewModel.UpdateCurrentFilterIds(newItems, removedItems);
         }
     }
 
     private void FiltersDropdown_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (CurrentPageViewModel is ListViewModel listViewModel &&
-            listViewModel.Filters is not null &&
             e.ClickedItem is FilterItemViewModel filterItem)
         {
-            // If we can only select one, then go ahead and
-            // send it to the page
-            if (!ViewModel.MultipleSelectionsEnabled)
+            if (!ViewModel.IsSelected(filterItem.Id))
             {
-                listViewModel.UpdateCurrentFilterIds([filterItem.Id]);
-                FilterButton.Flyout.Hide();
+                ViewModel.SelectOne(filterItem.Id);
             }
         }
+
+        FilterButton.Flyout.Hide();
     }
 }

@@ -14,7 +14,9 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class ListViewModel : PageViewModel, IDisposable
+public partial class ListViewModel : PageViewModel,
+    IRecipient<UpdateCurrentFilterIdsMessage>,
+    IDisposable
 {
     // private readonly HashSet<ListItemViewModel> _itemCache = [];
 
@@ -26,6 +28,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
+
+    [ObservableProperty]
+    public partial bool HasFilters { get; set; } = false;
 
     private readonly ExtensionObject<IListPage> _model;
 
@@ -76,7 +81,50 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
 
-        WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(new(model.Filters));
+        WeakReferenceMessenger.Default.Register<UpdateCurrentFilterIdsMessage>(this);
+
+        HasFilters = model.Filters is not null;
+
+        if (HasFilters)
+        {
+            WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(
+                new(
+                    model.Filters!.GetFilters(),
+                    model.Filters.CurrentFilterIds,
+                    model is MultiSelectFilters));
+        }
+        else
+        {
+            WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(new([], [], false));
+        }
+    }
+
+    public void Receive(UpdateCurrentFilterIdsMessage message)
+    {
+        var newFilterIds = message.CurrentFilterIds;
+
+        // Dynamic pages will handler their own filtering. They will tell us if
+        // something needs to change, by raising ItemsChanged.
+        if (_isDynamic)
+        {
+            // We're getting called on the UI thread.
+            // Hop off to a BG thread to update the extension.
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    if (_model.Unsafe is IDynamicListPage dynamic &&
+                        dynamic.Filters is not null)
+                    {
+                        dynamic.Filters.CurrentFilterIds = newFilterIds;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowException(ex, _model?.Unsafe?.Name);
+                }
+            });
+        }
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
@@ -120,31 +168,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
             ItemsUpdated?.Invoke(this, EventArgs.Empty);
             UpdateEmptyContent();
             _isLoading = false;
-        }
-    }
-
-    public void UpdateCurrentFilterIds(string[] newFilterIds)
-    {
-        // Dynamic pages will handler their own filtering. They will tell us if
-        // something needs to change, by raising ItemsChanged.
-        if (_isDynamic)
-        {
-            // We're getting called on the UI thread.
-            // Hop off to a BG thread to update the extension.
-            _ = Task.Run(() =>
-            {
-                try
-                {
-                    if (_model.Unsafe is IDynamicListPage dynamic)
-                    {
-                        dynamic.Filters.CurrentFilterIds = newFilterIds;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    ShowException(ex, _model?.Unsafe?.Name);
-                }
-            });
         }
     }
 

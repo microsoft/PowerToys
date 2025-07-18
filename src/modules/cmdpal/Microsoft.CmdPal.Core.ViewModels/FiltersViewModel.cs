@@ -2,16 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -20,16 +16,92 @@ public partial class FiltersViewModel : ObservableObject,
     IRecipient<UpdateCurrentFilterIdsMessage>
 {
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedFilterName))]
+    [NotifyPropertyChangedFor(nameof(SelectedFilterIcon))]
     [NotifyPropertyChangedFor(nameof(ShouldShowFilters))]
-    public partial IFilterItemViewModel[] Filters { get; set; } = [];
+    [NotifyPropertyChangedFor(nameof(SelectedFilters))]
+    [NotifyPropertyChangedFor(nameof(DisplayFilters))]
+    public partial IFilterItemViewModel[] Filters { get; private set; } = [];
+
+    public IFilterItemViewModel[] DisplayFilters => Filters.Select(filter =>
+                                                            {
+                                                                if (filter is FilterItemViewModel filterItem)
+                                                                {
+                                                                    filterItem.IsSelected = CurrentFilterIds.Contains(filterItem.Id);
+                                                                }
+
+                                                                return filter;
+                                                            })
+                                                            .ToArray();
 
     [ObservableProperty]
-    public partial string[] CurrentFilterIds { get; set; } = [];
+    [NotifyPropertyChangedFor(nameof(SelectedFilterName))]
+    [NotifyPropertyChangedFor(nameof(SelectedFilterIcon))]
+    [NotifyPropertyChangedFor(nameof(SelectedFilters))]
+    [NotifyPropertyChangedFor(nameof(DisplayFilters))]
+    public partial string[] CurrentFilterIds { get; private set; } = [];
 
     [ObservableProperty]
-    public partial bool MultipleSelectionsEnabled { get; set; }
+    public partial bool MultipleSelectionsEnabled { get; private set; }
+
+    public IFilterItemViewModel[] SelectedFilters => Filters
+                                                        .OfType<FilterItemViewModel>()
+                                                        .Where(item => CurrentFilterIds.Contains(item.Id))
+                                                        .ToArray();
 
     public bool ShouldShowFilters => Filters is not null && Filters.Length > 0;
+
+    public IconInfoViewModel? SelectedFilterIcon
+    {
+        get
+        {
+            if (CurrentFilterIds.Length == 1)
+            {
+                var item = Filters
+                                .OfType<FilterItemViewModel>()
+                                .FirstOrDefault(f => f.Id == CurrentFilterIds[0]);
+
+                return item?.Icon ?? null;
+            }
+
+            return null;
+        }
+    }
+
+    public Visibility HasIcon(IconInfoViewModel? icon) => icon?.HasIcon(true) ?? false ? Visibility.Visible : Visibility.Collapsed;
+
+    public string SelectedFilterName
+    {
+        get
+        {
+            if (CurrentFilterIds.Length == 1)
+            {
+                var item = Filters
+                                .OfType<FilterItemViewModel>()
+                                .FirstOrDefault(f => f.Id == CurrentFilterIds[0]);
+
+                return item?.Name ?? string.Empty;
+            }
+            else
+            {
+                var selected = Filters
+                                .OfType<FilterItemViewModel>()
+                                .Where(f => CurrentFilterIds.Any(c => c == f.Id))
+                                .Select(item => item.Name)
+                                .ToList();
+                var label = string.Join(", ", selected);
+
+                if (label.Length > 15)
+                {
+                    label = $"{selected[0]} & {selected.Count - 1} more";
+                }
+
+                return label;
+            }
+        }
+    }
+
+    public bool IsSelected(FilterItemViewModel filterItemViewModel) => CurrentFilterIds.Contains(filterItemViewModel.Id);
 
     public FiltersViewModel()
     {
@@ -46,12 +118,8 @@ public partial class FiltersViewModel : ObservableObject,
 
         if (message.Filters is not null)
         {
-            var filters = message.Filters.GetFilters();
-
-            if (message.Filters is MultiSelectFilters)
-            {
-                multiSelectEnabled = true;
-            }
+            var filters = message.Filters;
+            multiSelectEnabled = message.IsMultiSelect;
 
             if (filters is not null)
             {
@@ -69,16 +137,31 @@ public partial class FiltersViewModel : ObservableObject,
                                     .ToArray();
             }
 
-            newSelectedFilterIds = message.Filters.CurrentFilterIds;
+            newSelectedFilterIds = message.CurrentFilterIds;
         }
 
+        MultipleSelectionsEnabled = multiSelectEnabled;
         Filters = newFilters;
         CurrentFilterIds = newSelectedFilterIds;
-        MultipleSelectionsEnabled = multiSelectEnabled;
     }
 
     public void Receive(UpdateCurrentFilterIdsMessage message)
     {
         CurrentFilterIds = message.CurrentFilterIds;
     }
+
+    public void SelectOne(string filterId)
+    {
+        CurrentFilterIds = [filterId];
+        WeakReferenceMessenger.Default.Send<UpdateCurrentFilterIdsMessage>(new(CurrentFilterIds));
+    }
+
+    public void UpdateCurrentFilterIds(string[] newFilterIds, string[] removeFitlerIds)
+    {
+        CurrentFilterIds = CurrentFilterIds.Except(removeFitlerIds).ToArray();
+        CurrentFilterIds = CurrentFilterIds.Concat(newFilterIds).ToArray();
+        WeakReferenceMessenger.Default.Send<UpdateCurrentFilterIdsMessage>(new(CurrentFilterIds));
+    }
+
+    public bool IsSelected(string filterId) => CurrentFilterIds.Contains(filterId);
 }

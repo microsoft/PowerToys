@@ -9,6 +9,6 @@ namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 /// <summary>
 /// Used to announce a pages filter has been updated.
 /// </summary>
-public record UpdateFiltersMessage(IFilters Filters)
+public record UpdateFiltersMessage(IFilterItem[] Filters, string[] CurrentFilterIds, bool IsMultiSelect)
 {
 }
