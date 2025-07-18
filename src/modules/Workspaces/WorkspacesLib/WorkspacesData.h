@@ -33,6 +33,9 @@ namespace WorkspacesData
             std::wstring appUserModelId;
             std::wstring pwaAppId;
             std::wstring commandLineArgs;
+
+            // empty to 1,
+            std::wstring version;
             bool isElevated{};
             bool canLaunchElevated{};
             bool isMinimized{};
@@ -69,10 +72,10 @@ namespace WorkspacesData
 
         std::wstring id;
         std::wstring name;
-        time_t creationTime;
+        time_t creationTime{};
         std::optional<time_t> lastLaunchedTime;
-        bool isShortcutNeeded;
-        bool moveExistingWindows;
+        bool isShortcutNeeded{};
+        bool moveExistingWindows{};
         std::vector<Monitor> monitors;
         std::vector<Application> apps;
     };
@@ -86,7 +89,7 @@ namespace WorkspacesData
     {
         WorkspacesData::WorkspacesProject::Application application;
         HWND window{};
-        LaunchingState state { LaunchingState::Waiting };
+        LaunchingState state{ LaunchingState::Waiting };
     };
 
     using LaunchingAppStateMap = std::map<WorkspacesData::WorkspacesProject::Application, LaunchingAppState>;

@@ -28,7 +28,7 @@ namespace AdvancedPaste.UnitTests.ServicesTests;
 /// Tests that write batch AI outputs against a list of inputs. Connects to OpenAI and uses the full AdvancedPaste action catalog for Semantic Kernel.
 /// If queries produce errors, the error message is written to the output file. If queries produce text-file output, their contents are included as though they were text output.
 /// To run this test-suite, first:
-/// 1. Setup an OpenAI API key using AdvancedPaste Settings.
+/// 1. Set up an OpenAI API key using AdvancedPaste Settings.
 /// 2. Comment out the [Ignore] attribute above.
 /// 3. Ensure the %USERPROFILE% folder contains the required input files (paths are below).
 /// These tests are idempotent and resumable, allowing for partial runs and restarts. It's ok to use existing output files as input files - output-related fields will simply be ignored.

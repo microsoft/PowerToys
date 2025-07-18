@@ -17,6 +17,7 @@ using Peek.Common;
 using Peek.FilePreviewer;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Models;
+using Peek.FilePreviewer.Previewers;
 using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
@@ -121,6 +122,7 @@ namespace Peek.UI
             NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnShowPeek);
             NativeEventWaiter.WaitForEventLoop(Constants.TerminatePeekEvent(), () =>
             {
+                ShellPreviewHandlerPreviewer.ReleaseHandlerFactories();
                 EtwTrace?.Dispose();
                 Environment.Exit(0);
             });
@@ -143,7 +145,7 @@ namespace Peek.UI
             {
                 // Need to read the foreground HWND before activating Peek to avoid focus stealing
                 // Foreground HWND must always be Explorer or Desktop
-                var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+                var foregroundWindowHandle = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
                 _selectedItem = new SelectedItemByWindowHandle(foregroundWindowHandle);
             }
 

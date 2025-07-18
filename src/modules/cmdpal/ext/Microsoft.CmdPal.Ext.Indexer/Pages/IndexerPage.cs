@@ -24,7 +24,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
     public IndexerPage()
     {
         Id = "com.microsoft.indexer.fileSearch";
-        Icon = Icons.FileExplorer;
+        Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Title;
         PlaceholderText = Resources.Indexer_PlaceholderText;
         _searchEngine = new();
@@ -33,7 +33,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     public IndexerPage(string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
     {
-        Icon = Icons.FileExplorer;
+        Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Title;
         _searchEngine = searchEngine;
         _queryCookie = queryCookie;

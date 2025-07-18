@@ -5,6 +5,7 @@
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
@@ -67,6 +68,7 @@ public partial class App : Application
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
                 EtwTrace?.Dispose();
+                AppWindow?.Close();
                 Environment.Exit(0);
             });
     }
@@ -102,9 +104,9 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
 
-        services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
+        services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
 
         // GH #38440: Users might not have WinGet installed! Or they might have
         // a ridiculously old version. Or might be running as admin.
@@ -143,8 +145,13 @@ public partial class App : Application
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<TrayIconService>();
 
+        services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IAppHostService, PowerToysAppHostService>();
+        services.AddSingleton(new TelemetryForwarder());
+
         // ViewModels
         services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
 
         return services.BuildServiceProvider();
     }
