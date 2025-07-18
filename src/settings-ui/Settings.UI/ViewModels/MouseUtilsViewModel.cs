@@ -44,7 +44,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private MousePointerCrosshairsSettings MousePointerCrosshairsSettingsConfig { get; set; }
 
         public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -145,18 +144,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             int isEnabled = 0;
+
+            // Using Utilities.NativeMethods to access system parameters for animation settings.
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
             _isAnimationEnabledBySystem = isEnabled != 0;
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-
-            // Register hotkey settings for conflict detection
-            RegisterHotkeySettings(
-                FindMyMouseActivationShortcut,
-                MouseHighlighterActivationShortcut,
-                MousePointerCrosshairsActivationShortcut,
-                MouseJumpActivationShortcut);
         }
 
         private void InitializeEnabledValues()

@@ -17,18 +17,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public abstract class PageViewModelBase : Observable
     {
-        private readonly Func<string, int> sendConfigMSG;
-        private readonly List<HotkeySettings> _hotkeySettings = new List<HotkeySettings>();
-
         private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
         private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
 
         protected abstract string ModuleName { get; }
 
-        protected PageViewModelBase(Func<string, int> ipcMSGCallBackFunc)
+        protected PageViewModelBase()
         {
-            sendConfigMSG = ipcMSGCallBackFunc;
-
             if (GlobalHotkeyConflictManager.Instance != null)
             {
                 GlobalHotkeyConflictManager.Instance.ConflictsUpdated += OnConflictsUpdated;
@@ -41,30 +36,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 
-        protected void RegisterHotkeySettings(params HotkeySettings[] hotkeySettings)
-        {
-            foreach (var setting in hotkeySettings)
-            {
-                if (setting != null && !_hotkeySettings.Contains(setting))
-                {
-                    _hotkeySettings.Add(setting);
-                }
-            }
-        }
-
-        protected void UnregisterHotkeySettings(params HotkeySettings[] hotkeySettings)
-        {
-            foreach (var setting in hotkeySettings)
-            {
-                _hotkeySettings.Remove(setting);
-            }
-        }
-
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
         };
 
+        /// <summary>
+        /// Handles updates to hotkey conflicts for the module. This method is called when the
+        /// <see cref="GlobalHotkeyConflictManager"/> raises the <c>ConflictsUpdated</c> event.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the <see cref="GlobalHotkeyConflictManager"/> instance.</param>
+        /// <param name="e">An <see cref="AllHotkeyConflictsEventArgs"/> object containing details about the hotkey conflicts.</param>
+        /// <remarks>
+        /// Derived classes can override this method to provide custom handling for hotkey conflicts.
+        /// Ensure that the overridden method maintains the expected behavior of processing and logging conflict data.
+        /// </remarks>
         protected virtual void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
             try

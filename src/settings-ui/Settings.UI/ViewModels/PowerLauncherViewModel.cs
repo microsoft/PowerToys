@@ -55,7 +55,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
             Func<bool> isDark)
-            : base(ipcMSGCallBackFunc)
         {
             if (settings == null)
             {
@@ -119,8 +118,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             SearchPluginsCommand = new Library.ViewModels.Commands.RelayCommand(SearchPlugins);
-
-            RegisterHotkeySettings(OpenPowerLauncher, OpenFileLocation, CopyPathLocation);
         }
 
         private void InitializeEnabledValue()

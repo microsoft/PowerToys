@@ -90,7 +90,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         };
 
         public ZoomItViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog, Func<LOGFONT, LOGFONT> pickFontDialog)
-            : base(ipcMSGCallBackFunc)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -123,9 +122,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectTypeFontCommand = new ButtonClickCommand(SelectTypeFontAction);
 
             LoadMicrophoneList();
-
-            // Register hotkey settings for conflict detection
-            RegisterHotkeySettings(ZoomToggleKey, LiveZoomToggleKey, DrawToggleKey, RecordToggleKey, SnipToggleKey, BreakTimerKey, DemoTypeToggleKey);
         }
 
         private void InitializeEnabledValue()

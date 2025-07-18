@@ -35,7 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private MeasureToolSettings Settings { get; set; }
 
         public MeasureToolViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<MeasureToolSettings> measureToolSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
-            : base(ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -57,9 +56,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             SendConfigMSG = ipcMSGCallBackFunc;
-
-            // Register hotkey settings for conflict detection
-            RegisterHotkeySettings(ActivationShortcut);
         }
 
         private void InitializeEnabledValue()
@@ -291,9 +287,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                          "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                          MeasureToolSettings.ModuleName,
                          JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.MeasureToolSettings)));
-
-                    // Update hotkey settings for conflict detection
-                    RegisterHotkeySettings(ActivationShortcut);
                 }
             }
         }

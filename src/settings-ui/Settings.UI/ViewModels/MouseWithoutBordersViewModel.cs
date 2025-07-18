@@ -434,7 +434,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private DispatcherQueue _uiDispatcherQueue;
 
         public MouseWithoutBordersViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, DispatcherQueue uiDispatcherQueue)
-            : base(ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -463,9 +462,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _cancellationTokenSource = new CancellationTokenSource();
 
             _machinePollingThreadTask = StartMachineStatusPollingThread(_machinePollingThreadTask, _cancellationTokenSource.Token);
-
-            // Register hotkey settings for conflict detection
-            RegisterHotkeySettings(ToggleEasyMouseShortcut, LockMachinesShortcut, ReconnectShortcut, HotKeySwitch2AllPC);
         }
 
         private Task StartMachineStatusPollingThread(Task previousThreadTask, CancellationToken token)
