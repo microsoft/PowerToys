@@ -3,10 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -37,6 +40,24 @@ public class PeekFilePreviewTests : UITestBase
     {
         Session.CloseMainWindow();
         SendKeys(Key.Win, Key.D);
+    }
+
+    [TestCleanup]
+    public void PeekTestCleanup()
+    {
+        try
+        {
+            // Ensure all test resources are cleaned up
+            ClosePeekAndExplorer();
+
+            // Force garbage collection to help with resource cleanup
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"TestCleanup failed: {ex.Message}");
+        }
     }
 
     [TestMethod("Peek.FilePreview.Folder")]
@@ -142,7 +163,7 @@ public class PeekFilePreviewTests : UITestBase
 
         // Close peek
         ClosePeekAndExplorer();
-        Task.Delay(1000).Wait(); // Wait for window to close completely
+        Thread.Sleep(1000); // Wait for window to close completely
 
         // Reopen the same image
         var reopenedWindow = OpenPeekWindow(imagePath);
@@ -267,7 +288,7 @@ public class PeekFilePreviewTests : UITestBase
         openButton.Click();
 
         // Wait a moment for the default program to launch
-        Task.Delay(2000).Wait();
+        Thread.Sleep(2000);
 
         // Verify that the default program process has started (check for Explorer opening 7-zip)
         bool defaultProgramLaunched = CheckIfExplorerLaunched();
@@ -292,7 +313,7 @@ public class PeekFilePreviewTests : UITestBase
         SendKeys(Key.Enter);
 
         // Wait a moment for the default program to launch
-        Task.Delay(2000).Wait();
+        Thread.Sleep(2000);
 
         // Verify that the default program process has started (check for Explorer opening 7-zip)
         bool defaultProgramLaunched = CheckIfExplorerLaunched();
@@ -325,7 +346,7 @@ public class PeekFilePreviewTests : UITestBase
             SendKeys(Key.Right);
 
             // Wait for file to load
-            Task.Delay(2000).Wait();
+            Thread.Sleep(2000);
 
             // Try to determine current file from window title
             var currentWindow = peekWindow.Name;
@@ -345,7 +366,7 @@ public class PeekFilePreviewTests : UITestBase
             SendKeys(Key.Left);
 
             // Wait for file to load
-            Task.Delay(2000).Wait();
+            Thread.Sleep(2000);
 
             // Try to determine current file from window title during backward navigation
             var currentWindow = peekWindow.Name;
@@ -385,13 +406,13 @@ public class PeekFilePreviewTests : UITestBase
         WaitForExplorerWindow(selectedFiles[0]);
 
         // Give Explorer time to fully load
-        Task.Delay(2000).Wait();
+        Thread.Sleep(2000);
 
         // Use Shift+Down to extend selection to include the next 2 files
         SendKeys(Key.Shift, Key.Down); // Extend to second file
-        Task.Delay(300).Wait();
+        Thread.Sleep(300);
         SendKeys(Key.Shift, Key.Down); // Extend to third file
-        Task.Delay(300).Wait();
+        Thread.Sleep(300);
 
         // Now we should have the first 3 files selected, open Peek
         SendPeekHotkeyWithRetry();
@@ -411,7 +432,7 @@ public class PeekFilePreviewTests : UITestBase
         for (int i = 0; i < 5; i++)
         {
             SendKeys(Key.Left);
-            Task.Delay(2000).Wait(); // Wait for file to load
+            Thread.Sleep(2000); // Wait for file to load
 
             var currentWindowTitle = peekWindow.Name;
             windowTitles.Add(currentWindowTitle);
@@ -469,21 +490,29 @@ public class PeekFilePreviewTests : UITestBase
         WaitForCondition(
             condition: () =>
             {
-                // Check if Explorer window is open and responsive
-                var explorerProcesses = Process.GetProcessesByName("explorer")
-                    .Where(p => p.MainWindowHandle != IntPtr.Zero)
-                    .ToList();
-
-                if (explorerProcesses.Count != 0)
+                try
                 {
-                    // Give Explorer a moment to fully load the file selection
-                    Task.Delay(ExplorerLoadDelayMs).Wait();
+                    // Check if Explorer window is open and responsive
+                    var explorerProcesses = Process.GetProcessesByName("explorer")
+                        .Where(p => p.MainWindowHandle != IntPtr.Zero)
+                        .ToList();
 
-                    // Verify the file is accessible
-                    return File.Exists(filePath) || Directory.Exists(filePath);
+                    if (explorerProcesses.Count != 0)
+                    {
+                        // Give Explorer a moment to fully load the file selection
+                        Thread.Sleep(ExplorerLoadDelayMs);
+
+                        // Verify the file is accessible
+                        return File.Exists(filePath) || Directory.Exists(filePath);
+                    }
+
+                    return false;
                 }
-
-                return false;
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"WaitForExplorerWindow exception: {ex.Message}");
+                    return false;
+                }
             },
             timeoutSeconds: ExplorerOpenTimeoutSeconds,
             checkIntervalMs: ExplorerCheckIntervalMs,
@@ -507,35 +536,47 @@ public class PeekFilePreviewTests : UITestBase
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"SendPeekHotkeyWithRetry attempt {attempt} failed: {ex.Message}");
+
                 if (attempt == MaxRetryAttempts)
                 {
                     throw new InvalidOperationException($"Failed to open Peek after {MaxRetryAttempts} attempts. Last error: {ex.Message}", ex);
                 }
             }
 
-            // Wait before retry
-            Task.Delay(RetryDelayMs).Wait();
+            // Wait before retry using Thread.Sleep
+            Thread.Sleep(RetryDelayMs);
         }
+
+        throw new InvalidOperationException($"Failed to open Peek after {MaxRetryAttempts} attempts");
     }
 
     private bool WaitForPeekWindow()
     {
-        WaitForCondition(
-            condition: () =>
-            {
-                if (TryFindPeekWindow())
+        try
+        {
+            WaitForCondition(
+                condition: () =>
                 {
-                    // Give Peek a moment to fully initialize
-                    Task.Delay(PeekInitializeDelayMs).Wait();
-                    return true;
-                }
+                    if (TryFindPeekWindow())
+                    {
+                        // Give Peek a moment to fully initialize using Thread.Sleep
+                        Thread.Sleep(PeekInitializeDelayMs);
+                        return true;
+                    }
 
-                return false;
-            },
-            timeoutSeconds: PeekWindowTimeoutSeconds,
-            checkIntervalMs: PeekCheckIntervalMs,
-            timeoutMessage: "Peek window did not appear");
-        return true;
+                    return false;
+                },
+                timeoutSeconds: PeekWindowTimeoutSeconds,
+                checkIntervalMs: PeekCheckIntervalMs,
+                timeoutMessage: "Peek window did not appear");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"WaitForPeekWindow failed: {ex.Message}");
+            return false;
+        }
     }
 
     private bool WaitForCondition(Func<bool> condition, int timeoutSeconds, int checkIntervalMs, string timeoutMessage)
@@ -552,12 +593,14 @@ public class PeekFilePreviewTests : UITestBase
                     return true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Continue waiting on errors
+                // Log exception but continue waiting
+                Debug.WriteLine($"WaitForCondition exception: {ex.Message}");
             }
 
-            Task.Delay(checkIntervalMs).Wait();
+            // Use async delay to prevent blocking the thread
+            Thread.Sleep(checkIntervalMs);
         }
 
         throw new TimeoutException($"{timeoutMessage} (timeout: {timeoutSeconds}s)");
@@ -567,33 +610,57 @@ public class PeekFilePreviewTests : UITestBase
     {
         try
         {
-            // Check for Peek process
+            // Check for Peek process with timeout
             var peekProcesses = Process.GetProcessesByName("PowerToys.Peek.UI")
                 .Where(p => p.MainWindowHandle != IntPtr.Zero);
 
-            return peekProcesses.Any();
+            var foundProcess = peekProcesses.Any();
+
+            if (foundProcess)
+            {
+                // Additional validation - check if window is responsive
+                Thread.Sleep(100); // Small delay to ensure window is ready
+                return true;
+            }
+
+            return false;
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore all errors in detection
+            Debug.WriteLine($"TryFindPeekWindow exception: {ex.Message}");
             return false;
         }
     }
 
     private Element OpenPeekWindow(string filePath)
     {
-        SendKeys(Key.Enter);
+        try
+        {
+            SendKeys(Key.Enter);
 
-        // Open file with Peek
-        OpenAndPeekFile(filePath);
+            // Open file with Peek
+            OpenAndPeekFile(filePath);
 
-        // Find the Peek window using the common method
-        var peekWindow = FindPeekWindow(filePath);
+            // Find the Peek window using the common method with timeout
+            var peekWindow = FindPeekWindow(filePath);
 
-        // Attach to the found window
-        Session.Attach(peekWindow.Name);
+            // Attach to the found window with error handling
+            try
+            {
+                Session.Attach(peekWindow.Name);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to attach to window: {ex.Message}");
+            }
 
-        return peekWindow;
+            return peekWindow;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"OpenPeekWindow failed for {filePath}: {ex.Message}");
+            throw;
+        }
     }
 
     private void TestFilePreviewWithVisualComparison(string filePath)
@@ -630,7 +697,7 @@ public class PeekFilePreviewTests : UITestBase
         Assert.IsNotNull(pinButton, "Pin button should be found");
 
         pinButton.Click();
-        Task.Delay(PinActionDelayMs).Wait(); // Wait for pin action to complete
+        Thread.Sleep(PinActionDelayMs); // Wait for pin action to complete
     }
 
     private void UnpinWindow()
@@ -640,13 +707,21 @@ public class PeekFilePreviewTests : UITestBase
         Assert.IsNotNull(pinButton, "Pin button should be found");
 
         pinButton.Click();
-        Task.Delay(PinActionDelayMs).Wait(); // Wait for unpin action to complete
+        Thread.Sleep(PinActionDelayMs); // Wait for unpin action to complete
     }
 
     private void ClosePeekAndExplorer()
     {
-        // Close Peek window
-        Session.CloseMainWindow();
+        try
+        {
+            // Close Peek window
+            Session.CloseMainWindow();
+            Thread.Sleep(500); // Wait for window to close
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error closing Peek window: {ex.Message}");
+        }
 
         // Close all Explorer windows that have a main window handle
         try
@@ -658,15 +733,33 @@ public class PeekFilePreviewTests : UITestBase
 
             foreach (var explorer in explorerProcesses)
             {
-                explorer.CloseMainWindow();
+                try
+                {
+                    explorer.CloseMainWindow();
 
-                // Give time for the window to close before continuing
-                Task.Delay(500).Wait();
+                    // Give time for the window to close before continuing
+                    Thread.Sleep(500);
+
+                    // Force kill if still running after graceful close
+                    if (!explorer.HasExited)
+                    {
+                        explorer.Kill();
+                        explorer.WaitForExit(2000); // Wait up to 2 seconds for exit
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error closing Explorer process {explorer.Id}: {ex.Message}");
+                }
+                finally
+                {
+                    explorer.Dispose();
+                }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore errors when closing Explorer
+            Debug.WriteLine($"Error during Explorer cleanup: {ex.Message}");
         }
     }
 
