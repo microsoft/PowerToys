@@ -35,6 +35,7 @@ namespace PowerAccent.Core
         KU,
         LT,
         MK,
+        MT,
         MI,
         NL,
         NO,
@@ -98,6 +99,7 @@ namespace PowerAccent.Core
                     Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
                     Language.LT => GetDefaultLetterKeyLT(letter), // Lithuanian
                     Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
+                    Language.MT => GetDefaultLetterKeyMT(letter), // Maltese
                     Language.MI => GetDefaultLetterKeyMI(letter), // Maori
                     Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
                     Language.NO => GetDefaultLetterKeyNO(letter), // Norwegian
@@ -155,6 +157,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyLT(letter))
                 .Union(GetDefaultLetterKeyROM(letter))
                 .Union(GetDefaultLetterKeyMK(letter))
+                .Union(GetDefaultLetterKeyMT(letter))
                 .Union(GetDefaultLetterKeyMI(letter))
                 .Union(GetDefaultLetterKeyNL(letter))
                 .Union(GetDefaultLetterKeyNO(letter))
@@ -835,6 +838,24 @@ namespace PowerAccent.Core
             {
                 LetterKey.VK_E => new[] { "ѐ" },
                 LetterKey.VK_I => new[] { "ѝ" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Maltese
+        private static string[] GetDefaultLetterKeyMT(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "à" },
+                LetterKey.VK_C => new[] { "ċ" },
+                LetterKey.VK_E => new[] { "è", "€" },
+                LetterKey.VK_G => new[] { "ġ" },
+                LetterKey.VK_H => new[] { "ħ" },
+                LetterKey.VK_I => new[] { "ì" },
+                LetterKey.VK_O => new[] { "ò" },
+                LetterKey.VK_U => new[] { "ù" },
+                LetterKey.VK_Z => new[] { "ż" },
                 _ => Array.Empty<string>(),
             };
         }
