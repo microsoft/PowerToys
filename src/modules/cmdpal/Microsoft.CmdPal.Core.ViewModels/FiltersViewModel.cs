@@ -16,28 +16,97 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 public partial class FiltersViewModel : ObservableObject
 {
     [ObservableProperty]
-    public partial string CurrentFilterId { get; set; } = string.Empty;
+    public partial bool MultipleSelectionsEnabled { get; set; } = false;
 
     [ObservableProperty]
-    public partial IFilterItemViewModel[] Filters { get; set; } = [];
+    [NotifyPropertyChangedFor(nameof(FilterItems))]
+    [NotifyPropertyChangedFor(nameof(ShouldShowFilters))]
+    [NotifyPropertyChangedFor(nameof(SelectedFilterIcon))]
+    [NotifyPropertyChangedFor(nameof(SelectedFilterName))]
+    public partial IFilterItem[] Filters { get; set; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedFilterIcon))]
+    [NotifyPropertyChangedFor(nameof(SelectedFilterName))]
+    public partial string[] CurrentFilterIds { get; set; } = [];
+
+    public IFilterItemViewModel[] FilterItems
+    {
+        get
+        {
+            return Filters.Select(item =>
+                            {
+                                if (item is IFilter filterItem)
+                                {
+                                    return new FilterItemViewModel(filterItem)
+                                    {
+                                        IsSelected = CurrentFilterIds.Any(c => c == filterItem.Id),
+                                    }
+
+                                    as IFilterItemViewModel;
+                                }
+
+                                return new SeparatorViewModel();
+                            })
+                            .ToArray();
+        }
+    }
 
     public bool ShouldShowFilters
     {
         get
         {
-            return Filters.Length > 0;
+            return Filters
+                        .OfType<Filter>()
+                        .Any();
         }
     }
 
-    public string SelectedFilter
+    public IconInfoViewModel? SelectedFilterIcon
     {
         get
         {
-            var item = Filters
-                            .OfType<FilterItemViewModel>()
-                            .FirstOrDefault(f => f.Id == CurrentFilterId);
+            if (CurrentFilterIds.Length == 1)
+            {
+                var item = FilterItems
+                                .OfType<FilterItemViewModel>()
+                                .FirstOrDefault(f => f.Id == CurrentFilterIds[0]);
 
-            return item?.Name ?? string.Empty;
+                return item?.Icon ?? null;
+            }
+
+            return null;
+        }
+    }
+
+    public string SelectedFilterName
+    {
+        get
+        {
+            if (CurrentFilterIds.Length == 1)
+            {
+                var item = Filters
+                                .OfType<Filter>()
+                                .FirstOrDefault(f => f.Id == CurrentFilterIds[0]);
+
+                return item?.Name ?? string.Empty;
+            }
+            else
+            {
+                var selected = Filters
+                                .OfType<Filter>()
+                                .Where(f => CurrentFilterIds.Any(c => c == f.Id))
+                                .Select(item => item.Name)
+                                .ToList();
+                var label = string.Join(", ", selected);
+
+                if (label.Length > 15)
+                {
+                    label = $"{selected[0]} & {selected.Count - 1} more";
+                }
+
+                return label;
+            }
         }
     }
 
@@ -49,23 +118,8 @@ public partial class FiltersViewModel : ObservableObject
     {
         if (filters != null)
         {
-            CurrentFilterId = filters.CurrentFilterId;
-            Filters = filters.Filters()
-                                .Select(item =>
-                                {
-                                    if (item is IFilter filterItem)
-                                    {
-                                        return new FilterItemViewModel(filterItem)
-                                        {
-                                            IsSelected = CurrentFilterId == filterItem.Id,
-                                        }
-
-                                        as IFilterItemViewModel;
-                                    }
-
-                                    return new SeparatorViewModel();
-                                })
-                                .ToArray();
+            CurrentFilterIds = filters.CurrentFilterIds;
+            Filters = filters.GetFilters();
         }
     }
 }

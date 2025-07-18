@@ -78,7 +78,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
-        Filters = new(model.Filters);
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
@@ -122,6 +121,31 @@ public partial class ListViewModel : PageViewModel, IDisposable
             ItemsUpdated?.Invoke(this, EventArgs.Empty);
             UpdateEmptyContent();
             _isLoading = false;
+        }
+    }
+
+    public void UpdateCurrentFilterIds(string[] newFilterIds)
+    {
+        // Dynamic pages will handler their own filtering. They will tell us if
+        // something needs to change, by raising ItemsChanged.
+        if (_isDynamic)
+        {
+            // We're getting called on the UI thread.
+            // Hop off to a BG thread to update the extension.
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    if (_model.Unsafe is IDynamicListPage dynamic)
+                    {
+                        dynamic.Filters.CurrentFilterIds = newFilterIds;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowException(ex, _model?.Unsafe?.Name);
+                }
+            });
         }
     }
 
@@ -451,6 +475,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         UpdateProperty(nameof(SearchTextBox));
         UpdateProperty(nameof(InitialSearchText));
 
+        Filters = new(model.Filters);
+        UpdateProperty(nameof(Filters));
+
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
 
@@ -503,6 +530,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(SearchTextBox):
                 this.SearchTextBox = model.SearchText;
+                break;
+            case nameof(Filters):
+                this.Filters = new(model.Filters);
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);

@@ -130,8 +130,8 @@ namespace Microsoft.CommandPalette.Extensions
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFilters {
-        String CurrentFilterId { get; set; };
-        IFilterItem[] Filters();
+        String[] CurrentFilterIds { get; set; };
+        IFilterItem[] GetFilters();
     }
     
     struct Color

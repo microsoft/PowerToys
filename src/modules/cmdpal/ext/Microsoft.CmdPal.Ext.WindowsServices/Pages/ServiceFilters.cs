@@ -6,27 +6,21 @@ using Microsoft.CmdPal.Ext.WindowsServices;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class ServiceFilters : BaseObservable, IFilters
+public partial class ServiceFilters : Filters
 {
-    public virtual string CurrentFilterId
+    public ServiceFilters()
     {
-        get;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(CurrentFilterId));
-        }
+        CurrentFilterIds = ["all"];
     }
 
-= "all";
-
-    public IFilterItem[] Filters()
+    public override IFilterItem[] GetFilters()
     {
         return [
             new Filter() { Id = "all", Name = "All Services" },
             new Separator(),
             new Filter() { Id = "running", Name = "Running", Icon = Icons.GreenCircleIcon },
             new Filter() { Id = "stopped", Name = "Stopped", Icon = Icons.RedCircleIcon },
+            new Filter() { Id = "paused", Name = "Paused", Icon = Icons.PauseIcon },
         ];
     }
 }

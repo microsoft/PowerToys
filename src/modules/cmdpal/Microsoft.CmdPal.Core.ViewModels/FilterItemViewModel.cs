@@ -27,5 +27,7 @@ public partial class FilterItemViewModel : IFilterItemViewModel
         Id = filter.Id;
         Name = filter.Name;
         Icon = new(filter.Icon);
+
+        Icon.InitializeProperties();
     }
 }

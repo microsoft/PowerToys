@@ -10,6 +10,8 @@ using Microsoft.Bot.AdaptiveExpressions.Core;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Diagnostics.Tracing.AutomatedAnalysis;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -65,39 +67,37 @@ public sealed partial class Filter : UserControl,
         this.InitializeComponent();
     }
 
-    private void FiltersDropdown_ItemClick(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is FilterItemViewModel filterItem)
-        {
-            ViewModel.CurrentFilterId = filterItem.Id;
-        }
-
-        FilterButton.Flyout.Hide();
-    }
-
-    private void FiltersDropdown_KeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Handled)
-        {
-            return;
-        }
-
-        if (e.Key == VirtualKey.Enter)
-        {
-            if (FiltersDropdown.SelectedIndex > 0 &&
-                ViewModel.Filters.Length > FiltersDropdown.SelectedIndex)
-            {
-                var item = ViewModel.Filters[FiltersDropdown.SelectedIndex]! as FilterItemViewModel;
-                ViewModel.CurrentFilterId = item!.Id;
-
-                FilterButton.Flyout.Hide();
-                e.Handled = true;
-            }
-        }
-    }
-
-    private void FilterButton_Tapped(object sender, TappedRoutedEventArgs e)
+    private void FilterButton_Click(object sender, RoutedEventArgs e)
     {
         FilterButton.Flyout.ShowAt(FilterButton);
+    }
+
+    private void FiltersDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CurrentPageViewModel is ListViewModel listViewModel)
+        {
+            var filterIds = FiltersDropdown.SelectedItems
+                                            .OfType<FilterItemViewModel>()
+                                            .Select(item => item.Id)
+                                            .ToArray();
+
+            listViewModel.UpdateCurrentFilterIds(ViewModel.CurrentFilterIds);
+        }
+    }
+
+    private void FiltersDropdown_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (CurrentPageViewModel is ListViewModel listViewModel &&
+            listViewModel.Filters is not null &&
+            e.ClickedItem is FilterItemViewModel filterItem)
+        {
+            // If we can only select one, then go ahead and
+            // send it to the page
+            if (!ViewModel.MultipleSelectionsEnabled)
+            {
+                listViewModel.UpdateCurrentFilterIds([filterItem.Id]);
+                FilterButton.Flyout.Hide();
+            }
+        }
     }
 }
