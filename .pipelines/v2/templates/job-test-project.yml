@@ -113,6 +113,23 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
+  - pwsh: |-
+      # Set Windows Error Reporting to not show UI to prevent test hangs
+      reg add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v DontShowUI /t REG_DWORD /d 1 /f
+      Write-Host "Windows Error Reporting DontShowUI set to prevent dialog popups during UI tests"
+    displayName: Configure Windows Error Reporting for UI Tests
+
+  - pwsh: |-
+      # Verify the setting was actually applied
+      $result = reg query "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" /v DontShowUI 2>$null
+      if ($result -match "DontShowUI.*REG_DWORD.*0x1") {
+          Write-Host "✓ Verification successful: DontShowUI is set to 1"
+      } else {
+          Write-Host "✗ Verification failed: DontShowUI setting not found or incorrect"
+          Write-Host "Registry query result: $result"
+      }
+    displayName: Verify Windows Error Reporting Configuration
+
   - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
     - task: DownloadPipelineArtifact@2
       inputs:
