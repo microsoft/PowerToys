@@ -76,7 +76,7 @@ public class PeekFilePreviewTests : UITestBase
             TestFilePreviewWithVisualComparison(testFile);
         }
 
-        Assert.Fail("All test files should be processed without failure. If this fails, check the TestAssets folder for missing or unsupported files.");
+        // Assert.Fail("All test files should be processed without failure. If this fails, check the TestAssets folder for missing or unsupported files.");
     }
 
     /// <summary>
@@ -604,9 +604,8 @@ public class PeekFilePreviewTests : UITestBase
 
         Assert.IsNotNull(previewWindow, $"Should open Peek window for {fileNameWithoutExt}");
 
-        previewWindow.SaveToPngFile(Path.Combine(ScreenshotDirectory ?? string.Empty, $"{fileNameWithoutExt}.png"));
-
-        // VisualAssert.AreEqual(TestContext, previewWindow, fileNameWithoutExt );
+        // previewWindow.SaveToPngFile(Path.Combine(ScreenshotDirectory ?? string.Empty, $"{fileNameWithoutExt}.png"));
+        VisualAssert.AreEqual(TestContext, previewWindow, fileNameWithoutExt );
 
         // Close peek window
         ClosePeekAndExplorer();
