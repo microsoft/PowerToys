@@ -737,6 +737,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerRenameUITest", "src\modules\powerrename\PowerRenameUITest\PowerRenameUITest.csproj", "{9D3F3793-EFE3-4525-8782-238015DABA62}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Peek.UITests", "src\modules\peek\Peek.UITests\Peek.UITests.csproj", "{BCDC7246-F4F8-4EED-8DE6-037AA2E7C6D1}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Core.ViewModels", "src\modules\cmdpal\Microsoft.CmdPal.Core.ViewModels\Microsoft.CmdPal.Core.ViewModels.csproj", "{24133F7F-C1D1-DE04-EFA8-F5D5467FE027}"
