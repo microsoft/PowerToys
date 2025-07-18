@@ -30,13 +30,14 @@ public static class ResultHelper
 
         var copyCommandItem = CreateResult(roundedResult, inputCulture, outputCulture, query);
 
+        // No TextToSuggest on the main save command item. We don't want to keep suggesting what the result is,
+        // as the user is typing it.
         return new ListItem(saveCommand)
         {
             // Using CurrentCulture since this is user facing
             Icon = Icons.ResultIcon,
             Title = result,
             Subtitle = query,
-            TextToSuggest = result,
             MoreCommands = [
                 new CommandContextItem(copyCommandItem.Command)
                 {

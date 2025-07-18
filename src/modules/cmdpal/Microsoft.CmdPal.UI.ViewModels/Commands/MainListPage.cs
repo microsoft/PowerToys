@@ -263,7 +263,7 @@ public partial class MainListPage : DynamicListPage,
         {
              nameMatch,
              descriptionMatch,
-             isFallback ? 1 : 0, // Always give fallbacks a chance...
+             isFallback ? 1 : 0, // Always give fallbacks a chance
         };
         var max = scores.Max();
 
@@ -273,8 +273,7 @@ public partial class MainListPage : DynamicListPage,
         // above "git" from "whatever"
         max = max + extensionTitleMatch;
 
-        // ... but downweight them
-        var matchSomething = (max / (isFallback ? 3 : 1))
+        var matchSomething = max
             + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
 
         // If we matched title, subtitle, or alias (something real), then
