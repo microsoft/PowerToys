@@ -38,9 +38,9 @@
                     </Grid.ColumnDefinitions>
                     <cpcontrols:IconBox
                         Width="16"
-                        Height="16"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
@@ -108,7 +108,7 @@
             </DataTemplate>
 
             <!--  Template for context item separators  -->
-            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="coreViewModels:SeparatorContextItemViewModel">
+            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="coreViewModels:SeparatorViewModel">
                 <Rectangle
                     Height="1"
                     Margin="-16,-12,-12,-12"

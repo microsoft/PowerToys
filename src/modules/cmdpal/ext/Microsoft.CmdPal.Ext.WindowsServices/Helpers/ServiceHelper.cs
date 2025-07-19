@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Helpers;
 
 public static class ServiceHelper
 {
-    public static IEnumerable<ListItem> Search(string search)
+    public static IEnumerable<ListItem> Search(string search, string[] filterIds)
     {
         var services = ServiceController.GetServices().OrderBy(s => s.DisplayName);
         IEnumerable<ServiceController> serviceList = [];
@@ -44,61 +44,74 @@ public static class ServiceHelper
             serviceList = servicesStartsWith.Concat(servicesContains);
         }
 
-        var result = serviceList.Select(s =>
+        if (filterIds.Contains("running"))
         {
-            var serviceResult = ServiceResult.CreateServiceController(s);
-            if (serviceResult == null)
-            {
-                return null;
-            }
+            serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Running);
+        }
+        else if (filterIds.Contains("stopped"))
+        {
+            serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Stopped);
+        }
+        else if (filterIds.Contains("paused"))
+        {
+            serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Paused);
+        }
 
-            ServiceCommand serviceCommand;
-            CommandContextItem[] moreCommands;
-            if (serviceResult.IsRunning)
+        var result = serviceList.Select(s =>
             {
-                serviceCommand = new ServiceCommand(serviceResult, Action.Stop);
-                moreCommands = [
-                    new CommandContextItem(new RestartServiceCommand(serviceResult)),
+                var serviceResult = ServiceResult.CreateServiceController(s);
+                if (serviceResult == null)
+                {
+                    return null;
+                }
+
+                ServiceCommand serviceCommand;
+                CommandContextItem[] moreCommands;
+                if (serviceResult.IsRunning)
+                {
+                    serviceCommand = new ServiceCommand(serviceResult, Action.Stop);
+                    moreCommands = [
+                        new CommandContextItem(new RestartServiceCommand(serviceResult)),
                     new CommandContextItem(new OpenServicesCommand(serviceResult))
                     {
                         RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.O, 0),
                     },
-                ];
-            }
-            else
-            {
-                serviceCommand = new ServiceCommand(serviceResult, Action.Start);
-                moreCommands = [
-                    new CommandContextItem(new OpenServicesCommand(serviceResult)),
-                ];
-            }
+                    ];
+                }
+                else
+                {
+                    serviceCommand = new ServiceCommand(serviceResult, Action.Start);
+                    moreCommands = [
+                        new CommandContextItem(new OpenServicesCommand(serviceResult)),
+                    ];
+                }
 
-            IconInfo icon = Icons.GreenCircleIcon;
-            switch (s.Status)
-            {
-                case ServiceControllerStatus.Stopped:
-                    icon = Icons.RedCircleIcon;
-                    break;
-                case ServiceControllerStatus.Running:
-                    break;
-                case ServiceControllerStatus.Paused:
-                    icon = Icons.PauseIcon;
-                    break;
-            }
+                IconInfo icon = Icons.GreenCircleIcon;
+                switch (s.Status)
+                {
+                    case ServiceControllerStatus.Stopped:
+                        icon = Icons.RedCircleIcon;
+                        break;
+                    case ServiceControllerStatus.Running:
+                        break;
+                    case ServiceControllerStatus.Paused:
+                        icon = Icons.PauseIcon;
+                        break;
+                }
 
-            return new ListItem(serviceCommand)
-            {
-                Title = s.DisplayName,
-                Subtitle = ServiceHelper.GetResultSubTitle(s),
-                MoreCommands = moreCommands,
-                Icon = icon,
+                return new ListItem(serviceCommand)
+                {
+                    Title = s.DisplayName,
+                    Subtitle = ServiceHelper.GetResultSubTitle(s),
+                    MoreCommands = moreCommands,
+                    Icon = icon,
 
-                // TODO GH #78 we need to improve the icon story
-                // TODO GH #126 investigate tooltip story
-                // ToolTipData = new ToolTipData(serviceResult.DisplayName, serviceResult.ServiceName),
-                // IcoPath = icoPath,
-            };
-        }).Where(s => s != null);
+                    // TODO GH #78 we need to improve the icon story
+                    // TODO GH #126 investigate tooltip story
+                    // ToolTipData = new ToolTipData(serviceResult.DisplayName, serviceResult.ServiceName),
+                    // IcoPath = icoPath,
+                };
+            }).Where(s => s != null);
 
         return result;
     }

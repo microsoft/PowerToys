@@ -57,8 +57,8 @@ public sealed partial class SearchBar : UserControl,
         {
             // TODO: In some cases we probably want commands to clear a filter
             // somewhere in the process, so we need to figure out when that is.
-            @this.FilterBox.Text = page.Filter;
-            @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
+            @this.SearchBox.Text = page.SearchTextBox;
+            @this.SearchBox.Select(@this.SearchBox.Text.Length, 0);
 
             page.PropertyChanged += @this.Page_PropertyChanged;
         }
@@ -77,11 +77,11 @@ public sealed partial class SearchBar : UserControl,
         // _ = _queue.EnqueueAsync(() =>
         _queue.TryEnqueue(new(() =>
         {
-            this.FilterBox.Text = string.Empty;
+            this.SearchBox.Text = string.Empty;
 
             if (CurrentPageViewModel != null)
             {
-                CurrentPageViewModel.Filter = string.Empty;
+                CurrentPageViewModel.SearchTextBox = string.Empty;
             }
         }));
     }
@@ -92,11 +92,11 @@ public sealed partial class SearchBar : UserControl,
         // _ = _queue.EnqueueAsync(() =>
         _queue.TryEnqueue(new(() =>
         {
-            this.FilterBox.SelectAll();
+            this.SearchBox.SelectAll();
         }));
     }
 
-    private void FilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Handled)
         {
@@ -129,26 +129,26 @@ public sealed partial class SearchBar : UserControl,
         {
             if (CurrentPageViewModel != null && !string.IsNullOrEmpty(CurrentPageViewModel.TextToSuggest))
             {
-                FilterBox.Text = CurrentPageViewModel.TextToSuggest;
-                FilterBox.Select(FilterBox.Text.Length, 0);
+                SearchBox.Text = CurrentPageViewModel.TextToSuggest;
+                SearchBox.Select(SearchBox.Text.Length, 0);
                 e.Handled = true;
             }
         }
         else if (e.Key == VirtualKey.Escape)
         {
-            if (string.IsNullOrEmpty(FilterBox.Text))
+            if (string.IsNullOrEmpty(SearchBox.Text))
             {
                 WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
             }
             else
             {
                 // Clear the search box
-                FilterBox.Text = string.Empty;
+                SearchBox.Text = string.Empty;
 
                 // hack TODO GH #245
                 if (CurrentPageViewModel != null)
                 {
-                    CurrentPageViewModel.Filter = FilterBox.Text;
+                    CurrentPageViewModel.SearchTextBox = SearchBox.Text;
                 }
             }
 
@@ -159,7 +159,7 @@ public sealed partial class SearchBar : UserControl,
             // hack TODO GH #245
             if (CurrentPageViewModel != null)
             {
-                CurrentPageViewModel.Filter = FilterBox.Text;
+                CurrentPageViewModel.SearchTextBox = SearchBox.Text;
             }
         }
 
@@ -174,11 +174,11 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    private void FilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    private void SearchBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Back)
         {
-            if (string.IsNullOrEmpty(FilterBox.Text))
+            if (string.IsNullOrEmpty(SearchBox.Text))
             {
                 if (!_isBackspaceHeld)
                 {
@@ -208,7 +208,7 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    private void FilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)
+    private void SearchBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Back)
         {
@@ -217,20 +217,20 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    private void FilterBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        Debug.WriteLine($"FilterBox_TextChanged: {FilterBox.Text}");
+        Debug.WriteLine($"SearchBox_TextChanged: {SearchBox.Text}");
 
         // TERRIBLE HACK TODO GH #245
         // There's weird wacky bugs with debounce currently. We're trying
         // to get them ingested, but while we wait for the toolkit feeds to
         // bubble, just manually send the first character, always
         // (otherwise aliases just stop working)
-        if (FilterBox.Text.Length == 1)
+        if (SearchBox.Text.Length == 1)
         {
             if (CurrentPageViewModel != null)
             {
-                CurrentPageViewModel.Filter = FilterBox.Text;
+                CurrentPageViewModel.SearchTextBox = SearchBox.Text;
             }
 
             return;
@@ -243,7 +243,7 @@ public sealed partial class SearchBar : UserControl,
                 // Actually plumb Filtering to the view model
                 if (CurrentPageViewModel != null)
                 {
-                    CurrentPageViewModel.Filter = FilterBox.Text;
+                    CurrentPageViewModel.SearchTextBox = SearchBox.Text;
                 }
             },
             //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default
@@ -251,7 +251,7 @@ public sealed partial class SearchBar : UserControl,
             //// i.e. if another keyboard press comes in within 50ms of the last, we'll wait before we fire off the request
             interval: TimeSpan.FromMilliseconds(50),
             //// If we're not already waiting, and this is blanking out or the first character type, we'll start filtering immediately instead to appear more responsive and either clear the filter to get back home faster or at least chop to the first starting letter.
-            immediate: FilterBox.Text.Length <= 1);
+            immediate: SearchBox.Text.Length <= 1);
     }
 
     // Used to handle the case when a ListPage's `SearchText` may have changed
@@ -261,17 +261,17 @@ public sealed partial class SearchBar : UserControl,
 
         if (CurrentPageViewModel is ListViewModel list)
         {
-            if (property == nameof(ListViewModel.SearchText))
+            if (property == nameof(ListViewModel.SearchTextBox))
             {
                 // Only if the text actually changed...
                 // (sometimes this triggers on a round-trip of the SearchText)
-                if (FilterBox.Text != list.SearchText)
+                if (SearchBox.Text != list.SearchTextBox)
                 {
                     // ... Update our displayed text, and...
-                    FilterBox.Text = list.SearchText;
+                    SearchBox.Text = list.SearchTextBox;
 
                     // ... Move the cursor to the end of the input
-                    FilterBox.Select(FilterBox.Text.Length, 0);
+                    SearchBox.Select(SearchBox.Text.Length, 0);
                 }
             }
             else if (property == nameof(ListViewModel.InitialSearchText))
@@ -289,5 +289,5 @@ public sealed partial class SearchBar : UserControl,
 
     public void Receive(GoHomeMessage message) => ClearSearch();
 
-    public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+    public void Receive(FocusSearchBoxMessage message) => SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 }
