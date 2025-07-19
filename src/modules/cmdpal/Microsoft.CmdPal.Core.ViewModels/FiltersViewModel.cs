@@ -15,30 +15,19 @@ public partial class FiltersViewModel : ObservableObject,
     IRecipient<UpdateFiltersMessage>,
     IRecipient<UpdateCurrentFilterIdsMessage>
 {
+    private readonly IconInfoViewModel filterIcon = new(new IconInfo("\uE71C"));
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SelectedFilterName))]
     [NotifyPropertyChangedFor(nameof(SelectedFilterIcon))]
     [NotifyPropertyChangedFor(nameof(ShouldShowFilters))]
     [NotifyPropertyChangedFor(nameof(SelectedFilters))]
-    [NotifyPropertyChangedFor(nameof(DisplayFilters))]
     public partial IFilterItemViewModel[] Filters { get; private set; } = [];
-
-    public IFilterItemViewModel[] DisplayFilters => Filters.Select(filter =>
-                                                            {
-                                                                if (filter is FilterItemViewModel filterItem)
-                                                                {
-                                                                    filterItem.IsSelected = CurrentFilterIds.Contains(filterItem.Id);
-                                                                }
-
-                                                                return filter;
-                                                            })
-                                                            .ToArray();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SelectedFilterName))]
     [NotifyPropertyChangedFor(nameof(SelectedFilterIcon))]
     [NotifyPropertyChangedFor(nameof(SelectedFilters))]
-    [NotifyPropertyChangedFor(nameof(DisplayFilters))]
     public partial string[] CurrentFilterIds { get; private set; } = [];
 
     [ObservableProperty]
@@ -61,10 +50,16 @@ public partial class FiltersViewModel : ObservableObject,
                                 .OfType<FilterItemViewModel>()
                                 .FirstOrDefault(f => f.Id == CurrentFilterIds[0]);
 
-                return item?.Icon ?? null;
+                if (item?.Icon is null || !item.Icon.HasIcon(true))
+                {
+                    // If the filter item doesn't have an icon, use the default filter icon
+                    return filterIcon;
+                }
+
+                return item.Icon;
             }
 
-            return null;
+            return filterIcon;
         }
     }
 
@@ -74,7 +69,11 @@ public partial class FiltersViewModel : ObservableObject,
     {
         get
         {
-            if (CurrentFilterIds.Length == 1)
+            if (CurrentFilterIds.Length == 0)
+            {
+                return "Filters";
+            }
+            else if (CurrentFilterIds.Length == 1)
             {
                 var item = Filters
                                 .OfType<FilterItemViewModel>()
@@ -105,6 +104,8 @@ public partial class FiltersViewModel : ObservableObject,
 
     public FiltersViewModel()
     {
+        filterIcon.InitializeProperties();
+
         WeakReferenceMessenger.Default.Register<UpdateFiltersMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateCurrentFilterIdsMessage>(this);
     }

@@ -116,7 +116,7 @@ namespace Microsoft.CommandPalette.Extensions
     [uuid("ef5db50c-d26b-4aee-9343-9f98739ab411")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFilterItem {}
-    
+
     [uuid("0a923c7f-5b7b-431d-9898-3c8c841d02ed")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ISeparatorFilterItem requires IFilterItem {}
@@ -129,10 +129,14 @@ namespace Microsoft.CommandPalette.Extensions
     }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFilters {
+    interface IFilters requires INotifyPropChanged {
         String[] CurrentFilterIds { get; set; };
         IFilterItem[] GetFilters();
-    }
+    } 
+    
+    [uuid("8d611c8e-6cc4-434d-a671-0836b33426ea")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IMultiSelectFilters requires IFilters {}
     
     struct Color
     {

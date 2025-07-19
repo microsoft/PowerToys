@@ -41,8 +41,8 @@
                     </Grid.ColumnDefinitions>
                     <cpcontrols:IconBox
                         Width="16"
-                        Height="16"
-                        Margin="0,0,0,0"
+                        Margin="4,0,8,0"
+                        VerticalAlignment="Center"
                         HorizontalAlignment="Left"
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
@@ -79,12 +79,12 @@
                 VerticalAlignment="Center"
                 >
                 <cpcontrols:IconBox
+                    Margin="4,0,8,0"
                     Width="12"
-                    Height="12"
-                    Margin="0,4,8,0"
                     Visibility="{x:Bind ViewModel.HasIcon(ViewModel.SelectedFilterIcon), Mode=OneWay}"
-                    HorizontalAlignment="Left"
+                    HorizontalAlignment="Center"
                     VerticalAlignment="Center"
+                    Foreground="{ThemeResource ComboBoxDisabledForegroundThemeBrush}"
                     SourceKey="{x:Bind ViewModel.SelectedFilterIcon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                 <TextBlock

@@ -91,7 +91,7 @@ public partial class ListViewModel : PageViewModel,
                 new(
                     model.Filters!.GetFilters(),
                     model.Filters.CurrentFilterIds,
-                    model is MultiSelectFilters));
+                    model.Filters is IMultiSelectFilters));
         }
         else
         {

@@ -4,6 +4,6 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public abstract class MultiSelectFilters : Filters
+public abstract class MultiSelectFilters : Filters, IMultiSelectFilters
 {
 }
