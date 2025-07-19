@@ -6,6 +6,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using System.Windows;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -23,6 +24,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+        }
+
+        private void TestOverlayClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            // TODO: Display the overlay without overwriting the clipboard
+            Clipboard.SetText("Test text for ClipPing overlay");
         }
 
         public void RefreshEnabledState()

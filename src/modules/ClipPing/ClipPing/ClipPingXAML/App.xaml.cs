@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using ClipPing.Overlays;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -14,23 +17,56 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace ClipPing;
 
-/// <summary>
-/// Provides application-specific behavior to supplement the default Application class.
-/// </summary>
 public partial class App : Application, IDisposable
 {
+    private static readonly SettingsUtils ModuleSettings = new();
+    private readonly FileSystemWatcher _fileSystemWatcher;
+    private readonly ETWTrace _etwTrace = new();
+    private ClipPingSettings _currentSettings;
     private IOverlay? _overlay;
-    private ETWTrace? _etwTrace = new ETWTrace();
 
     public App()
     {
         InitializeComponent();
+
+        _currentSettings = ModuleSettings.GetSettings<ClipPingSettings>(ClipPingSettings.ModuleName);
+
+        var settingsPath = ModuleSettings.GetSettingsFilePath(ClipPingSettings.ModuleName);
+
+        _fileSystemWatcher = new FileSystemWatcher
+        {
+            Path = Path.GetDirectoryName(settingsPath) ?? string.Empty,
+            Filter = Path.GetFileName(settingsPath),
+            NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime,
+        };
+
+        _fileSystemWatcher.Changed += Settings_Changed;
+        _fileSystemWatcher.EnableRaisingEvents = true;
+    }
+
+    private void Settings_Changed(object sender, FileSystemEventArgs e)
+    {
+        _ = OnSettingsChanged();
+    }
+
+    private async Task OnSettingsChanged()
+    {
+        await Task.Delay(25);
+
+        try
+        {
+            _currentSettings = ModuleSettings.GetSettings<ClipPingSettings>(ClipPingSettings.ModuleName);
+        }
+        catch
+        {
+            // TODO: Log the error
+        }
     }
 
     public void Dispose()
     {
-        _etwTrace?.Dispose();
-        _etwTrace = null;
+        _fileSystemWatcher.Dispose();
+        _etwTrace.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -60,8 +96,7 @@ public partial class App : Application, IDisposable
                     Constants.ClipPingExitEvent(),
                     () =>
                     {
-                        application._etwTrace?.Dispose();
-                        application._etwTrace = null;
+                        application._etwTrace.Dispose();
                         dispatcher.TryEnqueue(App.Current.Exit);
                     });
             }
@@ -121,6 +156,15 @@ public partial class App : Application, IDisposable
         var dpi = NativeMethods.GetDpiForWindow(hwnd);
         double scale = 96.0 / dpi;
 
-        _overlay!.Show(new(rect.Left, rect.Top, windowWidth * scale, windowHeight * scale));
+        var rawColor = _currentSettings.Properties.OverlayColor;
+
+        // Convert #RRGGBB to Windows.UI.Color
+        var color = Windows.UI.Color.FromArgb(
+            255,
+            Convert.ToByte(rawColor.Value.Substring(1, 2), 16),
+            Convert.ToByte(rawColor.Value.Substring(3, 2), 16),
+            Convert.ToByte(rawColor.Value.Substring(5, 2), 16));
+
+        _overlay!.Show(new(rect.Left, rect.Top, windowWidth * scale, windowHeight * scale), color);
     }
 }

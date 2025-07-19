@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using Windows.Foundation;
+using Windows.UI;
 
 namespace ClipPing;
 
 internal interface IOverlay
 {
-    void Show(Rect area);
+    void Show(Rect area, Color color);
 }

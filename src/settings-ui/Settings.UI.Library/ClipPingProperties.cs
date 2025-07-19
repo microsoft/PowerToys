@@ -11,11 +11,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public ClipPingProperties()
         {
+            OverlayColor = new StringProperty("#00FF00");
         }
 
-        public string ToJsonString()
-        {
-            return JsonSerializer.Serialize(this);
-        }
+        public StringProperty OverlayColor { get; set; }
+
+        public string ToJsonString() => JsonSerializer.Serialize(this);
     }
 }

@@ -35,7 +35,7 @@
             </Storyboard>
         </Grid.Resources>
         <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" >
+            <LinearGradientBrush x:Name="OverlayBrush" StartPoint="0,0" EndPoint="0,1" >
                 <LinearGradientBrush.GradientStops>
                     <GradientStop Color="#5000FF00" Offset="0" />
                     <GradientStop Color="#0000FF00" Offset=".1" />

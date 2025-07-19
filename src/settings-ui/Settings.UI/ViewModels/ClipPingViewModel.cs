@@ -4,22 +4,18 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using PowerToys.GPOWrapper;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class ClipPingViewModel : Observable
     {
-        private ISettingsUtils SettingsUtils { get; set; }
-
-        private GeneralSettings GeneralSettingsConfig { get; set; }
-
-        private ClipPingSettings Settings { get; set; }
-
-        private Func<string, int> SendConfigMSG { get; }
+        private GpoRuleConfigured _enabledGpoRuleConfiguration;
+        private bool _enabledStateIsGpoConfigured;
+        private bool _isEnabled;
 
         public ClipPingViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<ClipPingSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
@@ -43,13 +39,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 
+        private ISettingsUtils SettingsUtils { get; }
+
+        private GeneralSettings GeneralSettingsConfig { get; }
+
+        private ClipPingSettings Settings { get; }
+
+        private Func<string, int> SendConfigMSG { get; }
+
         private void InitializeEnabledValue()
         {
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredClipPingEnabledValue();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.
-                _enabledStateIsGPOConfigured = true;
+                _enabledStateIsGpoConfigured = true;
                 _isEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
             else
@@ -64,7 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                if (_enabledStateIsGPOConfigured)
+                if (_enabledStateIsGpoConfigured)
                 {
                     // If it's GPO configured, shouldn't be able to change this state.
                     return;
@@ -79,14 +83,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OutGoingGeneralSettings snd = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(snd.ToString());
-                    OnPropertyChanged(nameof(IsEnabled));
+                    OnPropertyChanged();
                 }
             }
         }
 
         public bool IsEnabledGpoConfigured
         {
-            get => _enabledStateIsGPOConfigured;
+            get => _enabledStateIsGpoConfigured;
+        }
+
+        public string OverlayColor
+        {
+            get
+            {
+                return Settings.Properties.OverlayColor.Value;
+            }
+
+            set
+            {
+                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#00FF00";
+                if (!value.Equals(Settings.Properties.OverlayColor.Value, StringComparison.OrdinalIgnoreCase))
+                {
+                    Settings.Properties.OverlayColor.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
@@ -100,9 +122,5 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
         }
-
-        private GpoRuleConfigured _enabledGpoRuleConfiguration;
-        private bool _enabledStateIsGPOConfigured;
-        private bool _isEnabled;
     }
 }

@@ -5145,4 +5145,16 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ClipPing_ShortDescription" xml:space="preserve">
     <value>Displays a visual notification in the active window whenever something is copied into the clipboard.</value>
   </data>
+  <data name="ClipPing_Settings.Header" xml:space="preserve">
+    <value>Overlay settings</value>
+  </data>
+  <data name="ClipPing_OverlayColor.Header" xml:space="preserve">
+    <value>Overlay color</value>
+  </data>
+  <data name="ClipPing_Test.Header" xml:space="preserve">
+    <value>Test overlay</value>
+  </data>
+  <data name="ClipPing_TestOverlay.Content" xml:space="preserve">
+    <value>Show</value>
+  </data>
 </root>
