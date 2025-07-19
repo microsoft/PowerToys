@@ -115,11 +115,7 @@ internal sealed partial class PackageRepository : ListRepository<UWPApplication>
 
     public void IndexPrograms()
     {
-        var windows10 = new Version(10, 0);
-        var support = Environment.OSVersion.Version.Major >= windows10.Major;
-
-        var applications = support ? Programs.UWP.All() : Array.Empty<UWPApplication>();
-
+        var applications = UWP.All();
         SetList(applications);
     }
 }
