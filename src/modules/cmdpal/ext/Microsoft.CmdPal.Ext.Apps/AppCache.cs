@@ -57,7 +57,7 @@ public sealed partial class AppCache : IDisposable
 
             foreach (var inner in ex.InnerExceptions)
             {
-                ManagedCommon.Logger.LogError(ex.Message, inner);
+                ManagedCommon.Logger.LogError(inner.Message, inner);
             }
         }
 
