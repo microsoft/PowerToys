@@ -298,5 +298,40 @@ namespace Hosts.Tests
             var hidden = fileSystem.FileInfo.New(service.HostsFilePath).Attributes.HasFlag(FileAttributes.Hidden);
             Assert.IsTrue(hidden);
         }
+
+        [TestMethod]
+        public async Task Toggle_No_WhiteSpace()
+        {
+            var content =
+@"  10.1.1.1 host host.local   # comment
+  10.1.1.2 host2 host2.local # another comment
+# 10.1.1.1 host host.local   # comment
+# 10.1.1.2 host2 host2.local # another comment
+";
+
+            var contentResult =
+@"10.1.1.1 host host.local   # comment
+10.1.1.2 host2 host2.local # another comment
+#10.1.1.1 host host.local   # comment
+#10.1.1.2 host2 host2.local # another comment
+";
+
+            var fileSystem = new CustomMockFileSystem();
+            var userSettings = new Mock<IUserSettings>();
+            userSettings.Setup(m => m.NoWhiteSpace).Returns(true);
+            var service = new HostsService(fileSystem, userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
+
+            var dataNoWhiteSpaceOn = await service.ReadAsync();
+            await service.WriteAsync(dataNoWhiteSpaceOn.AdditionalLines, dataNoWhiteSpaceOn.Entries);
+            var resultOn = fileSystem.GetFile(service.HostsFilePath);
+            Assert.AreEqual(contentResult, resultOn.TextContents);
+
+            userSettings.Setup(m => m.NoWhiteSpace).Returns(false);
+            var dataNoWhiteSpaceOff = await service.ReadAsync();
+            await service.WriteAsync(dataNoWhiteSpaceOff.AdditionalLines, dataNoWhiteSpaceOff.Entries);
+            var resultsOff = fileSystem.GetFile(service.HostsFilePath);
+            Assert.AreEqual(content, resultsOff.TextContents);
+        }
     }
 }
