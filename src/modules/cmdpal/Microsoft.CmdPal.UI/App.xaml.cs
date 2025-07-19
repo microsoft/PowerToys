@@ -5,6 +5,7 @@
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Ext.Actions;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
@@ -146,10 +147,13 @@ public partial class App : Application
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<TrayIconService>();
 
+        services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton(new TelemetryForwarder());
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
 
         return services.BuildServiceProvider();
     }

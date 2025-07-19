@@ -24,7 +24,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
     {
         clipboardHistory = [];
         _defaultIconPath = string.Empty;
-        Icon = Icons.ClipboardList;
+        Icon = Icons.ClipboardListIcon;
         Name = Properties.Resources.clipboard_history_page_name;
         Id = "com.microsoft.cmdpal.clipboardHistory";
         ShowDetails = true;

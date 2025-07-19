@@ -76,6 +76,7 @@ ARPINSTALLLOCATION
 ARPPRODUCTICON
 ARRAYSIZE
 ARROWKEYS
+ARTIFACTSTAGINGDIRECTORY
 asf
 Ashcraft
 AShortcut
@@ -217,6 +218,7 @@ coclass
 CODENAME
 codereview
 Codespaces
+Coen
 COINIT
 colid
 colorconv
@@ -286,6 +288,7 @@ CVal
 cvd
 CVirtual
 CVS
+CWMO
 CXSCREEN
 CXSMICON
 CXVIRTUALSCREEN
@@ -1381,6 +1384,7 @@ RIGHTSCROLLBAR
 riid
 RKey
 RNumber
+Rns
 rop
 ROUNDSMALL
 ROWSETEXT
@@ -1722,6 +1726,8 @@ UFlags
 UHash
 UIA
 UIEx
+uild
+uitests
 ULONGLONG
 ums
 uncompilable
@@ -1748,6 +1754,7 @@ Uptool
 urld
 Usb
 USEDEFAULT
+USEINSTALLERFORTEST
 USEFILEATTRIBUTES
 USESHOWWINDOW
 USESTDHANDLES
@@ -1927,6 +1934,7 @@ Wubi
 WUX
 Wwanpp
 XAxis
+XButton
 xclip
 xcopy
 XDeployment

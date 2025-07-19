@@ -23,7 +23,7 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
 
     public TimeDateExtensionPage(SettingsManager settingsManager)
     {
-        Icon = IconHelpers.FromRelativePath("Assets\\TimeDate.svg");
+        Icon = Icons.TimeDateExtIcon;
         Title = Resources.Microsoft_plugin_timedate_main_page_title;
         Name = Resources.Microsoft_plugin_timedate_main_page_name;
         PlaceholderText = Resources.Microsoft_plugin_timedate_placeholder_text;
