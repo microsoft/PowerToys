@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             foreach (var release in latestReleases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
-                var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n## Highlights");
+                var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n### Highlights");
 
                 // Add a unique counter to [github-current-release-work] to distinguish each release,
                 // since this variable is used for all latest releases when they are merged.

@@ -118,6 +118,6 @@ public partial class ArgumentItemViewModel : ExtensionObjectViewModel
             return;
         }
 
-        model.ShowPicker(PageContext?.HostHwnd ?? 0);
+        // model.ShowPicker(PageContext?.HostHwnd ?? 0);
     }
 }
