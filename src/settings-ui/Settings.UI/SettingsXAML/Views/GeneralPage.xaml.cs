@@ -227,7 +227,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 var shellViewModel = ShellPage.ShellHandler?.ViewModel;
                 if (shellViewModel != null)
                 {
-                    shellViewModel.ShowCloseMenu = !toggleSwitch.IsOn;
+                    shellViewModel.ShowQuitMenu = !toggleSwitch.IsOn;
                 }
             }
         }
