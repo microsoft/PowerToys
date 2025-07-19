@@ -5076,21 +5076,21 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
-  <data name="Quit_NavViewItem.Content" xml:space="preserve">
-    <value>Quit PowerToys</value>
+  <data name="Close_NavViewItem.Content" xml:space="preserve">
+    <value>Close PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
   </data>
-  <data name="QuitDialog.Content" xml:space="preserve">
-    <value>Quitting PowerToys will close all running modules.</value>
+  <data name="CloseDialog.Content" xml:space="preserve">
+    <value>Closing PowerToys will close all running modules.</value>
     <comment>Don't loc "PowerToys"</comment>
   </data>
-  <data name="QuitDialog.Title" xml:space="preserve">
+  <data name="CloseDialog.Title" xml:space="preserve">
     <value>Are you sure?</value>
   </data>
-  <data name="QuitDialog.PrimaryButtonText" xml:space="preserve">
+  <data name="CloseDialog.PrimaryButtonText" xml:space="preserve">
     <value>Yes</value>
   </data>
-  <data name="QuitDialog.SecondaryButtonText" xml:space="preserve">
+  <data name="CloseDialog.SecondaryButtonText" xml:space="preserve">
     <value>No</value>
   </data>
 </root>

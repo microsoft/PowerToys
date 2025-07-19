@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly KeyboardAccelerator backKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.GoBack);
 
         private bool isBackEnabled;
-        private bool showQuitMenu;
+        private bool showCloseMenu;
         private IList<KeyboardAccelerator> keyboardAccelerators;
         private NavigationView navigationView;
         private NavigationViewItem selected;
@@ -43,10 +43,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => Set(ref isBackEnabled, value);
         }
 
-        public bool ShowQuitMenu
+        public bool ShowCloseMenu
         {
-            get => showQuitMenu;
-            set => Set(ref showQuitMenu, value);
+            get => showCloseMenu;
+            set => Set(ref showCloseMenu, value);
         }
 
         public NavigationViewItem Selected
@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ShellViewModel(ISettingsRepository<GeneralSettings> settingsRepository)
         {
             _generalSettingsConfig = settingsRepository.SettingsConfig;
-            ShowQuitMenu = !_generalSettingsConfig.ShowSysTrayIcon;
+            ShowCloseMenu = !_generalSettingsConfig.ShowSysTrayIcon;
         }
 
         public void Initialize(Frame frame, NavigationView navigationView, IList<KeyboardAccelerator> keyboardAccelerators)

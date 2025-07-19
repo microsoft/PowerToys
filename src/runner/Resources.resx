@@ -189,8 +189,8 @@
   <data name="TRAY_ICON_ADMIN_TOOLTIP" xml:space="preserve">
     <value>Administrator</value>
   </data>
-  <data name="QUIT_MENU_TEXT" xml:space="preserve">
-    <value>Quit</value>
-    <comment>Quit as a verb, as in Quit the application</comment>
+  <data name="CLOSE_MENU_TEXT" xml:space="preserve">
+    <value>Close</value>
+    <comment>Close as a verb, as in Close the application</comment>
   </data>
 </root>

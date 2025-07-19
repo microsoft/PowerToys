@@ -463,22 +463,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
 
-        private async void Quit_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private async void Close_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            await QuitDialog.ShowAsync();
+            await CloseDialog.ShowAsync();
         }
 
-        private void QuitDialog_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void CloseDialog_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             const string ptTrayIconWindowClass = "PToyTrayIconWindow"; // Defined in runner/tray_icon.h
-            const nuint ID_QUIT_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
+            const nuint ID_CLOSE_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
 
             // Exit the XAML application
             Application.Current.Exit();
 
             // Invoke the exit command from the tray icon
             IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
-            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_QUIT_MENU_COMMAND, 0);
+            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_CLOSE_MENU_COMMAND, 0);
         }
     }
 }

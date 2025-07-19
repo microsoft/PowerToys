@@ -276,10 +276,10 @@
                         Icon="{ui:FontIcon Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />
                     <NavigationViewItem
-                        x:Uid="Quit_NavViewItem"
+                        x:Uid="Close_NavViewItem"
                         Icon="{ui:FontIcon Glyph=&#xE7E8;}"
-                        Tapped="Quit_Tapped"
-                        Visibility="{x:Bind ViewModel.ShowQuitMenu, Mode=OneWay}" />
+                        Tapped="Close_Tapped"
+                        Visibility="{x:Bind ViewModel.ShowCloseMenu, Mode=OneWay}" />
                 </StackPanel>
             </NavigationView.PaneFooter>
             <i:Interaction.Behaviors>
@@ -290,11 +290,11 @@
             <Frame x:Name="shellFrame" />
         </NavigationView>
         <ContentDialog
-            x:Name="QuitDialog"
-            x:Uid="QuitDialog"
+            x:Name="CloseDialog"
+            x:Uid="CloseDialog"
             IsPrimaryButtonEnabled="True"
             IsSecondaryButtonEnabled="True"
-            PrimaryButtonClick="QuitDialog_Click"
+            PrimaryButtonClick="CloseDialog_Click"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}" />
     </Grid>
 </UserControl>
