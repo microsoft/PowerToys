@@ -15,7 +15,7 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ListViewModel : PageViewModel,
-    IRecipient<UpdateCurrentFilterIdsMessage>,
+    IRecipient<UpdateCurrentFilterIdMessage>,
     IDisposable
 {
     // private readonly HashSet<ListItemViewModel> _itemCache = [];
@@ -81,7 +81,7 @@ public partial class ListViewModel : PageViewModel,
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
 
-        WeakReferenceMessenger.Default.Register<UpdateCurrentFilterIdsMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateCurrentFilterIdMessage>(this);
 
         HasFilters = model.Filters is not null;
 
@@ -90,18 +90,17 @@ public partial class ListViewModel : PageViewModel,
             WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(
                 new(
                     model.Filters!.GetFilters(),
-                    model.Filters.CurrentFilterIds,
-                    model.Filters is IMultiSelectFilters));
+                    model.Filters.CurrentFilterId));
         }
         else
         {
-            WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(new([], [], false));
+            WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(new([], string.Empty));
         }
     }
 
-    public void Receive(UpdateCurrentFilterIdsMessage message)
+    public void Receive(UpdateCurrentFilterIdMessage message)
     {
-        var newFilterIds = message.CurrentFilterIds;
+        var newFilterId = message.CurrentFilterId;
 
         // Dynamic pages will handler their own filtering. They will tell us if
         // something needs to change, by raising ItemsChanged.
@@ -116,7 +115,7 @@ public partial class ListViewModel : PageViewModel,
                     if (_model.Unsafe is IDynamicListPage dynamic &&
                         dynamic.Filters is not null)
                     {
-                        dynamic.Filters.CurrentFilterIds = newFilterIds;
+                        dynamic.Filters.CurrentFilterId = newFilterId;
                     }
                 }
                 catch (Exception ex)

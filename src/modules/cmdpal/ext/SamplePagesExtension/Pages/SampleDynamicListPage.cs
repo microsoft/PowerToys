@@ -17,7 +17,7 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
         Icon = new IconInfo(string.Empty);
         Name = "Dynamic List";
         IsLoading = true;
-        Filters = new SampleDynamicMultiSelectFilters();
+        Filters = new SampleDynamicFilters();
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged(newSearch.Length);
@@ -35,18 +35,18 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
             items[0].Subtitle = "Notice how the number of items changes for this page when you type in the filter box";
         }
 
-        if (Filters?.CurrentFilterIds?.Length == 0)
+        if (string.IsNullOrEmpty(Filters?.CurrentFilterId))
         {
             return items;
         }
 
         ListItem[] filteredItems = [];
-        if (Filters.CurrentFilterIds.Contains("mod2"))
+        if (Filters.CurrentFilterId == "mod2")
         {
             filteredItems = items.Where((s, i) => i % 2 == 0).ToArray();
         }
 
-        if (Filters.CurrentFilterIds.Contains("mod3"))
+        if (Filters.CurrentFilterId == "mod3")
         {
             filteredItems = items.Where((s, i) => i % 3 == 0).Except(filteredItems).ToArray();
         }
@@ -56,13 +56,13 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
 }
 
 #pragma warning disable SA1402 // File may only contain a single type
-internal sealed partial class SampleDynamicMultiSelectFilters
-    : MultiSelectFilters
+internal sealed partial class SampleDynamicFilters
+    : Filters
 #pragma warning restore SA1402 // File may only contain a single type
 {
-    public SampleDynamicMultiSelectFilters()
+    public SampleDynamicFilters()
     {
-        CurrentFilterIds = [];
+        CurrentFilterId = string.Empty;
     }
 
     public override IFilterItem[] GetFilters()

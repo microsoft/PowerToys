@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Helpers;
 
 public static class ServiceHelper
 {
-    public static IEnumerable<ListItem> Search(string search, string[] filterIds)
+    public static IEnumerable<ListItem> Search(string search, string filterId)
     {
         var services = ServiceController.GetServices().OrderBy(s => s.DisplayName);
         IEnumerable<ServiceController> serviceList = [];
@@ -44,17 +44,19 @@ public static class ServiceHelper
             serviceList = servicesStartsWith.Concat(servicesContains);
         }
 
-        if (filterIds.Contains("running"))
+        switch (filterId)
         {
-            serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Running);
-        }
-        else if (filterIds.Contains("stopped"))
-        {
-            serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Stopped);
-        }
-        else if (filterIds.Contains("paused"))
-        {
-            serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Paused);
+            case "running":
+                serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Running);
+                break;
+            case "stopped":
+                serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Stopped);
+                break;
+            case "paused":
+                serviceList = serviceList.Where(w => w.Status == ServiceControllerStatus.Paused);
+                break;
+            case "all":
+                break;
         }
 
         var result = serviceList.Select(s =>

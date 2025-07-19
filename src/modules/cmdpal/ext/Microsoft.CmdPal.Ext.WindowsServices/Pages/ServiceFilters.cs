@@ -10,7 +10,7 @@ public partial class ServiceFilters : Filters
 {
     public ServiceFilters()
     {
-        CurrentFilterIds = ["all"];
+        CurrentFilterId = "all";
     }
 
     public override IFilterItem[] GetFilters()

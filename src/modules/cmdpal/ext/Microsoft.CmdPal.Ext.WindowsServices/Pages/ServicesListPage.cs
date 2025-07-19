@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.CmdPal.Ext.WindowsServices.Helpers;
@@ -28,7 +29,7 @@ internal sealed partial class ServicesListPage : DynamicListPage
 
     public override IListItem[] GetItems()
     {
-        var items = ServiceHelper.Search(SearchText, Filters.CurrentFilterIds).ToArray();
+        var items = ServiceHelper.Search(SearchText, Filters.CurrentFilterId).ToArray();
 
         return items;
     }

@@ -2,28 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
-using Microsoft.Bot.AdaptiveExpressions.Core;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
-using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Diagnostics.Tracing.AutomatedAnalysis;
-using Microsoft.UI.Dispatching;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using CoreVirtualKeyStates = Windows.UI.Core.CoreVirtualKeyStates;
-using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class Filter : UserControl,
-    IRecipient<UpdateCurrentFilterIdsMessage>,
+    IRecipient<UpdateCurrentFilterIdMessage>,
     IRecipient<OpenFiltersMessage>,
     ICurrentPageAware
 {
@@ -48,7 +37,7 @@ public sealed partial class Filter : UserControl,
         {
             if (page is not ListViewModel list || !list.HasFilters)
             {
-                WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(new([], [], false));
+                WeakReferenceMessenger.Default.Send<UpdateFiltersMessage>(new([], string.Empty));
             }
         }
     }
@@ -60,18 +49,15 @@ public sealed partial class Filter : UserControl,
         this.InitializeComponent();
 
         WeakReferenceMessenger.Default.Register<OpenFiltersMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateCurrentFilterIdsMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateCurrentFilterIdMessage>(this);
     }
 
-    public void Receive(UpdateCurrentFilterIdsMessage message)
+    public void Receive(UpdateCurrentFilterIdMessage message)
     {
-        if (ViewModel.MultipleSelectionsEnabled)
+        if (!string.IsNullOrEmpty(message.CurrentFilterId) &&
+            FiltersDropdown.SelectedItem is not null)
         {
-            FiltersDropdown.SelectedItems.Clear();
-            foreach (var item in ViewModel.SelectedFilters)
-            {
-                FiltersDropdown.SelectedItems.Add(item);
-            }
+            FiltersDropdown.SelectedItem = ViewModel.SelectedFilter;
         }
     }
 
@@ -93,26 +79,12 @@ public sealed partial class Filter : UserControl,
         FilterButton.Flyout.ShowAt(FilterButton);
     }
 
-    private void FiltersDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (CurrentPageViewModel is ListViewModel listViewModel)
-        {
-            var newItems = e.AddedItems.OfType<FilterItemViewModel>().Select(s => s.Name).ToArray();
-            var removedItems = e.RemovedItems.OfType<FilterItemViewModel>().Select(s => s.Name).ToArray();
-
-            ViewModel.UpdateCurrentFilterIds(newItems, removedItems);
-        }
-    }
-
     private void FiltersDropdown_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (CurrentPageViewModel is ListViewModel listViewModel &&
             e.ClickedItem is FilterItemViewModel filterItem)
         {
-            if (!ViewModel.IsSelected(filterItem.Id))
-            {
-                ViewModel.SelectOne(filterItem.Id);
-            }
+            WeakReferenceMessenger.Default.Send<UpdateCurrentFilterIdMessage>(new(filterItem.Id));
         }
 
         FilterButton.Flyout.Hide();

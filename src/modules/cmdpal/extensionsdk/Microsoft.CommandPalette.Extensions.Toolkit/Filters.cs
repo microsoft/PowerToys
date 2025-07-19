@@ -6,17 +6,17 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public abstract class Filters : BaseObservable, IFilters
 {
-    public string[] CurrentFilterIds
+    public string CurrentFilterId
     {
         get => field;
         set
         {
             field = value;
-            OnPropertyChanged(nameof(CurrentFilterIds));
+            OnPropertyChanged(nameof(CurrentFilterId));
         }
     }
 
-    = [];
+    = string.Empty;
 
     public abstract IFilterItem[] GetFilters();
 }

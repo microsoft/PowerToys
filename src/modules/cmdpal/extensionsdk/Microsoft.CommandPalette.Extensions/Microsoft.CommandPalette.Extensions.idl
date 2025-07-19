@@ -130,13 +130,9 @@ namespace Microsoft.CommandPalette.Extensions
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFilters requires INotifyPropChanged {
-        String[] CurrentFilterIds { get; set; };
+        String CurrentFilterId { get; set; };
         IFilterItem[] GetFilters();
     } 
-    
-    [uuid("8d611c8e-6cc4-434d-a671-0836b33426ea")]
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IMultiSelectFilters requires IFilters {}
     
     struct Color
     {
