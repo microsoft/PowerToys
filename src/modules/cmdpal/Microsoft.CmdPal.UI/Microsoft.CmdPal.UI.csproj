@@ -22,6 +22,8 @@
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);IL2059;</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">

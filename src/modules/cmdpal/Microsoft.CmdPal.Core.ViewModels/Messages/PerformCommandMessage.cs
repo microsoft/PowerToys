@@ -19,13 +19,12 @@ public record PerformCommandMessage
     public bool WithAnimation { get; set; } = true;
 
     public ICommandArgument?[] Arguments { get; set; } = [];
-    
-    public PerformCommandMessage(ExtensionObject<ICommand> command)
-    {
-        Command = command;
-        Context = null;
-    }
 
+    // public PerformCommandMessage(ExtensionObject<ICommand> command)
+    // {
+    //    Command = command;
+    //    Context = null;
+    // }
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context)
     {
         Command = command;
@@ -48,6 +47,16 @@ public record PerformCommandMessage
     {
         Command = contextCommand.Command.Model;
         Context = contextCommand.Model.Unsafe;
+    }
+
+    public PerformCommandMessage(CommandItemViewModel item, CommandItemViewModel? context = null)
+    {
+        Command = item.Command.Model;
+        Context = context?.Model.Unsafe ?? item.Model.Unsafe;
+        if (item.Parameters != null && item.Parameters.Any())
+        {
+            Arguments = item.Parameters.Select(p => p.Model.Unsafe).ToArray();
+        }
     }
 
     public PerformCommandMessage(ConfirmResultViewModel vm)

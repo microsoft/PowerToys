@@ -149,12 +149,12 @@ public partial class CommandBarViewModel : ObservableObject,
 
         if (command.HasMoreCommands)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command));
             return ContextKeybindingResult.KeepOpen;
         }
         else
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command));
             return ContextKeybindingResult.Hide;
         }
     }

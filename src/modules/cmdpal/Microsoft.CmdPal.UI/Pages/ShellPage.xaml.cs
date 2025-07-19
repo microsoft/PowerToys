@@ -8,6 +8,7 @@ using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -17,7 +18,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -447,7 +447,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model, new ExtensionObject<IListItem>(null)));
         }
     }
 

@@ -250,7 +250,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (PrimaryCommand != null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand.Command.Model, PrimaryCommand.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand));
         }
     }
 
@@ -260,7 +260,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (SecondaryCommand != null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand));
         }
     }
 

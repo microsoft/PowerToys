@@ -225,7 +225,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         }
         else
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command));
             UpdateContextItems();
             return ContextKeybindingResult.Hide;
         }

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -64,7 +65,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public bool HasParameters => Command.HasParameters;
 
-    public List<ArgumentItemViewModel> Parameters => Command.Parameters;
+    public ObservableCollection<ArgumentItemViewModel> Parameters => Command.Parameters;
 
     public List<IContextItemViewModel> AllCommands
     {

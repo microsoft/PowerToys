@@ -297,13 +297,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         if (item != null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item));
         }
         else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe != null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
-                EmptyContent.PrimaryCommand.Command.Model,
-                EmptyContent.PrimaryCommand.Model));
+                EmptyContent.PrimaryCommand));
         }
     }
 
@@ -315,14 +314,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             if (item.SecondaryCommand != null)
             {
-                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
+                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand, item));
             }
         }
         else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe != null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
-                EmptyContent.SecondaryCommand.Command.Model,
-                EmptyContent.SecondaryCommand.Model));
+                EmptyContent.SecondaryCommand));
         }
     }
 

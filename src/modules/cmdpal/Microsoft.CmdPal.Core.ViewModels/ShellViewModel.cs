@@ -93,7 +93,7 @@ public partial class ShellViewModel : ObservableObject,
         _rootPage = _rootPageService.GetRootPage();
 
         // This sends a message to us to load the root page view model.
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage), new ExtensionObject<ICommandContextItem>(null)));
 
         // Now that the root page is loaded, do any post-load work that the root page service needs to do.
         // This runs asynchronously, on a background thread.
@@ -221,10 +221,9 @@ public partial class ShellViewModel : ObservableObject,
             {
                 Logger.LogDebug($"Invoking command with args");
 
-                var args = ArgumentsViewModel.Arguments;
-                var aa = args.Select(a => a.Model.Unsafe).ToArray() ?? [];
-                message.Arguments = aa;
-
+                // var args = ArgumentsViewModel.Arguments;
+                // var aa = args.Select(a => a.Model.Unsafe).ToArray() ?? [];
+                // message.Arguments = aa;
                 WeakReferenceMessenger.Default.Send<BeginInvokeMessage>();
                 HandleInvokeCommandWithArgs(message, commandWithParams, host);
             }

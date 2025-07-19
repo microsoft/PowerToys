@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -31,7 +32,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public bool HasParameters { get; set; }
 
-    public List<ArgumentItemViewModel> Parameters { get; private set; } = [];
+    public ObservableCollection<ArgumentItemViewModel> Parameters { get; private set; } = new();
 
     public CommandViewModel(ICommand? command, WeakReference<IPageContext> pageContext)
         : base(pageContext)
