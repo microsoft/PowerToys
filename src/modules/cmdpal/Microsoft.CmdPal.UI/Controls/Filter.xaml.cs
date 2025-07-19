@@ -24,6 +24,7 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class Filter : UserControl,
     IRecipient<UpdateCurrentFilterIdsMessage>,
+    IRecipient<OpenFiltersMessage>,
     ICurrentPageAware
 {
     public PageViewModel? CurrentPageViewModel
@@ -58,6 +59,7 @@ public sealed partial class Filter : UserControl,
     {
         this.InitializeComponent();
 
+        WeakReferenceMessenger.Default.Register<OpenFiltersMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateCurrentFilterIdsMessage>(this);
     }
 
@@ -70,6 +72,19 @@ public sealed partial class Filter : UserControl,
             {
                 FiltersDropdown.SelectedItems.Add(item);
             }
+        }
+    }
+
+    public void Receive(OpenFiltersMessage message)
+    {
+        if (!ViewModel.ShouldShowFilters)
+        {
+            return;
+        }
+
+        if (!FilterButton.Flyout.IsOpen)
+        {
+            FilterButton.Flyout.ShowAt(FilterButton);
         }
     }
 

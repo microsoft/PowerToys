@@ -2,14 +2,15 @@
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Controls.Filter"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -69,6 +70,7 @@
             Name="FilterButton"
             x:Uid="FilterButton"
             Click="FilterButton_Click"
+            ToolTipService.ToolTip="Ctrl+F"
             Style="{StaticResource FilterButtonStyle}">
             <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                 <cpcontrols:IconBox
@@ -96,14 +98,13 @@
             <Button.Flyout>
                 <Flyout FlyoutPresenterStyle="{StaticResource FilterFlyoutStyle}">
                     <ListView
-                        x:Name="FiltersDropdown"
-                        MinWidth="248"
-                        IsItemClickEnabled="True"
-                        ItemClick="FiltersDropdown_ItemClick"
-                        ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
-                        ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
-                        SelectionChanged="FiltersDropdown_SelectionChanged"
-                        SelectionMode="{x:Bind ViewModel.MultipleSelectionsEnabled, Mode=OneWay, Converter={StaticResource BoolToSelectionModeConverter}}">
+                         x:Name="FiltersDropdown"
+                         MinWidth="248"
+                         IsItemClickEnabled="True"
+                         ItemClick="FiltersDropdown_ItemClick"
+                         ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
+                         ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
+                         SelectionMode="Single">
                         <ListView.ItemContainerStyle>
                             <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                                 <Setter Property="MinHeight" Value="0" />

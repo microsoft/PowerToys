@@ -125,6 +125,12 @@ public sealed partial class SearchBar : UserControl,
             WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
             e.Handled = true;
         }
+        else if (ctrlPressed && e.Key == VirtualKey.F)
+        {
+            // ctrl+f
+            WeakReferenceMessenger.Default.Send<OpenFiltersMessage>(new OpenFiltersMessage());
+            e.Handled = true;
+        }
         else if (e.Key == VirtualKey.Right)
         {
             if (CurrentPageViewModel != null && !string.IsNullOrEmpty(CurrentPageViewModel.TextToSuggest))
