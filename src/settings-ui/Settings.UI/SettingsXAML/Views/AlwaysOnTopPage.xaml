@@ -38,7 +38,11 @@
                         x:Uid="AlwaysOnTop_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
+                            HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}"
+                            HasConflict="{x:Bind Path=ViewModel.HotkeyHasConflict, Mode=OneWay}"
+                            Tooltip="{x:Bind Path=ViewModel.HotkeyTooltip, Mode=OneWay}"/>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />

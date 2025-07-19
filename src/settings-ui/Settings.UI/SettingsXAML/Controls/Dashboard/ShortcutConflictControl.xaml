@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
         <Button Click="ShortcutConflictBtn_Click" Style="{StaticResource SubtleButtonStyle}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
@@ -25,7 +25,7 @@
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="2 conflicts found" />
+                        Text="{x:Bind ConflictText, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
         </Button>

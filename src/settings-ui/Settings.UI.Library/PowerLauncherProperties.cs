@@ -95,20 +95,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool GenerateThumbnailsFromFiles { get; set; }
 
         [CmdConfigureIgnoreAttribute]
-        public HotkeySettings DefaultOpenPowerLauncher => new HotkeySettings(false, false, true, false, 32);
+        public HotkeySettings DefaultOpenPowerLauncher => new HotkeySettings(false, false, true, false, 32, "OpenPowerLauncher", PowerLauncherSettings.ModuleName);
 
         [CmdConfigureIgnoreAttribute]
-        public HotkeySettings DefaultOpenFileLocation => new HotkeySettings();
+        public HotkeySettings DefaultOpenFileLocation => new HotkeySettings("OpenFileLocation", PowerLauncherSettings.ModuleName);
 
         [CmdConfigureIgnoreAttribute]
-        public HotkeySettings DefaultCopyPathLocation => new HotkeySettings();
+        public HotkeySettings DefaultCopyPathLocation => new HotkeySettings("CopyPathLocation", PowerLauncherSettings.ModuleName);
 
         public PowerLauncherProperties()
         {
             OpenPowerLauncher = DefaultOpenPowerLauncher;
             OpenFileLocation = DefaultOpenFileLocation;
             CopyPathLocation = DefaultCopyPathLocation;
-            OpenConsole = new HotkeySettings();
+            OpenConsole = new HotkeySettings("OpenConsole", PowerLauncherSettings.ModuleName);
             SearchResultPreference = "most_recently_used";
             SearchTypePreference = "application_name";
             IgnoreHotkeysInFullscreen = false;

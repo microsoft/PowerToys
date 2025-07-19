@@ -27,6 +27,9 @@ namespace
     const wchar_t JSON_KEY_SHAKING_INTERVAL_MS[] = L"shaking_interval_ms";
     const wchar_t JSON_KEY_SHAKING_FACTOR[] = L"shaking_factor";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
+    const wchar_t JSON_KEY_NAME[] = L"hotkeyName";
+
+    const wchar_t ACTIVATION_SHORTCUT_NAME[] = L"ActivationShortcut";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -483,6 +486,10 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             Logger::info("Using default Activation Shortcut");
             m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
             m_hotkey.vkCode = 0x46; // F key
+        }
+        if (m_hotkey.name == nullptr)
+        {
+            m_hotkey.name = ACTIVATION_SHORTCUT_NAME;
         }
     }
     else

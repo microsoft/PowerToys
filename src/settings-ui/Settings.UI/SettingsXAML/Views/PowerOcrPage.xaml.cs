@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void TextExtractor_ComboBox_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

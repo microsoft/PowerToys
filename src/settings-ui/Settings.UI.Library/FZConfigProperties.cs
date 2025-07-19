@@ -16,9 +16,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const int VkNext = 0x22;
         public const int VkPrior = 0x21;
 
-        public static readonly HotkeySettings DefaultEditorHotkeyValue = new HotkeySettings(true, false, false, true, VkOem3);
-        public static readonly HotkeySettings DefaultNextTabHotkeyValue = new HotkeySettings(true, false, false, false, VkNext);
-        public static readonly HotkeySettings DefaultPrevTabHotkeyValue = new HotkeySettings(true, false, false, false, VkPrior);
+        public static readonly HotkeySettings DefaultEditorHotkeyValue = new HotkeySettings(true, false, false, true, VkOem3, "EditorHotkey", FancyZonesSettings.ModuleName);
+        public static readonly HotkeySettings DefaultNextTabHotkeyValue = new HotkeySettings(true, false, false, false, VkNext, "NextTabHotkey", FancyZonesSettings.ModuleName);
+        public static readonly HotkeySettings DefaultPrevTabHotkeyValue = new HotkeySettings(true, false, false, false, VkPrior, "PrevTabHotkey", FancyZonesSettings.ModuleName);
 
         public FZConfigProperties()
         {

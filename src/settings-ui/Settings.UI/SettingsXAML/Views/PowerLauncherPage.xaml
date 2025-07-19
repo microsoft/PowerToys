@@ -343,7 +343,11 @@
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
+                        <controls:ShortcutControl 
+                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
+                            HasConflict="{x:Bind Path=ViewModel.OpenPowerLauncherHasConflict, Mode=OneWay}"
+                            Tooltip="{x:Bind Path=ViewModel.OpenPowerLauncherTooltip, Mode=OneWay}"
+                            HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
