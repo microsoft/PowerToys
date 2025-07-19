@@ -42,7 +42,7 @@ public sealed partial class Filter : UserControl,
 
         // If the new page is a ListViewModel we'll get an UpdateFiltersMessage
         // with that lists filters. However, if it's just a PageViewModel, we
-        // need to let the FilterViewModel know to clear its filters/currentfilterids
+        // need to let the FilterViewModel know to clear its filters/current filter ids
         if (e.NewValue is PageViewModel page)
         {
             if (page is not ListViewModel list || !list.HasFilters)

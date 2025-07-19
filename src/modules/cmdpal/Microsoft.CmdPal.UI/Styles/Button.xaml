@@ -163,7 +163,7 @@
         <Setter Property="BorderBrush" Value="{ThemeResource ButtonPointerOverBackgroundThemeBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
         <Setter Property="Padding" Value="12,8" />
-        <Setter Property="Margin" Value="0, 0, 12, 0" />
+        <Setter Property="Margin" Value="0,0,12,0" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
@@ -189,8 +189,7 @@
                         ContentTemplate="{TemplateBinding ContentTemplate}"
                         ContentTransitions="{TemplateBinding ContentTransitions}"
                         CornerRadius="{TemplateBinding CornerRadius}"
-                        Foreground="{TemplateBinding Foreground}"
-                        >
+                        Foreground="{TemplateBinding Foreground}">
                         <ContentPresenter.BackgroundTransition>
                             <BrushTransition Duration="0:0:0.083" />
                         </ContentPresenter.BackgroundTransition>

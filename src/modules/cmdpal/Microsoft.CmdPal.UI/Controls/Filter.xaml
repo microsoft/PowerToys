@@ -42,8 +42,8 @@
                     <cpcontrols:IconBox
                         Width="16"
                         Margin="4,0,8,0"
-                        VerticalAlignment="Center"
                         HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
@@ -64,52 +64,44 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel
-        VerticalAlignment="Center"
-        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-        >
+    <StackPanel VerticalAlignment="Center" Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
         <Button
             Name="FilterButton"
             x:Uid="FilterButton"
-            Style="{StaticResource FilterButtonStyle}"
             Click="FilterButton_Click"
-            >
-            <StackPanel
-                Orientation="Horizontal"
-                VerticalAlignment="Center"
-                >
+            Style="{StaticResource FilterButtonStyle}">
+            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                 <cpcontrols:IconBox
-                    Margin="4,0,8,0"
                     Width="12"
-                    Visibility="{x:Bind ViewModel.HasIcon(ViewModel.SelectedFilterIcon), Mode=OneWay}"
+                    Margin="4,0,8,0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource ComboBoxDisabledForegroundThemeBrush}"
                     SourceKey="{x:Bind ViewModel.SelectedFilterIcon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                    Visibility="{x:Bind ViewModel.HasIcon(ViewModel.SelectedFilterIcon), Mode=OneWay}" />
                 <TextBlock
                     VerticalAlignment="Center"
                     FontSize="12"
                     Foreground="{ThemeResource ComboBoxDisabledForegroundThemeBrush}"
-                    Text="{x:Bind ViewModel.SelectedFilterName, Mode=OneWay}"/>
+                    Text="{x:Bind ViewModel.SelectedFilterName, Mode=OneWay}" />
                 <FontIcon
+                    Margin="8,0,0,0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Margin="8,0,0,0"
-                    Foreground="{ThemeResource ComboBoxArrowDisabledForegroundThemeBrush}"
                     FontSize="{ThemeResource AppBarButtonSubItemChevronFontSize}"
+                    Foreground="{ThemeResource ComboBoxArrowDisabledForegroundThemeBrush}"
                     Glyph="&#xE70D;" />
             </StackPanel>
             <Button.Flyout>
-                <Flyout
-                    FlyoutPresenterStyle="{StaticResource FilterFlyoutStyle}">
+                <Flyout FlyoutPresenterStyle="{StaticResource FilterFlyoutStyle}">
                     <ListView
                         x:Name="FiltersDropdown"
                         MinWidth="248"
                         IsItemClickEnabled="True"
+                        ItemClick="FiltersDropdown_ItemClick"
                         ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
                         ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
-                        ItemClick="FiltersDropdown_ItemClick"
                         SelectionChanged="FiltersDropdown_SelectionChanged"
                         SelectionMode="{x:Bind ViewModel.MultipleSelectionsEnabled, Mode=OneWay, Converter={StaticResource BoolToSelectionModeConverter}}">
                         <ListView.ItemContainerStyle>

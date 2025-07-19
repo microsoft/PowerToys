@@ -157,9 +157,9 @@ public partial class FiltersViewModel : ObservableObject,
         WeakReferenceMessenger.Default.Send<UpdateCurrentFilterIdsMessage>(new(CurrentFilterIds));
     }
 
-    public void UpdateCurrentFilterIds(string[] newFilterIds, string[] removeFitlerIds)
+    public void UpdateCurrentFilterIds(string[] newFilterIds, string[] removeFilterIds)
     {
-        CurrentFilterIds = CurrentFilterIds.Except(removeFitlerIds).ToArray();
+        CurrentFilterIds = CurrentFilterIds.Except(removeFilterIds).ToArray();
         CurrentFilterIds = CurrentFilterIds.Concat(newFilterIds).ToArray();
         WeakReferenceMessenger.Default.Send<UpdateCurrentFilterIdsMessage>(new(CurrentFilterIds));
     }
