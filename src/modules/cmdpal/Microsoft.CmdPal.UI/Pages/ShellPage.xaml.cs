@@ -42,6 +42,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
+    IRecipient<RequestOpenPickerMessage>,
     INotifyPropertyChanged
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -82,6 +83,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
+        WeakReferenceMessenger.Default.Register<RequestOpenPickerMessage>(this);
 
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
@@ -285,6 +287,19 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     public void Receive(ClearSearchMessage message) => SearchBox.ClearSearch();
+
+    public void Receive(RequestOpenPickerMessage message)
+    {
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            var argument = message.Argument.Unsafe;
+            if (argument != null)
+            {
+                var hwnd = (ulong)WinRT.Interop.WindowNative.GetWindowHandle(App.Current.AppWindow).ToInt64();
+                argument.ShowPicker(hwnd);
+            }
+        });
+    }
 
     public void Receive(HotkeySummonMessage message)
     {

@@ -23,6 +23,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
+    <!-- TODO!: I'm pretty sure this is just because my machine is on an old VS / .net SDK  -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);IL2059;</WarningsNotAsErrors>
   </PropertyGroup>
 

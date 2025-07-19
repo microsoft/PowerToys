@@ -10,6 +10,7 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.AI.Actions;
 using Windows.AI.Actions.Hosting;
+using Windows.Storage.Pickers;
 
 namespace Microsoft.CmdPal.Ext.Actions;
 
@@ -80,7 +81,7 @@ public partial class CommandParameter : BaseObservable, ICommandArgument
 
     public object? Value { get; set; }
 
-    public void ShowPicker(ulong hostHwnd)
+    public virtual void ShowPicker(ulong hostHwnd)
     {
     }
 
@@ -160,9 +161,78 @@ public partial class DoActionCommand : InvokableWithParams
 
         _actionRuntime = actionRuntime;
         _id = actionId;
-        ICommandArgument[] commandParameters = inputs.AsEnumerable()
-            .Select(input => new CommandParameter(input.Name))
-            .ToArray();
-        Parameters = commandParameters;
+
+        // ICommandArgument[] commandParameters = inputs.AsEnumerable()
+        //     .Select(input => new CommandParameter(input.Name))
+        //     .ToArray();
+        // Parameters = commandParameters;
+        foreach (var input in inputs)
+        {
+            var param = input.Kind switch
+            {
+                ActionEntityKind.None => new CommandParameter(input.Name),
+                ActionEntityKind.Document => new CommandParameter(input.Name),
+                ActionEntityKind.File => new CommandParameter(input.Name),
+                ActionEntityKind.Photo => new ImageParameter(input.Name),
+                ActionEntityKind.Text => new CommandParameter(input.Name),
+
+                // ActionEntityKind.StreamingText => new CommandParameter(input.Name, input.Required, ParameterType.StreamingText),
+                // ActionEntityKind.RemoteFile => new CommandParameter(input.Name, input.Required, ParameterType.RemoteFile),
+                // ActionEntityKind.Table => new CommandParameter(input.Name, input.Required, ParameterType.Table),
+                ActionEntityKind.Contact => new CommandParameter(input.Name),
+                _ => throw new NotSupportedException($"Unsupported action entity kind: {input.Kind}"),
+            };
+
+            // var parameter = new CommandParameter(input.Name, input.Required, input.Kind.ToParameterType());
+            // if (input.DefaultValue != null)
+            // {
+            //     parameter.Value = input.DefaultValue;
+            // }
+            Parameters = Parameters.Append(param).ToArray();
+        }
+    }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
+public partial class ImageParameter : CommandParameter
+{
+    public ImageParameter(string name = "", bool required = true)
+        : base(name, required, ParameterType.Custom)
+    {
+    }
+
+    public override void ShowPicker(ulong hostHwnd)
+    {
+        var picker = new FileOpenPicker
+        {
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+        };
+        picker.FileTypeFilter.Add(".jpg");
+        picker.FileTypeFilter.Add(".jpeg");
+        picker.FileTypeFilter.Add(".png");
+        picker.FileTypeFilter.Add(".gif");
+        picker.FileTypeFilter.Add(".bmp");
+        picker.FileTypeFilter.Add(".tiff");
+        picker.FileTypeFilter.Add(".webp");
+
+        // Initialize the picker with the window handle
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, (IntPtr)hostHwnd);
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var file = await picker.PickSingleFileAsync();
+                if (file != null)
+                {
+                    Value = file.Path;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions that might occur during file picking
+                System.Diagnostics.Debug.WriteLine($"Error picking image file: {ex.Message}");
+            }
+        });
     }
 }
