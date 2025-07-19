@@ -174,19 +174,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await Task.Run(ViewModel.ViewDiagnosticData);
         }
 
-        private void ExitPTItem_Tapped(object sender, RoutedEventArgs e)
-        {
-            const string ptTrayIconWindowClass = "PToyTrayIconWindow"; // Defined in runner/tray_icon.h
-            const nuint ID_EXIT_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
-
-            // Exit the XAML application
-            Application.Current.Exit();
-
-            // Invoke the exit command from the tray icon
-            IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
-            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
-        }
-
         private void BugReportToolClicked(object sender, RoutedEventArgs e)
         {
             // Start bug report
@@ -230,6 +217,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
             {
                 ShellPage.ShellHandler.IPCResponseHandleList.Remove(HandleBugReportStatusResponse);
+            }
+        }
+
+        private void ShowSystemTrayIcon_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                var shellViewModel = ShellPage.ShellHandler?.ViewModel;
+                if (shellViewModel != null)
+                {
+                    shellViewModel.ShowCloseMenu = !toggleSwitch.IsOn;
+                }
             }
         }
     }

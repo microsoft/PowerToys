@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Windowing;
@@ -113,7 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Gets view model.
         /// </summary>
-        public ShellViewModel ViewModel { get; } = new ShellViewModel();
+        public ShellViewModel ViewModel { get; }
 
         /// <summary>
         /// Gets a collection of functions that handle IPC responses.
@@ -134,6 +135,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
 
+            var settingsUtils = new SettingsUtils();
+            ViewModel = new ShellViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
             DataContext = ViewModel;
             ShellHandler = this;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
@@ -460,7 +463,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
 
-        private void ExitPTItem_Tapped(object sender, RoutedEventArgs e)
+        private async void Close_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            await CloseDialog.ShowAsync();
+        }
+
+        private void CloseDialog_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             const string ptTrayIconWindowClass = "PToyTrayIconWindow"; // Defined in runner/tray_icon.h
             const nuint ID_EXIT_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
