@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -471,14 +471,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void QuitDialog_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             const string ptTrayIconWindowClass = "PToyTrayIconWindow"; // Defined in runner/tray_icon.h
-            const nuint ID_EXIT_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
+            const nuint ID_QUIT_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
 
             // Exit the XAML application
             Application.Current.Exit();
 
             // Invoke the exit command from the tray icon
             IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
-            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
+            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_QUIT_MENU_COMMAND, 0);
         }
     }
 }
