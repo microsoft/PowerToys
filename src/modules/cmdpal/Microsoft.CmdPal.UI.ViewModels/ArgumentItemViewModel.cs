@@ -109,4 +109,15 @@ public partial class ArgumentItemViewModel : ExtensionObjectViewModel
         {
         }
     }
+
+    public void OpenPicker()
+    {
+        var model = _model.Unsafe;
+        if (model == null)
+        {
+            return;
+        }
+
+        model.ShowPicker(PageContext?.HostHwnd ?? 0);
+    }
 }

@@ -312,22 +312,60 @@ public sealed partial class SearchBar : UserControl,
             {
                 // var argVm = new ArgumentItemViewModel { Name = param.Name };
                 ArgumentsViewModel.Arguments.Add(param);
-                var textBox = new TextBox
+
+                if (param.Type == CommandPalette.Extensions.ParameterType.Text)
                 {
-                    MinHeight = 24,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    VerticalContentAlignment = VerticalAlignment.Stretch,
-                    PlaceholderText = param.Name,
-                    Margin = new Thickness(4, 0, 4, 0),
-                };
-                textBox.SetBinding(TextBox.TextProperty, new Microsoft.UI.Xaml.Data.Binding
+                    var textBox = new TextBox
+                    {
+                        MinHeight = 24,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        VerticalContentAlignment = VerticalAlignment.Stretch,
+                        PlaceholderText = param.Name,
+                        Margin = new Thickness(4, 0, 4, 0),
+                    };
+                    textBox.SetBinding(TextBox.TextProperty, new Microsoft.UI.Xaml.Data.Binding
+                    {
+                        Source = param,
+                        Path = new PropertyPath("Value"),
+                        Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay,
+                        UpdateSourceTrigger = Microsoft.UI.Xaml.Data.UpdateSourceTrigger.PropertyChanged,
+                    });
+                    ParametersPanel.Children.Add(textBox);
+                }
+
+                // else if (param.Type == ParameterType.Enum)
+                // {
+                //     var comboBox = new ComboBox
+                //     {
+                //         MinHeight = 24,
+                //         VerticalAlignment = VerticalAlignment.Center,
+                //         VerticalContentAlignment = VerticalAlignment.Stretch,
+                //         PlaceholderText = param.Name,
+                //         Margin = new Thickness(4, 0, 4, 0),
+                //     };
+                //     comboBox.SetBinding(ComboBox.SelectedItemProperty, new Microsoft.UI.Xaml.Data.Binding
+                //     {
+                //         Source = param,
+                //         Path = new PropertyPath("Value"),
+                //         Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay,
+                //         UpdateSourceTrigger = Microsoft.UI.Xaml.Data.UpdateSourceTrigger.PropertyChanged,
+                //     });
+                //     ParametersPanel.Children.Add(comboBox);
+                // }
+                else if (param.Type == CommandPalette.Extensions.ParameterType.Custom)
                 {
-                    Source = param,
-                    Path = new PropertyPath("Value"),
-                    Mode = Microsoft.UI.Xaml.Data.BindingMode.TwoWay,
-                    UpdateSourceTrigger = Microsoft.UI.Xaml.Data.UpdateSourceTrigger.PropertyChanged,
-                });
-                ParametersPanel.Children.Add(textBox);
+                    // Add a button, and when they click it, trigger the custom action
+                    var button = new Button
+                    {
+                        Content = param.Name,
+                        Margin = new Thickness(4, 0, 4, 0),
+                    };
+                    button.Click += (s, e) =>
+                    {
+                        param.OpenPicker();
+                    };
+                    ParametersPanel.Children.Add(button);
+                }
             }
         }
     }
