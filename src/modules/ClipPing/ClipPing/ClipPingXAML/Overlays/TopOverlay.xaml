@@ -19,11 +19,19 @@
 
     <Grid x:Name="GridOverlay">
         <Grid.Resources>
-            <Storyboard x:Name="EnterStoryboard" Completed="EnterStoryboard_Completed">
-                <FadeInThemeAnimation Storyboard.TargetName="GridOverlay" Duration="0:0:0.1" />
+            <Storyboard x:Name="EnterStoryboard" Completed="EnterStoryboard_Completed" >
+                <DoubleAnimation Storyboard.TargetName="GridOverlay" From="0" To="1" Storyboard.TargetProperty="Opacity" Duration="0:0:0.1">
+                    <DoubleAnimation.EasingFunction>
+                        <SineEase EasingMode="EaseOut" />
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
             </Storyboard>
             <Storyboard x:Name="ExitStoryboard" Completed="ExitStoryboard_Completed">
-                <FadeOutThemeAnimation Storyboard.TargetName="GridOverlay" Duration="0:0:0.3" />
+                <DoubleAnimation Storyboard.TargetName="GridOverlay" From="1" To="0" Storyboard.TargetProperty="Opacity" Duration="0:0:0.3">
+                    <DoubleAnimation.EasingFunction>
+                        <SineEase EasingMode="EaseInOut" />
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
             </Storyboard>
         </Grid.Resources>
         <Grid.Background>
