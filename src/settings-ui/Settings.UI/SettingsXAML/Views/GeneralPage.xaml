@@ -268,9 +268,10 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="ShowSystemTrayIcon">
-                        <ToggleSwitch x:Uid="ShowSystemTrayIcon_ToggleSwitch"
-                                      IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}"
-                                      Toggled="ShowSystemTrayIcon_Toggled" />
+                        <ToggleSwitch
+                            x:Uid="ShowSystemTrayIcon_ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}"
+                            Toggled="ShowSystemTrayIcon_Toggled" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
