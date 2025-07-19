@@ -9,20 +9,25 @@ using Microsoft.UI.Dispatching;
 
 namespace ClipPing;
 
-public static partial class NativeEventWaiter
+public static class NativeEventWaiter
 {
-    public static void WaitForEventLoop(string eventName, Action callback)
+    public static void WaitForEvents(params (string EventName, Action Callback)[] events)
     {
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         var t = new Thread(() =>
         {
-            var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+            var eventHandles = new WaitHandle[events.Length];
+
+            for (int i = 0; i < events.Length; i++)
+            {
+                var (eventName, _) = events[i];
+                eventHandles[i] = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+            }
+
             while (true)
             {
-                if (eventHandle.WaitOne())
-                {
-                    dispatcherQueue.TryEnqueue(() => callback());
-                }
+                var index = WaitHandle.WaitAny(eventHandles);
+                dispatcherQueue.TryEnqueue(() => events[index].Callback());
             }
         });
 

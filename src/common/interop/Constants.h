@@ -53,6 +53,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring PowerToysRunnerTerminateSettingsEvent();
         static hstring ShowCmdPalEvent();
         static hstring ClipPingExitEvent();
+        static hstring ClipPingShowOverlayEvent();
     };
 }
 

@@ -50,6 +50,7 @@ namespace PowerToys
             static String PowerToysRunnerTerminateSettingsEvent();
             static String ShowCmdPalEvent();
             static String ClipPingExitEvent();
+            static String ClipPingShowOverlayEvent();
         }
     }
 }

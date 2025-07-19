@@ -199,4 +199,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::CLIPPING_EXIT_EVENT;
     }
+    hstring Constants::ClipPingShowOverlayEvent()
+    {
+        return CommonSharedConstants::CLIPPING_SHOW_OVERLAY_EVENT;
+    }
 }

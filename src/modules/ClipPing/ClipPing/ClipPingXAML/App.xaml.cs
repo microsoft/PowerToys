@@ -90,15 +90,9 @@ public partial class App : Application, IDisposable
                     dispatcher.TryEnqueue(App.Current.Exit);
                 });
 
-                var application = this;
-
-                NativeEventWaiter.WaitForEventLoop(
-                    Constants.ClipPingExitEvent(),
-                    () =>
-                    {
-                        application._etwTrace.Dispose();
-                        dispatcher.TryEnqueue(App.Current.Exit);
-                    });
+                NativeEventWaiter.WaitForEvents(
+                    (Constants.ClipPingExitEvent(), ExitEventSignaled),
+                    (Constants.ClipPingShowOverlayEvent(), ShowOverlay));
             }
         }
         else
@@ -110,6 +104,12 @@ public partial class App : Application, IDisposable
 
         Clipboard.ContentChanged += Clipboard_ContentChanged;
         _overlay = LoadOverlay();
+    }
+
+    private void ExitEventSignaled()
+    {
+        _etwTrace.Dispose();
+        App.Current.Exit();
     }
 
     private void Clipboard_ContentChanged(object? sender, object e)

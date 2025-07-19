@@ -68,6 +68,7 @@ private:
 
     HANDLE m_hProcess = nullptr;
     HANDLE m_exit_event_handle = nullptr;
+    HANDLE m_show_overlay_event_handle = nullptr;
 
 public:
     ClipPingModuleInterface()
@@ -76,6 +77,7 @@ public:
         app_key = L"ClipPing";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "ClipPing");
         m_exit_event_handle = CreateDefaultEvent(CommonSharedConstants::CLIPPING_EXIT_EVENT);
+        m_show_overlay_event_handle = CreateDefaultEvent(CommonSharedConstants::CLIPPING_SHOW_OVERLAY_EVENT);
         init_settings();
     };
 
