@@ -1319,11 +1319,11 @@
     <value>On-Screen</value>
   </data>
   <data name="OpenControlPanel" xml:space="preserve">
-    <value>Control Panel (Application homepage)</value>
+    <value>Control Panel homepage</value>
     <comment>'Control Panel' is here the name of the legacy settings app.</comment>
   </data>
   <data name="OpenSettingsApp" xml:space="preserve">
-    <value>Settings (Application homepage)</value>
+    <value>System Settings homepage</value>
     <comment>'Settings' is here the name of the modern settings app.</comment>
   </data>
   <data name="Os" xml:space="preserve">
@@ -2096,5 +2096,13 @@
   </data>
   <data name="settings_fallback_subtitle" xml:space="preserve">
     <value>Search Windows settings for this device</value>
+  </data>
+  <data name="PluginNoResultsMessageHelp" xml:space="preserve">
+    <value>Search setting names, setting areas with the colon (Update:)
+and setting paths with the greater-than sign (System settings&gt;Apps).</value>
+    <comment>Multiline list with line break before the word "and".</comment>
+  </data>
+  <data name="PluginNoResultsMessage" xml:space="preserve">
+    <value>No settings found.</value>
   </data>
 </root>

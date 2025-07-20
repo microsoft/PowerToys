@@ -3049,7 +3049,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Control Panel (Application homepage).
+        ///   Looks up a localized string similar to Control Panel homepage.
         /// </summary>
         internal static string OpenControlPanel {
             get {
@@ -3067,7 +3067,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings (Application homepage).
+        ///   Looks up a localized string similar to Settings homepage.
         /// </summary>
         internal static string OpenSettingsApp {
             get {
@@ -3342,6 +3342,25 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         internal static string PluginDescription {
             get {
                 return ResourceManager.GetString("PluginDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No settings found..
+        /// </summary>
+        internal static string PluginNoResultsMessage {
+            get {
+                return ResourceManager.GetString("PluginNoResultsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search setting names, setting areas with the colon (Update:)
+        ///and setting paths with the greater-than sign (System settings&gt;Apps)..
+        /// </summary>
+        internal static string PluginNoResultsMessageHelp {
+            get {
+                return ResourceManager.GetString("PluginNoResultsMessageHelp", resourceCulture);
             }
         }
         
