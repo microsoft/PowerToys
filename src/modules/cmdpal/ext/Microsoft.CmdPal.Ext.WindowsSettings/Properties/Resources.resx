@@ -2098,7 +2098,7 @@
     <value>Search Windows settings for this device</value>
   </data>
   <data name="PluginNoResultsMessageHelp" xml:space="preserve">
-    <value>Search setting names, setting areas with the colon (Update:)
+    <value>Tip: Search for setting names, setting areas with the colon (Update:)
 and setting paths with the greater-than sign (System settings&gt;Apps).</value>
     <comment>Multiline list with line break before the word "and".</comment>
   </data>

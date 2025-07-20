@@ -3067,7 +3067,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings homepage.
+        ///   Looks up a localized string similar to System Settings homepage.
         /// </summary>
         internal static string OpenSettingsApp {
             get {
@@ -3355,7 +3355,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search setting names, setting areas with the colon (Update:)
+        ///   Looks up a localized string similar to Tip: Search for setting names, setting areas with the colon (Update:)
         ///and setting paths with the greater-than sign (System settings&gt;Apps)..
         /// </summary>
         internal static string PluginNoResultsMessageHelp {
