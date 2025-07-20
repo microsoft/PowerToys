@@ -360,6 +360,13 @@ public sealed partial class SearchBar : UserControl,
                     {
                         param.OpenPicker();
                     };
+                    button.SetBinding(Button.ContentProperty, new Microsoft.UI.Xaml.Data.Binding
+                    {
+                        Source = param,
+                        Path = new PropertyPath("DisplayName"),
+                        Mode = Microsoft.UI.Xaml.Data.BindingMode.OneWay,
+                        UpdateSourceTrigger = Microsoft.UI.Xaml.Data.UpdateSourceTrigger.PropertyChanged,
+                    });
                     ParametersPanel.Children.Add(button);
                 }
             }

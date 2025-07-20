@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
@@ -73,13 +74,36 @@ internal sealed partial class ActionsTestPage : ListPage
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
 public partial class CommandParameter : BaseObservable, ICommandArgument
 {
-    public string Name { get; set; }
+    public virtual string Name { get; set; }
 
-    public bool Required { get; set; }
+    public virtual bool Required { get; set; }
 
-    public ParameterType Type { get; set; }
+    public virtual ParameterType Type { get; set; }
 
-    public object? Value { get; set; }
+    public virtual object? Value
+    {
+        get; set
+        {
+            if (field != value)
+            {
+                field = value;
+                OnPropertyChanged(nameof(Value));
+                OnPropertyChanged(nameof(DisplayName));
+            }
+        }
+    }
+
+    public virtual string? DisplayName => Value?.ToString() ?? string.Empty;
+
+    public virtual IIconInfo? Icon
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Icon));
+        }
+    }
 
     public virtual void ShowPicker(ulong hostHwnd)
     {
@@ -145,8 +169,12 @@ public partial class DoActionCommand : InvokableWithParams
                 ActionInvocationResult.Success => MessageState.Success,
                 _ => MessageState.Error,
             };
-            var text = $"{c.Result.ToString()}: tion{c.ExtendedError}";
-            var resultToast = new ToastStatusMessage(text);
+            var text = c.Result switch
+            {
+                ActionInvocationResult.Success => $"{c.Result.ToString()}",
+                _ => $"{c.Result.ToString()}: {c.ExtendedError}",
+            };
+            var resultToast = new ToastStatusMessage(new StatusMessage() { Message = text, State = statusType });
             resultToast.Show();
         });
 
@@ -196,6 +224,8 @@ public partial class DoActionCommand : InvokableWithParams
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
 public partial class ImageParameter : CommandParameter
 {
+    private string? _filePath;
+
     public ImageParameter(string name = "", bool required = true)
         : base(name, required, ParameterType.Custom)
     {
@@ -225,7 +255,11 @@ public partial class ImageParameter : CommandParameter
                 var file = await picker.PickSingleFileAsync();
                 if (file != null)
                 {
-                    Value = file.Path;
+                    _filePath = file.Path;
+                    Value = _filePath;
+                    Icon = new IconInfo(_filePath);
+
+                    // TODO! update display name
                 }
             }
             catch (Exception ex)
@@ -234,5 +268,10 @@ public partial class ImageParameter : CommandParameter
                 System.Diagnostics.Debug.WriteLine($"Error picking image file: {ex.Message}");
             }
         });
+    }
+
+    public override string? DisplayName
+    {
+        get { return string.IsNullOrEmpty(_filePath) ? null : Path.GetFileName(_filePath); }
     }
 }

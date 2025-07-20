@@ -26,6 +26,11 @@
             "input": "pushd .\\ExtensionTemplate\\ ; git archive -o ..\\Microsoft.CmdPal.UI.ViewModels\\Assets\\template.zip HEAD -- .\\TemplateCmdPalExtension\\ ; popd",
             "name": "Update template project",
             "description": "zips up the ExtensionTemplate into our assets. Run this in the cmdpal/ directory."
+        },
+        {
+            "input": "pwsh -c .\\clean-sdk.ps1",
+            "name": "Delete old extensions output",
+            "description": "Delete old extensions output directory.\r\nUse this after regenerating the interface, otherwise it will not pass fast up to date checks."
         }
     ]
 }

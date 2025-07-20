@@ -2174,6 +2174,8 @@ interface ICommandArgument requires INotifyPropChanged
     Boolean Required{ get; };
 
     Object Value { get; set; };
+    String DisplayName { get; };
+    IIconInfo Icon { get; };
 
     void ShowPicker(UInt64 hostHwnd);
     // todo

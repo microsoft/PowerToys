@@ -21,6 +21,11 @@ public partial class ArgumentItemViewModel : ExtensionObjectViewModel
 
     public bool Required { get; private set; }
 
+    private string ModelDisplayName { get; set; } = string.Empty;
+
+    public string DisplayName => string.IsNullOrEmpty(ModelDisplayName) ? Name : ModelDisplayName;
+
+    // TODO! This should be an ExtensionObject<object> since it's out-of-proc
     public object? Value
     {
         get; set
@@ -48,6 +53,7 @@ public partial class ArgumentItemViewModel : ExtensionObjectViewModel
         Name = model.Name;
         Required = model.Required;
         Value = model.Value;
+        ModelDisplayName = model.DisplayName;
 
         // Register for property changes
         model.PropChanged += Model_PropChanged;
@@ -76,18 +82,49 @@ public partial class ArgumentItemViewModel : ExtensionObjectViewModel
         switch (propertyName)
         {
             case nameof(ICommandArgument.Type):
+                if (model.Type == Type)
+                {
+                    return;
+                }
+
                 Type = model.Type;
                 break;
             case nameof(ICommandArgument.Name):
+                if (model.Name == Name)
+                {
+                    return;
+                }
+
                 Name = model.Name;
+                UpdateProperty(nameof(DisplayName));
                 break;
             case nameof(ICommandArgument.Required):
+                if (model.Required == Required)
+                {
+                    return;
+                }
+
                 Required = model.Required;
                 break;
             case nameof(ICommandArgument.Value):
+                if (model.Value == Value)
+                {
+                    return;
+                }
+
                 Value = model.Value;
                 break;
+            case nameof(ICommandArgument.DisplayName):
+                if (model.DisplayName == ModelDisplayName)
+                {
+                    return;
+                }
+
+                ModelDisplayName = model.DisplayName;
+                break;
         }
+
+        UpdateProperty(propertyName);
     }
 
     private void SafeSetValue(object? value)

@@ -80,6 +80,10 @@ public partial class BuiltInsCommandProvider : CommandProvider
 
         public object? Value { get; set; }
 
+        public string DisplayName => string.Empty;
+
+        public IIconInfo? Icon => null;
+
         public void ShowPicker(ulong hostHwnd)
         {
         }
