@@ -31,5 +31,7 @@ internal static class NativeMethods
         public readonly int Top = top;
         public readonly int Right = right;
         public readonly int Bottom = bottom;
+
+        public override string ToString() => $"Left: {Left}, Top: {Top}, Right: {Right}, Bottom: {Bottom}";
     }
 }

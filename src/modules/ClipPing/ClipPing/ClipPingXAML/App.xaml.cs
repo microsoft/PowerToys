@@ -14,6 +14,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using PowerToys.Interop;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 
 namespace ClipPing;
 
@@ -57,9 +58,9 @@ public partial class App : Application, IDisposable
         {
             _currentSettings = ModuleSettings.GetSettings<ClipPingSettings>(ClipPingSettings.ModuleName);
         }
-        catch
+        catch (Exception ex)
         {
-            // TODO: Log the error
+            Logger.LogError($"Failed to load ClipPing settings: {ex}.");
         }
     }
 
@@ -129,7 +130,7 @@ public partial class App : Application, IDisposable
 
         if (hwnd == IntPtr.Zero)
         {
-            // No active window
+            Logger.LogInfo("Overlay hidden because there is no active window.");
             return;
         }
 
@@ -137,11 +138,12 @@ public partial class App : Application, IDisposable
         var hr = NativeMethods.DwmGetWindowAttribute(
             hwnd,
             NativeMethods.DWMWA_EXTENDED_FRAME_BOUNDS,
-            out NativeMethods.RECT rect,
+            out var rect,
             Marshal.SizeOf<NativeMethods.RECT>());
 
         if (hr != 0)
         {
+            Logger.LogWarning($"Could not get the foreground window attributes (hwnd: {hwnd:x2}, hr: {hr:x2}).");
             return;
         }
 
@@ -150,6 +152,7 @@ public partial class App : Application, IDisposable
 
         if (windowWidth <= 0 || windowHeight <= 0)
         {
+            Logger.LogWarning($"The foreground window has zero or negative size: {rect}.");
             return;
         }
 
@@ -165,6 +168,10 @@ public partial class App : Application, IDisposable
             Convert.ToByte(rawColor.Value.Substring(3, 2), 16),
             Convert.ToByte(rawColor.Value.Substring(5, 2), 16));
 
-        _overlay!.Show(new(rect.Left, rect.Top, windowWidth * scale, windowHeight * scale), color);
+        var target = new Rect(rect.Left, rect.Top, windowWidth * scale, windowHeight * scale);
+
+        Logger.LogDebug($"Showing overlay at {target} with color {color}.");
+
+        _overlay!.Show(target, color);
     }
 }

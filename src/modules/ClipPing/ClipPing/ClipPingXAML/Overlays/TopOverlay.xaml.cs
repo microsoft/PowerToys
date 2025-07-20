@@ -29,17 +29,16 @@ public sealed partial class TopOverlay : WindowEx, IOverlay
         this.Move((int)area.Left, (int)area.Top);
         this.SetWindowSize(area.Width, area.Height);
 
+        // Not sure why it's needed, but after relaunching ClipPing the overlay sometimes loses its always-on-top state.
+        IsAlwaysOnTop = false;
+        IsAlwaysOnTop = true;
+
         AppWindow.Show(activateWindow: false);
 
         EnterStoryboard.Begin();
     }
 
     private void EnterStoryboard_Completed(object? sender, object e)
-    {
-        ExitStoryboard.Begin();
-    }
-
-    private void ExitStoryboard_Completed(object? sender, object e)
     {
         AppWindow.Hide();
     }

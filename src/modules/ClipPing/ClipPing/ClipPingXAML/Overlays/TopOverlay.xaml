@@ -19,25 +19,26 @@
 
     <Grid x:Name="GridOverlay">
         <Grid.Resources>
-            <Storyboard x:Name="EnterStoryboard" Completed="EnterStoryboard_Completed" >
-                <DoubleAnimation Storyboard.TargetName="GridOverlay" From="0" To="1" Storyboard.TargetProperty="Opacity" Duration="0:0:0.1">
-                    <DoubleAnimation.EasingFunction>
-                        <SineEase EasingMode="EaseOut" />
-                    </DoubleAnimation.EasingFunction>
-                </DoubleAnimation>
-            </Storyboard>
-            <Storyboard x:Name="ExitStoryboard" Completed="ExitStoryboard_Completed">
-                <DoubleAnimation Storyboard.TargetName="GridOverlay" From="1" To="0" Storyboard.TargetProperty="Opacity" Duration="0:0:0.3">
-                    <DoubleAnimation.EasingFunction>
-                        <SineEase EasingMode="EaseInOut" />
-                    </DoubleAnimation.EasingFunction>
-                </DoubleAnimation>
+            <Storyboard x:Name="EnterStoryboard" Completed="EnterStoryboard_Completed">
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="GridOverlay" Storyboard.TargetProperty="Opacity" Duration="Automatic">
+                    <DiscreteDoubleKeyFrame Value="0" KeyTime="0:0:0" />
+                    <EasingDoubleKeyFrame Value="1" KeyTime="0:0:0.1">
+                        <EasingDoubleKeyFrame.EasingFunction>
+                            <SineEase EasingMode="EaseOut" />
+                        </EasingDoubleKeyFrame.EasingFunction>
+                    </EasingDoubleKeyFrame>
+                    <EasingDoubleKeyFrame Value="0" KeyTime="0:0:0.4">
+                        <EasingDoubleKeyFrame.EasingFunction>
+                            <SineEase EasingMode="EaseInOut" />
+                        </EasingDoubleKeyFrame.EasingFunction>
+                    </EasingDoubleKeyFrame>
+                </DoubleAnimationUsingKeyFrames>
             </Storyboard>
         </Grid.Resources>
         <Grid.Background>
             <LinearGradientBrush x:Name="OverlayBrush" StartPoint="0,0" EndPoint="0,1" >
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Color="#5000FF00" Offset="0" />
+                    <GradientStop Color="#7000FF00" Offset="0" />
                     <GradientStop Color="#0000FF00" Offset=".1" />
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
