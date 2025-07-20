@@ -37,17 +37,24 @@ internal sealed partial class ActionsTestPage : ListPage
         {
             foreach (var overload in action.GetOverloads())
             {
-                var inputs = overload.GetInputs();
-
-                var tags = inputs.AsEnumerable().Select(input => new Tag(input.Name) { Icon = GetIconForInput(input)! }).ToList();
-
-                items.Add(new ListItem(new DoActionCommand(action.Id, overload, _actionRuntime) { Name = "Invoke" })
+                try
                 {
-                    Title = action.Description,
-                    Subtitle = overload.DescriptionTemplate,
-                    Icon = new IconInfo(action.IconFullPath),
-                    Tags = tags.ToArray(),
-                });
+                    var inputs = overload.GetInputs();
+
+                    var tags = inputs.AsEnumerable().Select(input => new Tag(input.Name) { Icon = GetIconForInput(input)! }).ToList();
+                    var command = new DoActionCommand(action.Id, overload, _actionRuntime) { Name = "Invoke" };
+                    items.Add(new ListItem(command)
+                    {
+                        Title = action.Description,
+                        Subtitle = overload.DescriptionTemplate,
+                        Icon = new IconInfo(action.IconFullPath),
+                        Tags = tags.ToArray(),
+                    });
+                }
+                catch (Exception)
+                {
+                    ExtensionHost.LogMessage($"Unsupported action {overload.DescriptionTemplate}");
+                }
             }
         }
 
@@ -291,8 +298,9 @@ public partial class ContactParameter : CommandParameter
     {
         var picker = new ContactPicker
         {
-            CommitButtonText = "Select",
-            SelectionMode = ContactSelectionMode.Contacts,
+            // CommitButtonText = "Select",
+
+            // SelectionMode = ContactSelectionMode.Contacts,
         };
 
         // Specify which contact properties to retrieve

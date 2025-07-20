@@ -48,6 +48,14 @@ public partial class AgentsTestCommandsProvider : CommandProvider
                     });
                 }
             }
+
+            // Add the contacts list page
+            _commands.Add(new CommandItem(new ContactsListPage())
+            {
+                Title = "Contacts",
+                Subtitle = "Browse your contacts",
+                Icon = Icons.ContactInput,
+            });
         }
 
         return _commands.ToArray();
