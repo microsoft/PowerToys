@@ -11,6 +11,7 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.AI.Actions;
 using Windows.AI.Actions.Hosting;
+using Windows.ApplicationModel.Contacts;
 using Windows.Storage.Pickers;
 
 namespace Microsoft.CmdPal.Ext.Actions;
@@ -207,7 +208,7 @@ public partial class DoActionCommand : InvokableWithParams
                 // ActionEntityKind.StreamingText => new CommandParameter(input.Name, input.Required, ParameterType.StreamingText),
                 // ActionEntityKind.RemoteFile => new CommandParameter(input.Name, input.Required, ParameterType.RemoteFile),
                 // ActionEntityKind.Table => new CommandParameter(input.Name, input.Required, ParameterType.Table),
-                ActionEntityKind.Contact => new CommandParameter(input.Name),
+                ActionEntityKind.Contact => new ContactParameter(input.Name),
                 _ => throw new NotSupportedException($"Unsupported action entity kind: {input.Kind}"),
             };
 
@@ -273,5 +274,63 @@ public partial class ImageParameter : CommandParameter
     public override string? DisplayName
     {
         get { return string.IsNullOrEmpty(_filePath) ? null : Path.GetFileName(_filePath); }
+    }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
+public partial class ContactParameter : CommandParameter
+{
+    private Contact? _selectedContact;
+
+    public ContactParameter(string name = "", bool required = true)
+        : base(name, required, ParameterType.Custom)
+    {
+    }
+
+    public override void ShowPicker(ulong hostHwnd)
+    {
+        var picker = new ContactPicker
+        {
+            CommitButtonText = "Select",
+            SelectionMode = ContactSelectionMode.Contacts,
+        };
+
+        // Specify which contact properties to retrieve
+        // picker.DesiredFieldsWithContactFieldType.Add(ContactFieldType.Email);
+        // picker.DesiredFieldsWithContactFieldType.Add(ContactFieldType.PhoneNumber);
+
+        // Initialize the picker with the window handle
+        WinRT.Interop.InitializeWithWindow.Initialize(picker, (IntPtr)hostHwnd);
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var contact = await picker.PickContactAsync();
+                if (contact != null)
+                {
+                    _selectedContact = contact;
+                    Value = contact;
+                    Icon = Icons.ContactInput;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions that might occur during contact picking
+                System.Diagnostics.Debug.WriteLine($"Error picking contact: {ex.Message}");
+            }
+        });
+    }
+
+    public override string? DisplayName
+    {
+        get
+        {
+            return _selectedContact == null
+                ? null
+                : !string.IsNullOrEmpty(_selectedContact.DisplayName)
+                ? _selectedContact.DisplayName
+                : _selectedContact.Name;
+        }
     }
 }
