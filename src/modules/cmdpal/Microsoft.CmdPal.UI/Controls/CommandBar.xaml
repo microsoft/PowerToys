@@ -49,7 +49,6 @@
             <Flyout
                 x:Name="ContextMenuFlyout"
                 FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
-                Opened="ContextMenuFlyout_Opened"
                 ShouldConstrainToRootBounds="False"
                 >
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
