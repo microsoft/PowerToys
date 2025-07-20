@@ -18,9 +18,10 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// This class encapsulates the data we load from built-in providers and extensions to use within the same extension-UI system for a <see cref="ListPage"/>.
 /// TODO: Need to think about how we structure/interop for the page -> section -> item between the main setup, the extensions, and our viewmodels.
 /// </summary>
-public partial class MainListPage : DynamicListPage,
+public sealed partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
-    IRecipient<UpdateFallbackItemsMessage>
+    IRecipient<UpdateFallbackItemsMessage>,
+    IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
 
@@ -28,6 +29,9 @@ public partial class MainListPage : DynamicListPage,
     private IEnumerable<IListItem>? _filteredItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
+
+    private CancellationTokenSource? _cancellationTokenSource;
+    private Task? _currentSearchTask;
 
     public MainListPage(IServiceProvider serviceProvider)
     {
@@ -119,6 +123,77 @@ public partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        if (newSearch == oldSearch)
+        {
+            return;
+        }
+
+        DoUpdateSearchText(newSearch);
+    }
+
+    private void DoUpdateSearchText(string newSearch)
+    {
+        // Cancel any ongoing search
+        if (_cancellationTokenSource != null)
+        {
+            Logger.LogDebug("Cancelling old search", memberName: nameof(DoUpdateSearchText));
+            _cancellationTokenSource.Cancel();
+        }
+
+        _cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _cancellationTokenSource.Token;
+
+        try
+        {
+            // Save the latest search task
+            _currentSearchTask = DoSearchAsync(newSearch, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // DO NOTHING HERE
+            return;
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            Logger.LogError($"[MainListPage] DoUpdateSearchText threw exception: {ex.Message}");
+            return;
+        }
+
+        // Await the task to ensure only the latest one gets processed
+        _ = ProcessSearchResultsAsync(_currentSearchTask, newSearch);
+    }
+
+    private async Task ProcessSearchResultsAsync(Task searchTask, string newSearch)
+    {
+        try
+        {
+            await searchTask;
+
+            // Ensure this is still the latest task
+            if (_currentSearchTask == searchTask)
+            {
+                // The results have already been processed in DoSearchAsync
+                Logger.LogDebug($"Completed search for '{newSearch}'");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Handle cancellation gracefully
+            Logger.LogDebug($"Cancelled search for '{newSearch}'");
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            Logger.LogError($"[MainListPage] ProcessSearchResultsAsync threw exception: {ex.Message}");
+        }
+    }
+
+    private async Task DoSearchAsync(string newSearch, CancellationToken cancellationToken)
+    {
+        // Were we already canceled?
+        cancellationToken.ThrowIfCancellationRequested();
+
         // Handle changes to the filter text here
         if (!string.IsNullOrEmpty(SearchText))
         {
@@ -130,68 +205,85 @@ public partial class MainListPage : DynamicListPage,
         }
 
         var commands = _tlcManager.TopLevelCommands;
-        lock (commands)
+
+        await Task.Run(
+            () =>
         {
-            UpdateFallbacks(newSearch, commands.ToImmutableArray());
-
-            // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
-            if (string.IsNullOrEmpty(newSearch))
+            lock (commands)
             {
-                _filteredItems = null;
-                RaiseItemsChanged(commands.Count);
-                return;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            // If the new string doesn't start with the old string, then we can't
-            // re-use previous results. Reset _filteredItems, and keep er moving.
-            if (!newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase))
-            {
-                _filteredItems = null;
-            }
+                UpdateFallbacks(newSearch, commands.ToImmutableArray(), cancellationToken);
 
-            // If the internal state has changed, reset _filteredItems to reset the list.
-            if (_filteredItemsIncludesApps != _includeApps)
-            {
-                _filteredItems = null;
-            }
-
-            // If we don't have any previous filter results to work with, start
-            // with a list of all our commands & apps.
-            if (_filteredItems == null)
-            {
-                _filteredItems = commands;
-                _filteredItemsIncludesApps = _includeApps;
-                if (_includeApps)
+                // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
+                if (string.IsNullOrEmpty(newSearch))
                 {
-                    IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
-                    _filteredItems = _filteredItems.Concat(apps);
+                    _filteredItems = null;
+                    RaiseItemsChanged(commands.Count);
+                    return;
                 }
-            }
 
-            // Produce a list of everything that matches the current filter.
-            _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
-            RaiseItemsChanged(_filteredItems.Count());
-        }
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // If the new string doesn't start with the old string, then we can't
+                // re-use previous results. Reset _filteredItems, and keep er moving.
+                if (!newSearch.StartsWith(SearchText, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    _filteredItems = null;
+                }
+
+                // If the internal state has changed, reset _filteredItems to reset the list.
+                if (_filteredItemsIncludesApps != _includeApps)
+                {
+                    _filteredItems = null;
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // If we don't have any previous filter results to work with, start
+                // with a list of all our commands & apps.
+                if (_filteredItems == null)
+                {
+                    _filteredItems = commands;
+                    _filteredItemsIncludesApps = _includeApps;
+                    if (_includeApps)
+                    {
+                        IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
+                        _filteredItems = _filteredItems.Concat(apps);
+                    }
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // Produce a list of everything that matches the current filter.
+                _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
+                RaiseItemsChanged(_filteredItems.Count());
+            }
+        },
+            cancellationToken);
     }
 
-    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands)
+    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
     {
         // fire and forget
-        _ = Task.Run(() =>
+        _ = Task.Run(
+            () =>
         {
             var needsToUpdate = false;
 
             foreach (var command in commands)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
                 needsToUpdate = needsToUpdate || changedVisibility;
             }
 
-            if (needsToUpdate)
+            if (needsToUpdate && !cancellationToken.IsCancellationRequested)
             {
                 RaiseItemsChanged();
             }
-        });
+        },
+            cancellationToken);
     }
 
     private bool ActuallyLoading()
@@ -321,4 +413,10 @@ public partial class MainListPage : DynamicListPage,
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
+
+    public void Dispose()
+    {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+    }
 }
