@@ -28,7 +28,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         EmptyContent = new CommandItem(new NoOpCommand())
         {
             Icon = Icon,
-            Title = Resources.windowwalker_plugin_description,
+            Title = Resources.window_walker_top_level_command_title,
             Subtitle = Resources.windowwalker_NoResultsMessage,
         };
     }
