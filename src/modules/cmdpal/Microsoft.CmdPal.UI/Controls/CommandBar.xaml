@@ -41,6 +41,8 @@
                 <Style.Setters>
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="Padding" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
                 </Style.Setters>
             </Style>
 
@@ -51,6 +53,9 @@
                 ShouldConstrainToRootBounds="False"
                 >
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
+                <Flyout.SystemBackdrop>
+                    <DesktopAcrylicBackdrop />
+                </Flyout.SystemBackdrop>
             </Flyout>
 
             <Style x:Key="HotkeyStyle" TargetType="Border">
