@@ -318,7 +318,7 @@ public sealed partial class ListPage : Page,
                                 element,
                                 Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
                                 pos,
-                                ContextMenuFilterLocation.Top));
+                                ContextMenuFilterLocation.Bottom));
                     });
         }
     }
