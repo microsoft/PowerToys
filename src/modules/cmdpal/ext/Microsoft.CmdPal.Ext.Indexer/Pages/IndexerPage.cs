@@ -29,6 +29,13 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         PlaceholderText = Resources.Indexer_PlaceholderText;
         _searchEngine = new();
         _queryCookie = 10;
+
+        EmptyContent = new CommandItem(new NoOpCommand())
+        {
+            Icon = Icon,
+            Title = Resources.Indexer_Subtitle,
+            Subtitle = Resources.Indexer_NoResultsMessage + "\n\n" + Resources.Indexer_NoResultsMessageTip,
+        };
     }
 
     public IndexerPage(string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
