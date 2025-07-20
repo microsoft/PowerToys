@@ -24,12 +24,12 @@
                 Separator="{StaticResource SeparatorViewModelTemplate}" />
 
             <Style
-                x:Name="FilterFlyoutStyle"
-                BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
-                TargetType="FlyoutPresenter">
+                x:Name="ComboBoxStyle"
+                BasedOn="{StaticResource DefaultComboBoxStyle}"
+                TargetType="ComboBox">
                 <Style.Setters>
-                    <Setter Property="Margin" Value="0" />
-                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0,0,12,0" />
+                    <Setter Property="Padding" Value="16,4" />
                 </Style.Setters>
             </Style>
 
@@ -42,7 +42,7 @@
                     </Grid.ColumnDefinitions>
                     <cpcontrols:IconBox
                         Width="16"
-                        Margin="4,0,8,0"
+                        Margin="4,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         SourceKey="{x:Bind Icon}"
@@ -65,57 +65,24 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel VerticalAlignment="Center" Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-        <Button
-            Name="FilterButton"
-            x:Uid="FilterButton"
-            Click="FilterButton_Click"
-            Style="{StaticResource FilterButtonStyle}"
-            ToolTipService.ToolTip="Ctrl+F">
-            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                <cpcontrols:IconBox
-                    Width="12"
-                    Margin="4,0,8,0"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Foreground="{ThemeResource ComboBoxDisabledForegroundThemeBrush}"
-                    SourceKey="{x:Bind ViewModel.SelectedFilterIcon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-                <TextBlock
-                    VerticalAlignment="Center"
-                    FontSize="12"
-                    Foreground="{ThemeResource ComboBoxDisabledForegroundThemeBrush}"
-                    Text="{x:Bind ViewModel.SelectedFilterName, Mode=OneWay}" />
-                <FontIcon
-                    Margin="8,0,0,0"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="{ThemeResource AppBarButtonSubItemChevronFontSize}"
-                    Foreground="{ThemeResource ComboBoxArrowDisabledForegroundThemeBrush}"
-                    Glyph="&#xE70D;" />
-            </StackPanel>
-            <Button.Flyout>
-                <Flyout FlyoutPresenterStyle="{StaticResource FilterFlyoutStyle}">
-                    <ListView
-                        x:Name="FiltersDropdown"
-                        MinWidth="248"
-                        IsItemClickEnabled="True"
-                        ItemClick="FiltersDropdown_ItemClick"
-                        ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
-                        ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
-                        SelectionMode="Single">
-                        <ListView.ItemContainerStyle>
-                            <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                                <Setter Property="MinHeight" Value="0" />
-                                <Setter Property="Padding" Value="12,8" />
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                        <ListView.ItemContainerTransitions>
-                            <TransitionCollection />
-                        </ListView.ItemContainerTransitions>
-                    </ListView>
-                </Flyout>
-            </Button.Flyout>
-        </Button>
-    </StackPanel>
+    <ComboBox
+        Name="FiltersDropdown"
+        x:Uid="FiltersDropdown"
+        VerticalAlignment="Center"
+        ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
+        ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
+        PlaceholderText="Filters"
+        SelectionChanged="FiltersDropdown_SelectionChanged"
+        Style="{StaticResource ComboBoxStyle}"
+        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+        <ComboBox.ItemContainerStyle>
+            <Style BasedOn="{StaticResource DefaultComboBoxItemStyle}" TargetType="ComboBoxItem">
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Padding" Value="12,8" />
+            </Style>
+        </ComboBox.ItemContainerStyle>
+        <ComboBox.ItemContainerTransitions>
+            <TransitionCollection />
+        </ComboBox.ItemContainerTransitions>
+    </ComboBox>
 </UserControl>

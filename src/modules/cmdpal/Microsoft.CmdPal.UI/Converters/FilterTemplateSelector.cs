@@ -18,15 +18,15 @@ internal sealed partial class FilterTemplateSelector : DataTemplateSelector
     {
         DataTemplate? dataTemplate = Default;
 
-        if (dependencyObject is ListViewItem li)
+        if (dependencyObject is ComboBoxItem cbi)
         {
-            li.IsEnabled = true;
+            cbi.IsEnabled = true;
 
             if (item is SeparatorViewModel)
             {
-                li.IsEnabled = false;
-                li.AllowFocusWhenDisabled = false;
-                li.AllowFocusOnInteraction = false;
+                cbi.IsEnabled = false;
+                cbi.AllowFocusWhenDisabled = false;
+                cbi.AllowFocusOnInteraction = false;
                 dataTemplate = Separator;
             }
         }
