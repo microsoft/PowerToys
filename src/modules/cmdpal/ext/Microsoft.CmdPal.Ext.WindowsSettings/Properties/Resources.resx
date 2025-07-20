@@ -2103,6 +2103,6 @@ and setting paths with the greater-than sign (System settings&gt;Apps).</value>
     <comment>Multiline list with line break before the word "and".</comment>
   </data>
   <data name="PluginNoResultsMessage" xml:space="preserve">
-    <value>No settings found.</value>
+    <value>No settings found</value>
   </data>
 </root>

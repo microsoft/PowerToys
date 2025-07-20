@@ -3346,7 +3346,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No settings found..
+        ///   Looks up a localized string similar to No settings found.
         /// </summary>
         internal static string PluginNoResultsMessage {
             get {
