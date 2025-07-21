@@ -94,9 +94,7 @@
                             Layout="{StaticResource VerticalStackLayout}">
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="coreViewModels:StatusMessageViewModel">
-                                    <StackPanel
-                                        HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Bottom">
+                                    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
                                         <InfoBar
                                             CornerRadius="{ThemeResource ControlCornerRadius}"
                                             IsClosable="False"
