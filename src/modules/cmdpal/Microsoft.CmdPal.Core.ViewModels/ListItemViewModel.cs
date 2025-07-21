@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -60,6 +62,64 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
         UpdateProperty(nameof(TextToSuggest));
         UpdateProperty(nameof(Section));
+    }
+
+    public override void SlowInitializeProperties()
+    {
+        // Call the base class first to populate MoreCommands from the model
+        base.SlowInitializeProperties();
+
+        // Add "Show Details" action if the page has ShowDetails=false and this item has Details
+        if (HasDetails && ShouldAddShowDetailsAction())
+        {
+            AddShowDetailsAction();
+        }
+    }
+
+    private bool ShouldAddShowDetailsAction()
+    {
+        // Check if the parent page has ShowDetails = false
+        if (PageContext.TryGetTarget(out var pageContext) && pageContext is ListViewModel listViewModel)
+        {
+            return !listViewModel.ShowDetails;
+        }
+        return false;
+    }
+
+    private void AddShowDetailsAction()
+    {
+        if (Details == null) return;
+
+        // Create a "Show Details" context action
+        var showDetailsAction = new CommandContextItem(
+            title: "Show Details",
+            subtitle: "View detailed information",
+            name: "ShowDetails",
+            action: () =>
+            {
+                // Send the ShowDetailsMessage when the action is invoked
+                WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(Details));
+            }
+        );
+
+        // Create the view model for the context action
+        var showDetailsContextItem = new CommandContextItemViewModel(showDetailsAction, PageContext);
+        showDetailsContextItem.InitializeProperties();
+
+        // Create a new list with the "Show Details" action first, followed by existing actions
+        var newContextMenu = new List<IContextItemViewModel> { showDetailsContextItem };
+        newContextMenu.AddRange(MoreCommands);
+
+        // Update the MoreCommands list in place
+        lock (MoreCommands)
+        {
+            ListHelpers.InPlaceUpdateList(MoreCommands, newContextMenu);
+        }
+
+        // Update properties to reflect the changes
+        UpdateProperty(nameof(MoreCommands));
+        UpdateProperty(nameof(HasMoreCommands));
+        UpdateProperty(nameof(AllCommands));
     }
 
     protected override void FetchProperty(string propertyName)
