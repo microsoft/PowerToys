@@ -100,12 +100,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SettingsRepository<CropAndLockSettings>.GetInstance(_settingsUtils),
                     SendConfigMSG);
 
-                _viewModelFactories["shortcutguide"] = () => new ShortcutGuideViewModel(
-                    _settingsUtils,
-                    _generalSettingsRepository,
-                    SettingsRepository<ShortcutGuideSettings>.GetInstance(_settingsUtils),
-                    SendConfigMSG);
-
                 _viewModelFactories["powerocr"] = () => new PowerOcrViewModel(
                     _settingsUtils,
                     _generalSettingsRepository,
@@ -134,7 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG);
 
                 // powertoys run
-                _viewModelFactories["powerlauncher"] = () => new PowerLauncherViewModel(
+                _viewModelFactories["powertoys run"] = () => new PowerLauncherViewModel(
                     powerLauncherSettings,
                     SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils),
                     ShellPage.SendDefaultIPCMessage,
@@ -148,7 +142,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG);
 
                 // shortcut guide
-                _viewModelFactories["shortcutguide"] = () => new ShortcutGuideViewModel(
+                _viewModelFactories["shortcut guide"] = () => new ShortcutGuideViewModel(
                     _settingsUtils,
                     _generalSettingsRepository,
                     SettingsRepository<ShortcutGuideSettings>.GetInstance(_settingsUtils),
@@ -322,7 +316,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     case "measure tool":
                         UpdateMeasureToolHotkeySettings(viewModel as MeasureToolViewModel, hotkeyName, newHotkeySettings);
                         break;
-                    case "shortcutguide":
+                    case "shortcut guide":
                         UpdateShortcutGuideHotkeySettings(viewModel as ShortcutGuideViewModel, hotkeyName, newHotkeySettings);
                         break;
                     case "textextractor":
@@ -334,7 +328,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     case "peek":
                         UpdatePeekHotkeySettings(viewModel as PeekViewModel, hotkeyName, newHotkeySettings);
                         break;
-                    case "powerlauncher":
+                    case "powertoys run":
                         UpdatePowerLauncherHotkeySettings(viewModel as PowerLauncherViewModel, hotkeyName, newHotkeySettings);
                         break;
                     case "cmdpal":
@@ -809,11 +803,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     "cropandlock" => GetCropAndLockHotkeySettings(viewModel as CropAndLockViewModel, hotkeyName),
                     "fancyzones" => GetFancyZonesHotkeySettings(viewModel as FancyZonesViewModel, hotkeyName),
                     "measure tool" => GetMeasureToolHotkeySettings(viewModel as MeasureToolViewModel, hotkeyName),
-                    "shortcutguide" => GetShortcutGuideHotkeySettings(viewModel as ShortcutGuideViewModel, hotkeyName),
+                    "shortcut guide" => GetShortcutGuideHotkeySettings(viewModel as ShortcutGuideViewModel, hotkeyName),
                     "powerocr" or "textextractor" => GetPowerOcrHotkeySettings(viewModel as PowerOcrViewModel, hotkeyName),
                     "workspaces" => GetWorkspacesHotkeySettings(viewModel as WorkspacesViewModel, hotkeyName),
                     "peek" => GetPeekHotkeySettings(viewModel as PeekViewModel, hotkeyName),
-                    "powerlauncher" => GetPowerLauncherHotkeySettings(viewModel as PowerLauncherViewModel, hotkeyName),
+                    "powertoys run" => GetPowerLauncherHotkeySettings(viewModel as PowerLauncherViewModel, hotkeyName),
                     "cmdpal" => GetCmdPalHotkeySettings(viewModel as CmdPalViewModel, hotkeyName),
                     "mousewithoutborders" => GetMouseWithoutBordersHotkeySettings(viewModel as MouseWithoutBordersViewModel, hotkeyName),
                     "mouseutils" => GetMouseUtilsHotkeySettings(viewModel as MouseUtilsViewModel, moduleName, hotkeyName),

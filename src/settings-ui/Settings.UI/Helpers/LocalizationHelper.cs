@@ -36,10 +36,10 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             { ("cropandlock", "ReparentHotkey"), "CropAndLock_ReparentActivation_Shortcut" },
 
             // MeasureTool module mappings
-            { ("measuretool", "ActivationShortcut"), "MeasureTool_ActivationShortcut" },
+            { ("measure tool", "ActivationShortcut"), "MeasureTool_ActivationShortcut" },
 
             // ShortcutGuide module mappings
-            { ("shortcutguide", "OpenShortcutGuide"), "Activation_Shortcut" },
+            { ("shortcut guide", "OpenShortcutGuide"), "Activation_Shortcut" },
 
             // PowerOCR/TextExtractor module mappings
             { ("textextractor", "ActivationShortcut"), "Activation_Shortcut" },
@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             { ("peek", "ActivationShortcut"), "Activation_Shortcut" },
 
             // PowerLauncher module mappings
-            { ("powerlauncher", "OpenPowerLauncher"), "PowerLauncher_OpenPowerLauncher" },
+            { ("powertoys run", "OpenPowerLauncher"), "PowerLauncher_OpenPowerLauncher" },
 
             // MouseUtils module mappings
             { ("mousehighlighter", "ActivationShortcut"), "MouseUtils_MouseHighlighter_ActivationShortcut" },
