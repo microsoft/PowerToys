@@ -461,20 +461,20 @@ jobs:
       Copy-Item -Verbose -Force "$(CmdPalPackagePath)" "$(JobOutputDirectory)"
     displayName: Stage the final CmdPal package
 
-  - template: steps-build-installer.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+  # - template: steps-build-installer.yml
+  #   parameters:
+  #     codeSign: ${{ parameters.codeSign }}
+  #     signingIdentity: ${{ parameters.signingIdentity }}
+  #     versionNumber: ${{ parameters.versionNumber }}
+  #     additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
-  - template: steps-build-installer.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
+  # - template: steps-build-installer.yml
+  #   parameters:
+  #     codeSign: ${{ parameters.codeSign }}
+  #     signingIdentity: ${{ parameters.signingIdentity }}
+  #     versionNumber: ${{ parameters.versionNumber }}
+  #     additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+  #     buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
   - template: steps-build-installer-vnext.yml
     parameters:
