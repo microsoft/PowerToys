@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
@@ -89,6 +90,13 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
     private void AddShowDetailsAction()
     {
         if (Details == null) return;
+
+        // Check if "Show Details" action already exists to prevent duplicates
+        if (MoreCommands.Any(cmd => cmd is CommandContextItemViewModel ccvm && 
+                                    ccvm.Name == "ShowDetails"))
+        {
+            return;
+        }
 
         // Create a "Show Details" context action
         var showDetailsAction = new CommandContextItem(
