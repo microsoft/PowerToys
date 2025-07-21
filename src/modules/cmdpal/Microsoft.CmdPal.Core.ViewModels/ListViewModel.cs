@@ -48,6 +48,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public IGridProperties? GridProperties { get; private set; }
 
+    public double TileWidth => GridProperties?.TileSize.Width ?? 120.0;
+
+    public double TileHeight => GridProperties?.TileSize.Height ?? 120.0;
+
     private string _modelPlaceholderText = string.Empty;
 
     public override string PlaceholderText => _modelPlaceholderText;
@@ -446,6 +450,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         GridProperties = model.GridProperties;
         UpdateProperty(nameof(GridProperties));
+        UpdateProperty(nameof(TileWidth));
+        UpdateProperty(nameof(TileHeight));
 
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
@@ -503,6 +509,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(GridProperties):
                 this.GridProperties = model.GridProperties;
+                UpdateProperty(nameof(TileWidth));
+                UpdateProperty(nameof(TileHeight));
                 break;
             case nameof(PlaceholderText):
                 this._modelPlaceholderText = model.PlaceholderText;

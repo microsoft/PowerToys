@@ -30,8 +30,6 @@
 
         <converters:ObjectToBoolConverter x:Key="ObjectToBoolConverter" />
 
-        <converters:GridPropertiesToTileSizeConverter x:Key="GridPropertiesToTileSizeConverter" />
-
         <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
             <cpcontrols:Tag
                 AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
@@ -207,8 +205,8 @@
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid 
                                         Orientation="Horizontal"
-                                        ItemWidth="{x:Bind ViewModel.GridProperties.TileSize.Width, Mode=OneWay, FallbackValue=120}"
-                                        ItemHeight="{x:Bind ViewModel.GridProperties.TileSize.Height, Mode=OneWay, FallbackValue=120}" />
+                                        ItemWidth="{x:Bind ViewModel.TileWidth, Mode=OneWay}"
+                                        ItemHeight="{x:Bind ViewModel.TileHeight, Mode=OneWay}" />
                                 </ItemsPanelTemplate>
                             </GridView.ItemsPanel>
                         </GridView>
