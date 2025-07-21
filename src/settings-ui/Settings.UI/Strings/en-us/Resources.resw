@@ -5048,6 +5048,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="YoureUpToDate.Text" xml:space="preserve">
     <value>You're up to date</value>
   </data>
+  <data name="UpdateAvailableTextBlock.Text" xml:space="preserve">
+    <value>Update Available</value>
+  </data>
   <data name="GeneralVersion.Text" xml:space="preserve">
     <value>Version</value>
   </data>
