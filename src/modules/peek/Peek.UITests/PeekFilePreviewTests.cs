@@ -773,22 +773,22 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         // Close Explorer windows
-        try
-        {
-            var explorerProcesses = Process.GetProcessesByName("explorer")
-                .Where(p => p.MainWindowHandle != IntPtr.Zero)
-                .ToList();
+        // try
+        // {
+        //     var explorerProcesses = Process.GetProcessesByName("explorer")
+        //         .Where(p => p.MainWindowHandle != IntPtr.Zero)
+        //         .ToList();
 
-            foreach (var explorer in explorerProcesses)
-            {
-                explorer.CloseMainWindow();
-                Thread.Sleep(500);
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error during Explorer cleanup: {ex.Message}");
-        }
+        // foreach (var explorer in explorerProcesses)
+        //     {
+        //         explorer.CloseMainWindow();
+        //         Thread.Sleep(500);
+        //     }
+        // }
+        // catch (Exception ex)
+        // {
+        //     Debug.WriteLine($"Error during Explorer cleanup: {ex.Message}");
+        // }
     }
 
     /// <summary>
