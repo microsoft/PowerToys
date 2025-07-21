@@ -1,4 +1,4 @@
-﻿<Window
+﻿<winuiex:WindowEx
     x:Class="Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard.ShortcutConflictWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,6 +9,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:winuiex="using:WinUIEx"
+    MinWidth="480"
+    MinHeight="600"
+    MaxWidth="900"
+    MaxHeight="1000"
+    Closed="WindowEx_Closed"
+    IsMaximizable="False"
+    IsMinimizable="False"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
@@ -72,12 +80,12 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <controls:KeyVisual
-                                                    Height="30"
+                                                    Height="32"
                                                     Padding="12,4,12,4"
                                                     VerticalAlignment="Center"
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     Content="{Binding}"
-                                                    FontWeight="ExtraBold"
+                                                    FontWeight="SemiBold"
                                                     IsEnabled="True"
                                                     Style="{StaticResource DefaultKeyVisualStyle}" />
                                             </DataTemplate>
@@ -87,7 +95,7 @@
                                     <!--  Instruction text  -->
                                     <TextBlock
                                         x:Uid="ShortcutConflictWindow_ModulesUsingShortcut"
-                                        FontSize="13"
+                                        FontSize="12"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Style="{StaticResource BodyTextBlockStyle}" />
                                 </StackPanel>
@@ -102,9 +110,13 @@
                                                     Margin="0,0,0,4"
                                                     Click="SettingsCard_Click"
                                                     Description="{x:Bind ModuleName}"
-                                                    HeaderIcon="{ui:BitmapIcon}"
-                                                    IsClickEnabled="True"
-                                                    Loaded="SettingsCard_Loaded">
+                                                    Header="{x:Bind Header}"
+                                                    IsClickEnabled="True">
+
+                                                    <tkcontrols:SettingsCard.HeaderIcon>
+                                                        <BitmapIcon ShowAsMonochrome="False" UriSource="{x:Bind IconPath}" />
+                                                    </tkcontrols:SettingsCard.HeaderIcon>
+
 
                                                     <!--  ShortcutControl with TwoWay binding and enabled for editing  -->
                                                     <controls:ShortcutControl
@@ -124,24 +136,19 @@
                                     <!--  System Conflict Card (only show if it's a system conflict)  -->
                                     <tkcontrols:SettingsCard
                                         x:Uid="ShortcutConflictWindow_SystemCard"
+                                        x:Name="SystemConflictCard"
+                                        x:Load="{x:Bind IsSystemConflict}"
                                         Margin="0,0,0,4"
                                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Windows.png}"
-                                        IsClickEnabled="False"
-                                        Visibility="{x:Bind IsSystemConflict}">
+                                        IsClickEnabled="False">
 
                                         <!--  System shortcut message  -->
                                         <TextBlock
                                             x:Uid="ShortcutConflictWindow_SystemShortcutMessage"
                                             VerticalAlignment="Center"
                                             FontSize="14"
-                                            FontStyle="Italic"
                                             FontWeight="SemiBold"
                                             Foreground="{ThemeResource TextFillColorDisabledBrush}" />
-
-                                        <!--  Tooltip for system conflict  -->
-                                        <ToolTipService.ToolTip>
-                                            <ToolTip x:Uid="ShortcutConflictWindow_SystemShortcutTooltip" />
-                                        </ToolTipService.ToolTip>
                                     </tkcontrols:SettingsCard>
                                 </StackPanel>
                             </StackPanel>
@@ -178,4 +185,4 @@
             </Grid>
         </ScrollViewer>
     </Grid>
-</Window>
+</winuiex:WindowEx>

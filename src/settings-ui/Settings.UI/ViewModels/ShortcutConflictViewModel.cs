@@ -29,7 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private AllHotkeyConflictsData _conflictsData = new();
         private ObservableCollection<HotkeyConflictGroupData> _conflictItems = new();
-
         private PowerLauncherSettings powerLauncherSettings;
 
         private Dispatcher dispatcher;
@@ -266,6 +265,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 module.HotkeySettings = GetHotkeySettingsFromViewModel(module.ModuleName, module.HotkeyName);
 
+                module.Header = LocalizationHelper.GetLocalizedHotkeyHeader(module.ModuleName, module.HotkeyName);
+
                 if (module.HotkeySettings != null)
                 {
                     // Store original settings for rollback
@@ -275,8 +276,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Set conflict properties
                     module.HotkeySettings.HasConflict = true;
                     module.HotkeySettings.IsSystemConflict = isSystemConflict;
-
-                    // module.HotkeySettings.ConflictDescription = GetConflictDescription(conflict, module, isSystemConflict);
                 }
 
                 module.IsSystemConflict = isSystemConflict;
@@ -995,26 +994,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private HotkeySettings GetCmdPalHotkeySettings(CmdPalViewModel viewModel, string hotkeyName)
         {
             return viewModel?.Hotkey;
-        }
-
-        private string GetConflictDescription(HotkeyConflictGroupData conflict, ModuleHotkeyData currentModule, bool isSystemConflict)
-        {
-            if (isSystemConflict)
-            {
-                return "Conflicts with system shortcut";
-            }
-
-            var otherModules = conflict.Modules
-                .Where(m => m.ModuleName != currentModule.ModuleName)
-                .Select(m => m.ModuleName)
-                .ToList();
-
-            return otherModules.Count switch
-            {
-                1 => $"Conflicts with {otherModules[0]}",
-                > 1 => $"Conflicts with: {string.Join(", ", otherModules)}",
-                _ => "Shortcut conflict detected",
-            };
         }
 
         public override void Dispose()
