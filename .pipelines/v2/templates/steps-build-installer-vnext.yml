@@ -177,8 +177,8 @@ steps:
             ]
 
     - script: |-
-        wix burn attach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe -o installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe
-      displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Merge Engine into Bundle"
+        wix burn reattach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe -o installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe
+      displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Reattach Engine to Bundle"
 
     - template: steps-esrp-signing.yml
       parameters:
