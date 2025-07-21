@@ -705,7 +705,7 @@ public class PeekFilePreviewTests : UITestBase
     /// </summary>
     /// <param name="filePath">Full path to the file to test</param>
     /// <param name="expectedFileName">Expected file name for visual comparison</param>
-    private void TestSingleFilePreview(string filePath, string expectedFileName, int? delayMs = null)
+    private void TestSingleFilePreview(string filePath, string expectedFileName, int? delayMs = 5000)
     {
         Element? previewWindow = null;
 
