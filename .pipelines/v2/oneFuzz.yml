@@ -43,6 +43,7 @@ stages:
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: true
           useVSPreview: ${{ parameters.useVSPreview }}
+          timeoutInMinutes: 90
 
   - stage: OneFuzz
     displayName: Fuzz ${{ parameters.platform }}

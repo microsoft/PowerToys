@@ -15,14 +15,16 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
     private readonly SettingsManager _settings;
 
     public FallbackExecuteItem(SettingsManager settings)
-        : base(new ExecuteItem(string.Empty, settings), Resources.shell_command_display_title)
+        : base(
+            new ExecuteItem(string.Empty, settings) { Id = "com.microsoft.run.fallback" },
+            Resources.shell_command_display_title)
     {
         _settings = settings;
         _executeItem = (ExecuteItem)this.Command!;
         Title = string.Empty;
         _executeItem.Name = string.Empty;
         Subtitle = Properties.Resources.generic_run_command;
-        Icon = Icons.RunV2; // Defined in Icons.cs and contains the execute command icon.
+        Icon = Icons.RunV2Icon; // Defined in Icons.cs and contains the execute command icon.
     }
 
     public override void UpdateQuery(string query)

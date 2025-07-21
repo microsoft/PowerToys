@@ -274,7 +274,7 @@ public:
             Trace::EnableRegistryPreview(false);
             Logger::trace(L"Disabling Registry Preview...");
 
-            // Yeet the Registry setting so preview doesn't work anymore
+            // Remove the Registry setting so preview doesn't work anymore
             const std::wstring installationDir = get_module_folderpath();
 
             if (!getRegistryPreviewChangeSet(installationDir, true).unApply())

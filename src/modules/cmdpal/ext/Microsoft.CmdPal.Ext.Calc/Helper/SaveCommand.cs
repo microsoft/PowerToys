@@ -18,7 +18,7 @@ public sealed partial class SaveCommand : InvokableCommand
     public SaveCommand(string result)
     {
         Name = Resources.calculator_save_command_name;
-        Icon = CalculatorIcons.SaveIcon;
+        Icon = Icons.SaveIcon;
         _result = result;
     }
 

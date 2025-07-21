@@ -3,9 +3,6 @@ variables:
     value: false
   - name: EnablePipelineCache
     value: true
-  - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-    - name: EnablePipelineCache
-      value: true
 
 parameters:
   - name: buildPlatforms
@@ -61,3 +58,4 @@ stages:
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
               useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+            timeoutInMinutes: 90
