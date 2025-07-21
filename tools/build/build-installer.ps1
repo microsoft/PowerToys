@@ -47,7 +47,7 @@ Runs the pipeline for x64 Release with machine-wide installer.
 param (
     [string]$Platform = 'x64',
     [string]$Configuration = 'Release',
-    [bool]$PerUser = $true
+    [string]$PerUser = 'true'
 )
 
 # Find the PowerToys repository root automatically
