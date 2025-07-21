@@ -85,22 +85,27 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         {
             return !listViewModel.ShowDetails;
         }
+
         return false;
     }
 
     private void AddShowDetailsAction()
     {
-        if (Details == null) return;
+        if (Details == null)
+        {
+            return;
+        }
 
         // Check if "Show Details" action already exists to prevent duplicates
-        if (MoreCommands.Any(cmd => cmd is CommandContextItemViewModel ccvm && 
+        if (MoreCommands.Any(cmd => cmd is CommandContextItemViewModel ccvm &&
                                     ccvm.Name == "ShowDetailsContextAction"))
         {
             return;
         }
 
         // Get localized string for the action title
-        var showDetailsTitle = ResourceLoaderInstance.GetString("ShowDetailsContextAction.Title");
+        // TODO: Replace with proper localization once ResourceLoaderInstance is accessible from Core.ViewModels
+        var showDetailsTitle = "Show Details";
 
         // Create a "Show Details" context action
         var showDetailsAction = new CommandContextItem(

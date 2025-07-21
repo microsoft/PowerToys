@@ -45,6 +45,7 @@ internal sealed partial class SampleListPageWithDetailsNoShow : ListPage
             {
                 Title = "Item WITHOUT Details",
                 Subtitle = "This one has no details so should NOT have a 'Show Details' action",
+
                 // No Details property set - this should NOT get the Show Details action
             },
         ];
