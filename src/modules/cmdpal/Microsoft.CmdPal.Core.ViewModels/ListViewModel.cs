@@ -48,6 +48,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public IGridProperties? GridProperties { get; private set; }
 
+    public bool IsGridMode => GridProperties != null;
+
     public double TileWidth => GridProperties?.TileSize.Width ?? 120.0;
 
     public double TileHeight => GridProperties?.TileSize.Height ?? 120.0;
@@ -450,6 +452,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         GridProperties = model.GridProperties;
         UpdateProperty(nameof(GridProperties));
+        UpdateProperty(nameof(IsGridMode));
         UpdateProperty(nameof(TileWidth));
         UpdateProperty(nameof(TileHeight));
 
@@ -509,6 +512,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(GridProperties):
                 this.GridProperties = model.GridProperties;
+                UpdateProperty(nameof(IsGridMode));
                 UpdateProperty(nameof(TileWidth));
                 UpdateProperty(nameof(TileHeight));
                 break;

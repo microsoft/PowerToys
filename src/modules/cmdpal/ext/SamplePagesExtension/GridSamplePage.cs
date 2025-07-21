@@ -24,7 +24,7 @@ internal sealed partial class GridSamplePage : IListPage
     { 
         Icon = new IconInfo("\uE9F9"), 
         Title = "No items to display", 
-        Subtitle = "This is an empty grid page" 
+        Subtitle = "This is an empty grid page", 
     };
 
     public IFilters Filters => null;
@@ -48,6 +48,7 @@ internal sealed partial class GridSamplePage : IListPage
 
 #pragma warning disable CS0067 // The event is never used
     public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged;
+    
     public event TypedEventHandler<object, IItemsChangedEventArgs> ItemsChanged;
 #pragma warning restore CS0067 // The event is never used
 
@@ -71,10 +72,4 @@ internal sealed partial class GridSamplePage : IListPage
     public void LoadMore()
     {
     }
-}
-
-// Implementation of IGridProperties for testing
-internal class GridProperties : IGridProperties
-{
-    public Size TileSize { get; set; }
 }

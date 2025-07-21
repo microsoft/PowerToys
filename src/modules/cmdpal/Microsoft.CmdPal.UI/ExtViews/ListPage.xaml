@@ -28,8 +28,6 @@
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
 
-        <converters:ObjectToBoolConverter x:Key="ObjectToBoolConverter" />
-
         <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
             <cpcontrols:Tag
                 AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
@@ -166,7 +164,7 @@
                 <controls:SwitchPresenter
                     HorizontalAlignment="Stretch"
                     TargetType="x:Boolean"
-                    Value="{x:Bind ViewModel.GridProperties, Mode=OneWay, Converter={StaticResource ObjectToBoolConverter}}">
+                    Value="{x:Bind ViewModel.IsGridMode, Mode=OneWay}">
                     <!--  List mode when GridProperties is null  -->
                     <controls:Case Value="False">
                         <ListView
@@ -204,6 +202,7 @@
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid 
+                                        x:DataType="local:ListPage"
                                         Orientation="Horizontal"
                                         ItemWidth="{x:Bind ViewModel.TileWidth, Mode=OneWay}"
                                         ItemHeight="{x:Bind ViewModel.TileHeight, Mode=OneWay}" />
