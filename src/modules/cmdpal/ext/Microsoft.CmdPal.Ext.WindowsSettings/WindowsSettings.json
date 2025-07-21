@@ -1834,7 +1834,7 @@
       "Command": "ms-settings-connectabledevices:devicediscovery"
     },
     {
-      "Name": "AppMMC",
+      "Name": "OpenMMC",
       "Type": "AppMMC",
       "AltNames": [ "MMC_mmcexe" ],
       "Command": "mmc.exe",
