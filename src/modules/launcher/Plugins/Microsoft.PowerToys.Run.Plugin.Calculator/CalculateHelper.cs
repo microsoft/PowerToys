@@ -76,7 +76,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private static string CheckScientificNotation(string input)
         {
             /**
-             * NOTE: By the time the expression gets to us, it's already in English format.
+             * NOTE: By the time that the expression gets to us, it's already in English format.
              *
              * Regex explanation:
              * (-?(\d+({0}\d*)?)|-?({0}\d+)): Used to capture one of two types:

@@ -23,7 +23,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class LayoutHotkeysTests : UITestBase
     {
         public LayoutHotkeysTests()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 
@@ -106,6 +106,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -206,13 +207,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
         }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
-        }
-
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HotKey_Initialize")]
+        [TestCategory("FancyZones Editor #11")]
         public void Initialize()
         {
             foreach (var layout in CustomLayouts.CustomLayouts)
@@ -256,7 +252,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HotKey_Assign_Save")]
+        [TestCategory("FancyZones Editor #11")]
         public void Assign_Save()
         {
             var layout = CustomLayouts.CustomLayouts[2]; // a layout without assigned hotkey
@@ -299,7 +296,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HotKey_Assign_Cancel")]
+        [TestCategory("FancyZones Editor #11")]
         public void Assign_Cancel()
         {
             var layout = CustomLayouts.CustomLayouts[2]; // a layout without assigned hotkey
@@ -338,7 +336,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HotKey_Assign_AllPossibleValues")]
+        [TestCategory("FancyZones Editor #11")]
         public void Assign_AllPossibleValues()
         {
             for (int i = 0; i < 4; i++)
@@ -384,7 +383,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HotKey_Reset_Save")]
+        [TestCategory("FancyZones Editor #11")]
         public void Reset_Save()
         {
             var layout = CustomLayouts.CustomLayouts[0]; // a layout with assigned hotkey
@@ -424,7 +424,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HotKey_Reset_Cancel")]
+        [TestCategory("FancyZones Editor #11")]
         public void Reset_Cancel()
         {
             var layout = CustomLayouts.CustomLayouts[0]; // a layout with assigned hotkey

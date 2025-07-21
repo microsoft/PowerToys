@@ -91,13 +91,6 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         }
         DestroyWindow(window);
         break;
-    case ID_SHOW_TRAY_ICON_MENU_COMMAND:
-    {
-        GeneralSettings settings = get_general_settings();
-        settings.showSystemTrayIcon = true;
-        apply_general_settings(settings.to_json(), true);
-        break;
-    }
     case ID_ABOUT_MENU_COMMAND:
         if (!about_box_shown)
         {
@@ -199,14 +192,14 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 {
                     static std::wstring settings_menuitem_label = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT);
                     static std::wstring exit_menuitem_label = GET_RESOURCE_STRING(IDS_EXIT_MENU_TEXT);
-                    static std::wstring show_tray_icon_menuitem_label = GET_RESOURCE_STRING(IDS_SHOW_TRAY_ICON_MENU_TEXT);
                     static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
                     static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
                     static std::wstring quick_access_menuitem_label = GET_RESOURCE_STRING(IDS_QUICK_ACCESS_MENU_TEXT);
                     change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
                     change_menu_item_text(ID_EXIT_MENU_COMMAND, exit_menuitem_label.data());
-                    change_menu_item_text(ID_SHOW_TRAY_ICON_MENU_COMMAND, show_tray_icon_menuitem_label.data());
                     change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
+                    bool bug_report_disabled = is_bug_report_running();
+                    EnableMenuItem(h_sub_menu, ID_REPORT_BUG_COMMAND, MF_BYCOMMAND | (bug_report_disabled ? MF_GRAYED : MF_ENABLED));
                     change_menu_item_text(ID_DOCUMENTATION_MENU_COMMAND, documentation_menuitem_label.data());
                     change_menu_item_text(ID_QUICK_ACCESS_MENU_COMMAND, quick_access_menuitem_label.data());
                 }
@@ -269,6 +262,14 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
     return DefWindowProc(window, message, wparam, lparam);
 }
 
+void update_bug_report_menu_status(bool isRunning)
+{
+    if (h_sub_menu != nullptr)
+    {
+        EnableMenuItem(h_sub_menu, ID_REPORT_BUG_COMMAND, MF_BYCOMMAND | (isRunning ? MF_GRAYED : MF_ENABLED));
+    }
+}
+
 void start_tray_icon(bool isProcessElevated)
 {
     auto h_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
@@ -319,6 +320,16 @@ void start_tray_icon(bool isProcessElevated)
         ChangeWindowMessageFilterEx(hwnd, WM_COMMAND, MSGFLT_ALLOW, nullptr);
 
         tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
+
+        // Register callback to update bug report menu item status
+        BugReportManager::instance().register_callback([](bool isRunning) {
+            dispatch_run_on_main_ui_thread([](PVOID data) {
+                bool* running = static_cast<bool*>(data);
+                update_bug_report_menu_status(*running);
+                delete running;
+            },
+                                           new bool(isRunning));
+        });
     }
 }
 
@@ -334,6 +345,8 @@ void stop_tray_icon()
 {
     if (tray_icon_created)
     {
+        // Clear bug report callbacks
+        BugReportManager::instance().clear_callbacks();
         SendMessage(tray_icon_hwnd, WM_CLOSE, 0, 0);
     }
 }
