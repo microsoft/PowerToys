@@ -201,7 +201,7 @@
                             </GridView.ItemContainerTransitions>
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <ItemsWrapGrid 
+                                    <ItemsWrapGrid
                                         x:DataType="local:ListPage"
                                         Orientation="Horizontal"
                                         ItemWidth="{x:Bind ViewModel.TileWidth, Mode=OneWay}"

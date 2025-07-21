@@ -55,7 +55,7 @@ internal sealed partial class GridSamplePage : IListPage
     public GridSamplePage()
     {
         // Create some sample items for the grid
-        for (int i = 1; i <= 20; i++)
+        for (var i = 1; i <= 20; i++)
         {
             var item = new ListItem(new NoOpCommand())
             {

@@ -143,14 +143,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
             var newItems = _model.Unsafe!.GetItems();
 
             // Collect all the items into new viewmodels
-            Collection<ListItemViewModel> newViewModels = [];
+            var newViewModels = new Collection<ListItemViewModel>();
 
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
             // building new viewmodels for the ones we haven't already built.
             foreach (var item in newItems)
             {
-                ListItemViewModel viewModel = new(item, new(this));
+                var viewModel = new ListItemViewModel(item, new(this));
 
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
