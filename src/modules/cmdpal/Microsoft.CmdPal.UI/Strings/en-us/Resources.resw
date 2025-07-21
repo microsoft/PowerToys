@@ -428,4 +428,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OffContent" xml:space="preserve">
     <value>Indirect</value>
   </data>
+  <data name="ShowDetailsContextAction.Title" xml:space="preserve">
+    <value>Show Details</value>
+    <comment>Context action title for showing item details when details are not automatically shown</comment>
+  </data>
 </root>

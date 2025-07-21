@@ -7,6 +7,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -93,16 +94,18 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
         // Check if "Show Details" action already exists to prevent duplicates
         if (MoreCommands.Any(cmd => cmd is CommandContextItemViewModel ccvm && 
-                                    ccvm.Name == "ShowDetails"))
+                                    ccvm.Name == "ShowDetailsContextAction"))
         {
             return;
         }
 
+        // Get localized string for the action title
+        var showDetailsTitle = ResourceLoaderInstance.GetString("ShowDetailsContextAction.Title");
+
         // Create a "Show Details" context action
         var showDetailsAction = new CommandContextItem(
-            title: "Show Details",
-            subtitle: "View detailed information",
-            name: "ShowDetails",
+            title: showDetailsTitle,
+            name: "ShowDetailsContextAction",
             action: () =>
             {
                 // Send the ShowDetailsMessage when the action is invoked
