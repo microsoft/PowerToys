@@ -163,12 +163,20 @@ public partial class DoActionCommand : InvokableWithParams
         {
             var c = _actionRuntime.CreateInvocationContext(actionId: _id);
             var f = _actionRuntime.EntityFactory;
-            foreach (var i in args)
+
+            for (var i = 0; i < args.Length; i++)
             {
-                var v = f.CreatePhotoEntity(i.Value as string);
-                c.SetInputEntity(i.Name, v);
+                var arg = args[i];
+                var inputParam = _action.GetInputs()[i];
+                var entity = CreateEntity(inputParam, f, arg);
+                c.SetInputEntity(arg.Name, entity);
             }
 
+            // foreach (var i in args)
+            // {
+            //     var v = f.CreatePhotoEntity(i.Value as string);
+            //     c.SetInputEntity(i.Name, v);
+            // }
             var task = _action.InvokeAsync(c);
             await task;
             var status = task.Status;
@@ -187,6 +195,20 @@ public partial class DoActionCommand : InvokableWithParams
         });
 
         return CommandResult.KeepOpen();
+    }
+
+    private ActionEntity CreateEntity(ActionEntityRegistrationInfo i, ActionEntityFactory f, ICommandArgument arg)
+    {
+        ActionEntity v = i.Kind switch
+        {
+            ActionEntityKind.Photo => f.CreatePhotoEntity(arg.Value as string),
+            ActionEntityKind.Document => f.CreateDocumentEntity(arg.Value as string),
+            ActionEntityKind.File => f.CreateFileEntity(arg.Value as string),
+            ActionEntityKind.Text => f.CreateTextEntity(arg.Value as string),
+            ActionEntityKind.Contact => f.CreateContactEntity(arg.Value as Contact),
+            _ => throw new NotSupportedException($"Unsupported entity kind: {i.Kind}"),
+        };
+        return v;
     }
 
     public DoActionCommand(string actionId, ActionOverload action, ActionRuntime actionRuntime)
