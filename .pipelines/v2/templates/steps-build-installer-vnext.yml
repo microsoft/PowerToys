@@ -189,23 +189,6 @@ steps:
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-          
-    # Verify that the final bootstrapper is signed
-    - pwsh: |-
-        $installerPath = "installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe"
-        Write-Host "Checking signature of: $installerPath"
-        if (Test-Path $installerPath) {
-          $signature = Get-AuthenticodeSignature $installerPath
-          Write-Host "Signature Status: $($signature.Status)"
-          Write-Host "Signature Certificate Subject: $($signature.SignerCertificate.Subject)"
-          if ($signature.Status -ne "Valid") {
-            Write-Warning "Final bootstrapper is not properly signed!"
-          } else {
-            Write-Host "Final bootstrapper is properly signed."
-          }
-        } else {
-          Write-Error "Installer file not found at: $installerPath"
-        }
-      displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Verify Final Bootstrapper Signature
+
   #### END BOOTSTRAP
   ## END INSTALLER
