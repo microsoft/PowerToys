@@ -3067,7 +3067,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open setting.
+        ///   Looks up a localized string similar to Open.
         /// </summary>
         internal static string OpenSettings {
             get {

@@ -2080,7 +2080,7 @@
     <comment>Mean zooming of things via a magnifier</comment>
   </data>
   <data name="OpenSettings" xml:space="preserve">
-    <value>Open setting</value>
+    <value>Open</value>
     <comment>Open 'the setting' in Settings app, Control Panel or MMC.</comment>
   </data>
   <data name="WindowsSettingsProvider_DisplayName" xml:space="preserve">
