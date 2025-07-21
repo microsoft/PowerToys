@@ -18,10 +18,11 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using Windows.Web.AtomPub;
+using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 {
-    public sealed partial class ShortcutConflictWindow : Window
+    public sealed partial class ShortcutConflictWindow : WindowEx
     {
         public ShortcutConflictViewModel DataContext { get; }
 
@@ -43,35 +44,11 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
             // Set localized window title
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            this.Title = resourceLoader.GetString("ShortcutConflictWindow_Title/Text");
+            this.ExtendsContentIntoTitleBar = true;
 
-            // Configure window presenter to disable maximize button
-            if (this.AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
-            {
-                overlappedPresenter.IsMaximizable = false;
-                overlappedPresenter.IsMinimizable = false;
-            }
-
-            // Set window size using AppWindow API
-            this.AppWindow.Resize(new SizeInt32(900, 1200));
-
-            // Set window properties
-            this.AppWindow.SetIcon("Assets/Settings/Icons/PowerToys.ico");
-            this.AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
-            this.AppWindow.TitleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
-            this.AppWindow.TitleBar.ButtonInactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
-
-            // Center the window on screen
             this.CenterOnScreen();
 
             ViewModel.OnPageLoaded();
-
-            Closed += (s, e) =>
-            {
-                // Clean up the delegate when window is closed
-                LocalizationHelper.GetCustomActionNameDelegate = null;
-                ViewModel?.Dispose();
-            };
         }
 
         private void CenterOnScreen()
@@ -104,23 +81,6 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             }
         }
 
-        private void SettingsCard_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is SettingsCard card && card.DataContext is ModuleHotkeyData moduleData)
-            {
-                var iconPath = GetModuleIconPath(moduleData.ModuleName);
-
-                // Setup header for SettingsCard
-                card.Header = LocalizationHelper.GetLocalizedHotkeyHeader(moduleData.ModuleName, moduleData.HotkeyName);
-
-                card.HeaderIcon = new BitmapIcon
-                {
-                    UriSource = new Uri(iconPath),
-                    ShowAsMonochrome = false,
-                };
-            }
-        }
-
         /// <summary>
         /// Gets the custom action name for AdvancedPaste
         /// </summary>
@@ -137,31 +97,10 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             return ViewModel?.GetAdvancedPasteCustomActionName(actionId);
         }
 
-        private string GetModuleIconPath(string moduleName)
+        private void WindowEx_Closed(object sender, WindowEventArgs args)
         {
-            return moduleName?.ToLowerInvariant() switch
-            {
-                "advancedpaste" => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
-                "alwaysontop" => "ms-appx:///Assets/Settings/Icons/AlwaysOnTop.png",
-                "colorpicker" => "ms-appx:///Assets/Settings/Icons/ColorPicker.png",
-                "cropandlock" => "ms-appx:///Assets/Settings/Icons/CropAndLock.png",
-                "fancyzones" => "ms-appx:///Assets/Settings/Icons/FancyZones.png",
-                "mousehighlighter" => "ms-appx:///Assets/Settings/Icons/MouseHighlighter.png",
-                "mousepointercrosshairs" => "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png",
-                "findmymouse" => "ms-appx:///Assets/Settings/Icons/FindMyMouse.png",
-                "mousejump" => "ms-appx:///Assets/Settings/Icons/MouseJump.png",
-                "peek" => "ms-appx:///Assets/Settings/Icons/Peek.png",
-                "powerlauncher" => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
-                "measuretool" => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
-                "shortcutguide" => "ms-appx:///Assets/Settings/Icons/ShortcutGuide.png",
-                "powerocr" => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
-                "workspaces" => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
-                "cmdpal" => "ms-appx:///Assets/Settings/Icons/CmdPal.png",
-                "mousewithoutborders" => "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png",
-                "zoomit" => "ms-appx:///Assets/Settings/Icons/ZoomIt.png",
-                "measure tool" => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
-                _ => "ms-appx:///Assets/Settings/Icons/PowerToys.png",
-            };
+            LocalizationHelper.GetCustomActionNameDelegate = null;
+            ViewModel?.Dispose();
         }
     }
 }
