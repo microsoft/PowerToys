@@ -70,14 +70,15 @@ public class PeekFilePreviewTests : UITestBase
 
     /// <summary>
     /// Test PDF document preview
+    /// ToDo: need to open settings to enable PDF preview in Peek
     /// </summary>
-    [TestMethod("Peek.FilePreview.PDFDocument")]
-    [TestCategory("Preview files")]
-    public void PeekPDFDocumentPreview()
-    {
-        string pdfPath = Path.GetFullPath(@".\TestAssets\3.pdf");
-        TestSingleFilePreview(pdfPath, "3", 10000);
-    }
+    // [TestMethod("Peek.FilePreview.PDFDocument")]
+    // [TestCategory("Preview files")]
+    // public void PeekPDFDocumentPreview()
+    // {
+    //    string pdfPath = Path.GetFullPath(@".\TestAssets\3.pdf");
+    //    TestSingleFilePreview(pdfPath, "3", 10000);
+    // }
 
     /// <summary>
     /// Test QOI image preview
