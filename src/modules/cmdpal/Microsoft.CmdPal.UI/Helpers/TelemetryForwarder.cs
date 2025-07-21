@@ -20,12 +20,14 @@ namespace Microsoft.CmdPal.UI;
 /// </summary>
 internal sealed class TelemetryForwarder :
     IRecipient<BeginInvokeMessage>,
-    IRecipient<CmdPalInvokeResultMessage>
+    IRecipient<CmdPalInvokeResultMessage>,
+    IRecipient<FetchItemsMetricsMessage>
 {
     public TelemetryForwarder()
     {
         WeakReferenceMessenger.Default.Register<BeginInvokeMessage>(this);
         WeakReferenceMessenger.Default.Register<CmdPalInvokeResultMessage>(this);
+        WeakReferenceMessenger.Default.Register<FetchItemsMetricsMessage>(this);
     }
 
     public void Receive(CmdPalInvokeResultMessage message)
@@ -36,5 +38,10 @@ internal sealed class TelemetryForwarder :
     public void Receive(BeginInvokeMessage message)
     {
         PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());
+    }
+
+    public void Receive(FetchItemsMetricsMessage message)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new FetchItemsMetrics(message.ItemCount, message.GetItemsTime, message.InitializeItemsTime));
     }
 }

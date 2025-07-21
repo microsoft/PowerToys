@@ -132,7 +132,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         try
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            stopwatch.Start();
+
             var newItems = _model.Unsafe!.GetItems();
+            var getItemsTime = stopwatch.ElapsedMilliseconds;
 
             // Collect all the items into new viewmodels
             Collection<ListItemViewModel> newViewModels = [];
@@ -169,6 +173,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             // TODO: Iterate over everything in Items, and prune items from the
             // cache if we don't need them anymore
+            stopwatch.Stop();
+            var initializeTime = stopwatch.ElapsedMilliseconds - getItemsTime;
+            WeakReferenceMessenger.Default.Send<FetchItemsMetricsMessage>(new(
+                newViewModels.Count,
+                getItemsTime,
+                initializeTime
+            ));
         }
         catch (Exception ex)
         {
