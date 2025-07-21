@@ -16,13 +16,13 @@ parameters:
     default: ''
 
 steps:
-  # Install WiX 5.x tools needed for VNext installer
+  # Install WiX 5.0.2 tools needed for VNext installer (matching project SDK)
   - task: DotNetCoreCLI@2
-    displayName: Install WiX 5.x tools
+    displayName: Install WiX 5.0.2 tools
     inputs:
       command: 'custom'
       custom: 'tool'
-      arguments: 'install --global wix'
+      arguments: 'install --global wix --version 5.0.2'
 
   - pwsh: |-
       & git clean -xfd -e *exe -- .\installer\
