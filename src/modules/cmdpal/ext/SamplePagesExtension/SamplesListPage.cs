@@ -22,6 +22,11 @@ public partial class SamplesListPage : ListPage
             Title = "List Page With Details",
             Subtitle = "A list of items, each with additional details to display",
         },
+        new ListItem(new SampleListPageWithDetailsNoShow())
+        {
+            Title = "List Page With Details (ShowDetails=false)",
+            Subtitle = "Test the 'Show Details' context action when ShowDetails=false",
+        },
         new ListItem(new SampleUpdatingItemsPage())
         {
             Title = "List page with items that change",
