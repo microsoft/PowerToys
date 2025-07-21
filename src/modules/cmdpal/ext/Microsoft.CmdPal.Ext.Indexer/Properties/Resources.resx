@@ -184,6 +184,6 @@
     <value>No items found</value>
   </data>
   <data name="Indexer_NoResultsMessageTip" xml:space="preserve">
-    <value>Tip: Improve your search result using filters like in Windows Explorer. (For example: type:directory)</value>
+    <value>Tip: Refine your search using filters, just like in File Explorer (e.g., type:directory).</value>
   </data>
 </root>
