@@ -76,7 +76,7 @@ public class PeekFilePreviewTests : UITestBase
     public void PeekPDFDocumentPreview()
     {
         string pdfPath = Path.GetFullPath(@".\TestAssets\3.pdf");
-        TestSingleFilePreview(pdfPath, "3");
+        TestSingleFilePreview(pdfPath, "3", 10000);
     }
 
     /// <summary>
@@ -704,7 +704,7 @@ public class PeekFilePreviewTests : UITestBase
     /// </summary>
     /// <param name="filePath">Full path to the file to test</param>
     /// <param name="expectedFileName">Expected file name for visual comparison</param>
-    private void TestSingleFilePreview(string filePath, string expectedFileName)
+    private void TestSingleFilePreview(string filePath, string expectedFileName, int? delayMs = null)
     {
         Element? previewWindow = null;
 
@@ -713,6 +713,12 @@ public class PeekFilePreviewTests : UITestBase
             Debug.WriteLine($"Testing file preview: {Path.GetFileName(filePath)}");
 
             previewWindow = OpenPeekWindow(filePath);
+
+            if (delayMs.HasValue)
+            {
+                Thread.Sleep(delayMs.Value); // Allow time for the preview to load
+            }
+
             Assert.IsNotNull(previewWindow, $"Should open Peek window for {Path.GetFileName(filePath)}");
 
             // Perform visual comparison
