@@ -5081,7 +5081,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <comment>Don't loc "PowerToys"</comment>
   </data>
   <data name="CloseDialog.Content" xml:space="preserve">
-    <value>Closing PowerToys will close all running modules.</value>
+    <value>Closing PowerToys will stop all active utilities.</value>
     <comment>Don't loc "PowerToys"</comment>
   </data>
   <data name="CloseDialog.Title" xml:space="preserve">
