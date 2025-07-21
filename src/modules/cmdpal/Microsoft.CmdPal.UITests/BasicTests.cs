@@ -10,31 +10,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.UITests;
 
 [TestClass]
-public class BasicTests : UITestBase
+public class BasicTests : CommandPaletteTestBase
 {
     public BasicTests()
-        : base(PowerToysModule.CommandPalette)
     {
-    }
-
-    private void SetSearchBox(string text)
-    {
-        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true).Text, text);
-    }
-
-    private void SetFilesExtensionSearchBox(string text)
-    {
-        Assert.AreEqual(this.Find<TextBox>("Search for files and folders...").SetText(text, true).Text, text);
-    }
-
-    private void SetCalculatorExtensionSearchBox(string text)
-    {
-        Assert.AreEqual(this.Find<TextBox>("Type an equation...").SetText(text, true).Text, text);
-    }
-
-    private void SetTimeAndDaterExtensionSearchBox(string text)
-    {
-        Assert.AreEqual(this.Find<TextBox>("Search values or type a custom time stamp...").SetText(text, true).Text, text);
     }
 
     [TestMethod]
