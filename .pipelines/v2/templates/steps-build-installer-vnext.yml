@@ -83,9 +83,9 @@ steps:
       maximumCpuCount: true
 
   - script: |-
-      "C:\Program Files (x86)\WiX Toolset v3.14\bin\dark.exe" -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).msi
+      dotnet tool run wix msi decompile installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).msi -x $(build.sourcesdirectory)\extractedMsi
       dir $(build.sourcesdirectory)\extractedMsi
-    displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Extract and verify MSI"
+    displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Extract and verify MSI"
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
@@ -133,8 +133,8 @@ steps:
   # The entirety of bundle unpacking/re-packing is unnecessary if we are not code signing it.
   - ${{ if eq(parameters.codeSign, true) }}:
     - script: |-
-        "C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ib installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -o installer\engine.exe
-      displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Insignia: Extract Engine from Bundle"
+        dotnet tool run wix burn detach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe
+      displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Extract Engine from Bundle"
 
     - template: steps-esrp-signing.yml
       parameters:
@@ -169,8 +169,8 @@ steps:
             ]
 
     - script: |-
-        "C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ab installer\engine.exe installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -o installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe
-      displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Insignia: Merge Engine into Bundle"
+        dotnet tool run wix burn attach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe -o installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe
+      displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Merge Engine into Bundle"
 
     - template: steps-esrp-signing.yml
       parameters:
@@ -181,5 +181,23 @@ steps:
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+          
+    # Verify that the final bootstrapper is signed
+    - pwsh: |-
+        $installerPath = "installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe"
+        Write-Host "Checking signature of: $installerPath"
+        if (Test-Path $installerPath) {
+          $signature = Get-AuthenticodeSignature $installerPath
+          Write-Host "Signature Status: $($signature.Status)"
+          Write-Host "Signature Certificate Subject: $($signature.SignerCertificate.Subject)"
+          if ($signature.Status -ne "Valid") {
+            Write-Warning "Final bootstrapper is not properly signed!"
+          } else {
+            Write-Host "Final bootstrapper is properly signed."
+          }
+        } else {
+          Write-Error "Installer file not found at: $installerPath"
+        }
+      displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Verify Final Bootstrapper Signature
   #### END BOOTSTRAP
   ## END INSTALLER
