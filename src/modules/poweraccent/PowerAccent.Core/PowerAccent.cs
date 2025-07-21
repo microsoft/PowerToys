@@ -20,6 +20,7 @@ public partial class PowerAccent : IDisposable
 
     // Keys that show a description (like dashes) when ShowCharacterInfoSetting is 1
     private readonly LetterKey[] _letterKeysShowingDescription = new LetterKey[] { LetterKey.VK_O };
+    private const double ScreenMinPadding = 150;
 
     private bool _visible;
     private string[] _characters = Array.Empty<string>();
@@ -330,6 +331,11 @@ public partial class PowerAccent : IDisposable
         /* Debug.WriteLine("Dpi: " + activeDisplay.Dpi); */
 
         return Calculation.GetRawCoordinatesFromPosition(position, screen, window);
+    }
+
+    public double GetDisplayMaxWidth()
+    {
+        return WindowsFunctions.GetActiveDisplay().Size.Width - ScreenMinPadding;
     }
 
     public Position GetToolbarPosition()
