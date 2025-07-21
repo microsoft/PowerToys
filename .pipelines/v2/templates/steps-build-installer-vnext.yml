@@ -16,6 +16,14 @@ parameters:
     default: ''
 
 steps:
+  # Install WiX 5.x tools needed for VNext installer
+  - task: DotNetCoreCLI@2
+    displayName: Install WiX 5.x tools
+    inputs:
+      command: 'custom'
+      custom: 'tool'
+      arguments: 'install --global wix'
+
   - pwsh: |-
       & git clean -xfd -e *exe -- .\installer\
     displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Clean installer to reduce cross-contamination
@@ -83,7 +91,7 @@ steps:
       maximumCpuCount: true
 
   - script: |-
-      dotnet tool run wix msi decompile installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).msi -x $(build.sourcesdirectory)\extractedMsi
+      wix msi decompile installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).msi -x $(build.sourcesdirectory)\extractedMsi
       dir $(build.sourcesdirectory)\extractedMsi
     displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Extract and verify MSI"
 
@@ -133,7 +141,7 @@ steps:
   # The entirety of bundle unpacking/re-packing is unnecessary if we are not code signing it.
   - ${{ if eq(parameters.codeSign, true) }}:
     - script: |-
-        dotnet tool run wix burn detach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe
+        wix burn detach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe
       displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Extract Engine from Bundle"
 
     - template: steps-esrp-signing.yml
@@ -169,7 +177,7 @@ steps:
             ]
 
     - script: |-
-        dotnet tool run wix burn attach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe -o installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe
+        wix burn attach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe -o installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe
       displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Merge Engine into Bundle"
 
     - template: steps-esrp-signing.yml
