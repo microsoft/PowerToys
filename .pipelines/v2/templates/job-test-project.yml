@@ -160,7 +160,6 @@ jobs:
         vsTestVersion: 'toolsInstaller'
         uiTests: true
         rerunFailedTests: true
-        diagnosticsEnabled: true
         testRunTitle: 'UITests_${{ parameters.platform }}_${{ parameters.installMode }}'
         # Since UITests-FancyZonesEditor.dll is generated in both UITests-FancyZonesEditor and UITests-FancyZones, removed one to avoid duplicate test runs
         testAssemblyVer2: |
@@ -184,7 +183,6 @@ jobs:
           vsTestVersion: 'toolsInstaller'
           uiTests: true
           rerunFailedTests: true
-          diagnosticsEnabled: true
           testRunTitle: 'UITests_${{ parameters.platform }}_${{ parameters.installMode }}'
           testAssemblyVer2: |
             **\*${{ module }}*.dll

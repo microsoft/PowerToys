@@ -766,29 +766,12 @@ public class PeekFilePreviewTests : UITestBase
             // Close Peek window
             Session.CloseMainWindow();
             Thread.Sleep(500);
+            SendKeys(Key.Win, Key.M);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error closing Peek window: {ex.Message}");
         }
-
-        // Close Explorer windows
-        // try
-        // {
-        //     var explorerProcesses = Process.GetProcessesByName("explorer")
-        //         .Where(p => p.MainWindowHandle != IntPtr.Zero)
-        //         .ToList();
-
-        // foreach (var explorer in explorerProcesses)
-        //     {
-        //         explorer.CloseMainWindow();
-        //         Thread.Sleep(500);
-        //     }
-        // }
-        // catch (Exception ex)
-        // {
-        //     Debug.WriteLine($"Error during Explorer cleanup: {ex.Message}");
-        // }
     }
 
     /// <summary>
