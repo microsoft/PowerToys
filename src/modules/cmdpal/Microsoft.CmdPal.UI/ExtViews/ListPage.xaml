@@ -28,6 +28,10 @@
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
 
+        <converters:ObjectToBoolConverter x:Key="ObjectToBoolConverter" />
+
+        <converters:GridPropertiesToTileSizeConverter x:Key="GridPropertiesToTileSizeConverter" />
+
         <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
             <cpcontrols:Tag
                 AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
@@ -102,6 +106,56 @@
                 </ItemsControl>
             </Grid>
         </DataTemplate>
+
+        <!--  Grid item template for visual grid representation  -->
+        <DataTemplate x:Key="GridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+            <Grid
+                Padding="8"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <cpcontrols:IconBox
+                    x:Name="GridIconBorder"
+                    Grid.Row="0"
+                    Width="48"
+                    Height="48"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="0,8,0,2"
+                    HorizontalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Text="{x:Bind Title, Mode=OneWay}"
+                    TextAlignment="Center"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="Wrap" />
+
+                <TextBlock
+                    Grid.Row="2"
+                    HorizontalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Subtitle, Mode=OneWay}"
+                    TextAlignment="Center"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="Wrap"
+                    Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
+            </Grid>
+        </DataTemplate>
     </Page.Resources>
 
     <Grid>
@@ -110,33 +164,56 @@
             TargetType="x:Boolean"
             Value="{x:Bind ViewModel.ShowEmptyContent, Mode=OneWay}">
             <controls:Case Value="False">
-                <ListView
-                    x:Name="ItemsList"
-                    Padding="0,2,0,0"
-                    DoubleTapped="ItemsList_DoubleTapped"
-                    IsDoubleTapEnabled="True"
-                    IsItemClickEnabled="True"
-                    ItemClick="ItemsList_ItemClick"
-                    ItemTemplate="{StaticResource ListItemViewModelTemplate}"
-                    ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-                    RightTapped="ItemsList_RightTapped"
-                    SelectionChanged="ItemsList_SelectionChanged">
-                    <ListView.ItemContainerTransitions>
-                        <TransitionCollection />
-                    </ListView.ItemContainerTransitions>
-                    <!--<ListView.GroupStyle>
-                        <GroupStyle HidesIfEmpty="True">
-                            <GroupStyle.HeaderTemplate>
-                                <DataTemplate>
-                                    <TextBlock
-                                        Margin="0,16,0,0"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding Key, Mode=OneWay}" />
-                                </DataTemplate>
-                            </GroupStyle.HeaderTemplate>
-                        </GroupStyle>
-                    </ListView.GroupStyle>-->
-                </ListView>
+                <!--  Switch between List and Grid mode based on GridProperties  -->
+                <controls:SwitchPresenter
+                    HorizontalAlignment="Stretch"
+                    TargetType="x:Boolean"
+                    Value="{x:Bind ViewModel.GridProperties, Mode=OneWay, Converter={StaticResource ObjectToBoolConverter}}">
+                    <!--  List mode when GridProperties is null  -->
+                    <controls:Case Value="False">
+                        <ListView
+                            x:Name="ItemsList"
+                            Padding="0,2,0,0"
+                            DoubleTapped="ItemsList_DoubleTapped"
+                            IsDoubleTapEnabled="True"
+                            IsItemClickEnabled="True"
+                            ItemClick="ItemsList_ItemClick"
+                            ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+                            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                            RightTapped="ItemsList_RightTapped"
+                            SelectionChanged="ItemsList_SelectionChanged">
+                            <ListView.ItemContainerTransitions>
+                                <TransitionCollection />
+                            </ListView.ItemContainerTransitions>
+                        </ListView>
+                    </controls:Case>
+                    <!--  Grid mode when GridProperties is not null  -->
+                    <controls:Case Value="True">
+                        <GridView
+                            x:Name="ItemsGrid"
+                            Padding="8,2,8,0"
+                            DoubleTapped="ItemsGrid_DoubleTapped"
+                            IsDoubleTapEnabled="True"
+                            IsItemClickEnabled="True"
+                            ItemClick="ItemsGrid_ItemClick"
+                            ItemTemplate="{StaticResource GridItemViewModelTemplate}"
+                            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                            RightTapped="ItemsGrid_RightTapped"
+                            SelectionChanged="ItemsGrid_SelectionChanged">
+                            <GridView.ItemContainerTransitions>
+                                <TransitionCollection />
+                            </GridView.ItemContainerTransitions>
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsWrapGrid 
+                                        Orientation="Horizontal"
+                                        ItemWidth="{x:Bind ViewModel.GridProperties.TileSize.Width, Mode=OneWay, FallbackValue=120}"
+                                        ItemHeight="{x:Bind ViewModel.GridProperties.TileSize.Height, Mode=OneWay, FallbackValue=120}" />
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
+                        </GridView>
+                    </controls:Case>
+                </controls:SwitchPresenter>
             </controls:Case>
             <controls:Case Value="True">
                 <StackPanel

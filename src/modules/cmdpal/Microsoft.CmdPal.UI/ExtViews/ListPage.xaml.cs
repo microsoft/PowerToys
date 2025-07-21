@@ -38,6 +38,7 @@ public sealed partial class ListPage : Page,
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
         this.ItemsList.Loaded += ItemsList_Loaded;
+        this.ItemsGrid.Loaded += ItemsGrid_Loaded;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -48,11 +49,11 @@ public sealed partial class ListPage : Page,
         }
 
         if (e.NavigationMode == NavigationMode.Back
-            || (e.NavigationMode == NavigationMode.New && ItemsList.Items.Count > 0))
+            || (e.NavigationMode == NavigationMode.New && (ItemsList.Items.Count > 0 || ItemsGrid.Items.Count > 0)))
         {
             // Upon navigating _back_ to this page, immediately select the
-            // first item in the list
-            ItemsList.SelectedIndex = 0;
+            // first item in the list or grid
+            SetSelectedIndex(0);
         }
 
         // RegisterAll isn't AOT compatible
@@ -123,6 +124,36 @@ public sealed partial class ListPage : Page,
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
+    private void ItemsGrid_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is ListItemViewModel item)
+        {
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            if (settings.SingleClickActivates)
+            {
+                ViewModel?.InvokeItemCommand.Execute(item);
+            }
+            else
+            {
+                ViewModel?.UpdateSelectedItemCommand.Execute(item);
+                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+            }
+        }
+    }
+
+    private void ItemsGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (ItemsGrid.SelectedItem is ListItemViewModel vm)
+        {
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            if (!settings.SingleClickActivates)
+            {
+                ViewModel?.InvokeItemCommand.Execute(vm);
+            }
+        }
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var vm = ViewModel;
@@ -147,6 +178,22 @@ public sealed partial class ListPage : Page,
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
+    private void ItemsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var vm = ViewModel;
+        var li = ItemsGrid.SelectedItem as ListItemViewModel;
+        _ = Task.Run(() =>
+        {
+            vm?.UpdateSelectedItemCommand.Execute(li);
+        });
+
+        if (ItemsGrid.SelectedItem != null)
+        {
+            ItemsGrid.ScrollIntoView(ItemsGrid.SelectedItem);
+        }
+    }
+
     private void ItemsList_Loaded(object sender, RoutedEventArgs e)
     {
         // Find the ScrollViewer in the ListView
@@ -158,7 +205,36 @@ public sealed partial class ListPage : Page,
         }
     }
 
+    private void ItemsGrid_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Find the ScrollViewer in the GridView
+        var gridViewScrollViewer = FindScrollViewer(this.ItemsGrid);
+
+        if (gridViewScrollViewer != null)
+        {
+            gridViewScrollViewer.ViewChanged += GridViewScrollViewer_ViewChanged;
+        }
+    }
+
     private void ListViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
+    {
+        var scrollView = sender as ScrollViewer;
+        if (scrollView == null)
+        {
+            return;
+        }
+
+        // When we get to the bottom, request more from the extension, if they
+        // have more to give us.
+        // We're checking when we get to 80% of the scroll height, to give the
+        // extension a bit of a heads-up before the user actually gets there.
+        if (scrollView.VerticalOffset >= (scrollView.ScrollableHeight * .8))
+        {
+            ViewModel?.LoadMoreIfNeeded();
+        }
+    }
+
+    private void GridViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
     {
         var scrollView = sender as ScrollViewer;
         if (scrollView == null)
@@ -182,25 +258,31 @@ public sealed partial class ListPage : Page,
         // And then have these commands manipulate that state being bound to the UI instead
         // We may want to see how other non-list UIs need to behave to make this decision
         // At least it's decoupled from the SearchBox now :)
-        if (ItemsList.SelectedIndex < ItemsList.Items.Count - 1)
+        var currentIndex = GetSelectedIndex();
+        var itemCount = GetItemCount();
+        
+        if (currentIndex < itemCount - 1)
         {
-            ItemsList.SelectedIndex++;
+            SetSelectedIndex(currentIndex + 1);
         }
         else
         {
-            ItemsList.SelectedIndex = 0;
+            SetSelectedIndex(0);
         }
     }
 
     public void Receive(NavigatePreviousCommand message)
     {
-        if (ItemsList.SelectedIndex > 0)
+        var currentIndex = GetSelectedIndex();
+        var itemCount = GetItemCount();
+        
+        if (currentIndex > 0)
         {
-            ItemsList.SelectedIndex--;
+            SetSelectedIndex(currentIndex - 1);
         }
         else
         {
-            ItemsList.SelectedIndex = ItemsList.Items.Count - 1;
+            SetSelectedIndex(itemCount - 1);
         }
     }
 
@@ -210,9 +292,13 @@ public sealed partial class ListPage : Page,
         {
             ViewModel?.InvokeItemCommand.Execute(null);
         }
-        else if (ItemsList.SelectedItem is ListItemViewModel item)
+        else
         {
-            ViewModel?.InvokeItemCommand.Execute(item);
+            var selectedItem = GetSelectedItem();
+            if (selectedItem is ListItemViewModel item)
+            {
+                ViewModel?.InvokeItemCommand.Execute(item);
+            }
         }
     }
 
@@ -222,9 +308,13 @@ public sealed partial class ListPage : Page,
         {
             ViewModel?.InvokeSecondaryCommandCommand.Execute(null);
         }
-        else if (ItemsList.SelectedItem is ListItemViewModel item)
+        else
         {
-            ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
+            var selectedItem = GetSelectedItem();
+            if (selectedItem is ListItemViewModel item)
+            {
+                ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
+            }
         }
     }
 
@@ -261,9 +351,9 @@ public sealed partial class ListPage : Page,
         // ItemsList_SelectionChanged again to give us another chance to change
         // the selection from null -> something. Better to just update the
         // selection once, at the end of all the updating.
-        if (ItemsList.SelectedItem == null)
+        if (GetSelectedItem() == null)
         {
-            ItemsList.SelectedIndex = 0;
+            SetSelectedIndex(0);
         }
     }
 
@@ -321,5 +411,62 @@ public sealed partial class ListPage : Page,
                                 ContextMenuFilterLocation.Top));
                     });
         }
+    }
+
+    private void ItemsGrid_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if (e.OriginalSource is FrameworkElement element &&
+            element.DataContext is ListItemViewModel item)
+        {
+            if (ItemsGrid.SelectedItem != item)
+            {
+                ItemsGrid.SelectedItem = item;
+            }
+
+            ViewModel?.UpdateSelectedItemCommand.Execute(item);
+
+            var pos = e.GetPosition(element);
+
+            _ = DispatcherQueue.TryEnqueue(
+                () =>
+                    {
+                        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                            new OpenContextMenuMessage(
+                                element,
+                                Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                                pos,
+                                ContextMenuFilterLocation.Top));
+                    });
+        }
+    }
+
+    // Helper methods for working with both ListView and GridView
+    private bool IsGridMode => ViewModel?.GridProperties != null;
+
+    private int GetSelectedIndex()
+    {
+        return IsGridMode ? ItemsGrid.SelectedIndex : ItemsList.SelectedIndex;
+    }
+
+    private void SetSelectedIndex(int index)
+    {
+        if (IsGridMode)
+        {
+            ItemsGrid.SelectedIndex = index;
+        }
+        else
+        {
+            ItemsList.SelectedIndex = index;
+        }
+    }
+
+    private object? GetSelectedItem()
+    {
+        return IsGridMode ? ItemsGrid.SelectedItem : ItemsList.SelectedItem;
+    }
+
+    private int GetItemCount()
+    {
+        return IsGridMode ? ItemsGrid.Items.Count : ItemsList.Items.Count;
     }
 }

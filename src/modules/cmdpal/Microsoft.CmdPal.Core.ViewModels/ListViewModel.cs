@@ -46,6 +46,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // cannot be marked [ObservableProperty]
     public bool ShowDetails { get; private set; }
 
+    public IGridProperties? GridProperties { get; private set; }
+
     private string _modelPlaceholderText = string.Empty;
 
     public override string PlaceholderText => _modelPlaceholderText;
@@ -442,6 +444,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
 
+        GridProperties = model.GridProperties;
+        UpdateProperty(nameof(GridProperties));
+
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
@@ -495,6 +500,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             case nameof(ShowDetails):
                 this.ShowDetails = model.ShowDetails;
+                break;
+            case nameof(GridProperties):
+                this.GridProperties = model.GridProperties;
                 break;
             case nameof(PlaceholderText):
                 this._modelPlaceholderText = model.PlaceholderText;
