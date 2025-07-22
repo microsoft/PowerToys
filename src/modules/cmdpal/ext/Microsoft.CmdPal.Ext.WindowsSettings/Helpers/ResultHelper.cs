@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-
 using Microsoft.CmdPal.Ext.WindowsSettings.Commands;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
@@ -30,7 +29,7 @@ internal static class ResultHelper
         {
             var result = new ListItem(new OpenSettingsCommand(entry))
             {
-                Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg"),
+                Icon = Icons.WindowsSettingsIcon,
                 Subtitle = entry.JoinedFullSettingsPath,
                 Title = entry.Name,
                 MoreCommands = ContextMenuHelper.GetContextMenu(entry).ToArray(),
