@@ -514,9 +514,11 @@ jobs:
       targetFolder: $(JobOutputDirectory)
 
   - task: CopyFiles@2
-    displayName: Stage Installers
+    displayName: Stage VNext Installers
     inputs:
-      contents: "**/PowerToys*SetupVNext-*.exe"
+      contents: |-
+        installer/PowerToysSetupVNext/**/PowerToys*SetupVNext-*.exe
+        !installer/PowerToysSetupVNext/obj/**
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)
 
