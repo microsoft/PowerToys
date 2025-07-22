@@ -3,12 +3,17 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="LayoutRoot"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:ConflictStyleConverter x:Key="ConflictStyleConverter" />
+    </UserControl.Resources>
 
     <Grid HorizontalAlignment="Right">
         <Button
@@ -33,7 +38,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <controls:KeyVisual
-                                Height="30              "
+                                Height="30"
                                 Padding="12,4,12,4"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
@@ -41,7 +46,7 @@
                                 CornerRadius="{StaticResource ControlCornerRadius}"
                                 FontWeight="SemiBold"
                                 IsTabStop="False"
-                                Style="{StaticResource AccentKeyVisualStyle}" />
+                                Style="{Binding ElementName=LayoutRoot, Path=HasConflict, Converter={StaticResource ConflictStyleConverter}}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

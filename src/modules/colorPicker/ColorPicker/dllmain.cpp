@@ -39,6 +39,8 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
+    const wchar_t JSON_KEY_NAME[] = L"hotkeyName";
+    const wchar_t ACTIVATION_SHORTCUT_NAME[] = L"ActivationShortcut";
 }
 
 struct ModuleSettings
@@ -82,6 +84,7 @@ private:
                 m_hotkey.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
                 m_hotkey.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
                 m_hotkey.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                m_hotkey.name = ACTIVATION_SHORTCUT_NAME;
             }
             catch (...)
             {
@@ -101,6 +104,7 @@ private:
             m_hotkey.shift = true;
             m_hotkey.ctrl = false;
             m_hotkey.key = 'C';
+            m_hotkey.name = ACTIVATION_SHORTCUT_NAME;
         }
     }
 

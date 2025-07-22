@@ -1,4 +1,4 @@
-// dllmain.cpp : Defines the entry point for the DLL application.
+﻿// dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
 #include "AdvancedPasteConstants.h"
@@ -50,6 +50,7 @@ namespace
     const wchar_t JSON_KEY_CTRL[] = L"ctrl";
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
+    const wchar_t JSON_KEY_NAME[] = L"hotkeyName";
     const wchar_t JSON_KEY_PASTE_AS_PLAIN_HOTKEY[] = L"paste-as-plain-hotkey";
     const wchar_t JSON_KEY_ADVANCED_PASTE_UI_HOTKEY[] = L"advanced-paste-ui-hotkey";
     const wchar_t JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY[] = L"paste-as-markdown-hotkey";
@@ -57,9 +58,47 @@ namespace
     const wchar_t JSON_KEY_IS_ADVANCED_AI_ENABLED[] = L"IsAdvancedAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
     const wchar_t JSON_KEY_VALUE[] = L"value";
+    const wchar_t JSON_KEY_IMAGE_TO_TEXT_HOTKEY[] = L"image-to-text";
+    const wchar_t JSON_KEY_PASTE_AS_TXT_FILE_HOTKEY[] = L"paste-as-txt-file";
+    const wchar_t JSON_KEY_PASTE_AS_PNG_FILE_HOTKEY[] = L"paste-as-png-file";
+    const wchar_t JSON_KEY_PASTE_AS_HTML_FILE_HOTKEY[] = L"paste-as-html-file";
+    const wchar_t JSON_KEY_TRANSCODE_TO_MP3_HOTKEY[] = L"transcode-to-mp3";
+    const wchar_t JSON_KEY_TRANSCODE_TO_MP4_HOTKEY[] = L"transcode-to-mp4";
 
     const wchar_t OPENAI_VAULT_RESOURCE[] = L"https://platform.openai.com/api-keys";
     const wchar_t OPENAI_VAULT_USERNAME[] = L"PowerToys_AdvancedPaste_OpenAIKey";
+
+    const wchar_t PASTE_AS_PLAIN_HOTKEY_NAME[] = L"PasteAsPlainTextShortcut";
+    const wchar_t ADVANCED_PASTE_UI_HOTKEY_NAME[] = L"AdvancedPasteUIShortcut";
+    const wchar_t PASTE_AS_MARKDOWN_HOTKEY_NAME[] = L"PasteAsMarkdownShortcut";
+    const wchar_t PASTE_AS_JSON_HOTKEY_NAME[] = L"PasteAsJsonShortcut";
+    // additional actions hotkeys
+    const wchar_t IMAGE_TO_TEXT_HOTKEY_NAME[] = L"ImageToTextShortcut";
+    const wchar_t PASTE_AS_TXT_FILE_HOTKEY_NAME[] = L"PasteAsTxtFileShortcut";
+    const wchar_t PASTE_AS_PNG_FILE_HOTKEY_NAME[] = L"PasteAsPngFileShortcut";
+    const wchar_t PASTE_AS_HTML_FILE_HOTKEY_NAME[] = L"PasteAsHtmlFileShortcut";
+    const wchar_t TRANSCODE_TO_MP3_HOTKEY_NAME[] = L"TranscodeToMp3Shortcut";
+    const wchar_t TRANSCODE_TO_MP4_HOTKEY_NAME[] = L"TranscodeToMp4Shortcut";
+
+    const std::unordered_map<std::wstring, const wchar_t*> g_hotkey_name_map = {
+        { JSON_KEY_PASTE_AS_PLAIN_HOTKEY, PASTE_AS_PLAIN_HOTKEY_NAME },
+        { JSON_KEY_ADVANCED_PASTE_UI_HOTKEY, ADVANCED_PASTE_UI_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY, PASTE_AS_MARKDOWN_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_JSON_HOTKEY, PASTE_AS_JSON_HOTKEY_NAME },
+
+        { JSON_KEY_IMAGE_TO_TEXT_HOTKEY, IMAGE_TO_TEXT_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_TXT_FILE_HOTKEY, PASTE_AS_TXT_FILE_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_PNG_FILE_HOTKEY, PASTE_AS_PNG_FILE_HOTKEY_NAME },
+        { JSON_KEY_PASTE_AS_HTML_FILE_HOTKEY, PASTE_AS_HTML_FILE_HOTKEY_NAME },
+        { JSON_KEY_TRANSCODE_TO_MP3_HOTKEY, TRANSCODE_TO_MP3_HOTKEY_NAME },
+        { JSON_KEY_TRANSCODE_TO_MP4_HOTKEY, TRANSCODE_TO_MP4_HOTKEY_NAME },
+    };
+
+    const wchar_t* get_hotkey_name(const std::wstring& key)
+    {
+        auto it = g_hotkey_name_map.find(key);
+        return it != g_hotkey_name_map.end() ? it->second : nullptr;
+    }
 }
 
 class AdvancedPaste : public PowertoyModuleIface
@@ -76,10 +115,10 @@ private:
 
     static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
-    Hotkey m_paste_as_plain_hotkey = { .win = true, .ctrl = true, .shift = false, .alt = true, .key = 'V' };
-    Hotkey m_advanced_paste_ui_hotkey = { .win = true, .ctrl = false, .shift = true, .alt = false, .key = 'V' };
-    Hotkey m_paste_as_markdown_hotkey{};
-    Hotkey m_paste_as_json_hotkey{};
+    Hotkey m_paste_as_plain_hotkey = { .win = true, .ctrl = true, .shift = false, .alt = true, .key = 'V', .name = PASTE_AS_PLAIN_HOTKEY_NAME };
+    Hotkey m_advanced_paste_ui_hotkey = { .win = true, .ctrl = false, .shift = true, .alt = false, .key = 'V', .name = ADVANCED_PASTE_UI_HOTKEY_NAME };
+    Hotkey m_paste_as_markdown_hotkey{ .name = PASTE_AS_MARKDOWN_HOTKEY_NAME };
+    Hotkey m_paste_as_json_hotkey{ .name = PASTE_AS_JSON_HOTKEY_NAME };
 
     template<class Id>
     struct ActionData
@@ -93,6 +132,7 @@ private:
 
     using CustomAction = ActionData<int>;
     std::vector<CustomAction> m_custom_actions;
+    std::vector<std::wstring> m_custom_action_hotkey_names;
 
     bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
@@ -102,7 +142,9 @@ private:
         try
         {
             const auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(keyName);
-            return parse_single_hotkey(jsonHotkeyObject);
+            Hotkey hotkey = parse_single_hotkey(jsonHotkeyObject);
+            hotkey.name = get_hotkey_name(keyName);
+            return hotkey;
         }
         catch (...)
         {
@@ -140,6 +182,7 @@ private:
         jsonObject.SetNamedValue(JSON_KEY_SHIFT, json::value(hotkey.shift));
         jsonObject.SetNamedValue(JSON_KEY_CTRL, json::value(hotkey.ctrl));
         jsonObject.SetNamedValue(JSON_KEY_CODE, json::value(hotkey.key));
+        jsonObject.SetNamedValue(JSON_KEY_NAME, json::value(hotkey.name));
 
         return jsonObject;
     }
@@ -247,12 +290,13 @@ private:
 
         if (action.HasKey(JSON_KEY_SHORTCUT))
         {
-            const AdditionalAction additionalAction
+            AdditionalAction additionalAction
             {
                 actionName.c_str(),
                 parse_single_hotkey(action.GetNamedObject(JSON_KEY_SHORTCUT))
             };
 
+            additionalAction.hotkey.name = get_hotkey_name(additionalAction.id);
             m_additional_actions.push_back(additionalAction);
         }
         else
@@ -334,12 +378,14 @@ private:
 
                                 if (object.GetNamedBoolean(JSON_KEY_IS_SHOWN, false))
                                 {
-                                    const CustomAction customActionData
+                                    CustomAction customActionData
                                     {
                                         static_cast<int>(object.GetNamedNumber(JSON_KEY_ID)),
                                         parse_single_hotkey(object.GetNamedObject(JSON_KEY_SHORTCUT))
                                     };
 
+                                    m_custom_action_hotkey_names.push_back(L"CustomAction_" + std::to_wstring(customActionData.id));
+                                    customActionData.hotkey.name = m_custom_action_hotkey_names.back().c_str();
                                     m_custom_actions.push_back(customActionData);
                                 }
                             }

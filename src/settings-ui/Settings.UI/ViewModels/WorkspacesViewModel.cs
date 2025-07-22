@@ -3,21 +3,28 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-
+using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class WorkspacesViewModel : Observable
+    public partial class WorkspacesViewModel : PageViewModelBase
     {
+        protected override string ModuleName => WorkspacesSettings.ModuleName;
+
+        private bool _hotkeyHasConflict;
+        private string _hotkeyTooltip;
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -48,6 +55,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _hotkey = Settings.Properties.Hotkey.Value;
 
+            if (string.IsNullOrEmpty(_hotkey.HotkeyName))
+            {
+                _hotkey.HotkeyName = WorkspacesProperties.DefaultHotkeyValue.HotkeyName;
+                _hotkey.OwnerModuleName = WorkspacesProperties.DefaultHotkeyValue.OwnerModuleName;
+            }
+
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
@@ -72,6 +85,64 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.Workspaces;
+            }
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                HotkeyHasConflict = GetHotkeyConflictStatus(WorkspacesProperties.DefaultHotkeyValue.HotkeyName);
+                HotkeyTooltip = GetHotkeyConflictTooltip(WorkspacesProperties.DefaultHotkeyValue.HotkeyName);
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        public bool HotkeyHasConflict
+        {
+            get => _hotkeyHasConflict;
+            set
+            {
+                if (_hotkeyHasConflict != value)
+                {
+                    _hotkeyHasConflict = value;
+                    OnPropertyChanged(nameof(HotkeyHasConflict));
+                }
+            }
+        }
+
+        public string HotkeyTooltip
+        {
+            get => _hotkeyTooltip;
+            set
+            {
+                if (_hotkeyTooltip != value)
+                {
+                    _hotkeyTooltip = value;
+                    OnPropertyChanged(nameof(HotkeyTooltip));
+                }
             }
         }
 

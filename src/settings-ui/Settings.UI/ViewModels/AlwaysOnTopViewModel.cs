@@ -3,21 +3,30 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class AlwaysOnTopViewModel : Observable
+    public partial class AlwaysOnTopViewModel : PageViewModelBase
     {
+        protected override string ModuleName => AlwaysOnTopSettings.ModuleName;
+
+        private bool _hotkeyHasConflict;
+        private string _hotkeyTooltip;
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -56,6 +65,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _excludedApps = Settings.Properties.ExcludedApps.Value;
             _windows11 = OSVersionHelper.IsWindows11();
 
+            CheckAndUpdateHotkeyName();
+
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
         }
@@ -72,6 +83,64 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.AlwaysOnTop;
+            }
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                HotkeyHasConflict = GetHotkeyConflictStatus(AlwaysOnTopProperties.DefaultHotkeyValue.HotkeyName);
+                HotkeyTooltip = GetHotkeyConflictTooltip(AlwaysOnTopProperties.DefaultHotkeyValue.HotkeyName);
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        public bool HotkeyHasConflict
+        {
+            get => _hotkeyHasConflict;
+            set
+            {
+                if (_hotkeyHasConflict != value)
+                {
+                    _hotkeyHasConflict = value;
+                    OnPropertyChanged(nameof(HotkeyHasConflict));
+                }
+            }
+        }
+
+        public string HotkeyTooltip
+        {
+            get => _hotkeyTooltip;
+            set
+            {
+                if (_hotkeyTooltip != value)
+                {
+                    _hotkeyTooltip = value;
+                    OnPropertyChanged(nameof(HotkeyTooltip));
+                }
             }
         }
 
@@ -292,6 +361,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
+        }
+
+        private void CheckAndUpdateHotkeyName()
+        {
+            if (Settings.Properties.Hotkey.Value.HotkeyName == string.Empty)
+            {
+                Settings.Properties.Hotkey.Value.HotkeyName = AlwaysOnTopProperties.DefaultHotkeyValue.HotkeyName;
+                Settings.Properties.Hotkey.Value.OwnerModuleName = AlwaysOnTopSettings.ModuleName;
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), AlwaysOnTopSettings.ModuleName);
+            }
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;

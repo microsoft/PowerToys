@@ -3,16 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
@@ -21,8 +24,13 @@ using Windows.Management.Deployment;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class CmdPalViewModel : Observable
+    public class CmdPalViewModel : PageViewModelBase
     {
+        protected override string ModuleName => "CmdPal";
+
+        private bool _hotkeyHasConflict;
+        private string _hotkeyTooltip;
+
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _isEnabled;
         private HotkeySettings _hotkey;
@@ -85,6 +93,64 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.CmdPal;
+            }
+        }
+
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            UpdateHotkeyConflictStatus(e.Conflicts);
+
+            // Update properties using setters to trigger PropertyChanged
+            void UpdateConflictProperties()
+            {
+                HotkeyHasConflict = GetHotkeyConflictStatus(CmdPalProperties.DefaultHotkeyValue.HotkeyName);
+                HotkeyTooltip = GetHotkeyConflictTooltip(CmdPalProperties.DefaultHotkeyValue.HotkeyName);
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    if (settingsWindow?.DispatcherQueue != null)
+                    {
+                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                    }
+                    else
+                    {
+                        UpdateConflictProperties();
+                    }
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        public bool HotkeyHasConflict
+        {
+            get => _hotkeyHasConflict;
+            set
+            {
+                if (_hotkeyHasConflict != value)
+                {
+                    _hotkeyHasConflict = value;
+                    OnPropertyChanged(nameof(HotkeyHasConflict));
+                }
+            }
+        }
+
+        public string HotkeyTooltip
+        {
+            get => _hotkeyTooltip;
+            set
+            {
+                if (_hotkeyTooltip != value)
+                {
+                    _hotkeyTooltip = value;
+                    OnPropertyChanged(nameof(HotkeyTooltip));
+                }
             }
         }
 
