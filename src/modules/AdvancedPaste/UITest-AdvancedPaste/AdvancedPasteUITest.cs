@@ -227,7 +227,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -238,20 +238,20 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Backspace);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             process.Kill(true);
         }
@@ -268,7 +268,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -279,20 +279,20 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(keys);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             process.Kill(true);
         }
@@ -311,7 +311,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -322,25 +322,25 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // Click Paste as Plain Text button and confirm that plain text without any formatting is pasted.
             var apWind = this.Find<Window>("Advanced Paste", global: true);
             apWind.Find<TextBlock>("Paste as plain text").Click();
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             process.Kill(true);
         }
@@ -359,7 +359,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -370,25 +370,25 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // press Ctrl + 1 and confirm that plain text without any formatting is pasted.
             this.SendKeys(Key.LCtrl, Key.Num1);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             process.Kill(true);
         }
@@ -407,7 +407,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -418,20 +418,20 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.Win, Key.LCtrl, Key.Alt, Key.M);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             window.Close();
         }
@@ -448,7 +448,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -459,25 +459,25 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // click Paste as markdown button and confirm that pasted text is converted to markdown
             var apWind = this.Find<Window>("Advanced Paste", global: true);
             apWind.Find<TextBlock>("Paste as markdown").Click();
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             window.Close();
         }
@@ -494,7 +494,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -505,24 +505,24 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.Num2);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             window.Close();
         }
@@ -541,7 +541,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -552,20 +552,20 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.Win, Key.LCtrl, Key.Alt, Key.J);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             window.Close();
         }
@@ -582,7 +582,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -593,25 +593,25 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // click Paste as markdown button and confirm that pasted text is converted to markdown
             var apWind = this.Find<Window>("Advanced Paste", global: true);
             apWind.Find<TextBlock>("Paste as JSON").Click();
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             window.Close();
         }
@@ -628,7 +628,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             // Replace SetForegroundWindow with the improved function
             var window = this.Find<Window>(windowTitle, global: true);
@@ -639,24 +639,24 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(200);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.Num3);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(300);
+            Thread.Sleep(15000);
 
             window.Close();
         }
@@ -706,7 +706,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start Notepad.exe");
             }
 
-            Thread.Sleep(500);
+            Thread.Sleep(15000);
 
             var window = this.Find<Window>("Untitled - Notepad", global: true);
             window.Find<PowerToys.UITest.Button>("Settings").Click();
