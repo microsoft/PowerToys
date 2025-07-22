@@ -20,6 +20,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
             <cmdpalUI:ContextItemTemplateSelector
                 x:Key="ContextItemTemplateSelector"
@@ -43,9 +44,18 @@
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
+                        x:Name="TitleTextBlock"
                         Grid.Column="1"
+                        MaxWidth="200"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
-                        Text="{x:Bind Title}" />
+                        Text="{x:Bind Title}"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </ToolTipService.ToolTip>
+                    </TextBlock>
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
@@ -74,10 +84,19 @@
                         SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
+                        x:Name="TitleTextBlock"
                         Grid.Column="1"
+                        MaxWidth="200"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
-                        Text="{x:Bind Title}" />
+                        Text="{x:Bind Title}"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </ToolTipService.ToolTip>
+                    </TextBlock>
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
@@ -129,6 +148,7 @@
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
             Margin="4"
+            IsTextScaleFactorEnabled="True"
             KeyDown="ContextFilterBox_KeyDown"
             PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
             TextChanged="ContextFilterBox_TextChanged" />

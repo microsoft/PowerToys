@@ -6,13 +6,11 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
-using Windows.UI.Core;
 
 namespace Microsoft.CmdPal.UI.Controls;
 

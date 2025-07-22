@@ -91,15 +91,12 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Exit a exe.
+        /// Exit a exe by Name.
         /// </summary>
-        /// <param name="appPath">The path to the application executable.</param>
-        public void ExitExe(string appPath)
+        /// <param name="processName">The path to the application executable.</param>
+        public void ExitExeByName(string processName)
         {
-            // Exit Exe
-            string exeName = Path.GetFileNameWithoutExtension(appPath);
-
-            Process[] processes = Process.GetProcessesByName(exeName);
+            Process[] processes = Process.GetProcessesByName(processName);
             foreach (Process process in processes)
             {
                 try
@@ -115,6 +112,18 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Exit a exe.
+        /// </summary>
+        /// <param name="appPath">The path to the application executable.</param>
+        public void ExitExe(string appPath)
+        {
+            // Exit Exe
+            string exeName = Path.GetFileNameWithoutExtension(appPath);
+
+            ExitExeByName(exeName);
+        }
+
+        /// <summary>
         /// Starts a new exe and takes control of it.
         /// </summary>
         /// <param name="appPath">The path to the application executable.</param>
@@ -122,26 +131,34 @@ namespace Microsoft.PowerToys.UITest
         public void StartExe(string appPath, string[]? args = null)
         {
             var opts = new AppiumOptions();
-            opts.AddAdditionalCapability("app", appPath);
 
-            if (args != null && args.Length > 0)
+            if (scope == PowerToysModule.PowerToysSettings)
             {
-                // Build command line arguments string
-                string argsString = string.Join(" ", args.Select(arg =>
+                TryLaunchPowerToysSettings(opts);
+            }
+            else
+            {
+                opts.AddAdditionalCapability("app", appPath);
+
+                if (args != null && args.Length > 0)
                 {
-                    // Quote arguments that contain spaces
-                    if (arg.Contains(' '))
+                    // Build command line arguments string
+                    string argsString = string.Join(" ", args.Select(arg =>
                     {
-                        return $"\"{arg}\"";
-                    }
+                        // Quote arguments that contain spaces
+                        if (arg.Contains(' '))
+                        {
+                            return $"\"{arg}\"";
+                        }
 
-                    return arg;
-                }));
+                        return arg;
+                    }));
 
-                opts.AddAdditionalCapability("appArguments", argsString);
+                    opts.AddAdditionalCapability("appArguments", argsString);
+                }
             }
 
-            this.Driver = NewWindowsDriver(opts);
+            Driver = NewWindowsDriver(opts);
         }
 
         private void TryLaunchPowerToysSettings(AppiumOptions opts)
@@ -150,14 +167,17 @@ namespace Microsoft.PowerToys.UITest
 
             var runnerProcessInfo = new ProcessStartInfo
             {
-                FileName = locationPath + this.runnerPath,
+                FileName = locationPath + runnerPath,
                 Verb = "runas",
                 Arguments = "--open-settings",
             };
 
-            this.ExitExe(runnerProcessInfo.FileName);
-            this.runner = Process.Start(runnerProcessInfo);
+            ExitExe(runnerProcessInfo.FileName);
+            runner = Process.Start(runnerProcessInfo);
             Thread.Sleep(5000);
+
+            // Exit CmdPal UI before launching new process if use installer for test
+            ExitExeByName("Microsoft.CmdPal.UI");
 
             if (root != null)
             {
@@ -168,7 +188,7 @@ namespace Microsoft.PowerToys.UITest
                 for (int attempt = 1; attempt <= maxRetries; attempt++)
                 {
                     var settingsWindow = ApiHelper.FindDesktopWindowHandler(
-                        new[] { windowName, AdministratorPrefix + windowName });
+                        [windowName, AdministratorPrefix + windowName]);
 
                     if (settingsWindow.Count > 0)
                     {
