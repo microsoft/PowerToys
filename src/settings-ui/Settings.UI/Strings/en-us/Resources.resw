@@ -426,7 +426,7 @@
     <value>Disable Easy Mouse when an application is running in full screen.</value>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
-    <value>Prevent easy mouse from moving to another machine if an application is running in the foreground in full screen mode.</value>
+    <value>Prevent Easy Mouse from moving to another machine when an application is in full-screen mode.</value>
   </data>
   <data name="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine.Title" xml:space="preserve">
     <value>Disabling Easy Mouse when an application is running in full screen will only work on the host computer, it will not prevent moving away from remote machines.</value>
