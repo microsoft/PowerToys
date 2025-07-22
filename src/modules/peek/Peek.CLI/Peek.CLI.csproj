@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
   <PropertyGroup>
     <RootNamespace>Peek.CLI</RootNamespace>
-    <TargetFramework>net9.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <OutputType>WinExe</OutputType> <!-- WinExe to hide the console window. -->
     <AssemblyName>PowerToys.Peek.CLI</AssemblyName>
-    <PublishAot>True</PublishAot>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
-
 </Project>

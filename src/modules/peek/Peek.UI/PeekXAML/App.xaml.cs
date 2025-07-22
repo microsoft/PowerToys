@@ -174,13 +174,18 @@ namespace Peek.UI
                         var path = await reader.ReadLineAsync(token);
                         if (!string.IsNullOrWhiteSpace(path))
                         {
-                            if (_peekWaitHandle == null)
+                            // Validate that the file or directory exists before proceeding
+                            if (File.Exists(path) || Directory.Exists(path))
                             {
-                                _peekWaitHandle = EventWaitHandle.OpenExisting(Constants.ShowPeekEvent());
-                            }
+                                _peekWaitHandle ??= EventWaitHandle.OpenExisting(Constants.ShowPeekEvent());
 
-                            _selectedItem = new SelectedItemByPath(path);
-                            _peekWaitHandle.Set();
+                                _selectedItem = new SelectedItemByPath(path);
+                                _peekWaitHandle.Set();
+                            }
+                            else
+                            {
+                                Logger.LogError($"CLI requested file or directory does not exist: {path}");
+                            }
                         }
                     }
                 }
