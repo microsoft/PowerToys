@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CmdPal.Ext.System.Helpers;
+using Microsoft.CmdPal.Ext.System.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,21 +25,22 @@ public class ImageTests
     [DataRow("hibernate", "SleepIcon")]
     [DataRow("recycle bin", "RecycleBinIcon")]
     [DataRow("uefi firmware settings", "FirmwareSettingsIcon")]
-    [DataRow("ip v4 addr", "NetworkAdapterIcon")]
-    [DataRow("ip v6 addr", "NetworkAdapterIcon")]
-    [DataRow("mac addr", "NetworkAdapterIcon")]
+    [DataRow("IPv4 addr", "NetworkAdapterIcon")]
+    [DataRow("IPV6 addr", "NetworkAdapterIcon")]
+    [DataRow("MAC addr", "NetworkAdapterIcon")]
     public void IconThemeDarkTest(string typedString, string expectedIconPropertyName)
     {
-        // Setup
-        var iconProperty = typeof(Icons).GetProperty(expectedIconPropertyName);
-        var iconInfo = iconProperty?.GetValue(null) as IconInfo;
+        var systemPage = new SystemCommandPage(new SettingsManager());
 
-        // Act
-        var result = iconInfo.Dark;
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Icon);
+        foreach (var item in systemPage.GetItems())
+        {
+            if (item.Title.Contains(typedString, StringComparison.OrdinalIgnoreCase) || item.Subtitle.Contains(typedString, StringComparison.OrdinalIgnoreCase))
+            {
+                var icon = item.Icon;
+                Assert.IsNotNull(icon, $"Icon for '{typedString}' should not be null.");
+                Assert.IsNotEmpty(icon.Dark.Icon, $"Icon for '{typedString}' should not be empty.");
+            }
+        }
     }
 
     [DataTestMethod]
@@ -50,20 +52,21 @@ public class ImageTests
     [DataRow("hibernate", "SleepIcon")]
     [DataRow("recycle bin", "RecycleBinIcon")]
     [DataRow("uefi firmware settings", "FirmwareSettingsIcon")]
-    [DataRow("ip v4 addr", "NetworkAdapterIcon")]
-    [DataRow("ip v6 addr", "NetworkAdapterIcon")]
-    [DataRow("mac addr", "NetworkAdapterIcon")]
+    [DataRow("IPv4 addr", "NetworkAdapterIcon")]
+    [DataRow("IPV6 addr", "NetworkAdapterIcon")]
+    [DataRow("MAC addr", "NetworkAdapterIcon")]
     public void IconThemeLightTest(string typedString, string expectedIconPropertyName)
     {
-        // Setup
-        var iconProperty = typeof(Icons).GetProperty(expectedIconPropertyName);
-        var iconInfo = iconProperty?.GetValue(null) as IconInfo;
+        var systemPage = new SystemCommandPage(new SettingsManager());
 
-        // Act
-        var result = iconInfo.Light;
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.IsNotNull(result.Icon);
+        foreach (var item in systemPage.GetItems())
+        {
+            if (item.Title.Contains(typedString, StringComparison.OrdinalIgnoreCase) || item.Subtitle.Contains(typedString, StringComparison.OrdinalIgnoreCase))
+            {
+                var icon = item.Icon;
+                Assert.IsNotNull(icon, $"Icon for '{typedString}' should not be null.");
+                Assert.IsNotEmpty(icon.Light.Icon, $"Icon for '{typedString}' should not be empty.");
+            }
+        }
     }
 }
