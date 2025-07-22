@@ -4,7 +4,7 @@
   <PropertyGroup>
     <RootNamespace>Peek.CLI</RootNamespace>
     <Nullable>enable</Nullable>
-    <OutputType>WinExe</OutputType> <!-- WinExe to hide the console window. -->
+    <OutputType>Exe</OutputType> <!-- Exe to show console output -->
     <AssemblyName>PowerToys.Peek.CLI</AssemblyName>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

@@ -21,7 +21,7 @@ try
     writer.WriteLine(args[0]);
     return 0;
 }
-catch (TimeoutException)
+catch (Exception ex) when (IsConnectionError(ex))
 {
     Console.WriteLine("Error: Could not connect to PowerToys. Make sure PowerToys Peek is running.");
     return 2;
@@ -30,4 +30,11 @@ catch (Exception ex)
 {
     Console.WriteLine($"Error: {ex.Message}");
     return 3;
+}
+
+static bool IsConnectionError(Exception ex)
+{
+    return ex is TimeoutException ||
+           (ex is InvalidOperationException &&
+            (ex.Message.Contains("Pipe is broken") || ex.Message.Contains("timeout")));
 }
