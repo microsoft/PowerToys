@@ -199,21 +199,21 @@ jobs:
     - task: Cache@2
       displayName: 'Cache nuget packages (PackageReference)'
       inputs:
-        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props | "$(DotNetSdkVersion)"'
+        key: '"$(DotNetSdkVersion)" | "PackageReference" | "$(Agent.OS)" | Directory.Packages.props'
         restoreKeys: |
-           "PackageReference" | "$(Agent.OS)" | Directory.Packages.props
-           "PackageReference" | "$(Agent.OS)"
-           "PackageReference"
+           "$(DotNetSdkVersion)" | "PackageReference" | "$(Agent.OS)"
+           "$(DotNetSdkVersion)" | "PackageReference"
+           "$(DotNetSdkVersion)"
         path: $(NUGET_PACKAGES)
 
     - task: Cache@2
       displayName: 'Cache nuget packages (packages.config)'
       inputs:
-        key: '"packages.config" | "$(Agent.OS)" | **/packages.config | "$(DotNetSdkVersion)"'
+        key: '"$(DotNetSdkVersion)" | "packages.config" | "$(Agent.OS)" | **/packages.config'
         restoreKeys: |
-           "packages.config" | "$(Agent.OS)" | **/packages.config
-           "packages.config" | "$(Agent.OS)"
-           "packages.config"
+           "$(DotNetSdkVersion)" | "packages.config" | "$(Agent.OS)"
+           "$(DotNetSdkVersion)" | "packages.config"
+           "$(DotNetSdkVersion)"
         path: packages
   
   - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
