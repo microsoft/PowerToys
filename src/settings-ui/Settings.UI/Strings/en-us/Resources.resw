@@ -439,7 +439,7 @@
     <value>Ignored fullscreen applications</value>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Description" xml:space="preserve">
-    <value>Allow easy mouse to move between machines even if one of these applications is running in full screen.</value>
+    <value>Allow Easy Mouse to move between machines even if one of these applications is running in full screen.</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
     <value>Shortcut to lock all machines.</value>
