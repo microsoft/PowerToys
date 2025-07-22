@@ -423,7 +423,7 @@
     <comment>This is the Shift keyboard key</comment>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Header" xml:space="preserve">
-    <value>Disable easy mouse when an application is running in full screen.</value>
+    <value>Disable Easy Mouse when an application is running in full screen.</value>
   </data>
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
     <value>Prevent easy mouse from moving to another machine if an application is running in the foreground in full screen mode.</value>
