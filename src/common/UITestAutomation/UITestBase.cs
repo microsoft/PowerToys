@@ -22,6 +22,8 @@ namespace Microsoft.PowerToys.UITest
 
         public bool IsInPipeline { get; }
 
+        public string? ScreenshotDirectory { get; set; }
+
         public static MonitorInfoData.ParamsWrapper MonitorInfoData { get; set; } = new MonitorInfoData.ParamsWrapper() { Monitors = new List<MonitorInfoData.MonitorInfoDataWrapper>() };
 
         private readonly PowerToysModule scope;
@@ -29,7 +31,6 @@ namespace Microsoft.PowerToys.UITest
         private readonly string[]? commandLineArgs;
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
-        private string? screenshotDirectory;
 
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
         {
@@ -58,11 +59,11 @@ namespace Microsoft.PowerToys.UITest
             CloseOtherApplications();
             if (IsInPipeline)
             {
-                screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
-                Directory.CreateDirectory(screenshotDirectory);
+                ScreenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
+                Directory.CreateDirectory(ScreenshotDirectory);
 
                 // Take screenshot every 1 second
-                screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+                screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, ScreenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
 
                 // Escape Popups before starting
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
@@ -415,9 +416,9 @@ namespace Microsoft.PowerToys.UITest
 
         protected void AddScreenShotsToTestResultsDirectory()
         {
-            if (screenshotDirectory != null)
+            if (ScreenshotDirectory != null)
             {
-                foreach (string file in Directory.GetFiles(screenshotDirectory))
+                foreach (string file in Directory.GetFiles(ScreenshotDirectory))
                 {
                     this.TestContext.AddResultFile(file);
                 }
@@ -625,6 +626,23 @@ namespace Microsoft.PowerToys.UITest
                 else
                 {
                     Console.WriteLine($"Failed to change display resolution. Error code: {result}");
+                }
+            }
+
+            // Windows API for moving windows
+            [DllImport("user32.dll")]
+            private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+            private const uint SWPNOSIZE = 0x0001;
+            private const uint SWPNOZORDER = 0x0004;
+
+            public static void MoveWindow(Element window, int x, int y)
+            {
+                var windowHandle = IntPtr.Parse(window.GetAttribute("NativeWindowHandle") ?? "0", System.Globalization.CultureInfo.InvariantCulture);
+                if (windowHandle != IntPtr.Zero)
+                {
+                    SetWindowPos(windowHandle, IntPtr.Zero, x, y, 0, 0, SWPNOSIZE | SWPNOZORDER);
+                    Task.Delay(500).Wait();
                 }
             }
         }
