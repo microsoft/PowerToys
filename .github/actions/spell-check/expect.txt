@@ -218,6 +218,7 @@ coclass
 CODENAME
 codereview
 Codespaces
+Coen
 COINIT
 colid
 colorconv
@@ -1614,6 +1615,8 @@ svgz
 SVSI
 SWFO
 SWP
+SWPNOSIZE
+SWPNOZORDER
 SWRESTORE
 symbolrequestprod
 SYMCACHE
