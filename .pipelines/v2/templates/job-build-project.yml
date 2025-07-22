@@ -199,7 +199,7 @@ jobs:
     - task: Cache@2
       displayName: 'Cache nuget packages (PackageReference)'
       inputs:
-        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props | $(DotNetSdkVersion)'
+        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props | "$(DotNetSdkVersion)"'
         restoreKeys: |
            "PackageReference" | "$(Agent.OS)" | Directory.Packages.props
            "PackageReference" | "$(Agent.OS)"
