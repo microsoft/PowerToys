@@ -399,7 +399,7 @@
     <value>Advanced Settings</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseSettings_Group.Header" xml:space="preserve">
-    <value>Easy Mouse Settings</value>
+    <value>Easy Mouse</value>
   </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
