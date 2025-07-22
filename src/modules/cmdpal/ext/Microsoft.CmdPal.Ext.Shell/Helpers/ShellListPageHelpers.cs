@@ -4,11 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -26,7 +24,7 @@ public class ShellListPageHelpers
 
     private ListItem GetCurrentCmd(string cmd)
     {
-        ListItem result = new ListItem(new ExecuteItem(cmd, _settings))
+        var result = new ListItem(new ExecuteItem(cmd, _settings))
         {
             Title = cmd,
             Subtitle = Properties.Resources.cmd_plugin_name + ": " + Properties.Resources.cmd_execute_through_shell,
@@ -34,58 +32,6 @@ public class ShellListPageHelpers
         };
 
         return result;
-    }
-
-    private List<ListItem> GetHistoryCmds(string cmd, ListItem result)
-    {
-        IEnumerable<ListItem?> history = _settings.Count.Where(o => o.Key.Contains(cmd, StringComparison.CurrentCultureIgnoreCase))
-            .OrderByDescending(o => o.Value)
-            .Select(m =>
-            {
-                if (m.Key == cmd)
-                {
-                    // Using CurrentCulture since this is user facing
-                    result.Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value);
-                    return null;
-                }
-
-                var ret = new ListItem(new ExecuteItem(m.Key, _settings))
-                {
-                    Title = m.Key,
-
-                    // Using CurrentCulture since this is user facing
-                    Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value),
-                    Icon = Icons.HistoryIcon,
-                };
-                return ret;
-            }).Where(o => o != null).Take(4);
-        return history.Select(o => o!).ToList();
-    }
-
-    public List<ListItem> Query(string query)
-    {
-        ArgumentNullException.ThrowIfNull(query);
-
-        List<ListItem> results = new List<ListItem>();
-        var cmd = query;
-        if (string.IsNullOrEmpty(cmd))
-        {
-            results = ResultsFromHistory();
-        }
-        else
-        {
-            var queryCmd = GetCurrentCmd(cmd);
-            results.Add(queryCmd);
-            var history = GetHistoryCmds(cmd, queryCmd);
-            results.AddRange(history);
-        }
-
-        foreach (var currItem in results)
-        {
-            currItem.MoreCommands = LoadContextMenus(currItem).ToArray();
-        }
-
-        return results;
     }
 
     public List<CommandContextItem> LoadContextMenus(ListItem listItem)
@@ -99,18 +45,53 @@ public class ShellListPageHelpers
         return resultList;
     }
 
-    private List<ListItem> ResultsFromHistory()
+    internal static bool FileExistInPath(string filename)
     {
-        IEnumerable<ListItem> history = _settings.Count.OrderByDescending(o => o.Value)
-            .Select(m => new ListItem(new ExecuteItem(m.Key, _settings))
+        return FileExistInPath(filename, out var _);
+    }
+
+    internal static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
+    {
+        fullPath = string.Empty;
+
+        if (File.Exists(filename))
+        {
+            token?.ThrowIfCancellationRequested();
+            fullPath = Path.GetFullPath(filename);
+            return true;
+        }
+        else
+        {
+            var values = Environment.GetEnvironmentVariable("PATH");
+            if (values != null)
             {
-                Title = m.Key,
+                foreach (var path in values.Split(';'))
+                {
+                    var path1 = Path.Combine(path, filename);
+                    if (File.Exists(path1))
+                    {
+                        fullPath = Path.GetFullPath(path1);
+                        return true;
+                    }
 
-                // Using CurrentCulture since this is user facing
-                Subtitle = Properties.Resources.cmd_plugin_name + ": " + string.Format(CultureInfo.CurrentCulture, CmdHasBeenExecutedTimes, m.Value),
-                Icon = Icons.HistoryIcon,
-            }).Take(5);
+                    token?.ThrowIfCancellationRequested();
 
-        return history.ToList();
+                    var path2 = Path.Combine(path, filename + ".exe");
+                    if (File.Exists(path2))
+                    {
+                        fullPath = Path.GetFullPath(path2);
+                        return true;
+                    }
+
+                    token?.ThrowIfCancellationRequested();
+                }
+
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
