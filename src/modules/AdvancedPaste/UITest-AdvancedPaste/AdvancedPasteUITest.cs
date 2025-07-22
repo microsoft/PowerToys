@@ -65,7 +65,9 @@ namespace Microsoft.AdvancedPaste.UITests
             Assert.IsTrue(Directory.Exists(testFilesFolder), $"Test files directory not found at: {testFilesFolder}");
 
             testFilesFolderPath = testFilesFolder;
-            _notepadSettingsChanged = false;
+
+            // ignore the notepad settings in pipeline
+            _notepadSettingsChanged = true;
         }
 
         [TestMethod]
