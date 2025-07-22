@@ -209,8 +209,9 @@ jobs:
     - task: Cache@2
       displayName: 'Cache nuget packages (packages.config)'
       inputs:
-        key: '"packages.config" | "$(Agent.OS)" | **/packages.config'
+        key: '"packages.config" | "$(Agent.OS)" | **/packages.config | "$(DotNetSdkVersion)"'
         restoreKeys: |
+           "packages.config" | "$(Agent.OS)" | **/packages.config
            "packages.config" | "$(Agent.OS)"
            "packages.config"
         path: packages
