@@ -190,11 +190,18 @@ jobs:
     displayName: Verify ARM64 configurations
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
+    - pwsh: |-
+        $dotnetVersion = dotnet --version
+        Write-Host "Current .NET SDK Version: $dotnetVersion"
+        Write-Host "##vso[task.setvariable variable=DotNetSdkVersion]$dotnetVersion"
+      displayName: Get .NET SDK Version for Cache Key
+
     - task: Cache@2
       displayName: 'Cache nuget packages (PackageReference)'
       inputs:
-        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props'
+        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props | $(DotNetSdkVersion)'
         restoreKeys: |
+           "PackageReference" | "$(Agent.OS)" | Directory.Packages.props
            "PackageReference" | "$(Agent.OS)"
            "PackageReference"
         path: $(NUGET_PACKAGES)
