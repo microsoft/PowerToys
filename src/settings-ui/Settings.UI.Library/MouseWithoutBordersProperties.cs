@@ -182,7 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             UseService = false;
 
             DisableEasyMouseWhenForegroundWindowIsFullscreen = true;
-            EasyMouseFullscreenSwitchBlockExcludedApps = new GenericProperty<HashSet<string>>([]);
+            EasyMouseFullscreenSwitchBlockExcludedApps = new GenericProperty<HashSet<string>>(new HashSet<string>(StringComparer.OrdinalIgnoreCase));
 
             HotKeySwitchMachine = new IntProperty(0x70); // VK.F1
             ToggleEasyMouseShortcut = DefaultHotKeyToggleEasyMouse;

@@ -1596,7 +1596,9 @@ namespace MouseWithoutBorders
             var name = new string(nameBuffer, 0, (int)maxPath);
 
             var excludedApps = Setting.Values.EasyMouseFullscreenSwitchBlockExcludedApps;
-            return excludedApps.Contains(Path.GetFileNameWithoutExtension(name)) || excludedApps.Contains(Path.GetFileName(name));
+
+            return excludedApps.Contains(Path.GetFileNameWithoutExtension(name), StringComparer.OrdinalIgnoreCase)
+                || excludedApps.Contains(Path.GetFileName(name), StringComparer.OrdinalIgnoreCase);
         }
 
         internal static bool IsEasyMouseBlockedByFullscreenWindow()

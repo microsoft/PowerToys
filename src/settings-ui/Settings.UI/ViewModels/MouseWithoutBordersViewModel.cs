@@ -887,15 +887,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private string _easyMouseIgnoredFullscreenAppsString;
+
         public string EasyMouseFullscreenSwitchBlockExcludedApps
         {
             // Convert the list of excluded apps retrieved from the settings
             // to a single string that can be displayed in the bound textbox
             get
             {
-                var excludedApps = Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
+                if (_easyMouseIgnoredFullscreenAppsString == null)
+                {
+                    var excludedApps = Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
+                    _easyMouseIgnoredFullscreenAppsString = excludedApps.Count == 0 ? string.Empty : string.Join('\r', excludedApps);
+                }
 
-                return excludedApps.Count == 0 ? string.Empty : string.Join('\r', excludedApps);
+                return _easyMouseIgnoredFullscreenAppsString;
             }
 
             set
@@ -905,7 +911,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = value == string.Empty ? [] : [..value.Split('\r')];
+                _easyMouseIgnoredFullscreenAppsString = value;
+
+                var ignoredAppsSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (value != string.Empty)
+                {
+                    ignoredAppsSet.UnionWith(value.Split('\r', StringSplitOptions.RemoveEmptyEntries));
+                }
+
+                Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = ignoredAppsSet;
                 NotifyPropertyChanged();
             }
         }
