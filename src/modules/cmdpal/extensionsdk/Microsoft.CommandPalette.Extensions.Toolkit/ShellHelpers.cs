@@ -108,9 +108,9 @@ public static class ShellHelpers
     /// If it exists, returns the full path to the file in the out parameter.
     /// If it does not exist, returns false and the out parameter is set to an empty string.
     /// <param name="filename">The name of the file to check.</param>
-    /// <param name="fullPath">The full path to the file if it exists, otherwise an empty string.</param>
+    /// <param name="fullPath">The full path to the file if it exists; otherwise an empty string.</param>
     /// <param name="token">An optional cancellation token to cancel the operation.</param>
-    /// <returns>True if the file exists in the PATH, otherwise false.</returns>
+    /// <returns>True if the file exists in the PATH; otherwise false.</returns>
     /// </summary>
     public static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
     {
