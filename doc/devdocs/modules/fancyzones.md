@@ -444,9 +444,11 @@ PowerToys/doc/releases/tests-checklist-template.md at releaseChecklist · micros
 - ### First Run FancyZones error
 ![Debug Step Image](../images/fancyzones/16.png)
 
-If you encounter this situation, you need to launch the FancyZones Editor once in the powertoys settings UI (Refer to the image below). The reason is that running the Editor directly within the project will not initialize various configuration files.
+If you encounter this situation, you need to launch the FancyZones Editor once in the powertoys settings UI:
 
 ![Debug Step Image](../images/fancyzones/17.png)
+
+The reason is that running the Editor directly within the project will not initialize various configuration files.
 
 - ### How are layouts stored and loaded? Is there a central configuration handler?
 
@@ -471,7 +473,7 @@ When the Editor starts, it will load the config data, and when FancyZones starts
 
 About monitor detection you can find "FancyZones::MoveSizeUpdate" function. 
 
-I believe that in the case without DPI scaling, FancyZones retrieves the window's position and does not need to know what the mouse's DPI scaling is like. If you are referring to window scaling, it is called through the system interface, and you can see the detailed code in "WindowMouseSnap::MoveSizeEnd()" fucntion.
+I believe that in the case without DPI scaling, FancyZones retrieves the window's position and does not need to know what the mouse's DPI scaling is like. If you are referring to window scaling, it is called through the system interface, and you can see the detailed code in "WindowMouseSnap::MoveSizeEnd()" function.
 
 - ### How does FancyZones track which windows belong to which zones?
 

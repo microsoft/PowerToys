@@ -25,7 +25,7 @@ public partial class CalculatorCommandProvider : CommandProvider
     {
         Id = "Calculator";
         DisplayName = Resources.calculator_display_name;
-        Icon = CalculatorIcons.ProviderIcon;
+        Icon = Icons.CalculatorIcon;
         Settings = settings.Settings;
     }
 

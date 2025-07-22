@@ -10,7 +10,7 @@ namespace winrt::PowerToys::Interop::implementation
 
         hstring GetKeyName(uint32_t key);
         uint32_t GetKeyValue(hstring const& name);
-        void Updatelayout();
+        void UpdateLayout();
 
         private:
         std::unique_ptr<LayoutMap> _map = std::make_unique<LayoutMap>();

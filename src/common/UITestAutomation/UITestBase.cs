@@ -22,15 +22,17 @@ namespace Microsoft.PowerToys.UITest
 
         public bool IsInPipeline { get; }
 
+        public string? ScreenshotDirectory { get; set; }
+
         public static MonitorInfoData.ParamsWrapper MonitorInfoData { get; set; } = new MonitorInfoData.ParamsWrapper() { Monitors = new List<MonitorInfoData.MonitorInfoDataWrapper>() };
 
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
+        private readonly string[]? commandLineArgs;
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
-        private string? screenshotDirectory;
 
-        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
+        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
         {
             this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
@@ -45,6 +47,7 @@ namespace Microsoft.PowerToys.UITest
 
             this.scope = scope;
             this.size = size;
+            this.commandLineArgs = commandLineArgs;
         }
 
         /// <summary>
@@ -56,28 +59,18 @@ namespace Microsoft.PowerToys.UITest
             CloseOtherApplications();
             if (IsInPipeline)
             {
-                screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
-                Directory.CreateDirectory(screenshotDirectory);
+                ScreenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
+                Directory.CreateDirectory(ScreenshotDirectory);
 
                 // Take screenshot every 1 second
-                screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+                screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, ScreenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
 
                 // Escape Popups before starting
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
             }
 
-            this.sessionHelper = new SessionHelper(scope).Init();
+            this.sessionHelper = new SessionHelper(scope, commandLineArgs).Init();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
-
-            if (this.scope == PowerToysModule.PowerToysSettings)
-            {
-                // close Debug warning dialog if any
-                // Such debug warning dialog seems only appear in PowerToys Settings
-                if (this.FindAll("DEBUG").Count > 0)
-                {
-                    this.Find("DEBUG").Find<Button>("Close").Click();
-                }
-            }
         }
 
         /// <summary>
@@ -164,7 +157,7 @@ namespace Microsoft.PowerToys.UITest
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="by">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if only has one element, otherwise false.</returns>
+        /// <returns>True if only has one element; otherwise, false.</returns>
         public bool HasOne<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
@@ -176,7 +169,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="by">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if only has one element, otherwise false.</returns>
+        /// <returns>True if only has one element; otherwise, false.</returns>
         public bool HasOne(By by, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.HasOne<Element>(by, timeoutMS, global);
@@ -188,7 +181,7 @@ namespace Microsoft.PowerToys.UITest
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if only has one element, otherwise false.</returns>
+        /// <returns>True if only has one element; otherwise, false.</returns>
         public bool HasOne<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
@@ -200,7 +193,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if only has one element, otherwise false.</returns>
+        /// <returns>True if only has one element; otherwise, false.</returns>
         public bool HasOne(string name, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.HasOne<Element>(name, timeoutMS, global);
@@ -212,7 +205,7 @@ namespace Microsoft.PowerToys.UITest
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if  has one or more element, otherwise false.</returns>
+        /// <returns>True if  has one or more element; otherwise, false.</returns>
         public bool Has<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
@@ -224,7 +217,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if  has one or more element, otherwise false.</returns>
+        /// <returns>True if  has one or more element; otherwise, false.</returns>
         public bool Has(By by, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.Has<Element>(by, timeoutMS, global);
@@ -236,7 +229,7 @@ namespace Microsoft.PowerToys.UITest
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if  has one or more element, otherwise false.</returns>
+        /// <returns>True if  has one or more element; otherwise, false.</returns>
         public bool Has<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
@@ -248,7 +241,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if  has one or more element, otherwise false.</returns>
+        /// <returns>True if  has one or more element; otherwise, false.</returns>
         public bool Has(string name, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.Has<Element>(name, timeoutMS, global);
@@ -423,9 +416,9 @@ namespace Microsoft.PowerToys.UITest
 
         protected void AddScreenShotsToTestResultsDirectory()
         {
-            if (screenshotDirectory != null)
+            if (ScreenshotDirectory != null)
             {
-                foreach (string file in Directory.GetFiles(screenshotDirectory))
+                foreach (string file in Directory.GetFiles(ScreenshotDirectory))
                 {
                     this.TestContext.AddResultFile(file);
                 }
@@ -633,6 +626,23 @@ namespace Microsoft.PowerToys.UITest
                 else
                 {
                     Console.WriteLine($"Failed to change display resolution. Error code: {result}");
+                }
+            }
+
+            // Windows API for moving windows
+            [DllImport("user32.dll")]
+            private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+            private const uint SWPNOSIZE = 0x0001;
+            private const uint SWPNOZORDER = 0x0004;
+
+            public static void MoveWindow(Element window, int x, int y)
+            {
+                var windowHandle = IntPtr.Parse(window.GetAttribute("NativeWindowHandle") ?? "0", System.Globalization.CultureInfo.InvariantCulture);
+                if (windowHandle != IntPtr.Zero)
+                {
+                    SetWindowPos(windowHandle, IntPtr.Zero, x, y, 0, 0, SWPNOSIZE | SWPNOZORDER);
+                    Task.Delay(500).Wait();
                 }
             }
         }
