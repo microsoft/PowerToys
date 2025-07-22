@@ -165,6 +165,11 @@ public class ShellListPageHelpers
             return null;
         }
 
+        if (li != null)
+        {
+            li.TextToSuggest = searchText;
+        }
+
         return li;
     }
 }
