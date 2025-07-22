@@ -207,7 +207,10 @@ public partial class TopLevelCommandManager : ObservableObject,
         clone.InsertRange(startIndex, newItems);
 
         // now update the actual observable list with the new contents
-        ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+        lock (TopLevelCommands)
+        {
+            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+        }
     }
 
     public async Task ReloadAllCommandsAsync()
