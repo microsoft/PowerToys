@@ -16,7 +16,7 @@
  - [] restart PT and verify that all module are still on in the settings page and they are actually working
 
 **Quick access tray icon flyout:**
- - [] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
+ - [] Use left click on the system tray icon and verify the flyout appears.
  - [] Try to launch a module from the launch screen in the flyout.
  - [] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
  - [] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
