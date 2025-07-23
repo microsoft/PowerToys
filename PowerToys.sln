@@ -60,9 +60,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameLib", "src\modules\powerrename\lib\PowerRenameLib.vcxproj", "{51920F1F-C28C-4ADF-8660-4238766796C2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameTest", "src\modules\powerrename\testapp\PowerRenameTest.vcxproj", "{A3935CF4-46C5-4A88-84D3-6B12E16E6BA2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{51920F1F-C28C-4ADF-8660-4238766796C2} = {51920F1F-C28C-4ADF-8660-4238766796C2}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameUnitTests", "src\modules\powerrename\unittests\PowerRenameLibUnitTests.vcxproj", "{2151F984-E006-4A9F-92EF-C6DDE3DC8413}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -743,6 +740,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Core.ViewModels", "src\modules\cmdpal\Microsoft.CmdPal.Core.ViewModels\Microsoft.CmdPal.Core.ViewModels.csproj", "{24133F7F-C1D1-DE04-EFA8-F5D5467FE027}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.UITests", "src\modules\cmdpal\Microsoft.CmdPal.UITests\Microsoft.CmdPal.UITests.csproj", "{840455DF-5634-51BB-D937-9D7D32F0B0C2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{15EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Registry.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.Registry.UnitTests\Microsoft.CmdPal.Ext.Registry.UnitTests.csproj", "{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.System.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.System.UnitTests\Microsoft.CmdPal.Ext.System.UnitTests.csproj", "{790247CB-2B95-E139-E933-09D10137EEAF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.TimeDate.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.TimeDate.UnitTests\Microsoft.CmdPal.Ext.TimeDate.UnitTests.csproj", "{18525614-CDB2-8BBE-B1B4-3812CD990C22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.WindowWalker.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.WindowWalker.UnitTests\Microsoft.CmdPal.Ext.WindowWalker.UnitTests.csproj", "{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2758,6 +2765,38 @@ Global
 		{840455DF-5634-51BB-D937-9D7D32F0B0C2}.Release|ARM64.Build.0 = Release|ARM64
 		{840455DF-5634-51BB-D937-9D7D32F0B0C2}.Release|x64.ActiveCfg = Release|x64
 		{840455DF-5634-51BB-D937-9D7D32F0B0C2}.Release|x64.Build.0 = Release|x64
+		{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7}.Debug|ARM64.Build.0 = Debug|ARM64
+		{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7}.Debug|x64.ActiveCfg = Debug|x64
+		{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7}.Debug|x64.Build.0 = Debug|x64
+		{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7}.Release|ARM64.ActiveCfg = Release|ARM64
+		{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7}.Release|ARM64.Build.0 = Release|ARM64
+		{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7}.Release|x64.ActiveCfg = Release|x64
+		{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7}.Release|x64.Build.0 = Release|x64
+		{790247CB-2B95-E139-E933-09D10137EEAF}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{790247CB-2B95-E139-E933-09D10137EEAF}.Debug|ARM64.Build.0 = Debug|ARM64
+		{790247CB-2B95-E139-E933-09D10137EEAF}.Debug|x64.ActiveCfg = Debug|x64
+		{790247CB-2B95-E139-E933-09D10137EEAF}.Debug|x64.Build.0 = Debug|x64
+		{790247CB-2B95-E139-E933-09D10137EEAF}.Release|ARM64.ActiveCfg = Release|ARM64
+		{790247CB-2B95-E139-E933-09D10137EEAF}.Release|ARM64.Build.0 = Release|ARM64
+		{790247CB-2B95-E139-E933-09D10137EEAF}.Release|x64.ActiveCfg = Release|x64
+		{790247CB-2B95-E139-E933-09D10137EEAF}.Release|x64.Build.0 = Release|x64
+		{18525614-CDB2-8BBE-B1B4-3812CD990C22}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{18525614-CDB2-8BBE-B1B4-3812CD990C22}.Debug|ARM64.Build.0 = Debug|ARM64
+		{18525614-CDB2-8BBE-B1B4-3812CD990C22}.Debug|x64.ActiveCfg = Debug|x64
+		{18525614-CDB2-8BBE-B1B4-3812CD990C22}.Debug|x64.Build.0 = Debug|x64
+		{18525614-CDB2-8BBE-B1B4-3812CD990C22}.Release|ARM64.ActiveCfg = Release|ARM64
+		{18525614-CDB2-8BBE-B1B4-3812CD990C22}.Release|ARM64.Build.0 = Release|ARM64
+		{18525614-CDB2-8BBE-B1B4-3812CD990C22}.Release|x64.ActiveCfg = Release|x64
+		{18525614-CDB2-8BBE-B1B4-3812CD990C22}.Release|x64.Build.0 = Release|x64
+		{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8}.Debug|ARM64.Build.0 = Debug|ARM64
+		{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8}.Debug|x64.ActiveCfg = Debug|x64
+		{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8}.Debug|x64.Build.0 = Debug|x64
+		{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8}.Release|ARM64.ActiveCfg = Release|ARM64
+		{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8}.Release|ARM64.Build.0 = Release|ARM64
+		{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8}.Release|x64.ActiveCfg = Release|x64
+		{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3047,6 +3086,11 @@ Global
 		{9D3F3793-EFE3-4525-8782-238015DABA62} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{BCDC7246-F4F8-4EED-8DE6-037AA2E7C6D1} = {17B4FA70-001E-4D33-BBBB-0D142DBC2E20}
 		{840455DF-5634-51BB-D937-9D7D32F0B0C2} = {7520A2FE-00A2-49B8-83ED-DB216E874C04}
+		{15EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {3846508C-77EB-4034-A702-F8BB263C4F79}
+		{2CF0567E-1E00-4E3F-1561-BF85F5CE5FE7} = {15EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{790247CB-2B95-E139-E933-09D10137EEAF} = {15EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{18525614-CDB2-8BBE-B1B4-3812CD990C22} = {15EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{B0FE6EF3-5FB3-B8DC-7507-008BBB392FD8} = {15EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

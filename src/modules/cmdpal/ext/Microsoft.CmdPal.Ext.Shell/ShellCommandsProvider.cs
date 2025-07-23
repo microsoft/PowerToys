@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.Ext.Shell;
 public partial class ShellCommandsProvider : CommandProvider
 {
     private readonly CommandItem _shellPageItem;
+
     private readonly SettingsManager _settingsManager = new();
     private readonly FallbackCommandItem _fallbackItem;
 
@@ -39,4 +40,6 @@ public partial class ShellCommandsProvider : CommandProvider
     public override ICommandItem[] TopLevelCommands() => [_shellPageItem];
 
     public override IFallbackCommandItem[]? FallbackCommands() => [_fallbackItem];
+
+    public static bool SuppressFileFallbackIf(string query) => FallbackExecuteItem.SuppressFileFallbackIf(query);
 }

@@ -298,6 +298,7 @@ internal static class TimeAndDateHelper
         }
         else
         {
+            inputParsingErrorMsg = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle;
             timestamp = new DateTime(1, 1, 1, 1, 1, 1);
             Logger.LogWarning($"Failed to parse input: '{input}'. Format not recognized.");
             return false;
