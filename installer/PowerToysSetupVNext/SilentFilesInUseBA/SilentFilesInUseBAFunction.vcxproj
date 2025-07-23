@@ -25,7 +25,7 @@
     <ProjectGuid>{F8B9F842-F5C3-4A2D-8C85-7F8B9E2B4F1D}</ProjectGuid>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <TargetName>BAFunctions</TargetName>
+    <TargetName>SilentFilesInUseBAFunction</TargetName>
     <ProjectModuleDefinitionFile>bafunctions.def</ProjectModuleDefinitionFile>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
