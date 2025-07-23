@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Shell;
 
@@ -49,10 +50,10 @@ internal sealed partial class PathListItem : ListItem
         TextToSuggest = suggestion;
 
         MoreCommands = [
-           new CommandContextItem(new OpenWithCommand(path)),
-            new CommandContextItem(new ShowFileInFolderCommand(path)),
-            new CommandContextItem(new CopyPathCommand(path) { Name = Properties.Resources.copy_path_command_name }),
-            new CommandContextItem(new OpenInConsoleCommand(path)),
+            new CommandContextItem(new OpenWithCommand(path)),
+            new CommandContextItem(new ShowFileInFolderCommand(path)) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E) },
+            new CommandContextItem(new CopyPathCommand(path) { Name = Properties.Resources.copy_path_command_name }) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C) },
+            new CommandContextItem(new OpenInConsoleCommand(path)) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R) },
             new CommandContextItem(new OpenPropertiesCommand(path)),
          ];
 
