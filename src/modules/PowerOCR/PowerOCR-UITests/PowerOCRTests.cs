@@ -12,15 +12,13 @@ namespace PowerOCR.UITests;
 public class PowerOCRTests : UITestBase
 {
     public PowerOCRTests()
-        : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical)
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
     {
     }
 
     [TestInitialize]
     public void TestInitialize()
     {
-        Session.CloseMainWindow();
-        SendKeys(Key.Win, Key.M);
     }
 
     [TestMethod("PowerOCR.DetectTextExtractor")]
@@ -29,6 +27,14 @@ public class PowerOCRTests : UITestBase
     {
         try
         {
+            if (FindAll<NavigationViewItem>("Text Extractor").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                Find<NavigationViewItem>("System Tools").Click();
+            }
+
+            Find<NavigationViewItem>("Text Extractor").Click();
+
             SendKeys(Key.Win, Key.Shift, Key.T);
             Thread.Sleep(5000);
 
