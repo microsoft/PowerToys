@@ -12,8 +12,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UITests;
 
+[TestClass]
 public class CommandPaletteTestBase : UITestBase
 {
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        SendKeys(Key.Win, Key.M);
+    }
+
     public CommandPaletteTestBase()
         : base(PowerToysModule.CommandPalette)
     {
@@ -53,11 +60,13 @@ public class CommandPaletteTestBase : UITestBase
 
     protected void UACConfirm()
     {
-        var uacWindow = this.Find<Window>("User Account Control", global: true);
-        Assert.IsNotNull(uacWindow, "UAC window not found.");
+        Session.SendKeys(Key.Left);
+        Session.SendKeys(Key.Enter);
+    }
 
-        var yesButton = uacWindow.Find<Button>("Yes");
-        Assert.IsNotNull(yesButton, "UAC Yes button not found.");
-        yesButton.Click();
+    protected void HideAllWindow()
+    {
+        Session.SendKeys(Key.Win);
+        Session.SendKeys(Key.Enter);
     }
 }
