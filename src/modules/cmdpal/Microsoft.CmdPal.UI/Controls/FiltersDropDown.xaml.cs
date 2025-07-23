@@ -71,6 +71,7 @@ public sealed partial class FiltersDropDown : UserControl,
                 if (ViewModel is not null &&
                     ViewModel.Filters is not null)
                 {
+                    FiltersComboBox.ItemsSource = ViewModel.Filters;
                     FiltersComboBox.SelectedItem = ViewModel.Filters
                                                                 .OfType<FilterItemViewModel>()
                                                                 .FirstOrDefault(f => f.Id == ViewModel.CurrentFilterId);
@@ -87,23 +88,10 @@ public sealed partial class FiltersDropDown : UserControl,
             listViewModel.UpdateCurrentFilter(filterItem.Id);
         }
 
-        // We need to handle a weird case where ComboBox will allow separators
-        // to be selected (even thought their IsEnabled is false).
+        // TODO: We need to handle a weird case where ComboBox will allow
+        // separators to be selected (even thought their IsEnabled is false).
         // This doesn't happen once the ComboBox has been opened, but if the user
         // is using a keyboard to navigate the ComboBox, the enabled state of the
         // separator isn't respected.
-        if (FiltersComboBox.SelectedItem is SeparatorViewModel)
-        {
-            // If there's a filter item after the separator, move to it. Otherwise,
-            // move to the previous item.
-            if (FiltersComboBox.SelectedIndex < FiltersComboBox.Items.Count - 1)
-            {
-                FiltersComboBox.SelectedIndex++;
-            }
-            else if (FiltersComboBox.SelectedIndex > 0)
-            {
-                FiltersComboBox.SelectedIndex--;
-            }
-        }
     }
 }

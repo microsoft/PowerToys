@@ -25,8 +25,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [ObservableProperty]
     public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
-    [ObservableProperty]
-    public partial FiltersViewModel? Filters { get; set; } = null;
+    public FiltersViewModel? Filters { get; set; }
 
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 

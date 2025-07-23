@@ -57,10 +57,10 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
 }
 
 #pragma warning disable SA1402 // File may only contain a single type
-public partial class SampleFilters : ListFilters
+public partial class SampleFilters : Filters
 #pragma warning restore SA1402 // File may only contain a single type
 {
-    public override IFilterItem[] Filters()
+    public override IFilterItem[] GetFilters()
     {
         return
         [

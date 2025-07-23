@@ -131,7 +131,7 @@ namespace Microsoft.CommandPalette.Extensions
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFilters {
         String CurrentFilterId { get; set; };
-        IFilterItem[] Filters();
+        IFilterItem[] GetFilters();
     }
     
     struct Color
