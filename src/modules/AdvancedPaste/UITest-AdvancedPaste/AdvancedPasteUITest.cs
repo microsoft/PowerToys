@@ -90,7 +90,7 @@ namespace Microsoft.AdvancedPaste.UITests
             // Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
             // Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
             DeleteAndCopyFile(pasteAsPlainTextRawFileName, tempRTFFileName);
-            ContentCopyAndPasteWithShortcutThenPasteAgain(tempRTFFileName, isRTF: true, Key.Win, Key.LCtrl, Key.Alt, Key.O);
+            ContentCopyAndPasteWithShortcutThenPasteAgain(tempRTFFileName, isRTF: true);
             resultWithFormatting = FileReader.CompareRtfFiles(
                 Path.Combine(testFilesFolderPath, tempRTFFileName),
                 Path.Combine(testFilesFolderPath, pasteAsPlainTextPlainFileName),
@@ -238,25 +238,25 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.V);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Backspace);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             process.Kill(true);
         }
 
-        private void ContentCopyAndPasteWithShortcutThenPasteAgain(string fileName, bool isRTF = false, params Key[] keys)
+        private void ContentCopyAndPasteWithShortcutThenPasteAgain(string fileName, bool isRTF = false)
         {
             string tempFile = Path.Combine(testFilesFolderPath, fileName);
 
@@ -279,20 +279,20 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
-            this.SendKeys(keys);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
+            this.SendKeys(Key.Win, Key.LCtrl, Key.Alt, Key.O);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.V);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             process.Kill(true);
         }
@@ -322,14 +322,14 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
@@ -340,7 +340,7 @@ namespace Microsoft.AdvancedPaste.UITests
             apWind.Find<TextBlock>("Paste as plain text").Click();
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             process.Kill(true);
         }
@@ -370,25 +370,25 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             // press Ctrl + 1 and confirm that plain text without any formatting is pasted.
             this.SendKeys(Key.LCtrl, Key.Num1);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             process.Kill(true);
         }
@@ -418,20 +418,20 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.Win, Key.LCtrl, Key.Alt, Key.M);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             window.Close();
         }
@@ -459,14 +459,14 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
@@ -477,7 +477,7 @@ namespace Microsoft.AdvancedPaste.UITests
             apWind.Find<TextBlock>("Paste as markdown").Click();
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             window.Close();
         }
@@ -505,24 +505,24 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.Num2);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             window.Close();
         }
@@ -552,20 +552,20 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.Win, Key.LCtrl, Key.Alt, Key.J);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             window.Close();
         }
@@ -593,14 +593,14 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
@@ -611,7 +611,7 @@ namespace Microsoft.AdvancedPaste.UITests
             apWind.Find<TextBlock>("Paste as JSON").Click();
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             window.Close();
         }
@@ -639,24 +639,24 @@ namespace Microsoft.AdvancedPaste.UITests
             }
 
             window.Click();
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
             this.SendKeys(Key.Delete);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.Num3);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(15000);
+            Thread.Sleep(1000);
 
             window.Close();
         }
