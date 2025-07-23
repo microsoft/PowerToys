@@ -232,7 +232,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
@@ -273,7 +273,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
@@ -316,7 +316,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
@@ -364,7 +364,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
@@ -412,7 +412,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
@@ -453,7 +453,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
@@ -499,7 +499,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
@@ -546,7 +546,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
@@ -587,7 +587,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
@@ -633,7 +633,7 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException($"Failed to start {(isRTF ? "WordPad" : "Notepad")}.");
             }
 
-            string windowTitle = Path.GetFileName(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
+            string windowTitle = Path.GetFileNameWithoutExtension(tempFile) + (isRTF ? " - WordPad" : " - Notepad");
 
             Thread.Sleep(15000);
 
