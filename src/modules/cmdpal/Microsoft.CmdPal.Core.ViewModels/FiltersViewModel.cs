@@ -5,7 +5,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -37,18 +36,19 @@ public partial class FiltersViewModel : ExtensionObjectViewModel
                 if (_filtersModel.Unsafe is not null)
                 {
                     var filters = _filtersModel.Unsafe.GetFilters();
-                    Filters = filters.Select(filter =>
+                    Filters = filters.Select<IFilterItem, IFilterItemViewModel>(filter =>
                     {
-                        if (filter is IFilter filterItem)
+                        var filterItem = filter as IFilter;
+                        if (filterItem != null)
                         {
                             var filterVM = new FilterItemViewModel(filterItem!, PageContext);
                             filterVM.InitializeProperties();
 
-                            return filterVM as IFilterItemViewModel;
+                            return filterVM;
                         }
                         else
                         {
-                            return new SeparatorViewModel() as IFilterItemViewModel;
+                            return new SeparatorViewModel();
                         }
                     }).ToArray();
 
