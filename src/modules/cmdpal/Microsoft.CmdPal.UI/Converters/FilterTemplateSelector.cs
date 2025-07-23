@@ -5,16 +5,12 @@
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.CmdPal.UI;
 
-internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
+internal sealed partial class FilterTemplateSelector : DataTemplateSelector
 {
     public DataTemplate? Default { get; set; }
-
-    public DataTemplate? Critical { get; set; }
 
     public DataTemplate? Separator { get; set; }
 
@@ -22,20 +18,16 @@ internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
     {
         DataTemplate? dataTemplate = Default;
 
-        if (dependencyObject is ListViewItem li)
+        if (dependencyObject is ComboBoxItem comboBoxItem)
         {
-            li.IsEnabled = true;
+            comboBoxItem.IsEnabled = true;
 
             if (item is SeparatorViewModel)
             {
-                li.IsEnabled = false;
-                li.AllowFocusWhenDisabled = false;
-                li.AllowFocusOnInteraction = false;
+                comboBoxItem.IsEnabled = false;
+                comboBoxItem.AllowFocusWhenDisabled = false;
+                comboBoxItem.AllowFocusOnInteraction = false;
                 dataTemplate = Separator;
-            }
-            else
-            {
-                dataTemplate = ((CommandContextItemViewModel)item).IsCritical ? Critical : Default;
             }
         }
 

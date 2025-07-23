@@ -119,7 +119,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                     }
                     else
                     {
-                        return new SeparatorContextItemViewModel();
+                        return new SeparatorViewModel();
                     }
                 })
                 .ToList();
@@ -178,7 +178,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                                 }
                                 else
                                 {
-                                    return new SeparatorContextItemViewModel();
+                                    return new SeparatorViewModel();
                                 }
                             })
                             .ToList();

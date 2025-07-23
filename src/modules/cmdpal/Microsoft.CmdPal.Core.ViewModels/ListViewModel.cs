@@ -25,6 +25,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [ObservableProperty]
     public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
+    [ObservableProperty]
+    public partial FiltersViewModel? Filters { get; set; } = null;
+
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
     private readonly ExtensionObject<IListPage> _model;
@@ -79,12 +82,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
+        Filters = new(new(model.Filters), PageContext);
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
 
-    protected override void OnFilterUpdated(string filter)
+    protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
         //// TODO: Just temp testing, need to think about where we want to filter, as AdvancedCollectionView in View could be done, but then grouping need CollectionViewSource, maybe we do grouping in view
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
@@ -102,7 +106,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     if (_model.Unsafe is IDynamicListPage dynamic)
                     {
-                        dynamic.SearchText = filter;
+                        dynamic.SearchText = searchTextBox;
                     }
                 }
                 catch (Exception ex)
@@ -122,6 +126,32 @@ public partial class ListViewModel : PageViewModel, IDisposable
             ItemsUpdated?.Invoke(this, EventArgs.Empty);
             UpdateEmptyContent();
             _isLoading = false;
+        }
+    }
+
+    public void UpdateCurrentFilter(string currentFilterId)
+    {
+        // Filtering only applies to dynamic pages, which will
+        // handle their own filtering. They will tell us if something
+        // needs to change by raising ItemsChanged.
+        if (_isDynamic)
+        {
+            // We're getting called on the UI thread.
+            // Hop off to a BG thread to update the extension.
+            _ = Task.Run((Action)(() =>
+            {
+                try
+                {
+                    if (_model.Unsafe is IDynamicListPage dynamic)
+                    {
+                        dynamic.Filters?.CurrentFilterId = currentFilterId;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowException(ex, _model?.Unsafe?.Name);
+                }
+            }));
         }
     }
 
@@ -255,7 +285,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// Apply our current filter text to the list of items, and update
     /// FilteredItems to match the results.
     /// </summary>
-    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, Filter));
+    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, SearchTextBox));
 
     /// <summary>
     /// Helper to generate a weighting for a given list item, based on title,
@@ -457,6 +487,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
 
+        Filters = new(new(model.Filters), PageContext);
+        Filters.InitializeProperties();
+        UpdateProperty(nameof(Filters));
+
         FetchItems();
         model.ItemsChanged += Model_ItemsChanged;
     }
@@ -510,6 +544,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);
                 EmptyContent.SlowInitializeProperties();
+                break;
+            case nameof(Filters):
+                Filters = new(new(model.Filters), PageContext);
+                Filters.InitializeProperties();
                 break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
@@ -568,6 +606,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             FilteredItems.Clear();
         }
+
+        Filters?.SafeCleanup();
 
         var model = _model.Unsafe;
         if (model != null)
