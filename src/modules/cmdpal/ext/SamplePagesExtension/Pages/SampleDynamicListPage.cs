@@ -17,10 +17,14 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
         Icon = new IconInfo(string.Empty);
         Name = "Dynamic List";
         IsLoading = true;
-        Filters = new SampleFilters();
+        var filters = new SampleFilters();
+        filters.PropChanged += Filters_PropChanged;
+        Filters = filters;
     }
 
-    public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged(newSearch.Length);
+    private void Filters_PropChanged(object sender, IPropChangedEventArgs args) => RaiseItemsChanged();
+
+    public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged();
 
     public override IListItem[] GetItems()
     {
@@ -35,10 +39,10 @@ internal sealed partial class SampleDynamicListPage : DynamicListPage
             switch (Filters.CurrentFilterId)
             {
                 case "mod2":
-                    items = items.Where((item, index) => index % 2 == 0).ToArray();
+                    items = items.Where((item, index) => (index + 1) % 2 == 0).ToArray();
                     break;
                 case "mod3":
-                    items = items.Where((item, index) => index % 3 == 0).ToArray();
+                    items = items.Where((item, index) => (index + 1) % 3 == 0).ToArray();
                     break;
                 case "all":
                 default:
