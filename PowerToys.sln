@@ -60,9 +60,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameLib", "src\modules\powerrename\lib\PowerRenameLib.vcxproj", "{51920F1F-C28C-4ADF-8660-4238766796C2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameTest", "src\modules\powerrename\testapp\PowerRenameTest.vcxproj", "{A3935CF4-46C5-4A88-84D3-6B12E16E6BA2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{51920F1F-C28C-4ADF-8660-4238766796C2} = {51920F1F-C28C-4ADF-8660-4238766796C2}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRename.UnitTests", "src\modules\powerrename\unittests\PowerRenameLibUnitTests.vcxproj", "{2151F984-E006-4A9F-92EF-C6DDE3DC8413}"
 	ProjectSection(ProjectDependencies) = postProject
