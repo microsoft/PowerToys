@@ -19,6 +19,17 @@ public class PowerOCRTests : UITestBase
     [TestInitialize]
     public void TestInitialize()
     {
+        if (FindAll<NavigationViewItem>("Text Extractor").Count == 0)
+        {
+            // Expand Advanced list-group if needed
+            Find<NavigationViewItem>("System Tools").Click();
+        }
+
+        Find<NavigationViewItem>("Text Extractor").Click();
+
+        Find<ToggleSwitch>("Enable Text Extractor").Toggle(true);
+
+        SendKeys(Key.Win, Key.D);
     }
 
     [TestMethod("PowerOCR.DetectTextExtractor")]
@@ -27,15 +38,8 @@ public class PowerOCRTests : UITestBase
     {
         try
         {
-            if (FindAll<NavigationViewItem>("Text Extractor").Count == 0)
-            {
-                // Expand Advanced list-group if needed
-                Find<NavigationViewItem>("System Tools").Click();
-            }
-
-            Find<NavigationViewItem>("Text Extractor").Click();
-
             SendKeys(Key.Win, Key.Shift, Key.T);
+
             Thread.Sleep(5000);
 
             var textExtractorWindow = Find("TextExtractor", 10000, true);

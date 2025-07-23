@@ -113,29 +113,6 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  - task: PowerShell@2
-    inputs:
-      targetType: 'inline'
-      script: |
-        # Check if OCR Engine is available (Windows PowerShell for Windows Runtime compatibility)
-        $ocrAvailable = $false
-        
-        try {
-            [Windows.Media.Ocr.OcrEngine,Windows.Media.Ocr,ContentType=WindowsRuntime] | Out-Null
-            $ocrLanguages = [Windows.Media.Ocr.OcrEngine]::AvailableRecognizerLanguages
-            if ($ocrLanguages.Count -gt 0) {
-                $ocrAvailable = $true
-            }
-        }
-        catch {
-            $ocrAvailable = $false
-        }
-        
-        Write-Host "##vso[task.setvariable variable=OCR_ENGINE_AVAILABLE]$ocrAvailable"
-        Write-Host "OCR Engine Available: $ocrAvailable"
-      pwsh: false
-    displayName: "Check OCR Engine Availability"
-
   - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
     - task: DownloadPipelineArtifact@2
       inputs:
