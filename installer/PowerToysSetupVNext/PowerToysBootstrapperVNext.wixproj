@@ -44,6 +44,12 @@
   <ItemGroup>
     <Folder Include="CustomDialogs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="SilentFilesInUseBA\SilentFilesInUseBAFunction.vcxproj">
+      <Project>{F8B9F842-F5C3-4A2D-8C85-7F8B9E2B4F1D}</Project>
+      <Name>SilentFilesInUseBAFunction</Name>
+    </ProjectReference>
+  </ItemGroup>
   <!-- Prevents NU1503 -->
   <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
     <ItemGroup>
