@@ -4,17 +4,17 @@
 
 using System.Runtime.InteropServices;
 using ManagedCsWin32;
-using Microsoft.CmdPal.Ext.Indexer.Data;
-using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
-using Microsoft.CmdPal.Ext.Indexer.Properties;
+using Microsoft.CmdPal.Common.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace Microsoft.CmdPal.Ext.Indexer.Commands;
+namespace Microsoft.CmdPal.Common.Commands;
 
-internal sealed partial class OpenWithCommand : InvokableCommand
+public partial class OpenWithCommand : InvokableCommand
 {
-    private readonly IndexerItem _item;
+    internal static IconInfo OpenWithIcon { get; } = new("\uE7AC");
+
+    private readonly string _path;
 
     private static unsafe bool OpenWith(string filename)
     {
@@ -29,7 +29,7 @@ internal sealed partial class OpenWithCommand : InvokableCommand
                 LpVerb = verbPtr,
                 LpFile = filenamePtr,
                 Show = (int)SHOW_WINDOW_CMD.SW_SHOWNORMAL,
-                FMask = NativeHelpers.SEEMASKINVOKEIDLIST,
+                FMask = global::Windows.Win32.PInvoke.SEE_MASK_INVOKEIDLIST,
             };
 
             return Shell32.ShellExecuteEx(ref info);
@@ -41,16 +41,16 @@ internal sealed partial class OpenWithCommand : InvokableCommand
         }
     }
 
-    internal OpenWithCommand(IndexerItem item)
+    public OpenWithCommand(string fullPath)
     {
-        this._item = item;
+        this._path = fullPath;
         this.Name = Resources.Indexer_Command_OpenWith;
-        this.Icon = new IconInfo("\uE7AC");
+        this.Icon = OpenWithIcon;
     }
 
     public override CommandResult Invoke()
     {
-        OpenWith(_item.FullPath);
+        OpenWith(_path);
 
         return CommandResult.GoHome();
     }

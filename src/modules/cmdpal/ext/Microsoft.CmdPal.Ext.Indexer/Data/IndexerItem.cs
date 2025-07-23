@@ -12,6 +12,16 @@ internal sealed class IndexerItem
 
     internal string FileName { get; init; }
 
+    internal IndexerItem()
+    {
+    }
+
+    internal IndexerItem(string fullPath)
+    {
+        FullPath = fullPath;
+        FileName = Path.GetFileName(fullPath);
+    }
+
     internal bool IsDirectory()
     {
         if (!Path.Exists(FullPath))

@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Microsoft.CmdPal.Ext.Indexer.Commands;
+using System.IO;
+using System.Linq;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation.Metadata;
 
@@ -28,51 +29,79 @@ internal sealed partial class IndexerListItem : ListItem
     public IndexerListItem(
         IndexerItem indexerItem,
         IncludeBrowseCommand browseByDefault = IncludeBrowseCommand.Include)
-        : base(new OpenFileCommand(indexerItem))
+        : base()
     {
         FilePath = indexerItem.FullPath;
 
         Title = indexerItem.FileName;
         Subtitle = indexerItem.FullPath;
-        List<CommandContextItem> context = [];
-        if (indexerItem.IsDirectory())
+
+        var commands = FileCommands(indexerItem.FullPath, browseByDefault);
+        if (commands.Any())
         {
-            var directoryPage = new DirectoryPage(indexerItem.FullPath);
+            Command = commands.First().Command;
+            MoreCommands = commands.Skip(1).ToArray();
+        }
+    }
+
+    public static IEnumerable<CommandContextItem> FileCommands(string fullPath)
+    {
+        return FileCommands(fullPath, IncludeBrowseCommand.Include);
+    }
+
+    internal static IEnumerable<CommandContextItem> FileCommands(
+        string fullPath,
+        IncludeBrowseCommand browseByDefault = IncludeBrowseCommand.Include)
+    {
+        List<CommandContextItem> commands = [];
+        if (!Path.Exists(fullPath))
+        {
+            return commands;
+        }
+
+        // detect whether it is a directory or file
+        var attr = File.GetAttributes(fullPath);
+        var isDir = (attr & FileAttributes.Directory) == FileAttributes.Directory;
+
+        var openCommand = new OpenFileCommand(fullPath) { Name = Resources.Indexer_Command_OpenFile };
+        if (isDir)
+        {
+            var directoryPage = new DirectoryPage(fullPath);
             if (browseByDefault == IncludeBrowseCommand.AsDefault)
             {
-                // Swap the open file command into the context menu
-                context.Add(new CommandContextItem(Command));
-                Command = directoryPage;
+                // AsDefault: browse dir first, then open in explorer
+                commands.Add(new CommandContextItem(directoryPage));
+                commands.Add(new CommandContextItem(openCommand));
             }
             else if (browseByDefault == IncludeBrowseCommand.Include)
             {
-                context.Add(new CommandContextItem(directoryPage));
+                // AsDefault: open in explorer first, then browse
+                commands.Add(new CommandContextItem(openCommand));
+                commands.Add(new CommandContextItem(directoryPage));
+            }
+            else if (browseByDefault == IncludeBrowseCommand.Exclude)
+            {
+                // AsDefault: Just open in explorer
+                commands.Add(new CommandContextItem(openCommand));
             }
         }
 
-        IContextItem[] moreCommands = [
-            ..context,
-            new CommandContextItem(new OpenWithCommand(indexerItem))];
+        commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));
+        commands.Add(new CommandContextItem(new ShowFileInFolderCommand(fullPath) { Name = Resources.Indexer_Command_ShowInFolder }));
+        commands.Add(new CommandContextItem(new CopyPathCommand(fullPath) { Name = Resources.Indexer_Command_CopyPath }));
+        commands.Add(new CommandContextItem(new OpenInConsoleCommand(fullPath)));
+        commands.Add(new CommandContextItem(new OpenPropertiesCommand(fullPath)));
 
         if (IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {
-            var actionsListContextItem = new ActionsListContextItem(indexerItem.FullPath);
+            var actionsListContextItem = new ActionsListContextItem(fullPath);
             if (actionsListContextItem.AnyActions())
             {
-                moreCommands = [
-                    .. moreCommands,
-                    actionsListContextItem
-                ];
+                commands.Add(actionsListContextItem);
             }
         }
 
-        MoreCommands = [
-            .. moreCommands,
-            new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath) { Name = Resources.Indexer_Command_ShowInFolder }),
-            new CommandContextItem(new CopyPathCommand(indexerItem)),
-            new CommandContextItem(new OpenInConsoleCommand(indexerItem)),
-            new CommandContextItem(new OpenPropertiesCommand(indexerItem)),
-        ];
+        return commands;
     }
 }
 

@@ -5,21 +5,15 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Reflection;
 using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
-using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -190,7 +184,7 @@ public class Win32Program : IProgram
 
     public List<IContextItem> GetCommands()
     {
-        List<IContextItem> commands = new List<IContextItem>();
+        List<IContextItem> commands = [];
 
         if (AppType != ApplicationType.InternetShortcutApplication && AppType != ApplicationType.Folder && AppType != ApplicationType.GenericFile)
         {
@@ -208,7 +202,7 @@ public class Win32Program : IProgram
         }
 
         commands.Add(new CommandContextItem(
-                    new CopyPathCommand(FullPath))
+                    new Commands.CopyPathCommand(FullPath))
         {
             RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
         });
