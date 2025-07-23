@@ -4,7 +4,10 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -17,6 +20,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 {
     private readonly SettingsModel _settings;
+    private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
 
@@ -52,7 +56,18 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
 
-    IContextItem?[] ICommandItem.MoreCommands => _commandItemViewModel.MoreCommands.Select(i => i.Model.Unsafe).ToArray();
+    IContextItem?[] ICommandItem.MoreCommands => _commandItemViewModel.MoreCommands
+                                                    .Select(item =>
+                                                    {
+                                                        if (item is ISeparatorContextItem)
+                                                        {
+                                                            return item as IContextItem;
+                                                        }
+                                                        else
+                                                        {
+                                                            return ((CommandContextItemViewModel)item).Model.Unsafe;
+                                                        }
+                                                    }).ToArray();
 
     ////// IListItem
     ITag[] IListItem.Tags => Tags.ToArray();
@@ -65,6 +80,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     ////// INotifyPropChanged
     public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
+
+    // Fallback items
+    public string DisplayTitle { get; private set; } = string.Empty;
 
     public HotkeySettings? Hotkey
     {
@@ -122,16 +140,32 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         }
     }
 
+    public bool IsEnabled
+    {
+        get => _providerSettings.IsFallbackEnabled(this);
+        set
+        {
+            if (value != IsEnabled)
+            {
+                _providerSettings.SetFallbackEnabled(this, value);
+                Save();
+                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+            }
+        }
+    }
+
     public TopLevelViewModel(
         CommandItemViewModel item,
         bool isFallback,
         CommandPaletteHost extensionHost,
         string commandProviderId,
         SettingsModel settings,
+        ProviderSettings providerSettings,
         IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
         _settings = settings;
+        _providerSettings = providerSettings;
         _commandProviderId = commandProviderId;
         _commandItemViewModel = item;
 
@@ -143,6 +177,22 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         // UpdateAlias();
         // UpdateHotkey();
         // UpdateTags();
+    }
+
+    internal void InitializeProperties()
+    {
+        ItemViewModel.SlowInitializeProperties();
+
+        if (IsFallback)
+        {
+            var model = _commandItemViewModel.Model.Unsafe;
+
+            // RPC to check type
+            if (model is IFallbackCommandItem fallback)
+            {
+                DisplayTitle = fallback.DisplayTitle;
+            }
+        }
     }
 
     private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -205,7 +255,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void UpdateTags()
     {
-        List<Tag> tags = new();
+        List<Tag> tags = [];
 
         if (Hotkey != null)
         {
@@ -229,7 +279,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     {
         // Use WyHash64 to generate stable ID hashes.
         // manually seeding with 0, so that the hash is stable across launches
-        var result = WyHash64.ComputeHash64(_commandProviderId + Title + Subtitle, seed: 0);
+        var result = WyHash64.ComputeHash64(_commandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
         _generatedId = $"{_commandProviderId}{result}";
     }
 
@@ -248,6 +298,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
     {
         if (!IsFallback)
+        {
+            return false;
+        }
+
+        if (!IsEnabled)
         {
             return false;
         }
@@ -286,5 +341,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         }
 
         return false;
+    }
+
+    public PerformCommandMessage GetPerformCommandMessage()
+    {
+        return new PerformCommandMessage(this.CommandViewModel.Model, new Core.ViewModels.Models.ExtensionObject<IListItem>(this));
     }
 }

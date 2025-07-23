@@ -17,6 +17,7 @@ namespace NonLocalizable
     const static std::vector<std::wstring> ExtMarkdown = { L".md", L".markdown", L".mdown", L".mkdn", L".mkd", L".mdwn", L".mdtxt", L".mdtext" };
     const static std::vector<std::wstring> ExtPDF      = { L".pdf" };
     const static std::vector<std::wstring> ExtGCode    = { L".gcode" };
+    const static std::vector<std::wstring> ExtBGCode   = { L".bgcode" };
     const static std::vector<std::wstring> ExtSTL      = { L".stl" };
     const static std::vector<std::wstring> ExtQOI      = { L".qoi" };
     const static std::vector<std::wstring> ExtNoNoNo   = {
@@ -146,6 +147,19 @@ inline registry::ChangeSet getGcodePreviewHandlerChangeSet(const std::wstring in
                                   NonLocalizable::ExtGCode);
 }
 
+inline registry::ChangeSet getBgcodePreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
+{
+    using namespace registry::shellex;
+    return generatePreviewHandler(PreviewHandlerType::preview,
+                                  perUser,
+                                  L"{0e6d5bdd-d5f8-4692-a089-8bb88cdd37f4}",
+                                  get_std_product_version(),
+                                  (fs::path{ installationDir } / LR"d(PowerToys.BgcodePreviewHandlerCpp.dll)d").wstring(),
+                                  L"BgcodePreviewHandler",
+                                  L"Binary G-code Preview Handler",
+                                  NonLocalizable::ExtBGCode);
+}
+
 inline registry::ChangeSet getQoiPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
 {
     using namespace registry::shellex;
@@ -198,6 +212,19 @@ inline registry::ChangeSet getGcodeThumbnailHandlerChangeSet(const std::wstring 
                                   L"GcodeThumbnailProvider",
                                   L"G-code Thumbnail Provider",
                                   NonLocalizable::ExtGCode);
+}
+
+inline registry::ChangeSet getBgcodeThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)
+{
+    using namespace registry::shellex;
+    return generatePreviewHandler(PreviewHandlerType::thumbnail,
+                                  perUser,
+                                  L"{5c93a1e4-99d0-4fb3-991c-6c296a27be21}",
+                                  get_std_product_version(),
+                                  (fs::path{ installationDir } / LR"d(PowerToys.BgcodeThumbnailProviderCpp.dll)d").wstring(),
+                                  L"BgcodeThumbnailProvider",
+                                  L"Binary G-code Thumbnail Provider",
+                                  NonLocalizable::ExtBGCode);
 }
 
 inline registry::ChangeSet getStlThumbnailHandlerChangeSet(const std::wstring installationDir, const bool perUser)
@@ -275,9 +302,11 @@ inline std::vector<registry::ChangeSet> getAllOnByDefaultModulesChangeSets(const
              getMdPreviewHandlerChangeSet(installationDir, PER_USER),
              getMonacoPreviewHandlerChangeSet(installationDir, PER_USER),
              getGcodePreviewHandlerChangeSet(installationDir, PER_USER),
+             getBgcodePreviewHandlerChangeSet(installationDir, PER_USER),
              getQoiPreviewHandlerChangeSet(installationDir, PER_USER),
              getSvgThumbnailHandlerChangeSet(installationDir, PER_USER),
              getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getBgcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
              getStlThumbnailHandlerChangeSet(installationDir, PER_USER),
              getQoiThumbnailHandlerChangeSet(installationDir, PER_USER),
              getRegistryPreviewChangeSet(installationDir, PER_USER) };
@@ -291,10 +320,12 @@ inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstri
              getMonacoPreviewHandlerChangeSet(installationDir, PER_USER),
              getPdfPreviewHandlerChangeSet(installationDir, PER_USER),
              getGcodePreviewHandlerChangeSet(installationDir, PER_USER),
+             getBgcodePreviewHandlerChangeSet(installationDir, PER_USER),
              getQoiPreviewHandlerChangeSet(installationDir, PER_USER),
              getSvgThumbnailHandlerChangeSet(installationDir, PER_USER),
              getPdfThumbnailHandlerChangeSet(installationDir, PER_USER),
              getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
+             getBgcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
              getStlThumbnailHandlerChangeSet(installationDir, PER_USER),
              getQoiThumbnailHandlerChangeSet(installationDir, PER_USER),
              getRegistryPreviewChangeSet(installationDir, PER_USER),

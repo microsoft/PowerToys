@@ -73,16 +73,16 @@ public static class ServiceHelper
                 ];
             }
 
-            IconInfo icon = new("\U0001f7e2"); // unicode LARGE GREEN CIRCLE
+            IconInfo icon = Icons.GreenCircleIcon;
             switch (s.Status)
             {
                 case ServiceControllerStatus.Stopped:
-                    icon = new("\U0001F534"); // unicode LARGE RED CIRCLE
+                    icon = Icons.RedCircleIcon;
                     break;
                 case ServiceControllerStatus.Running:
                     break;
                 case ServiceControllerStatus.Paused:
-                    icon = new("\u23F8"); // unicode DOUBLE VERTICAL BAR, aka, "Pause"
+                    icon = Icons.PauseIcon;
                     break;
             }
 

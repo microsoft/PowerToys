@@ -15,22 +15,38 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System.IDisposable
 {
+    private static readonly NoOpCommand _baseCommandWithId = new() { Id = "com.microsoft.indexer.fallback" };
+
     private readonly CompositeFormat fallbackItemSearchPageTitleCompositeFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
 
     private readonly SearchEngine _searchEngine = new();
 
     private uint _queryCookie = 10;
 
+    private Func<string, bool> _suppressCallback;
+
     public FallbackOpenFileItem()
-        : base(new NoOpCommand(), Resources.Indexer_Find_Path_fallback_display_title)
+        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title)
     {
         Title = string.Empty;
         Subtitle = string.Empty;
+        Icon = Icons.FileExplorerIcon;
     }
 
     public override void UpdateQuery(string query)
     {
         if (string.IsNullOrWhiteSpace(query))
+        {
+            Command = new NoOpCommand();
+            Title = string.Empty;
+            Subtitle = string.Empty;
+            Icon = null;
+            MoreCommands = null;
+
+            return;
+        }
+
+        if (_suppressCallback != null && _suppressCallback(query))
         {
             Command = new NoOpCommand();
             Title = string.Empty;
@@ -103,7 +119,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 // us to the file search page, prepopulated with this search.
                 var indexerPage = new IndexerPage(query, _searchEngine, _queryCookie, results);
                 Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
-                Icon = Icons.FileExplorer;
+                Icon = Icons.FileExplorerIcon;
                 Subtitle = Resources.Indexer_Subtitle;
                 Command = indexerPage;
 
@@ -124,5 +140,10 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     {
         _searchEngine.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    public void SuppressFallbackWhen(Func<string, bool> callback)
+    {
+        _suppressCallback = callback;
     }
 }

@@ -19,7 +19,7 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     displayName: "Enable MSBuild Caching"
-    default: false
+    default: true
   - name: runTests
     type: boolean
     displayName: "Run Tests"
@@ -36,7 +36,8 @@ extends:
   template: templates/pipeline-ci-build.yml
   parameters:
     buildPlatforms: ${{ parameters.buildPlatforms }}
-    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+    ${{ if eq(variables['System.PullRequest.IsFork'], 'False') }}:
+      enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
     useVSPreview: ${{ parameters.useVSPreview }}
     useLatestWebView2: ${{ parameters.useLatestWebView2 }}
