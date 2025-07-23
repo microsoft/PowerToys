@@ -157,7 +157,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
 
         // modify the TopLevelCommands under shared lock; event if we clone it, we don't want
-        // TopLevelCommands to get modified while we're working on it. Otherwise , we might
+        // TopLevelCommands to get modified while we're working on it. Otherwise, we might
         // out clone would be stale at the end of this method.
         lock (TopLevelCommands)
         {
