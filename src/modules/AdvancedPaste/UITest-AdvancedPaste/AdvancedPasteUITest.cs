@@ -70,6 +70,13 @@ namespace Microsoft.AdvancedPaste.UITests
             _notepadSettingsChanged = true;
         }
 
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            Session.CloseMainWindow();
+            SendKeys(Key.Win, Key.M);
+        }
+
         [TestMethod]
         [TestCategory("AdvancedPasteUITest")]
         [TestCategory("PasteAsPlainText")]
