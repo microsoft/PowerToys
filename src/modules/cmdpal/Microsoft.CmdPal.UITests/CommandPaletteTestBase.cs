@@ -39,10 +39,25 @@ public class CommandPaletteTestBase : UITestBase
         Assert.AreEqual(this.Find<TextBox>("Search values or type a custom time stamp...").SetText(text, true).Text, text);
     }
 
+    protected void SetAppsExtensionSearchBox(string text)
+    {
+        Assert.AreEqual(this.Find<TextBox>("Search installed apps...").SetText(text, true).Text, text);
+    }
+
     protected void OpenContextMenu()
     {
         var contextMenuButton = this.Find<Button>("More");
         Assert.IsNotNull(contextMenuButton, "Context menu button not found.");
         contextMenuButton.Click();
+    }
+
+    protected void UACConfirm()
+    {
+        var uacWindow = this.Find<Window>("User Account Control", global: true);
+        Assert.IsNotNull(uacWindow, "UAC window not found.");
+
+        var yesButton = uacWindow.Find<Button>("Yes");
+        Assert.IsNotNull(yesButton, "UAC Yes button not found.");
+        yesButton.Click();
     }
 }
