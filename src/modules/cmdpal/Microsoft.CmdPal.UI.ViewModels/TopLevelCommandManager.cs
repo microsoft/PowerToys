@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
@@ -20,7 +21,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
-    IPageContext
+    IPageContext,
+    IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly TaskScheduler _taskScheduler;
@@ -28,6 +30,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
     private readonly Lock _commandProvidersLock = new();
+    private readonly SupersedingAsyncGate _reloadCommandsGate;
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
@@ -36,6 +39,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         _serviceProvider = serviceProvider;
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
+        _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
@@ -194,6 +198,14 @@ public partial class TopLevelCommandManager : ObservableObject,
     }
 
     public async Task ReloadAllCommandsAsync()
+    {
+        // gate ensures that the reload is serialized and if multiple calls
+        // request a reload, only the first and the last one will be executed.
+        // this should be superseded with a cancellable version.
+        await _reloadCommandsGate.ExecuteAsync(CancellationToken.None);
+    }
+
+    private async Task ReloadAllCommandsAsyncCore(CancellationToken cancellationToken)
     {
         IsLoading = true;
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
@@ -401,5 +413,11 @@ public partial class TopLevelCommandManager : ObservableObject,
             return _builtInCommands.Any(wrapper => wrapper.Id == id && wrapper.IsActive)
                    || _extensionCommandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
         }
+    }
+
+    public void Dispose()
+    {
+        _reloadCommandsGate.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
