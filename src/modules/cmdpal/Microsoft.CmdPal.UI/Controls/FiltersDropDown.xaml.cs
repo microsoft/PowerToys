@@ -18,6 +18,7 @@ public sealed partial class FiltersDropDown : UserControl,
         set => SetValue(CurrentPageViewModelProperty, value);
     }
 
+    // Using a DependencyProperty as the backing store for CurrentPageViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty CurrentPageViewModelProperty =
         DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(FiltersDropDown), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
 
@@ -41,6 +42,7 @@ public sealed partial class FiltersDropDown : UserControl,
             if (e.NewValue is ListViewModel listViewModel)
             {
                 @this.ViewModel = listViewModel.Filters;
+                @this.UpdateFilters();
             }
             else
             {
@@ -70,18 +72,7 @@ public sealed partial class FiltersDropDown : UserControl,
             if (property == nameof(ListViewModel.Filters))
             {
                 ViewModel = list.Filters;
-
-                // FiltersComboBox.Visibility = ViewModel?.ShouldShowFilters ?? false ?
-                //        Visibility.Visible :
-                //        Visibility.Collapsed;
-                // if (ViewModel is not null &&
-                //    ViewModel.Filters is not null)
-                // {
-                //    FiltersComboBox.ItemsSource = ViewModel.Filters;
-                //    FiltersComboBox.SelectedItem = ViewModel.Filters
-                //                                                .OfType<FilterItemViewModel>()
-                //                                                .FirstOrDefault(f => f.Id == ViewModel.CurrentFilterId);
-                // }
+                UpdateFilters();
             }
         }
     }
@@ -99,5 +90,26 @@ public sealed partial class FiltersDropDown : UserControl,
         // This doesn't happen once the ComboBox has been opened, but if the user
         // is using a keyboard to navigate the ComboBox, the enabled state of the
         // separator isn't respected.
+    }
+
+    private void UpdateFilters()
+    {
+        if (ViewModel is not null &&
+            ViewModel.ShouldShowFilters)
+        {
+            FiltersComboBox.ItemsSource = ViewModel.Filters;
+            FiltersComboBox.Visibility = Visibility.Visible;
+
+            var selectedItem = ViewModel.Filters
+                                        .OfType<FilterItemViewModel>()
+                                        .FirstOrDefault(f => f.Id == ViewModel.CurrentFilterId);
+            FiltersComboBox.SelectedItem = selectedItem;
+        }
+        else
+        {
+            FiltersComboBox.ItemsSource = null;
+            FiltersComboBox.SelectedItem = null;
+            FiltersComboBox.Visibility = Visibility.Collapsed;
+        }
     }
 }
