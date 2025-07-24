@@ -164,6 +164,12 @@ public partial class MainListPage : DynamicListPage,
                 if (_includeApps)
                 {
                     IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
+
+                    // Remove any top level pinned apps and use the apps from AllAppsCommandProvider.Page.GetItems()
+                    _filteredItems = _filteredItems.Where(item =>
+                                                        item is not TopLevelViewModel topLevelViewModel ||
+                                                        !apps.Any(app => app.Command.Id == topLevelViewModel.Id));
+
                     _filteredItems = _filteredItems.Concat(apps);
                 }
             }
