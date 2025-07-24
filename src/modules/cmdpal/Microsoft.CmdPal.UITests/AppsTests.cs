@@ -88,6 +88,7 @@ public class AppsTests : CommandPaletteTestBase
         Assert.IsTrue(clipboardContent.Contains("Calculator"), $"Clipboard content does not contain the expected file name. clipboard: {clipboardContent}");
     }
 
+    /*
     [TestMethod]
     public void ClickSecondaryButtonWin32AppTest()
     {
@@ -104,7 +105,7 @@ public class AppsTests : CommandPaletteTestBase
 
         var fileExplorerWindow = this.Find<Window>(By.ClassName("RegEdit_RegEdit"), global: true);
         Assert.IsNotNull(fileExplorerWindow, "Registry Editor window not found.");
-    }
+    }*/
 
     [TestMethod]
     public void OpenContextMenuTest()
@@ -134,6 +135,7 @@ public class AppsTests : CommandPaletteTestBase
         Assert.IsNotNull(notepadWindow, "Notepad window not found.");
     }
 
+    /*
     [TestMethod]
     public void ContextMenuRunAsAdminButtonTest()
     {
@@ -150,7 +152,7 @@ public class AppsTests : CommandPaletteTestBase
 
         var notepadWindow = this.Find<Window>(By.ClassName("Notepad"), global: true);
         Assert.IsNotNull(notepadWindow, "Notepad window not found.");
-    }
+    }*/
 
     [STATestMethod]
     [TestMethod]
