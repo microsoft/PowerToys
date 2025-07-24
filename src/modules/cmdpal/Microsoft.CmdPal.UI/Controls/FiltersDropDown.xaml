@@ -9,6 +9,7 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    Background="Transparent"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
@@ -33,7 +34,7 @@
 
             <!--  Template for the filter items  -->
             <DataTemplate x:Key="FilterItemViewModelTemplate" x:DataType="coreViewModels:FilterItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Name}">
+                <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
@@ -72,7 +73,7 @@
         PlaceholderText="Filters"
         SelectionChanged="FiltersComboBox_SelectionChanged"
         Style="{StaticResource ComboBoxStyle}"
-        Visibility="Collapsed">
+        Visibility="{Binding ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
         <ComboBox.ItemContainerStyle>
             <Style BasedOn="{StaticResource DefaultComboBoxItemStyle}" TargetType="ComboBoxItem">
                 <Setter Property="MinHeight" Value="0" />

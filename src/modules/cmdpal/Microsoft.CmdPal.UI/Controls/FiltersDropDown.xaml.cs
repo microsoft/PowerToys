@@ -2,18 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
-using Microsoft.UI.Dispatching;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using CoreVirtualKeyStates = Windows.UI.Core.CoreVirtualKeyStates;
-using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -26,9 +18,8 @@ public sealed partial class FiltersDropDown : UserControl,
         set => SetValue(CurrentPageViewModelProperty, value);
     }
 
-    // Using a DependencyProperty as the backing store for CurrentPageViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty CurrentPageViewModelProperty =
-        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(SearchBar), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
+        DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(FiltersDropDown), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
 
     public FiltersViewModel? ViewModel { get; set; }
 
@@ -40,6 +31,21 @@ public sealed partial class FiltersDropDown : UserControl,
             && e.OldValue is PageViewModel old)
         {
             old.PropertyChanged -= @this.Page_PropertyChanged;
+        }
+
+        // If this new page does not implement ListViewModel or if
+        // it doesn't contain Filters, we need to clear any filters
+        // that may have been set.
+        if (@this != null)
+        {
+            if (e.NewValue is ListViewModel listViewModel)
+            {
+                @this.ViewModel = listViewModel.Filters;
+            }
+            else
+            {
+                @this.ViewModel = null;
+            }
         }
 
         if (@this != null
@@ -64,18 +70,18 @@ public sealed partial class FiltersDropDown : UserControl,
             if (property == nameof(ListViewModel.Filters))
             {
                 ViewModel = list.Filters;
-                FiltersComboBox.Visibility = ViewModel?.ShouldShowFilters ?? false ?
-                        Visibility.Visible :
-                        Visibility.Collapsed;
 
-                if (ViewModel is not null &&
-                    ViewModel.Filters is not null)
-                {
-                    FiltersComboBox.ItemsSource = ViewModel.Filters;
-                    FiltersComboBox.SelectedItem = ViewModel.Filters
-                                                                .OfType<FilterItemViewModel>()
-                                                                .FirstOrDefault(f => f.Id == ViewModel.CurrentFilterId);
-                }
+                // FiltersComboBox.Visibility = ViewModel?.ShouldShowFilters ?? false ?
+                //        Visibility.Visible :
+                //        Visibility.Collapsed;
+                // if (ViewModel is not null &&
+                //    ViewModel.Filters is not null)
+                // {
+                //    FiltersComboBox.ItemsSource = ViewModel.Filters;
+                //    FiltersComboBox.SelectedItem = ViewModel.Filters
+                //                                                .OfType<FilterItemViewModel>()
+                //                                                .FirstOrDefault(f => f.Id == ViewModel.CurrentFilterId);
+                // }
             }
         }
     }
