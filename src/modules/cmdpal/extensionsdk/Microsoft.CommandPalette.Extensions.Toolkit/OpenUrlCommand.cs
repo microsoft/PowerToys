@@ -13,7 +13,7 @@ public partial class OpenUrlCommand : InvokableCommand
     public OpenUrlCommand(string target)
     {
         _target = target;
-        Name = "Open";
+        Name = Properties.Resources.OpenUrlCommand_Open;
         Icon = new IconInfo("\uE8A7");
     }
 
