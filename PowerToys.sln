@@ -46,7 +46,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZones.UnitTests", "src
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{1AFB6476-670D-4E80-A464-657E01DFF482}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common.Lib-UnitTests", "src\common\UnitTests-CommonLib\UnitTests-CommonLib.vcxproj", "{1A066C63-64B3-45F8-92FE-664E1CCE8077}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common.Lib.UnitTests", "src\common\UnitTests-CommonLib\UnitTests-CommonLib.vcxproj", "{1A066C63-64B3-45F8-92FE-664E1CCE8077}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FancyZonesEditor", "src\modules\fancyzones\editor\FancyZonesEditor\FancyZonesEditor.csproj", "{5CCC8468-DEC8-4D36-99D4-5C891BEBD481}"
 EndProject
@@ -683,7 +683,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyboardManagerEditorUI", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorLibraryWrapper", "src\modules\keyboardmanager\KeyboardManagerEditorLibraryWrapper\KeyboardManagerEditorLibraryWrapper.vcxproj", "{4382A954-179A-4078-92AF-715187DFFF50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostsEdtior.FuzzTests", "src\modules\Hosts\Hosts.FuzzTests\HostsEdtior.FuzzTests.csproj", "{EBED240C-8702-452D-B764-6DB9DA9179AF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostsEditor.FuzzTests", "src\modules\Hosts\Hosts.FuzzTests\HostsEditor.FuzzTests.csproj", "{EBED240C-8702-452D-B764-6DB9DA9179AF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostsEditor.UITests", "src\modules\Hosts\Hosts.UITests\HostsEditor.UITests.csproj", "{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}"
 EndProject
