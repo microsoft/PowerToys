@@ -37,7 +37,7 @@ namespace MouseWithoutBorders
             }
         }
 
-        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        protected override void OnFormClosing(System.Windows.Forms.FormClosingEventArgs e)
         {
             MachineStuff.Settings = null;
 
@@ -47,7 +47,7 @@ namespace MouseWithoutBorders
                 _currentPage.OnPageClosing();
             }
 
-            base.OnClosing(e);
+            base.OnFormClosing(e);
         }
 
         internal SettingsFormPage GetCurrentPage()
