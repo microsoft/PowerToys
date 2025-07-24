@@ -156,7 +156,26 @@ public partial class App : Application, IDisposable
             return;
         }
 
-        var dpi = NativeMethods.GetDpiForWindow(hwnd);
+        uint dpi = 96;
+
+        var awareness = NativeMethods.GetAwarenessFromDpiAwarenessContext(NativeMethods.GetWindowDpiAwarenessContext(hwnd));
+        bool isDpiAware = awareness is NativeMethods.DPI_AWARENESS.PER_MONITOR_AWARE;
+
+        // If the window is DPI unaware, we need to adjust the scale based on the monitor DPI
+        if (isDpiAware)
+        {
+            dpi = NativeMethods.GetDpiForWindow(hwnd);
+        }
+        else
+        {
+            var monitor = NativeMethods.MonitorFromWindow(hwnd, NativeMethods.MONITOR_DEFAULTTONEAREST);
+
+            if (NativeMethods.GetDpiForMonitor(monitor, NativeMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var monDpiX, out _) == 0)
+            {
+                dpi = monDpiX;
+            }
+        }
+
         double scale = 96.0 / dpi;
 
         var rawColor = _currentSettings.Properties.OverlayColor;
