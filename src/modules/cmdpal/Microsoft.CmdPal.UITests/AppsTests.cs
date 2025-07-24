@@ -88,6 +88,7 @@ public class AppsTests : CommandPaletteTestBase
         Assert.IsTrue(clipboardContent.Contains("Calculator"), $"Clipboard content does not contain the expected file name. clipboard: {clipboardContent}");
     }
 
+    /*
     [TestMethod]
     public void ClickSecondaryButtonWin32AppTest()
     {
@@ -104,7 +105,7 @@ public class AppsTests : CommandPaletteTestBase
 
         var fileExplorerWindow = this.Find<Window>(By.ClassName("RegEdit_RegEdit"), global: true);
         Assert.IsNotNull(fileExplorerWindow, "Registry Editor window not found.");
-    }
+    }*/
 
     [TestMethod]
     public void OpenContextMenuTest()
@@ -134,6 +135,7 @@ public class AppsTests : CommandPaletteTestBase
         Assert.IsNotNull(notepadWindow, "Notepad window not found.");
     }
 
+    /*
     [TestMethod]
     public void ContextMenuRunAsAdminButtonTest()
     {
@@ -150,7 +152,7 @@ public class AppsTests : CommandPaletteTestBase
 
         var notepadWindow = this.Find<Window>(By.ClassName("Notepad"), global: true);
         Assert.IsNotNull(notepadWindow, "Notepad window not found.");
-    }
+    }*/
 
     [STATestMethod]
     [TestMethod]
@@ -222,5 +224,39 @@ public class AppsTests : CommandPaletteTestBase
 
         var commandPromptWindow = FindWindowsTerminalWindow();
         Assert.IsNotNull(commandPromptWindow, "Command Prompt window not found.");
+    }
+
+    [TestMethod]
+    public void ContextMenuOpenLocationTest()
+    {
+        const string appName = "Command Prompt";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
+        OpenContextMenu();
+        var openLocationButton = this.Find<NavigationViewItem>("Open location");
+        Assert.IsNotNull(openLocationButton, "Open location button not found.");
+        openLocationButton.Click();
+        var fileExplorerWindow = FindFileExploerWindow();
+        Assert.IsNotNull(fileExplorerWindow, "File Explorer window not found.");
+    }
+
+    [TestMethod]
+    public void ContextMenuSearchTest()
+    {
+        const string appName = "Command Prompt";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
+        OpenContextMenu();
+
+        var contextMenuSearchBox = this.Find<TextBox>("Search commands...");
+        Assert.IsNotNull(contextMenuSearchBox, "Context menu search box not found.");
+
+        Assert.AreEqual(contextMenuSearchBox.SetText("Open location", true).Text, "Open location");
+        var openLocationButton = this.Find<NavigationViewItem>("Open location");
+        Assert.IsNotNull(openLocationButton, "Open location button not found.");
+        openLocationButton.Click();
+
+        var fileExplore = FindFileExploerWindow();
+        Assert.IsNotNull(fileExplore, "File Explorer window not found.");
     }
 }

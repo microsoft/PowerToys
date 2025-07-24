@@ -202,8 +202,8 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var textItem = this.Find<Window>("C:\\Windows\\system32\\cmd.exe", global: true);
-        Assert.IsNotNull(textItem, "The console did not open with the expected path.");
+        var windowsTerminal = FindWindowsTerminalWindow();
+        Assert.IsNotNull(windowsTerminal, "The console did not open with the expected path.");
     }
 
     [TestMethod]
