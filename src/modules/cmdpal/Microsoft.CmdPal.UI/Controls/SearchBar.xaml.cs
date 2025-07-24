@@ -336,8 +336,6 @@ public sealed partial class SearchBar : UserControl,
                     // ... Move the cursor to the end of the input
                     FilterBox.Select(FilterBox.Text.Length, 0);
                 }
-
-                // TODO! deal with suggestion
             }
             else if (property == nameof(ListViewModel.InitialSearchText))
             {
