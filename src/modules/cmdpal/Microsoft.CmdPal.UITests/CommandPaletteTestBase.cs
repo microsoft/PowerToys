@@ -66,7 +66,8 @@ public class CommandPaletteTestBase : UITestBase
 
     protected void UACConfirm()
     {
-        Session.SendKey(Key.Left);
+        FocusOnCenter();
+        Session.SendKey(Key.Tab);
         Session.SendKey(Key.Enter);
     }
 
