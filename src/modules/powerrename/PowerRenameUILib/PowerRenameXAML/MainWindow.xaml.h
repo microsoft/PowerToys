@@ -88,6 +88,7 @@ namespace winrt::PowerRenameUI::implementation
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> DateTimeShortcuts() { return m_dateTimeShortcuts; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> CounterShortcuts() { return m_CounterShortcuts; }
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> RandomizerShortcuts() { return m_RandomizerShortcuts; }
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> ExifShortcuts() { return m_exifShortcuts; }
 
         hstring OriginalCount();
         void OriginalCount(hstring value);
@@ -111,6 +112,7 @@ namespace winrt::PowerRenameUI::implementation
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_dateTimeShortcuts;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_CounterShortcuts;
         winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_RandomizerShortcuts;
+        winrt::Windows::Foundation::Collections::IObservableVector<PowerRenameUI::PatternSnippet> m_exifShortcuts;
 
         // Used by PowerRenameManagerEvents
         HRESULT OnRename(_In_ IPowerRenameItem* renameItem);

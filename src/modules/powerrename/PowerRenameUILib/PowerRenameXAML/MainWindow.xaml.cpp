@@ -225,6 +225,18 @@ namespace winrt::PowerRenameUI::implementation
         m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${rstringdigit=36}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Digit").ValueAsString()));
         m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${ruuidv4}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Uuid").ValueAsString()));
 
+        m_exifShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$CameraMake", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_CameraMake").ValueAsString()));
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$CameraModel", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_CameraModel").ValueAsString()));
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$LensModel", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_LensModel").ValueAsString()));
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$FNumber", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_FNumber").ValueAsString()));
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$ISO", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_ISO").ValueAsString()));
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$ExposureTime", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_ExposureTime").ValueAsString()));
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$FocalLength", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_FocalLength").ValueAsString()));
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$ExifDateTaken", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_ExifDateTaken").ValueAsString()));
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$ImageWidth", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_ImageWidth").ValueAsString()));
+        m_exifShortcuts.Append(winrt::make<PatternSnippet>(L"$ImageHeight", manager.MainResourceMap().GetValue(L"Resources/ExifCheatSheet_ImageHeight").ValueAsString()));
+
         InitializeComponent();
 
         m_etwTrace.UpdateState(true);
