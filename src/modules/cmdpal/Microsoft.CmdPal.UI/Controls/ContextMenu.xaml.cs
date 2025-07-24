@@ -5,6 +5,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -38,6 +39,9 @@ public sealed partial class ContextMenu : UserControl,
 
     public void Receive(OpenContextMenuMessage message)
     {
+        ViewModel.FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
+        ViewModel.ResetContextMenu();
+
         UpdateUiForStackChange();
     }
 

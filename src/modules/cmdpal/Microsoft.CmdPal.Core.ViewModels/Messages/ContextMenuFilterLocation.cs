@@ -8,13 +8,6 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
-/// <summary>
-/// Used to announce the context menu should open
-/// </summary>
-public record OpenContextMenuMessage(FrameworkElement? Element, FlyoutPlacementMode? FlyoutPlacementMode, Point? Point, ContextMenuFilterLocation ContextMenuFilterLocation)
-{
-}
-
 public enum ContextMenuFilterLocation
 {
     Top,
