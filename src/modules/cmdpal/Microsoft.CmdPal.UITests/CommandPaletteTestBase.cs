@@ -54,21 +54,19 @@ public class CommandPaletteTestBase : UITestBase
 
     protected Window FindFileExploerWindow()
     {
-        var fileExplorerWindow = this.Find<Window>(By.ClassName("CabinetWClass"), global: true, timeoutMS: 20000);
+        var fileExplorerWindow = this.Find<Window>(By.ClassName("CabinetWClass"), global: true, timeoutMS: 2000);
         return fileExplorerWindow;
     }
 
     protected Window FindWindowsTerminalWindow()
     {
-        var terminalWindow = this.Find<Window>(By.ClassName("CASCADIA_HOSTING_WINDOW_CLASS"), global: true);
+        var terminalWindow = this.Find<Window>(By.ClassName("CASCADIA_HOSTING_WINDOW_CLASS"), global: true, timeoutMS: 2000);
         return terminalWindow;
     }
 
     protected void UACConfirm()
     {
-        Task.Delay(2000).Wait(); // Wait for the UAC dialog to appear
-        Session.SendKey(Key.Tab);
-        Session.SendKey(Key.Tab);
+        Session.SendKey(Key.Left);
         Session.SendKey(Key.Enter);
     }
 

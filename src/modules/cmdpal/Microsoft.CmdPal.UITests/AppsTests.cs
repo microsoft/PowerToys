@@ -88,7 +88,6 @@ public class AppsTests : CommandPaletteTestBase
         Assert.IsTrue(clipboardContent.Contains("Calculator"), $"Clipboard content does not contain the expected file name. clipboard: {clipboardContent}");
     }
 
-    /*
     [TestMethod]
     public void ClickSecondaryButtonWin32AppTest()
     {
@@ -105,7 +104,7 @@ public class AppsTests : CommandPaletteTestBase
 
         var fileExplorerWindow = this.Find<Window>(By.ClassName("RegEdit_RegEdit"), global: true);
         Assert.IsNotNull(fileExplorerWindow, "Registry Editor window not found.");
-    }*/
+    }
 
     [TestMethod]
     public void OpenContextMenuTest()
@@ -135,7 +134,6 @@ public class AppsTests : CommandPaletteTestBase
         Assert.IsNotNull(notepadWindow, "Notepad window not found.");
     }
 
-    /*
     [TestMethod]
     public void ContextMenuRunAsAdminButtonTest()
     {
@@ -152,7 +150,7 @@ public class AppsTests : CommandPaletteTestBase
 
         var notepadWindow = this.Find<Window>(By.ClassName("Notepad"), global: true);
         Assert.IsNotNull(notepadWindow, "Notepad window not found.");
-    }*/
+    }
 
     [STATestMethod]
     [TestMethod]
@@ -221,6 +219,8 @@ public class AppsTests : CommandPaletteTestBase
         var openInConsoleButton = this.Find<NavigationViewItem>("Open path in console");
         Assert.IsNotNull(openInConsoleButton);
         openInConsoleButton.Click();
+
+        Task.Delay(2000).Wait(); // Wait for the console to open
 
         var commandPromptWindow = FindWindowsTerminalWindow();
         Assert.IsNotNull(commandPromptWindow, "Command Prompt window not found.");
