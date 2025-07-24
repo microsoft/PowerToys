@@ -152,7 +152,7 @@ public class NumberTranslatorTests
     [DataRow("fr-FR", "12.0004", "12.0004")]
 
     // [DataRow("fr-FR", "123.01 + 52.30", "123.01 + 52.30")]
-    // [DataRow("fr-FR", "123.001 + 52.30", "123.001 + 52.30")] passed locally, fialed in CI
+    // [DataRow("fr-FR", "123.001 + 52.30", "123.001 + 52.30")] passed locally, failed in CI
     public void Translate_NoRemovalOfLeadingZeroesOnEdgeCases(string sourceCultureName, string input, string expectedResult)
     {
         // Arrange
