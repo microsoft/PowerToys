@@ -32,6 +32,7 @@ public partial class MainListPage : DynamicListPage,
     public MainListPage(IServiceProvider serviceProvider)
     {
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
+        PlaceholderText = "Type here to search commands...";
         _serviceProvider = serviceProvider;
 
         _tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
