@@ -4,8 +4,8 @@
     {
       "fuzzer": {
         "$type": "libfuzzerDotNet",
-        "dll": "Hosts.FuzzTests.dll",
-        "class": "Hosts.FuzzTests.FuzzTests",
+        "dll": "HostsEditor.FuzzTests.dll",
+        "class": "HostsEditor.FuzzTests.FuzzTests",
         "method": "FuzzValidIPv4",
         "FuzzingTargetBinaries": [
           "PowerToys.Hosts.dll"
@@ -35,8 +35,8 @@
         // the DLL and PDB files
         // you will need to add any other files required
         // (globs are supported)
-        "Hosts.FuzzTests.dll",
-        "Hosts.FuzzTests.pdb",
+        "HostsEditor.FuzzTests.dll",
+        "HostsEditor.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
         "WinRT.Runtime.dll"
       ],
@@ -45,8 +45,8 @@
     {
       "fuzzer": {
         "$type": "libfuzzerDotNet",
-        "dll": "Hosts.FuzzTests.dll",
-        "class": "Hosts.FuzzTests.FuzzTests",
+        "dll": "HostsEditor.FuzzTests.dll",
+        "class": "HostsEditor.FuzzTests.FuzzTests",
         "method": "FuzzValidIPv6",
         "FuzzingTargetBinaries": [
           "PowerToys.Hosts.dll"
@@ -76,8 +76,8 @@
         // the DLL and PDB files
         // you will need to add any other files required
         // (globs are supported)
-        "Hosts.FuzzTests.dll",
-        "Hosts.FuzzTests.pdb",
+        "HostsEditor.FuzzTests.dll",
+        "HostsEditor.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
         "WinRT.Runtime.dll"
       ],
@@ -86,8 +86,8 @@
     {
       "fuzzer": {
         "$type": "libfuzzerDotNet",
-        "dll": "Hosts.FuzzTests.dll",
-        "class": "Hosts.FuzzTests.FuzzTests",
+        "dll": "HostsEditor.FuzzTests.dll",
+        "class": "HostsEditor.FuzzTests.FuzzTests",
         "method": "FuzzValidHosts",
         "FuzzingTargetBinaries": [
           "PowerToys.Hosts.dll"
@@ -117,8 +117,8 @@
         // the DLL and PDB files
         // you will need to add any other files required
         // (globs are supported)
-        "Hosts.FuzzTests.dll",
-        "Hosts.FuzzTests.pdb",
+        "HostsEditor.FuzzTests.dll",
+        "HostsEditor.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
         "WinRT.Runtime.dll"
       ],
@@ -127,8 +127,8 @@
     {
       "fuzzer": {
         "$type": "libfuzzerDotNet",
-        "dll": "Hosts.FuzzTests.dll",
-        "class": "Hosts.FuzzTests.FuzzTests",
+        "dll": "HostsEditor.FuzzTests.dll",
+        "class": "HostsEditor.FuzzTests.FuzzTests",
         "method": "FuzzWriteAsync",
         "FuzzingTargetBinaries": [
           "PowerToys.Hosts.dll"
@@ -160,8 +160,8 @@
         // (globs are supported)
         "Castle.Core.dll",
         "CommunityToolkit.Mvvm.dll",
-        "Hosts.FuzzTests.dll",
-        "Hosts.FuzzTests.pdb",
+        "HostsEditor.FuzzTests.dll",
+        "HostsEditor.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
         "Moq.dll",
         "System.IO.Abstractions.dll",

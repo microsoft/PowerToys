@@ -3,8 +3,8 @@
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
-    <ProjectGuid>{3A9A791E-94A9-49F8-8401-C11CE288D5FB}</ProjectGuid>
-    <RootNamespace>Microsoft.FancyZonesEditor.UITests</RootNamespace>
+    <ProjectGuid>{69D76A76-6EF6-4846-94CD-EAAF0CAC9F15}</ProjectGuid>
+    <RootNamespace>Microsoft.FancyZones.UITests</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
@@ -14,13 +14,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UITests-FancyZonesEditor\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\FancyZones.UITests\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" />
     <PackageReference Include="MSTest" />
-    <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.Net.Http" />
     <PackageReference Include="System.Private.Uri" />
     <PackageReference Include="System.Text.RegularExpressions" />
@@ -28,10 +27,15 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
+    <ProjectReference Include="..\editor\FancyZonesEditor\FancyZonesEditor.csproj" />
+    <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+    <ProjectReference Include="..\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\editor\FancyZonesEditor\FancyZonesEditor.csproj" />
-    <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+	<ProjectReference Include="..\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj" />
+	<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
   </ItemGroup>
+
 </Project>
