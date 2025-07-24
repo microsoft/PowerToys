@@ -87,6 +87,7 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalDependencies>version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>bafunctions.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
 

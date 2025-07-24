@@ -5,7 +5,7 @@
     <?include $(sys.CURRENTDIR)\Common.wxi?>
 
     <Bundle Name="PowerToys (Preview) $(var.PowerToysPlatform)" Version="$(var.Version)" Manufacturer="Microsoft Corporation" IconSourceFile="$(var.BinDir)svgs\icon.ico" UpgradeCode="$(var.UpgradeCode)">
-        <BootstrapperApplication bal:BAFunctions="SilentFilesInUseBAFunction.dll">
+        <BootstrapperApplication>
             <bal:WixStandardBootstrapperApplication 
                 LicenseFile="$(var.RepoDir)\installer\License.rtf" 
                 LogoFile="$(var.RepoDir)\installer\PowerToysSetupVNext\Images\logo44.png" 
@@ -14,7 +14,7 @@
                 Theme="rtfLicense" 
                 ThemeFile="$(var.RepoDir)\installer\PowerToysSetupVNext\RtfTheme.xml"/>
             <Payload Name="icon.ico" SourceFile="$(var.BinDir)svgs\icon.ico" Compressed="yes" />
-            <Payload Name="SilentFilesInUseBAFunction.dll" SourceFile="$(var.RepoDir)installer\$(var.PowerToysPlatform)\Release\SilentFilesInUseBAFunction.dll" Compressed="yes" />
+            <Payload Name="SilentFilesInUseBAFunction.dll" SourceFile="$(var.RepoDir)installer\$(var.PowerToysPlatform)\Release\SilentFilesInUseBAFunction.dll" Compressed="yes" bal:BAFunctions="yes" />
         </BootstrapperApplication>
 
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
@@ -56,8 +56,9 @@
             </ExePackage>
             <ExePackage DisplayName="Microsoft Edge WebView2" Name="MicrosoftEdgeWebview2Setup.exe" Compressed="yes" Id="WebView2" DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser" SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe" Permanent="yes" PerMachine="$(var.PerMachineYesNo)" InstallArguments="/silent /install" RepairArguments="/repair /passive" UninstallArguments="/silent /uninstall">
             </ExePackage>
-            <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" >
+            <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" bal:DisplayInternalUICondition="false">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
+                <MsiProperty Name="MSIRESTARTMANAGERCONTROL" Value="Disable" />
             </MsiPackage>
         </Chain>
     </Bundle>
