@@ -15,14 +15,8 @@ namespace Microsoft.CmdPal.UITests;
 [TestClass]
 public class CommandPaletteTestBase : UITestBase
 {
-    [TestInitialize]
-    public void TestInitialize()
-    {
-        SendKeys(Key.Win, Key.M);
-    }
-
     public CommandPaletteTestBase()
-        : base(PowerToysModule.CommandPalette)
+        : base(PowerToysModule.CommandPalette, hideAllWindowBeforeStart: true)
     {
     }
 
@@ -58,10 +52,24 @@ public class CommandPaletteTestBase : UITestBase
         contextMenuButton.Click();
     }
 
+    protected Window FindFileExploerWindow()
+    {
+        var fileExplorerWindow = this.Find<Window>(By.ClassName("CabinetWClass"), global: true, timeoutMS: 20000);
+        return fileExplorerWindow;
+    }
+
+    protected Window FindWindowsTerminalWindow()
+    {
+        var terminalWindow = this.Find<Window>(By.ClassName("CASCADIA_HOSTING_WINDOW_CLASS"), global: true);
+        return terminalWindow;
+    }
+
     protected void UACConfirm()
     {
-        Session.SendKeys(Key.Left);
-        Session.SendKeys(Key.Enter);
+        Task.Delay(2000).Wait(); // Wait for the UAC dialog to appear
+        Session.SendKey(Key.Tab);
+        Session.SendKey(Key.Tab);
+        Session.SendKey(Key.Enter);
     }
 
     protected void HideAllWindow()

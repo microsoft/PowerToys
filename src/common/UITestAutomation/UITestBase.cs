@@ -29,10 +29,11 @@ namespace Microsoft.PowerToys.UITest
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
         private readonly string[]? commandLineArgs;
+        private readonly bool hideAllWindowBeforeStart;
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
 
-        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
+        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null, bool hideAllWindowBeforeStart = false)
         {
             this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
@@ -48,6 +49,7 @@ namespace Microsoft.PowerToys.UITest
             this.scope = scope;
             this.size = size;
             this.commandLineArgs = commandLineArgs;
+            this.hideAllWindowBeforeStart = hideAllWindowBeforeStart;
         }
 
         /// <summary>
@@ -67,6 +69,12 @@ namespace Microsoft.PowerToys.UITest
 
                 // Escape Popups before starting
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
+            }
+
+            if (hideAllWindowBeforeStart)
+            {
+                KeyboardHelper.SendKeys([Key.Win, Key.M]);
+                Task.Delay(2000).Wait(); // Wait for a second to ensure all windows are minimized
             }
 
             this.sessionHelper = new SessionHelper(scope, commandLineArgs).Init();

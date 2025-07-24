@@ -107,9 +107,10 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(openButton);
 
         openButton.Click();
-        var notepadWindow = this.Find<Window>($"{TestFolderName} - File Explorer", global: true);
 
-        Assert.IsNotNull(notepadWindow);
+        var fileExplorerWindow = FindFileExploerWindow();
+
+        Assert.IsNotNull(fileExplorerWindow);
     }
 
     [TestMethod]
@@ -122,9 +123,9 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(searchItem);
         searchItem.DoubleClick();
 
-        var fileExplorer = this.Find<Window>($"{TestFolderName} - File Explorer", global: true);
+        var fileExplorerWindow = FindFileExploerWindow();
 
-        Assert.IsNotNull(fileExplorer);
+        Assert.IsNotNull(fileExplorerWindow);
     }
 
     [TestMethod]
@@ -181,9 +182,9 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(showInFolderButton);
         showInFolderButton.Click();
 
-        var fileExplorer = this.Find<Window>($"{TestFolderName} - File Explorer", global: true, timeoutMS: 20000);
+        var fileExplorerWindow = FindFileExploerWindow();
 
-        Assert.IsNotNull(fileExplorer);
+        Assert.IsNotNull(fileExplorerWindow);
     }
 
     [TestMethod]

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -24,26 +25,32 @@ public class AppsTests : CommandPaletteTestBase
         searchFileItem.DoubleClick();
     }
 
-    [TestMethod]
-    public void OpenWin32App()
+    public NavigationViewItem SearchAppByName(string name)
     {
         EnterAppsExtension();
-        SetAppsExtensionSearchBox("Command Prompt");
-        var fileExplorer = this.Find<NavigationViewItem>("Command Prompt");
-        Assert.IsNotNull(fileExplorer, "Notepad app not found.");
-        fileExplorer.DoubleClick();
+        SetAppsExtensionSearchBox(name);
+        var item = this.Find<NavigationViewItem>(name);
+        Assert.IsNotNull(item, $"{name} app not found.");
 
-        var fileExplorerWindow = this.Find<Window>("Command Prompt", global: true);
-        Assert.IsNotNull(fileExplorerWindow, "Command Prompt window not found.");
+        return item;
     }
 
     [TestMethod]
-    public void OpenUWPApp()
+    public void OpenWin32AppTest()
     {
-        EnterAppsExtension();
-        SetAppsExtensionSearchBox("Calculator");
-        var calculatorItem = this.Find<NavigationViewItem>("Calculator");
-        Assert.IsNotNull(calculatorItem, "Calculator app not found.");
+        const string appName = "Notepad";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.DoubleClick();
+
+        var commandPromptWindow = FindWindowsTerminalWindow();
+        Assert.IsNotNull(commandPromptWindow, "Command Prompt window not found.");
+    }
+
+    [TestMethod]
+    public void OpenUWPAppTest()
+    {
+        const string appName = "Calculator";
+        var calculatorItem = SearchAppByName(appName);
         calculatorItem.DoubleClick();
 
         var calculatorWindow = this.Find<Window>("Calculator", global: true);
@@ -51,55 +58,169 @@ public class AppsTests : CommandPaletteTestBase
     }
 
     [TestMethod]
-    public void ClickPrimaryButton()
+    public void ClickPrimaryButtonTest()
     {
-        EnterAppsExtension();
-        SetAppsExtensionSearchBox("Calculator");
-        var calculatorItem = this.Find<NavigationViewItem>("Calculator");
-        Assert.IsNotNull(calculatorItem, "Calculator app not found.");
-        calculatorItem.Click();
+        const string appName = "Notepad";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
 
         var primaryButton = this.Find<Button>("Run");
         Assert.IsNotNull(primaryButton, "Primary button not found.");
-        primaryButton.DoubleClick();
-        var calculatorWindow = this.Find<Window>("Calculator", global: true);
-        Assert.IsNotNull(calculatorWindow, "Calculator window not found.");
+        primaryButton.Click();
+        var calculatorWindow = this.Find<Window>(By.ClassName("Notepad"), global: true);
+        Assert.IsNotNull(calculatorWindow, "Notepad window not found.");
     }
 
-    [TestMethod]
     [STATestMethod]
-    public void ClickSecondaryButtonUWPApp()
+    [TestMethod]
+    public void ClickSecondaryButtonUWPAppTest()
     {
-        EnterAppsExtension();
-        SetAppsExtensionSearchBox("Calculator");
-        var calculatorItem = this.Find<NavigationViewItem>("Calculator");
-        Assert.IsNotNull(calculatorItem, "Calculator app not found.");
+        const string appName = "Calculator";
+        var calculatorItem = SearchAppByName(appName);
+
         calculatorItem.Click();
 
         var secondaryButton = this.Find<Button>("Copy path");
         Assert.IsNotNull(secondaryButton, "Secondary button not found.");
-        secondaryButton.DoubleClick();
+        secondaryButton.Click();
 
         var clipboardContent = System.Windows.Forms.Clipboard.GetText();
         Assert.IsTrue(clipboardContent.Contains("Calculator"), $"Clipboard content does not contain the expected file name. clipboard: {clipboardContent}");
     }
 
     [TestMethod]
-    public void ClickSecondaryButtonWin32App()
+    public void ClickSecondaryButtonWin32AppTest()
     {
-        EnterAppsExtension();
-        SetAppsExtensionSearchBox("Registry Editor");
-        var calculatorItem = this.Find<NavigationViewItem>("Registry Editor");
-        Assert.IsNotNull(calculatorItem, "Registry Editor app not found.");
+        const string appName = "Registry Editor";
+        var calculatorItem = SearchAppByName(appName);
+
         calculatorItem.Click();
 
         var secondaryButton = this.Find<Button>("Run as administrator");
         Assert.IsNotNull(secondaryButton, "Secondary button not found.");
-        secondaryButton.DoubleClick();
+        secondaryButton.Click();
 
         UACConfirm();
 
-        var fileExplorerWindow = this.Find<Window>("Registry Editor", global: true);
+        var fileExplorerWindow = this.Find<Window>(By.ClassName("RegEdit_RegEdit"), global: true);
         Assert.IsNotNull(fileExplorerWindow, "Registry Editor window not found.");
+    }
+
+    [TestMethod]
+    public void OpenContextMenuTest()
+    {
+        const string appName = "Notepad";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
+        OpenContextMenu();
+
+        var pinButton = this.Find<NavigationViewItem>("Pin");
+        Assert.IsNotNull(pinButton);
+    }
+
+    [TestMethod]
+    public void ContextMenuRunButtonTest()
+    {
+        const string appName = "Notepad";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
+        OpenContextMenu();
+
+        var runButton = this.Find<NavigationViewItem>("Run");
+        Assert.IsNotNull(runButton);
+        runButton.Click();
+
+        var notepadWindow = this.Find<Window>(By.ClassName("Notepad"), global: true);
+        Assert.IsNotNull(notepadWindow, "Notepad window not found.");
+    }
+
+    [TestMethod]
+    public void ContextMenuRunAsAdminButtonTest()
+    {
+        const string appName = "Notepad";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
+        OpenContextMenu();
+
+        var runButton = this.Find<NavigationViewItem>("Run as administrator");
+        Assert.IsNotNull(runButton);
+        runButton.Click();
+
+        UACConfirm();
+
+        var notepadWindow = this.Find<Window>(By.ClassName("Notepad"), global: true);
+        Assert.IsNotNull(notepadWindow, "Notepad window not found.");
+    }
+
+    [STATestMethod]
+    [TestMethod]
+    public void ContextMenuCopyPathButtonTest()
+    {
+        const string appName = "Notepad";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
+        OpenContextMenu();
+
+        var copyPathButton = this.Find<NavigationViewItem>("Copy path");
+        Assert.IsNotNull(copyPathButton);
+        copyPathButton.Click();
+
+        var clipboardContent = System.Windows.Forms.Clipboard.GetText();
+        Assert.IsTrue(clipboardContent.Contains("Notepad"), $"Clipboard content does not contain the expected file name. clipboard: {clipboardContent}");
+    }
+
+    [TestMethod]
+    public void ContextMenuPinTest()
+    {
+        const string appName = "Notepad";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
+        OpenContextMenu();
+
+        var pinButton = this.Find<NavigationViewItem>("Pin");
+        Assert.IsNotNull(pinButton);
+        pinButton.Click();
+
+        SetAppsExtensionSearchBox(string.Empty);
+        var item = this.Find<NavigationViewItem>(appName);
+        Assert.IsNotNull(item, $"{appName} app not found.");
+        OpenContextMenu();
+        var unPinButton = this.Find<NavigationViewItem>("Unpin");
+        Assert.IsNotNull(unPinButton);
+        unPinButton.Click();
+        SetAppsExtensionSearchBox(string.Empty);
+    }
+
+    [TestMethod]
+    public void ContextMenuOpenContainingFolderTest()
+    {
+        const string appName = "Calculator";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
+        OpenContextMenu();
+
+        var openContainingFolderButton = this.Find<NavigationViewItem>("Open containing folder");
+        Assert.IsNotNull(openContainingFolderButton);
+        openContainingFolderButton.Click();
+
+        var fileExplorerWindow = FindFileExploerWindow();
+
+        Assert.IsNotNull(fileExplorerWindow);
+    }
+
+    [TestMethod]
+    public void ContextMenuOpenPathInConsole()
+    {
+        const string appName = "Notepad";
+        var notepadItem = SearchAppByName(appName);
+        notepadItem.Click();
+        OpenContextMenu();
+
+        var openInConsoleButton = this.Find<NavigationViewItem>("Open path in console");
+        Assert.IsNotNull(openInConsoleButton);
+        openInConsoleButton.Click();
+
+        var commandPromptWindow = FindWindowsTerminalWindow();
+        Assert.IsNotNull(commandPromptWindow, "Command Prompt window not found.");
     }
 }
