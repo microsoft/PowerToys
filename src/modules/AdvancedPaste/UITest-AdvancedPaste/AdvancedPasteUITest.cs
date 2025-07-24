@@ -55,7 +55,7 @@ namespace Microsoft.AdvancedPaste.UITests
         }
 
         public AdvancedPasteUITest()
-            : base(PowerToysModule.PowerToysSettings, size: WindowSize.Small)
+            : base(PowerToysModule.PowerToysSettings, size: WindowSize.Large_Vertical)
         {
             Type currentTestType = typeof(AdvancedPasteUITest);
             string? dirName = Path.GetDirectoryName(currentTestType.Assembly.Location);
@@ -259,8 +259,34 @@ namespace Microsoft.AdvancedPaste.UITests
            - [] Open Settings and Disable clipboard history. Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
          * Disable Advanced Paste, try different Advanced Paste hotkeys and confirm that it's disabled and nothing happens.
          */
-        private void TestCaseClipboardHistory()
+        [TestMethod]
+        [TestCategory("AdvancedPasteUITest")]
+        [TestCategory("TestCaseClipboardHistoryDeleteTest")]
+        public void TestCaseClipboardHistoryDeleteTest()
         {
+            // Open Settings and Enable clipboard history (if not enabled already).
+            RestartScopeExe();
+            Thread.Sleep(1000);
+
+            // Find the PowerToys Settings window
+            var settingsWindow = Find<Window>("PowerToys Settings", global: true);
+            Assert.IsNotNull(settingsWindow, "Failed to open PowerToys Settings window");
+
+            if (FindAll<NavigationViewItem>("Advanced Paste").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                Find<NavigationViewItem>("System Tools").Click();
+            }
+
+            Find<NavigationViewItem>("Advanced Paste").Click();
+
+            Find<ToggleSwitch>("Clipboard history").Toggle(true);
+
+            SendKeys(Key.Win, Key.D);
+
+            // Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry.
+
+            // Check OS clipboard history (Win+V), and confirm that the same entry no longer exist.
         }
 
         private void ContentCopyAndPasteDirectly(string fileName, bool isRTF = false)
