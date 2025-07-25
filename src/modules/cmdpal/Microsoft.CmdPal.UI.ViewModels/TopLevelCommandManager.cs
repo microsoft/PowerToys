@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
@@ -20,7 +21,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
-    IPageContext
+    IPageContext,
+    IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly TaskScheduler _taskScheduler;
@@ -28,6 +30,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
     private readonly Lock _commandProvidersLock = new();
+    private readonly SupersedingAsyncGate _reloadCommandsGate;
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
@@ -36,6 +39,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         _serviceProvider = serviceProvider;
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
+        _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
     }
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
@@ -144,46 +148,10 @@ public partial class TopLevelCommandManager : ObservableObject,
     /// <returns>an awaitable task</returns>
     private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
-        // Work on a clone of the list, so that we can just do one atomic
-        // update to the actual observable list at the end
-        List<TopLevelViewModel> clone = [.. TopLevelCommands];
-        List<TopLevelViewModel> newItems = [];
-        var startIndex = -1;
-        var firstCommand = sender.TopLevelItems[0];
-        var commandsToRemove = sender.TopLevelItems.Length + sender.FallbackItems.Length;
-
-        // Tricky: all Commands from a single provider get added to the
-        // top-level list all together, in a row. So if we find just the first
-        // one, we can slice it out and insert the new ones there.
-        for (var i = 0; i < clone.Count; i++)
-        {
-            var wrapper = clone[i];
-            try
-            {
-                var isTheSame = wrapper == firstCommand;
-                if (isTheSame)
-                {
-                    startIndex = i;
-                    break;
-                }
-            }
-            catch
-            {
-            }
-        }
-
         WeakReference<IPageContext> weakSelf = new(this);
-
-        // Fetch the new items
         await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
-
-        foreach (var i in sender.TopLevelItems)
-        {
-            newItems.Add(i);
-        }
-
+        List<TopLevelViewModel> newItems = [..sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
         {
             if (i.IsEnabled)
@@ -192,25 +160,52 @@ public partial class TopLevelCommandManager : ObservableObject,
             }
         }
 
-        // Slice out the old commands
-        if (startIndex != -1)
+        // modify the TopLevelCommands under shared lock; event if we clone it, we don't want
+        // TopLevelCommands to get modified while we're working on it. Otherwise, we might
+        // out clone would be stale at the end of this method.
+        lock (TopLevelCommands)
         {
-            clone.RemoveRange(startIndex, commandsToRemove);
-        }
-        else
-        {
-            // ... or, just stick them at the end (this is unexpected)
-            startIndex = clone.Count;
-        }
+            // Work on a clone of the list, so that we can just do one atomic
+            // update to the actual observable list at the end
+            // TODO: just added a lock around all of this anyway, but keeping the clone
+            // while looking on some other ways to improve this; can be removed later.
+            List<TopLevelViewModel> clone = [.. TopLevelCommands];
+            var startIndex = -1;
 
-        // add the new commands into the list at the place we found the old ones
-        clone.InsertRange(startIndex, newItems);
+            // Tricky: all Commands from a single provider get added to the
+            // top-level list all together, in a row. So if we find just the first
+            // one, we can slice it out and insert the new ones there.
+            for (var i = 0; i < clone.Count; i++)
+            {
+                var wrapper = clone[i];
+                try
+                {
+                    if (sender.ProviderId == wrapper.CommandProviderId)
+                    {
+                        startIndex = i;
+                        break;
+                    }
+                }
+                catch
+                {
+                }
+            }
 
-        // now update the actual observable list with the new contents
-        ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+            clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
+            clone.InsertRange(startIndex, newItems);
+            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+        }
     }
 
     public async Task ReloadAllCommandsAsync()
+    {
+        // gate ensures that the reload is serialized and if multiple calls
+        // request a reload, only the first and the last one will be executed.
+        // this should be superseded with a cancellable version.
+        await _reloadCommandsGate.ExecuteAsync(CancellationToken.None);
+    }
+
+    private async Task ReloadAllCommandsAsyncCore(CancellationToken cancellationToken)
     {
         IsLoading = true;
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
@@ -418,5 +413,11 @@ public partial class TopLevelCommandManager : ObservableObject,
             return _builtInCommands.Any(wrapper => wrapper.Id == id && wrapper.IsActive)
                    || _extensionCommandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
         }
+    }
+
+    public void Dispose()
+    {
+        _reloadCommandsGate.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
