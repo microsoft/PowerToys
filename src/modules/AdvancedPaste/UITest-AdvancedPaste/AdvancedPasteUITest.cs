@@ -265,7 +265,7 @@ namespace Microsoft.AdvancedPaste.UITests
         public void TestCaseClipboardHistoryDeleteTest()
         {
             RestartScopeExe();
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             // Find the PowerToys Settings window
             var settingsWindow = Find<Window>("PowerToys Settings", global: true);
@@ -292,7 +292,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             // Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry.
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             var apWind = this.Find<Window>("Advanced Paste", global: true);
             apWind.Find<PowerToys.UITest.Button>("Clipboard history").Click();
@@ -306,7 +306,7 @@ namespace Microsoft.AdvancedPaste.UITests
             // Check OS clipboard history (Win+V), and confirm that the same entry no longer exist.
             this.SendKeys(Key.Win, Key.V);
 
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             var clipboardWindow = this.Find<Window>("Windows Input Experience", global: true);
             Assert.IsNotNull(clipboardWindow, "Cannot find system clipboard window.");
@@ -321,7 +321,7 @@ namespace Microsoft.AdvancedPaste.UITests
         public void TestCaseClipboardHistorySelectTest()
         {
             RestartScopeExe();
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             // Find the PowerToys Settings window
             var settingsWindow = Find<Window>("PowerToys Settings", global: true);
@@ -347,12 +347,12 @@ namespace Microsoft.AdvancedPaste.UITests
             foreach (var str in textForTesting)
             {
                 SetClipboardTextInSTAMode(str);
-                Thread.Sleep(300);
+                Thread.Sleep(1000);
             }
 
             // Open Advanced Paste window with hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             var apWind = this.Find<Window>("Advanced Paste", global: true);
             apWind.Find<PowerToys.UITest.Button>("Clipboard history").Click();
@@ -365,7 +365,7 @@ namespace Microsoft.AdvancedPaste.UITests
             // Check OS clipboard history (Win+V)
             this.SendKeys(Key.Win, Key.V);
 
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             var clipboardWindow = this.Find<Window>("Windows Input Experience", global: true);
             Assert.IsNotNull(clipboardWindow, "Cannot find system clipboard window.");
@@ -381,7 +381,7 @@ namespace Microsoft.AdvancedPaste.UITests
         public void TestCaseClipboardHistoryDisableTest()
         {
             RestartScopeExe();
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             // Find the PowerToys Settings window
             var settingsWindow = Find<Window>("PowerToys Settings", global: true);
@@ -405,7 +405,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             // Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry.
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             var apWind = this.Find<Window>("Advanced Paste", global: true);
 
@@ -426,7 +426,7 @@ namespace Microsoft.AdvancedPaste.UITests
         public void TestCaseDisableAdvancedPaste()
         {
             RestartScopeExe();
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             // Find the PowerToys Settings window
             var settingsWindow = Find<Window>("PowerToys Settings", global: true);
@@ -461,7 +461,7 @@ namespace Microsoft.AdvancedPaste.UITests
 
             // Re-enable Advanced Paste for other tests
             RestartScopeExe();
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             settingsWindow = Find<Window>("PowerToys Settings", global: true);
 
@@ -480,7 +480,7 @@ namespace Microsoft.AdvancedPaste.UITests
         {
             this.SendKeys(Key.Win, Key.V);
 
-            Thread.Sleep(300);
+            Thread.Sleep(1500);
 
             var clipboardWindow = this.Find<Window>("Windows Input Experience", global: true);
             Assert.IsNotNull(clipboardWindow, "Cannot find system clipboard window.");
