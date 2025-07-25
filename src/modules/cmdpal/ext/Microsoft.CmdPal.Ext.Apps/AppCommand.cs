@@ -6,11 +6,9 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Services.Maps;
 using Windows.Win32;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
@@ -18,11 +16,11 @@ using WyHash;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-internal sealed partial class AppCommand : InvokableCommand
+public sealed partial class AppCommand : InvokableCommand
 {
     private readonly AppItem _app;
 
-    internal AppCommand(AppItem app)
+    public AppCommand(AppItem app)
     {
         _app = app;
 
