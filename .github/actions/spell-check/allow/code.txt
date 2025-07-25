@@ -108,6 +108,7 @@ CSilent
 CBal
 CREATEBAFUNCTIONS
 CPrereq
+dirutil
 Editbox
 EXSEL
 HOLDENTER
@@ -126,6 +127,8 @@ LCONTROL
 LCtrl
 LEFTDOWN
 LEFTUP
+locutil
+logutil
 msimg
 MBUTTON
 MBUTTONDBLCLK
@@ -133,6 +136,7 @@ MBUTTONDOWN
 MBUTTONUP
 MIDDLEDOWN
 MIDDLEUP
+memutil
 NCRBUTTONDBLCLK
 NCRBUTTONDOWN
 NCRBUTTONUP
@@ -147,9 +151,12 @@ RIGHTDOWN
 RIGHTUP
 Richedit
 rgwz
+resrutil
 srd
 scz
+shelutil
 thmutil
+uriutil
 VKTAB
 winkey
 wininet
@@ -162,6 +169,7 @@ XBUTTONDBLCLK
 XBUTTONDOWN
 XBUTTONUP
 XDOWN
+xmlutil
 
 # Prefix
 pcs
