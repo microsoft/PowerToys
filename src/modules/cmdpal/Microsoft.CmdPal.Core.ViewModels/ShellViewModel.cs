@@ -291,59 +291,59 @@ public partial class ShellViewModel : ObservableObject,
         switch (kind)
         {
             case CommandResultKind.Dismiss:
-                {
-                    // Reset the palette to the main page and dismiss
-                    GoHome(withAnimation: false, focusSearch: false);
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
-                    break;
-                }
+            {
+                // Reset the palette to the main page and dismiss
+                GoHome(withAnimation: false, focusSearch: false);
+                WeakReferenceMessenger.Default.Send<DismissMessage>();
+                break;
+            }
 
             case CommandResultKind.GoHome:
-                {
-                    // Go back to the main page, but keep it open
-                    GoHome();
-                    break;
-                }
+            {
+                // Go back to the main page, but keep it open
+                GoHome();
+                break;
+            }
 
             case CommandResultKind.GoBack:
-                {
-                    GoBack();
-                    break;
-                }
+            {
+                GoBack();
+                break;
+            }
 
             case CommandResultKind.Hide:
-                {
-                    // Keep this page open, but hide the palette.
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
-                    break;
-                }
+            {
+                // Keep this page open, but hide the palette.
+                WeakReferenceMessenger.Default.Send<DismissMessage>();
+                break;
+            }
 
             case CommandResultKind.KeepOpen:
-                {
-                    // Do nothing.
-                    break;
-                }
+            {
+                // Do nothing.
+                break;
+            }
 
             case CommandResultKind.Confirm:
+            {
+                if (result.Args is IConfirmationArgs a)
                 {
-                    if (result.Args is IConfirmationArgs a)
-                    {
-                        WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
-                    }
-
-                    break;
+                    WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
                 }
+
+                break;
+            }
 
             case CommandResultKind.ShowToast:
+            {
+                if (result.Args is IToastArgs a)
                 {
-                    if (result.Args is IToastArgs a)
-                    {
-                        WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
-                        UnsafeHandleCommandResult(a.Result);
-                    }
-
-                    break;
+                    WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
+                    UnsafeHandleCommandResult(a.Result);
                 }
+
+                break;
+            }
         }
     }
 

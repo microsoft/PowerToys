@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -19,10 +19,10 @@ public partial class ListHelpers
             return 0;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
+        MatchResult nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
 
         // var locNameMatch = StringMatcher.FuzzySearch(query, NameLocalized);
-        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
+        MatchResult descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
 
         // var executableNameMatch = StringMatcher.FuzzySearch(query, ExePath);
         // var locExecutableNameMatch = StringMatcher.FuzzySearch(query, ExecutableNameLocalized);
@@ -34,7 +34,7 @@ public partial class ListHelpers
 
     public static IEnumerable<IListItem> FilterList(IEnumerable<IListItem> items, string query)
     {
-        var scores = items
+        IOrderedEnumerable<ScoredListItem> scores = items
             .Select(li => new ScoredListItem() { ListItem = li, Score = ScoreListItem(query, li) })
             .Where(score => score.Score > 0)
             .OrderByDescending(score => score.Score);
@@ -44,7 +44,7 @@ public partial class ListHelpers
 
     public static IEnumerable<T> FilterList<T>(IEnumerable<T> items, string query, Func<string, T, int> scoreFunction)
     {
-        var scores = items
+        IOrderedEnumerable<Scored<T>> scores = items
             .Select(li => new Scored<T>() { Item = li, Score = scoreFunction(query, li) })
             .Where(score => score.Score > 0)
             .OrderByDescending(score => score.Score);
@@ -66,7 +66,7 @@ public partial class ListHelpers
         where T : class
     {
         // we're not changing newContents - stash this so we don't re-evaluate it every time
-        var numberOfNew = newContents.Count();
+        int numberOfNew = newContents.Count();
 
         // Short circuit - new contents should just be empty
         if (numberOfNew == 0)
@@ -75,21 +75,21 @@ public partial class ListHelpers
             return;
         }
 
-        var i = 0;
-        foreach (var newItem in newContents)
+        int i = 0;
+        foreach (T newItem in newContents)
         {
             if (i >= original.Count)
             {
                 break;
             }
 
-            for (var j = i; j < original.Count; j++)
+            for (int j = i; j < original.Count; j++)
             {
-                var og_2 = original[j];
-                var areEqual_2 = og_2?.Equals(newItem) ?? false;
+                T og_2 = original[j];
+                bool areEqual_2 = og_2?.Equals(newItem) ?? false;
                 if (areEqual_2)
                 {
-                    for (var k = i; k < j; k++)
+                    for (int k = i; k < j; k++)
                     {
                         // This item from the original list was not in the new list. Remove it.
                         original.RemoveAt(i);
@@ -99,8 +99,8 @@ public partial class ListHelpers
                 }
             }
 
-            var og = original[i];
-            var areEqual = og?.Equals(newItem) ?? false;
+            T og = original[i];
+            bool areEqual = og?.Equals(newItem) ?? false;
 
             // Is this new item already in the list?
             if (areEqual)
@@ -126,8 +126,8 @@ public partial class ListHelpers
         // Add any extra trailing items from the source
         if (original.Count < numberOfNew)
         {
-            var remaining = newContents.Skip(original.Count);
-            foreach (var item in remaining)
+            IEnumerable<T> remaining = newContents.Skip(original.Count);
+            foreach (T? item in remaining)
             {
                 original.Add(item);
             }
@@ -137,12 +137,14 @@ public partial class ListHelpers
 
 public struct ScoredListItem
 {
-    public int Score;
-    public IListItem ListItem;
+    public int Score { get; set; }
+
+    public IListItem ListItem { get; set; }
 }
 
 public struct Scored<T>
 {
-    public int Score;
-    public T Item;
+    public int Score { get; set; }
+
+    public T Item { get; set; }
 }

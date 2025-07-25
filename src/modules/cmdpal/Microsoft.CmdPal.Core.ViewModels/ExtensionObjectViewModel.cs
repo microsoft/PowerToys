@@ -11,13 +11,13 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
 {
     public WeakReference<IPageContext> PageContext { get; set; }
 
-    public ExtensionObjectViewModel(IPageContext? context)
+    protected ExtensionObjectViewModel(IPageContext? context)
     {
         var realContext = context ?? (this is IPageContext c ? c : throw new ArgumentException("You need to pass in an IErrorContext"));
         PageContext = new(realContext);
     }
 
-    public ExtensionObjectViewModel(WeakReference<IPageContext> context)
+    protected ExtensionObjectViewModel(WeakReference<IPageContext> context)
     {
         PageContext = context;
     }
