@@ -46,6 +46,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // cannot be marked [ObservableProperty]
     public bool ShowDetails { get; private set; }
 
+    public IGridProperties? GridProperties { get; private set; }
+
+    public bool IsGridMode => GridProperties != null;
+
+    public double TileWidth => GridProperties?.TileSize.Width ?? 120.0;
+
+    public double TileHeight => GridProperties?.TileSize.Height ?? 120.0;
+
     private string _modelPlaceholderText = string.Empty;
 
     public override string PlaceholderText => _modelPlaceholderText;
@@ -137,14 +145,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
             var newItems = _model.Unsafe!.GetItems();
 
             // Collect all the items into new viewmodels
-            Collection<ListItemViewModel> newViewModels = [];
+            var newViewModels = new Collection<ListItemViewModel>();
 
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
             // building new viewmodels for the ones we haven't already built.
             foreach (var item in newItems)
             {
-                ListItemViewModel viewModel = new(item, new(this));
+                var viewModel = new ListItemViewModel(item, new(this));
 
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
@@ -447,6 +455,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
 
+        GridProperties = model.GridProperties;
+        UpdateProperty(nameof(GridProperties));
+        UpdateProperty(nameof(IsGridMode));
+        UpdateProperty(nameof(TileWidth));
+        UpdateProperty(nameof(TileHeight));
+
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
@@ -500,6 +514,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             case nameof(ShowDetails):
                 this.ShowDetails = model.ShowDetails;
+                break;
+            case nameof(GridProperties):
+                this.GridProperties = model.GridProperties;
+                UpdateProperty(nameof(IsGridMode));
+                UpdateProperty(nameof(TileWidth));
+                UpdateProperty(nameof(TileHeight));
                 break;
             case nameof(PlaceholderText):
                 this._modelPlaceholderText = model.PlaceholderText;

@@ -21,6 +21,11 @@ public partial class SamplePagesCommandsProvider : CommandProvider
            Title = "Sample Pages",
            Subtitle = "View example commands",
        },
+       new CommandItem(new GridSamplePage())
+       {
+           Title = "Grid Sample",
+           Subtitle = "View items in grid layout",
+       },
     ];
 
     public override ICommandItem[] TopLevelCommands()
