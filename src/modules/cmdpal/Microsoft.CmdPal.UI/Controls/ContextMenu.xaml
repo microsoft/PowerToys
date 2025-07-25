@@ -131,7 +131,7 @@
                 ItemClick="CommandsDropdown_ItemClick"
                 ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
                 ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-                KeyDown="CommandsDropdown_KeyDown"
+                PreviewKeyDown="CommandsDropdown_PreviewKeyDown"
                 SelectionMode="Single">
                 <ListView.ItemContainerStyle>
                     <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
