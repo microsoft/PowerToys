@@ -19,8 +19,6 @@ public sealed partial class ContentPage : Page,
      IRecipient<ActivateSelectedListItemMessage>,
      IRecipient<ActivateSecondaryCommandMessage>
 {
-    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
-
     public ContentPageViewModel? ViewModel
     {
         get => (ContentPageViewModel?)GetValue(ViewModelProperty);

@@ -17,8 +17,8 @@ public static partial class NativeMethods
     internal const int SW_SHOWMAXIMIZED = 3;
     internal const int SW_HIDE = 0;
 
-    [DllImport("user32.dll")]
-    internal static extern IntPtr GetActiveWindow();
+    [LibraryImport("user32.dll")]
+    internal static partial IntPtr GetActiveWindow();
 
     [DllImport("user32.dll")]
     internal static extern bool SetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
@@ -32,25 +32,25 @@ public static partial class NativeMethods
     [LibraryImport("user32.dll")]
     internal static partial short GetAsyncKeyState(int vKey);
 
-    [DllImport("user32.dll", SetLastError = true)]
-    internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+    [LibraryImport("user32.dll", SetLastError = true)]
+    internal static partial int GetWindowLong(IntPtr hWnd, int nIndex);
 
-    [DllImport("user32.dll")]
-    internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    [LibraryImport("user32.dll")]
+    internal static partial int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
     // [DllImport("shell32.dll")]
     // internal static extern IntPtr SHBrowseForFolderW(ref ShellGetFolder.BrowseInformation browseInfo);
-    [DllImport("shell32.dll")]
-    internal static extern int SHGetPathFromIDListW(IntPtr pidl, IntPtr pszPath);
+    [LibraryImport("shell32.dll")]
+    internal static partial int SHGetPathFromIDListW(IntPtr pidl, IntPtr pszPath);
 
     // [DllImport("Comdlg32.dll", CharSet = CharSet.Unicode)]
     // internal static extern bool GetOpenFileName([In, Out] OpenFileName openFileName);
 #pragma warning disable CA1401 // P/Invokes should not be visible
     [DllImport("user32.dll")]
-    public static extern bool ShowWindow(System.IntPtr hWnd, int nCmdShow);
+    public static extern bool ShowWindow(nint hWnd, int nCmdShow);
 
-    [DllImport("user32.dll")]
-    public static extern int GetDpiForWindow(System.IntPtr hWnd);
+    [LibraryImport("user32.dll")]
+    public static partial int GetDpiForWindow(nint hWnd);
 
     [DllImport("user32.dll")]
     public static extern bool IsWindowVisible(IntPtr hWnd);
@@ -61,8 +61,8 @@ public static partial class NativeMethods
     [System.Runtime.InteropServices.DllImport("User32.dll")]
     public static extern bool SetForegroundWindow(IntPtr handle);
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    public static extern IntPtr LoadLibrary(string dllToLoad);
+    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial IntPtr LoadLibrary(string dllToLoad);
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
     public static extern bool FreeLibrary(IntPtr hModule);

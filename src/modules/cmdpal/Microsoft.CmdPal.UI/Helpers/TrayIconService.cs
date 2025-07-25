@@ -134,8 +134,7 @@ internal sealed partial class TrayIconService
     private DestroyIconSafeHandle GetAppIconHandle()
     {
         var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
-        DestroyIconSafeHandle largeIcon;
-        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
+        PInvoke.ExtractIconEx(exePath, 0, out DestroyIconSafeHandle largeIcon, out _, 1);
         return largeIcon;
     }
 

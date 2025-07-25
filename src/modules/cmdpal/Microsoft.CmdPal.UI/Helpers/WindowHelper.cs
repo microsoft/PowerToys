@@ -10,10 +10,8 @@ internal sealed partial class WindowHelper
 {
     public static bool IsWindowFullscreen()
     {
-        UserNotificationState state;
-
         // https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ne-shellapi-query_user_notification_state
-        if (Marshal.GetExceptionForHR(NativeMethods.SHQueryUserNotificationState(out state)) == null)
+        if (Marshal.GetExceptionForHR(NativeMethods.SHQueryUserNotificationState(out UserNotificationState state)) == null)
         {
             if (state == UserNotificationState.QUNS_RUNNING_D3D_FULL_SCREEN ||
                 state == UserNotificationState.QUNS_BUSY ||

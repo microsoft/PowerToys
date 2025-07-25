@@ -16,10 +16,7 @@ internal static class NativeKeyboardHelper
         internal INPUTTYPE type;
         internal InputUnion data;
 
-        internal static int Size
-        {
-            get { return Marshal.SizeOf<INPUT>(); }
-        }
+        internal static int Size => Marshal.SizeOf<INPUT>();
     }
 
     [StructLayout(LayoutKind.Explicit)]

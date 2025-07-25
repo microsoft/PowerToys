@@ -13,16 +13,14 @@ namespace Microsoft.CmdPal.UI.Controls
     {
         public string Text
         {
-            get { return (string)GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value);
         }
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(ShortcutWithTextLabelControl), new PropertyMetadata(default(string)));
 
         public List<object> Keys
         {
-            get { return (List<object>)GetValue(KeysProperty); }
-            set { SetValue(KeysProperty, value); }
+            get => (List<object>)GetValue(KeysProperty); set => SetValue(KeysProperty, value);
         }
 
         public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(ShortcutWithTextLabelControl), new PropertyMetadata(default(string)));

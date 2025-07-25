@@ -69,10 +69,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     public bool Enabled
     {
-        get
-        {
-            return _enabled;
-        }
+        get => _enabled;
 
         set
         {
@@ -85,10 +82,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     public HotkeySettings? HotkeySettings
     {
-        get
-        {
-            return hotkeySettings;
-        }
+        get => hotkeySettings;
 
         set
         {
@@ -490,10 +484,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         {
             if (disposing)
             {
-                if (hook != null)
-                {
-                    hook.Dispose();
-                }
+                hook?.Dispose();
 
                 hook = null;
             }

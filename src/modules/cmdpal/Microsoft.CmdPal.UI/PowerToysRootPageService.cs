@@ -17,11 +17,11 @@ using WinRT;
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Microsoft.CmdPal.UI;
 
-internal sealed class PowerToysRootPageService : IRootPageService
+internal sealed partial class PowerToysRootPageService : IRootPageService
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly Lazy<MainListPage> _mainListPage;
     private IExtensionWrapper? _activeExtension;
-    private Lazy<MainListPage> _mainListPage;
 
     public PowerToysRootPageService(IServiceProvider serviceProvider)
     {
@@ -35,7 +35,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PreLoadAsync()
     {
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
+        TopLevelCommandManager tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
         await tlcManager.LoadBuiltinsAsync();
     }
 
@@ -46,7 +46,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PostLoadRootPageAsync()
     {
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
+        TopLevelCommandManager tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
 
         // After loading built-ins, and starting navigation, kick off a thread to load extensions.
         tlcManager.LoadExtensionsCommand.Execute(null);
@@ -99,16 +99,16 @@ internal sealed class PowerToysRootPageService : IRootPageService
             // need to handle that
             _activeExtension = extension;
 
-            var extensionWinRtObject = _activeExtension?.GetExtensionObject();
+            IExtension? extensionWinRtObject = _activeExtension?.GetExtensionObject();
             if (extensionWinRtObject != null)
             {
                 try
                 {
                     unsafe
                     {
-                        var winrtObj = (IWinRTObject)extensionWinRtObject;
-                        var intPtr = winrtObj.NativeObject.ThisPtr;
-                        var hr = Native.CoAllowSetForegroundWindow(intPtr);
+                        IWinRTObject winrtObj = (IWinRTObject)extensionWinRtObject;
+                        nint intPtr = winrtObj.NativeObject.ThisPtr;
+                        global::Windows.Win32.Foundation.HRESULT hr = Native.CoAllowSetForegroundWindow(intPtr);
                         if (hr != 0)
                         {
                             Logger.LogWarning($"Error giving foreground rights: 0x{hr.Value:X8}");

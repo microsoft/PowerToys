@@ -14,8 +14,6 @@ namespace Microsoft.CmdPal.UI.Pages;
 /// </summary>
 public sealed partial class LoadingPage : Page
 {
-    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
-
     public LoadingPage()
     {
         this.InitializeComponent();
