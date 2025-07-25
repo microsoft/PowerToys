@@ -60,7 +60,7 @@ public partial class ShellViewModel : ObservableObject,
 
     private bool _isNested;
 
-    public bool IsNested { get => _isNested; }
+    public bool IsNested => _isNested;
 
     public ShellViewModel(
         TaskScheduler scheduler,

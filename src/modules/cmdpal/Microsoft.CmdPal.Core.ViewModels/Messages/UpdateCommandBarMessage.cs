@@ -16,11 +16,11 @@ public record UpdateCommandBarMessage(ICommandBarContext? ViewModel)
 
 public interface IContextMenuContext : INotifyPropertyChanged
 {
-    public IEnumerable<IContextItemViewModel> MoreCommands { get; }
+    IEnumerable<IContextItemViewModel> MoreCommands { get; }
 
-    public bool HasMoreCommands { get; }
+    bool HasMoreCommands { get; }
 
-    public List<IContextItemViewModel> AllCommands { get; }
+    List<IContextItemViewModel> AllCommands { get; }
 
     /// <summary>
     /// Generates a mapping of key -> command item for this particular item's
@@ -30,7 +30,7 @@ public interface IContextMenuContext : INotifyPropertyChanged
     /// </summary>
     /// <returns>a dictionary of KeyChord -> Context commands, for all commands
     /// that have a shortcut key set.</returns>
-    public Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
+    Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
     {
         return MoreCommands
             .OfType<CommandContextItemViewModel>()
@@ -48,9 +48,9 @@ public interface IContextMenuContext : INotifyPropertyChanged
 // the two things with sub-commands.
 public interface ICommandBarContext : IContextMenuContext
 {
-    public string SecondaryCommandName { get; }
+    string SecondaryCommandName { get; }
 
-    public CommandItemViewModel? PrimaryCommand { get; }
+    CommandItemViewModel? PrimaryCommand { get; }
 
-    public CommandItemViewModel? SecondaryCommand { get; }
+    CommandItemViewModel? SecondaryCommand { get; }
 }
