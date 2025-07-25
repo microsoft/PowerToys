@@ -127,9 +127,8 @@ public class ThumbnailHelper
 
         var hIcon = IntPtr.Zero;
         var iID_IImageList = new Guid("46EB5926-582E-4017-9FDF-E8998DAA0950");
-        IntPtr imageListPtr;
 
-        if (NativeMethods.SHGetImageList(SHIL_JUMBO, ref iID_IImageList, out imageListPtr) == 0 && imageListPtr != IntPtr.Zero)
+        if (NativeMethods.SHGetImageList(SHIL_JUMBO, ref iID_IImageList, out nint imageListPtr) == 0 && imageListPtr != IntPtr.Zero)
         {
             hIcon = NativeMethods.ImageList_GetIcon(imageListPtr, shinfo.iIcon, ILD_TRANSPARENT);
         }

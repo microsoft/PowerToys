@@ -21,8 +21,7 @@ public sealed partial class Settings : ICommandSettings
 
     public bool TryGetSetting<T>(string key, out T? val)
     {
-        object? o;
-        if (_settings.TryGetValue(key, out o))
+        if (_settings.TryGetValue(key, out object? o))
         {
             if (o is Setting<T> s)
             {

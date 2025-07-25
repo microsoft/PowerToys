@@ -13,10 +13,10 @@ public static partial class NativeEventWaiter
 {
     public static void WaitForEventLoop(string eventName, Action callback)
     {
-        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        var t = new Thread(() =>
+        DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        Thread t = new Thread(() =>
         {
-            var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+            EventWaitHandle eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
             while (true)
             {
                 if (eventHandle.WaitOne())
@@ -26,7 +26,7 @@ public static partial class NativeEventWaiter
             }
         })
         {
-            IsBackground = true
+            IsBackground = true,
         };
         t.Start();
     }

@@ -22,20 +22,19 @@ public sealed partial class ExtensionServer : IDisposable
         Trace.WriteLine($"CLSID: {typeof(T).GUID:B}");
         Trace.WriteLine($"Type: {typeof(T)}");
 
-        int cookie;
-        var clsid = typeof(T).GUID;
-        var wrappedCallback = () => (IExtension)createExtension();
-        _extensionInstanceManager ??= new ExtensionInstanceManager(wrappedCallback, restrictToMicrosoftExtensionHosts, typeof(T).GUID);
+        Guid clsid = typeof(T).GUID;
+        IExtension WrappedCallback() => createExtension();
+        _extensionInstanceManager ??= new ExtensionInstanceManager(WrappedCallback, restrictToMicrosoftExtensionHosts, typeof(T).GUID);
         _comWrappers ??= new StrategyBasedComWrappers();
 
-        var f = _comWrappers.GetOrCreateComInterfaceForObject(_extensionInstanceManager, CreateComInterfaceFlags.None);
+        nint f = _comWrappers.GetOrCreateComInterfaceForObject(_extensionInstanceManager, CreateComInterfaceFlags.None);
 
-        var hr = Ole32.CoRegisterClassObject(
+        int hr = Ole32.CoRegisterClassObject(
             ref clsid,
             f,
             Ole32.CLSCTX_LOCAL_SERVER,
             Ole32.REGCLS_MULTIPLEUSE | Ole32.REGCLS_SUSPENDED,
-            out cookie);
+            out int cookie);
 
         if (hr < 0)
         {
@@ -65,10 +64,10 @@ public sealed partial class ExtensionServer : IDisposable
     {
         Trace.WriteLine($"Revoking class object registrations:");
         Trace.Indent();
-        foreach (var cookie in registrationCookies)
+        foreach (int cookie in registrationCookies)
         {
             Trace.WriteLine($"Cookie: {cookie}");
-            var hr = Ole32.CoRevokeClassObject(cookie);
+            int hr = Ole32.CoRevokeClassObject(cookie);
             Debug.Assert(hr >= 0, $"CoRevokeClassObject failed ({hr:x}). Cookie: {cookie}");
         }
 
