@@ -11,7 +11,6 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 public sealed partial class Settings : ICommandSettings
 {
     private readonly Dictionary<string, object> _settings = [];
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new() { WriteIndented = true };
 
     public event TypedEventHandler<object, Settings>? SettingsChanged;
 

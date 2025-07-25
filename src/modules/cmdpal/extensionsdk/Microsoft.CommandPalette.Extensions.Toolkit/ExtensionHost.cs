@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class ExtensionHost
+public static partial class ExtensionHost
 {
     public static IExtensionHost? Host { get; private set; }
 

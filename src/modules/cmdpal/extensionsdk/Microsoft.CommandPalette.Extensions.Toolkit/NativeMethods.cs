@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-internal sealed class NativeMethods
+internal sealed partial class NativeMethods
 {
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
     internal static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
@@ -28,9 +28,9 @@ internal sealed class NativeMethods
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     internal static extern bool DestroyIcon(IntPtr hIcon);
 
-    [DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
-    internal static extern int SHGetImageList(int iImageList, ref Guid riid, out IntPtr ppv);
+    [LibraryImport("Shell32.dll")]
+    internal static partial int SHGetImageList(int iImageList, ref Guid riid, out IntPtr ppv);
 
-    [DllImport("comctl32.dll", SetLastError = true)]
-    internal static extern int ImageList_GetIcon(IntPtr himl, int i, int flags);
+    [LibraryImport("comctl32.dll", SetLastError = true)]
+    internal static partial int ImageList_GetIcon(IntPtr himl, int i, int flags);
 }

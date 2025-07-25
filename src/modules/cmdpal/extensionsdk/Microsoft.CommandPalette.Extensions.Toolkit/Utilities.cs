@@ -10,7 +10,7 @@ using Windows.Win32.UI.Shell;
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1312:Variable names should begin with lower-case letter", Justification = "This file has more than a couple Windows constants in it, which don't make sense to rename")]
-public class Utilities
+public static class Utilities
 {
     /// <summary>
     /// Used to produce a path to a settings folder which your app can use.

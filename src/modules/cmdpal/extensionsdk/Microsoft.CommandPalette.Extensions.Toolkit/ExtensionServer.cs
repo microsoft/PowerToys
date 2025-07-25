@@ -74,7 +74,7 @@ public sealed partial class ExtensionServer : IDisposable
         Trace.Unindent();
     }
 
-    private sealed class Ole32
+    private sealed partial class Ole32
     {
 #pragma warning disable SA1310 // Field names should not contain underscore
         // https://docs.microsoft.com/windows/win32/api/wtypesbase/ne-wtypesbase-clsctx
@@ -86,15 +86,15 @@ public sealed partial class ExtensionServer : IDisposable
 #pragma warning restore SA1310 // Field names should not contain underscore
 
         // https://docs.microsoft.com/windows/win32/api/combaseapi/nf-combaseapi-coregisterclassobject
-        [DllImport(nameof(Ole32))]
-        public static extern int CoRegisterClassObject(ref Guid guid, IntPtr obj, int context, int flags, out int register);
+        [LibraryImport(nameof(Ole32))]
+        public static partial int CoRegisterClassObject(ref Guid guid, IntPtr obj, int context, int flags, out int register);
 
         // https://docs.microsoft.com/windows/win32/api/combaseapi/nf-combaseapi-coresumeclassobjects
-        [DllImport(nameof(Ole32))]
-        public static extern int CoResumeClassObjects();
+        [LibraryImport(nameof(Ole32))]
+        public static partial int CoResumeClassObjects();
 
         // https://docs.microsoft.com/windows/win32/api/combaseapi/nf-combaseapi-corevokeclassobject
-        [DllImport(nameof(Ole32))]
-        public static extern int CoRevokeClassObject(int register);
+        [LibraryImport(nameof(Ole32))]
+        public static partial int CoRevokeClassObject(int register);
     }
 }

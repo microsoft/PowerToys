@@ -6,7 +6,7 @@ using Windows.System;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class KeyChordHelpers
+public static partial class KeyChordHelpers
 {
     public static KeyChord FromModifiers(
         bool ctrl = false,

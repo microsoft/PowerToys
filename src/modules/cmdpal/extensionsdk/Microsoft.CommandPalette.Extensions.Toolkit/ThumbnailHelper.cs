@@ -11,7 +11,7 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public class ThumbnailHelper
+public static class ThumbnailHelper
 {
     private static readonly string[] ImageExtensions =
     [

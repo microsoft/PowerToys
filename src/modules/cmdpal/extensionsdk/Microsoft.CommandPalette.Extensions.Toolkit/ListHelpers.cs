@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class ListHelpers
+public static partial class ListHelpers
 {
     // Generate a score for a list item.
     public static int ScoreListItem(string query, ICommandItem listItem)
