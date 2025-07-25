@@ -90,9 +90,9 @@
 #### One stop script for building installer
 1. Open developer powershell for vs 2022
 2. Run tools\build\build-installer.ps1
-> Note: First time run need to run as admin so that it will try to move wix wix.target to desired location, and trust the certificate used to sign the msix packages. 
+> For the first-time setup, please run the installer as an administrator. This ensures that the Wix tool can move wix.target to the desired location and trust the certificate used to sign the MSIX packages.
 
-> The following manual steps will not install the msix apps like command palette in your local installer.
+The following manual steps will not install the MSIX apps (such as Command Palette) on your local installer.
 
 #### Prerequisites for building the MSI installer
 
