@@ -20,6 +20,9 @@ namespace Microsoft.PowerToys.UITest
 
         public required Session Session { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the tests are running in a CI/CD pipeline.
+        /// </summary>
         public bool IsInPipeline { get; }
 
         public string? ScreenshotDirectory { get; set; }
@@ -34,8 +37,8 @@ namespace Microsoft.PowerToys.UITest
 
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
         {
-            this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
-            Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
+            this.IsInPipeline = EnvironmentConfig.IsInPipeline;
+            Console.WriteLine($"Running tests on platform: {EnvironmentConfig.Platform}");
             if (IsInPipeline)
             {
                 NativeMethods.ChangeDisplayResolution(1920, 1080);
