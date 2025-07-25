@@ -3,15 +3,15 @@
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
-    <ProjectGuid>{090CD7B7-3B0C-4D1D-BC98-83EB5D799BC1}</ProjectGuid>
-    <RootNamespace>Microsoft.ColorPicker.UnitTests</RootNamespace>
+    <ProjectGuid>{F93C2817-C846-4259-84D8-B39A6B57C8DE}</ProjectGuid>
+    <RootNamespace>ColorPicker.UnitTests</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UnitTest-ColorPickerUI\</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\ColorPickerUI.UnitTest\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
