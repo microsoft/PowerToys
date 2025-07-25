@@ -211,7 +211,7 @@ public class AppsTests : CommandPaletteTestBase
     }
 
     [TestMethod]
-    public void ContextMenuOpenPathInConsole()
+    public void ContextMenuOpenPathInConsoleTest()
     {
         const string appName = "Notepad";
         var notepadItem = SearchAppByName(appName);

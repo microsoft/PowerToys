@@ -22,7 +22,7 @@ public class CommandPaletteTestBase : UITestBase
 
     protected void SetSearchBox(string text)
     {
-        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true).Text, text);
+        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true, slowlyInput: true).Text, text);
     }
 
     protected void SetFilesExtensionSearchBox(string text)
@@ -45,6 +45,16 @@ public class CommandPaletteTestBase : UITestBase
         Assert.AreEqual(this.Find<TextBox>("Search installed apps...").SetText(text, true).Text, text);
     }
 
+    protected void SetWindowsTerminalExtensionSearchBox(string text)
+    {
+        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true).Text, text);
+    }
+
+    protected void SetWindowsSettingsExtensionSearchBox(string text)
+    {
+        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true).Text, text);
+    }
+
     protected void OpenContextMenu()
     {
         var contextMenuButton = this.Find<Button>("More");
@@ -60,8 +70,14 @@ public class CommandPaletteTestBase : UITestBase
 
     protected Window FindWindowsTerminalWindow()
     {
-        var terminalWindow = this.Find<Window>(By.ClassName("CASCADIA_HOSTING_WINDOW_CLASS"), global: true, timeoutMS: 2000);
+        var terminalWindow = this.Find<Window>(By.ClassName("CASCADIA_HOSTING_WINDOW_CLASS"), global: true, timeoutMS: 3000);
         return terminalWindow;
+    }
+
+    protected Window FindWindowsSettingsWindow()
+    {
+        var settingsWinodw = this.Find<Window>("Settings", global: true, timeoutMS: 3000);
+        return settingsWinodw;
     }
 
     protected void UACConfirm()

@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="value">The text to set.</param>
         /// <param name="clearText">A value indicating whether to clear the text before setting it. Default value is true</param>
         /// <returns>The current TextBox instance.</returns>
-        public TextBox SetText(string value, bool clearText = true)
+        public TextBox SetText(string value, bool clearText = true, bool slowlyInput = false)
         {
             if (clearText)
             {
@@ -39,10 +39,35 @@ namespace Microsoft.PowerToys.UITest
                 Task.Delay(500).Wait();
             }
 
-            PerformAction((actions, windowElement) =>
+            if (slowlyInput)
             {
-                windowElement.SendKeys(value);
-            });
+                // split input by blanks
+                var splitedValues = value.Split(' ');
+                int count = 0;
+
+                // If slowlyInput is true, we will send the keys one by one with a delay
+                foreach (var str in splitedValues)
+                {
+                    PerformAction((actions, windowElement) =>
+                    {
+                        windowElement.SendKeys(str);
+                        if (count != splitedValues.Length - 1)
+                        {
+                            windowElement.SendKeys(" ");
+                        }
+                    });
+                    count++;
+                }
+
+                return this;
+            }
+            else
+            {
+                PerformAction((actions, windowElement) =>
+                {
+                    windowElement.SendKeys(value);
+                });
+            }
 
             return this;
         }
