@@ -6,7 +6,7 @@
 			<Type Name="Microsoft.UI.Xaml.Controls.DataTemplateSelector" Dynamic="Required All" />
 			<Type Name="Microsoft.UI.Xaml.Controls.ListViewItem" Dynamic="Required All" />
 		</Assembly>
-		
+
 		<!-- Add ViewModel types for AOT compatibility -->
 		<Assembly Name="Microsoft.CmdPal.Core.ViewModels">
 			<Type Name="Microsoft.CmdPal.Core.ViewModels.CommandContextItemViewModel" Dynamic="Required All" />
@@ -14,11 +14,8 @@
 			<Type Name="Microsoft.CmdPal.Core.ViewModels.IContextItemViewModel" Dynamic="Required All" />
 			<Type Name="Microsoft.CmdPal.Core.ViewModels.CommandItemViewModel" Dynamic="Required All" />
 		</Assembly>
-		
+
 		<!-- Add UI types for AOT compatibility -->
-		<Assembly Name="Microsoft.CmdPal.UI">
-			<Type Name="Microsoft.CmdPal.UI.ContextItemTemplateSelector" Dynamic="Required All" />
-		</Assembly>
 		<Assembly Name="Microsoft.CmdPal.UI">
 			<Type Name="Microsoft.CmdPal.UI.ContextItemTemplateSelector" Dynamic="Required All" />
 		</Assembly>
