@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.InteropServices;
 using CommunityToolkit.WinUI;
-using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -37,14 +35,7 @@ public partial class ContentIcon : FontIcon
     {
         if (this.FindDescendants().OfType<Grid>().FirstOrDefault() is Grid grid && Content is not null)
         {
-            try
-            {
-                grid.Children.Add(Content);
-            }
-            catch (COMException ex)
-            {
-                Logger.LogError(ex.ToString());
-            }
+            grid.Children.Add(Content);
         }
     }
 }
