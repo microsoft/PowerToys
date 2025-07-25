@@ -323,7 +323,7 @@
                 </Grid>
                 <!--  Filter: wrapped in a grid to enable RepositionThemeTransitions  -->
                 <Grid Grid.Column="2" HorizontalAlignment="Right">
-                <cpcontrols:FiltersDropDown
+                    <cpcontrols:FiltersDropDown
                         x:Name="FiltersDropDown"
                         HorizontalAlignment="Right"
                         CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />

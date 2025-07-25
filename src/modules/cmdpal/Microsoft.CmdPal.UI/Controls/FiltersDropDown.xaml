@@ -6,11 +6,11 @@
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
-    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    Background="Transparent"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -71,9 +71,9 @@
         ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
         ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
         PlaceholderText="Filters"
+        PreviewKeyDown="FiltersComboBox_PreviewKeyDown"
         SelectionChanged="FiltersComboBox_SelectionChanged"
         Style="{StaticResource ComboBoxStyle}"
-        PreviewKeyDown="FiltersComboBox_PreviewKeyDown"
         Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
         <ComboBox.ItemContainerStyle>
             <Style BasedOn="{StaticResource DefaultComboBoxItemStyle}" TargetType="ComboBoxItem">
