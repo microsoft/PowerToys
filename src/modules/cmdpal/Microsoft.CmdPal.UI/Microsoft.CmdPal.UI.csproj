@@ -31,7 +31,7 @@
     <PublishAot>true</PublishAot>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 
