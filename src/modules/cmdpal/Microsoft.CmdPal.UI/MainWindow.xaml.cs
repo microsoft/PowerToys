@@ -10,7 +10,6 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
@@ -100,7 +99,7 @@ public sealed partial class MainWindow : WindowEx,
         // into the WindowLongPtr will be useless after we leave this function,
         // and our **WindProc will explode**.
         _hotkeyWndProc = HotKeyPrc;
-        var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
+        nint hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
         _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
 
         // Load our settings, and then also wire up a settings changed handler
@@ -128,7 +127,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void PositionCentered()
     {
-        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+        DisplayArea displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         PositionCentered(displayArea);
     }
 
@@ -136,7 +135,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (displayArea is not null)
         {
-            var centeredPosition = AppWindow.Position;
+            PointInt32 centeredPosition = AppWindow.Position;
             centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
             centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
 
@@ -148,7 +147,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HotReloadSettings()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
 
         SetupHotkey(settings);
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
@@ -188,7 +187,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private static DesktopAcrylicController GetAcrylicConfig(UIElement content)
     {
-        var feContent = content as FrameworkElement;
+        FrameworkElement? feContent = content as FrameworkElement;
 
         return feContent?.ActualTheme == ElementTheme.Light
             ? new DesktopAcrylicController()
@@ -211,7 +210,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
     {
-        var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
+        HWND hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
         // Make sure our HWND is cloaked before any possible window manipulations
         Cloak();
@@ -226,7 +225,7 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        var display = GetScreen(hwnd, target);
+        DisplayArea display = GetScreen(hwnd, target);
         PositionCentered(display);
 
         // Just to be sure, SHOW our hwnd.
@@ -248,11 +247,11 @@ public sealed partial class MainWindow : WindowEx,
         // Leaving a note here, in case we ever need it:
         // https://github.com/microsoft/microsoft-ui-xaml/issues/6454
         // If we need to ever FindAll, we'll need to iterate manually
-        var displayAreas = Microsoft.UI.Windowing.DisplayArea.FindAll();
+        IReadOnlyList<DisplayArea> displayAreas = Microsoft.UI.Windowing.DisplayArea.FindAll();
         switch (target)
         {
             case MonitorBehavior.InPlace:
-                if (PInvoke.GetWindowRect(currentHwnd, out var bounds))
+                if (PInvoke.GetWindowRect(currentHwnd, out RECT bounds))
                 {
                     RectInt32 converted = new(bounds.X, bounds.Y, bounds.Width, bounds.Height);
                     return DisplayArea.GetFromRect(converted, DisplayAreaFallback.Nearest);
@@ -261,10 +260,10 @@ public sealed partial class MainWindow : WindowEx,
                 break;
 
             case MonitorBehavior.ToFocusedWindow:
-                var foregroundWindowHandle = PInvoke.GetForegroundWindow();
+                HWND foregroundWindowHandle = PInvoke.GetForegroundWindow();
                 if (foregroundWindowHandle != IntPtr.Zero)
                 {
-                    if (PInvoke.GetWindowRect(foregroundWindowHandle, out var fgBounds))
+                    if (PInvoke.GetWindowRect(foregroundWindowHandle, out RECT fgBounds))
                     {
                         RectInt32 converted = new(fgBounds.X, fgBounds.Y, fgBounds.Width, fgBounds.Height);
                         return DisplayArea.GetFromRect(converted, DisplayAreaFallback.Nearest);
@@ -278,7 +277,7 @@ public sealed partial class MainWindow : WindowEx,
 
             case MonitorBehavior.ToMouse:
             default:
-                if (PInvoke.GetCursorPos(out var cursorPos))
+                if (PInvoke.GetCursorPos(out System.Drawing.Point cursorPos))
                 {
                     return DisplayArea.GetFromPoint(new PointInt32(cursorPos.X, cursorPos.Y), DisplayAreaFallback.Nearest);
                 }
@@ -291,7 +290,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ShowWindowMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
 
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
@@ -362,8 +361,8 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
-        var serviceProvider = App.Current.Services;
-        var extensionService = serviceProvider.GetService<IExtensionService>()!;
+        IServiceProvider serviceProvider = App.Current.Services;
+        IExtensionService extensionService = serviceProvider.GetService<IExtensionService>()!;
         extensionService.SignalStopExtensionsAsync();
 
         App.Current.Services.GetService<TrayIconService>()!.Destroy();
@@ -391,29 +390,29 @@ public sealed partial class MainWindow : WindowEx,
     private void UpdateRegionsForCustomTitleBar()
     {
         // Specify the interactive regions of the title bar.
-        var scaleAdjustment = RootShellPage.XamlRoot.RasterizationScale;
+        double scaleAdjustment = RootShellPage.XamlRoot.RasterizationScale;
 
         // Get the rectangle around our XAML content. We're going to mark this
         // rectangle as "Passthrough", so that the normal window operations
         // (resizing, dragging) don't apply in this space.
-        var transform = RootShellPage.TransformToVisual(null);
+        Microsoft.UI.Xaml.Media.GeneralTransform transform = RootShellPage.TransformToVisual(null);
 
         // Reserve 16px of space at the top for dragging.
-        var topHeight = 16;
-        var bounds = transform.TransformBounds(new Rect(
+        int topHeight = 16;
+        Rect bounds = transform.TransformBounds(new Rect(
             0,
             topHeight,
             RootShellPage.ActualWidth,
             RootShellPage.ActualHeight));
-        var contentRect = GetRect(bounds, scaleAdjustment);
-        var rectArray = new RectInt32[] { contentRect };
-        var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
+        RectInt32 contentRect = GetRect(bounds, scaleAdjustment);
+        RectInt32[] rectArray = new RectInt32[] { contentRect };
+        InputNonClientPointerSource nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
 
         // Add a drag-able region on top
-        var w = RootShellPage.ActualWidth;
+        double w = RootShellPage.ActualWidth;
         _ = RootShellPage.ActualHeight;
-        var dragSides = new RectInt32[]
+        RectInt32[] dragSides = new RectInt32[]
         {
             GetRect(new Rect(0, 0, w, topHeight), scaleAdjustment), // the top, {topHeight=16} tall
         };
@@ -529,7 +528,7 @@ public sealed partial class MainWindow : WindowEx,
     {
         UnregisterHotkeys();
 
-        var globalHotkey = settings.Hotkey;
+        ViewModels.Settings.HotkeySettings? globalHotkey = settings.Hotkey;
         if (globalHotkey != null)
         {
             if (settings.UseLowLevelGlobalHotkey)
@@ -540,15 +539,15 @@ public sealed partial class MainWindow : WindowEx,
             }
             else
             {
-                var vk = globalHotkey.Code;
-                var modifiers =
+                int vk = globalHotkey.Code;
+                HOT_KEY_MODIFIERS modifiers =
                                 (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
                                 (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
                                 (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
                                 (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
                                 ;
 
-                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                BOOL success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
                 if (success)
                 {
                     _hotkeys.Add(new(globalHotkey, string.Empty));
@@ -556,9 +555,9 @@ public sealed partial class MainWindow : WindowEx,
             }
         }
 
-        foreach (var commandHotkey in settings.CommandHotkeys)
+        foreach (TopLevelHotkey commandHotkey in settings.CommandHotkeys)
         {
-            var key = commandHotkey.Hotkey;
+            ViewModels.Settings.HotkeySettings? key = commandHotkey.Hotkey;
 
             if (key != null)
             {
@@ -570,15 +569,15 @@ public sealed partial class MainWindow : WindowEx,
                 }
                 else
                 {
-                    var vk = key.Code;
-                    var modifiers =
+                    int vk = key.Code;
+                    HOT_KEY_MODIFIERS modifiers =
                         (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
                         (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
                         (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
                         (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
                         ;
 
-                    var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                    BOOL success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
                     if (success)
                     {
                         _hotkeys.Add(commandHotkey);
@@ -590,10 +589,10 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HandleSummon(string commandId)
     {
-        var isRootHotkey = string.IsNullOrEmpty(commandId);
+        bool isRootHotkey = string.IsNullOrEmpty(commandId);
         PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
-        var isVisible = this.Visible;
+        bool isVisible = this.Visible;
 
         unsafe
         {
@@ -647,7 +646,7 @@ public sealed partial class MainWindow : WindowEx,
                 return (LRESULT)IntPtr.Zero;
             case PInvoke.WM_HOTKEY:
             {
-                var hotkeyIndex = (int)wParam.Value;
+                int hotkeyIndex = (int)wParam.Value;
                 if (hotkeyIndex < _hotkeys.Count)
                 {
                     if (_ignoreHotKeyWhenFullScreen)
@@ -659,7 +658,7 @@ public sealed partial class MainWindow : WindowEx,
                         }
                     }
 
-                    var hotkey = _hotkeys[hotkeyIndex];
+                    TopLevelHotkey hotkey = _hotkeys[hotkeyIndex];
                     HandleSummon(hotkey.CommandId);
                 }
 

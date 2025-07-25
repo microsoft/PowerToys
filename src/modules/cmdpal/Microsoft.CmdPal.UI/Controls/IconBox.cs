@@ -101,8 +101,8 @@ public partial class IconBox : ContentControl
                 // _ = @this._queue.EnqueueAsync(() =>
                 @this._queue.TryEnqueue(new(async () =>
                 {
-                    var requestedTheme = @this.ActualTheme;
-                    var eventArgs = new SourceRequestedEventArgs(e.NewValue, requestedTheme);
+                    ElementTheme requestedTheme = @this.ActualTheme;
+                    SourceRequestedEventArgs eventArgs = new SourceRequestedEventArgs(e.NewValue, requestedTheme);
 
                     if (@this.SourceRequested != null)
                     {
@@ -147,12 +147,12 @@ public partial class IconBox : ContentControl
                         {
                             if (!string.IsNullOrEmpty(iconData.Icon) && iconData.Icon.Length <= 2)
                             {
-                                var ch = iconData.Icon[0];
+                                char ch = iconData.Icon[0];
 
                                 // The range of MDL2 Icons isn't explicitly defined, but
                                 // we're using this based off the table on:
                                 // https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font
-                                var isMDL2Icon = ch is >= '\uE700' and <= '\uF8FF';
+                                bool isMDL2Icon = ch is >= '\uE700' and <= '\uF8FF';
                                 if (!isMDL2Icon)
                                 {
                                     @this.Padding = new Thickness(-4);

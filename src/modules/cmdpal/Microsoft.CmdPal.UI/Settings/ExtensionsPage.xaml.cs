@@ -21,7 +21,7 @@ public sealed partial class ExtensionsPage : Page
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
         viewModel = new SettingsViewModel(settings, App.Current.Services, _mainTaskScheduler);
     }
 

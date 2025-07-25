@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -59,7 +59,7 @@ internal sealed partial class TrayIconService
                 // into the WindowLongPtr will be useless after we leave this function,
                 // and our **WindProc will explode**.
                 _trayWndProc = WindowProc;
-                var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
+                nint hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
                 _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
             }
 
@@ -82,7 +82,7 @@ internal sealed partial class TrayIconService
                 };
             }
 
-            var d = (NOTIFYICONDATAW)_trayIconData;
+            NOTIFYICONDATAW d = (NOTIFYICONDATAW)_trayIconData;
 
             // Add the notification icon
             PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d);
@@ -104,7 +104,7 @@ internal sealed partial class TrayIconService
     {
         if (_trayIconData != null)
         {
-            var d = (NOTIFYICONDATAW)_trayIconData;
+            NOTIFYICONDATAW d = (NOTIFYICONDATAW)_trayIconData;
             if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
             {
                 _trayIconData = null;
@@ -133,7 +133,7 @@ internal sealed partial class TrayIconService
 
     private DestroyIconSafeHandle GetAppIconHandle()
     {
-        var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
+        string exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
         PInvoke.ExtractIconEx(exePath, 0, out DestroyIconSafeHandle largeIcon, out _, 1);
         return largeIcon;
     }
@@ -173,9 +173,10 @@ internal sealed partial class TrayIconService
 
             break;
             default:
+            {
                 // WM_TASKBAR_RESTART isn't a compile-time constant, so we can't
                 // use it in a case label
-            if (uMsg == WM_TASKBAR_RESTART)
+                if (uMsg == WM_TASKBAR_RESTART)
                 {
                     // Handle the case where explorer.exe restarts.
                     // Even if we created it before, do it again
@@ -189,7 +190,7 @@ internal sealed partial class TrayIconService
                         {
                             if (_popupMenu != null)
                             {
-                                PInvoke.GetCursorPos(out var cursorPos);
+                                PInvoke.GetCursorPos(out System.Drawing.Point cursorPos);
                                 PInvoke.SetForegroundWindow(_hwnd);
                                 PInvoke.TrackPopupMenuEx(_popupMenu, (uint)TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN | (uint)TRACK_POPUP_MENU_FLAGS.TPM_BOTTOMALIGN, cursorPos.X, cursorPos.Y, _hwnd, null);
                             }
@@ -202,6 +203,7 @@ internal sealed partial class TrayIconService
                         break;
                     }
                 }
+            }
 
             break;
         }

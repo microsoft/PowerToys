@@ -29,13 +29,13 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
 
     public override void InitializeProperties()
     {
-        var model = Model.Unsafe;
+        ITreeContent? model = Model.Unsafe;
         if (model == null)
         {
             return;
         }
 
-        var root = model.RootContent;
+        IContent root = model.RootContent;
         if (root != null)
         {
             RootContent = ViewModelFromContent(root, PageContext);
@@ -70,7 +70,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
     {
         try
         {
-            var propName = args.PropertyName;
+            string propName = args.PropertyName;
             FetchProperty(propName);
         }
         catch (Exception ex)
@@ -81,7 +81,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
 
     protected void FetchProperty(string propertyName)
     {
-        var model = Model.Unsafe;
+        ITreeContent? model = Model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -90,7 +90,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         switch (propertyName)
         {
             case nameof(RootContent):
-                var root = model.RootContent;
+                IContent? root = model.RootContent;
                 if (root != null)
                 {
                     RootContent = ViewModelFromContent(root, PageContext);
@@ -114,11 +114,11 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         List<ContentViewModel> newContent = [];
         try
         {
-            var newItems = Model.Unsafe!.GetChildren();
+            IContent[] newItems = Model.Unsafe!.GetChildren();
 
-            foreach (var item in newItems)
+            foreach (IContent? item in newItems)
             {
-                var viewModel = ViewModelFromContent(item, PageContext);
+                ContentViewModel? viewModel = ViewModelFromContent(item, PageContext);
                 if (viewModel != null)
                 {
                     viewModel.InitializeProperties();
@@ -146,13 +146,13 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
     {
         base.UnsafeCleanup();
         RootContent?.SafeCleanup();
-        foreach (var item in Children)
+        foreach (ContentViewModel item in Children)
         {
             item.SafeCleanup();
         }
 
         Children.Clear();
-        var model = Model.Unsafe;
+        ITreeContent? model = Model.Unsafe;
         if (model != null)
         {
             model.PropChanged -= Model_PropChanged;

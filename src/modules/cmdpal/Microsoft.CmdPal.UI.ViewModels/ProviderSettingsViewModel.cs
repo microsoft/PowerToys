@@ -134,8 +134,8 @@ public partial class ProviderSettingsViewModel(
 
     private List<TopLevelViewModel> BuildTopLevelViewModels()
     {
-        var thisProvider = _provider;
-        var providersCommands = thisProvider.TopLevelItems;
+        CommandProviderWrapper thisProvider = _provider;
+        TopLevelViewModel[] providersCommands = thisProvider.TopLevelItems;
 
         // Remember! This comes in on the UI thread!
         return [.. providersCommands];
@@ -156,8 +156,8 @@ public partial class ProviderSettingsViewModel(
 
     private List<TopLevelViewModel> BuildFallbackViewModels()
     {
-        var thisProvider = _provider;
-        var providersCommands = thisProvider.FallbackItems;
+        CommandProviderWrapper thisProvider = _provider;
+        TopLevelViewModel[] providersCommands = thisProvider.FallbackItems;
 
         // Remember! This comes in on the UI thread!
         return [.. providersCommands];

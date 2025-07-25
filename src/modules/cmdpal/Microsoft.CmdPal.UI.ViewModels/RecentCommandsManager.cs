@@ -22,7 +22,7 @@ public partial class RecentCommandsManager : ObservableObject
     {
         lock (_lock)
         {
-            var entry = History
+            (int Index, HistoryItem Item) entry = History
             .Index()
             .Where(item => item.Item.CommandId == commandId)
             .FirstOrDefault();
@@ -32,10 +32,10 @@ public partial class RecentCommandsManager : ObservableObject
             // Usually it has a weight of 84, compared to 109 for the VS cmd prompt
             if (entry.Item != null)
             {
-                var index = entry.Index;
+                int index = entry.Index;
 
                 // First, add some weight based on how early in the list this appears
-                var bucket = index switch
+                int bucket = index switch
                 {
                     var i when index <= 2 => 35,
                     var i when index <= 10 => 25,
@@ -45,7 +45,7 @@ public partial class RecentCommandsManager : ObservableObject
                 };
 
                 // Then, add weight for how often this is used, but cap the weight from usage.
-                var uses = Math.Min(entry.Item.Uses * 5, 35);
+                int uses = Math.Min(entry.Item.Uses * 5, 35);
 
                 return bucket + uses;
             }
@@ -58,12 +58,12 @@ public partial class RecentCommandsManager : ObservableObject
     {
         lock (_lock)
         {
-            var entry = History
+            HistoryItem? entry = History
             .Where(item => item.CommandId == commandId)
             .FirstOrDefault();
             if (entry == null)
             {
-                var newitem = new HistoryItem() { CommandId = commandId, Uses = 1 };
+                HistoryItem newitem = new HistoryItem() { CommandId = commandId, Uses = 1 };
                 History.Insert(0, newitem);
             }
             else

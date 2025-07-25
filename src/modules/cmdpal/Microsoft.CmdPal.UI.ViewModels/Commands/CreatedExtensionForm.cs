@@ -13,13 +13,13 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
 {
     public CreatedExtensionForm(string name, string displayName, string path)
     {
-        static string serializeString(string? s) => JsonSerializer.Serialize(s, JsonSerializationContext.Default.String);
+        static string SerializeString(string? s) => JsonSerializer.Serialize(s, JsonSerializationContext.Default.String);
         TemplateJson = CardTemplate;
         DataJson = $$"""
 {
-    "name": {{serializeString(name)}},
-    "directory": {{serializeString(path)}},
-    "displayName": {{serializeString(displayName)}}
+    "name": {{SerializeString(name)}},
+    "directory": {{SerializeString(path)}},
+    "displayName": {{SerializeString(displayName)}}
 }
 """;
         _name = name;
@@ -29,13 +29,13 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
 
     public override ICommandResult SubmitForm(string inputs, string data)
     {
-        var dataInput = JsonNode.Parse(data)?.AsObject();
+        JsonObject? dataInput = JsonNode.Parse(data)?.AsObject();
         if (dataInput == null)
         {
             return CommandResult.KeepOpen();
         }
 
-        var verb = dataInput["x"]?.AsValue()?.ToString() ?? string.Empty;
+        string verb = dataInput["x"]?.AsValue()?.ToString() ?? string.Empty;
         return verb switch
         {
             "sln" => OpenSolution(),
@@ -45,23 +45,23 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
         };
     }
 
-    private ICommandResult OpenSolution()
+    private CommandResult OpenSolution()
     {
         string[] parts = [_path, _name, $"{_name}.sln"];
-        var pathToSolution = Path.Combine(parts);
+        string pathToSolution = Path.Combine(parts);
         ShellHelpers.OpenInShell(pathToSolution);
         return CommandResult.Hide();
     }
 
-    private ICommandResult OpenDirectory()
+    private CommandResult OpenDirectory()
     {
         string[] parts = [_path, _name];
-        var pathToDir = Path.Combine(parts);
+        string pathToDir = Path.Combine(parts);
         ShellHelpers.OpenInShell(pathToDir);
         return CommandResult.Hide();
     }
 
-    private ICommandResult CreateNew()
+    private CommandResult CreateNew()
     {
         RaiseFormSubmit(null);
         return CommandResult.KeepOpen();

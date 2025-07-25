@@ -31,8 +31,8 @@ public class CommandAlias
 
     public static CommandAlias FromSearchText(string text, string commandId)
     {
-        var trailingSpace = text.EndsWith(' ');
-        var realAlias = trailingSpace ? text.Substring(0, text.Length - 1) : text;
+        bool trailingSpace = text.EndsWith(' ');
+        string realAlias = trailingSpace ? text.Substring(0, text.Length - 1) : text;
         return new CommandAlias(realAlias, commandId, !trailingSpace);
     }
 }

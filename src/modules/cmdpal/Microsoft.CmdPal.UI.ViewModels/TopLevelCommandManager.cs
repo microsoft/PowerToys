@@ -56,7 +56,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     public async Task<bool> LoadBuiltinsAsync()
     {
-        var s = new Stopwatch();
+        Stopwatch s = new Stopwatch();
         s.Start();
 
         lock (_commandProvidersLock)
@@ -66,8 +66,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         // Load built-In commands first. These are all in-proc, and
         // owned by our ServiceProvider.
-        var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
-        foreach (var provider in builtInCommands)
+        IEnumerable<ICommandProvider> builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
+        foreach (ICommandProvider provider in builtInCommands)
         {
             CommandProviderWrapper wrapper = new(provider, _taskScheduler);
             lock (_commandProvidersLock)
@@ -75,10 +75,10 @@ public partial class TopLevelCommandManager : ObservableObject,
                 _builtInCommands.Add(wrapper);
             }
 
-            var commands = await LoadTopLevelCommandsFromProvider(wrapper);
+            IEnumerable<TopLevelViewModel> commands = await LoadTopLevelCommandsFromProvider(wrapper);
             lock (TopLevelCommands)
             {
-                foreach (var c in commands)
+                foreach (TopLevelViewModel c in commands)
                 {
                     TopLevelCommands.Add(c);
                 }
@@ -99,16 +99,16 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
-        var commands = await Task.Factory.StartNew(
+        List<TopLevelViewModel> commands = await Task.Factory.StartNew(
             () =>
             {
                 List<TopLevelViewModel> commands = [];
-                foreach (var item in commandProvider.TopLevelItems)
+                foreach (TopLevelViewModel item in commandProvider.TopLevelItems)
                 {
                     commands.Add(item);
                 }
 
-                foreach (var item in commandProvider.FallbackItems)
+                foreach (TopLevelViewModel item in commandProvider.FallbackItems)
                 {
                     if (item.IsEnabled)
                     {
@@ -148,19 +148,19 @@ public partial class TopLevelCommandManager : ObservableObject,
         // update to the actual observable list at the end
         List<TopLevelViewModel> clone = [.. TopLevelCommands];
         List<TopLevelViewModel> newItems = [];
-        var startIndex = -1;
-        var firstCommand = sender.TopLevelItems[0];
-        var commandsToRemove = sender.TopLevelItems.Length + sender.FallbackItems.Length;
+        int startIndex = -1;
+        TopLevelViewModel firstCommand = sender.TopLevelItems[0];
+        int commandsToRemove = sender.TopLevelItems.Length + sender.FallbackItems.Length;
 
         // Tricky: all Commands from a single provider get added to the
         // top-level list all together, in a row. So if we find just the first
         // one, we can slice it out and insert the new ones there.
-        for (var i = 0; i < clone.Count; i++)
+        for (int i = 0; i < clone.Count; i++)
         {
-            var wrapper = clone[i];
+            TopLevelViewModel wrapper = clone[i];
             try
             {
-                var isTheSame = wrapper == firstCommand;
+                bool isTheSame = wrapper == firstCommand;
                 if (isTheSame)
                 {
                     startIndex = i;
@@ -177,14 +177,14 @@ public partial class TopLevelCommandManager : ObservableObject,
         // Fetch the new items
         await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
+        SettingsModel settings = _serviceProvider.GetService<SettingsModel>()!;
 
-        foreach (var i in sender.TopLevelItems)
+        foreach (TopLevelViewModel i in sender.TopLevelItems)
         {
             newItems.Add(i);
         }
 
-        foreach (var i in sender.FallbackItems)
+        foreach (TopLevelViewModel i in sender.FallbackItems)
         {
             if (i.IsEnabled)
             {
@@ -213,7 +213,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     public async Task ReloadAllCommandsAsync()
     {
         IsLoading = true;
-        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
+        IExtensionService extensionService = _serviceProvider.GetService<IExtensionService>()!;
         await extensionService.SignalStopExtensionsAsync();
 
         lock (TopLevelCommands)
@@ -235,12 +235,12 @@ public partial class TopLevelCommandManager : ObservableObject,
     [RelayCommand]
     public async Task<bool> LoadExtensionsAsync()
     {
-        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
+        IExtensionService extensionService = _serviceProvider.GetService<IExtensionService>()!;
 
         extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
         extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
 
-        var extensions = (await extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
+        ImmutableList<IExtensionWrapper> extensions = (await extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
         lock (_commandProvidersLock)
         {
             _extensionCommandProviders.Clear();
@@ -273,14 +273,14 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
     {
-        var timer = new Stopwatch();
+        Stopwatch timer = new Stopwatch();
         timer.Start();
 
         // Start all extensions in parallel
-        var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
+        IEnumerable<Task<CommandProviderWrapper?>> startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
 
         // Wait for all extensions to start
-        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).Select(w => w!).ToList();
+        List<CommandProviderWrapper> wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).Select(w => w!).ToList();
 
         lock (_commandProvidersLock)
         {
@@ -288,15 +288,15 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
 
         // Load the commands from the providers in parallel
-        var loadTasks = wrappers.Select(LoadCommandsWithTimeoutAsync);
+        IEnumerable<Task<IEnumerable<TopLevelViewModel>?>> loadTasks = wrappers.Select(LoadCommandsWithTimeoutAsync);
 
-        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results != null).Select(r => r!).ToList();
+        List<IEnumerable<TopLevelViewModel>> commandSets = (await Task.WhenAll(loadTasks)).Where(results => results != null).Select(r => r!).ToList();
 
         lock (TopLevelCommands)
         {
-            foreach (var commands in commandSets)
+            foreach (IEnumerable<TopLevelViewModel>? commands in commandSets)
             {
-                foreach (var c in commands)
+                foreach (TopLevelViewModel? c in commands)
                 {
                     TopLevelCommands.Add(c);
                 }
@@ -350,11 +350,11 @@ public partial class TopLevelCommandManager : ObservableObject,
                 List<TopLevelViewModel> commandsToRemove = [];
                 lock (TopLevelCommands)
                 {
-                    foreach (var extension in extensions)
+                    foreach (IExtensionWrapper extension in extensions)
                     {
-                        foreach (var command in TopLevelCommands)
+                        foreach (TopLevelViewModel command in TopLevelCommands)
                         {
-                            var host = command.ExtensionHost;
+                            CommandPaletteHost host = command.ExtensionHost;
                             if (host?.Extension == extension)
                             {
                                 commandsToRemove.Add(command);
@@ -373,7 +373,7 @@ public partial class TopLevelCommandManager : ObservableObject,
                     {
                         if (commandsToRemove.Count != 0)
                         {
-                            foreach (var deleted in commandsToRemove)
+                            foreach (TopLevelViewModel deleted in commandsToRemove)
                             {
                                 TopLevelCommands.Remove(deleted);
                             }
@@ -390,7 +390,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         lock (TopLevelCommands)
         {
-            foreach (var command in TopLevelCommands)
+            foreach (TopLevelViewModel command in TopLevelCommands)
             {
                 if (command.Id == id)
                 {
@@ -407,7 +407,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     void IPageContext.ShowException(Exception ex, string? extensionHint)
     {
-        var errorMessage = $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
+        string errorMessage = $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
         CommandPaletteHost.Instance.Log(errorMessage);
     }
 

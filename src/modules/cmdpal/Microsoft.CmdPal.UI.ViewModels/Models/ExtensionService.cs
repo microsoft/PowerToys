@@ -83,12 +83,12 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     private void InstallPackageUnderLock(Package package)
     {
-        var isCmdPalExtensionResult = Task.Run(() =>
+        IsExtensionResult isCmdPalExtensionResult = Task.Run(() =>
         {
             return IsValidCmdPalExtension(package);
         }).Result;
-        var isExtension = isCmdPalExtensionResult.IsExtension;
-        var extension = isCmdPalExtensionResult.Extension;
+        bool isExtension = isCmdPalExtensionResult.IsExtension;
+        AppExtension? extension = isCmdPalExtensionResult.Extension;
         if (isExtension && extension != null)
         {
             CommandPaletteHost.Instance.DebugLog($"Installed new extension app {extension.DisplayName}");
@@ -98,7 +98,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
                 await _getInstalledExtensionsLock.WaitAsync();
                 try
                 {
-                    var wrappers = await CreateWrappersForExtension(extension);
+                    List<ExtensionWrapper> wrappers = await CreateWrappersForExtension(extension);
 
                     UpdateExtensionsListsFromWrappers(wrappers);
 
@@ -115,7 +115,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
     private void UninstallPackageUnderLock(Package package)
     {
         List<IExtensionWrapper> removedExtensions = [];
-        foreach (var extension in _installedExtensions)
+        foreach (IExtensionWrapper extension in _installedExtensions)
         {
             if (extension.PackageFullName == package.Id.FullName)
             {
@@ -144,12 +144,12 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     private static async Task<IsExtensionResult> IsValidCmdPalExtension(Package package)
     {
-        var extensions = await AppExtensionCatalog.Open("com.microsoft.commandpalette").FindAllAsync();
-        foreach (var extension in extensions)
+        IReadOnlyList<AppExtension> extensions = await AppExtensionCatalog.Open("com.microsoft.commandpalette").FindAllAsync();
+        foreach (AppExtension? extension in extensions)
         {
             if (package.Id?.FullName == extension.Package?.Id?.FullName)
             {
-                var (cmdPalProvider, classId) = await GetCmdPalExtensionPropertiesAsync(extension);
+                (IPropertySet? cmdPalProvider, List<string> classId) = await GetCmdPalExtensionPropertiesAsync(extension);
 
                 return new(cmdPalProvider != null && classId.Count != 0, extension);
             }
@@ -160,21 +160,21 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     private static async Task<(IPropertySet? CmdPalProvider, List<string> ClassIds)> GetCmdPalExtensionPropertiesAsync(AppExtension extension)
     {
-        var classIds = new List<string>();
-        var properties = await extension.GetExtensionPropertiesAsync();
+        List<string> classIds = new List<string>();
+        IPropertySet? properties = await extension.GetExtensionPropertiesAsync();
 
         if (properties is null)
         {
             return (null, classIds);
         }
 
-        var cmdPalProvider = GetSubPropertySet(properties, "CmdPalProvider");
+        IPropertySet? cmdPalProvider = GetSubPropertySet(properties, "CmdPalProvider");
         if (cmdPalProvider is null)
         {
             return (null, classIds);
         }
 
-        var activation = GetSubPropertySet(cmdPalProvider, "Activation");
+        IPropertySet? activation = GetSubPropertySet(cmdPalProvider, "Activation");
         if (activation is null)
         {
             return (cmdPalProvider, classIds);
@@ -195,10 +195,10 @@ public partial class ExtensionService : IExtensionService, IDisposable
         {
             if (_installedExtensions.Count == 0)
             {
-                var extensions = await GetInstalledAppExtensionsAsync();
-                foreach (var extension in extensions)
+                IEnumerable<AppExtension> extensions = await GetInstalledAppExtensionsAsync();
+                foreach (AppExtension extension in extensions)
                 {
-                    var wrappers = await CreateWrappersForExtension(extension);
+                    List<ExtensionWrapper> wrappers = await CreateWrappersForExtension(extension);
                     UpdateExtensionsListsFromWrappers(wrappers);
                 }
             }
@@ -213,11 +213,11 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     private static void UpdateExtensionsListsFromWrappers(List<ExtensionWrapper> wrappers)
     {
-        foreach (var extensionWrapper in wrappers)
+        foreach (ExtensionWrapper extensionWrapper in wrappers)
         {
             // var localSettingsService = Application.Current.GetService<ILocalSettingsService>();
-            var extensionUniqueId = extensionWrapper.ExtensionUniqueId;
-            var isExtensionDisabled = false; // await localSettingsService.ReadSettingAsync<bool>(extensionUniqueId + "-ExtensionDisabled");
+            string extensionUniqueId = extensionWrapper.ExtensionUniqueId;
+            bool isExtensionDisabled = false; // await localSettingsService.ReadSettingAsync<bool>(extensionUniqueId + "-ExtensionDisabled");
 
             _installedExtensions.Add(extensionWrapper);
             if (!isExtensionDisabled)
@@ -234,7 +234,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     private static async Task<List<ExtensionWrapper>> CreateWrappersForExtension(AppExtension extension)
     {
-        var (cmdPalProvider, classIds) = await GetCmdPalExtensionPropertiesAsync(extension);
+        (IPropertySet? cmdPalProvider, List<string> classIds) = await GetCmdPalExtensionPropertiesAsync(extension);
 
         if (cmdPalProvider == null || classIds.Count == 0)
         {
@@ -242,9 +242,9 @@ public partial class ExtensionService : IExtensionService, IDisposable
         }
 
         List<ExtensionWrapper> wrappers = [];
-        foreach (var classId in classIds)
+        foreach (string classId in classIds)
         {
-            var extensionWrapper = CreateExtensionWrapper(extension, cmdPalProvider, classId);
+            ExtensionWrapper extensionWrapper = CreateExtensionWrapper(extension, cmdPalProvider, classId);
             wrappers.Add(extensionWrapper);
         }
 
@@ -253,12 +253,12 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     private static ExtensionWrapper CreateExtensionWrapper(AppExtension extension, IPropertySet cmdPalProvider, string classId)
     {
-        var extensionWrapper = new ExtensionWrapper(extension, classId);
+        ExtensionWrapper extensionWrapper = new ExtensionWrapper(extension, classId);
 
-        var supportedInterfaces = GetSubPropertySet(cmdPalProvider, "SupportedInterfaces");
+        IPropertySet? supportedInterfaces = GetSubPropertySet(cmdPalProvider, "SupportedInterfaces");
         if (supportedInterfaces is not null)
         {
-            foreach (var supportedInterface in supportedInterfaces)
+            foreach (KeyValuePair<string, object> supportedInterface in supportedInterfaces)
             {
                 if (Enum.TryParse(supportedInterface.Key, out ProviderType pt))
                 {
@@ -277,14 +277,14 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     public IExtensionWrapper? GetInstalledExtension(string extensionUniqueId)
     {
-        var extension = _installedExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
+        IEnumerable<IExtensionWrapper> extension = _installedExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
         return extension.FirstOrDefault();
     }
 
     public async Task SignalStopExtensionsAsync()
     {
-        var installedExtensions = await GetInstalledExtensionsAsync();
-        foreach (var installedExtension in installedExtensions)
+        IEnumerable<IExtensionWrapper> installedExtensions = await GetInstalledExtensionsAsync();
+        foreach (IExtensionWrapper installedExtension in installedExtensions)
         {
             if (installedExtension.IsRunning())
             {
@@ -295,10 +295,10 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     public async Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(ProviderType providerType, bool includeDisabledExtensions = false)
     {
-        var installedExtensions = await GetInstalledExtensionsAsync(includeDisabledExtensions);
+        IEnumerable<IExtensionWrapper> installedExtensions = await GetInstalledExtensionsAsync(includeDisabledExtensions);
 
         List<IExtensionWrapper> filteredExtensions = [];
-        foreach (var installedExtension in installedExtensions)
+        foreach (IExtensionWrapper installedExtension in installedExtensions)
         {
             if (installedExtension.HasProviderType(providerType))
             {
@@ -329,9 +329,9 @@ public partial class ExtensionService : IExtensionService, IDisposable
         }
     }
 
-    private static IPropertySet? GetSubPropertySet(IPropertySet propSet, string name) => propSet.TryGetValue(name, out var value) ? value as IPropertySet : null;
+    private static IPropertySet? GetSubPropertySet(IPropertySet propSet, string name) => propSet.TryGetValue(name, out object? value) ? value as IPropertySet : null;
 
-    private static object[]? GetSubPropertySetArray(IPropertySet propSet, string name) => propSet.TryGetValue(name, out var value) ? value as object[] : null;
+    private static object[]? GetSubPropertySetArray(IPropertySet propSet, string name) => propSet.TryGetValue(name, out object? value) ? value as object[] : null;
 
     /// <summary>
     /// There are cases where the extension creates multiple COM instances.
@@ -340,11 +340,11 @@ public partial class ExtensionService : IExtensionService, IDisposable
     /// <returns>List of ClassId strings associated with the activation property</returns>
     private static List<string> GetCreateInstanceList(IPropertySet activationPropSet)
     {
-        var propSetList = new List<string>();
-        var singlePropertySet = GetSubPropertySet(activationPropSet, CreateInstanceProperty);
+        List<string> propSetList = new List<string>();
+        IPropertySet? singlePropertySet = GetSubPropertySet(activationPropSet, CreateInstanceProperty);
         if (singlePropertySet != null)
         {
-            var classId = GetProperty(singlePropertySet, ClassIdProperty);
+            string? classId = GetProperty(singlePropertySet, ClassIdProperty);
 
             // If the instance has a classId as a single string, then it's only supporting a single instance.
             if (classId != null)
@@ -354,17 +354,17 @@ public partial class ExtensionService : IExtensionService, IDisposable
         }
         else
         {
-            var propertySetArray = GetSubPropertySetArray(activationPropSet, CreateInstanceProperty);
+            object[]? propertySetArray = GetSubPropertySetArray(activationPropSet, CreateInstanceProperty);
             if (propertySetArray != null)
             {
-                foreach (var prop in propertySetArray)
+                foreach (object prop in propertySetArray)
                 {
                     if (prop is not IPropertySet propertySet)
                     {
                         continue;
                     }
 
-                    var classId = GetProperty(propertySet, ClassIdProperty);
+                    string? classId = GetProperty(propertySet, ClassIdProperty);
                     if (classId != null)
                     {
                         propSetList.Add(classId);
@@ -380,13 +380,13 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     public void EnableExtension(string extensionUniqueId)
     {
-        var extension = _installedExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
+        IEnumerable<IExtensionWrapper> extension = _installedExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
         _enabledExtensions.Add(extension.First());
     }
 
     public void DisableExtension(string extensionUniqueId)
     {
-        var extension = _enabledExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
+        IEnumerable<IExtensionWrapper> extension = _enabledExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
         _enabledExtensions.Remove(extension.First());
     }
 

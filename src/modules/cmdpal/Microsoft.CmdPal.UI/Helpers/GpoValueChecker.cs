@@ -2,13 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Bookmarks;
-using Microsoft.UI.Xaml.Documents;
 using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.UI.Helpers;
@@ -38,7 +31,7 @@ internal static class GpoValueChecker
     private static GpoRuleConfiguredValue GetConfiguredValue(string registryValueName)
     {
         // For GPO policies, machine scope should take precedence over user scope
-        var value = ReadRegistryValue(PoliciesScopeMachine, PoliciesPath, registryValueName);
+        int? value = ReadRegistryValue(PoliciesScopeMachine, PoliciesPath, registryValueName);
 
         if (!value.HasValue)
         {
@@ -68,7 +61,7 @@ internal static class GpoValueChecker
                 return null;
             }
 
-            var value = key.GetValue(valueName);
+            object? value = key.GetValue(valueName);
             if (value is int intValue)
             {
                 return intValue;
@@ -80,7 +73,7 @@ internal static class GpoValueChecker
 
     private static GpoRuleConfiguredValue GetUtilityEnabledValue(string utilityName)
     {
-        var individualValue = GetConfiguredValue(utilityName);
+        GpoRuleConfiguredValue individualValue = GetConfiguredValue(utilityName);
 
         if (individualValue == GpoRuleConfiguredValue.Disabled || individualValue == GpoRuleConfiguredValue.Enabled)
         {

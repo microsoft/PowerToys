@@ -12,7 +12,7 @@ public static class WindowExtensions
 {
     public static void SetIcon(this Window window)
     {
-        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+        nint hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
         WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
         AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
         appWindow.SetIcon(@"Assets\icon.ico");

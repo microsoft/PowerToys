@@ -81,8 +81,8 @@ public sealed class CommandProviderWrapper
             throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
         }
 
-        var extensionImpl = extension.GetExtensionObject();
-        var providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
+        IExtension? extensionImpl = extension.GetExtensionObject();
+        object? providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
         if (providerObject is not ICommandProvider provider)
         {
             throw new ArgumentException("extension didn't actually implement ICommandProvider");
@@ -92,7 +92,7 @@ public sealed class CommandProviderWrapper
 
         try
         {
-            var model = _commandProvider.Unsafe!;
+            ICommandProvider model = _commandProvider.Unsafe!;
 
             // Hook the extension back into us
             model.InitializeWithHost(ExtensionHost);
@@ -125,7 +125,7 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        SettingsModel settings = serviceProvider.GetService<SettingsModel>()!;
 
         IsActive = GetProviderSettings(settings).IsEnabled;
         if (!IsActive)
@@ -138,7 +138,7 @@ public sealed class CommandProviderWrapper
 
         try
         {
-            var model = _commandProvider.Unsafe!;
+            ICommandProvider model = _commandProvider.Unsafe!;
 
             Task<ICommandItem[]> t = new(model.TopLevelCommands);
             t.Start();
@@ -171,10 +171,10 @@ public sealed class CommandProviderWrapper
 
     private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
-        var providerSettings = GetProviderSettings(settings);
+        SettingsModel settings = serviceProvider.GetService<SettingsModel>()!;
+        ProviderSettings providerSettings = GetProviderSettings(settings);
 
-        TopLevelViewModel makeAndAdd(ICommandItem? i, bool fallback)
+        TopLevelViewModel MakeAndAdd(ICommandItem? i, bool fallback)
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
@@ -182,17 +182,18 @@ public sealed class CommandProviderWrapper
 
             return topLevelViewModel;
         }
+
         if (commands != null)
         {
             TopLevelItems = commands
-                .Select(c => makeAndAdd(c, false))
+                .Select(c => MakeAndAdd(c, false))
                 .ToArray();
         }
 
         if (fallbacks != null)
         {
             FallbackItems = fallbacks
-                .Select(c => makeAndAdd(c, true))
+                .Select(c => MakeAndAdd(c, true))
                 .ToArray();
         }
     }

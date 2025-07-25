@@ -30,11 +30,11 @@ public partial class AliasManager : ObservableObject
 
     public bool CheckAlias(string searchText)
     {
-        if (_aliases.TryGetValue(searchText, out var alias))
+        if (_aliases.TryGetValue(searchText, out CommandAlias? alias))
         {
             try
             {
-                var topLevelCommand = _topLevelCommandManager.LookupCommand(alias.CommandId);
+                TopLevelViewModel? topLevelCommand = _topLevelCommandManager.LookupCommand(alias.CommandId);
                 if (topLevelCommand != null)
                 {
                     WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
@@ -89,7 +89,7 @@ public partial class AliasManager : ObservableObject
 
         // If we already have _this exact alias_, do nothing
         if (newAlias != null &&
-            _aliases.TryGetValue(newAlias.SearchPrefix, out var existingAlias))
+            _aliases.TryGetValue(newAlias.SearchPrefix, out CommandAlias? existingAlias))
         {
             if (existingAlias.CommandId == commandId)
             {
@@ -99,7 +99,7 @@ public partial class AliasManager : ObservableObject
 
         // Look for the old alias, and remove it
         List<CommandAlias> toRemove = [];
-        foreach (var kv in _aliases)
+        foreach (KeyValuePair<string, CommandAlias> kv in _aliases)
         {
             if (kv.Value.CommandId == commandId)
             {
@@ -107,7 +107,7 @@ public partial class AliasManager : ObservableObject
             }
         }
 
-        foreach (var alias in toRemove)
+        foreach (CommandAlias alias in toRemove)
         {
             // REMEMBER, SearchPrefix is what we use as keys
             _aliases.Remove(alias.SearchPrefix);

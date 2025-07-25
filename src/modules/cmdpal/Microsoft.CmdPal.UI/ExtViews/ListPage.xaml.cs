@@ -97,7 +97,7 @@ public sealed partial class ListPage : Page,
     {
         if (e.ClickedItem is ListItemViewModel item)
         {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
             if (settings.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(item);
@@ -114,7 +114,7 @@ public sealed partial class ListPage : Page,
     {
         if (ItemsList.SelectedItem is ListItemViewModel vm)
         {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
             if (!settings.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(vm);
@@ -125,8 +125,8 @@ public sealed partial class ListPage : Page,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        var vm = ViewModel;
-        var li = ItemsList.SelectedItem as ListItemViewModel;
+        ListViewModel? vm = ViewModel;
+        ListItemViewModel? li = ItemsList.SelectedItem as ListItemViewModel;
         _ = Task.Run(() =>
         {
             vm?.UpdateSelectedItemCommand.Execute(li);
@@ -150,7 +150,7 @@ public sealed partial class ListPage : Page,
     private void ItemsList_Loaded(object sender, RoutedEventArgs e)
     {
         // Find the ScrollViewer in the ListView
-        var listViewScrollViewer = FindScrollViewer(this.ItemsList);
+        ScrollViewer? listViewScrollViewer = FindScrollViewer(this.ItemsList);
 
         if (listViewScrollViewer != null)
         {
@@ -160,7 +160,7 @@ public sealed partial class ListPage : Page,
 
     private void ListViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
     {
-        var scrollView = sender as ScrollViewer;
+        ScrollViewer? scrollView = sender as ScrollViewer;
         if (scrollView == null)
         {
             return;
@@ -276,7 +276,7 @@ public sealed partial class ListPage : Page,
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        var prop = e.PropertyName;
+        string? prop = e.PropertyName;
         if (prop == nameof(ViewModel.FilteredItems))
         {
             Debug.WriteLine($"ViewModel.FilteredItems {ItemsList.SelectedItem}");
@@ -290,10 +290,10 @@ public sealed partial class ListPage : Page,
             return (ScrollViewer)parent;
         }
 
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {
-            var child = VisualTreeHelper.GetChild(parent, i);
-            var result = FindScrollViewer(child);
+            DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+            ScrollViewer? result = FindScrollViewer(child);
             if (result != null)
             {
                 return result;
@@ -315,7 +315,7 @@ public sealed partial class ListPage : Page,
 
             ViewModel?.UpdateSelectedItemCommand.Execute(item);
 
-            var pos = e.GetPosition(element);
+            global::Windows.Foundation.Point pos = e.GetPosition(element);
 
             _ = DispatcherQueue.TryEnqueue(
                 () =>

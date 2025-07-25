@@ -51,7 +51,7 @@ public static class TypedEventHandlerExtensions
             return Task.CompletedTask;
         }
 
-        var tasks = eventHandler.GetInvocationList()
+        Task[] tasks = eventHandler.GetInvocationList()
             .OfType<TypedEventHandler<S, R>>()
             .Select(invocationDelegate =>
             {
@@ -60,7 +60,7 @@ public static class TypedEventHandlerExtensions
                 invocationDelegate(sender, eventArgs);
 
 #pragma warning disable CS0618 // Type or member is obsolete
-                var deferral = eventArgs.GetCurrentDeferralAndReset();
+                EventDeferral? deferral = eventArgs.GetCurrentDeferralAndReset();
 
                 return deferral?.WaitForCompletion(cancellationToken) ?? Task.CompletedTask;
 #pragma warning restore CS0618 // Type or member is obsolete

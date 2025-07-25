@@ -38,21 +38,21 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     private static void OnAllowDisableChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e)
     {
-        var me = d as ShortcutControl;
+        ShortcutControl? me = d as ShortcutControl;
         if (me == null)
         {
             return;
         }
 
-        var description = me.c?.FindDescendant<TextBlock>();
+        TextBlock? description = me.c?.FindDescendant<TextBlock>();
         if (description == null)
         {
             return;
         }
 
-        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
-        var newValue = (bool)(e?.NewValue ?? false);
-        var text = newValue ?
+        Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
+        bool newValue = (bool)(e?.NewValue ?? false);
+        string text = newValue ?
             resourceLoader.GetString("Activation_Shortcut_With_Disable_Description") :
             resourceLoader.GetString("Activation_Shortcut_Description");
         description.Text = text;
@@ -102,7 +102,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         InitializeComponent();
         internalSettings = new HotkeySettings();
 
-        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
+        Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
 
         // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
         shortcutDialog = new ContentDialog
@@ -169,7 +169,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     private void KeyEventHandler(int key, bool matchValue, int matchValueCode)
     {
-        var virtualKey = (VirtualKey)key;
+        VirtualKey virtualKey = (VirtualKey)key;
         switch (virtualKey)
         {
             case VirtualKey.LeftWindows:
@@ -228,7 +228,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
     // Function to send a single key event to the system which would be ignored by the hotkey control.
     private void SendSingleKeyboardInput(short keyCode, uint keyStatus)
     {
-        var inputShift = new NativeKeyboardHelper.INPUT
+        NativeKeyboardHelper.INPUT inputShift = new NativeKeyboardHelper.INPUT
         {
             type = NativeKeyboardHelper.INPUTTYPE.INPUT_KEYBOARD,
             data = new NativeKeyboardHelper.InputUnion
@@ -442,7 +442,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
             return;
         }
 
-        var empty = new HotkeySettings();
+        HotkeySettings empty = new HotkeySettings();
         HotkeySettings = empty;
 
         PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();

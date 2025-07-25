@@ -185,7 +185,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
         if (IsFallback)
         {
-            var model = _commandItemViewModel.Model.Unsafe;
+            ICommandItem? model = _commandItemViewModel.Model.Unsafe;
 
             // RPC to check type
             if (model is IFallbackCommandItem fallback)
@@ -222,7 +222,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     public void SetAlias()
     {
-        var commandAlias = Alias is null
+        CommandAlias? commandAlias = Alias is null
                 ? null
                 : new CommandAlias(Alias.Alias, Alias.CommandId, Alias.IsDirect);
 
@@ -232,10 +232,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void FetchAliasFromAliasManager()
     {
-        var am = _serviceProvider.GetService<AliasManager>();
+        AliasManager? am = _serviceProvider.GetService<AliasManager>();
         if (am != null)
         {
-            var commandAlias = am.AliasFromId(Id);
+            CommandAlias? commandAlias = am.AliasFromId(Id);
             if (commandAlias is not null)
             {
                 // Decouple from the alias manager alias object
@@ -246,7 +246,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void UpdateHotkey()
     {
-        var hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        TopLevelHotkey? hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
         if (hotkey != null)
         {
             _hotkey = hotkey.Hotkey;
@@ -279,13 +279,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     {
         // Use WyHash64 to generate stable ID hashes.
         // manually seeding with 0, so that the hash is stable across launches
-        var result = WyHash64.ComputeHash64(_commandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
+        ulong result = WyHash64.ComputeHash64(_commandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
         _generatedId = $"{_commandProviderId}{result}";
     }
 
     private void DoOnUiThread(Action action)
     {
-        if (_commandItemViewModel.PageContext.TryGetTarget(out var pageContext))
+        if (_commandItemViewModel.PageContext.TryGetTarget(out IPageContext? pageContext))
         {
             Task.Factory.StartNew(
                 action,
@@ -327,16 +327,16 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     /// <returns>true if our Title changed across this call</returns>
     private bool UnsafeUpdateFallbackSynchronous(string newQuery)
     {
-        var model = _commandItemViewModel.Model.Unsafe;
+        ICommandItem? model = _commandItemViewModel.Model.Unsafe;
 
         // RPC to check type
         if (model is IFallbackCommandItem fallback)
         {
-            var wasEmpty = string.IsNullOrEmpty(Title);
+            bool wasEmpty = string.IsNullOrEmpty(Title);
 
             // RPC for method
             fallback.FallbackHandler.UpdateQuery(newQuery);
-            var isEmpty = string.IsNullOrEmpty(Title);
+            bool isEmpty = string.IsNullOrEmpty(Title);
             return wasEmpty != isEmpty;
         }
 

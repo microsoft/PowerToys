@@ -108,15 +108,15 @@ public class ExtensionWrapper : IExtensionWrapper
 
                     unsafe
                     {
-                        var extensionPtr = (void*)nint.Zero;
+                        void* extensionPtr = (void*)nint.Zero;
                         try
                         {
                             // -2147024809: E_INVALIDARG
                             // -2147467262: E_NOINTERFACE
                             // -2147024893: E_PATH_NOT_FOUND
-                            var guid = typeof(IExtension).GUID;
+                            Guid guid = typeof(IExtension).GUID;
 
-                            var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out extensionPtr);
+                            global::Windows.Win32.Foundation.HRESULT hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out extensionPtr);
 
                             if (hr.Value == -2147024893)
                             {
@@ -181,7 +181,7 @@ public class ExtensionWrapper : IExtensionWrapper
     {
         await StartExtensionAsync();
 
-        var supportedProviders = GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]);
+        object? supportedProviders = GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]);
         if (supportedProviders is IEnumerable<T> multipleProvidersSupported)
         {
             return multipleProvidersSupported;

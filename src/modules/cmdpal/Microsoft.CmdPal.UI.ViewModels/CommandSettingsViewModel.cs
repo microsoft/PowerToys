@@ -23,7 +23,7 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
 
     private void UnsafeInitializeProperties()
     {
-        var model = _model.Unsafe;
+        ICommandSettings? model = _model.Unsafe;
         if (model == null)
         {
             return;

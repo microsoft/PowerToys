@@ -44,8 +44,8 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
 
         try
         {
-            var template = new AdaptiveCardTemplate(templateJson);
-            var cardJson = template.Expand(dataJson);
+            AdaptiveCardTemplate template = new AdaptiveCardTemplate(templateJson);
+            string cardJson = template.Expand(dataJson);
             card = AdaptiveCard.FromJsonString(cardJson);
             return true;
         }
@@ -59,7 +59,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
 
     public override void InitializeProperties()
     {
-        var model = _formModel.Unsafe;
+        IFormContent? model = _formModel.Unsafe;
         if (model is null)
         {
             return;
@@ -69,14 +69,14 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         StateJson = model.StateJson;
         DataJson = model.DataJson;
 
-        if (TryBuildCard(TemplateJson, DataJson, out var builtCard, out var renderingError))
+        if (TryBuildCard(TemplateJson, DataJson, out AdaptiveCardParseResult? builtCard, out Exception? renderingError))
         {
             Card = builtCard;
             UpdateProperty(nameof(Card));
             return;
         }
 
-        var errorPayload = $$"""
+        string errorPayload = $$"""
     {
         "error_message": {{Serialize(renderingError!.Message)}},
         "error_stack":   {{Serialize(renderingError.StackTrace)}},
@@ -86,7 +86,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
     }
     """;
 
-        if (TryBuildCard(ErrorCardJson, errorPayload, out var errorCard, out var _))
+        if (TryBuildCard(ErrorCardJson, errorPayload, out AdaptiveCardParseResult? errorCard, out Exception? _))
         {
             Card = errorCard;
             UpdateProperty(nameof(Card));
@@ -107,17 +107,17 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         if (action is AdaptiveSubmitAction or AdaptiveExecuteAction)
         {
             // Get the data and inputs
-            var dataString = (action as AdaptiveSubmitAction)?.DataJson.Stringify() ?? string.Empty;
-            var inputString = inputs.Stringify();
+            string dataString = (action as AdaptiveSubmitAction)?.DataJson.Stringify() ?? string.Empty;
+            string inputString = inputs.Stringify();
 
             _ = Task.Run(() =>
             {
                 try
                 {
-                    var model = _formModel.Unsafe!;
+                    IFormContent model = _formModel.Unsafe!;
                     if (model != null)
                     {
-                        var result = model.SubmitForm(inputString, dataString);
+                        ICommandResult result = model.SubmitForm(inputString, dataString);
                         WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
                     }
                 }

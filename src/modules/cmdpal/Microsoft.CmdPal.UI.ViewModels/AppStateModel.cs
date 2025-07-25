@@ -51,9 +51,9 @@ public partial class AppStateModel : ObservableObject
         try
         {
             // Read the JSON content from the file
-            var jsonContent = File.ReadAllText(FilePath);
+            string jsonContent = File.ReadAllText(FilePath);
 
-            var loaded = JsonSerializer.Deserialize<AppStateModel>(jsonContent, JsonSerializationContext.Default.AppStateModel);
+            AppStateModel? loaded = JsonSerializer.Deserialize<AppStateModel>(jsonContent, JsonSerializationContext.Default.AppStateModel);
 
             Debug.WriteLine(loaded != null ? "Loaded settings file" : "Failed to parse");
 
@@ -77,23 +77,23 @@ public partial class AppStateModel : ObservableObject
         try
         {
             // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.AppStateModel);
+            string settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.AppStateModel);
 
             // Is it valid JSON?
             if (JsonNode.Parse(settingsJson) is JsonObject newSettings)
             {
                 // Now, read the existing content from the file
-                var oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
+                string oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
 
                 // Is it valid JSON?
                 if (JsonNode.Parse(oldContent) is JsonObject savedSettings)
                 {
-                    foreach (var item in newSettings)
+                    foreach (KeyValuePair<string, JsonNode?> item in newSettings)
                     {
                         savedSettings[item.Key] = item.Value?.DeepClone();
                     }
 
-                    var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.AppStateModel.Options);
+                    string serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.AppStateModel.Options);
                     File.WriteAllText(FilePath, serialized);
 
                     // TODO: Instead of just raising the event here, we should
@@ -119,7 +119,7 @@ public partial class AppStateModel : ObservableObject
 
     internal static string StateJsonPath()
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        string directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
         // now, the settings is just next to the exe

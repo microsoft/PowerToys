@@ -4,7 +4,6 @@
 
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Controls;
-using Microsoft.CmdPal.UI.Helpers;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
@@ -26,7 +25,7 @@ public static partial class IconCacheProvider
 
         if (args.Key is IconDataViewModel iconData)
         {
-            var deferral = args.GetDeferral();
+            CommunityToolkit.Common.Deferred.EventDeferral deferral = args.GetDeferral();
 
             args.Value = await IconService.GetIconSource(iconData);
 
@@ -34,9 +33,9 @@ public static partial class IconCacheProvider
         }
         else if (args.Key is IconInfoViewModel iconInfo)
         {
-            var deferral = args.GetDeferral();
+            CommunityToolkit.Common.Deferred.EventDeferral deferral = args.GetDeferral();
 
-            var data = args.Theme == Microsoft.UI.Xaml.ElementTheme.Dark ? iconInfo.Dark : iconInfo.Light;
+            IconDataViewModel data = args.Theme == Microsoft.UI.Xaml.ElementTheme.Dark ? iconInfo.Dark : iconInfo.Light;
             args.Value = await IconService.GetIconSource(data);
 
             deferral.Complete();

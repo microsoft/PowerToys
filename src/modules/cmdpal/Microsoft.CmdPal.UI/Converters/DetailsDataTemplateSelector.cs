@@ -24,7 +24,7 @@ public partial class DetailsDataTemplateSelector : DataTemplateSelector
     {
         if (item is DetailsElementViewModel element)
         {
-            var data = element;
+            DetailsElementViewModel data = element;
             return data switch
             {
                 DetailsSeparatorViewModel => SeparatorTemplate,

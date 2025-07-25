@@ -40,7 +40,7 @@ public partial class MainListPage : DynamicListPage,
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
-        var allApps = AllAppsCommandProvider.Page;
+        AllAppsPage allApps = AllAppsCommandProvider.Page;
         allApps.PropChanged += (s, p) =>
         {
             if (p.PropertyName == nameof(allApps.IsLoading))
@@ -52,7 +52,7 @@ public partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
+        SettingsModel settings = _serviceProvider.GetService<SettingsModel>()!;
         settings.SettingsChanged += SettingsChangedHandler;
         HotReloadSettings(settings);
 
@@ -86,7 +86,7 @@ public partial class MainListPage : DynamicListPage,
         {
             try
             {
-                var currentSearchText = SearchText;
+                string currentSearchText = SearchText;
                 UpdateSearchText(currentSearchText, currentSearchText);
             }
             catch (Exception e)
@@ -122,14 +122,14 @@ public partial class MainListPage : DynamicListPage,
         // Handle changes to the filter text here
         if (!string.IsNullOrEmpty(SearchText))
         {
-            var aliases = _serviceProvider.GetService<AliasManager>()!;
+            AliasManager aliases = _serviceProvider.GetService<AliasManager>()!;
             if (aliases.CheckAlias(newSearch))
             {
                 return;
             }
         }
 
-        var commands = _tlcManager.TopLevelCommands;
+        System.Collections.ObjectModel.ObservableCollection<TopLevelViewModel> commands = _tlcManager.TopLevelCommands;
         lock (commands)
         {
             UpdateFallbacks(newSearch, commands.ToImmutableArray());
@@ -179,11 +179,11 @@ public partial class MainListPage : DynamicListPage,
         // fire and forget
         _ = Task.Run(() =>
         {
-            var needsToUpdate = false;
+            bool needsToUpdate = false;
 
-            foreach (var command in commands)
+            foreach (TopLevelViewModel command in commands)
             {
-                var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
+                bool changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
                 needsToUpdate = needsToUpdate || changedVisibility;
             }
 
@@ -196,8 +196,8 @@ public partial class MainListPage : DynamicListPage,
 
     private bool ActuallyLoading()
     {
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
-        var allApps = AllAppsCommandProvider.Page;
+        TopLevelCommandManager tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
+        AllAppsPage allApps = AllAppsCommandProvider.Page;
         return allApps.IsLoading || tlcManager.IsLoading;
     }
 
@@ -206,26 +206,26 @@ public partial class MainListPage : DynamicListPage,
     // _always_ show up first.
     private int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem)
     {
-        var title = topLevelOrAppItem.Title;
+        string title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
         {
             return 0;
         }
 
-        var isWhiteSpace = string.IsNullOrWhiteSpace(query);
+        bool isWhiteSpace = string.IsNullOrWhiteSpace(query);
 
-        var isFallback = false;
-        var isAliasSubstringMatch = false;
-        var isAliasMatch = false;
-        var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
+        bool isFallback = false;
+        bool isAliasSubstringMatch = false;
+        bool isAliasMatch = false;
+        string id = IdForTopLevelOrAppItem(topLevelOrAppItem);
 
-        var extensionDisplayName = string.Empty;
+        string extensionDisplayName = string.Empty;
         if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
             isFallback = topLevel.IsFallback;
             if (topLevel.HasAlias)
             {
-                var alias = topLevel.AliasText;
+                string alias = topLevel.AliasText;
                 isAliasMatch = alias == query;
                 isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query, StringComparison.CurrentCultureIgnoreCase);
             }
@@ -243,29 +243,29 @@ public partial class MainListPage : DynamicListPage,
         // Title:
         // * whitespace query: 1 point
         // * otherwise full weight match
-        var nameMatch = isWhiteSpace ?
+        int nameMatch = isWhiteSpace ?
             (title.Contains(query) ? 1 : 0) :
             StringMatcher.FuzzySearch(query, title).Score;
 
         // Subtitle:
         // * whitespace query: 1/2 point
         // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
-        var descriptionMatch = isWhiteSpace ?
+        double descriptionMatch = isWhiteSpace ?
             (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
             (StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle).Score - 4) / 2.0;
 
         // Extension title: despite not being visible, give the extension name itself some weight
         // * whitespace query: 0 points
         // * otherwise more weight than a subtitle, but not much
-        var extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName).Score / 1.5;
+        double extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName).Score / 1.5;
 
-        var scores = new[]
+        double[] scores = new[]
         {
              nameMatch,
              descriptionMatch,
              isFallback ? 1 : 0, // Always give fallbacks a chance
         };
-        var max = scores.Max();
+        double max = scores.Max();
 
         // _Add_ the extension name. This will bubble items that match both
         // title and extension name up above ones that just match title.
@@ -273,18 +273,18 @@ public partial class MainListPage : DynamicListPage,
         // above "git" from "whatever"
         max += extensionTitleMatch;
 
-        var matchSomething = max
+        double matchSomething = max
             + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
 
         // If we matched title, subtitle, or alias (something real), then
         // here we add the recent command weight boost
         //
         // Otherwise something like `x` will still match everything you've run before
-        var finalScore = matchSomething;
+        double finalScore = matchSomething;
         if (matchSomething > 0)
         {
-            var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
-            var recentWeightBoost = history.GetCommandHistoryWeight(id);
+            RecentCommandsManager history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
+            int recentWeightBoost = history.GetCommandHistoryWeight(id);
             finalScore += recentWeightBoost;
         }
 
@@ -293,9 +293,9 @@ public partial class MainListPage : DynamicListPage,
 
     public void UpdateHistory(IListItem topLevelOrAppItem)
     {
-        var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        var state = _serviceProvider.GetService<AppStateModel>()!;
-        var history = state.RecentCommands;
+        string id = IdForTopLevelOrAppItem(topLevelOrAppItem);
+        AppStateModel state = _serviceProvider.GetService<AppStateModel>()!;
+        RecentCommandsManager history = state.RecentCommands;
         history.AddHistoryItem(id);
         AppStateModel.SaveState(state);
     }

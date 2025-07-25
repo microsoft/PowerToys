@@ -5,7 +5,6 @@
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml.Data;
 using Windows.System;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -15,7 +14,7 @@ public partial class KeyChordToStringConverter : IValueConverter
     {
         if (value is KeyChord shortcut && (VirtualKey)shortcut.Vkey != VirtualKey.None)
         {
-            var result = string.Empty;
+            string result = string.Empty;
 
             if (shortcut.Modifiers.HasFlag(VirtualKeyModifiers.Control))
             {

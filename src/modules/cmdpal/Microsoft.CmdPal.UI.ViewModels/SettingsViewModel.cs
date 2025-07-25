@@ -125,22 +125,22 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         _settings = settings;
         _serviceProvider = serviceProvider;
 
-        var activeProviders = GetCommandProviders();
-        var allProviderSettings = _settings.ProviderSettings;
+        IEnumerable<CommandProviderWrapper> activeProviders = GetCommandProviders();
+        Dictionary<string, ProviderSettings> allProviderSettings = _settings.ProviderSettings;
 
-        foreach (var item in activeProviders)
+        foreach (CommandProviderWrapper item in activeProviders)
         {
-            var providerSettings = settings.GetProviderSettings(item);
+            ProviderSettings providerSettings = settings.GetProviderSettings(item);
 
-            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
+            ProviderSettingsViewModel settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
             CommandProviders.Add(settingsModel);
         }
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()
     {
-        var manager = _serviceProvider.GetService<TopLevelCommandManager>()!;
-        var allProviders = manager.CommandProviders;
+        TopLevelCommandManager manager = _serviceProvider.GetService<TopLevelCommandManager>()!;
+        IEnumerable<CommandProviderWrapper> allProviders = manager.CommandProviders;
         return allProviders;
     }
 

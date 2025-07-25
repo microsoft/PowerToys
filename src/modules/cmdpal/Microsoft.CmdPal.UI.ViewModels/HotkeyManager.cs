@@ -21,7 +21,7 @@ public partial class HotkeyManager : ObservableObject
     public void UpdateHotkey(string commandId, HotkeySettings? hotkey)
     {
         // If any of the commands were already bound to this hotkey, remove that
-        foreach (var item in _commandHotkeys)
+        foreach (TopLevelHotkey item in _commandHotkeys)
         {
             if (item.Hotkey == hotkey)
             {
@@ -31,7 +31,7 @@ public partial class HotkeyManager : ObservableObject
 
         _commandHotkeys.RemoveAll(item => item.Hotkey == null);
 
-        foreach (var item in _commandHotkeys)
+        foreach (TopLevelHotkey item in _commandHotkeys)
         {
             if (item.CommandId == commandId)
             {

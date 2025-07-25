@@ -97,15 +97,15 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
 
     public override CommandResult SubmitForm(string payload)
     {
-        var formInput = JsonNode.Parse(payload)?.AsObject();
+        JsonObject? formInput = JsonNode.Parse(payload)?.AsObject();
         if (formInput == null)
         {
             return CommandResult.KeepOpen();
         }
 
-        var extensionName = formInput["ExtensionName"]?.AsValue()?.ToString() ?? string.Empty;
-        var displayName = formInput["DisplayName"]?.AsValue()?.ToString() ?? string.Empty;
-        var outputPath = formInput["OutputPath"]?.AsValue()?.ToString() ?? string.Empty;
+        string extensionName = formInput["ExtensionName"]?.AsValue()?.ToString() ?? string.Empty;
+        string displayName = formInput["DisplayName"]?.AsValue()?.ToString() ?? string.Empty;
+        string outputPath = formInput["OutputPath"]?.AsValue()?.ToString() ?? string.Empty;
 
         _creatingMessage.State = MessageState.Info;
         _creatingMessage.Message = _creatingText;
@@ -133,10 +133,10 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
 
     private void CreateExtension(string extensionName, string newDisplayName, string outputPath)
     {
-        var newGuid = Guid.NewGuid().ToString();
+        string newGuid = Guid.NewGuid().ToString();
 
         // Unzip `template.zip` to a temp dir:
-        var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        string tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
         // Does the output path exist?
         if (!Directory.Exists(outputPath))
@@ -144,13 +144,13 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
             Directory.CreateDirectory(outputPath);
         }
 
-        var assetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Microsoft.CmdPal.UI.ViewModels\\Assets\\template.zip");
+        string assetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Microsoft.CmdPal.UI.ViewModels\\Assets\\template.zip");
         ZipFile.ExtractToDirectory(assetsPath, tempDir);
 
-        var files = Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories);
-        foreach (var file in files)
+        string[] files = Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories);
+        foreach (string file in files)
         {
-            var text = File.ReadAllText(file);
+            string text = File.ReadAllText(file);
 
             // Replace all the instances of `FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF` with a new random guid:
             text = text.Replace("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", newGuid);
@@ -162,9 +162,9 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
             text = text.Replace("TemplateDisplayName", newDisplayName);
 
             // We're going to write the file to the same relative location in the output path
-            var relativePath = Path.GetRelativePath(tempDir, file);
+            string relativePath = Path.GetRelativePath(tempDir, file);
 
-            var newFileName = Path.Combine(outputPath, relativePath);
+            string newFileName = Path.Combine(outputPath, relativePath);
 
             // if the file name had `TemplateCmdPalExtension` in it, replace it with `extensionName`
             newFileName = newFileName.Replace("TemplateCmdPalExtension", extensionName);
