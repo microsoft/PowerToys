@@ -61,7 +61,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Actions.
+        ///   Looks up a localized string similar to Actions....
         /// </summary>
         internal static string Indexer_Command_Actions {
             get {
@@ -174,6 +174,24 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_Folder_Is_Empty {
             get {
                 return ResourceManager.GetString("Indexer_Folder_Is_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No items found.
+        /// </summary>
+        internal static string Indexer_NoResultsMessage {
+            get {
+                return ResourceManager.GetString("Indexer_NoResultsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tip: Improve your search result using filters like in Windows Explorer. (For example: type:directory).
+        /// </summary>
+        internal static string Indexer_NoResultsMessageTip {
+            get {
+                return ResourceManager.GetString("Indexer_NoResultsMessageTip", resourceCulture);
             }
         }
         
