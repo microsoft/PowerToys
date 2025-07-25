@@ -27,7 +27,7 @@ public partial class TagViewModel(ITag _tag, WeakReference<IPageContext> context
 
     public override void InitializeProperties()
     {
-        var model = _tagModel.Unsafe;
+        ITag? model = _tagModel.Unsafe;
         if (model == null)
         {
             return;

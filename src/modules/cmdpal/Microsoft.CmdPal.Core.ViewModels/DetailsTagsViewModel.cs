@@ -21,7 +21,7 @@ public partial class DetailsTagsViewModel(
     public override void InitializeProperties()
     {
         base.InitializeProperties();
-        var model = _dataModel.Unsafe;
+        IDetailsTags? model = _dataModel.Unsafe;
         if (model == null)
         {
             return;
@@ -31,7 +31,7 @@ public partial class DetailsTagsViewModel(
             .Tags?
             .Select(t =>
         {
-            var vm = new TagViewModel(t, PageContext);
+            TagViewModel vm = new TagViewModel(t, PageContext);
             vm.InitializeProperties();
             return vm;
         })

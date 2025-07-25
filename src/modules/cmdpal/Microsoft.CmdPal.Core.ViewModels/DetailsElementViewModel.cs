@@ -15,7 +15,7 @@ public abstract partial class DetailsElementViewModel(IDetailsElement _detailsEl
 
     public override void InitializeProperties()
     {
-        var model = _model.Unsafe;
+        IDetailsElement? model = _model.Unsafe;
         if (model == null)
         {
             return;

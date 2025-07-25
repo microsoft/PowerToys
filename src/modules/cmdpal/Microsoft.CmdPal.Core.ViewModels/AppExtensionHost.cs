@@ -79,7 +79,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
             {
                 try
                 {
-                    var vm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
+                    StatusMessageViewModel? vm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
                     if (vm != null)
                     {
                         StatusMessages.Remove(vm);
@@ -96,7 +96,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
     public void ProcessLogMessage(ILogMessage message)
     {
-        var vm = new LogMessageViewModel(message, _globalLogPageContext);
+        LogMessageViewModel vm = new LogMessageViewModel(message, _globalLogPageContext);
         vm.SafeInitializePropertiesSynchronous();
 
         Task.Factory.StartNew(
@@ -112,7 +112,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
     public void ProcessStatusMessage(IStatusMessage message, StatusContext context)
     {
         // If this message is already in the list of messages, just bring it to the top
-        var oldVm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
+        StatusMessageViewModel? oldVm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
         if (oldVm != null)
         {
             Task.Factory.StartNew(
@@ -127,7 +127,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
             return;
         }
 
-        var vm = new StatusMessageViewModel(message, new(_globalLogPageContext));
+        StatusMessageViewModel vm = new StatusMessageViewModel(message, new(_globalLogPageContext));
         vm.SafeInitializePropertiesSynchronous();
 
         Task.Factory.StartNew(

@@ -21,7 +21,7 @@ public partial class DetailsCommandsViewModel(
     public override void InitializeProperties()
     {
         base.InitializeProperties();
-        var model = _dataModel.Unsafe;
+        IDetailsCommands? model = _dataModel.Unsafe;
         if (model == null)
         {
             return;
@@ -31,7 +31,7 @@ public partial class DetailsCommandsViewModel(
             .Commands?
             .Select(c =>
             {
-                var vm = new CommandViewModel(c, PageContext);
+                CommandViewModel vm = new CommandViewModel(c, PageContext);
                 vm.InitializeProperties();
                 return vm;
             })

@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 

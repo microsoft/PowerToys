@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
@@ -126,12 +125,12 @@ public partial class CommandBarViewModel : ObservableObject,
 
     public ContextKeybindingResult CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        var keybindings = SelectedItem?.Keybindings();
+        Dictionary<CommandPalette.Extensions.KeyChord, CommandContextItemViewModel>? keybindings = SelectedItem?.Keybindings();
         if (keybindings != null)
         {
             // Does the pressed key match any of the keybindings?
-            var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
-            if (keybindings.TryGetValue(pressedKeyChord, out var matchedItem))
+            CommandPalette.Extensions.KeyChord pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
+            if (keybindings.TryGetValue(pressedKeyChord, out CommandContextItemViewModel? matchedItem))
             {
                 return matchedItem != null ? PerformCommand(matchedItem) : ContextKeybindingResult.Unhandled;
             }

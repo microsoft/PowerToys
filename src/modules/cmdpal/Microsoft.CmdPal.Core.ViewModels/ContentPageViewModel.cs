@@ -62,11 +62,11 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         List<ContentViewModel> newContent = [];
         try
         {
-            var newItems = _model.Unsafe!.GetContent();
+            IContent[] newItems = _model.Unsafe!.GetContent();
 
-            foreach (var item in newItems)
+            foreach (IContent? item in newItems)
             {
-                var viewModel = ViewModelFromContent(item, PageContext);
+                ContentViewModel? viewModel = ViewModelFromContent(item, PageContext);
                 if (viewModel != null)
                 {
                     viewModel.InitializeProperties();
@@ -80,7 +80,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             throw;
         }
 
-        var oneContent = newContent.Count == 1;
+        bool oneContent = newContent.Count == 1;
         newContent.ForEach(c => c.OnlyControlOnPage = oneContent);
 
         // Now, back to a UI thread to update the observable collection
@@ -103,7 +103,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         base.InitializeProperties();
 
-        var model = _model.Unsafe;
+        IContentPage? model = _model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -132,7 +132,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 contextItem.InitializeProperties();
             });
 
-        var extensionDetails = model.Details;
+        IDetails extensionDetails = model.Details;
         if (extensionDetails != null)
         {
             Details = new(extensionDetails, PageContext);
@@ -155,7 +155,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         base.FetchProperty(propertyName);
 
-        var model = this._model.Unsafe;
+        IContentPage? model = this._model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -165,10 +165,10 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         {
             case nameof(Commands):
 
-                var more = model.Commands;
+                IContextItem[] more = model.Commands;
                 if (more != null)
                 {
-                    var newContextMenu = more
+                    List<IContextItemViewModel> newContextMenu = more
                             .ToList()
                             .Select(item =>
                             {
@@ -215,7 +215,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
                 break;
             case nameof(Details):
-                var extensionDetails = model.Details;
+                IDetails extensionDetails = model.Details;
                 Details = extensionDetails != null ? new(extensionDetails, PageContext) : null;
                 UpdateDetails();
                 break;
@@ -277,14 +277,14 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
         Commands.Clear();
 
-        foreach (var item in Content)
+        foreach (ContentViewModel item in Content)
         {
             item.SafeCleanup();
         }
 
         Content.Clear();
 
-        var model = _model.Unsafe;
+        IContentPage? model = _model.Unsafe;
         if (model != null)
         {
             model.ItemsChanged -= Model_ItemsChanged;

@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Diagnostics.Utilities;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
@@ -99,11 +98,11 @@ public partial class ContextMenuViewModel : ObservableObject,
             return;
         }
 
-        var commands = CurrentContextMenu
+        IEnumerable<CommandContextItemViewModel> commands = CurrentContextMenu
                             .OfType<CommandContextItemViewModel>()
                             .Where(c => c.ShouldBeVisible);
 
-        var newResults = ListHelpers.FilterList<CommandContextItemViewModel>(commands, searchText, ScoreContextCommand);
+        IEnumerable<CommandContextItemViewModel> newResults = ListHelpers.FilterList<CommandContextItemViewModel>(commands, searchText, ScoreContextCommand);
         ListHelpers.InPlaceUpdateList(FilteredItems, newResults);
     }
 
@@ -119,9 +118,9 @@ public partial class ContextMenuViewModel : ObservableObject,
             return 0;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, item.Title);
+        MatchResult nameMatch = StringMatcher.FuzzySearch(query, item.Title);
 
-        var descriptionMatch = StringMatcher.FuzzySearch(query, item.Subtitle);
+        MatchResult descriptionMatch = StringMatcher.FuzzySearch(query, item.Subtitle);
 
         return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
     }
@@ -151,12 +150,12 @@ public partial class ContextMenuViewModel : ObservableObject,
 
     public ContextKeybindingResult? CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        var keybindings = Keybindings();
+        Dictionary<KeyChord, CommandContextItemViewModel> keybindings = Keybindings();
         if (keybindings != null)
         {
             // Does the pressed key match any of the keybindings?
-            var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
-            if (keybindings.TryGetValue(pressedKeyChord, out var item))
+            KeyChord pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
+            if (keybindings.TryGetValue(pressedKeyChord, out CommandContextItemViewModel? item))
             {
                 return InvokeCommand(item);
             }

@@ -25,7 +25,7 @@ public partial class DetailsLinkViewModel(
     public override void InitializeProperties()
     {
         base.InitializeProperties();
-        var model = _dataModel.Unsafe;
+        IDetailsLink? model = _dataModel.Unsafe;
         if (model == null)
         {
             return;
