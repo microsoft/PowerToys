@@ -123,8 +123,10 @@ jobs:
     displayName: Stage UI Test Build Outputs
     inputs:
       sourceFolder: '$(Build.SourcesDirectory)'
-      contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
-      targetFolder: '$(JobOutputDirectory)'
+      contents: |
+        $(BuildPlatform)/$(BuildConfiguration)/tests/**/*
+        **/$(BuildPlatform)/$(BuildConfiguration)/tests/**/*
+      targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
 
   - publish: $(JobOutputDirectory)
     artifact: $(JobOutputArtifactName)
