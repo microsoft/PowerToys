@@ -646,25 +646,25 @@ public sealed partial class MainWindow : WindowEx,
             case PInvoke.WM_NCLBUTTONDBLCLK:
                 return (LRESULT)IntPtr.Zero;
             case PInvoke.WM_HOTKEY:
+            {
+                var hotkeyIndex = (int)wParam.Value;
+                if (hotkeyIndex < _hotkeys.Count)
                 {
-                    var hotkeyIndex = (int)wParam.Value;
-                    if (hotkeyIndex < _hotkeys.Count)
+                    if (_ignoreHotKeyWhenFullScreen)
                     {
-                        if (_ignoreHotKeyWhenFullScreen)
+                        // If we're in full screen mode, ignore the hotkey
+                        if (WindowHelper.IsWindowFullscreen())
                         {
-                            // If we're in full screen mode, ignore the hotkey
-                            if (WindowHelper.IsWindowFullscreen())
-                            {
-                                return (LRESULT)IntPtr.Zero;
-                            }
+                            return (LRESULT)IntPtr.Zero;
                         }
-
-                        var hotkey = _hotkeys[hotkeyIndex];
-                        HandleSummon(hotkey.CommandId);
                     }
 
-                    return (LRESULT)IntPtr.Zero;
+                    var hotkey = _hotkeys[hotkeyIndex];
+                    HandleSummon(hotkey.CommandId);
                 }
+
+                return (LRESULT)IntPtr.Zero;
+            }
 
             default:
                 if (uMsg == WM_TASKBAR_RESTART)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -110,10 +110,18 @@ public sealed partial class KeyVisual : Control
                     case 161: // The Shift key or button.
                         _keyVisual._keyPresenter.Content = "\uE752"; break; */
 
-                    case 38: _keyVisual._keyPresenter.Content = "\uE0E4"; break; // The Up Arrow key or button.
-                    case 40: _keyVisual._keyPresenter.Content = "\uE0E5"; break; // The Down Arrow key or button.
-                    case 37: _keyVisual._keyPresenter.Content = "\uE0E2"; break; // The Left Arrow key or button.
-                    case 39: _keyVisual._keyPresenter.Content = "\uE0E3"; break; // The Right Arrow key or button.
+                    case 38:
+                        _keyVisual._keyPresenter.Content = "\uE0E4";
+                        break; // The Up Arrow key or button.
+                    case 40:
+                        _keyVisual._keyPresenter.Content = "\uE0E5";
+                        break; // The Down Arrow key or button.
+                    case 37:
+                        _keyVisual._keyPresenter.Content = "\uE0E2";
+                        break; // The Left Arrow key or button.
+                    case 39:
+                        _keyVisual._keyPresenter.Content = "\uE0E3";
+                        break; // The Right Arrow key or button.
 
                     case 91: // The left Windows key
                     case 92: // The right Windows key
@@ -130,7 +138,9 @@ public sealed partial class KeyVisual : Control
                         winIconContainer.Width = iconDimensions;
                         _keyVisual._keyPresenter.Content = winIconContainer;
                         break;
-                    default: _keyVisual._keyPresenter.Content = ((VirtualKey)_keyVisual.Content).ToString(); break;
+                    default:
+                        _keyVisual._keyPresenter.Content = ((VirtualKey)_keyVisual.Content).ToString();
+                        break;
                 }
             }
         }
