@@ -41,7 +41,6 @@ public sealed partial class FiltersDropDown : UserControl,
             if (e.NewValue is ListViewModel listViewModel)
             {
                 @this.ViewModel = listViewModel.Filters;
-                @this.UpdateFilters();
             }
             else
             {
@@ -56,7 +55,14 @@ public sealed partial class FiltersDropDown : UserControl,
         }
     }
 
-    public FiltersViewModel? ViewModel { get; set; }
+    public FiltersViewModel? ViewModel
+    {
+        get => (FiltersViewModel?)GetValue(ViewModelProperty);
+        set => SetValue(ViewModelProperty, value);
+    }
+
+    public static readonly DependencyProperty ViewModelProperty =
+        DependencyProperty.Register(nameof(ViewModel), typeof(FiltersViewModel), typeof(FiltersDropDown), new PropertyMetadata(null));
 
     public FiltersDropDown()
     {
@@ -73,7 +79,6 @@ public sealed partial class FiltersDropDown : UserControl,
             if (property == nameof(ListViewModel.Filters))
             {
                 ViewModel = list.Filters;
-                UpdateFilters();
             }
         }
     }
@@ -84,27 +89,6 @@ public sealed partial class FiltersDropDown : UserControl,
             FiltersComboBox.SelectedItem is FilterItemViewModel filterItem)
         {
             listViewModel.UpdateCurrentFilter(filterItem.Id);
-        }
-    }
-
-    private void UpdateFilters()
-    {
-        if (ViewModel is not null &&
-            ViewModel.ShouldShowFilters)
-        {
-            FiltersComboBox.ItemsSource = ViewModel.Filters;
-            FiltersComboBox.Visibility = Visibility.Visible;
-
-            var selectedItem = ViewModel.Filters
-                                        .OfType<FilterItemViewModel>()
-                                        .FirstOrDefault(f => f.Id == ViewModel.CurrentFilterId);
-            FiltersComboBox.SelectedItem = selectedItem;
-        }
-        else
-        {
-            FiltersComboBox.ItemsSource = null;
-            FiltersComboBox.SelectedItem = null;
-            FiltersComboBox.Visibility = Visibility.Collapsed;
         }
     }
 
