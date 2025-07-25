@@ -179,7 +179,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         if (more != null)
         {
             MoreCommands = more
-                .Select(item =>
+                .Select<IContextItem, IContextItemViewModel>(item =>
                 {
                     if (item is ICommandContextItem contextItem)
                     {
@@ -336,7 +336,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 if (more != null)
                 {
                     List<IContextItemViewModel> newContextMenu = more
-                        .Select(item =>
+                        .Select<IContextItem, IContextItemViewModel>(item =>
                         {
                             if (item is CommandContextItem contextItem)
                             {
