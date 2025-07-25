@@ -24,9 +24,10 @@ public static partial class NativeEventWaiter
                     dispatcherQueue.TryEnqueue(() => callback());
                 }
             }
-        });
-
-        t.IsBackground = true;
+        })
+        {
+            IsBackground = true
+        };
         t.Start();
     }
 }
