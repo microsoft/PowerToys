@@ -6,6 +6,8 @@ using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -18,11 +20,8 @@ public sealed partial class FiltersDropDown : UserControl,
         set => SetValue(CurrentPageViewModelProperty, value);
     }
 
-    // Using a DependencyProperty as the backing store for CurrentPageViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty CurrentPageViewModelProperty =
         DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(FiltersDropDown), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
-
-    public FiltersViewModel? ViewModel { get; set; }
 
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -57,6 +56,8 @@ public sealed partial class FiltersDropDown : UserControl,
         }
     }
 
+    public FiltersViewModel? ViewModel { get; set; }
+
     public FiltersDropDown()
     {
         this.InitializeComponent();
@@ -84,12 +85,6 @@ public sealed partial class FiltersDropDown : UserControl,
         {
             listViewModel.UpdateCurrentFilter(filterItem.Id);
         }
-
-        // TODO: We need to handle a weird case where ComboBox will allow
-        // separators to be selected (even thought their IsEnabled is false).
-        // This doesn't happen once the ComboBox has been opened, but if the user
-        // is using a keyboard to navigate the ComboBox, the enabled state of the
-        // separator isn't respected.
     }
 
     private void UpdateFilters()
@@ -111,5 +106,100 @@ public sealed partial class FiltersDropDown : UserControl,
             FiltersComboBox.SelectedItem = null;
             FiltersComboBox.Visibility = Visibility.Collapsed;
         }
+    }
+
+    private void FiltersComboBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Up)
+        {
+            NavigateUp();
+
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.Down)
+        {
+            NavigateDown();
+
+            e.Handled = true;
+        }
+    }
+
+    private void NavigateUp()
+    {
+        var newIndex = FiltersComboBox.SelectedIndex;
+
+        if (FiltersComboBox.SelectedIndex > 0)
+        {
+            newIndex--;
+
+            while (
+                newIndex >= 0 &&
+                IsSeparator(FiltersComboBox.Items[newIndex]) &&
+                newIndex != FiltersComboBox.SelectedIndex)
+            {
+                newIndex--;
+            }
+
+            if (newIndex < 0)
+            {
+                newIndex = FiltersComboBox.Items.Count - 1;
+
+                while (
+                    newIndex >= 0 &&
+                    IsSeparator(FiltersComboBox.Items[newIndex]) &&
+                    newIndex != FiltersComboBox.SelectedIndex)
+                {
+                    newIndex--;
+                }
+            }
+        }
+        else
+        {
+            newIndex = FiltersComboBox.Items.Count - 1;
+        }
+
+        FiltersComboBox.SelectedIndex = newIndex;
+    }
+
+    private void NavigateDown()
+    {
+        var newIndex = FiltersComboBox.SelectedIndex;
+
+        if (FiltersComboBox.SelectedIndex == FiltersComboBox.Items.Count - 1)
+        {
+            newIndex = 0;
+        }
+        else
+        {
+            newIndex++;
+
+            while (
+                newIndex < FiltersComboBox.Items.Count &&
+                IsSeparator(FiltersComboBox.Items[newIndex]) &&
+                newIndex != FiltersComboBox.SelectedIndex)
+            {
+                newIndex++;
+            }
+
+            if (newIndex >= FiltersComboBox.Items.Count)
+            {
+                newIndex = 0;
+
+                while (
+                    newIndex < FiltersComboBox.Items.Count &&
+                    IsSeparator(FiltersComboBox.Items[newIndex]) &&
+                    newIndex != FiltersComboBox.SelectedIndex)
+                {
+                    newIndex++;
+                }
+            }
+        }
+
+        FiltersComboBox.SelectedIndex = newIndex;
+    }
+
+    private bool IsSeparator(object item)
+    {
+        return item is SeparatorViewModel;
     }
 }
