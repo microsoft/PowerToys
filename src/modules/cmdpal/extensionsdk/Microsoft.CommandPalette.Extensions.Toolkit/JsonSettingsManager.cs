@@ -25,7 +25,7 @@ public abstract class JsonSettingsManager
             throw new InvalidOperationException($"You must set a valid {nameof(FilePath)} before calling {nameof(LoadSettings)}");
         }
 
-        var filePath = FilePath;
+        string filePath = FilePath;
         if (!File.Exists(filePath))
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = "The provided settings file does not exist" });
@@ -35,7 +35,7 @@ public abstract class JsonSettingsManager
         try
         {
             // Read the JSON content from the file
-            var jsonContent = File.ReadAllText(filePath);
+            string jsonContent = File.ReadAllText(filePath);
 
             // Is it valid JSON?
             if (JsonNode.Parse(jsonContent) is JsonObject savedSettings)
@@ -63,23 +63,23 @@ public abstract class JsonSettingsManager
         try
         {
             // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = Settings.ToJson();
+            string settingsJson = Settings.ToJson();
 
             // Is it valid JSON?
             if (JsonNode.Parse(settingsJson) is JsonObject newSettings)
             {
                 // Now, read the existing content from the file
-                var oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
+                string oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
 
                 // Is it valid JSON?
                 if (JsonNode.Parse(oldContent) is JsonObject savedSettings)
                 {
-                    foreach (var item in newSettings)
+                    foreach (KeyValuePair<string, JsonNode?> item in newSettings)
                     {
                         savedSettings[item.Key] = item.Value?.DeepClone();
                     }
 
-                    var serialized = savedSettings.ToJsonString(_serializerOptions);
+                    string serialized = savedSettings.ToJsonString(_serializerOptions);
                     File.WriteAllText(FilePath, serialized);
                 }
                 else

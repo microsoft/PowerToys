@@ -92,7 +92,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
         Action? action = null,
         ICommandResult? result = null)
     {
-        var c = new AnonymousCommand(action);
+        AnonymousCommand c = new AnonymousCommand(action);
         if (!string.IsNullOrEmpty(name))
         {
             c.Name = name;

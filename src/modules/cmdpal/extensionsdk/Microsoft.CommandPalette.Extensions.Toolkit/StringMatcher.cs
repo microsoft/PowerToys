@@ -68,9 +68,9 @@ public partial class StringMatcher
             return new MatchResult(false, UserSettingSearchPrecision);
         }
 
-        var bestResult = new MatchResult(false, UserSettingSearchPrecision);
+        MatchResult bestResult = new MatchResult(false, UserSettingSearchPrecision);
 
-        for (var startIndex = 0; startIndex < stringToCompare.Length; startIndex++)
+        for (int startIndex = 0; startIndex < stringToCompare.Length; startIndex++)
         {
             MatchResult result = FuzzyMatch(query, stringToCompare, opt, startIndex);
             if (result.Success && (!bestResult.Success || result.Score > bestResult.Score))
@@ -100,25 +100,25 @@ public partial class StringMatcher
         // }
 
         // Using InvariantCulture since this is internal
-        var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
-        var queryWithoutCase = opt.IgnoreCase ? query.ToUpper(CultureInfo.InvariantCulture) : query;
+        string fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
+        string queryWithoutCase = opt.IgnoreCase ? query.ToUpper(CultureInfo.InvariantCulture) : query;
 
-        var querySubstrings = queryWithoutCase.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
-        var currentQuerySubstringIndex = 0;
-        var currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
-        var currentQuerySubstringCharacterIndex = 0;
+        string[] querySubstrings = queryWithoutCase.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+        int currentQuerySubstringIndex = 0;
+        string currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
+        int currentQuerySubstringCharacterIndex = 0;
 
-        var firstMatchIndex = -1;
-        var firstMatchIndexInWord = -1;
-        var lastMatchIndex = 0;
-        var allQuerySubstringsMatched = false;
-        var matchFoundInPreviousLoop = false;
-        var allSubstringsContainedInCompareString = true;
+        int firstMatchIndex = -1;
+        int firstMatchIndexInWord = -1;
+        int lastMatchIndex = 0;
+        bool allQuerySubstringsMatched = false;
+        bool matchFoundInPreviousLoop = false;
+        bool allSubstringsContainedInCompareString = true;
 
-        var indexList = new List<int>();
+        List<int> indexList = new List<int>();
         List<int> spaceIndices = new List<int>();
 
-        for (var compareStringIndex = startIndex; compareStringIndex < fullStringToCompareWithoutCase.Length; compareStringIndex++)
+        for (int compareStringIndex = startIndex; compareStringIndex < fullStringToCompareWithoutCase.Length; compareStringIndex++)
         {
             // To maintain a list of indices which correspond to spaces in the string to compare
             // To populate the list only for the first query substring
@@ -130,8 +130,8 @@ public partial class StringMatcher
             bool compareResult;
             if (opt.IgnoreCase)
             {
-                var fullStringToCompare = fullStringToCompareWithoutCase[compareStringIndex].ToString();
-                var querySubstring = currentQuerySubstring[currentQuerySubstringCharacterIndex].ToString();
+                string fullStringToCompare = fullStringToCompareWithoutCase[compareStringIndex].ToString();
+                string querySubstring = currentQuerySubstring[currentQuerySubstringCharacterIndex].ToString();
 #pragma warning disable CA1309 // Use ordinal string comparison (We are looking for a fuzzy match here)
                 compareResult = string.Compare(fullStringToCompare, querySubstring, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0;
 #pragma warning restore CA1309 // Use ordinal string comparison
@@ -163,7 +163,7 @@ public partial class StringMatcher
             {
                 // we want to verify that there is not a better match if this is not a full word
                 // in order to do so we need to verify all previous chars are part of the pattern
-                var startIndexToVerify = compareStringIndex - currentQuerySubstringCharacterIndex;
+                int startIndexToVerify = compareStringIndex - currentQuerySubstringCharacterIndex;
 
                 if (AllPreviousCharsMatched(startIndexToVerify, currentQuerySubstringCharacterIndex, fullStringToCompareWithoutCase, currentQuerySubstring))
                 {
@@ -204,8 +204,8 @@ public partial class StringMatcher
         // proceed to calculate score if every char or substring without whitespaces matched
         if (allQuerySubstringsMatched)
         {
-            var nearestSpaceIndex = CalculateClosestSpaceIndex(spaceIndices, firstMatchIndex);
-            var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex - nearestSpaceIndex - 1, lastMatchIndex - firstMatchIndex, allSubstringsContainedInCompareString);
+            int nearestSpaceIndex = CalculateClosestSpaceIndex(spaceIndices, firstMatchIndex);
+            int score = CalculateSearchScore(query, stringToCompare, firstMatchIndex - nearestSpaceIndex - 1, lastMatchIndex - firstMatchIndex, allSubstringsContainedInCompareString);
 
             return new MatchResult(true, UserSettingSearchPrecision, indexList, score);
         }
@@ -222,14 +222,14 @@ public partial class StringMatcher
         }
         else
         {
-            return spaceIndices.OrderBy(item => (firstMatchIndex - item)).Where(item => firstMatchIndex > item).FirstOrDefault(-1);
+            return spaceIndices.OrderBy(item => firstMatchIndex - item).Where(item => firstMatchIndex > item).FirstOrDefault(-1);
         }
     }
 
     private static bool AllPreviousCharsMatched(int startIndexToVerify, int currentQuerySubstringCharacterIndex, string fullStringToCompareWithoutCase, string currentQuerySubstring)
     {
-        var allMatch = true;
-        for (var indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
+        bool allMatch = true;
+        for (int indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
         {
             if (fullStringToCompareWithoutCase[startIndexToVerify + indexToCheck] !=
                 currentQuerySubstring[indexToCheck])
@@ -243,13 +243,13 @@ public partial class StringMatcher
 
     private static List<int> GetUpdatedIndexList(int startIndexToVerify, int currentQuerySubstringCharacterIndex, int firstMatchIndexInWord, List<int> indexList)
     {
-        var updatedList = new List<int>();
+        List<int> updatedList = new List<int>();
 
         indexList.RemoveAll(x => x >= firstMatchIndexInWord);
 
         updatedList.AddRange(indexList);
 
-        for (var indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
+        for (int indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
         {
             updatedList.Add(startIndexToVerify + indexToCheck);
         }
@@ -272,7 +272,7 @@ public partial class StringMatcher
         // I.e. the length is more important than the location where a match is found.
         const int matchLenWeightFactor = 2;
 
-        var score = 100 * (query.Length + 1) * matchLenWeightFactor / ((1 + firstIndex) + (matchLenWeightFactor * (matchLen + 1)));
+        int score = 100 * (query.Length + 1) * matchLenWeightFactor / (1 + firstIndex + (matchLenWeightFactor * (matchLen + 1)));
 
         // A match with less characters assigning more weights
         if (stringToCompare.Length - query.Length < 5)
@@ -286,8 +286,8 @@ public partial class StringMatcher
 
         if (allSubstringsContainedInCompareString)
         {
-            var count = query.Count(c => !char.IsWhiteSpace(c));
-            var threshold = 4;
+            int count = query.Count(c => !char.IsWhiteSpace(c));
+            int threshold = 4;
             if (count <= threshold)
             {
                 score += count * 10;
@@ -301,7 +301,7 @@ public partial class StringMatcher
 #pragma warning disable CA1309 // Use ordinal string comparison (Using CurrentCultureIgnoreCase since this relates to queries input by user)
         if (string.Equals(query, stringToCompare, StringComparison.CurrentCultureIgnoreCase))
         {
-            var bonusForExactMatch = 10;
+            int bonusForExactMatch = 10;
             score += bonusForExactMatch;
         }
 #pragma warning restore CA1309 // Use ordinal string comparison

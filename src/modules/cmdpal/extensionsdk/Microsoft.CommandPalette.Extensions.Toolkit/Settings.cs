@@ -35,19 +35,19 @@ public sealed partial class Settings : ICommandSettings
 
     internal string ToFormJson()
     {
-        var settings = _settings
+        IEnumerable<ISettingsForm> settings = _settings
             .Values
             .Where(s => s is ISettingsForm)
             .Select(s => s as ISettingsForm)
             .Where(s => s != null)
             .Select(s => s!);
 
-        var bodies = string.Join(",", settings
+        string bodies = string.Join(",", settings
             .Select(s => JsonSerializer.Serialize(s.ToDictionary(), JsonSerializationContext.Default.Dictionary)));
 
-        var datas = string.Join(",", settings.Select(s => s.ToDataIdentifier()));
+        string datas = string.Join(",", settings.Select(s => s.ToDataIdentifier()));
 
-        var json = $$"""
+        string json = $$"""
 {
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",
@@ -71,27 +71,27 @@ public sealed partial class Settings : ICommandSettings
 
     public string ToJson()
     {
-        var settings = _settings
+        IEnumerable<ISettingsForm> settings = _settings
             .Values
             .Where(s => s is ISettingsForm)
             .Select(s => s as ISettingsForm)
             .Where(s => s != null)
             .Select(s => s!);
-        var content = string.Join(",\n", settings.Select(s => s.ToState()));
+        string content = string.Join(",\n", settings.Select(s => s.ToState()));
         return $"{{\n{content}\n}}";
     }
 
     public void Update(string data)
     {
-        var formInput = JsonNode.Parse(data)?.AsObject();
+        JsonObject? formInput = JsonNode.Parse(data)?.AsObject();
         if (formInput == null)
         {
             return;
         }
 
-        foreach (var key in _settings.Keys)
+        foreach (string key in _settings.Keys)
         {
-            var value = _settings[key];
+            object value = _settings[key];
             if (value is ISettingsForm f)
             {
                 f.Update(formInput);
@@ -101,7 +101,7 @@ public sealed partial class Settings : ICommandSettings
 
     internal void RaiseSettingsChanged()
     {
-        var handlers = SettingsChanged;
+        TypedEventHandler<object, Settings>? handlers = SettingsChanged;
         handlers?.Invoke(this, this);
     }
 

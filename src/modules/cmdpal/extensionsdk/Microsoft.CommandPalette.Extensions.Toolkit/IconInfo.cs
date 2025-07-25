@@ -34,7 +34,7 @@ public partial class IconInfo : IIconInfo
 
     public static IconInfo FromStream(IRandomAccessStream stream)
     {
-        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+        IconData data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
         return new IconInfo(data, data);
     }
 }

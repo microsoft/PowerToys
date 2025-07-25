@@ -26,7 +26,7 @@ public partial class ShowFileInFolderCommand : InvokableCommand
         {
             try
             {
-                var argument = "/select, \"" + _path + "\"";
+                string argument = "/select, \"" + _path + "\"";
                 Process.Start("explorer.exe", argument);
             }
             catch (Exception)

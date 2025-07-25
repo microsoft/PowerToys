@@ -11,7 +11,7 @@ public abstract class DynamicListPage : ListPage, IDynamicListPage
         get => base.SearchText;
         set
         {
-            var oldSearch = base.SearchText;
+            string oldSearch = base.SearchText;
             base.SearchText = value;
             UpdateSearchText(oldSearch, value);
         }

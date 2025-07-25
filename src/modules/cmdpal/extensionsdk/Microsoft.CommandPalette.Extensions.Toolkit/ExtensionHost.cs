@@ -36,7 +36,7 @@ public static partial class ExtensionHost
 
     public static void LogMessage(string message)
     {
-        var logMessage = new LogMessage() { Message = message };
+        LogMessage logMessage = new LogMessage() { Message = message };
         LogMessage(logMessage);
     }
 

@@ -16,7 +16,7 @@ public static partial class KeyChordHelpers
         int vkey = 0,
         int scanCode = 0)
     {
-        var modifiers = (ctrl ? VirtualKeyModifiers.Control : VirtualKeyModifiers.None)
+        VirtualKeyModifiers modifiers = (ctrl ? VirtualKeyModifiers.Control : VirtualKeyModifiers.None)
             | (alt ? VirtualKeyModifiers.Menu : VirtualKeyModifiers.None)
             | (shift ? VirtualKeyModifiers.Shift : VirtualKeyModifiers.None)
             | (win ? VirtualKeyModifiers.Windows : VirtualKeyModifiers.None)

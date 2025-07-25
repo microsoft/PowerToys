@@ -26,7 +26,7 @@ public static class ThumbnailHelper
 
     public static Task<IRandomAccessStream?> GetThumbnail(string path, bool jumbo = false)
     {
-        var extension = Path.GetExtension(path).ToLower(CultureInfo.InvariantCulture);
+        string extension = Path.GetExtension(path).ToLower(CultureInfo.InvariantCulture);
         try
         {
             return ImageExtensions.Contains(extension) ? GetImageThumbnailAsync(path) : GetFileIconStream(path, jumbo);
@@ -53,10 +53,10 @@ public static class ThumbnailHelper
     // Duplicate it if you need it again after this.
     private static MemoryStream GetMemoryStreamFromIcon(IntPtr hIcon)
     {
-        var memoryStream = new MemoryStream();
+        MemoryStream memoryStream = new MemoryStream();
 
         // Ensure disposing the icon before freeing the handle
-        using (var icon = Icon.FromHandle(hIcon))
+        using (Icon icon = Icon.FromHandle(hIcon))
         {
             icon.ToBitmap().Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
         }
@@ -82,9 +82,9 @@ public static class ThumbnailHelper
         // the normal icon lookup
         if (hIcon == 0)
         {
-            var shinfo = default(NativeMethods.SHFILEINFO);
+            NativeMethods.SHFILEINFO shinfo = default(NativeMethods.SHFILEINFO);
 
-            var hr = NativeMethods.SHGetFileInfo(filePath, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SHELLICONSIZE);
+            nint hr = NativeMethods.SHGetFileInfo(filePath, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SHELLICONSIZE);
 
             if (hr == 0 || shinfo.hIcon == 0)
             {
@@ -99,11 +99,11 @@ public static class ThumbnailHelper
             return null;
         }
 
-        var stream = new InMemoryRandomAccessStream();
+        InMemoryRandomAccessStream stream = new InMemoryRandomAccessStream();
 
-        using var memoryStream = GetMemoryStreamFromIcon(hIcon); // this will DestroyIcon hIcon
-        using var outputStream = stream.GetOutputStreamAt(0);
-        using (var dataWriter = new DataWriter(outputStream))
+        using MemoryStream memoryStream = GetMemoryStreamFromIcon(hIcon); // this will DestroyIcon hIcon
+        using IOutputStream outputStream = stream.GetOutputStreamAt(0);
+        using (DataWriter dataWriter = new DataWriter(outputStream))
         {
             dataWriter.WriteBytes(memoryStream.ToArray());
             await dataWriter.StoreAsync();
@@ -115,18 +115,18 @@ public static class ThumbnailHelper
 
     private static async Task<IRandomAccessStream?> GetImageThumbnailAsync(string filePath)
     {
-        var file = await StorageFile.GetFileFromPathAsync(filePath);
-        var thumbnail = await file.GetThumbnailAsync(ThumbnailMode.PicturesView);
+        StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
+        StorageItemThumbnail thumbnail = await file.GetThumbnailAsync(ThumbnailMode.PicturesView);
         return thumbnail;
     }
 
     private static nint GetLargestIcon(string path)
     {
-        var shinfo = default(NativeMethods.SHFILEINFO);
+        NativeMethods.SHFILEINFO shinfo = default(NativeMethods.SHFILEINFO);
         NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX);
 
-        var hIcon = IntPtr.Zero;
-        var iID_IImageList = new Guid("46EB5926-582E-4017-9FDF-E8998DAA0950");
+        nint hIcon = IntPtr.Zero;
+        Guid iID_IImageList = new Guid("46EB5926-582E-4017-9FDF-E8998DAA0950");
 
         if (NativeMethods.SHGetImageList(SHIL_JUMBO, ref iID_IImageList, out nint imageListPtr) == 0 && imageListPtr != IntPtr.Zero)
         {

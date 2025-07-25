@@ -24,7 +24,7 @@ internal sealed partial class ExtensionInstanceManager : IClassFactory
 
     // Known constant ignored by win32metadata and cswin32 projections.
     // https://github.com/microsoft/win32metadata/blob/main/generation/WinSDK/RecompiledIdlHeaders/um/processthreadsapi.h
-    private static readonly HANDLE CURRENT_THREAD_PSEUDO_HANDLE = (HANDLE)(IntPtr)(-6);
+    private static readonly HANDLE CURRENT_THREAD_PSEUDO_HANDLE = (HANDLE)(-6);
 
     private static readonly Guid IID_IUnknown = Guid.Parse("00000000-0000-0000-C000-000000000046");
 
@@ -63,8 +63,8 @@ internal sealed partial class ExtensionInstanceManager : IClassFactory
         if (riid == _clsid || riid == IID_IUnknown)
         {
             // Create the instance of the .NET object
-            var managed = _createExtension();
-            var ins = MarshalInspectable<object>.FromManaged(managed);
+            IExtension managed = _createExtension();
+            nint ins = MarshalInspectable<object>.FromManaged(managed);
             ppvObject = ins;
         }
         else
@@ -92,7 +92,7 @@ internal sealed partial class ExtensionInstanceManager : IClassFactory
             return false;
         }
 
-        var value = new char[buffer];
+        char[] value = new char[buffer];
         fixed (char* p = value)
         {
             if (PInvoke.GetPackageFamilyNameFromToken(CURRENT_THREAD_PSEUDO_HANDLE, &buffer, p) != 0)
@@ -106,7 +106,7 @@ internal sealed partial class ExtensionInstanceManager : IClassFactory
             return false;
         }
 
-        var valueStr = new string(value);
+        string valueStr = new string(value);
         return valueStr switch
         {
             "Microsoft.Windows.CmdPal_8wekyb3d8bbwe\0" or "Microsoft.Windows.CmdPal.Canary_8wekyb3d8bbwe\0" or "Microsoft.Windows.CmdPal.Dev_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome.Canary_8wekyb3d8bbwe\0" or "Microsoft.Windows.DevHome.Dev_8wekyb3d8bbwe\0" or "Microsoft.WindowsTerminal\0" or "Microsoft.WindowsTerminal_8wekyb3d8bbwe\0" or "WindowsTerminalDev_8wekyb3d8bbwe\0" or "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\0" => true,

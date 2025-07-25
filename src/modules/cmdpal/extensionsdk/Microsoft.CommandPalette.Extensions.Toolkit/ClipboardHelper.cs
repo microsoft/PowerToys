@@ -2,10 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -25,9 +22,9 @@ public static partial class ClipboardHelper
             return _internalClipboard ?? string.Empty;
         }
 
-        var tool = string.Empty;
-        var args = string.Empty;
-        var clipboardText = string.Empty;
+        string tool = string.Empty;
+        string args = string.Empty;
+        string? clipboardText = string.Empty;
 
         ExecuteOnStaThread(() => GetTextImpl(out clipboardText));
         return clipboardText;
@@ -41,8 +38,8 @@ public static partial class ClipboardHelper
             return;
         }
 
-        var tool = string.Empty;
-        var args = string.Empty;
+        string tool = string.Empty;
+        string args = string.Empty;
         ExecuteOnStaThread(() => SetClipboardData(Tuple.Create(text, CF_UNICODETEXT)));
         return;
     }
@@ -123,7 +120,7 @@ public static partial class ClipboardHelper
             {
                 if (OpenClipboard(IntPtr.Zero))
                 {
-                    var data = GetClipboardData(CF_UNICODETEXT);
+                    nint data = GetClipboardData(CF_UNICODETEXT);
                     if (data != IntPtr.Zero)
                     {
                         data = GlobalLock(data);
@@ -137,7 +134,7 @@ public static partial class ClipboardHelper
             {
                 if (OpenClipboard(IntPtr.Zero))
                 {
-                    var data = GetClipboardData(CF_TEXT);
+                    nint data = GetClipboardData(CF_TEXT);
                     if (data != IntPtr.Zero)
                     {
                         data = GlobalLock(data);
@@ -172,7 +169,7 @@ public static partial class ClipboardHelper
 
             EmptyClipboard();
 
-            foreach (var d in data)
+            foreach (Tuple<string, uint> d in data)
             {
                 if (!SetSingleClipboardData(d.Item1, d.Item2))
                 {
@@ -190,8 +187,8 @@ public static partial class ClipboardHelper
 
     private static bool SetSingleClipboardData(string text, uint format)
     {
-        var hGlobal = IntPtr.Zero;
-        var data = IntPtr.Zero;
+        nint hGlobal = IntPtr.Zero;
+        nint data = IntPtr.Zero;
 
         try
         {
@@ -217,13 +214,13 @@ public static partial class ClipboardHelper
                 return false;
             }
 
-            hGlobal = GlobalAlloc(GHND, (UIntPtr)bytes);
+            hGlobal = GlobalAlloc(GHND, bytes);
             if (hGlobal == IntPtr.Zero)
             {
                 return false;
             }
 
-            var dataCopy = GlobalLock(hGlobal);
+            nint dataCopy = GlobalLock(hGlobal);
             if (dataCopy == IntPtr.Zero)
             {
                 return false;
@@ -261,7 +258,7 @@ public static partial class ClipboardHelper
     private static void ExecuteOnStaThread(Func<bool> action)
     {
         const int RetryCount = 5;
-        var tries = 0;
+        int tries = 0;
 
         if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
         {
@@ -274,7 +271,7 @@ public static partial class ClipboardHelper
         }
 
         Exception? exception = null;
-        var thread = new Thread(() =>
+        Thread thread = new Thread(() =>
         {
             try
             {

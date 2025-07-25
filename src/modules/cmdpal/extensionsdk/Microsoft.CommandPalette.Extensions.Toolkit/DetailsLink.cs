@@ -21,7 +21,7 @@ public partial class DetailsLink : IDetailsLink
 
     public DetailsLink(string url, string text)
     {
-        if (Uri.TryCreate(url, default(UriCreationOptions), out var newUri))
+        if (Uri.TryCreate(url, default(UriCreationOptions), out Uri? newUri))
         {
             Link = newUri;
         }
