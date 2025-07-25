@@ -260,8 +260,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
         {
             foreach (var supportedInterface in supportedInterfaces)
             {
-                ProviderType pt;
-                if (Enum.TryParse(supportedInterface.Key, out pt))
+                if (Enum.TryParse(supportedInterface.Key, out ProviderType pt))
                 {
                     extensionWrapper.AddProviderType(pt);
                 }

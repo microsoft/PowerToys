@@ -13,7 +13,7 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
 {
     public CreatedExtensionForm(string name, string displayName, string path)
     {
-        var serializeString = (string? s) => JsonSerializer.Serialize(s, JsonSerializationContext.Default.String);
+        static string serializeString(string? s) => JsonSerializer.Serialize(s, JsonSerializationContext.Default.String);
         TemplateJson = CardTemplate;
         DataJson = $$"""
 {

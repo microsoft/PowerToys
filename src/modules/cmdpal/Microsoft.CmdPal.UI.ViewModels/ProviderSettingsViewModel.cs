@@ -126,10 +126,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (field == null)
-            {
-                field = BuildTopLevelViewModels();
-            }
+            field ??= BuildTopLevelViewModels();
 
             return field;
         }
@@ -149,10 +146,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (field == null)
-            {
-                field = BuildFallbackViewModels();
-            }
+            field ??= BuildFallbackViewModels();
 
             return field;
         }

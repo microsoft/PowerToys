@@ -146,7 +146,7 @@ public record HotkeySettings// : ICmdLineRepresentable
 
     public bool IsValid()
     {
-        return IsAccessibleShortcut() ? false : (Alt || Ctrl || Win || Shift) && Code != 0;
+        return !IsAccessibleShortcut() && (Alt || Ctrl || Win || Shift) && Code != 0;
     }
 
     public bool IsEmpty()

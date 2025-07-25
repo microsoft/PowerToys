@@ -271,7 +271,7 @@ public partial class MainListPage : DynamicListPage,
         // title and extension name up above ones that just match title.
         // e.g. "git" will up-weight "GitHub searches" from the GitHub extension
         // above "git" from "whatever"
-        max = max + extensionTitleMatch;
+        max += extensionTitleMatch;
 
         var matchSomething = max
             + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));

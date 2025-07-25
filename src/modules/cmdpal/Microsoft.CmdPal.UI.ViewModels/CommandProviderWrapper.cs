@@ -43,13 +43,7 @@ public sealed class CommandProviderWrapper
 
     public bool IsActive { get; private set; }
 
-    public string ProviderId
-    {
-        get
-        {
-            return string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
-        }
-    }
+    public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
@@ -180,14 +174,14 @@ public sealed class CommandProviderWrapper
         var settings = serviceProvider.GetService<SettingsModel>()!;
         var providerSettings = GetProviderSettings(settings);
 
-        Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
+        TopLevelViewModel makeAndAdd(ICommandItem? i, bool fallback)
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
-        };
+        }
         if (commands != null)
         {
             TopLevelItems = commands

@@ -60,8 +60,7 @@ public partial class SettingsModel : ObservableObject
 
     public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
     {
-        ProviderSettings? settings;
-        if (!ProviderSettings.TryGetValue(provider.ProviderId, out settings))
+        if (!ProviderSettings.TryGetValue(provider.ProviderId, out ProviderSettings? settings))
         {
             settings = new ProviderSettings(provider);
             settings.Connect(provider);
