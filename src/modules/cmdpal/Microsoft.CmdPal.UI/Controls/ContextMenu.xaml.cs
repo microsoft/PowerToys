@@ -48,7 +48,7 @@ public sealed partial class ContextMenu : UserControl,
 
     public void Receive(TryCommandKeybindingMessage msg)
     {
-        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
+        ContextKeybindingResult? result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
 
         if (result == ContextKeybindingResult.Hide)
         {
@@ -87,13 +87,13 @@ public sealed partial class ContextMenu : UserControl,
             return;
         }
 
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+        bool ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        bool altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+        bool shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        bool winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
             InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
 
-        var result = ViewModel?.CheckKeybinding(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+        ContextKeybindingResult? result = ViewModel?.CheckKeybinding(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
 
         if (result == ContextKeybindingResult.Hide)
         {
@@ -113,7 +113,7 @@ public sealed partial class ContextMenu : UserControl,
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        var prop = e.PropertyName;
+        string? prop = e.PropertyName;
 
         if (prop == nameof(ContextMenuViewModel.FilteredItems))
         {
@@ -133,10 +133,10 @@ public sealed partial class ContextMenu : UserControl,
 
     private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+        bool ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        bool altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+        bool shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        bool winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
             InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
 
         if (e.Key == VirtualKey.Enter)
@@ -192,7 +192,7 @@ public sealed partial class ContextMenu : UserControl,
 
     private void NavigateUp()
     {
-        var newIndex = CommandsDropdown.SelectedIndex;
+        int newIndex = CommandsDropdown.SelectedIndex;
 
         if (CommandsDropdown.SelectedIndex > 0)
         {
@@ -229,7 +229,7 @@ public sealed partial class ContextMenu : UserControl,
 
     private void NavigateDown()
     {
-        var newIndex = CommandsDropdown.SelectedIndex;
+        int newIndex = CommandsDropdown.SelectedIndex;
 
         if (CommandsDropdown.SelectedIndex == CommandsDropdown.Items.Count - 1)
         {

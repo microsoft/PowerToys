@@ -27,7 +27,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
 
     public override void InitializeProperties()
     {
-        var model = Model.Unsafe;
+        IStatusMessage? model = Model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -35,7 +35,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
 
         Message = model.Message;
         State = model.State;
-        var modelProgress = model.Progress;
+        IProgressState modelProgress = model.Progress;
         if (modelProgress != null)
         {
             Progress = new(modelProgress, this.PageContext);
@@ -60,7 +60,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
 
     protected virtual void FetchProperty(string propertyName)
     {
-        var model = this.Model.Unsafe;
+        IStatusMessage? model = this.Model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -75,7 +75,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
                 this.State = model.State;
                 break;
             case nameof(Progress):
-                var modelProgress = model.Progress;
+                IProgressState modelProgress = model.Progress;
                 if (modelProgress != null)
                 {
                     Progress = new(modelProgress, this.PageContext);

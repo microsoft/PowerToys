@@ -6,7 +6,7 @@ using Windows.System;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class KeyChordHelpers
+public static partial class KeyChordHelpers
 {
     public static KeyChord FromModifiers(
         bool ctrl = false,
@@ -16,7 +16,7 @@ public partial class KeyChordHelpers
         int vkey = 0,
         int scanCode = 0)
     {
-        var modifiers = (ctrl ? VirtualKeyModifiers.Control : VirtualKeyModifiers.None)
+        VirtualKeyModifiers modifiers = (ctrl ? VirtualKeyModifiers.Control : VirtualKeyModifiers.None)
             | (alt ? VirtualKeyModifiers.Menu : VirtualKeyModifiers.None)
             | (shift ? VirtualKeyModifiers.Shift : VirtualKeyModifiers.None)
             | (win ? VirtualKeyModifiers.Windows : VirtualKeyModifiers.None)

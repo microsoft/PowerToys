@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -126,10 +126,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (field == null)
-            {
-                field = BuildTopLevelViewModels();
-            }
+            field ??= BuildTopLevelViewModels();
 
             return field;
         }
@@ -137,8 +134,8 @@ public partial class ProviderSettingsViewModel(
 
     private List<TopLevelViewModel> BuildTopLevelViewModels()
     {
-        var thisProvider = _provider;
-        var providersCommands = thisProvider.TopLevelItems;
+        CommandProviderWrapper thisProvider = _provider;
+        TopLevelViewModel[] providersCommands = thisProvider.TopLevelItems;
 
         // Remember! This comes in on the UI thread!
         return [.. providersCommands];
@@ -149,10 +146,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (field == null)
-            {
-                field = BuildFallbackViewModels();
-            }
+            field ??= BuildFallbackViewModels();
 
             return field;
         }
@@ -162,8 +156,8 @@ public partial class ProviderSettingsViewModel(
 
     private List<TopLevelViewModel> BuildFallbackViewModels()
     {
-        var thisProvider = _provider;
-        var providersCommands = thisProvider.FallbackItems;
+        CommandProviderWrapper thisProvider = _provider;
+        TopLevelViewModel[] providersCommands = thisProvider.FallbackItems;
 
         // Remember! This comes in on the UI thread!
         return [.. providersCommands];

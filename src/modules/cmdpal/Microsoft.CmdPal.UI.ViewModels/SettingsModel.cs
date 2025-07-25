@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -60,8 +60,7 @@ public partial class SettingsModel : ObservableObject
 
     public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
     {
-        ProviderSettings? settings;
-        if (!ProviderSettings.TryGetValue(provider.ProviderId, out settings))
+        if (!ProviderSettings.TryGetValue(provider.ProviderId, out ProviderSettings? settings))
         {
             settings = new ProviderSettings(provider);
             settings.Connect(provider);
@@ -91,9 +90,9 @@ public partial class SettingsModel : ObservableObject
         try
         {
             // Read the JSON content from the file
-            var jsonContent = File.ReadAllText(FilePath);
+            string jsonContent = File.ReadAllText(FilePath);
 
-            var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, JsonSerializationContext.Default.SettingsModel);
+            SettingsModel? loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, JsonSerializationContext.Default.SettingsModel);
 
             Debug.WriteLine(loaded != null ? "Loaded settings file" : "Failed to parse");
 
@@ -117,23 +116,23 @@ public partial class SettingsModel : ObservableObject
         try
         {
             // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.SettingsModel);
+            string settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.SettingsModel);
 
             // Is it valid JSON?
             if (JsonNode.Parse(settingsJson) is JsonObject newSettings)
             {
                 // Now, read the existing content from the file
-                var oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
+                string oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
 
                 // Is it valid JSON?
                 if (JsonNode.Parse(oldContent) is JsonObject savedSettings)
                 {
-                    foreach (var item in newSettings)
+                    foreach (KeyValuePair<string, JsonNode?> item in newSettings)
                     {
                         savedSettings[item.Key] = item.Value?.DeepClone();
                     }
 
-                    var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.Options);
+                    string serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.Options);
                     File.WriteAllText(FilePath, serialized);
 
                     // TODO: Instead of just raising the event here, we should
@@ -159,7 +158,7 @@ public partial class SettingsModel : ObservableObject
 
     internal static string SettingsJsonPath()
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        string directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
         // now, the settings is just next to the exe

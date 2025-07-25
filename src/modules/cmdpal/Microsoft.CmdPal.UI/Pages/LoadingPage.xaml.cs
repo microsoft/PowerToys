@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -14,8 +13,6 @@ namespace Microsoft.CmdPal.UI.Pages;
 /// </summary>
 public sealed partial class LoadingPage : Page
 {
-    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
-
     public LoadingPage()
     {
         this.InitializeComponent();

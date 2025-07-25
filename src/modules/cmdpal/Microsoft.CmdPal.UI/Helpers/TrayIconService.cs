@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -59,7 +59,7 @@ internal sealed partial class TrayIconService
                 // into the WindowLongPtr will be useless after we leave this function,
                 // and our **WindProc will explode**.
                 _trayWndProc = WindowProc;
-                var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
+                nint hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
                 _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
             }
 
@@ -82,7 +82,7 @@ internal sealed partial class TrayIconService
                 };
             }
 
-            var d = (NOTIFYICONDATAW)_trayIconData;
+            NOTIFYICONDATAW d = (NOTIFYICONDATAW)_trayIconData;
 
             // Add the notification icon
             PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d);
@@ -104,7 +104,7 @@ internal sealed partial class TrayIconService
     {
         if (_trayIconData != null)
         {
-            var d = (NOTIFYICONDATAW)_trayIconData;
+            NOTIFYICONDATAW d = (NOTIFYICONDATAW)_trayIconData;
             if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
             {
                 _trayIconData = null;
@@ -133,9 +133,8 @@ internal sealed partial class TrayIconService
 
     private DestroyIconSafeHandle GetAppIconHandle()
     {
-        var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
-        DestroyIconSafeHandle largeIcon;
-        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
+        string exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
+        PInvoke.ExtractIconEx(exePath, 0, out DestroyIconSafeHandle largeIcon, out _, 1);
         return largeIcon;
     }
 
@@ -148,32 +147,33 @@ internal sealed partial class TrayIconService
         switch (uMsg)
         {
             case PInvoke.WM_COMMAND:
+            {
+                if (wParam == PInvoke.WM_USER + 1)
                 {
-                    if (wParam == PInvoke.WM_USER + 1)
-                    {
-                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
-                    }
-                    else if (wParam == PInvoke.WM_USER + 2)
-                    {
-                        WeakReferenceMessenger.Default.Send<QuitMessage>();
-                    }
+                    WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
                 }
+                else if (wParam == PInvoke.WM_USER + 2)
+                {
+                    WeakReferenceMessenger.Default.Send<QuitMessage>();
+                }
+            }
 
-                break;
+            break;
 
             // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
             // We'll also never receive WM_TASKBAR_RESTART message if the first call to Shell_NotifyIcon failed, so we use
             // WM_WINDOWPOSCHANGING which is always received on explorer startup sequence.
             case PInvoke.WM_WINDOWPOSCHANGING:
+            {
+                if (_trayIconData == null)
                 {
-                    if (_trayIconData == null)
-                    {
-                        SetupTrayIcon();
-                    }
+                    SetupTrayIcon();
                 }
+            }
 
-                break;
+            break;
             default:
+            {
                 // WM_TASKBAR_RESTART isn't a compile-time constant, so we can't
                 // use it in a case label
                 if (uMsg == WM_TASKBAR_RESTART)
@@ -187,24 +187,25 @@ internal sealed partial class TrayIconService
                     switch ((uint)lParam.Value)
                     {
                         case PInvoke.WM_RBUTTONUP:
+                        {
+                            if (_popupMenu != null)
                             {
-                                if (_popupMenu != null)
-                                {
-                                    PInvoke.GetCursorPos(out var cursorPos);
-                                    PInvoke.SetForegroundWindow(_hwnd);
-                                    PInvoke.TrackPopupMenuEx(_popupMenu, (uint)TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN | (uint)TRACK_POPUP_MENU_FLAGS.TPM_BOTTOMALIGN, cursorPos.X, cursorPos.Y, _hwnd, null);
-                                }
+                                PInvoke.GetCursorPos(out System.Drawing.Point cursorPos);
+                                PInvoke.SetForegroundWindow(_hwnd);
+                                PInvoke.TrackPopupMenuEx(_popupMenu, (uint)TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN | (uint)TRACK_POPUP_MENU_FLAGS.TPM_BOTTOMALIGN, cursorPos.X, cursorPos.Y, _hwnd, null);
                             }
+                        }
 
-                            break;
+                        break;
                         case PInvoke.WM_LBUTTONUP:
                         case PInvoke.WM_LBUTTONDBLCLK:
-                            WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(string.Empty, HWND.Null));
-                            break;
+                        WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(string.Empty, HWND.Null));
+                        break;
                     }
                 }
+            }
 
-                break;
+            break;
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);

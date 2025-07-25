@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -9,8 +9,6 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public abstract class Setting<T> : ISettingsForm
 {
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new() { WriteIndented = true };
-
     public T? Value { get; set; }
 
     public string Key { get; }
@@ -29,13 +27,13 @@ public abstract class Setting<T> : ISettingsForm
         Key = string.Empty;
     }
 
-    public Setting(string key, T defaultValue)
+    protected Setting(string key, T defaultValue)
     {
         Key = key;
         Value = defaultValue;
     }
 
-    public Setting(string key, string label, string description, T defaultValue)
+    protected Setting(string key, string label, string description, T defaultValue)
     {
         Key = key;
         Value = defaultValue;
@@ -49,10 +47,10 @@ public abstract class Setting<T> : ISettingsForm
 
     public string ToForm()
     {
-        var bodyJson = JsonSerializer.Serialize(ToDictionary(), JsonSerializationContext.Default.Dictionary);
-        var dataJson = $"\"{Key}\": \"{Key}\"";
+        string bodyJson = JsonSerializer.Serialize(ToDictionary(), JsonSerializationContext.Default.Dictionary);
+        string dataJson = $"\"{Key}\": \"{Key}\"";
 
-        var json = $$"""
+        string json = $$"""
 {
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",

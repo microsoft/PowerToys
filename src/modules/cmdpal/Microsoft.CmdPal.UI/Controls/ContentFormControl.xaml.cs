@@ -38,7 +38,7 @@ public sealed partial class ContentFormControl : UserControl
     public ContentFormControl()
     {
         this.InitializeComponent();
-        var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
+        bool lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
         _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
 
         // 5% BODGY: if we set this multiple times over the lifetime of the app,
@@ -66,7 +66,7 @@ public sealed partial class ContentFormControl : UserControl
         {
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-            var c = _viewModel.Card;
+            AdaptiveCardParseResult? c = _viewModel.Card;
             if (c != null)
             {
                 DisplayCard(c);
@@ -83,7 +83,7 @@ public sealed partial class ContentFormControl : UserControl
 
         if (e.PropertyName == nameof(ViewModel.Card))
         {
-            var c = ViewModel.Card;
+            AdaptiveCardParseResult? c = ViewModel.Card;
             if (c != null)
             {
                 DisplayCard(c);
@@ -121,7 +121,7 @@ public sealed partial class ContentFormControl : UserControl
             // Focus on the first focusable element asynchronously to ensure the visual tree is fully built
             element.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
             {
-                var focusableElement = FindFirstFocusableElement(element);
+                Control? focusableElement = FindFirstFocusableElement(element);
                 focusableElement?.Focus(FocusState.Programmatic);
             });
         }
@@ -129,12 +129,12 @@ public sealed partial class ContentFormControl : UserControl
 
     private Control? FindFirstFocusableElement(DependencyObject parent)
     {
-        var childCount = VisualTreeHelper.GetChildrenCount(parent);
+        int childCount = VisualTreeHelper.GetChildrenCount(parent);
 
         // Process children first (depth-first search)
-        for (var i = 0; i < childCount; i++)
+        for (int i = 0; i < childCount; i++)
         {
-            var child = VisualTreeHelper.GetChild(parent, i);
+            DependencyObject child = VisualTreeHelper.GetChild(parent, i);
 
             // If the child is a focusable control like TextBox, ComboBox, etc.
             if (child is Control control &&
@@ -147,7 +147,7 @@ public sealed partial class ContentFormControl : UserControl
             }
 
             // Recursively check children
-            var result = FindFirstFocusableElement(child);
+            Control? result = FindFirstFocusableElement(child);
             if (result != null)
             {
                 return result;

@@ -35,7 +35,7 @@ public partial class IconDataViewModel : ObservableObject, IIconData
     // Unsafe, needs to be called on BG thread
     public void InitializeProperties()
     {
-        var model = _model.Unsafe;
+        IIconData? model = _model.Unsafe;
         if (model == null)
         {
             return;

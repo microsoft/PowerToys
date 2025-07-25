@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,10 +8,10 @@ using System.Security;
 namespace Microsoft.CmdPal.UI.Helpers;
 
 [SuppressUnmanagedCodeSecurity]
-internal static class NativeMethods
+internal static partial class NativeMethods
 {
-    [DllImport("shell32.dll")]
-    public static extern int SHQueryUserNotificationState(out UserNotificationState state);
+    [LibraryImport("shell32.dll")]
+    public static partial int SHQueryUserNotificationState(out UserNotificationState state);
 }
 
 internal enum UserNotificationState : int

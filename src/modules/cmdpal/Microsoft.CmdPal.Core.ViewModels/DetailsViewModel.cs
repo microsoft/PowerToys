@@ -25,7 +25,7 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
 
     public override void InitializeProperties()
     {
-        var model = _detailsModel.Unsafe;
+        IDetails? model = _detailsModel.Unsafe;
         if (model == null)
         {
             return;
@@ -40,10 +40,10 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
         UpdateProperty(nameof(Body));
         UpdateProperty(nameof(HeroImage));
 
-        var meta = model.Metadata;
+        IDetailsElement[] meta = model.Metadata;
         if (meta != null)
         {
-            foreach (var element in meta)
+            foreach (IDetailsElement? element in meta)
             {
                 DetailsElementViewModel? vm = element.Data switch
                 {

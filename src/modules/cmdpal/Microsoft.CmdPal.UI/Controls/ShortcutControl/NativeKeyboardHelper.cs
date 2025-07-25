@@ -1,8 +1,7 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers;
@@ -16,10 +15,7 @@ internal static class NativeKeyboardHelper
         internal INPUTTYPE type;
         internal InputUnion data;
 
-        internal static int Size
-        {
-            get { return Marshal.SizeOf<INPUT>(); }
-        }
+        internal static int Size => Marshal.SizeOf<INPUT>();
     }
 
     [StructLayout(LayoutKind.Explicit)]

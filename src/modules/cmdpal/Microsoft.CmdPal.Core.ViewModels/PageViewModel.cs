@@ -88,7 +88,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     {
         if (ExtensionHost.StatusMessages.Any())
         {
-            var last = ExtensionHost.StatusMessages.Last();
+            StatusMessageViewModel last = ExtensionHost.StatusMessages.Last();
             MostRecentStatusMessage = last;
         }
         else
@@ -131,7 +131,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public override void InitializeProperties()
     {
-        var page = _pageModel.Unsafe;
+        IPage? page = _pageModel.Unsafe;
         if (page == null)
         {
             return; // throw?
@@ -157,7 +157,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     {
         try
         {
-            var propName = args.PropertyName;
+            string propName = args.PropertyName;
             FetchProperty(propName);
         }
         catch (Exception ex)
@@ -176,13 +176,13 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     protected virtual void FetchProperty(string propertyName)
     {
-        var model = this._pageModel.Unsafe;
+        IPage? model = this._pageModel.Unsafe;
         if (model == null)
         {
             return; // throw?
         }
 
-        var updateProperty = true;
+        bool updateProperty = true;
         switch (propertyName)
         {
             case nameof(Name):
@@ -239,7 +239,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
         ExtensionHost.StatusMessages.CollectionChanged -= StatusMessages_CollectionChanged;
 
-        var model = _pageModel.Unsafe;
+        IPage? model = _pageModel.Unsafe;
         if (model != null)
         {
             model.PropChanged -= Model_PropChanged;

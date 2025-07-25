@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -25,11 +25,11 @@ public partial class LogMessagesPage : ListPage
     {
         if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
         {
-            foreach (var item in e.NewItems)
+            foreach (object? item in e.NewItems)
             {
                 if (item is LogMessageViewModel logMessageViewModel)
                 {
-                    var li = new ListItem(new NoOpCommand())
+                    ListItem li = new ListItem(new NoOpCommand())
                     {
                         Title = logMessageViewModel.Message,
                     };

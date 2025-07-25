@@ -97,7 +97,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        var model = _commandItemModel.Unsafe;
+        ICommandItem? model = _commandItemModel.Unsafe;
         if (model == null)
         {
             return;
@@ -125,7 +125,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             FastInitializeProperties();
         }
 
-        var model = _commandItemModel.Unsafe;
+        ICommandItem? model = _commandItemModel.Unsafe;
         if (model == null)
         {
             return;
@@ -133,7 +133,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         Command.InitializeProperties();
 
-        var listIcon = model.Icon;
+        IIconInfo listIcon = model.Icon;
         if (listIcon != null)
         {
             _listItemIcon = new(listIcon);
@@ -169,25 +169,25 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             InitializeProperties();
         }
 
-        var model = _commandItemModel.Unsafe;
+        ICommandItem? model = _commandItemModel.Unsafe;
         if (model == null)
         {
             return;
         }
 
-        var more = model.MoreCommands;
+        IContextItem[] more = model.MoreCommands;
         if (more != null)
         {
             MoreCommands = more
-                .Select(item =>
+                .Select<IContextItem, IContextItemViewModel>(item =>
                 {
                     if (item is ICommandContextItem contextItem)
                     {
-                        return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
+                        return new CommandContextItemViewModel(contextItem, PageContext);
                     }
                     else
                     {
-                        return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                        return new SeparatorContextItemViewModel();
                     }
                 })
                 .ToList();
@@ -297,7 +297,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     protected virtual void FetchProperty(string propertyName)
     {
-        var model = this._commandItemModel.Unsafe;
+        ICommandItem? model = this._commandItemModel.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -332,19 +332,19 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 break;
 
             case nameof(model.MoreCommands):
-                var more = model.MoreCommands;
+                IContextItem[] more = model.MoreCommands;
                 if (more != null)
                 {
-                    var newContextMenu = more
-                        .Select(item =>
+                    List<IContextItemViewModel> newContextMenu = more
+                        .Select<IContextItem, IContextItemViewModel>(item =>
                         {
                             if (item is CommandContextItem contextItem)
                             {
-                                return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
+                                return new CommandContextItemViewModel(contextItem, PageContext);
                             }
                             else
                             {
-                                return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                                return new SeparatorContextItemViewModel();
                             }
                         })
                         .ToList();
@@ -381,7 +381,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     private void Command_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        var propertyName = e.PropertyName;
+        string? propertyName = e.PropertyName;
         switch (propertyName)
         {
             case nameof(Command.Name):
@@ -415,7 +415,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Command.PropertyChanged -= Command_PropertyChanged;
         Command.SafeCleanup();
 
-        var model = _commandItemModel.Unsafe;
+        ICommandItem? model = _commandItemModel.Unsafe;
         if (model != null)
         {
             model.PropChanged -= Model_PropChanged;

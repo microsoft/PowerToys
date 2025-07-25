@@ -28,7 +28,7 @@ public partial class CommandContextItemViewModel(ICommandContextItem contextItem
 
         base.InitializeProperties();
 
-        var contextItem = Model.Unsafe;
+        ICommandContextItem? contextItem = Model.Unsafe;
         if (contextItem == null)
         {
             return; // throw?

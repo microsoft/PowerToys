@@ -1,8 +1,7 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
@@ -110,27 +109,37 @@ public sealed partial class KeyVisual : Control
                     case 161: // The Shift key or button.
                         _keyVisual._keyPresenter.Content = "\uE752"; break; */
 
-                    case 38: _keyVisual._keyPresenter.Content = "\uE0E4"; break; // The Up Arrow key or button.
-                    case 40: _keyVisual._keyPresenter.Content = "\uE0E5"; break; // The Down Arrow key or button.
-                    case 37: _keyVisual._keyPresenter.Content = "\uE0E2"; break; // The Left Arrow key or button.
-                    case 39: _keyVisual._keyPresenter.Content = "\uE0E3"; break; // The Right Arrow key or button.
+                    case 38:
+                        _keyVisual._keyPresenter.Content = "\uE0E4";
+                        break; // The Up Arrow key or button.
+                    case 40:
+                        _keyVisual._keyPresenter.Content = "\uE0E5";
+                        break; // The Down Arrow key or button.
+                    case 37:
+                        _keyVisual._keyPresenter.Content = "\uE0E2";
+                        break; // The Left Arrow key or button.
+                    case 39:
+                        _keyVisual._keyPresenter.Content = "\uE0E3";
+                        break; // The Right Arrow key or button.
 
                     case 91: // The left Windows key
                     case 92: // The right Windows key
-                        var winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M683 1229H0V546h683v683zm819 0H819V546h683v683zm-819 819H0v-683h683v683zm819 0H819v-683h683v683z"" />") as PathIcon;
-                        var winIconContainer = new Viewbox
+                        PathIcon? winIcon = XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M683 1229H0V546h683v683zm819 0H819V546h683v683zm-819 819H0v-683h683v683zm819 0H819v-683h683v683z"" />") as PathIcon;
+                        Viewbox winIconContainer = new Viewbox
                         {
                             Child = winIcon,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                         };
 
-                        var iconDimensions = GetIconSize();
+                        double iconDimensions = GetIconSize();
                         winIconContainer.Height = iconDimensions;
                         winIconContainer.Width = iconDimensions;
                         _keyVisual._keyPresenter.Content = winIconContainer;
                         break;
-                    default: _keyVisual._keyPresenter.Content = ((VirtualKey)_keyVisual.Content).ToString(); break;
+                    default:
+                        _keyVisual._keyPresenter.Content = ((VirtualKey)_keyVisual.Content).ToString();
+                        break;
                 }
             }
         }

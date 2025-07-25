@@ -25,7 +25,7 @@ public static class ShellHelpers
 
     public static bool OpenInShell(string? path, string? arguments = null, string? workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
     {
-        using var process = new Process();
+        using Process process = new Process();
         process.StartInfo.FileName = path;
         process.StartInfo.WorkingDirectory = string.IsNullOrWhiteSpace(workingDir) ? string.Empty : workingDir;
         process.StartInfo.Arguments = string.IsNullOrWhiteSpace(arguments) ? string.Empty : arguments;

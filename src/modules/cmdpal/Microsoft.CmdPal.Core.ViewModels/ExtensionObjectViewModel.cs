@@ -11,20 +11,20 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
 {
     public WeakReference<IPageContext> PageContext { get; set; }
 
-    public ExtensionObjectViewModel(IPageContext? context)
+    protected ExtensionObjectViewModel(IPageContext? context)
     {
-        var realContext = context ?? (this is IPageContext c ? c : throw new ArgumentException("You need to pass in an IErrorContext"));
+        IPageContext realContext = context ?? (this is IPageContext c ? c : throw new ArgumentException("You need to pass in an IErrorContext"));
         PageContext = new(realContext);
     }
 
-    public ExtensionObjectViewModel(WeakReference<IPageContext> context)
+    protected ExtensionObjectViewModel(WeakReference<IPageContext> context)
     {
         PageContext = context;
     }
 
-    public async virtual Task InitializePropertiesAsync()
+    public virtual async Task InitializePropertiesAsync()
     {
-        var t = new Task(() =>
+        Task t = new Task(() =>
         {
             SafeInitializePropertiesSynchronous();
         });
@@ -53,7 +53,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
 
     protected void ShowException(Exception ex, string? extensionHint = null)
     {
-        if (PageContext.TryGetTarget(out var pageContext))
+        if (PageContext.TryGetTarget(out IPageContext? pageContext))
         {
             pageContext.ShowException(ex, extensionHint);
         }
@@ -61,7 +61,7 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
 
     protected void DoOnUiThread(Action action)
     {
-        if (PageContext.TryGetTarget(out var pageContext))
+        if (PageContext.TryGetTarget(out IPageContext? pageContext))
         {
             Task.Factory.StartNew(
                 action,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -46,15 +46,15 @@ public sealed class ToggleSetting : Setting<bool>
         if (payload[Key] != null)
         {
             // Adaptive cards returns boolean values as a string "true"/"false", cause of course.
-            var strFromJson = payload[Key]?.GetValue<string>() ?? string.Empty;
-            var val = strFromJson switch { "true" => true, "false" => false, _ => false };
+            string strFromJson = payload[Key]?.GetValue<string>() ?? string.Empty;
+            bool val = strFromJson switch { "true" => true, "false" => false, _ => false };
             Value = val;
         }
     }
 
     public override string ToState()
     {
-        var adaptiveCardsUsesStringsForBools = Value ? "true" : "false";
+        string adaptiveCardsUsesStringsForBools = Value ? "true" : "false";
         return $"\"{Key}\": \"{adaptiveCardsUsesStringsForBools}\"";
     }
 }

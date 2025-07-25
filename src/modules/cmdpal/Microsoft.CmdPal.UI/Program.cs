@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -68,7 +68,7 @@ internal sealed class Program
         PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
-        var isRedirect = DecideRedirection();
+        bool isRedirect = DecideRedirection();
         if (!isRedirect)
         {
             Microsoft.UI.Xaml.Application.Start((p) =>
@@ -84,9 +84,9 @@ internal sealed class Program
 
     private static bool DecideRedirection()
     {
-        var isRedirect = false;
-        var args = AppInstance.GetCurrent().GetActivatedEventArgs();
-        var keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
+        bool isRedirect = false;
+        AppActivationArguments args = AppInstance.GetCurrent().GetActivatedEventArgs();
+        AppInstance keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
 
         if (keyInstance.IsCurrent)
         {
@@ -107,7 +107,10 @@ internal sealed class Program
     {
         // Do the redirection on another thread, and use a non-blocking
         // wait method to wait for the redirection to complete.
-        var redirectSemaphore = new Semaphore(0, 1);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        // Justification: lives for live of process
+        Semaphore redirectSemaphore = new Semaphore(0, 1);
+#pragma warning restore CA2000 // Dispose objects before losing scope
         Task.Run(() =>
         {
             keyInstance.RedirectActivationToAsync(args).AsTask().Wait();

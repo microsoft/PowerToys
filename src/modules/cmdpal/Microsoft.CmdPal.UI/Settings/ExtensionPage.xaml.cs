@@ -10,8 +10,6 @@ namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class ExtensionPage : Page
 {
-    private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
     public ProviderSettingsViewModel? ViewModel { get; private set; }
 
     public ExtensionPage()

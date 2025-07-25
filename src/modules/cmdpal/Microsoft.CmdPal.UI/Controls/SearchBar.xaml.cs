@@ -48,7 +48,7 @@ public sealed partial class SearchBar : UserControl,
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
-        var @this = (SearchBar)d;
+        SearchBar? @this = (SearchBar)d;
 
         if (@this != null
             && e.OldValue is PageViewModel old)
@@ -108,10 +108,10 @@ public sealed partial class SearchBar : UserControl,
             return;
         }
 
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+        bool ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        bool altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+        bool shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        bool winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
             InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
         if (ctrlPressed && e.Key == VirtualKey.Enter)
         {
@@ -232,7 +232,7 @@ public sealed partial class SearchBar : UserControl,
                 return;
             }
 
-            var ignoreLeave =
+            bool ignoreLeave =
 
                 e.Key == VirtualKey.Up ||
                 e.Key == VirtualKey.Down ||
@@ -320,7 +320,7 @@ public sealed partial class SearchBar : UserControl,
     // Used to handle the case when a ListPage's `SearchText` may have changed
     private void Page_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        var property = e.PropertyName;
+        string? property = e.PropertyName;
 
         if (CurrentPageViewModel is ListViewModel list)
         {
@@ -356,11 +356,11 @@ public sealed partial class SearchBar : UserControl,
 
     public void Receive(UpdateSuggestionMessage message)
     {
-        var suggestion = message.TextToSuggest;
+        string suggestion = message.TextToSuggest;
 
         _queue.TryEnqueue(new(() =>
         {
-            var clearSuggestion = string.IsNullOrEmpty(suggestion);
+            bool clearSuggestion = string.IsNullOrEmpty(suggestion);
 
             if (clearSuggestion && _inSuggestion)
             {
@@ -386,7 +386,7 @@ public sealed partial class SearchBar : UserControl,
                 _deletedSuggestion = null;
             }
 
-            var currentText = _lastText ?? FilterBox.Text;
+            string currentText = _lastText ?? FilterBox.Text;
 
             _lastText = currentText;
 
@@ -400,10 +400,10 @@ public sealed partial class SearchBar : UserControl,
             // }
             _inSuggestion = true;
 
-            var matchedChars = 0;
-            var suggestionStartsWithQuote = suggestion.Length > 0 && suggestion[0] == '"';
-            var currentStartsWithQuote = currentText.Length > 0 && currentText[0] == '"';
-            var skipCheckingFirst = suggestionStartsWithQuote && !currentStartsWithQuote;
+            int matchedChars = 0;
+            bool suggestionStartsWithQuote = suggestion.Length > 0 && suggestion[0] == '"';
+            bool currentStartsWithQuote = currentText.Length > 0 && currentText[0] == '"';
+            bool skipCheckingFirst = suggestionStartsWithQuote && !currentStartsWithQuote;
             for (int i = skipCheckingFirst ? 1 : 0, j = 0;
                  i < suggestion.Length && j < currentText.Length;
                  i++, j++)
@@ -421,18 +421,18 @@ public sealed partial class SearchBar : UserControl,
                 }
             }
 
-            var first = skipCheckingFirst ? "\"" : string.Empty;
-            var second = currentText.AsSpan(0, matchedChars);
-            var third = suggestion.AsSpan(matchedChars + (skipCheckingFirst ? 1 : 0));
+            string first = skipCheckingFirst ? "\"" : string.Empty;
+            ReadOnlySpan<char> second = currentText.AsSpan(0, matchedChars);
+            ReadOnlySpan<char> third = suggestion.AsSpan(matchedChars + (skipCheckingFirst ? 1 : 0));
 
-            var newText = string.Concat(
+            string newText = string.Concat(
                 first,
                 second,
                 third);
 
             FilterBox.Text = newText;
 
-            var wrappedInQuotes = suggestionStartsWithQuote && suggestion.Last() == '"';
+            bool wrappedInQuotes = suggestionStartsWithQuote && suggestion.Last() == '"';
             if (wrappedInQuotes)
             {
                 FilterBox.Select(

@@ -17,7 +17,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -47,9 +46,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-
-    private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
     private readonly SlideNavigationTransitionInfo _slideRightTransition = new() { Effect = SlideNavigationTransitionEffect.FromRight };
     private readonly SuppressNavigationTransitionInfo _noAnimation = new();
 
@@ -91,7 +87,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(NavigateBackMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
 
         if (RootFrame.CanGoBack)
         {
@@ -177,14 +173,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         ConfirmResultViewModel vm = new(args, new(ViewModel.CurrentPage));
-        var initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
+        Task initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
         await initializeDialogTask;
 
-        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
-        var confirmText = resourceLoader.GetString("ConfirmationDialog_ConfirmButtonText");
-        var cancelText = resourceLoader.GetString("ConfirmationDialog_CancelButtonText");
+        Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
+        string confirmText = resourceLoader.GetString("ConfirmationDialog_ConfirmButtonText");
+        string cancelText = resourceLoader.GetString("ConfirmationDialog_CancelButtonText");
 
-        var name = string.IsNullOrEmpty(vm.PrimaryCommand.Name) ? confirmText : vm.PrimaryCommand.Name;
+        string name = string.IsNullOrEmpty(vm.PrimaryCommand.Name) ? confirmText : vm.PrimaryCommand.Name;
         ContentDialog dialog = new()
         {
             Title = vm.Title,
@@ -209,10 +205,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // };
         }
 
-        var result = await dialog.ShowAsync();
+        ContentDialogResult result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            var performMessage = new PerformCommandMessage(vm);
+            PerformCommandMessage performMessage = new PerformCommandMessage(vm);
             WeakReferenceMessenger.Default.Send(performMessage);
         }
         else
@@ -295,9 +291,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void SummonOnUiThread(HotkeySummonMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
-        var commandId = message.CommandId;
-        var isRoot = string.IsNullOrEmpty(commandId);
+        SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
+        string commandId = message.CommandId;
+        bool isRoot = string.IsNullOrEmpty(commandId);
         if (isRoot)
         {
             // If this is the hotkey for the root level, then always show us
@@ -321,12 +317,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 // For a hotkey bound to a command, first lookup the
                 // command from our list of toplevel commands.
-                var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-                var topLevelCommand = tlcManager.LookupCommand(commandId);
+                TopLevelCommandManager tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+                TopLevelViewModel? topLevelCommand = tlcManager.LookupCommand(commandId);
                 if (topLevelCommand != null)
                 {
-                    var command = topLevelCommand.CommandViewModel.Model.Unsafe;
-                    var isPage = command is not IInvokableCommand;
+                    ICommand? command = topLevelCommand.CommandViewModel.Model.Unsafe;
+                    bool isPage = command is not IInvokableCommand;
 
                     // If the bound command is an invokable command, then
                     // we don't want to open the window at all - we want to
@@ -340,7 +336,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(message.Hwnd));
                     }
 
-                    var msg = topLevelCommand.GetPerformCommandMessage();
+                    PerformCommandMessage msg = topLevelCommand.GetPerformCommandMessage();
                     msg.WithAnimation = false;
                     WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
 
@@ -437,8 +433,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         get
         {
-            var requestedTheme = ActualTheme;
-            var iconInfoVM = ViewModel.Details?.HeroImage;
+            Microsoft.UI.Xaml.ElementTheme requestedTheme = ActualTheme;
+            IconInfoViewModel? iconInfoVM = ViewModel.Details?.HeroImage;
             return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
         }
     }
@@ -463,10 +459,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         try
         {
-            var ptr = e.Pointer;
+            Pointer ptr = e.Pointer;
             if (ptr.PointerDeviceType == PointerDeviceType.Mouse)
             {
-                var ptrPt = e.GetCurrentPoint(this);
+                PointerPoint ptrPt = e.GetCurrentPoint(this);
                 if (ptrPt.Properties.IsXButton1Pressed)
                 {
                     WeakReferenceMessenger.Default.Send(new NavigateBackMessage());

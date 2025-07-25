@@ -19,7 +19,7 @@ public sealed partial class GeneralPage : Page
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
         viewModel = new SettingsViewModel(settings, App.Current.Services, _mainTaskScheduler);
     }
 
@@ -27,7 +27,7 @@ public sealed partial class GeneralPage : Page
     {
         get
         {
-            var version = Package.Current.Id.Version;
+            PackageVersion version = Package.Current.Id.Version;
             return $"Version {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         }
     }

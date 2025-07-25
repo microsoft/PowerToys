@@ -23,7 +23,7 @@ public partial class ProgressViewModel : ExtensionObjectViewModel
 
     public override void InitializeProperties()
     {
-        var model = Model.Unsafe;
+        IProgressState? model = Model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -49,7 +49,7 @@ public partial class ProgressViewModel : ExtensionObjectViewModel
 
     protected virtual void FetchProperty(string propertyName)
     {
-        var model = this.Model.Unsafe;
+        IProgressState? model = this.Model.Unsafe;
         if (model == null)
         {
             return; // throw?

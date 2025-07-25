@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -60,7 +60,7 @@ public record HotkeySettings// : ICmdLineRepresentable
 
     public override string ToString()
     {
-        var output = new StringBuilder();
+        StringBuilder output = new StringBuilder();
 
         if (Win)
         {
@@ -84,7 +84,7 @@ public record HotkeySettings// : ICmdLineRepresentable
 
         if (Code > 0)
         {
-            var localKey = Helper.GetKeyName((uint)Code);
+            string localKey = Helper.GetKeyName((uint)Code);
             output.Append(localKey);
         }
         else if (output.Length >= 2)
@@ -97,7 +97,7 @@ public record HotkeySettings// : ICmdLineRepresentable
 
     public List<object> GetKeysList()
     {
-        var shortcutList = new List<object>();
+        List<object> shortcutList = new List<object>();
 
         if (Win)
         {
@@ -135,7 +135,7 @@ public record HotkeySettings// : ICmdLineRepresentable
                     shortcutList.Add(Code);
                     break;
                 default:
-                    var localKey = Helper.GetKeyName((uint)Code);
+                    string localKey = Helper.GetKeyName((uint)Code);
                     shortcutList.Add(localKey);
                     break;
             }
@@ -146,7 +146,7 @@ public record HotkeySettings// : ICmdLineRepresentable
 
     public bool IsValid()
     {
-        return IsAccessibleShortcut() ? false : (Alt || Ctrl || Win || Shift) && Code != 0;
+        return !IsAccessibleShortcut() && (Alt || Ctrl || Win || Shift) && Code != 0;
     }
 
     public bool IsEmpty()
@@ -164,10 +164,10 @@ public record HotkeySettings// : ICmdLineRepresentable
     public static bool TryParseFromCmd(string cmd, out object? result)
     {
         bool win = false, ctrl = false, alt = false, shift = false;
-        var code = 0;
+        int code = 0;
 
-        var parts = cmd.Split('+');
-        foreach (var part in parts)
+        string[] parts = cmd.Split('+');
+        foreach (string part in parts)
         {
             switch (part.Trim().ToLower(CultureInfo.InvariantCulture))
             {

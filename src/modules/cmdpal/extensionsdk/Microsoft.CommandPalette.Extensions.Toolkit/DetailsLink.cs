@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -21,7 +21,7 @@ public partial class DetailsLink : IDetailsLink
 
     public DetailsLink(string url, string text)
     {
-        if (Uri.TryCreate(url, default(UriCreationOptions), out var newUri))
+        if (Uri.TryCreate(url, default(UriCreationOptions), out Uri? newUri))
         {
             Link = newUri;
         }

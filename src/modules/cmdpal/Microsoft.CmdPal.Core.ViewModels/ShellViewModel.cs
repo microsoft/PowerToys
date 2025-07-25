@@ -38,7 +38,7 @@ public partial class ShellViewModel : ObservableObject,
         get => _currentPage;
         set
         {
-            var oldValue = _currentPage;
+            PageViewModel oldValue = _currentPage;
             if (SetProperty(ref _currentPage, value))
             {
                 if (oldValue is IDisposable disposable)
@@ -60,7 +60,7 @@ public partial class ShellViewModel : ObservableObject,
 
     private bool _isNested;
 
-    public bool IsNested { get => _isNested; }
+    public bool IsNested => _isNested;
 
     public ShellViewModel(
         TaskScheduler scheduler,
@@ -182,13 +182,13 @@ public partial class ShellViewModel : ObservableObject,
 
     private void PerformCommand(PerformCommandMessage message)
     {
-        var command = message.Command.Unsafe;
+        ICommand? command = message.Command.Unsafe;
         if (command == null)
         {
             return;
         }
 
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        AppExtensionHost host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
 
         _rootPageService.OnPerformCommand(message.Context, !CurrentPage.IsNested, host);
 
@@ -198,11 +198,11 @@ public partial class ShellViewModel : ObservableObject,
             {
                 Logger.LogDebug($"Navigating to page");
 
-                var isMainPage = command == _rootPage;
+                bool isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
-                var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host);
+                PageViewModel? pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host);
                 if (pageViewModel == null)
                 {
                     Logger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
@@ -259,7 +259,7 @@ public partial class ShellViewModel : ObservableObject,
             // Call out to extension process.
             // * May fail!
             // * May never return!
-            var result = invokable.Invoke(message.Context);
+            ICommandResult result = invokable.Invoke(message.Context);
 
             // But if it did succeed, we need to handle the result.
             UnsafeHandleCommandResult(result);
@@ -284,66 +284,66 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        var kind = result.Kind;
+        CommandResultKind kind = result.Kind;
         Logger.LogDebug($"handling {kind.ToString()}");
 
         WeakReferenceMessenger.Default.Send<CmdPalInvokeResultMessage>(new(kind));
         switch (kind)
         {
             case CommandResultKind.Dismiss:
-                {
-                    // Reset the palette to the main page and dismiss
-                    GoHome(withAnimation: false, focusSearch: false);
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
-                    break;
-                }
+            {
+                // Reset the palette to the main page and dismiss
+                GoHome(withAnimation: false, focusSearch: false);
+                WeakReferenceMessenger.Default.Send<DismissMessage>();
+                break;
+            }
 
             case CommandResultKind.GoHome:
-                {
-                    // Go back to the main page, but keep it open
-                    GoHome();
-                    break;
-                }
+            {
+                // Go back to the main page, but keep it open
+                GoHome();
+                break;
+            }
 
             case CommandResultKind.GoBack:
-                {
-                    GoBack();
-                    break;
-                }
+            {
+                GoBack();
+                break;
+            }
 
             case CommandResultKind.Hide:
-                {
-                    // Keep this page open, but hide the palette.
-                    WeakReferenceMessenger.Default.Send<DismissMessage>();
-                    break;
-                }
+            {
+                // Keep this page open, but hide the palette.
+                WeakReferenceMessenger.Default.Send<DismissMessage>();
+                break;
+            }
 
             case CommandResultKind.KeepOpen:
-                {
-                    // Do nothing.
-                    break;
-                }
+            {
+                // Do nothing.
+                break;
+            }
 
             case CommandResultKind.Confirm:
+            {
+                if (result.Args is IConfirmationArgs a)
                 {
-                    if (result.Args is IConfirmationArgs a)
-                    {
-                        WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
-                    }
-
-                    break;
+                    WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
                 }
+
+                break;
+            }
 
             case CommandResultKind.ShowToast:
+            {
+                if (result.Args is IToastArgs a)
                 {
-                    if (result.Args is IToastArgs a)
-                    {
-                        WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
-                        UnsafeHandleCommandResult(a.Result);
-                    }
-
-                    break;
+                    WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
+                    UnsafeHandleCommandResult(a.Result);
                 }
+
+                break;
+            }
         }
     }
 

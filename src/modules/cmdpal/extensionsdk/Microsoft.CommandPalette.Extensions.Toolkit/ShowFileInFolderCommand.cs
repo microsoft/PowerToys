@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -26,7 +26,7 @@ public partial class ShowFileInFolderCommand : InvokableCommand
         {
             try
             {
-                var argument = "/select, \"" + _path + "\"";
+                string argument = "/select, \"" + _path + "\"";
                 Process.Start("explorer.exe", argument);
             }
             catch (Exception)

@@ -5,7 +5,6 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -19,8 +18,6 @@ public sealed partial class ContentPage : Page,
      IRecipient<ActivateSelectedListItemMessage>,
      IRecipient<ActivateSecondaryCommandMessage>
 {
-    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
-
     public ContentPageViewModel? ViewModel
     {
         get => (ContentPageViewModel?)GetValue(ViewModelProperty);

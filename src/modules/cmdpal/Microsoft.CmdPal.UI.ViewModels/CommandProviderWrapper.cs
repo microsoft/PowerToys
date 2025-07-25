@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -43,13 +43,7 @@ public sealed class CommandProviderWrapper
 
     public bool IsActive { get; private set; }
 
-    public string ProviderId
-    {
-        get
-        {
-            return string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
-        }
-    }
+    public string ProviderId => string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
 
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
@@ -87,8 +81,8 @@ public sealed class CommandProviderWrapper
             throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
         }
 
-        var extensionImpl = extension.GetExtensionObject();
-        var providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
+        IExtension? extensionImpl = extension.GetExtensionObject();
+        object? providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
         if (providerObject is not ICommandProvider provider)
         {
             throw new ArgumentException("extension didn't actually implement ICommandProvider");
@@ -98,7 +92,7 @@ public sealed class CommandProviderWrapper
 
         try
         {
-            var model = _commandProvider.Unsafe!;
+            ICommandProvider model = _commandProvider.Unsafe!;
 
             // Hook the extension back into us
             model.InitializeWithHost(ExtensionHost);
@@ -131,7 +125,7 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        var settings = serviceProvider.GetService<SettingsModel>()!;
+        SettingsModel settings = serviceProvider.GetService<SettingsModel>()!;
 
         IsActive = GetProviderSettings(settings).IsEnabled;
         if (!IsActive)
@@ -144,7 +138,7 @@ public sealed class CommandProviderWrapper
 
         try
         {
-            var model = _commandProvider.Unsafe!;
+            ICommandProvider model = _commandProvider.Unsafe!;
 
             Task<ICommandItem[]> t = new(model.TopLevelCommands);
             t.Start();
@@ -177,28 +171,29 @@ public sealed class CommandProviderWrapper
 
     private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
-        var providerSettings = GetProviderSettings(settings);
+        SettingsModel settings = serviceProvider.GetService<SettingsModel>()!;
+        ProviderSettings providerSettings = GetProviderSettings(settings);
 
-        Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
+        TopLevelViewModel MakeAndAdd(ICommandItem? i, bool fallback)
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
-        };
+        }
+
         if (commands != null)
         {
             TopLevelItems = commands
-                .Select(c => makeAndAdd(c, false))
+                .Select(c => MakeAndAdd(c, false))
                 .ToArray();
         }
 
         if (fallbacks != null)
         {
             FallbackItems = fallbacks
-                .Select(c => makeAndAdd(c, true))
+                .Select(c => MakeAndAdd(c, true))
                 .ToArray();
         }
     }

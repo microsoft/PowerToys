@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -23,7 +23,7 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
 
     private void UnsafeInitializeProperties()
     {
-        var model = _model.Unsafe;
+        ICommandSettings? model = _model.Unsafe;
         if (model == null)
         {
             return;

@@ -39,7 +39,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         // This sets IsInitialized = true
         base.InitializeProperties();
 
-        var li = Model.Unsafe;
+        IListItem? li = Model.Unsafe;
         if (li == null)
         {
             return; // throw?
@@ -49,7 +49,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
         TextToSuggest = li.TextToSuggest;
         Section = li.Section ?? string.Empty;
-        var extensionDetails = li.Details;
+        IDetails extensionDetails = li.Details;
         if (extensionDetails != null)
         {
             Details = new(extensionDetails, PageContext);
@@ -66,7 +66,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
     {
         base.FetchProperty(propertyName);
 
-        var model = this.Model.Unsafe;
+        IListItem? model = this.Model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -84,7 +84,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 this.Section = model.Section ?? string.Empty;
                 break;
             case nameof(Details):
-                var extensionDetails = model.Details;
+                IDetails extensionDetails = model.Details;
                 Details = extensionDetails != null ? new(extensionDetails, PageContext) : null;
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details));
@@ -107,9 +107,9 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
     private void UpdateTags(ITag[]? newTagsFromModel)
     {
-        var newTags = newTagsFromModel?.Select(t =>
+        List<TagViewModel> newTags = newTagsFromModel?.Select(t =>
         {
-            var vm = new TagViewModel(t, PageContext);
+            TagViewModel vm = new TagViewModel(t, PageContext);
             vm.InitializeProperties();
             return vm;
         })
@@ -135,7 +135,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         Tags?.ForEach(t => t.SafeCleanup());
         Details?.SafeCleanup();
 
-        var model = Model.Unsafe;
+        IListItem? model = Model.Unsafe;
         if (model != null)
         {
             // We don't need to revoke the PropChanged event handler here,

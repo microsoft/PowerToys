@@ -81,7 +81,7 @@ public partial class App : Application
     {
         AppWindow = new MainWindow();
 
-        var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        Windows.AppLifecycle.AppActivationArguments activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         ((MainWindow)AppWindow).HandleLaunch(activatedEventArgs);
     }
 
@@ -97,8 +97,11 @@ public partial class App : Application
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
-        var allApps = new AllAppsCommandProvider();
-        var files = new IndexerCommandsProvider();
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        // justification: these two live for the life of the app
+        AllAppsCommandProvider allApps = new AllAppsCommandProvider();
+        IndexerCommandsProvider files = new IndexerCommandsProvider();
+#pragma warning restore CA2000 // Dispose objects before losing scope
         files.SuppressFallbackWhen(ShellCommandsProvider.SuppressFileFallbackIf);
         services.AddSingleton<ICommandProvider>(allApps);
 
@@ -118,8 +121,11 @@ public partial class App : Application
         // for WinGetStatics
         try
         {
-            var winget = new WinGetExtensionCommandsProvider();
-            var callback = allApps.LookupApp;
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // justification: lives for the life of the app
+            WinGetExtensionCommandsProvider winget = new WinGetExtensionCommandsProvider();
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            Func<string, ICommandItem?> callback = allApps.LookupApp;
             winget.SetAllLookup(callback);
             services.AddSingleton<ICommandProvider>(winget);
         }
@@ -141,9 +147,9 @@ public partial class App : Application
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
-        var sm = SettingsModel.LoadSettings();
+        SettingsModel sm = SettingsModel.LoadSettings();
         services.AddSingleton(sm);
-        var state = AppStateModel.LoadState();
+        AppStateModel state = AppStateModel.LoadState();
         services.AddSingleton(state);
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<TrayIconService>();

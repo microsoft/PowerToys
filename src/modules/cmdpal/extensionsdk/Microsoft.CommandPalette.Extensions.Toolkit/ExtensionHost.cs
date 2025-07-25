@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class ExtensionHost
+public static partial class ExtensionHost
 {
     public static IExtensionHost? Host { get; private set; }
 
@@ -36,7 +36,7 @@ public partial class ExtensionHost
 
     public static void LogMessage(string message)
     {
-        var logMessage = new LogMessage() { Message = message };
+        LogMessage logMessage = new LogMessage() { Message = message };
         LogMessage(logMessage);
     }
 

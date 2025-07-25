@@ -42,13 +42,13 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        var selectedItem = args.InvokedItemContainer;
+        NavigationViewItemBase selectedItem = args.InvokedItemContainer;
         Navigate((selectedItem.Tag as string)!);
     }
 
     private void Navigate(string page)
     {
-        var pageType = page switch
+        Type? pageType = page switch
         {
             "General" => typeof(GeneralPage),
             "Extensions" => typeof(ExtensionsPage),
@@ -70,10 +70,10 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void PositionCentered()
     {
-        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+        DisplayArea? displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
-            var centeredPosition = AppWindow.Position;
+            global::Windows.Graphics.PointInt32 centeredPosition = AppWindow.Position;
             centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
             centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
             AppWindow.Move(centeredPosition);

@@ -50,8 +50,8 @@ public sealed partial class ToastWindow : WindowEx,
     {
         try
         {
-            var monitor = PInvoke.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
-            _ = PInvoke.GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out _);
+            HMONITOR monitor = PInvoke.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            _ = PInvoke.GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _);
             return dpiX / 96.0;
         }
         catch (Exception ex)
@@ -65,14 +65,14 @@ public sealed partial class ToastWindow : WindowEx,
     {
         this.SetWindowSize(ToastText.ActualWidth, ToastText.ActualHeight);
 
-        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+        DisplayArea? displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
-            var centeredPosition = AppWindow.Position;
+            global::Windows.Graphics.PointInt32 centeredPosition = AppWindow.Position;
             centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
 
-            var monitorHeight = displayArea.WorkArea.Height;
-            var windowHeight = AppWindow.Size.Height;
+            int monitorHeight = displayArea.WorkArea.Height;
+            int windowHeight = AppWindow.Size.Height;
             centeredPosition.Y = monitorHeight - (windowHeight + 8); // Align with other shell toasts, like the volume indicator.
             AppWindow.Move(centeredPosition);
         }

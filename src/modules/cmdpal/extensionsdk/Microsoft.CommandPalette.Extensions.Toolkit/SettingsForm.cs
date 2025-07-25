@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -18,7 +18,7 @@ public partial class SettingsForm : FormContent
 
     public override ICommandResult SubmitForm(string inputs, string data)
     {
-        var formInput = JsonNode.Parse(inputs)?.AsObject();
+        JsonObject? formInput = JsonNode.Parse(inputs)?.AsObject();
         if (formInput == null)
         {
             return CommandResult.KeepOpen();

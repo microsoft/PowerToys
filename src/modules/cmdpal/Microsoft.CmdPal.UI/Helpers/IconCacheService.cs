@@ -25,7 +25,7 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
         {
             if (!string.IsNullOrEmpty(icon.Icon))
             {
-                var source = IconPathConverter.IconSourceMUX(icon.Icon, false);
+                IconSource source = IconPathConverter.IconSourceMUX(icon.Icon, false);
                 return source;
             }
             else if (icon.Data != null)
@@ -54,8 +54,8 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
             return null;
         }
 
-        var bitmap = await IconStreamToBitmapImageAsync(iconStreamRef);
-        var icon = new ImageIconSource() { ImageSource = bitmap };
+        BitmapImage bitmap = await IconStreamToBitmapImageAsync(iconStreamRef);
+        ImageIconSource icon = new ImageIconSource() { ImageSource = bitmap };
         return icon;
     }
 
@@ -63,16 +63,16 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
     {
         // Return the bitmap image via TaskCompletionSource. Using WCT's EnqueueAsync does not suffice here, since if
         // we're already on the thread of the DispatcherQueue then it just directly calls the function, with no async involved.
-        var completionSource = new TaskCompletionSource<BitmapImage>();
+        TaskCompletionSource<BitmapImage> completionSource = new TaskCompletionSource<BitmapImage>();
         dispatcherQueue.TryEnqueue(async () =>
         {
-            using var bitmapStream = await iconStreamRef.OpenReadAsync();
-            var itemImage = new BitmapImage();
+            using IRandomAccessStreamWithContentType bitmapStream = await iconStreamRef.OpenReadAsync();
+            BitmapImage itemImage = new BitmapImage();
             await itemImage.SetSourceAsync(bitmapStream);
             completionSource.TrySetResult(itemImage);
         });
 
-        var bitmapImage = await completionSource.Task;
+        BitmapImage bitmapImage = await completionSource.Task;
 
         return bitmapImage;
     }

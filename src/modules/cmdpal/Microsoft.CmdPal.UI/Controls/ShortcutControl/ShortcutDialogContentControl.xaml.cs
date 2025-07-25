@@ -1,8 +1,7 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -17,8 +16,7 @@ public sealed partial class ShortcutDialogContentControl : UserControl
 
     public List<object> Keys
     {
-        get { return (List<object>)GetValue(KeysProperty); }
-        set { SetValue(KeysProperty, value); }
+        get => (List<object>)GetValue(KeysProperty); set => SetValue(KeysProperty, value);
     }
 
     public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(ShortcutDialogContentControl), new PropertyMetadata(default(string)));

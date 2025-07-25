@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -47,7 +47,7 @@ public class ProviderSettings
 
     public bool IsFallbackEnabled(TopLevelViewModel command)
     {
-        return FallbackCommands.TryGetValue(command.Id, out var enabled) ? enabled : true;
+        return !FallbackCommands.TryGetValue(command.Id, out bool enabled) || enabled;
     }
 
     public void SetFallbackEnabled(TopLevelViewModel command, bool enabled)

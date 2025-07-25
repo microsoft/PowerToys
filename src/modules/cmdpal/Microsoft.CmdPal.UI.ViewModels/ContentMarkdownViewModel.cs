@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -19,7 +19,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
 
     public override void InitializeProperties()
     {
-        var model = Model.Unsafe;
+        IMarkdownContent? model = Model.Unsafe;
         if (model == null)
         {
             return;
@@ -35,7 +35,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
     {
         try
         {
-            var propName = args.PropertyName;
+            string propName = args.PropertyName;
             FetchProperty(propName);
         }
         catch (Exception ex)
@@ -46,7 +46,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
 
     protected void FetchProperty(string propertyName)
     {
-        var model = Model.Unsafe;
+        IMarkdownContent? model = Model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -65,7 +65,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
     protected override void UnsafeCleanup()
     {
         base.UnsafeCleanup();
-        var model = Model.Unsafe;
+        IMarkdownContent? model = Model.Unsafe;
         if (model != null)
         {
             model.PropChanged -= Model_PropChanged;

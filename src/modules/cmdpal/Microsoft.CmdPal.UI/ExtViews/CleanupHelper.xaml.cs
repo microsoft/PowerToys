@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,10 +12,10 @@ public static class CleanupHelper
 {
     public static void Cleanup(FrameworkElement element)
     {
-        var count = VisualTreeHelper.GetChildrenCount(element);
-        for (var index = 0; index < count; index++)
+        int count = VisualTreeHelper.GetChildrenCount(element);
+        for (int index = 0; index < count; index++)
         {
-            var child = VisualTreeHelper.GetChild(element, index);
+            DependencyObject child = VisualTreeHelper.GetChild(element, index);
             if (child is FrameworkElement childElement)
             {
                 Cleanup(childElement);
