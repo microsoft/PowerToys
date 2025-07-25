@@ -101,6 +101,7 @@ public partial class App : Application
         var files = new IndexerCommandsProvider();
         files.SuppressFallbackWhen(ShellCommandsProvider.SuppressFileFallbackIf);
         services.AddSingleton<ICommandProvider>(allApps);
+
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);
@@ -146,6 +147,7 @@ public partial class App : Application
         services.AddSingleton(state);
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<TrayIconService>();
+        services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
