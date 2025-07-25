@@ -144,11 +144,4 @@ public sealed partial class CommandBar : UserControl,
     {
         WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
     }
-
-    private void ContextMenuFlyout_Opened(object sender, object e)
-    {
-        // We need to wait until our flyout is opened to try and toss focus
-        // at its search box. The control isn't in the UI tree before that
-        ContextControl.FocusSearchBox();
-    }
 }

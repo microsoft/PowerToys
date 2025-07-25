@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -316,6 +317,7 @@ public sealed partial class ListPage : Page,
             ViewModel?.UpdateSelectedItemCommand.Execute(item);
 
             var pos = e.GetPosition(element);
+            pos = new Point(pos.X + 5, pos.Y );
 
             _ = DispatcherQueue.TryEnqueue(
                 () =>
@@ -325,7 +327,7 @@ public sealed partial class ListPage : Page,
                                 element,
                                 Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
                                 pos,
-                                ContextMenuFilterLocation.Top));
+                                ContextMenuFilterLocation.Bottom));
                     });
         }
     }
