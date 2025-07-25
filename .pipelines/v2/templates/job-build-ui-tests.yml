@@ -124,7 +124,7 @@ jobs:
     inputs:
       sourceFolder: '$(Build.SourcesDirectory)'
       contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
-      targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+      targetFolder: '$(JobOutputDirectory)'
 
   - publish: $(JobOutputDirectory)
     artifact: $(JobOutputArtifactName)
