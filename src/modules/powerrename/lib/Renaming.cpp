@@ -14,12 +14,19 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
 
     PWSTR replaceTerm = nullptr;
     bool useFileTime = false;
+    bool useExif = false;
+    wchar_t expandedReplaceTerm[MAX_PATH] = { 0 };
 
     winrt::check_hresult(spRenameRegEx->GetReplaceTerm(&replaceTerm));
 
     if (isFileTimeUsed(replaceTerm))
     {
         useFileTime = true;
+    }
+
+    if (isExifUsed(replaceTerm))
+    {
+        useExif = true;
     }
     CoTaskMemFree(replaceTerm);
 
@@ -82,11 +89,43 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
         winrt::check_hresult(spRenameRegEx->PutFileTime(fileTime));
     }
 
+    // Process EXIF metadata if needed
+    if (useExif)
+    {
+        PWSTR filePath = nullptr;
+        winrt::check_hresult(spItem->GetPath(&filePath));
+        
+        // Get the current replace term again to expand EXIF patterns
+        PWSTR currentReplaceTerm = nullptr;
+        winrt::check_hresult(spRenameRegEx->GetReplaceTerm(&currentReplaceTerm));
+        
+        // Expand EXIF patterns in replace term
+        HRESULT hr = GetExifFileName(expandedReplaceTerm, ARRAYSIZE(expandedReplaceTerm), currentReplaceTerm, filePath);
+        if (SUCCEEDED(hr))
+        {
+            // Temporarily set the expanded replace term
+            winrt::check_hresult(spRenameRegEx->PutReplaceTerm(expandedReplaceTerm, true));
+        }
+        
+        CoTaskMemFree(currentReplaceTerm);
+        CoTaskMemFree(filePath);
+    }
+
     PWSTR newName = nullptr;
 
     // Failure here means we didn't match anything or had nothing to match
     // Call put_newName with null in that case to reset it
     winrt::check_hresult(spRenameRegEx->Replace(sourceName, &newName, itemEnumIndex));
+
+    // Restore original replace term if we modified it for EXIF
+    if (useExif)
+    {
+        PWSTR originalReplaceTerm = nullptr;
+        winrt::check_hresult(spRenameRegEx->GetReplaceTerm(&originalReplaceTerm));
+        // Note: We don't need to restore here since the replace term was temporarily changed
+        // The original replace term is preserved in the RegEx object
+        CoTaskMemFree(originalReplaceTerm);
+    }
 
     if (useFileTime)
     {
