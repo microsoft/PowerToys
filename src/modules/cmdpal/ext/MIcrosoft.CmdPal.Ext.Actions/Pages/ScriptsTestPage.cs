@@ -102,6 +102,15 @@ internal sealed partial class ScriptsTestPage : ListPage
             }
 
             var command = script.ToCommand();
+            var scriptPage = new MarkdownPage($"```\r\n{script.ScriptBody}\r\n```")
+            {
+                Title = script.Title,
+                Name = "View script",
+            };
+            var viewScript = new CommandContextItem(scriptPage)
+            {
+            };
+
             var commandItem = new ListItem(command)
             {
                 Title = script.Title,
@@ -109,7 +118,9 @@ internal sealed partial class ScriptsTestPage : ListPage
                 Icon = new IconInfo(
                     new(script.IconDark ?? script.Icon ?? string.Empty),
                     new(script.Icon ?? script.IconDark ?? string.Empty)),
-                Details = new Details() { Body = $"```\r\n{script.ScriptBody}\r\n```" },
+
+                // Details = new Details() { Body = $"```\r\n{script.ScriptBody}\r\n```" },
+                MoreCommands = [viewScript],
 
                 // Tags = script.Arguments
                 //     .Where(arg => arg != null && !string.IsNullOrEmpty(arg.Placeholder))
@@ -384,6 +395,20 @@ internal sealed partial class DoScriptCommand : InvokableWithParams
 
         this.Parameters = parameters.ToArray();
     }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
+internal sealed partial class MarkdownPage : ContentPage
+{
+    private readonly string _text = string.Empty;
+
+    public MarkdownPage(string text)
+    {
+        _text = text;
+        Name = "Open";
+    }
+
+    public override IContent[] GetContent() => [new MarkdownContent(_text)];
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
