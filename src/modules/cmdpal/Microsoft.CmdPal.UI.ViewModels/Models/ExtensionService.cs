@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
@@ -287,9 +288,17 @@ public partial class ExtensionService : IExtensionService, IDisposable
         var installedExtensions = await GetInstalledExtensionsAsync();
         foreach (var installedExtension in installedExtensions)
         {
-            if (installedExtension.IsRunning())
+            Logger.LogDebug($"Signaling dispose to {installedExtension.ExtensionUniqueId}");
+            try
             {
-                installedExtension.SignalDispose();
+                if (installedExtension.IsRunning())
+                {
+                    installedExtension.SignalDispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to send dispose signal to extension {installedExtension.ExtensionUniqueId}", ex);
             }
         }
     }
