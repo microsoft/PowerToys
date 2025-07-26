@@ -20,6 +20,7 @@ internal sealed partial class ScriptsTestPage : ListPage
         Icon = Icons.ActionsPng;
         Title = "Scripts";
         Name = "Open";
+        ShowDetails = true;
     }
 
     public override IListItem[] GetItems()
@@ -105,6 +106,11 @@ internal sealed partial class ScriptsTestPage : ListPage
                 Icon = new IconInfo(
                     new(script.IconDark ?? script.Icon ?? string.Empty),
                     new(script.Icon ?? script.IconDark ?? string.Empty)),
+                Details = new Details() { Body = $"```\r\n{script.ScriptBody}\r\n```" },
+                Tags = script.Arguments
+                    .Where(arg => !string.IsNullOrEmpty(arg))
+                    .Select(arg => new Tag(arg!))
+                    .ToArray(),
             };
 
             commandItems.Add(commandItem);
@@ -157,13 +163,16 @@ internal sealed partial class ScriptMetadata
 
     public string? RefreshTime { get; set; }
 
-    public string?[] Arguments { get; set; } = [];
+    // max 3 arguments
+    public string?[] Arguments { get; set; } = new string?[3];
 
     public string? Author { get; set; }
 
     public string? AuthorUrl { get; set; }
 
     public string? Description { get; set; }
+
+    public string ScriptBody { get; set; } = string.Empty;
 
     internal static readonly char[] Separator = new[] { '\n', '\r' };
 
@@ -181,7 +190,10 @@ internal sealed partial class ScriptMetadata
         // # @raycast.schemaVersion 1
         // # @raycast.title My First Script
         var lines = text.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
-        var metadata = new ScriptMetadata();
+        var metadata = new ScriptMetadata
+        {
+            ScriptBody = text,
+        };
         foreach (var line in lines)
         {
             if (line.StartsWith("# @raycast.", StringComparison.InvariantCulture))
@@ -239,6 +251,16 @@ internal sealed partial class ScriptMetadata
                             break;
                         case "description":
                             metadata.Description = value;
+                            break;
+
+                        case "argument1":
+                            metadata.Arguments[0] = value;
+                            break;
+                        case "argument2":
+                            metadata.Arguments[1] = value;
+                            break;
+                        case "argument3":
+                            metadata.Arguments[2] = value;
                             break;
                     }
                 }
