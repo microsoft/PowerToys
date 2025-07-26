@@ -1832,6 +1832,7 @@ vswhere
 Vtbl
 WANTNUKEWARNING
 WANTPALM
+wapproj
 wasdk
 wbem
 WBounds
