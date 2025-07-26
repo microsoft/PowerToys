@@ -20,6 +20,9 @@ internal sealed class Icons
     // google's icon
     internal static IconInfo Google { get; } = new IconInfo("https://www.google.com/favicon.ico");
 
+    // raycast's icon
+    internal static IconInfo Raycast { get; } = IconHelpers.FromRelativePath("Assets\\Raycast_idE-hcBj9B_1.png");
+
     // google calendar's icon
     internal static IconInfo GoogleCalendar { get; } = new IconInfo("https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg");
 

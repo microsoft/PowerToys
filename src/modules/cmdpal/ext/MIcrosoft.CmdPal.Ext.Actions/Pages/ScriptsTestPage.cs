@@ -19,7 +19,7 @@ internal sealed partial class ScriptsTestPage : ListPage
 
     public ScriptsTestPage()
     {
-        Icon = Icons.ActionsPng;
+        Icon = Icons.Raycast;
         Title = "Scripts";
         Name = "Open";
         ShowDetails = true;
@@ -105,6 +105,7 @@ internal sealed partial class ScriptsTestPage : ListPage
             var scriptPage = new MarkdownPage($"```\r\n{script.ScriptBody}\r\n```")
             {
                 Title = script.Title,
+                Icon = script.IconInfo,
                 Name = "View script",
             };
             var viewScript = new CommandContextItem(scriptPage)
@@ -115,9 +116,7 @@ internal sealed partial class ScriptsTestPage : ListPage
             {
                 Title = script.Title,
                 Subtitle = script.PackageName ?? string.Empty,
-                Icon = new IconInfo(
-                    new(script.IconDark ?? script.Icon ?? string.Empty),
-                    new(script.Icon ?? script.IconDark ?? string.Empty)),
+                Icon = script.IconInfo,
 
                 // Details = new Details() { Body = $"```\r\n{script.ScriptBody}\r\n```" },
                 MoreCommands = [viewScript],
@@ -193,6 +192,10 @@ internal sealed partial class ScriptMetadata
     public string? Icon { get; set; }
 
     public string? IconDark { get; set; }
+
+    public IconInfo IconInfo => new(
+        new(IconDark ?? Icon ?? string.Empty),
+        new(Icon ?? IconDark ?? string.Empty));
 
     public string? CurrentDirectoryPath { get; set; }
 
@@ -346,7 +349,7 @@ internal sealed partial class ScriptMetadata
 
     public static ScriptMetadata? FromBash(string bashFile)
     {
-        return FromHashComments(bashFile, "sh");
+        return FromHashComments(bashFile, "bash");
     }
 
     public ICommand ToCommand()
