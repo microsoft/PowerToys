@@ -27,6 +27,11 @@ public partial class AgentsTestCommandsProvider : CommandProvider
                 Title = DisplayName,
                 Subtitle = "Use @ to invoke various agents",
             },
+            new CommandItem(new ScriptsTestPage())
+            {
+                Title = "Script commands",
+                Subtitle = "What if we were just raycast",
+            },
         ];
     }
 
