@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -108,8 +110,8 @@ internal sealed partial class ScriptsTestPage : ListPage
                     new(script.Icon ?? script.IconDark ?? string.Empty)),
                 Details = new Details() { Body = $"```\r\n{script.ScriptBody}\r\n```" },
                 Tags = script.Arguments
-                    .Where(arg => !string.IsNullOrEmpty(arg))
-                    .Select(arg => new Tag(arg!))
+                    .Where(arg => arg != null && !string.IsNullOrEmpty(arg.Placeholder))
+                    .Select(arg => new Tag(arg!.Placeholder))
                     .ToArray(),
             };
 
@@ -118,6 +120,28 @@ internal sealed partial class ScriptsTestPage : ListPage
 
         return commandItems.ToArray();
     }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
+internal sealed partial class ScriptArgument
+{
+    public string Type { get; set; } = "text";
+
+    public string Placeholder { get; set; } = string.Empty;
+
+    public bool Optional { get; set; }
+
+    public bool PercentEncoded { get; set; }
+
+    public DropdownItem[]? Data { get; set; }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
+internal sealed partial class DropdownItem
+{
+    public string Title { get; set; } = string.Empty;
+
+    public string Value { get; set; } = string.Empty;
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
@@ -144,7 +168,6 @@ internal sealed partial class ScriptMetadata
 | description          | A brief description about the script command to be presented in the documentation | No | |
 
     */
-
     public string? SchemaVersion { get; set; }
 
     public string? Title { get; set; }
@@ -164,7 +187,7 @@ internal sealed partial class ScriptMetadata
     public string? RefreshTime { get; set; }
 
     // max 3 arguments
-    public string?[] Arguments { get; set; } = new string?[3];
+    public ScriptArgument?[] Arguments { get; set; } = new ScriptArgument?[3];
 
     public string? Author { get; set; }
 
@@ -175,6 +198,30 @@ internal sealed partial class ScriptMetadata
     public string ScriptBody { get; set; } = string.Empty;
 
     internal static readonly char[] Separator = new[] { '\n', '\r' };
+
+    private static ScriptArgument? ParseArgument(string argumentJson)
+    {
+        if (string.IsNullOrWhiteSpace(argumentJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<ScriptArgument>(argumentJson, JsonSerializationContext.Default.ScriptArgument);
+        }
+        catch (JsonException)
+        {
+            // If JSON parsing fails, treat it as a simple text argument for backward compatibility
+            return new ScriptArgument
+            {
+                Type = "text",
+                Placeholder = argumentJson,
+                Optional = false,
+                PercentEncoded = false,
+            };
+        }
+    }
 
     public static ScriptMetadata? FromBash(string bashFile)
     {
@@ -254,13 +301,13 @@ internal sealed partial class ScriptMetadata
                             break;
 
                         case "argument1":
-                            metadata.Arguments[0] = value;
+                            metadata.Arguments[0] = ParseArgument(value);
                             break;
                         case "argument2":
-                            metadata.Arguments[1] = value;
+                            metadata.Arguments[1] = ParseArgument(value);
                             break;
                         case "argument3":
-                            metadata.Arguments[2] = value;
+                            metadata.Arguments[2] = ParseArgument(value);
                             break;
                     }
                 }
@@ -279,4 +326,16 @@ internal sealed partial class ScriptMetadata
     {
         return FromBash(pyFile);
     }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
+[JsonSerializable(typeof(string))]
+[JsonSerializable(typeof(bool))]
+[JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
+[JsonSerializable(typeof(ScriptArgument), TypeInfoPropertyName = "ScriptArgument")]
+[JsonSerializable(typeof(ScriptMetadata), TypeInfoPropertyName = "ScriptMetadata")]
+[JsonSerializable(typeof(DropdownItem), TypeInfoPropertyName = "DropdownItem")]
+[JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
+internal sealed partial class JsonSerializationContext : JsonSerializerContext
+{
 }
