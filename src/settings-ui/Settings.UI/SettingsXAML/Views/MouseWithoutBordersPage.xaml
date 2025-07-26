@@ -11,7 +11,6 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="negativeBoolToVisibilityConverter" />
         <converters:BoolToObjectConverter
             x:Key="OneRowMatrixBoolToNumberOfRowsConverter"
             FalseValue="2"
@@ -75,7 +74,7 @@
                                 x:Uid="MouseWithoutBorders_Connect"
                                 Command="{x:Bind ShowConnectFieldsCommand, Mode=OneTime}"
                                 Style="{StaticResource AccentButtonStyle}"
-                                Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource negativeBoolToVisibilityConverter}, ConverterParameter=True}" />
+                                Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}" />
                         </StackPanel>
                     </tkcontrols:SettingsExpander>
 
