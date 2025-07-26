@@ -101,7 +101,8 @@ internal sealed partial class ScriptsTestPage : ListPage
                 continue;
             }
 
-            var commandItem = new ListItem()
+            var command = script.ToCommand();
+            var commandItem = new ListItem(command)
             {
                 Title = script.Title,
                 Subtitle = script.PackageName ?? string.Empty,
@@ -109,10 +110,12 @@ internal sealed partial class ScriptsTestPage : ListPage
                     new(script.IconDark ?? script.Icon ?? string.Empty),
                     new(script.Icon ?? script.IconDark ?? string.Empty)),
                 Details = new Details() { Body = $"```\r\n{script.ScriptBody}\r\n```" },
-                Tags = script.Arguments
-                    .Where(arg => arg != null && !string.IsNullOrEmpty(arg.Placeholder))
-                    .Select(arg => new Tag(arg!.Placeholder))
-                    .ToArray(),
+
+                // Tags = script.Arguments
+                //     .Where(arg => arg != null && !string.IsNullOrEmpty(arg.Placeholder))
+                //     .Select(arg => new Tag(arg!.Placeholder))
+                //     .ToArray(),
+                Tags = [new Tag(script.Language)],
             };
 
             commandItems.Add(commandItem);
@@ -199,6 +202,8 @@ internal sealed partial class ScriptMetadata
 
     internal static readonly char[] Separator = new[] { '\n', '\r' };
 
+    public string Language { get; private set; } = string.Empty;
+
     private static ScriptArgument? ParseArgument(string argumentJson)
     {
         if (string.IsNullOrWhiteSpace(argumentJson))
@@ -223,7 +228,7 @@ internal sealed partial class ScriptMetadata
         }
     }
 
-    public static ScriptMetadata? FromBash(string bashFile)
+    public static ScriptMetadata? FromHashComments(string bashFile, string language = "sh")
     {
         if (string.IsNullOrEmpty(bashFile) || !File.Exists(bashFile))
         {
@@ -240,6 +245,7 @@ internal sealed partial class ScriptMetadata
         var metadata = new ScriptMetadata
         {
             ScriptBody = text,
+            Language = language,
         };
         foreach (var line in lines)
         {
@@ -319,12 +325,64 @@ internal sealed partial class ScriptMetadata
 
     public static ScriptMetadata? FromPowershell(string psFile)
     {
-        return FromBash(psFile);
+        return FromHashComments(psFile, "ps1");
     }
 
     public static ScriptMetadata? FromPython(string pyFile)
     {
-        return FromBash(pyFile);
+        return FromHashComments(pyFile, "py");
+    }
+
+    public static ScriptMetadata? FromBash(string bashFile)
+    {
+        return FromHashComments(bashFile, "sh");
+    }
+
+    public ICommand ToCommand()
+    {
+        return new DoScriptCommand(this);
+    }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
+internal sealed partial class DoScriptCommand : InvokableWithParams
+{
+    private ScriptMetadata Metadata { get; }
+
+    internal DoScriptCommand(ScriptMetadata metadata)
+    {
+        Metadata = metadata;
+
+        BuildParams();
+    }
+
+    public override ICommandResult InvokeWithArgs(object sender, ICommandArgument[] args)
+    {
+        return CommandResult.KeepOpen();
+    }
+
+    private void BuildParams()
+    {
+        if (Metadata.Arguments == null)
+        {
+            return;
+        }
+
+        var parameters = new List<CommandParameter>();
+        foreach (var arg in Metadata.Arguments)
+        {
+            if (arg == null ||
+                string.IsNullOrEmpty(arg.Placeholder) ||
+                arg.Type != "text")
+            {
+                continue;
+            }
+
+            var param = new CommandParameter(arg.Placeholder, !arg.Optional);
+            parameters.Add(param);
+        }
+
+        this.Parameters = parameters.ToArray();
     }
 }
 
