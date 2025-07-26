@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -12,6 +14,8 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 public partial class ListItemViewModel(IListItem model, WeakReference<IPageContext> context)
     : CommandItemViewModel(new(model), context)
 {
+    private IIconInfo showDetailsIcon = new IconInfo("\uF000");
+
     public new ExtensionObject<IListItem> Model { get; } = new(model);
 
     public List<TagViewModel>? Tags { get; set; }
@@ -104,6 +108,63 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
     public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
 
     public override int GetHashCode() => Model.GetHashCode();
+
+    public override void SlowInitializeProperties()
+    {
+        base.SlowInitializeProperties();
+
+        // If the parent page has ShowDetails = false and we have details,
+        // then we should add a show details action in the context menu.
+        if (HasDetails &&
+            PageContext.TryGetTarget(out var pageContext) &&
+            pageContext is ListViewModel listViewModel &&
+            listViewModel.ShowDetails == false)
+        {
+            AddShowDetailsAction();
+        }
+    }
+
+    private void AddShowDetailsAction()
+    {
+        if (Details == null)
+        {
+            return;
+        }
+
+        // Check if "Show Details" action already exists to prevent duplicates
+        if (MoreCommands.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
+                                    contextItemViewModel.Name == "ShowDetailsContextAction"))
+        {
+            return;
+        }
+
+        // Get localized string for the action title
+        // TODO: Replace with proper localization
+        var showDetailsTitle = "Show Details";
+
+        // Create a "Show Details" context action
+        var showDetailsAction = new CommandContextItem(
+            title: showDetailsTitle,
+            name: "ShowDetailsContextAction",
+            action: () =>
+            {
+                // Send the ShowDetailsMessage when the action is invoked
+                WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(Details));
+            });
+        showDetailsAction.Icon = showDetailsIcon;
+
+        // Create the view model for the context action
+        var showDetailsContextItem = new CommandContextItemViewModel(showDetailsAction, PageContext);
+        showDetailsContextItem.InitializeProperties();
+        showDetailsContextItem.SlowInitializeProperties();
+
+        MoreCommands.Add(showDetailsContextItem);
+
+        // Update properties to reflect the changes
+        UpdateProperty(nameof(MoreCommands));
+        UpdateProperty(nameof(HasMoreCommands));
+        UpdateProperty(nameof(AllCommands));
+    }
 
     private void UpdateTags(ITag[]? newTagsFromModel)
     {

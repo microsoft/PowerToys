@@ -157,7 +157,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Initialized |= InitializedState.Initialized;
     }
 
-    public void SlowInitializeProperties()
+    public virtual void SlowInitializeProperties()
     {
         if (IsSelectedInitialized)
         {
@@ -392,6 +392,17 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Icon));
                 break;
         }
+    }
+
+    private bool ShouldAddShowDetailsAction()
+    {
+        // Check if the parent page has ShowDetails = false
+        if (PageContext.TryGetTarget(out var pageContext) && pageContext is ListViewModel listViewModel)
+        {
+            return !listViewModel.ShowDetails;
+        }
+
+        return false;
     }
 
     protected override void UnsafeCleanup()

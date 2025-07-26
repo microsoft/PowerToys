@@ -2,16 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
@@ -32,7 +28,7 @@ public sealed partial class AllAppsPage : ListPage
     {
         this.Name = Resources.all_apps;
         this.Icon = Icons.AllAppsIcon;
-        this.ShowDetails = true;
+        this.ShowDetails = false;
         this.IsLoading = true;
         this.PlaceholderText = Resources.search_installed_apps_placeholder;
 
