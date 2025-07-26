@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -39,17 +39,10 @@
             Margin="48,0,0,0"
             VerticalAlignment="Top"
             IsHitTestVisible="True">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftTitleBarColumn" Width="*" />
-                <ColumnDefinition x:Name="RightTitleBarColumn" Width="Auto" />
-            </Grid.ColumnDefinitions>
             <animations:Implicit.Animations>
                 <animations:OffsetAnimation Duration="0:0:0.3" />
             </animations:Implicit.Animations>
-            <StackPanel
-                Grid.Column="0"
-                HorizontalAlignment="Left"
-                Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal">
                 <Image
                     Width="16"
                     Height="16"
@@ -70,24 +63,6 @@
                     Text="Debug"
                     TextWrapping="NoWrap"
                     Visibility="Collapsed" />
-            </StackPanel>
-            <StackPanel
-                Grid.Column="1"
-                Margin="0,0,148,0"
-                HorizontalAlignment="Right"
-                Orientation="Horizontal">
-                <Button
-                    x:Name="ShutDownBtn"
-                    Height="48"
-                    Click="ExitPTItem_Tapped"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xE7E8;" />
-                    <ToolTipService.ToolTip>
-                        <ToolTip>
-                            <TextBlock x:Uid="AppTitleBarShutDown_Tooltip" />
-                        </ToolTip>
-                    </ToolTipService.ToolTip>
-                </Button>
             </StackPanel>
         </Grid>
         <NavigationView
@@ -300,6 +275,11 @@
                         x:Uid="Feedback_NavViewItem"
                         Icon="{ui:FontIcon Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />
+                    <NavigationViewItem
+                        x:Uid="Close_NavViewItem"
+                        Icon="{ui:FontIcon Glyph=&#xE7E8;}"
+                        Tapped="Close_Tapped"
+                        Visibility="{x:Bind ViewModel.ShowCloseMenu, Mode=OneWay}" />
                 </StackPanel>
             </NavigationView.PaneFooter>
             <i:Interaction.Behaviors>
@@ -309,5 +289,12 @@
             </i:Interaction.Behaviors>
             <Frame x:Name="shellFrame" />
         </NavigationView>
+        <ContentDialog
+            x:Name="CloseDialog"
+            x:Uid="CloseDialog"
+            IsPrimaryButtonEnabled="True"
+            IsSecondaryButtonEnabled="True"
+            PrimaryButtonClick="CloseDialog_Click"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}" />
     </Grid>
 </UserControl>

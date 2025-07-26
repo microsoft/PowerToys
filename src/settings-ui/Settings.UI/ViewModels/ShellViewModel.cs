@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -26,31 +28,41 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly KeyboardAccelerator backKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.GoBack);
 
         private bool isBackEnabled;
+        private bool showCloseMenu;
         private IList<KeyboardAccelerator> keyboardAccelerators;
         private NavigationView navigationView;
         private NavigationViewItem selected;
         private ICommand loadedCommand;
         private ICommand itemInvokedCommand;
         private NavigationViewItem[] _fullListOfNavViewItems;
+        private GeneralSettings _generalSettingsConfig;
 
         public bool IsBackEnabled
         {
-            get { return isBackEnabled; }
-            set { Set(ref isBackEnabled, value); }
+            get => isBackEnabled;
+            set => Set(ref isBackEnabled, value);
+        }
+
+        public bool ShowCloseMenu
+        {
+            get => showCloseMenu;
+            set => Set(ref showCloseMenu, value);
         }
 
         public NavigationViewItem Selected
         {
-            get { return selected; }
-            set { Set(ref selected, value); }
+            get => selected;
+            set => Set(ref selected, value);
         }
 
         public ICommand LoadedCommand => loadedCommand ?? (loadedCommand = new RelayCommand(OnLoaded));
 
         public ICommand ItemInvokedCommand => itemInvokedCommand ?? (itemInvokedCommand = new RelayCommand<NavigationViewItemInvokedEventArgs>(OnItemInvoked));
 
-        public ShellViewModel()
+        public ShellViewModel(ISettingsRepository<GeneralSettings> settingsRepository)
         {
+            _generalSettingsConfig = settingsRepository.SettingsConfig;
+            ShowCloseMenu = !_generalSettingsConfig.ShowSysTrayIcon;
         }
 
         public void Initialize(Frame frame, NavigationView navigationView, IList<KeyboardAccelerator> keyboardAccelerators)
