@@ -469,7 +469,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void LoadMoreIfNeeded()
     {
-        var model = this._model.Unsafe;
+        var model = _model.Unsafe;
         if (model == null)
         {
             return;
@@ -496,7 +496,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         base.FetchProperty(propertyName);
 
-        var model = this._model.Unsafe;
+        var model = _model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -505,16 +505,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
         switch (propertyName)
         {
             case nameof(IsGridView):
-                this.IsGridView = model.GridProperties != null;
+                IsGridView = model.GridProperties != null;
                 break;
             case nameof(ShowDetails):
-                this.ShowDetails = model.ShowDetails;
+                ShowDetails = model.ShowDetails;
                 break;
             case nameof(PlaceholderText):
-                this._modelPlaceholderText = model.PlaceholderText;
+                _modelPlaceholderText = model.PlaceholderText;
                 break;
             case nameof(SearchText):
-                this.SearchText = model.SearchText;
+                SearchText = model.SearchText;
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);

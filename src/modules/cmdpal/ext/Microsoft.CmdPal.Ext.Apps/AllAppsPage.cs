@@ -28,7 +28,7 @@ public sealed partial class AllAppsPage : ListPage
     {
         Name = Resources.all_apps;
         Icon = Icons.AllAppsIcon;
-        ShowDetails = false;
+        ShowDetails = true;
         IsLoading = true;
         PlaceholderText = Resources.search_installed_apps_placeholder;
         GridProperties = new GridProperties(140, 140);

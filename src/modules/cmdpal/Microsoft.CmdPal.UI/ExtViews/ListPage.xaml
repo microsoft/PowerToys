@@ -12,7 +12,9 @@
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    x:Name="PageRoot"
     Background="Transparent"
+    DataContext="{x:Bind ViewModel, Mode=OneWay}"
     mc:Ignorable="d">
 
     <Page.Resources>
