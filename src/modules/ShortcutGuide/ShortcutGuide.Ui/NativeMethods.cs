@@ -42,6 +42,9 @@ internal static partial class NativeMethods
     [LibraryImport("user32.dll", SetLastError = true)]
     internal static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
+    [LibraryImport("user32.dll")]
+    internal static partial short GetAsyncKeyState(int vKey);
+
     [LibraryImport("ShortcutGuide.CPPProject.dll", EntryPoint = "get_buttons")]
     internal static partial IntPtr GetTasklistButtons(IntPtr monitor, out int size);
 
