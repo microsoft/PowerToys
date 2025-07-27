@@ -134,7 +134,7 @@
   </data>
   <data name="PinShortcut" xml:space="preserve">
     <value>Pin</value>
-    <comment>Refers to the action of pinning something on a pinboard</comment>
+    <comment>Refers to the action of pinning something on a pin board</comment>
   </data>
   <data name="SearchBlank" xml:space="preserve">
     <value>No results found</value>
@@ -146,6 +146,6 @@
   </data>
   <data name="UnpinShortcut" xml:space="preserve">
     <value>Unpin</value>
-    <comment>Refers to the action of unpinning something from a pinboard</comment>
+    <comment>Refers to the action of unpinning something from a pin board</comment>
   </data>
 </root>
