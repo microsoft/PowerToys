@@ -16,6 +16,7 @@ using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using Windows.Foundation;
 using Windows.Graphics;
+using Windows.System;
 using WinUIEx;
 using static ShortcutGuide.NativeMethods;
 
@@ -27,6 +28,7 @@ namespace ShortcutGuide
     public sealed partial class MainWindow
     {
         private readonly string[] _currentApplicationIds;
+        /*private readonly bool _isInWindowsKeyMode;*/
 
         public static nint WindowHwnd { get; set; }
 
@@ -37,6 +39,21 @@ namespace ShortcutGuide
             _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
 
             InitializeComponent();
+
+            // Todo: Reimplement holding the Windows key down to show the guide.
+            /*
+            _isInWindowsKeyMode = (GetAsyncKeyState(0x5B) & 0x8000) != 0 || (GetAsyncKeyState(0x5C) & 0x8000) != 0;
+
+            if (_isInWindowsKeyMode)
+            {
+                Current.CoreWindow.KeyUp += (_, e) =>
+                {
+                    if (e.VirtualKey is (VirtualKey)0x5B or (VirtualKey)0x5C)
+                    {
+                        Close();
+                    }
+                };
+            }*/
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
 
