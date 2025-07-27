@@ -196,5 +196,10 @@ namespace ShortcutGuide
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ShortcutGuide, true);
         }
+
+        private void InformationButton_Click(object sender, RoutedEventArgs e)
+        {
+            InformationTip.IsOpen = !InformationTip.IsOpen;
+        }
     }
 }
