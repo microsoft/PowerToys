@@ -20,12 +20,12 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <SelectorBar Grid.Column="0" Grid.Row="0" x:Name="WindowSelector" SelectionChanged="WindowSelectionChanged" />
-        <TextBox Grid.Column="1" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" VerticalContentAlignment="Center" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged">
+        <TextBox Grid.Column="1" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" PlaceholderText="Search shortcuts" VerticalContentAlignment="Center" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged">
             <TextBox.KeyboardAccelerators>
                 <KeyboardAccelerator Modifiers="Control" Key="F" Invoked="SearchBoy_KeyboardAcceleratorInvoked" />
             </TextBox.KeyboardAccelerators>
         </TextBox>
-        <Button Grid.Column="2" Grid.Row="0" HorizontalContentAlignment="Center">
+        <Button Grid.Column="2" Grid.Row="0" HorizontalContentAlignment="Center" Click="SettingsButton_Clicked">
             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />
         </Button>
         <Button Grid.Column="3" Grid.Row="0" HorizontalContentAlignment="Center" Click="CloseButton_Clicked">
