@@ -27,8 +27,8 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Padding="6,0,6,0" Margin="6,0,6,0" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{x:Bind Name}" />
-                    <Border CornerRadius="{StaticResource ControlCornerRadius}" BorderThickness="{StaticResource ButtonBorderThemeThickness}" Grid.Row="1" Grid.Column="1" Margin="20,6,6,6" HorizontalAlignment="Right" Background="White" >
-                        <ContentPresenter Content="{x:Bind Shortcut}" Padding="6,6,6,6" HorizontalAlignment="Stretch" />
+                    <Border BorderThickness="{StaticResource ButtonBorderThemeThickness}" Grid.Row="1" Grid.Column="1" Margin="20,6,6,6" HorizontalAlignment="Right" >
+                        <ContentPresenter CornerRadius="{StaticResource ControlCornerRadius}" Content="{x:Bind Shortcut}" Padding="6,6,6,6" HorizontalAlignment="Stretch" Background="{ThemeResource SystemAltHighColor}" />
                     </Border>
                     <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="6,0,6,0" Padding="6,0,6,0" Text="{x:Bind Description}" />
                 </Grid>

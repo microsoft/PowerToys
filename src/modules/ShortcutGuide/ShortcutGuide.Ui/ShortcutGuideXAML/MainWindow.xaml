@@ -21,7 +21,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <SelectorBar Grid.Column="0" Grid.Row="0" x:Name="WindowSelector" SelectionChanged="WindowSelectionChanged" />
-        <Button Grid.Column="1" Grid.Row="0" x:Name="InformationButton" Click="InformationButton_Click">
+        <Button Margin="0,0,6,0" Grid.Column="1" Grid.Row="0" x:Name="InformationButton" Click="InformationButton_Click">
             <FontIcon Glyph="&#xEA1F;" />
         </Button>
         <TeachingTip x:Name="InformationTip" Title="Additional information" Target="{x:Bind InformationButton}">
@@ -30,15 +30,15 @@
                 <TextBlock Margin="0,16,0,0" TextWrapping="WrapWholeWords">The content related to Windows is always based on the latest release build of Windows.</TextBlock>
             </StackPanel>
         </TeachingTip>
-        <TextBox Grid.Column="2" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" PlaceholderText="Search shortcuts" VerticalContentAlignment="Center" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged">
+        <TextBox Margin="0,0,6,0" Grid.Column="2" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" PlaceholderText="Search shortcuts" VerticalContentAlignment="Center" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged">
             <TextBox.KeyboardAccelerators>
                 <KeyboardAccelerator Modifiers="Control" Key="F" Invoked="SearchBoy_KeyboardAcceleratorInvoked" />
             </TextBox.KeyboardAccelerators>
         </TextBox>
-        <Button Grid.Column="3" Grid.Row="0" HorizontalContentAlignment="Center" Click="SettingsButton_Clicked">
+        <Button Margin="0,0,6,0" Grid.Column="3" Grid.Row="0" HorizontalContentAlignment="Center" Click="SettingsButton_Clicked">
             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />
         </Button>
-        <Button Grid.Column="4" Grid.Row="0" HorizontalContentAlignment="Center" Click="CloseButton_Clicked">
+        <Button Margin="0,0,6,0" Grid.Column="4" Grid.Row="0" HorizontalContentAlignment="Center" Click="CloseButton_Clicked">
             <FontIcon Glyph="&#xEF2C;" />
         </Button>
         <Frame Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="1" x:Name="ContentFrame" />
