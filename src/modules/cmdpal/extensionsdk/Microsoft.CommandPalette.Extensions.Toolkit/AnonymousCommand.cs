@@ -12,7 +12,7 @@ public sealed partial class AnonymousCommand : InvokableCommand
 
     public AnonymousCommand(Action? action)
     {
-        Name = "Invoke";
+        Name = Properties.Resources.AnonymousCommand_Invoke;
         _action = action;
     }
 

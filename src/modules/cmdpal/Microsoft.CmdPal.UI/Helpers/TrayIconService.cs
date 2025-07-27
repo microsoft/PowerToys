@@ -5,8 +5,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -72,7 +72,7 @@ internal sealed partial class TrayIconService
                 _largeIcon = GetAppIconHandle();
                 _trayIconData = new NOTIFYICONDATAW()
                 {
-                    cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATAW)),
+                    cbSize = (uint)Marshal.SizeOf<NOTIFYICONDATAW>(),
                     hWnd = _hwnd,
                     uID = MY_NOTIFY_ID,
                     uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
@@ -133,7 +133,7 @@ internal sealed partial class TrayIconService
 
     private DestroyIconSafeHandle GetAppIconHandle()
     {
-        var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
         DestroyIconSafeHandle largeIcon;
         PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
         return largeIcon;

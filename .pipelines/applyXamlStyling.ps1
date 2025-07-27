@@ -41,6 +41,9 @@ Write-Output ""
 Write-Output "Restoring dotnet tools..."
 dotnet tool restore --disable-parallel --no-cache
 
+# Use Regex syntax
+$PathExcludes = "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\Generated Files\\PowerRenameXAML\\)|(\\RegistryPreviewUILib\\Controls\\HexBox\\)"
+
 if (-not $Passive)
 {
     # Look for unstaged changed files by default
@@ -87,7 +90,7 @@ if (-not $Passive)
     }
 
     Write-Output "Running Git Diff: $gitDiffCommand"
-    $files = Invoke-Expression $gitDiffCommand | Select-String -Pattern "\.xaml$"
+    $files = Invoke-Expression $gitDiffCommand | Select-String -Pattern "\.xaml$" | Where-Object { $_ -notmatch $PathExcludes }
 
     if (-not $Passive -and -not $Main -and -not $Unstaged -and -not $Staged -and -not $LastCommit)
     {
@@ -107,7 +110,7 @@ if (-not $Passive)
 else 
 {
     Write-Output "Checking all files (passively)"
-    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\Generated Files\\PowerRenameXAML\\)" }
+    $files = Get-ChildItem -Path "$PSScriptRoot\..\src\*.xaml" -Recurse | Select-Object -ExpandProperty FullName | Where-Object { $_ -notmatch $PathExcludes }
 
     if ($files.count -gt 0)
     {

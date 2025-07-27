@@ -25,7 +25,7 @@ internal sealed partial class RestartServiceCommand : InvokableCommand
     {
         _serviceResult = serviceResult;
         Name = Resources.wox_plugin_service_restart;
-        Icon = new IconInfo("\xE72C"); // Refresh icon
+        Icon = Icons.RefreshIcon;
     }
 
     public override CommandResult Invoke()

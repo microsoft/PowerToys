@@ -8,6 +8,8 @@ Monaco preview enables to display developer files. It is based on [Microsoft's M
 
 This previewer is used for the File Explorer Dev File Previewer, as well as PowerToys Peek.
 
+For a general overview of how Monaco is used in PowerToys, see the [Monaco Editor documentation](monaco-editor.md).
+
 ### Update Monaco Editor
 
 1. Download Monaco editor with [npm](https://www.npmjs.com/): Run `npm i monaco-editor` in the command prompt.
