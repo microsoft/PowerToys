@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ClipPing.Overlays;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -25,6 +27,12 @@ public partial class App : Application, IDisposable
     private readonly ETWTrace _etwTrace = new();
     private ClipPingSettings _currentSettings;
     private IOverlay? _overlay;
+
+    private static readonly Dictionary<ClipPingOverlay, Type> OverlayTypes = new()
+    {
+        { ClipPingOverlay.Top, typeof(TopOverlay) },
+        { ClipPingOverlay.Border, typeof(BorderOverlay) },
+    };
 
     public App()
     {
@@ -43,6 +51,20 @@ public partial class App : Application, IDisposable
 
         _fileSystemWatcher.Changed += Settings_Changed;
         _fileSystemWatcher.EnableRaisingEvents = true;
+    }
+
+    protected Type OverlayType
+    {
+        get
+        {
+            if (OverlayTypes.TryGetValue(_currentSettings.Properties.OverlayType, out var overlayType))
+            {
+                return overlayType;
+            }
+
+            Logger.LogWarning($"Unknown overlay type: {_currentSettings.Properties.OverlayType}. Defaulting to TopOverlay.");
+            return typeof(TopOverlay);
+        }
     }
 
     private void Settings_Changed(object sender, FileSystemEventArgs e)
@@ -104,7 +126,7 @@ public partial class App : Application, IDisposable
         PowerToysTelemetry.Log.WriteEvent(new Telemetry.ClipPingOpenedEvent());
 
         Clipboard.ContentChanged += Clipboard_ContentChanged;
-        _overlay = LoadOverlay();
+        _ = GetOverlay(); // Preload the overlay to avoid delays when showing it.
     }
 
     private void ExitEventSignaled()
@@ -118,10 +140,23 @@ public partial class App : Application, IDisposable
         ShowOverlay();
     }
 
-    private IOverlay LoadOverlay()
+    private IOverlay? GetOverlay()
     {
-        // TODO: Add a way to pick what overlay to use
-        return new TopOverlay();
+        if (_overlay?.GetType() != OverlayType)
+        {
+            var oldOverlay = _overlay;
+
+            if (oldOverlay != null)
+            {
+                // No clue why, WinUI crashes if we close the old overlay right away.
+                // Enqueue it so that it gets closed on the next message pump.
+                DispatcherQueue.GetForCurrentThread().TryEnqueue(() => oldOverlay.Dispose());
+            }
+
+            _overlay = Activator.CreateInstance(OverlayType) as IOverlay;
+        }
+
+        return _overlay;
     }
 
     private void ShowOverlay()
@@ -191,6 +226,6 @@ public partial class App : Application, IDisposable
 
         Logger.LogDebug($"Showing overlay at {target} with color {color}.");
 
-        _overlay!.Show(target, color);
+        GetOverlay()?.Show(target, color);
     }
 }

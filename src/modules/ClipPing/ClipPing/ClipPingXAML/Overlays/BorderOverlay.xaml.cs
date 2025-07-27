@@ -8,9 +8,9 @@ using WinUIEx;
 
 namespace ClipPing.Overlays;
 
-public sealed partial class TopOverlay : WindowEx, IOverlay
+public sealed partial class BorderOverlay : WindowEx, IOverlay
 {
-    public TopOverlay()
+    public BorderOverlay()
     {
         InitializeComponent();
 
@@ -20,8 +20,7 @@ public sealed partial class TopOverlay : WindowEx, IOverlay
 
     public void Show(Rect area, Color color)
     {
-        OverlayBrush.GradientStops[0].Color = Color.FromArgb(70, color.R, color.G, color.B);
-        OverlayBrush.GradientStops[1].Color = Color.FromArgb(0, color.R, color.G, color.B);
+        OverlayBrush.Color = Color.FromArgb(180, color.R, color.G, color.B);
 
         Width = area.Width;
         Height = area.Height;

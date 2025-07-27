@@ -4,11 +4,9 @@
 
 using System;
 using System.Threading;
-using Common.UI;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
-using PowerToys.Interop;
 
 namespace ClipPing;
 

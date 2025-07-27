@@ -5151,10 +5151,19 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ClipPing_OverlayColor.Header" xml:space="preserve">
     <value>Overlay color</value>
   </data>
+  <data name="ClipPing_OverlayType.Header" xml:space="preserve">
+    <value>Overlay type</value>
+  </data>
   <data name="ClipPing_Test.Header" xml:space="preserve">
     <value>Test overlay</value>
   </data>
   <data name="ClipPing_TestOverlay.Content" xml:space="preserve">
     <value>Show</value>
+  </data>
+  <data name="ClipPing_OverlayTop.Content" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="ClipPing_OverlayBorder.Content" xml:space="preserve">
+    <value>Border</value>
   </data>
 </root>

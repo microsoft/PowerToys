@@ -34,6 +34,12 @@
                 </InfoBar>
 
                 <controls:SettingsGroup x:Uid="ClipPing_Settings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="ClipPing_OverlayType">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.OverlayType, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="ClipPing_OverlayTop" />
+                            <ComboBoxItem x:Uid="ClipPing_OverlayBorder" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ClipPing_OverlayColor">
                         <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.OverlayColor, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>

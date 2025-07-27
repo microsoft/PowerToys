@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using PowerToys.GPOWrapper;
@@ -106,6 +107,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (!value.Equals(Settings.Properties.OverlayColor.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     Settings.Properties.OverlayColor.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int OverlayType
+        {
+            get
+            {
+                return (int)Settings.Properties.OverlayType;
+            }
+
+            set
+            {
+                if (value != (int)Settings.Properties.OverlayType)
+                {
+                    Settings.Properties.OverlayType = (ClipPingOverlay)value;
                     NotifyPropertyChanged();
                 }
             }
