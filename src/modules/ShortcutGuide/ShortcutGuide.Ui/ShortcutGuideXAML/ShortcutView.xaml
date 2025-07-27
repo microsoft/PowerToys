@@ -50,7 +50,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" x:Name="PinnedListTitle" Style="{StaticResource TitleTextBlockStyle}" Text="Pinned Shortcuts" Margin="6,0,6,0"></TextBlock>
+                        <TextBlock Grid.Row="0" x:Uid="PinnedListTitle" x:Name="PinnedListTitle" Style="{StaticResource TitleTextBlockStyle}" Margin="6,0,6,0"></TextBlock>
                         <GridView Grid.Row="1" SelectionMode="None" x:Name="PinnedListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -60,7 +60,7 @@
                         </GridView>
                     </Grid>
                     <StackPanel>
-                        <TextBlock x:Name="RecommendedListTitle" Style="{StaticResource TitleTextBlockStyle}" Text="Recommended Shortcuts" Margin="6,0,6,0"></TextBlock>
+                        <TextBlock x:Uid="RecommendedListTitle" x:Name="RecommendedListTitle" Style="{StaticResource TitleTextBlockStyle}" Margin="6,0,6,0"></TextBlock>
                         <GridView SelectionMode="None" x:Name="RecommendedListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -70,8 +70,8 @@
                         </GridView>
                     </StackPanel>
                     <StackPanel>
-                        <TextBlock x:Name="TaskbarLaunchShortcutsTitle" Style="{StaticResource TitleTextBlockStyle}" Text="Taskbar launch shortcuts" Margin="6,0,6,0"></TextBlock>
-                        <TextBlock x:Name="TaskbarLaunchShortcutsDescription" Text="Use these keys together with a number displayed below" Margin="6,0,6,0"></TextBlock>
+                        <TextBlock x:Uid="TaskbarLaunchShortcutsTitle" x:Name="TaskbarLaunchShortcutsTitle" Style="{StaticResource TitleTextBlockStyle}" Margin="6,0,6,0"></TextBlock>
+                        <TextBlock x:Uid="TaskbarLaunchShortcutsDescription" x:Name="TaskbarLaunchShortcutsDescription" Margin="6,0,6,0"></TextBlock>
                         <GridView SelectionMode="None" x:Name="TaskbarLaunchShortcutsListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>

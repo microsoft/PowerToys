@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Settings.UI.Library;
+using static ShortcutGuide.Helpers.ResourceLoaderInstance;
 
 namespace ShortcutGuide.Helpers
 {
@@ -28,99 +29,99 @@ namespace ShortcutGuide.Helpers
             if (enabledModules.AdvancedPaste)
             {
                 AdvancedPasteProperties advancedPasteProperties = SettingsRepository<AdvancedPasteSettings>.GetInstance(settingsUtils).SettingsConfig.Properties;
-                content = HotkeySettingsToYaml(advancedPasteProperties.AdvancedPasteUIShortcut, "Advanced Paste", content, "Open Advanced Paste window");
-                content = HotkeySettingsToYaml(advancedPasteProperties.PasteAsPlainTextShortcut, "Advanced Paste", content, "Paste as plain text directly");
-                content = HotkeySettingsToYaml(advancedPasteProperties.PasteAsMarkdownShortcut, "Advanced Paste", content, "Paste as markdown directly");
-                content = HotkeySettingsToYaml(advancedPasteProperties.PasteAsJsonShortcut, "Advanced Paste", content, "Paste as JSON directly");
+                content = HotkeySettingsToYaml(advancedPasteProperties.AdvancedPasteUIShortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("AdvancedPasteUI_Shortcut/Header"));
+                content = HotkeySettingsToYaml(advancedPasteProperties.PasteAsPlainTextShortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("PasteAsPlainText_Shortcut/Header"));
+                content = HotkeySettingsToYaml(advancedPasteProperties.PasteAsMarkdownShortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("PasteAsMarkdown_Shortcut/Header"));
+                content = HotkeySettingsToYaml(advancedPasteProperties.PasteAsJsonShortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("PasteAsJson_Shortcut/Header"));
                 if (advancedPasteProperties.AdditionalActions.ImageToText.IsShown)
                 {
-                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.ImageToText.Shortcut, "Advanced Paste", content, "Paste image to text");
+                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.ImageToText.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("ImageToText/Header"));
                 }
 
                 if (advancedPasteProperties.AdditionalActions.PasteAsFile.IsShown)
                 {
-                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsTxtFile.Shortcut, "Advanced Paste", content, "Paste as .txt file");
-                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsPngFile.Shortcut, "Advanced Paste", content, "Paste as .png file");
-                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsHtmlFile.Shortcut, "Advanced Paste", content, "Paste as .html file");
+                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsTxtFile.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("PasteAsTxtFile/Header"));
+                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsPngFile.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("PasteAsPngFile/Header"));
+                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.PasteAsFile.PasteAsHtmlFile.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("PasteAsHtmlFile/Header"));
                 }
 
                 if (advancedPasteProperties.AdditionalActions.Transcode.IsShown)
                 {
-                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.Transcode.TranscodeToMp3.Shortcut, "Advanced Paste", content, "Transcode to .mp3");
-                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.Transcode.TranscodeToMp4.Shortcut, "Advanced Paste", content, "Transcode to .mp4");
+                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.Transcode.TranscodeToMp3.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("TranscodeToMp3/Header"));
+                    content = HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.Transcode.TranscodeToMp4.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), content, SettingsResourceLoader.GetString("TranscodeToMp4/Header"));
                 }
             }
 
             if (enabledModules.AlwaysOnTop)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<AlwaysOnTopSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.Hotkey, "Always On Top", content, "Pin a window");
+                content = HotkeySettingsToYaml(SettingsRepository<AlwaysOnTopSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.Hotkey, SettingsResourceLoader.GetString("AlwaysOnTop/ModuleTitle"), content, SettingsResourceLoader.GetString("AlwaysOnTop_ShortDescription"));
             }
 
             if (enabledModules.ColorPicker)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<ColorPickerSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, "Color Picker", content, "Pick a color");
+                content = HotkeySettingsToYaml(SettingsRepository<ColorPickerSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("ColorPicker/ModuleTitle"), content, SettingsResourceLoader.GetString("ColorPicker_ShortDescription"));
             }
 
             if (enabledModules.CmdPal)
             {
-                content = HotkeySettingsToYaml(new CmdPalProperties().Hotkey, "Command Palette", content, "Open Command Palette");
+                content = HotkeySettingsToYaml(new CmdPalProperties().Hotkey, SettingsResourceLoader.GetString("CmdPal/ModuleTitle"), content);
             }
 
             if (enabledModules.CropAndLock)
             {
                 CropAndLockProperties cropAndLockProperties = SettingsRepository<CropAndLockSettings>.GetInstance(settingsUtils).SettingsConfig.Properties;
-                content = HotkeySettingsToYaml(cropAndLockProperties.ThumbnailHotkey, "Crop And Lock", content, "Thumbnail");
-                content = HotkeySettingsToYaml(cropAndLockProperties.ReparentHotkey, "Crop And Lock", content, "Reparent");
+                content = HotkeySettingsToYaml(cropAndLockProperties.ThumbnailHotkey, SettingsResourceLoader.GetString("CropAndLock/ModuleTitle"), content, SettingsResourceLoader.GetString("CropAndLock_Thumbnail"));
+                content = HotkeySettingsToYaml(cropAndLockProperties.ReparentHotkey, SettingsResourceLoader.GetString("CropAndLock/ModuleTitle"), content, SettingsResourceLoader.GetString("CropAndLock_Reparent"));
             }
 
             if (enabledModules.FancyZones)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<FancyZonesSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.FancyzonesEditorHotkey, "FancyZones", content, "Open editor");
+                content = HotkeySettingsToYaml(SettingsRepository<FancyZonesSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.FancyzonesEditorHotkey, SettingsResourceLoader.GetString("FancyZones/ModuleTitle"), content, SettingsResourceLoader.GetString("FancyZones_OpenEditor"));
             }
 
             if (enabledModules.MouseHighlighter)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<MouseHighlighterSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, "Mouse Highlight", content, "Highlight clicks");
+                content = HotkeySettingsToYaml(SettingsRepository<MouseHighlighterSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("MouseUtils_MouseHighlighter/Header"), content, SettingsResourceLoader.GetString("MouseHighlighter_ShortDescription"));
             }
 
             if (enabledModules.MouseJump)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<MouseJumpSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, "Mouse Jump", content, "Quickly move the mouse pointer");
+                content = HotkeySettingsToYaml(SettingsRepository<MouseJumpSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("MouseUtils_MouseJump/Header"), content, SettingsResourceLoader.GetString("MouseJump_ShortDescription"));
             }
 
             if (enabledModules.MousePointerCrosshairs)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, "Mouse Pointer Crosshairs", content, "Show crosshairs");
+                content = HotkeySettingsToYaml(SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("MouseUtils_MousePointerCrosshairs/Header"), content, SettingsResourceLoader.GetString("MouseCrosshairs_ShortDescription"));
             }
 
             if (enabledModules.Peek)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<PeekSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, "Peek", content);
+                content = HotkeySettingsToYaml(SettingsRepository<PeekSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("Peek/ModuleTitle"), content);
             }
 
             if (enabledModules.PowerLauncher)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<PowerLauncherSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.OpenPowerLauncher, "PowerToys Run", content);
+                content = HotkeySettingsToYaml(SettingsRepository<PowerLauncherSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.OpenPowerLauncher, SettingsResourceLoader.GetString("PowerLauncher/ModuleTitle"), content);
             }
 
             if (enabledModules.MeasureTool)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<MeasureToolSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, "Screen Ruler", content);
+                content = HotkeySettingsToYaml(SettingsRepository<MeasureToolSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("MeasureTool/ModuleTitle"), content, SettingsResourceLoader.GetString("ScreenRuler_ShortDescription"));
             }
 
             if (enabledModules.ShortcutGuide)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.DefaultOpenShortcutGuide, "Shortcut Guide", content);
+                content = HotkeySettingsToYaml(SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.DefaultOpenShortcutGuide, SettingsResourceLoader.GetString("ShortcutGuide/ModuleTitle"), content, SettingsResourceLoader.GetString("ShortcutGuide_ShortDescription"));
             }
 
             if (enabledModules.PowerOcr)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<PowerOcrSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, "Text Extractor", content);
+                content = HotkeySettingsToYaml(SettingsRepository<PowerOcrSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("TextExtractor/ModuleTitle"), content, SettingsResourceLoader.GetString("PowerOcr_ShortDescription"));
             }
 
             if (enabledModules.Workspaces)
             {
-                content = HotkeySettingsToYaml(SettingsRepository<WorkspacesSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.Hotkey, "Workspaces", content);
+                content = HotkeySettingsToYaml(SettingsRepository<WorkspacesSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.Hotkey, SettingsResourceLoader.GetString("Workspaces/ModuleTitle"), content, SettingsResourceLoader.GetString("Workspaces_ShortDescription"));
             }
 
             content += populateEndString;

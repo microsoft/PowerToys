@@ -117,12 +117,27 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CloseButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Close</value>
+  </data>
   <data name="ErrorInAppParsing" xml:space="preserve">
     <value>Error displaying the application's shortcuts</value>
     <comment>Shortcuts refers to keyboard shortcuts; Application refers to a PC application</comment>
   </data>
   <data name="ErrorInCategoryParsing" xml:space="preserve">
     <value>There has been an error displaying this category</value>
+  </data>
+  <data name="InformationButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open additional information</value>
+  </data>
+  <data name="InformationTip.Title" xml:space="preserve">
+    <value>Additional information</value>
+  </data>
+  <data name="InformationTip1.Text" xml:space="preserve">
+    <value>This app may display content provided by third-party sources. Microsoft does not endorse or assume responsibility for the accuracy, reliability, or legality of such content.</value>
+  </data>
+  <data name="InformationTip2.Text" xml:space="preserve">
+    <value>The content related to Windows is always based on the latest release build of Windows.</value>
   </data>
   <data name="NoShortcutsInOverview" xml:space="preserve">
     <value>No shortcuts pinned or recommended</value>
@@ -132,13 +147,35 @@
     <value>Overview</value>
     <comment>Category title</comment>
   </data>
+  <data name="PinnedListTitle.Text" xml:space="preserve">
+    <value>Pinned Shortcuts</value>
+    <comment>Shortcuts refers to keyboard shortcuts</comment>
+  </data>
   <data name="PinShortcut" xml:space="preserve">
     <value>Pin</value>
     <comment>Refers to the action of pinning something on a pin board</comment>
   </data>
+  <data name="RecommendedListTitle.Text" xml:space="preserve">
+    <value>Recommended Shortcuts</value>
+    <comment>Shortcuts refers to keyboard shortcuts</comment>
+  </data>
   <data name="SearchBlank" xml:space="preserve">
     <value>No results found</value>
     <comment>Results refers to search results</comment>
+  </data>
+  <data name="SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search shortcuts</value>
+  </data>
+  <data name="SettingsButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open settings</value>
+  </data>
+  <data name="TaskbarLaunchShortcutsDescription.Text" xml:space="preserve">
+    <value>Use these keys together with a number displayed below</value>
+    <comment>keys refers to keyboard keys</comment>
+  </data>
+  <data name="TaskbarLaunchShortcutsTitle.Text" xml:space="preserve">
+    <value>Taskbar Launch Shortcuts</value>
+    <comment>Shortcuts refers to keyboard shortcuts</comment>
   </data>
   <data name="Title" xml:space="preserve">
     <value>Shortcut Guide</value>
