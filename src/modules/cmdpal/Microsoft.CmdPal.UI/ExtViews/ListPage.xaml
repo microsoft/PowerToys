@@ -106,19 +106,19 @@
         <!--  Grid item template for visual grid representation  -->
         <DataTemplate x:Key="GridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
             <StackPanel
-                Height="120"
                 Width="120"
+                Height="120"
+                Padding="12,16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
                 AutomationProperties.Name="{x:Bind Title}"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                Padding="12, 16"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center"
                 CornerRadius="8"
-                ToolTipService.ToolTip="{x:Bind Title}"
-                Orientation="Vertical">
-                
+                Orientation="Vertical"
+                ToolTipService.ToolTip="{x:Bind Title}">
+
                 <cpcontrols:IconBox
                     x:Name="GridIconBorder"
                     Width="32"
@@ -129,12 +129,12 @@
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
 
                 <TextBlock
-                    Margin="0, 20, 0, 4"
+                    MaxHeight="40"
+                    Margin="0,20,0,4"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     CharacterSpacing="12"
                     FontSize="12"
-                    MaxHeight="40"
                     Text="{x:Bind Title}"
                     TextAlignment="Center"
                     TextTrimming="WordEllipsis"
@@ -171,7 +171,7 @@
                         </ListView>
                     </controls:Case>
                     <controls:Case Value="True">
-                        <GridView                            
+                        <GridView
                             x:Name="ItemsGrid"
                             Padding="8"
                             HorizontalAlignment="Center"
