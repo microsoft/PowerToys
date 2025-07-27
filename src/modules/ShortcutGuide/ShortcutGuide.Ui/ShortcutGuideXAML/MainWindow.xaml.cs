@@ -5,7 +5,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Windows.Media;
 using Common.UI;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -95,6 +97,25 @@ namespace ShortcutGuide
                     Close();
                 }
             };
+
+            switch (SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.Theme.Value)
+            {
+                case "dark":
+                    ((FrameworkElement)Content).RequestedTheme = ElementTheme.Dark;
+                    MainPage.RequestedTheme = ElementTheme.Dark;
+                    MainPage.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 0, 0));
+                    break;
+                case "light":
+                    ((FrameworkElement)Content).RequestedTheme = ElementTheme.Light;
+                    MainPage.RequestedTheme = ElementTheme.Light;
+                    MainPage.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 255, 255));
+                    break;
+                case "system":
+                    // Ignore, as the theme will be set by the system.
+                    break;
+                default:
+                    throw new InvalidDataException("Invalid theme value in settings.");
+            }
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs e)
