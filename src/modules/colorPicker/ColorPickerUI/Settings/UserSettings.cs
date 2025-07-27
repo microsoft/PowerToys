@@ -49,7 +49,10 @@ namespace ColorPicker.Settings
             ChangeCursor = new SettingItem<bool>(true);
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<string>(ColorRepresentationType.HEX.ToString());
-            ActivationAction = new SettingItem<ColorPickerActivationAction>(ColorPickerActivationAction.OpenEditor);
+            ActivationAction = new SettingItem<ColorPickerActivationAction>(ColorPickerActivationAction.OpenColorPicker);
+            PrimaryClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.PickColorThenEditor);
+            MiddleClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.PickColorAndClose);
+            SecondaryClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.Close);
             ColorHistoryLimit = new SettingItem<int>(20);
             ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
             ShowColorName = new SettingItem<bool>(false);
@@ -77,6 +80,12 @@ namespace ColorPicker.Settings
         public SettingItem<string> CopiedColorRepresentationFormat { get; set; }
 
         public SettingItem<ColorPickerActivationAction> ActivationAction { get; private set; }
+
+        public SettingItem<ColorPickerClickAction> PrimaryClickAction { get; private set; }
+
+        public SettingItem<ColorPickerClickAction> MiddleClickAction { get; private set; }
+
+        public SettingItem<ColorPickerClickAction> SecondaryClickAction { get; private set; }
 
         public RangeObservableCollection<string> ColorHistory { get; private set; } = new RangeObservableCollection<string>();
 
@@ -121,6 +130,9 @@ namespace ColorPicker.Settings
                                 CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
                                 CopiedColorRepresentationFormat = new SettingItem<string>(string.Empty);
                                 ActivationAction.Value = settings.Properties.ActivationAction;
+                                PrimaryClickAction.Value = settings.Properties.PrimaryClickAction;
+                                MiddleClickAction.Value = settings.Properties.MiddleClickAction;
+                                SecondaryClickAction.Value = settings.Properties.SecondaryClickAction;
                                 ColorHistoryLimit.Value = settings.Properties.ColorHistoryLimit;
                                 ShowColorName.Value = settings.Properties.ShowColorName;
 

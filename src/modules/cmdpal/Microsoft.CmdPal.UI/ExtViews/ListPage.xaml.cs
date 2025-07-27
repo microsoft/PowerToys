@@ -5,8 +5,9 @@
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -244,7 +245,7 @@ public sealed partial class ListPage : Page,
             }
             else if (e.NewValue == null)
             {
-                Logger.LogDebug("cleared viewmodel");
+                Logger.LogDebug("cleared view model");
             }
         }
     }
@@ -261,6 +262,13 @@ public sealed partial class ListPage : Page,
         // the selection from null -> something. Better to just update the
         // selection once, at the end of all the updating.
         if (ItemsList.SelectedItem == null)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
+
+        // Always reset the selected item when the top-level list page changes
+        // its items
+        if (!sender.IsNested)
         {
             ItemsList.SelectedIndex = 0;
         }
@@ -293,5 +301,32 @@ public sealed partial class ListPage : Page,
         }
 
         return null;
+    }
+
+    private void ItemsList_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if (e.OriginalSource is FrameworkElement element &&
+            element.DataContext is ListItemViewModel item)
+        {
+            if (ItemsList.SelectedItem != item)
+            {
+                ItemsList.SelectedItem = item;
+            }
+
+            ViewModel?.UpdateSelectedItemCommand.Execute(item);
+
+            var pos = e.GetPosition(element);
+
+            _ = DispatcherQueue.TryEnqueue(
+                () =>
+                    {
+                        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                            new OpenContextMenuMessage(
+                                element,
+                                Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                                pos,
+                                ContextMenuFilterLocation.Top));
+                    });
+        }
     }
 }

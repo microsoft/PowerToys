@@ -130,6 +130,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     T2 oldSettings = GetSettings<T2>(powertoy, fileName);
                     T newSettings = (T)settingsUpgrader(oldSettings);
                     Logger.LogInfo($"Settings file {fileName} for {powertoy} was read successfully in the old format.");
+
+                    // If the file needs to be modified, to save the new configurations accordingly.
+                    if (newSettings.UpgradeSettingsConfiguration())
+                    {
+                        SaveSettings(newSettings.ToJsonString(), powertoy, fileName);
+                    }
+
                     return newSettings;
                 }
                 catch (Exception)

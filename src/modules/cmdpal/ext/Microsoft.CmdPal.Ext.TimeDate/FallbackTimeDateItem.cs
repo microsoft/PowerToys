@@ -17,13 +17,16 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 {
     private readonly HashSet<string> _validOptions;
     private SettingsManager _settingsManager;
+    private DateTime? _timestamp;
 
-    public FallbackTimeDateItem(SettingsManager settings)
+    public FallbackTimeDateItem(SettingsManager settings, DateTime? timestamp = null)
          : base(new NoOpCommand(), Resources.Microsoft_plugin_timedate_fallback_display_title)
     {
         Title = string.Empty;
         Subtitle = string.Empty;
         _settingsManager = settings;
+        _timestamp = timestamp;
+
         _validOptions = new(StringComparer.OrdinalIgnoreCase)
         {
             Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagDate", CultureInfo.CurrentCulture),
@@ -49,7 +52,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
             return;
         }
 
-        var availableResults = AvailableResultsList.GetList(false, _settingsManager);
+        var availableResults = AvailableResultsList.GetList(false, _settingsManager, timestamp: _timestamp);
         ListItem result = null;
         var maxScore = 0;
 
@@ -68,6 +71,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
             Title = result.Title;
             Subtitle = result.Subtitle;
             Icon = result.Icon;
+            Command = result.Command;
         }
         else
         {
