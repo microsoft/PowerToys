@@ -9,7 +9,7 @@ namespace ShortcutGuide.Models
 {
     internal struct ShortcutPageParameters
     {
-        public static SeachFilterObservable SearchFilter = new();
+        public static SearchFilterObservable SearchFilter = new();
 
         public static Dictionary<string, List<ShortcutEntry>> PinnedShortcuts = [];
 
@@ -17,7 +17,7 @@ namespace ShortcutGuide.Models
 
         public static FrameHeightObservable FrameHeight = new();
 
-        internal sealed class SeachFilterObservable
+        internal sealed class SearchFilterObservable
         {
             public event EventHandler<string>? FilterChanged;
 

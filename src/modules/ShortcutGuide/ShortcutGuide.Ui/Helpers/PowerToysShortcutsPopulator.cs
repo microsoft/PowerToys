@@ -21,7 +21,7 @@ namespace ShortcutGuide.Helpers
             const string populateStartString = "# <Populate start>";
             const string populateEndString = "# <Populate end>";
 
-            content = PoulateRegex().Replace(content, populateStartString + Environment.NewLine);
+            content = PopulateRegex().Replace(content, populateStartString + Environment.NewLine);
 
             ISettingsUtils settingsUtils = new SettingsUtils();
             EnabledModules enabledModules = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Enabled;
@@ -152,6 +152,6 @@ namespace ShortcutGuide.Helpers
         }
 
         [GeneratedRegex(@"# <Populate start>[\s\S\n\r]*# <Populate end>")]
-        private static partial Regex PoulateRegex();
+        private static partial Regex PopulateRegex();
     }
 }

@@ -346,7 +346,7 @@ Shortcuts:
             Alt: false
             Keys:
               - "/"
-      - Name: Open Gamebar
+      - Name: Open Game Bar
         Shortcut:
           - Win: true
             Ctrl: false
