@@ -106,15 +106,13 @@
         <!--  Grid item template for visual grid representation  -->
         <DataTemplate x:Key="GridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
             <StackPanel
-                Width="120"
-                Height="120"
-                Padding="12,16"
+                Width="100"
+                Height="100"
+                Padding="8,16"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="{x:Bind Title}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
+                BorderThickness="0"
                 CornerRadius="8"
                 Orientation="Vertical"
                 ToolTipService.ToolTip="{x:Bind Title}">
@@ -124,17 +122,17 @@
                     Width="32"
                     Height="32"
                     HorizontalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    SourceKey="{x:Bind Icon}"
+                    Foreground="{ThemeResource TextFillColorPrimary}"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
 
                 <TextBlock
                     MaxHeight="40"
-                    Margin="0,20,0,4"
+                    Margin="0,8,0,4"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     CharacterSpacing="12"
-                    FontSize="12"
+                    FontSize="11"
                     Text="{x:Bind Title}"
                     TextAlignment="Center"
                     TextTrimming="WordEllipsis"
@@ -174,7 +172,6 @@
                         <GridView
                             x:Name="ItemsGrid"
                             Padding="8"
-                            HorizontalAlignment="Center"
                             DoubleTapped="Items_DoubleTapped"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
