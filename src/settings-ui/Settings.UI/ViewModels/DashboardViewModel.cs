@@ -504,9 +504,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils());
 
-            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.UseLegacyPressWinKeyBehavior.Value
-                ? new List<object> { 92 } // Right Windows key code
-                : moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
+            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
 
             var list = new List<DashboardModuleItem>
             {

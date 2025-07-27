@@ -274,8 +274,6 @@ private:
 
     void ParseSettings(PowerToysSettings::PowerToyValues& settings)
     {
-        m_shouldReactToPressedWinKey = false;
-
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
         {

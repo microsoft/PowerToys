@@ -40,9 +40,7 @@ namespace ShortcutGuide.Helpers
             content = HotkeySettingsToYaml(SettingsRepository<MeasureToolSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut, "Screen Ruler", content);
             {
                 ShortcutGuideProperties settingsProperties = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties;
-                content = settingsProperties.UseLegacyPressWinKeyBehavior.Value
-                    ? HotkeySettingsToYaml(new HotkeySettings(true, false, false, false, 0), "Shortcut Guide", content)
-                    : HotkeySettingsToYaml(settingsProperties.DefaultOpenShortcutGuide, "Shortcut Guide", content);
+                content = HotkeySettingsToYaml(settingsProperties.DefaultOpenShortcutGuide, "Shortcut Guide", content);
             }
 
             content = HotkeySettingsToYaml(SettingsRepository<PowerOcrSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut, "Text Extractor", content);
