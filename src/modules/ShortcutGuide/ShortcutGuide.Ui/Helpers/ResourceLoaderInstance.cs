@@ -10,9 +10,12 @@ namespace ShortcutGuide.Helpers
     {
         internal static ResourceLoader ResourceLoader { get; private set; }
 
+        internal static ResourceLoader SettingsResourceLoader { get; private set; }
+
         static ResourceLoaderInstance()
         {
             ResourceLoader = new ResourceLoader("PowerToys.ShortcutGuide.pri");
+            SettingsResourceLoader = new ResourceLoader("PowerToys.Settings.pri");
         }
     }
 }
