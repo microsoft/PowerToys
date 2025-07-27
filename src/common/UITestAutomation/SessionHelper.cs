@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -137,12 +138,19 @@ namespace Microsoft.PowerToys.UITest
             {
                 TryLaunchPowerToysSettings(opts);
             }
-            else if (scope == PowerToysModule.CommandPalette && UseInstallerForTest)
-            {
-                TryLaunchCommandPalette(opts);
-            }
             else
             {
+                // Special handling for CommandPalette with installer test
+                if (scope == PowerToysModule.CommandPalette && UseInstallerForTest)
+                {
+                    // Get the actual exe path from MSIX package for CommandPalette
+                    string? msixExePath = GetCommandPaletteExePath();
+                    if (!string.IsNullOrEmpty(msixExePath) && File.Exists(msixExePath))
+                    {
+                        appPath = msixExePath; // Use the MSIX exe path instead
+                    }
+                }
+
                 opts.AddAdditionalCapability("app", appPath);
 
                 if (args != null && args.Length > 0)
@@ -192,30 +200,42 @@ namespace Microsoft.PowerToys.UITest
             }
         }
 
-        private void TryLaunchCommandPalette(AppiumOptions opts)
+        /// <summary>
+        /// Gets the Command Palette executable path from the MSIX package.
+        /// </summary>
+        /// <returns>The path to the Command Palette executable, or null if not found.</returns>
+        private string? GetCommandPaletteExePath()
         {
             try
             {
-                // Try to launch Command Palette using the correct package info
+                // Use PowerShell to get the package installation location
                 var processStartInfo = new ProcessStartInfo
                 {
-                    FileName = "cmd.exe",
-                    Arguments = "/c start shell:appsFolder\\Microsoft.CommandPalette_8wekyb3d8bbwe!App",
+                    FileName = "powershell.exe",
+                    Arguments = "-Command \"(Get-AppxPackage -Name 'Microsoft.CommandPalette').InstallLocation\"",
                     UseShellExecute = false,
+                    RedirectStandardOutput = true,
                     CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
                 };
 
-                var process = Process.Start(processStartInfo);
-                process?.WaitForExit();
-                Thread.Sleep(3000); // Wait for the app to start
+                using var process = Process.Start(processStartInfo);
+                if (process != null)
+                {
+                    string installLocation = process.StandardOutput.ReadToEnd().Trim();
+                    process.WaitForExit();
 
-                WaitForWindowAndSetCapability(opts, "Command Palette", 5000, 10);
+                    if (!string.IsNullOrEmpty(installLocation))
+                    {
+                        return Path.Combine(installLocation, "Microsoft.CmdPal.UI.exe");
+                    }
+                }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new InvalidOperationException($"Failed to launch Command Palette from installer: {ex.Message}", ex);
+                // If we can't get the path dynamically, fall back to the original appPath
             }
+
+            return null;
         }
 
         private void WaitForWindowAndSetCapability(AppiumOptions opts, string windowName, int delayMs, int maxRetries)
