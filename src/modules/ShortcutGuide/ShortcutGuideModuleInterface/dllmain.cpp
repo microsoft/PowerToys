@@ -104,7 +104,10 @@ public:
         if (_enabled)
         {
             _enabled = false;
-            TerminateProcess();
+            if (IsProcessActive())
+            {
+                TerminateProcess(m_hProcess, 0);
+            }
         }
         else
         {
@@ -144,7 +147,7 @@ public:
 
         if (IsProcessActive())
         {
-            TerminateProcess();
+            TerminateProcess(m_hProcess, 0);
             return;
         }
 
@@ -224,33 +227,18 @@ private:
         return true;
     }
 
-    void TerminateProcess()
-    {
-        if (m_hProcess)
-        {
-            if (WaitForSingleObject(m_hProcess, 0) != WAIT_OBJECT_0)
-            {
-                if (exitEvent && SetEvent(exitEvent))
-                {
-                    Logger::trace(L"Signaled {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT);
-                }
-                else
-                {
-                    Logger::warn(L"Failed to signal {}", CommonSharedConstants::SHORTCUT_GUIDE_EXIT_EVENT);
-                }
-            }
-            else
-            {
-                CloseHandle(m_hProcess);
-                m_hProcess = nullptr;
-                Logger::trace("SG process was already terminated");
-            }
-        }
-    }
-
     bool IsProcessActive()
     {
-        return m_hProcess && WaitForSingleObject(m_hProcess, 0) != WAIT_OBJECT_0;
+        if (!m_hProcess)
+        {
+            return false;
+        }
+        auto result = WaitForSingleObject(m_hProcess, 0);
+        if (result == WAIT_FAILED)
+        {
+            Logger::error("Failed to wait for SG process.");
+        }
+        return result == WAIT_TIMEOUT;
     }
 
     void InitSettings()

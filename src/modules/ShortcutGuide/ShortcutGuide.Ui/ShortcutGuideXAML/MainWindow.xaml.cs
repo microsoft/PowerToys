@@ -15,6 +15,7 @@ using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using Windows.Foundation;
 using Windows.Graphics;
+using Windows.System;
 using WinUIEx;
 using static ShortcutGuide.NativeMethods;
 
@@ -85,6 +86,14 @@ namespace ShortcutGuide
                 string pinnedPath = settingsUtils.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
                 ShortcutPageParameters.PinnedShortcuts = JsonSerializer.Deserialize<Dictionary<string, List<ShortcutEntry>>>(File.ReadAllText(pinnedPath))!;
             }
+
+            Content.KeyUp += (_, e) =>
+            {
+                if (e.Key == VirtualKey.Escape)
+                {
+                    Close();
+                }
+            };
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs e)
