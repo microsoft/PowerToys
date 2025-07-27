@@ -37,6 +37,11 @@ namespace ShortcutGuide
                 Directory.CreateDirectory(ManifestInterpreter.GetPathOfInterpretations());
             }
 
+            if (NativeMethods.IsCurrentWindowExcludedFromShortcutGuide())
+            {
+                return;
+            }
+
             // Todo: Only copy files after an update.
             // Todo: Handle error
             foreach (var file in InbuiltManifestFiles)

@@ -48,6 +48,10 @@ internal static partial class NativeMethods
     [LibraryImport("ShortcutGuide.CPPProject.dll", EntryPoint = "get_buttons")]
     internal static partial IntPtr GetTasklistButtons(IntPtr monitor, out int size);
 
+    [LibraryImport("ShortcutGuide.CPPProject.dll", EntryPoint = "IsCurrentWindowExcludedFromShortcutGuide")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool IsCurrentWindowExcludedFromShortcutGuide();
+
     [LibraryImport("User32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumDelegate lpfnEnum, IntPtr dwData);
