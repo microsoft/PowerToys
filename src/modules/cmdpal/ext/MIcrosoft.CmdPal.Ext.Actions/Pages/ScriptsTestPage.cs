@@ -193,9 +193,11 @@ internal sealed partial class ScriptMetadata
 
     public string? IconDark { get; set; }
 
+    public string ScriptFilePath { get; set; } = string.Empty;
+
     public IconInfo IconInfo => new(
-        new(IconDark ?? Icon ?? string.Empty),
-        new(Icon ?? IconDark ?? string.Empty));
+        new(ResolveIconPath(IconDark ?? Icon ?? string.Empty)),
+        new(ResolveIconPath(Icon ?? IconDark ?? string.Empty)));
 
     public string? CurrentDirectoryPath { get; set; }
 
@@ -217,6 +219,42 @@ internal sealed partial class ScriptMetadata
     internal static readonly char[] Separator = new[] { '\n', '\r' };
 
     public string Language { get; private set; } = string.Empty;
+
+    private string ResolveIconPath(string iconPath)
+    {
+        if (string.IsNullOrEmpty(iconPath))
+        {
+            return iconPath;
+        }
+
+        // If it's an emoji, URL, or already an absolute path, return as-is
+        if (iconPath.Length <= 2 || // Likely an emoji
+            iconPath.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            iconPath.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+            Path.IsPathRooted(iconPath))
+        {
+            return iconPath;
+        }
+
+        // If it's a relative path and we have a script file path, resolve it
+        if (!string.IsNullOrEmpty(ScriptFilePath))
+        {
+            var scriptDirectory = Path.GetDirectoryName(ScriptFilePath);
+            if (!string.IsNullOrEmpty(scriptDirectory))
+            {
+                var resolvedPath = Path.Combine(scriptDirectory, iconPath);
+
+                // Normalize the path and check if the file exists
+                if (File.Exists(resolvedPath))
+                {
+                    return Path.GetFullPath(resolvedPath);
+                }
+            }
+        }
+
+        // Return the original path if we can't resolve it
+        return iconPath;
+    }
 
     private static ScriptArgument? ParseArgument(string argumentJson)
     {
@@ -260,6 +298,7 @@ internal sealed partial class ScriptMetadata
         {
             ScriptBody = text,
             Language = language,
+            ScriptFilePath = bashFile,
         };
         foreach (var line in lines)
         {
