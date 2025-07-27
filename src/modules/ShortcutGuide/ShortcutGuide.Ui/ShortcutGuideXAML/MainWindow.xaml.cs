@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -189,6 +190,11 @@ namespace ShortcutGuide
         private void SearchBoy_KeyboardAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             SearchBox.Focus(FocusState.Programmatic);
+        }
+
+        private void SettingsButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ShortcutGuide, true);
         }
     }
 }
