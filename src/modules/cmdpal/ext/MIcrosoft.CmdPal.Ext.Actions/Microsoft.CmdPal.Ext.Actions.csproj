@@ -44,6 +44,15 @@
     <Content Update="Assets\Document.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="Assets\Powershell.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Python.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Bash.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
     <ItemGroup>
     <None Remove="Assets\Microsoft_Copilot_Icon.svg" />
@@ -52,6 +61,9 @@
     <!-- <None Remove="Assets\WindowsSettings.svg" /> -->
     <None Remove="Assets\Raycast_idE-hcBj9B_1.png" />
     <None Remove="Assets\Document.png" />
+    <None Remove="Assets\Powershell.svg" />
+    <None Remove="Assets\Python.svg" />
+    <None Remove="Assets\Bash.svg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

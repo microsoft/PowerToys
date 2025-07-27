@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.Ext.Actions;
 
 internal sealed partial class ScriptsTestPage : ListPage
 {
-    private readonly string _scriptsPath = "d:\\dev\\script-commands-test";
+    private readonly Settings _settings = new();
 
     public ScriptsTestPage()
     {
@@ -27,9 +27,9 @@ internal sealed partial class ScriptsTestPage : ListPage
 
     public override IListItem[] GetItems()
     {
-        var files = GetScriptFiles(_scriptsPath);
-        var metadata = GetAllScriptMetadata(files);
-        var commandItems = GetAllCommandItems(metadata);
+        var files = GetScriptFiles(_settings.ScriptsPath);
+        var metadata = GetAllScriptMetadata(files, _settings);
+        var commandItems = GetAllCommandItems(metadata, _settings);
 
         return commandItems.ToArray();
     }
@@ -74,7 +74,7 @@ internal sealed partial class ScriptsTestPage : ListPage
         };
     }
 
-    private static ScriptMetadata[] GetAllScriptMetadata(string[] scriptFiles)
+    private static ScriptMetadata[] GetAllScriptMetadata(string[] scriptFiles, Settings settings)
     {
         var metadataList = new List<ScriptMetadata>();
 
@@ -90,7 +90,7 @@ internal sealed partial class ScriptsTestPage : ListPage
         return metadataList.ToArray();
     }
 
-    private static ListItem[] GetAllCommandItems(ScriptMetadata[] metadata)
+    private static ListItem[] GetAllCommandItems(ScriptMetadata[] metadata, Settings settings)
     {
         var commandItems = new List<ListItem>();
 
@@ -101,7 +101,7 @@ internal sealed partial class ScriptsTestPage : ListPage
                 continue;
             }
 
-            var command = script.ToCommand();
+            var command = script.ToCommand(settings);
             var scriptPage = new MarkdownPage($"```\r\n{script.ScriptBody}\r\n```")
             {
                 Title = script.Title,
@@ -125,7 +125,7 @@ internal sealed partial class ScriptsTestPage : ListPage
                 //     .Where(arg => arg != null && !string.IsNullOrEmpty(arg.Placeholder))
                 //     .Select(arg => new Tag(arg!.Placeholder))
                 //     .ToArray(),
-                Tags = [new Tag(script.Language)],
+                Tags = [script.LanguageTag, new Tag(script.Mode.ToString())],
             };
 
             commandItems.Add(commandItem);
@@ -133,6 +133,14 @@ internal sealed partial class ScriptsTestPage : ListPage
 
         return commandItems.ToArray();
     }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
+internal sealed class Settings
+{
+    public string ScriptsPath { get; set; } = "d:\\dev\\script-commands-test";
+
+    public string BashPath { get; set; } = "wsl -- bash";
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
@@ -185,7 +193,7 @@ internal sealed partial class ScriptMetadata
 
     public string? Title { get; set; }
 
-    public string? Mode { get; set; }
+    public ScriptMode Mode { get; set; }
 
     public string? PackageName { get; set; }
 
@@ -219,6 +227,26 @@ internal sealed partial class ScriptMetadata
     internal static readonly char[] Separator = new[] { '\n', '\r' };
 
     public string Language { get; private set; } = string.Empty;
+
+    public static Tag PowerShellTag { get; } = new() { Icon = Icons.Pwsh };
+
+    public static Tag BashTag { get; } = new() { Icon = Icons.Bash };
+
+    public static Tag PythonTag { get; } = new() { Icon = Icons.Python };
+
+    public Tag LanguageTag
+    {
+        get
+        {
+            return Language switch
+            {
+                "ps1" => PowerShellTag,
+                "py" => PythonTag,
+                "bash" => BashTag,
+                _ => new Tag() { Text = Language, Icon = Icons.DocumentInput },
+            };
+        }
+    }
 
     private string ResolveIconPath(string iconPath)
     {
@@ -319,7 +347,15 @@ internal sealed partial class ScriptMetadata
                             metadata.Title = value;
                             break;
                         case "mode":
-                            metadata.Mode = value;
+                            metadata.Mode = value switch
+                            {
+                                "fullOutput" => ScriptMode.FullOutput,
+                                "compact" => ScriptMode.Compact,
+                                "silent" => ScriptMode.Silent,
+                                "inline" => ScriptMode.Inline,
+                                _ => ScriptMode.FullOutput, // Default to FullOutput if unknown
+                            };
+
                             break;
                         case "packageName":
                             metadata.PackageName = value;
@@ -391,9 +427,9 @@ internal sealed partial class ScriptMetadata
         return FromHashComments(bashFile, "bash");
     }
 
-    public ICommand ToCommand()
+    public ICommand ToCommand(Settings settings)
     {
-        return new DoScriptCommand(this);
+        return new DoScriptCommand(this, settings);
     }
 }
 
@@ -402,15 +438,169 @@ internal sealed partial class DoScriptCommand : InvokableWithParams
 {
     private ScriptMetadata Metadata { get; }
 
-    internal DoScriptCommand(ScriptMetadata metadata)
+    private Settings Settings { get; }
+
+    internal static readonly char[] Separator = new[] { '\n', '\r' };
+    internal static readonly char[] SeparatorArray = new[] { '\n', '\r' };
+
+    internal DoScriptCommand(ScriptMetadata metadata, Settings settings)
     {
         Metadata = metadata;
-
+        Settings = settings;
+        Name = "Run script";
         BuildParams();
     }
 
     public override ICommandResult InvokeWithArgs(object sender, ICommandArgument[] args)
     {
+        // Determine which exe to use to run this command
+        var exePath = string.Empty;
+        var exeArgs = string.Empty;
+        if (Metadata.Language.Equals("ps1", StringComparison.OrdinalIgnoreCase))
+        {
+            exePath = "pwsh.exe";
+            exeArgs = $"-noprofile -nologo -File \"{Metadata.ScriptFilePath}\"";
+        }
+        else if (Metadata.Language.Equals("py", StringComparison.OrdinalIgnoreCase))
+        {
+            exePath = "python.exe";
+            exeArgs = $"\"{Metadata.ScriptFilePath}\"";
+        }
+        else
+        {
+            var pathFromSettings = Settings.BashPath;
+
+            // split it
+            exePath = pathFromSettings.Split(' ').FirstOrDefault() ?? "bash";
+            exeArgs = pathFromSettings.Substring(exePath.Length).Trim();
+            exeArgs += $"-c \"{Metadata.ScriptFilePath}\"";
+        }
+
+        // If we have arguments, append them
+        if (args != null && args.Length > 0 && Metadata.Arguments != null)
+        {
+            foreach (var arg in args)
+            {
+                if (arg != null && arg.Value is string s && !string.IsNullOrEmpty(s))
+                {
+                    exeArgs += $" \"{s}\"";
+                }
+            }
+        }
+
+        // Run the script, in the directory that the script is in
+        var scriptDirectory = Path.GetDirectoryName(Metadata.ScriptFilePath);
+
+        switch (Metadata.Mode)
+        {
+            case ScriptMode.FullOutput:
+                // In `fullOutput` the entire output is presented on a separate view, similar to a terminal window. This is handy when your script generates output to consume.
+                ShellHelpers.OpenInShell(
+                    exePath,
+                    exeArgs,
+                    scriptDirectory,
+                    ShellHelpers.ShellRunAsType.None,
+                    runWithHiddenWindow: false);
+                return CommandResult.Dismiss();
+            case ScriptMode.Compact:
+                {
+                    // In `compact` mode the last line of the standard output is shown in the toast
+
+                    // Start the process and capture the output
+                    var process = new System.Diagnostics.Process
+                    {
+                        StartInfo = new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = exePath,
+                            Arguments = exeArgs,
+                            WorkingDirectory = scriptDirectory,
+                            RedirectStandardOutput = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                        },
+                    };
+                    process.Start();
+                    var output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    // Show the last line of output in a toast
+                    if (!string.IsNullOrEmpty(output))
+                    {
+                        var lastLine = output.Split(Separator, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                        var toast = new ToastStatusMessage(new StatusMessage() { Message = lastLine ?? "Script executed successfully." });
+                        toast.Show();
+                    }
+
+                    return CommandResult.KeepOpen();
+                }
+
+            case ScriptMode.Silent:
+                {
+                    // In `silent` mode the last line (if exists) will be shown in overlaying HUD toast after Raycast window is closed
+
+                    // Start the process and capture the output
+                    var process = new System.Diagnostics.Process
+                    {
+                        StartInfo = new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = exePath,
+                            Arguments = exeArgs,
+                            WorkingDirectory = scriptDirectory,
+                            RedirectStandardOutput = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                        },
+                    };
+                    process.Start();
+                    var output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+                    string? lastLine = null;
+
+                    // Show the last line of output in a toast
+                    if (!string.IsNullOrEmpty(output))
+                    {
+                        lastLine = output.Split(Separator, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                    }
+
+                    return CommandResult.ShowToast(lastLine ?? "Script executed successfully.");
+                }
+
+            case ScriptMode.Inline:
+                {
+                    // In `inline` mode, the first line of output will be directly shown in the command item and automatically refresh according to the specified `refreshTime`. Tip: Set your dashboard items as favorites via the action menu in Raycast.
+                    // TODO! **NOTE:** `refreshTime` parameter is required for `inline` mode. When not specified, `compact` mode will be used instead.
+
+                    // In `silent` mode the last line (if exists) will be shown in overlaying HUD toast after Raycast window is closed
+
+                    // Start the process and capture the output
+                    var process = new System.Diagnostics.Process
+                    {
+                        StartInfo = new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = exePath,
+                            Arguments = exeArgs,
+                            WorkingDirectory = scriptDirectory,
+                            RedirectStandardOutput = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                        },
+                    };
+                    process.Start();
+                    process.WaitForExit();
+                    var output = process.StandardOutput.ReadToEnd();
+                    string? lastLine = null;
+
+                    // Show the last line of output in a toast
+                    if (!string.IsNullOrEmpty(output))
+                    {
+                        lastLine = output.Split(SeparatorArray, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                    }
+
+                    // TODO!
+                    return CommandResult.KeepOpen();
+                }
+        }
+
         return CommandResult.KeepOpen();
     }
 
@@ -451,6 +641,15 @@ internal sealed partial class MarkdownPage : ContentPage
     }
 
     public override IContent[] GetContent() => [new MarkdownContent(_text)];
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
+internal enum ScriptMode
+{
+    FullOutput,
+    Compact,
+    Silent,
+    Inline,
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]

@@ -23,6 +23,12 @@ internal sealed class Icons
     // raycast's icon
     internal static IconInfo Raycast { get; } = IconHelpers.FromRelativePath("Assets\\Raycast_idE-hcBj9B_1.png");
 
+    internal static IconInfo Pwsh { get; } = IconHelpers.FromRelativePath("Assets\\Powershell.svg");
+
+    internal static IconInfo Python { get; } = IconHelpers.FromRelativePath("Assets\\Python.svg");
+
+    internal static IconInfo Bash { get; } = IconHelpers.FromRelativePath("Assets\\Bash.svg");
+
     // google calendar's icon
     internal static IconInfo GoogleCalendar { get; } = new IconInfo("https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg");
 
