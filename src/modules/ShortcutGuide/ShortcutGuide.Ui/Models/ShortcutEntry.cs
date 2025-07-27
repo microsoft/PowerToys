@@ -204,6 +204,9 @@ namespace ShortcutGuide.Models
                         case "<Down>":
                             AddNewTextToStackPanel("↓");
                             break;
+                        case "<TASKBAR1-9>":
+                            AddNewTextToStackPanel("...");
+                            break;
                         case "<Underlined letter>":
                             TextBlock animatedTextBlock = new()
                             {

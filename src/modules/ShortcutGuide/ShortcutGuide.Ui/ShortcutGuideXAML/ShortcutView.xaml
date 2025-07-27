@@ -69,6 +69,18 @@
                             </GridView.ItemsPanel>
                         </GridView>
                     </StackPanel>
+                    <StackPanel>
+                        <TextBlock x:Name="TaskbarLaunchShortcutsTitle" Style="{StaticResource TitleTextBlockStyle}" Text="Taskbar launch shortcuts" Margin="6,0,6,0"></TextBlock>
+                        <TextBlock x:Name="TaskbarLaunchShortcutsDescription" Text="Use these keys together with a number displayed below" Margin="6,0,6,0"></TextBlock>
+                        <GridView SelectionMode="None" x:Name="TaskbarLaunchShortcutsListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsWrapGrid Orientation="Vertical"/>
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
+                        </GridView>
+                    </StackPanel>
+
                 </StackPanel>
                 <GridView HorizontalContentAlignment="Left" HorizontalAlignment="Left" Height="{Binding ContentHeight}" SelectionMode="None" x:Name="ShortcutListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
                     <GridView.ItemsPanel>

@@ -225,6 +225,23 @@ namespace ShortcutGuide
                 ErrorMessage.Visibility = Visibility.Visible;
                 ErrorMessage.Text = ResourceLoaderInstance.ResourceLoader.GetString("NoShortcutsInOverview");
             }
+
+            if (_showTaskbarShortcuts)
+            {
+                TaskbarLaunchShortcutsListElement.Visibility = Visibility.Visible;
+                TaskbarLaunchShortcutsListElement.Items.Clear();
+                TaskbarLaunchShortcutsTitle.Visibility = Visibility.Visible;
+                foreach (var item in _shortcutList.Shortcuts.First(x => x.SectionName.StartsWith("<TASKBAR1-9>", StringComparison.InvariantCulture)).Properties)
+                {
+                    TaskbarLaunchShortcutsListElement.Items.Add((ShortcutTemplateDataObject)item);
+                }
+            }
+            else
+            {
+                TaskbarLaunchShortcutsListElement.Visibility = Visibility.Collapsed;
+                TaskbarLaunchShortcutsTitle.Visibility = Visibility.Collapsed;
+                TaskbarLaunchShortcutsDescription.Visibility = Visibility.Collapsed;
+            }
         }
 
         private string _searchFilter = string.Empty;
@@ -288,10 +305,14 @@ namespace ShortcutGuide
             ShortcutListElement.Items.Clear();
             RecommendedListElement.Items.Clear();
             PinnedListElement.Items.Clear();
+            TaskbarLaunchShortcutsListElement.Items.Clear();
             ErrorMessage.Visibility = Visibility.Collapsed;
             RecommendedListElement.Visibility = Visibility.Collapsed;
             PinnedListElement.Visibility = Visibility.Collapsed;
             OverviewStackPanel.Visibility = Visibility.Collapsed;
+            TaskbarLaunchShortcutsListElement.Visibility = Visibility.Collapsed;
+            TaskbarLaunchShortcutsTitle.Visibility = Visibility.Collapsed;
+            TaskbarLaunchShortcutsDescription.Visibility = Visibility.Collapsed;
             ShortcutListElement.Visibility = Visibility.Visible;
 
             try
