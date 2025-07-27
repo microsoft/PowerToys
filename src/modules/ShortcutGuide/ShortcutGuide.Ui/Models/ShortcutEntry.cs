@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -16,6 +17,29 @@ namespace ShortcutGuide.Models
 {
     public class ShortcutEntry(string name, string? description, bool recommended, ShortcutDescription[] shortcutDescriptions)
     {
+        public override bool Equals(object? obj)
+        {
+            return obj is ShortcutEntry other && Name == other.Name &&
+                   Description == other.Description &&
+                   Shortcut.Length == other.Shortcut.Length &&
+                   Shortcut.SequenceEqual(other.Shortcut);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public static bool operator ==(ShortcutEntry? left, ShortcutEntry? right)
+        {
+            return (left is null && right is null) || (left is not null && right is not null && left.Equals(right));
+        }
+
+        public static bool operator !=(ShortcutEntry? left, ShortcutEntry? right)
+        {
+            return !(left == right);
+        }
+
         public ShortcutEntry()
             : this(string.Empty, string.Empty, false, [])
         {
@@ -54,6 +78,30 @@ namespace ShortcutGuide.Models
 
             [JsonPropertyName(nameof(Keys))]
             public string[] Keys { get; set; } = keys;
+
+            public override bool Equals(object? obj)
+            {
+                return obj is ShortcutDescription other && Ctrl == other.Ctrl &&
+                       Shift == other.Shift &&
+                       Alt == other.Alt &&
+                       Win == other.Win &&
+                       Keys.SequenceEqual(other.Keys);
+            }
+
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
+
+            public static bool operator ==(ShortcutDescription? left, ShortcutDescription? right)
+            {
+                return (left is null && right is null) || (left is not null && right is not null && left.Equals(right));
+            }
+
+            public static bool operator !=(ShortcutDescription? left, ShortcutDescription? right)
+            {
+                return !(left == right);
+            }
         }
 
         public static implicit operator ShortcutTemplateDataObject(ShortcutEntry shortcut)
@@ -240,53 +288,53 @@ namespace ShortcutGuide.Models
                 case <= 1:
                     return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, stackPanelToReturn, shortcut);
                 default:
-                {
                     {
-                        stackPanelToReturn = new StackPanel
                         {
-                            Orientation = Orientation.Vertical,
-                        };
-
-                        foreach (StackPanel panel in shortcutStackPanels)
-                        {
-                            panel.Visibility = Visibility.Collapsed;
-                            stackPanelToReturn.Children.Add(panel);
-                        }
-
-                        shortcutStackPanels[0].Visibility = Visibility.Visible;
-                        for (int i = 1; i < shortcutStackPanels.Count; i++)
-                        {
-                            shortcutStackPanels[i].Visibility = Visibility.Collapsed;
-                        }
-
-                        async void AnimateStackPanels(StackPanel[] panels, int delay = 2000)
-                        {
-                            try
+                            stackPanelToReturn = new StackPanel
                             {
-                                int index = 0;
-                                while (!ShortcutView.AnimationCancellationTokenSource.Token.IsCancellationRequested)
-                                {
-                                    foreach (StackPanel panel in panels)
-                                    {
-                                        panel.Visibility = Visibility.Collapsed;
-                                    }
+                                Orientation = Orientation.Vertical,
+                            };
 
-                                    panels[index].Visibility = Visibility.Visible;
-                                    index = (index + 1) % panels.Length;
-                                    await Task.Delay(delay);
+                            foreach (StackPanel panel in shortcutStackPanels)
+                            {
+                                panel.Visibility = Visibility.Collapsed;
+                                stackPanelToReturn.Children.Add(panel);
+                            }
+
+                            shortcutStackPanels[0].Visibility = Visibility.Visible;
+                            for (int i = 1; i < shortcutStackPanels.Count; i++)
+                            {
+                                shortcutStackPanels[i].Visibility = Visibility.Collapsed;
+                            }
+
+                            async void AnimateStackPanels(StackPanel[] panels, int delay = 2000)
+                            {
+                                try
+                                {
+                                    int index = 0;
+                                    while (!ShortcutView.AnimationCancellationTokenSource.Token.IsCancellationRequested)
+                                    {
+                                        foreach (StackPanel panel in panels)
+                                        {
+                                            panel.Visibility = Visibility.Collapsed;
+                                        }
+
+                                        panels[index].Visibility = Visibility.Visible;
+                                        index = (index + 1) % panels.Length;
+                                        await Task.Delay(delay);
+                                    }
+                                }
+                                catch
+                                {
+                                    // ignored
                                 }
                             }
-                            catch
-                            {
-                                // ignored
-                            }
+
+                            AnimateStackPanels([.. shortcutStackPanels]);
                         }
 
-                        AnimateStackPanels([.. shortcutStackPanels]);
+                        return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, stackPanelToReturn, shortcut);
                     }
-
-                    return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, stackPanelToReturn, shortcut);
-                }
             }
         }
     }
