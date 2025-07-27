@@ -27,3 +27,6 @@
 #include <tuple>
 #include <unordered_set>
 #include <filesystem>
+#include <excluded_apps.h>
+#include <process_path.h>
+#include <../SettingsAPI/settings_objects.h>
