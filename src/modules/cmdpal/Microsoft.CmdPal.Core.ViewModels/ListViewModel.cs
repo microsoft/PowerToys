@@ -42,6 +42,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         (!_isFetching) &&
         IsLoading == false;
 
+    [ObservableProperty]
+    public partial bool IsGridView { get; set; }
+
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
     public bool ShowDetails { get; private set; }
@@ -444,6 +447,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         _isDynamic = model is IDynamicListPage;
 
+        IsGridView = model.GridProperties != null;
+        UpdateProperty(nameof(IsGridView));
+
         ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
 
@@ -498,6 +504,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         switch (propertyName)
         {
+            case nameof(IsGridView):
+                this.IsGridView = model.GridProperties != null;
+                break;
             case nameof(ShowDetails):
                 this.ShowDetails = model.ShowDetails;
                 break;
