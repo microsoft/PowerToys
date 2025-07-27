@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -16,7 +15,6 @@ using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using Windows.Foundation;
 using Windows.Graphics;
-using Windows.System;
 using WinUIEx;
 using static ShortcutGuide.NativeMethods;
 
