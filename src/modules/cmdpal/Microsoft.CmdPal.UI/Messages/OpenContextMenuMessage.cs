@@ -15,3 +15,9 @@ namespace Microsoft.CmdPal.UI.Messages;
 public record OpenContextMenuMessage(FrameworkElement? Element, FlyoutPlacementMode? FlyoutPlacementMode, Point? Point, ContextMenuFilterLocation ContextMenuFilterLocation)
 {
 }
+
+public enum ContextMenuFilterLocation
+{
+    Top,
+    Bottom,
+}
