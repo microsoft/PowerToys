@@ -116,7 +116,7 @@ public sealed partial class Settings : ICommandSettings
         public SettingsContentPage(Settings settings)
         {
             _settings = settings;
-            Name = "Settings";
+            Name = Properties.Resources.Settings;
             Icon = new IconInfo("\uE713"); // Settings icon
 
             // When our settings change, make sure to let CmdPal know to
