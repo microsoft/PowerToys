@@ -18,6 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Theme = new StringProperty("system");
             DisabledApps = new StringProperty();
             OpenShortcutGuide = DefaultOpenShortcutGuide;
+            FirstRun = new BoolProperty(true);
         }
 
         [JsonPropertyName("open_shortcutguide")]
@@ -28,5 +29,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("disabled_apps")]
         public StringProperty DisabledApps { get; set; }
+
+        [JsonPropertyName("first_run")]
+        public BoolProperty FirstRun { get; set; }
     }
 }

@@ -28,6 +28,7 @@
                 <StackPanel>
                     <TextBlock x:Uid="InformationTip1" Margin="0,16,0,0" TextWrapping="WrapWholeWords" />
                     <TextBlock x:Uid="InformationTip2" Margin="0,16,0,0" TextWrapping="WrapWholeWords" />
+                    <HyperlinkButton x:Uid="ShowOOBE" Click="HyperlinkButton_Click" Margin="-8,0,0,0" />
                 </StackPanel>
             </TeachingTip>
             <TextBox Margin="0,0,6,0" Grid.Column="2" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" VerticalContentAlignment="Center" x:Uid="SearchBox" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged">

@@ -72,6 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var newItem = new DashboardListItem()
             {
                 Tag = moduleType,
+                IsNew = moduleType == ModuleType.ShortcutGuide,
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
                 IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
