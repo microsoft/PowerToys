@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ public class IndexerTests : CommandPaletteTestBase
 {
     private const string TestFileContent = "This is Indexer UI test sample";
     private const string TestFileName = "indexer_test_item.txt";
+    private const string TestFileBaseName = "indexer_test_item";
     private const string TestFolderName = "Downloads";
 
     public IndexerTests()
@@ -71,7 +73,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(openButton);
 
         openButton.Click();
-        var notepadWindow = this.Find<Window>($"{TestFileName} - Notepad", global: true);
+        var notepadWindow = FindNotepadWindow(TestFileBaseName, global: true);
 
         Assert.IsNotNull(notepadWindow);
     }
@@ -88,7 +90,7 @@ public class IndexerTests : CommandPaletteTestBase
 
         searchItem.DoubleClick();
 
-        var notepadWindow = this.Find<Window>($"{TestFileName} - Notepad", global: true);
+        var notepadWindow = FindNotepadWindow(TestFileBaseName, global: true);
 
         Assert.IsNotNull(notepadWindow);
     }
@@ -107,9 +109,9 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(openButton);
 
         openButton.Click();
-        var notepadWindow = this.Find<Window>($"{TestFolderName} - File Explorer", global: true);
+        var fileExplorer = FindExplorerWindow(TestFolderName, global: true);
 
-        Assert.IsNotNull(notepadWindow);
+        Assert.IsNotNull(fileExplorer);
     }
 
     [TestMethod]
@@ -122,7 +124,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(searchItem);
         searchItem.DoubleClick();
 
-        var fileExplorer = this.Find<Window>($"{TestFolderName} - File Explorer", global: true);
+        var fileExplorer = FindExplorerWindow(TestFolderName, global: true);
 
         Assert.IsNotNull(fileExplorer);
     }
@@ -181,7 +183,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(showInFolderButton);
         showInFolderButton.Click();
 
-        var fileExplorer = this.Find<Window>($"{TestFolderName} - File Explorer", global: true, timeoutMS: 20000);
+        var fileExplorer = FindExplorerWindow(TestFolderName, global: true, timeoutMS: 20000);
 
         Assert.IsNotNull(fileExplorer);
     }

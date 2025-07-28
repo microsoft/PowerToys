@@ -144,6 +144,13 @@ jobs:
           & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine"
         displayName: Install PowerToys (Machine-Level)
 
+  - task: winget-install@0
+    displayName: Install Windows Terminal
+    inputs:
+      packageId: 'Microsoft.WindowsTerminal'
+      acceptPackageAgreements: true
+      acceptSourceAgreements: true
+
   - ${{ if ne(parameters.platform, 'arm64') }}:
     - task: ScreenResolutionUtility@1
       inputs:

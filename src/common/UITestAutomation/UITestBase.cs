@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 
@@ -59,6 +60,7 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
+            KeyboardHelper.SendKeys(Key.Win, Key.M);
             CloseOtherApplications();
             if (IsInPipeline)
             {
@@ -248,6 +250,164 @@ namespace Microsoft.PowerToys.UITest
         public bool Has(string name, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.Has<Element>(name, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an element using partial name matching (contains).
+        /// Useful for finding windows with variable titles like "filename.txt - Notepad" or "filename - Notepad".
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="partialName">Part of the name to search for.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected T FindByPartialName<T>(string partialName, int timeoutMS = 5000, bool global = false)
+            where T : Element, new()
+        {
+            return Session.Find<T>(By.XPath($"//*[contains(@Name, '{partialName}')]"), timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an element using partial name matching (contains).
+        /// </summary>
+        /// <param name="partialName">Part of the name to search for.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected Element FindByPartialName(string partialName, int timeoutMS = 5000, bool global = false)
+        {
+            return Session.Find(By.XPath($"//*[contains(@Name, '{partialName}')]"), timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Checks if an element exists using partial name matching.
+        /// </summary>
+        /// <param name="partialName">Part of the name to search for.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if element exists; otherwise, false.</returns>
+        public bool HasPartialName(string partialName, int timeoutMS = 5000, bool global = false)
+        {
+            try
+            {
+                return Session.FindAll<Element>(By.XPath($"//*[contains(@Name, '{partialName}')]"), timeoutMS, global).Count >= 1;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finds an element using regular expression pattern matching.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="pattern">Regular expression pattern to match against the Name attribute.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected T FindByPattern<T>(string pattern, int timeoutMS = 5000, bool global = false)
+            where T : Element, new()
+        {
+            var elements = Session.FindAll<T>(By.XPath("//*[@Name]"), timeoutMS, global);
+            var regex = new Regex(pattern, RegexOptions.IgnoreCase);
+
+            foreach (var element in elements)
+            {
+                var name = element.GetAttribute("Name");
+                if (!string.IsNullOrEmpty(name) && regex.IsMatch(name))
+                {
+                    return element;
+                }
+            }
+
+            throw new NoSuchElementException($"No element found matching pattern: {pattern}");
+        }
+
+        /// <summary>
+        /// Finds an element using regular expression pattern matching.
+        /// </summary>
+        /// <param name="pattern">Regular expression pattern to match against the Name attribute.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected Element FindByPattern(string pattern, int timeoutMS = 5000, bool global = false)
+        {
+            return FindByPattern<Element>(pattern, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds a Notepad window regardless of whether the file extension is shown in the title.
+        /// Handles both "filename.txt - Notepad" and "filename - Notepad" formats.
+        /// </summary>
+        /// <param name="baseFileName">The base filename without extension (e.g., "test" for "test.txt").</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found Notepad window element.</returns>
+        protected Element FindNotepadWindow(string baseFileName, int timeoutMS = 5000, bool global = false)
+        {
+            // Pattern to match both "filename.txt - Notepad" and "filename - Notepad"
+            string pattern = $@"^{Regex.Escape(baseFileName)}(\.\w+)?\s*-\s*Notepad$";
+            return FindByPattern(pattern, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Checks if a Notepad window exists for the given base filename.
+        /// </summary>
+        /// <param name="baseFileName">The base filename without extension.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if Notepad window exists; otherwise, false.</returns>
+        public bool HasNotepadWindow(string baseFileName, int timeoutMS = 5000, bool global = false)
+        {
+            try
+            {
+                FindNotepadWindow(baseFileName, timeoutMS, global);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finds an Explorer window regardless of the folder path display format.
+        /// Handles various Explorer window title formats like "FolderName", "FolderName - File Explorer", etc.
+        /// </summary>
+        /// <param name="folderName">The folder name to search for (e.g., "Documents", "Desktop").</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found Explorer window element.</returns>
+        protected Element FindExplorerWindow(string folderName, int timeoutMS = 5000, bool global = false)
+        {
+            // Pattern to match different Explorer window title formats:
+            // "FolderName", "FolderName - File Explorer", "FolderName - Windows Explorer"
+            string pattern = $@"^{Regex.Escape(folderName)}(\s*-\s*(File\s+Explorer|Windows\s+Explorer))?$";
+            return FindByPattern(pattern, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Checks if an Explorer window exists for the given folder name.
+        /// </summary>
+        /// <param name="folderName">The folder name to search for.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if Explorer window exists; otherwise, false.</returns>
+        public bool HasExplorerWindow(string folderName, int timeoutMS = 5000, bool global = false)
+        {
+            try
+            {
+                FindExplorerWindow(folderName, timeoutMS, global);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finds an Explorer window by partial folder path.
+        /// Useful when the full path might be displayed in the title.
+        /// </summary>
+        /// <param name="partialPath">Part of the folder path to search for.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found Explorer window element.</returns>
+        protected Element FindExplorerByPartialPath(string partialPath, int timeoutMS = 5000, bool global = false)
+        {
+            return FindByPartialName(partialPath, timeoutMS, global);
         }
 
         /// <summary>
