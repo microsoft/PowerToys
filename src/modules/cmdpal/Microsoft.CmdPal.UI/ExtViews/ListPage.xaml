@@ -11,10 +11,12 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     x:Name="PageRoot"
-    Background="Transparent"
     DataContext="{x:Bind ViewModel, Mode=OneWay}"
+    Background="Transparent"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -25,6 +27,7 @@
             IsSourceGrouped="True"
             Source="{x:Bind ViewModel.Items, Mode=OneWay}" />-->
 
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:StringVisibilityConverter
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
@@ -40,6 +43,14 @@
                 Text="{x:Bind Text, Mode=OneWay}"
                 ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
         </DataTemplate>
+
+        <cmdpalUI:GridItemTemplateSelector
+            x:Key="GridItemTemplateSelector"
+            x:DataType="coreViewModels:ListItemViewModel"
+            TileSize="{x:Bind ViewModel.GridProperties.Size}"
+            Small="{StaticResource SmallGridItemViewModelTemplate}"
+            Medium="{StaticResource MediumGridItemViewModelTemplate}"
+            Large="{StaticResource LargeGridItemViewModelTemplate}" />
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
@@ -105,8 +116,39 @@
             </Grid>
         </DataTemplate>
 
-        <!--  Grid item template for visual grid representation  -->
-        <DataTemplate x:Key="GridItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
+        <!--  Grid item templates for visual grid representation  -->
+        <DataTemplate 
+             x:Key="SmallGridItemViewModelTemplate" 
+             x:DataType="coreViewModels:ListItemViewModel">
+            <StackPanel
+                 Width="60"
+                 Height="60"
+                 Padding="8,16"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 AutomationProperties.Name="{x:Bind Title}"
+                 BorderThickness="0"
+                 CornerRadius="8"
+                 Orientation="Vertical"
+                 ToolTipService.ToolTip="{x:Bind Title}">
+
+                <cpcontrols:IconBox
+                     x:Name="GridIconBorder"
+                     Width="32"
+                     Height="32"
+                     Margin="0"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Foreground="{ThemeResource TextFillColorPrimary}"
+                     SourceKey="{x:Bind Icon, Mode=OneWay}"
+                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+
+            </StackPanel>
+        </DataTemplate>
+        
+        <DataTemplate 
+            x:Key="MediumGridItemViewModelTemplate" 
+            x:DataType="coreViewModels:ListItemViewModel">
             <StackPanel
                 Width="100"
                 Height="100"
@@ -121,14 +163,17 @@
 
                 <cpcontrols:IconBox
                     x:Name="GridIconBorder"
-                    Width="32"
-                    Height="32"
+                    Width="36"
+                    Height="36"
+                    Margin="0"
                     HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorPrimary}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
 
                 <TextBlock
+                    x:Name="TitleTextBlock"
                     MaxHeight="40"
                     Margin="0,8,0,4"
                     HorizontalAlignment="Center"
@@ -136,9 +181,85 @@
                     CharacterSpacing="12"
                     FontSize="11"
                     Text="{x:Bind Title}"
+                    Visibility="{Binding ElementName=PageRoot, Path=DataContext.GridProperties.ShowTitle, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                     TextAlignment="Center"
                     TextTrimming="WordEllipsis"
                     TextWrapping="Wrap" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate 
+            x:Key="LargeGridItemViewModelTemplate" 
+            x:DataType="coreViewModels:ListItemViewModel">
+            <StackPanel
+                Width="240"
+                Height="240"
+                Padding="8,16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="{x:Bind Title}"
+                BorderThickness="0"
+                CornerRadius="8"
+                Orientation="Vertical"
+                ToolTipService.ToolTip="{x:Bind Title}">
+
+                <cpcontrols:IconBox
+                    x:Name="GridIconBorder"
+                    Width="48"
+                    Height="48"
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorPrimary}"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+
+                <TextBlock
+                    x:Name="TitleTextBlock"
+                    MaxHeight="40"
+                    Margin="0,8,0,4"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    CharacterSpacing="11"
+                    FontSize="11"
+                    Text="{x:Bind Title}"
+                    TextAlignment="Center"
+                    TextTrimming="WordEllipsis"
+                    TextWrapping="Wrap" />
+
+                <TextBlock
+                    x:Name="SubTitleTextBlock"
+                    MaxHeight="40"
+                    Margin="0,8,0,4"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    CharacterSpacing="10"
+                    FontSize="10"
+                    Text="{x:Bind Subtitle}"
+                    TextAlignment="Center"
+                    TextTrimming="WordEllipsis"
+                    TextWrapping="Wrap" />
+
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="Subtitle">
+                        <VisualState x:Name="ShowSubtitle">
+                            <VisualState.StateTriggers>
+                                <ui:IsEqualStateTrigger Value="{Binding ElementName=PageRoot, Path=DataContext.GridProperties.ShowSubtitle}" To="True" />
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <Setter Target="SubTitleTextBlock.Visibility" Value="Visible" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="HideSubtitle">
+                            <VisualState.StateTriggers>
+                                <ui:IsEqualStateTrigger Value="{Binding ElementName=PageRoot, Path=DataContext.GridProperties.ShowSubtitle}" To="False" />
+                            </VisualState.StateTriggers>
+                            <VisualState.Setters>
+                                <Setter Target="SubTitleTextBlock.Visibility" Value="Collapsed" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
             </StackPanel>
         </DataTemplate>
     </Page.Resources>
@@ -178,7 +299,7 @@
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="Items_ItemClick"
-                            ItemTemplate="{StaticResource GridItemViewModelTemplate}"
+                            ItemTemplateSelector="{StaticResource GridItemTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                             RightTapped="Items_RightTapped"
                             SelectionChanged="Items_SelectionChanged">
@@ -189,37 +310,6 @@
                     </controls:Case>
                 </controls:SwitchPresenter>
             </controls:Case>
-            <controls:Case Value="True">
-                <StackPanel
-                    Margin="24"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Orientation="Vertical"
-                    Spacing="4">
-                    <cpcontrols:IconBox
-                        x:Name="IconBorder"
-                        Width="48"
-                        Height="48"
-                        Margin="8"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-                    <TextBlock
-                        Margin="0,4,0,0"
-                        HorizontalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{x:Bind ViewModel.EmptyContent.Title, Mode=OneWay}"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="{x:Bind ViewModel.EmptyContent.Subtitle, Mode=OneWay}"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-            </controls:Case>
         </controls:SwitchPresenter>
-
     </Grid>
 </Page>

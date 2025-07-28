@@ -42,8 +42,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         (!_isFetching) &&
         IsLoading == false;
 
-    [ObservableProperty]
-    public partial bool IsGridView { get; set; }
+    public bool IsGridView { get; private set; }
+
+    public IGridProperties? GridProperties { get; private set; }
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -450,6 +451,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         IsGridView = model.GridProperties != null;
         UpdateProperty(nameof(IsGridView));
 
+        GridProperties = model.GridProperties;
+        UpdateProperty(nameof(GridProperties));
+
         ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
 
@@ -506,6 +510,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             case nameof(IsGridView):
                 IsGridView = model.GridProperties != null;
+                break;
+            case nameof(GridProperties):
+                GridProperties = model.GridProperties;
                 break;
             case nameof(ShowDetails):
                 ShowDetails = model.ShowDetails;

@@ -28,10 +28,10 @@ public sealed partial class AllAppsPage : ListPage
     {
         Name = Resources.all_apps;
         Icon = Icons.AllAppsIcon;
-        ShowDetails = true;
+        ShowDetails = false;
         IsLoading = true;
         PlaceholderText = Resources.search_installed_apps_placeholder;
-        GridProperties = new GridProperties(140, 140);
+        GridProperties = new GridProperties(GridTileSize.Medium) { ShowTitle = true };
 
         // Subscribe to pin state changes to refresh the command provider
         PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
