@@ -32,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ShortcutGuideXAML\OOBEView.xaml" />
     <None Remove="ShortcutGuideXAML\ShortcutView.xaml" />
     <None Include="Assets\ShortcutGuide\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -100,6 +101,11 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ShortcutGuide.CPPProject\ShortcutGuide.CPPProject.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ShortcutGuideXAML\OOBEView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="ShortcutGuideXAML\ShortcutView.xaml">

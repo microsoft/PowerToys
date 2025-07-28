@@ -16,6 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
+using ShortcutGuide.ShortcutGuideXAML;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
@@ -31,6 +32,7 @@ namespace ShortcutGuide
     {
         private readonly string[] _currentApplicationIds;
         /*private readonly bool _isInWindowsKeyMode;*/
+        private readonly bool _firstRun;
 
         public static nint WindowHwnd { get; set; }
 
@@ -98,7 +100,10 @@ namespace ShortcutGuide
                 }
             };
 
-            switch (SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.Theme.Value)
+            ShortcutGuideSettings shortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig;
+            ShortcutGuideProperties shortcutGuideProperties = shortcutGuideSettings.Properties;
+
+            switch (shortcutGuideProperties.Theme.Value)
             {
                 case "dark":
                     ((FrameworkElement)Content).RequestedTheme = ElementTheme.Dark;
@@ -116,6 +121,12 @@ namespace ShortcutGuide
                 default:
                     throw new InvalidDataException("Invalid theme value in settings.");
             }
+
+            _firstRun = shortcutGuideProperties.FirstRun.Value;
+            shortcutGuideProperties.FirstRun = new BoolProperty(false);
+#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
+            settingsUtils.SaveSettings(JsonSerializer.Serialize(shortcutGuideSettings, new JsonSerializerOptions { WriteIndented = true }), "Shortcut Guide");
+#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs e)
@@ -179,13 +190,26 @@ namespace ShortcutGuide
                     }
                 }
 
+                if (_firstRun)
+                {
+                    CreateAndOpenWelcomePage();
+                }
+
                 WindowSelector.SelectedItem = WindowSelector.Items[0];
             }
         }
 
         public void WindowSelectionChanged(object sender, SelectorBarSelectionChangedEventArgs e)
         {
-            ShortcutPageParameters.CurrentPageName = ((SelectorBar)sender).SelectedItem.Name;
+            string newPageName = ((SelectorBar)sender).SelectedItem.Name;
+
+            if (newPageName == "<WELCOME>")
+            {
+                ContentFrame.Navigate(typeof(OOBEView));
+                return;
+            }
+
+            ShortcutPageParameters.CurrentPageName = newPageName;
 
             ContentFrame.Loaded += (_, _) => ShortcutPageParameters.FrameHeight.OnFrameHeightChanged(ContentFrame.ActualHeight);
 
@@ -221,6 +245,24 @@ namespace ShortcutGuide
         private void InformationButton_Click(object sender, RoutedEventArgs e)
         {
             InformationTip.IsOpen = !InformationTip.IsOpen;
+        }
+
+        private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (WindowSelector.Items[0].Name == "<WELCOME>")
+            {
+                WindowSelector.SelectedItem = WindowSelector.Items[0];
+            }
+            else
+            {
+                CreateAndOpenWelcomePage();
+            }
+        }
+
+        private void CreateAndOpenWelcomePage()
+        {
+            WindowSelector.Items.Insert(0, new SelectorBarItem { Name = "<WELCOME>", Text = ResourceLoaderInstance.ResourceLoader.GetString("Welcome"), Icon = new FontIcon { Glyph = "\uE789" } });
+            WindowSelector.SelectedItem = WindowSelector.Items[0];
         }
     }
 }

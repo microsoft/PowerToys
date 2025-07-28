@@ -496,7 +496,7 @@
     <comment>Product name: Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
-    <value>Shortcut Guide</value>
+    <value>Shortcut Guide V2</value>
     <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
@@ -1079,7 +1079,7 @@
     <value>Inactive color</value>
   </data>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
-    <value>Shows a help overlay with Windows shortcuts.</value>
+    <value>Shows a help overlay with shortcuts for your apps and Windows.</value>
   </data>
   <data name="ShortcutGuide_PressTimeForGlobalWindowsShortcuts.Header" xml:space="preserve">
     <value>Press duration before showing global Windows shortcuts (ms)</value>
@@ -1089,7 +1089,7 @@
     <value>Activation method</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Description" xml:space="preserve">
-    <value>Use a shortcut or press the Windows key for some time to activate</value>
+    <value>Use a shortcut to activate Shortcut Guide</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
     <value>Custom shortcut</value>
@@ -1347,7 +1347,7 @@
     <comment>do not loc</comment>
   </data>
   <data name="ShortcutGuide.ModuleTitle" xml:space="preserve">
-    <value>Shortcut Guide</value>
+    <value>Shortcut Guide V2</value>
   </data>
   <data name="Shortcut_Guide_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Shortcut Guide</value>
@@ -2026,7 +2026,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
   </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
-    <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
+    <value>The new Shortcut Guide displays keyboard shortcuts for your apps and for the Windows environment.</value>
   </data>
   <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
@@ -2218,7 +2218,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_ShortcutGuide.Title" xml:space="preserve">
-    <value>Shortcut Guide</value>
+    <value>Shortcut Guide V2</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Overview.Title" xml:space="preserve">
