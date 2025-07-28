@@ -29,7 +29,8 @@ internal sealed partial class ScriptsTestPage : ListPage
     {
         var files = GetScriptFiles(_settings.ScriptsPath);
         var metadata = GetAllScriptMetadata(files, _settings);
-        var commandItems = GetAllCommandItems(metadata, _settings);
+
+        var commandItems = GetAllCommandItems(metadata.OrderBy(m => m.PackageName), _settings);
 
         return commandItems.ToArray();
     }
@@ -90,7 +91,7 @@ internal sealed partial class ScriptsTestPage : ListPage
         return metadataList.ToArray();
     }
 
-    private static ListItem[] GetAllCommandItems(ScriptMetadata[] metadata, Settings settings)
+    private static ListItem[] GetAllCommandItems(IEnumerable<ScriptMetadata> metadata, Settings settings)
     {
         var commandItems = new List<ListItem>();
 
@@ -228,11 +229,11 @@ internal sealed partial class ScriptMetadata
 
     public string Language { get; private set; } = string.Empty;
 
-    public static Tag PowerShellTag { get; } = new() { Icon = Icons.Pwsh };
+    public static Tag PowerShellTag { get; } = new("ps1") { Icon = Icons.Pwsh };
 
-    public static Tag BashTag { get; } = new() { Icon = Icons.Bash };
+    public static Tag BashTag { get; } = new("bash") { Icon = Icons.Bash };
 
-    public static Tag PythonTag { get; } = new() { Icon = Icons.Python };
+    public static Tag PythonTag { get; } = new("py") { Icon = Icons.Python };
 
     public Tag LanguageTag
     {
