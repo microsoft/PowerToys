@@ -145,14 +145,13 @@ jobs:
         displayName: Install PowerToys (Machine-Level)
 
   - pwsh: |-
-      Write-Host "Installing Windows Terminal via winget..."
-      winget install --id Microsoft.WindowsTerminal --accept-package-agreements --accept-source-agreements --silent
-      if ($LASTEXITCODE -ne 0) {
-        Write-Host "##[warning]winget returned exit code $LASTEXITCODE, but continuing..."
+      Write-Host "Checking for Windows Terminal..."
+      if (Get-Command "wt.exe" -ErrorAction SilentlyContinue) {
+        Write-Host "Windows Terminal found and available"
+      } else {
+        Write-Host "##[warning]Windows Terminal not found, but continuing..."
       }
-      Write-Host "Windows Terminal installation completed"
-      exit 0  # Don't fail pipeline for Terminal installation issues
-    displayName: Install Windows Terminal
+    displayName: Check Windows Terminal
 
   - ${{ if ne(parameters.platform, 'arm64') }}:
     - task: ScreenResolutionUtility@1
