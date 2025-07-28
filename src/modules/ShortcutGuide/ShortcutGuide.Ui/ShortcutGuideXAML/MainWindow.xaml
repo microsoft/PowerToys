@@ -33,7 +33,7 @@
             </TeachingTip>
             <TextBox Margin="0,0,6,0" Grid.Column="2" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" VerticalContentAlignment="Center" x:Uid="SearchBox" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged">
                 <TextBox.KeyboardAccelerators>
-                    <KeyboardAccelerator Modifiers="Control" Key="F" Invoked="SearchBoy_KeyboardAcceleratorInvoked" />
+                    <KeyboardAccelerator Modifiers="Control" Key="F" Invoked="SearchBox_KeyboardAcceleratorInvoked" />
                 </TextBox.KeyboardAccelerators>
             </TextBox>
             <Button Margin="0,0,6,0" Grid.Column="3" Grid.Row="0" HorizontalContentAlignment="Center" x:Uid="SettingsButton" Click="SettingsButton_Clicked">

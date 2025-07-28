@@ -9,7 +9,6 @@ using System.Threading;
 using System.Windows;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using ShortcutGuide.Helpers;
 using Application = Microsoft.UI.Xaml.Application;
@@ -34,9 +33,9 @@ namespace ShortcutGuide
                 return;
             }
 
-            if (!Directory.Exists(ManifestInterpreter.GetPathOfInterpretations()))
+            if (!Directory.Exists(ManifestInterpreter.PathOfManifestFiles))
             {
-                Directory.CreateDirectory(ManifestInterpreter.GetPathOfInterpretations());
+                Directory.CreateDirectory(ManifestInterpreter.PathOfManifestFiles);
             }
 
             if (NativeMethods.IsCurrentWindowExcludedFromShortcutGuide())
@@ -48,7 +47,7 @@ namespace ShortcutGuide
             // Todo: Handle error
             foreach (var file in InbuiltManifestFiles)
             {
-                File.Copy(Path.GetDirectoryName(Environment.ProcessPath) + "\\Assets\\ShortcutGuide\\" + file, ManifestInterpreter.GetPathOfInterpretations() + "\\" + file, true);
+                File.Copy(Path.GetDirectoryName(Environment.ProcessPath) + "\\Assets\\ShortcutGuide\\" + file, ManifestInterpreter.PathOfManifestFiles + "\\" + file, true);
             }
 
             Process indexGeneration = Process.Start(Path.GetDirectoryName(Environment.ProcessPath) + "\\PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
@@ -56,7 +55,7 @@ namespace ShortcutGuide
             if (indexGeneration.ExitCode != 0)
             {
                 Logger.LogError("Index generation failed with exit code: " + indexGeneration.ExitCode);
-                MessageBox.Show($"Shortcut Guide encountered an error while generating the index file. There is likely a corrupt shortcuts file in \"{ManifestInterpreter.GetPathOfInterpretations()}\". Try deleting this directory.", "Error displaying shortcuts", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Shortcut Guide encountered an error while generating the index file. There is likely a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\". Try deleting this directory.", "Error displaying shortcuts", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 

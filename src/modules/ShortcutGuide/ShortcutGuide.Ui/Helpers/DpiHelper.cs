@@ -20,13 +20,13 @@ namespace ShortcutGuide.Helpers
             return (float)dpi / DEFAULT_DPI;
         }
 
-        public static long GetScreenDPIForWindow(int hwnd, ref int dpi)
+        private static long GetScreenDPIForWindow(int hwnd, ref int dpi)
         {
             var targetMonitor = NativeMethods.MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
             return GetScreenDPIForMonitor(targetMonitor.ToInt32(), ref dpi);
         }
 
-        public static long GetScreenDPIForMonitor(int targetMonitor, ref int dpi)
+        private static long GetScreenDPIForMonitor(int targetMonitor, ref int dpi)
         {
             if (targetMonitor != 0)
             {

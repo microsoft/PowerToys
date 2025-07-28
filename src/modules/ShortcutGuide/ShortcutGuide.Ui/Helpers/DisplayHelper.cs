@@ -9,21 +9,28 @@ namespace ShortcutGuide.Helpers
 {
     public static class DisplayHelper
     {
-        private enum MonitorFromWindowDwFlags
-        {
-            MONITOR_DEFAULTTONEAREST = 2,
-        }
-
+        /// <summary>
+        /// Returns the display work area for the monitor that contains the specified window.
+        /// </summary>
+        /// <param name="hwnd">The window handle</param>
+        /// <returns>A <see cref="Rect"/> element containing the display area</returns>
         public static Rect GetWorkAreaForDisplayWithWindow(nint hwnd)
         {
             _foundMonitorIndex = -1;
             _monitorIndex = 0;
-            var monitor = NativeMethods.MonitorFromWindow(hwnd, (int)MonitorFromWindowDwFlags.MONITOR_DEFAULTTONEAREST);
+            var monitor = NativeMethods.MonitorFromWindow(hwnd, (int)NativeMethods.MonitorFromWindowDwFlags.MONITOR_DEFAULTTONEAREST);
             NativeMethods.EnumDisplayMonitors(nint.Zero, nint.Zero, MonitorEnumProc, new NativeMethods.LPARAM(monitor));
             return MonitorInfo.GetDisplayMonitors()[_foundMonitorIndex].RectWork;
         }
 
+        /// <summary>
+        /// The index of the monitor that contains the specified window. -1 indicates that no monitor was found (yet).
+        /// </summary>
         private static int _foundMonitorIndex = -1;
+
+        /// <summary>
+        /// The index of the monitor in the enumeration. This is used to find the correct monitor in the list of monitors.
+        /// </summary>
         private static int _monitorIndex;
 
         private static bool MonitorEnumProc(nint hMonitor, nint hdcMonitor, ref NativeMethods.RECT lprcMonitor, nint dwData)
