@@ -47,6 +47,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     public CommandItemViewModel ItemViewModel => _commandItemViewModel;
 
+    public string CommandProviderId => _commandProviderId;
+
     ////// ICommandItem
     public string Title => _commandItemViewModel.Title;
 
@@ -350,5 +352,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     public PerformCommandMessage GetPerformCommandMessage()
     {
         return new PerformCommandMessage(this.CommandViewModel.Model, new Core.ViewModels.Models.ExtensionObject<IListItem>(this));
+    }
+
+    public override string ToString()
+    {
+        return $"{nameof(TopLevelViewModel)}: {Id} ({Title}) - display: {DisplayTitle} - fallback: {IsFallback} - enabled: {IsEnabled}";
     }
 }
