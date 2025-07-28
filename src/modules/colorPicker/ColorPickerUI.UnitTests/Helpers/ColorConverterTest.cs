@@ -9,7 +9,7 @@ using System.Globalization;
 using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.ColorPicker.UnitTests
+namespace ColorPicker.UnitTests.Helpers
 {
     /// <summary>
     /// Test class to test <see cref="ColorConverter"/>

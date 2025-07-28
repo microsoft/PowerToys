@@ -18,8 +18,8 @@ internal sealed partial class PathListItem : ListItem
 
     public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
 
-    public PathListItem(string path, string originalDir)
-        : base(new OpenUrlCommand(path))
+    public PathListItem(string path, string originalDir, Action<string>? addToHistory)
+        : base(new OpenUrlWithHistoryCommand(path, addToHistory))
     {
         var fileName = Path.GetFileName(path);
         _isDirectory = Directory.Exists(path);

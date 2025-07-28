@@ -14,6 +14,7 @@ namespace Microsoft.CmdPal.Ext.Shell.Pages;
 internal sealed partial class RunExeItem : ListItem
 {
     private readonly Lazy<IconInfo> _icon;
+    private readonly Action<string>? _addToHistory;
 
     public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
 
@@ -23,7 +24,9 @@ internal sealed partial class RunExeItem : ListItem
 
     private string _args = string.Empty;
 
-    public RunExeItem(string exe, string args, string fullExePath)
+    private string FullString => string.IsNullOrEmpty(_args) ? Exe : $"{Exe} {_args}";
+
+    public RunExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
     {
         FullExePath = fullExePath;
         Exe = exe;
@@ -41,6 +44,8 @@ internal sealed partial class RunExeItem : ListItem
             t.Wait();
             return t.Result;
         });
+
+        _addToHistory = addToHistory;
 
         UpdateArgs(args);
 
@@ -90,16 +95,22 @@ internal sealed partial class RunExeItem : ListItem
 
     public void Run()
     {
+        _addToHistory?.Invoke(FullString);
+
         ShellHelpers.OpenInShell(FullExePath, _args);
     }
 
     public void RunAsAdmin()
     {
+        _addToHistory?.Invoke(FullString);
+
         ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.Administrator);
     }
 
     public void RunAsOther()
     {
+        _addToHistory?.Invoke(FullString);
+
         ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.OtherUser);
     }
 }

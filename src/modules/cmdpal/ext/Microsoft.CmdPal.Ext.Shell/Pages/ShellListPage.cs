@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -20,7 +21,11 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     private readonly ShellListPageHelpers _helper;
 
     private readonly List<ListItem> _topLevelItems = [];
-    private readonly List<ListItem> _historyItems = [];
+    private readonly Dictionary<string, ListItem> _historyItems = [];
+    private readonly List<ListItem> _currentHistoryItems = [];
+
+    private readonly IRunHistoryService _historyService;
+
     private ListItem? _exeItem;
     private List<ListItem> _pathItems = [];
     private ListItem? _uriItem;
@@ -28,13 +33,16 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _currentSearchTask;
 
-    public ShellListPage(SettingsManager settingsManager, bool addBuiltins = false)
+    private bool _loadedInitialHistory;
+
+    public ShellListPage(SettingsManager settingsManager, IRunHistoryService runHistoryService, bool addBuiltins = false)
     {
         Icon = Icons.RunV2Icon;
         Id = "com.microsoft.cmdpal.shell";
         Name = Resources.cmd_plugin_name;
         PlaceholderText = Resources.list_placeholder_text;
         _helper = new(settingsManager);
+        _historyService = runHistoryService;
 
         EmptyContent = new CommandItem()
         {
@@ -67,8 +75,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
         _cancellationTokenSource = new CancellationTokenSource();
         var cancellationToken = _cancellationTokenSource.Token;
-
-        IsLoading = true;
 
         try
         {
@@ -139,6 +145,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             _pathItems.Clear();
             _exeItem = null;
             _uriItem = null;
+
+            _currentHistoryItems.Clear();
+            _currentHistoryItems.AddRange(_historyItems.Values);
+
             return;
         }
 
@@ -206,6 +216,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             && (!exeExists || pathIsDir)
             && couldResolvePath)
         {
+            IsLoading = true;
             await CreatePathItemsAsync(expanded, searchText, cancellationToken);
         }
 
@@ -231,18 +242,53 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             _uriItem = null;
         }
 
+        var histItemsNotInSearch =
+            _historyItems
+                .Where(kv => !kv.Key.Equals(newSearch, StringComparison.OrdinalIgnoreCase));
+        if (_exeItem != null)
+        {
+            // If we have an exe item, we want to remove it from the history items
+            histItemsNotInSearch = histItemsNotInSearch
+                .Where(kv => !kv.Value.Title.Equals(_exeItem.Title, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (_uriItem != null)
+        {
+            // If we have an uri item, we want to remove it from the history items
+            histItemsNotInSearch = histItemsNotInSearch
+                .Where(kv => !kv.Value.Title.Equals(_uriItem.Title, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Filter the history items based on the search text
+        var filterHistory = (string query, KeyValuePair<string, ListItem> pair) =>
+        {
+            // Fuzzy search on the key (command string)
+            var score = StringMatcher.FuzzySearch(query, pair.Key).Score;
+            return score;
+        };
+
+        var filteredHistory =
+            ListHelpers.FilterList<KeyValuePair<string, ListItem>>(
+                histItemsNotInSearch,
+                searchText,
+                filterHistory)
+            .Select(p => p.Value);
+
+        _currentHistoryItems.Clear();
+        _currentHistoryItems.AddRange(filteredHistory);
+
         // Final cancellation check
         cancellationToken.ThrowIfCancellationRequested();
     }
 
-    private static ListItem PathToListItem(string path, string originalPath, string args = "")
+    private static ListItem PathToListItem(string path, string originalPath, string args = "", Action<string>? addToHistory = null)
     {
-        var pathItem = new PathListItem(path, originalPath);
+        var pathItem = new PathListItem(path, originalPath, addToHistory);
 
         // Is this path an executable? If so, then make a RunExeItem
         if (IsExecutable(path))
         {
-            var exeItem = new RunExeItem(Path.GetFileName(path), args, path);
+            var exeItem = new RunExeItem(Path.GetFileName(path), args, path, addToHistory);
 
             exeItem.MoreCommands = [
             .. exeItem.MoreCommands,
@@ -255,25 +301,29 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     public override IListItem[] GetItems()
     {
+        if (!_loadedInitialHistory)
+        {
+            LoadInitialHistory();
+        }
+
         var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
         List<ListItem> uriItems = _uriItem != null ? [_uriItem] : [];
         List<ListItem> exeItems = _exeItem != null ? [_exeItem] : [];
+
         return
             exeItems
             .Concat(filteredTopLevel)
-            .Concat(_historyItems)
+            .Concat(_currentHistoryItems)
             .Concat(_pathItems)
             .Concat(uriItems)
             .ToArray();
     }
 
-    internal static ListItem CreateExeItem(string exe, string args, string fullExePath)
+    internal static ListItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
     {
         // PathToListItem will return a RunExeItem if it can find a executable.
         // It will ALSO add the file search commands to the RunExeItem.
-        return PathToListItem(fullExePath, exe, args); // as RunExeItem ??
-
-        // new RunExeItem(exe, args, fullExePath);
+        return PathToListItem(fullExePath, exe, args, addToHistory);
     }
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
@@ -285,7 +335,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
         else
         {
-            _exeItem = CreateExeItem(exe, args, fullExePath);
+            _exeItem = CreateExeItem(exe, args, fullExePath, AddToHistory);
         }
     }
 
@@ -442,6 +492,40 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         {
             Title = searchText,
         };
+    }
+
+    private void LoadInitialHistory()
+    {
+        var hist = _historyService.GetRunHistory();
+        var histItems = hist
+            .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h, AddToHistory)))
+            .Where(tuple => tuple.Item2 != null)
+            .Select(tuple => (tuple.h, tuple.Item2!))
+            .ToList();
+        _historyItems.Clear();
+
+        // Add all the history items to the _historyItems dictionary
+        foreach (var (h, item) in histItems)
+        {
+            _historyItems[h] = item;
+        }
+
+        _currentHistoryItems.Clear();
+        _currentHistoryItems.AddRange(histItems.Select(tuple => tuple.Item2));
+
+        _loadedInitialHistory = true;
+    }
+
+    internal void AddToHistory(string commandString)
+    {
+        if (string.IsNullOrWhiteSpace(commandString))
+        {
+            return; // Do not add empty or whitespace items
+        }
+
+        _historyService.AddRunHistoryItem(commandString);
+        LoadInitialHistory();
+        DoUpdateSearchText(SearchText);
     }
 
     public void Dispose()

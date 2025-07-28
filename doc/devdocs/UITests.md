@@ -68,7 +68,7 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 - Pipeline: https://microsoft.visualstudio.com/Dart/_build?definitionId=161438&_a=summary
 
 ## How to add the first UI tests for your modules
-
+- Follow the naming convention: ![{ModuleFolder}/Tests/{ModuleName}-{TestType(Fuzz/UI/Unit)}Tests](images/uitests/naming.png)
 - Create a new project and add the following references to the project file. Change the OutputPath to your own module's path.
   ```
     <Project Sdk="Microsoft.NET.Sdk">
