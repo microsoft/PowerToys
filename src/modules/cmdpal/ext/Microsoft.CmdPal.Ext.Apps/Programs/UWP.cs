@@ -128,14 +128,6 @@ public partial class UWP
 
     public static UWPApplication[] All()
     {
-        var windows10 = new Version(10, 0);
-        var support = Environment.OSVersion.Version.Major >= windows10.Major;
-
-        if (!support)
-        {
-            return Array.Empty<UWPApplication>();
-        }
-
         var appsBag = new ConcurrentBag<UWPApplication>();
 
         Parallel.ForEach(CurrentUserPackages(), p =>

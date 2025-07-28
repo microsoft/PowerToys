@@ -63,9 +63,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
                                                         {
                                                             return item as IContextItem;
                                                         }
+                                                        else if (item is CommandContextItemViewModel commandItem)
+                                                        {
+                                                            return commandItem.Model.Unsafe;
+                                                        }
                                                         else
                                                         {
-                                                            return ((CommandContextItemViewModel)item).Model.Unsafe;
+                                                            return null;
                                                         }
                                                     }).ToArray();
 

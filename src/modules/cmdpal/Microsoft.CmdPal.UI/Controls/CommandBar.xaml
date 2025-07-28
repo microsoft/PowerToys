@@ -200,12 +200,45 @@
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
                 Padding="4"
-                Content="{ui:FontIcon Glyph=&#xE712;,
-                                      FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="MoreCommandsButton_Tapped"
                 ToolTipService.ToolTip="Ctrl+K"
-                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}" />
+                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="More" />
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Border
+                            Padding="4,2,4,2"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <TextBlock
+                                CharacterSpacing="4"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Ctrl" />
+                        </Border>
+                        <Border
+                            Padding="4,2,4,2"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="K" />
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

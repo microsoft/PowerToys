@@ -277,6 +277,13 @@ public sealed partial class ListPage : Page,
         {
             ItemsList.SelectedIndex = 0;
         }
+
+        // Always reset the selected item when the top-level list page changes
+        // its items
+        if (!sender.IsNested)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
