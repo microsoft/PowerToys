@@ -70,6 +70,7 @@
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
     <PackageVersion Include="OpenAI" Version="2.0.0" />
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
+    <PackageVersion Include="RtfPipe" Version="2.0.7677.4303" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.37.2" />
     <!-- Don't update SkiaSharp.Views.WinUI to version 3.* branch as this brakes the HexBox control in Registry Preview. -->

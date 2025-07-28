@@ -8,7 +8,7 @@ using ColorPicker.Helpers;
 using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.ColorPicker.UnitTests
+namespace ColorPicker.Helpers
 {
     [TestClass]
     public class ColorRepresentationHelperTest
