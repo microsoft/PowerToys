@@ -332,6 +332,22 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Finds an application window regardless of whether the file extension is shown in the title.
+        /// Handles multiple formats: "filename.txt - AppName", "filename - AppName", "filename.txt AppName", "filename AppName".
+        /// </summary>
+        /// <param name="baseFileName">The base filename without extension (e.g., "test" for "test.txt").</param>
+        /// <param name="appName">The application name (e.g., "Notepad", "Visual Studio Code").</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found application window element.</returns>
+        protected Element FindApplicationWindow(string baseFileName, string appName, int timeoutMS = 5000, bool global = false)
+        {
+            // Pattern to match multiple formats:
+            // "filename.txt - AppName", "filename - AppName", "filename.txt AppName", "filename AppName"
+            string pattern = $@"^{Regex.Escape(baseFileName)}(\.\w+)?(\s*-\s*|\s+){Regex.Escape(appName)}$";
+            return FindByPattern(pattern, timeoutMS, global);
+        }
+
+        /// <summary>
         /// Finds a Notepad window regardless of whether the file extension is shown in the title.
         /// Handles both "filename.txt - Notepad" and "filename - Notepad" formats.
         /// </summary>
@@ -340,9 +356,27 @@ namespace Microsoft.PowerToys.UITest
         /// <returns>The found Notepad window element.</returns>
         protected Element FindNotepadWindow(string baseFileName, int timeoutMS = 5000, bool global = false)
         {
-            // Pattern to match both "filename.txt - Notepad" and "filename - Notepad"
-            string pattern = $@"^{Regex.Escape(baseFileName)}(\.\w+)?\s*-\s*Notepad$";
-            return FindByPattern(pattern, timeoutMS, global);
+            return FindApplicationWindow(baseFileName, "Notepad", timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Checks if an application window exists for the given base filename.
+        /// </summary>
+        /// <param name="baseFileName">The base filename without extension.</param>
+        /// <param name="appName">The application name.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if application window exists; otherwise, false.</returns>
+        public bool HasApplicationWindow(string baseFileName, string appName, int timeoutMS = 5000, bool global = false)
+        {
+            try
+            {
+                FindApplicationWindow(baseFileName, appName, timeoutMS, global);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -353,15 +387,7 @@ namespace Microsoft.PowerToys.UITest
         /// <returns>True if Notepad window exists; otherwise, false.</returns>
         public bool HasNotepadWindow(string baseFileName, int timeoutMS = 5000, bool global = false)
         {
-            try
-            {
-                FindNotepadWindow(baseFileName, timeoutMS, global);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return HasApplicationWindow(baseFileName, "Notepad", timeoutMS, global);
         }
 
         /// <summary>

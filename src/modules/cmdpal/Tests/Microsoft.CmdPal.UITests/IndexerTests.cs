@@ -203,7 +203,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var textItem = this.Find<Window>("C:\\Windows\\system32\\cmd.exe", global: true);
+        var textItem = FindByPartialName("C:\\Windows\\system32\\cmd.exe", global: true);
         Assert.IsNotNull(textItem, "The console did not open with the expected path.");
     }
 
@@ -222,7 +222,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var propertiesWindow = this.Find<Window>($"{TestFileName} Properties", global: true);
+        var propertiesWindow = FindApplicationWindow(TestFileBaseName, "Properties", global: true);
         Assert.IsNotNull(propertiesWindow, "The properties window did not open for the selected file.");
     }
 }

@@ -27,7 +27,6 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="value">The text to set.</param>
         /// <param name="clearText">A value indicating whether to clear the text before setting it. Default value is true</param>
-        /// <param name="delayMS">Delay in milliseconds after clearing text. Default is 500ms.</param>
         /// <param name="charDelayMS">Delay in milliseconds between each character. Default is 0 (no delay).</param>
         /// <returns>The current TextBox instance.</returns>
         public TextBox SetText(string value, bool clearText = true, int charDelayMS = 0)
