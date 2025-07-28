@@ -7,8 +7,15 @@ using TasklistButton = ShortcutGuide.NativeMethods.TasklistButton;
 
 namespace ShortcutGuide.Helpers
 {
-    internal sealed class TasklistPositions
+    /// <summary>
+    /// Provides methods to retrieve the positions of taskbar buttons on the current monitor.
+    /// </summary>
+    internal static class TasklistPositions
     {
+        /// <summary>
+        /// Retrieves the taskbar buttons for the current monitor.
+        /// </summary>
+        /// <returns>An array of the taskbar buttons.</returns>
         public static TasklistButton[] GetButtons()
         {
             var monitor = NativeMethods.MonitorFromWindow(MainWindow.WindowHwnd, 0);

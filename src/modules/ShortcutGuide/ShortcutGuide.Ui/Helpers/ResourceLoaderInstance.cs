@@ -8,8 +8,14 @@ namespace ShortcutGuide.Helpers
 {
     internal static class ResourceLoaderInstance
     {
+        /// <summary>
+        /// Gets the resource loader for the Shortcut Guide module.
+        /// </summary>
         internal static ResourceLoader ResourceLoader { get; private set; }
 
+        /// <summary>
+        /// Gets the resource loader for the Settings module.
+        /// </summary>
         internal static ResourceLoader SettingsResourceLoader { get; private set; }
 
         static ResourceLoaderInstance()

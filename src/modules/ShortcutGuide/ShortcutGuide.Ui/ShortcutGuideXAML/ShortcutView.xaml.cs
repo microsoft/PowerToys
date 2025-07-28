@@ -23,10 +23,15 @@ namespace ShortcutGuide
 {
     public sealed partial class ShortcutView : INotifyPropertyChanged
     {
-        private readonly DispatcherTimer _taskbarUpdateTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
-        private readonly bool _showTaskbarShortcuts;
+        private readonly DispatcherTimer _taskbarIconsUpdateTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
+        private readonly ShortcutFile _shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
+        private bool _showTaskbarShortcuts;
         private static CancellationTokenSource _animationCancellationTokenSource = new();
 
+        /// <summary>
+        /// Gets or sets a cancellation token source for animations in shortcut view.
+        /// When setting a new token source, the previous one is cancelled to stop ongoing animations.
+        /// </summary>
         public static CancellationTokenSource AnimationCancellationTokenSource
         {
             get => _animationCancellationTokenSource;
@@ -37,42 +42,17 @@ namespace ShortcutGuide
             }
         }
 
-        private readonly ShortcutFile _shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
-
         public ShortcutView()
         {
             InitializeComponent();
-            ShortcutView.AnimationCancellationTokenSource = new();
             DataContext = this;
 
-            int i = -1;
+            // Stop any ongoing animations by cancelling the previous token source
+            AnimationCancellationTokenSource = new();
 
             try
             {
-                CategorySelector.Items.Add(new SelectorBarItem()
-                {
-                    Text = ResourceLoaderInstance.ResourceLoader.GetString("Overview"),
-                    Name = i.ToString(CultureInfo.InvariantCulture),
-                });
-
-                i++;
-
-                foreach (var category in _shortcutList.Shortcuts)
-                {
-                    switch (category.SectionName)
-                    {
-                        case { } name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
-                            _showTaskbarShortcuts = true;
-                            break;
-                        case { } name when name.StartsWith('<') && name.EndsWith('>'):
-                            break;
-                        default:
-                            CategorySelector.Items.Add(new SelectorBarItem() { Text = category.SectionName, Name = i.ToString(CultureInfo.InvariantCulture) });
-                            break;
-                    }
-
-                    i++;
-                }
+                PopulateCategorySelector();
 
                 CategorySelector.SelectedItem = CategorySelector.Items[0];
                 CategorySelector.SelectionChanged += CategorySelector_SelectionChanged;
@@ -93,8 +73,8 @@ namespace ShortcutGuide
                 if (_showTaskbarShortcuts)
                 {
                     TaskbarIndicators.Visibility = Visibility.Visible;
-                    _taskbarUpdateTimer.Tick += UpdateTaskbarIndicators;
-                    _taskbarUpdateTimer.Start();
+                    _taskbarIconsUpdateTimer.Tick += UpdateTaskbarIndicators;
+                    _taskbarIconsUpdateTimer.Start();
                 }
 
                 OpenOverview();
@@ -108,12 +88,46 @@ namespace ShortcutGuide
 
             Unloaded += (_, _) =>
             {
-                AnimationCancellationTokenSource = new();
-                _taskbarUpdateTimer.Tick -= UpdateTaskbarIndicators;
-                _taskbarUpdateTimer.Stop();
+                _taskbarIconsUpdateTimer.Tick -= UpdateTaskbarIndicators;
+                _taskbarIconsUpdateTimer.Stop();
             };
         }
 
+        /// <summary>
+        /// Populates the <see cref="CategorySelector"/> selector and sets <see cref="_showTaskbarShortcuts"/>.
+        /// </summary>
+        private void PopulateCategorySelector()
+        {
+            int i = -1;
+            CategorySelector.Items.Add(new SelectorBarItem()
+            {
+                Text = ResourceLoaderInstance.ResourceLoader.GetString("Overview"),
+                Name = i.ToString(CultureInfo.InvariantCulture),
+            });
+
+            i++;
+
+            foreach (var category in _shortcutList.Shortcuts)
+            {
+                switch (category.SectionName)
+                {
+                    case { } name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
+                        _showTaskbarShortcuts = true;
+                        break;
+                    case { } name when name.StartsWith('<') && name.EndsWith('>'):
+                        break;
+                    default:
+                        CategorySelector.Items.Add(new SelectorBarItem() { Text = category.SectionName, Name = i.ToString(CultureInfo.InvariantCulture) });
+                        break;
+                }
+
+                i++;
+            }
+        }
+
+        /// <summary>
+        /// Updates the taskbar indicators.
+        /// </summary>
         private void UpdateTaskbarIndicators(object? sender, object? e)
         {
             NativeMethods.TasklistButton[] buttons = TasklistPositions.GetButtons();
@@ -159,11 +173,11 @@ namespace ShortcutGuide
                     ((Rectangle)canvases[i].Children[0]).Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
                     ((TextBlock)canvases[i].Children[1]).Width = buttons[i].Width / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
                     ((TextBlock)canvases[i].Children[1]).Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+
+                    continue;
                 }
-                else
-                {
-                    canvases[i].Visibility = Visibility.Collapsed;
-                }
+
+                canvases[i].Visibility = Visibility.Collapsed;
             }
         }
 
@@ -202,15 +216,9 @@ namespace ShortcutGuide
             PinnedListTitle.Visibility = Visibility.Visible;
             ShortcutListElement.Visibility = Visibility.Collapsed;
 
-            foreach (var list in _shortcutList.Shortcuts)
+            foreach (var shortcut in _shortcutList.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Recommended)))
             {
-                foreach (var shortcut in list.Properties)
-                {
-                    if (shortcut.Recommended)
-                    {
-                        RecommendedListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
-                    }
-                }
+                RecommendedListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
             }
 
             if (RecommendedListElement.Items.Count == 0)
@@ -246,13 +254,13 @@ namespace ShortcutGuide
                 {
                     TaskbarLaunchShortcutsListElement.Items.Add((ShortcutTemplateDataObject)item);
                 }
+
+                return;
             }
-            else
-            {
-                TaskbarLaunchShortcutsListElement.Visibility = Visibility.Collapsed;
-                TaskbarLaunchShortcutsTitle.Visibility = Visibility.Collapsed;
-                TaskbarLaunchShortcutsDescription.Visibility = Visibility.Collapsed;
-            }
+
+            TaskbarLaunchShortcutsListElement.Visibility = Visibility.Collapsed;
+            TaskbarLaunchShortcutsTitle.Visibility = Visibility.Collapsed;
+            TaskbarLaunchShortcutsDescription.Visibility = Visibility.Collapsed;
         }
 
         private string _searchFilter = string.Empty;
@@ -278,26 +286,16 @@ namespace ShortcutGuide
                 }
 
                 OverviewStackPanel.Visibility = Visibility.Collapsed;
-
-                foreach (var list in _shortcutList.Shortcuts)
+                foreach (var shortcut in _shortcutList.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Name.Contains(filter, StringComparison.InvariantCultureIgnoreCase))))
                 {
-                    foreach (var shortcut in list.Properties)
-                    {
-                        if (shortcut.Name.Contains(filter, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
-                        }
-                    }
+                    ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
                 }
             }
             else
             {
-                foreach (var shortcut in _shortcutList.Shortcuts[int.Parse(CategorySelector.SelectedItem.Name, CultureInfo.InvariantCulture)].Properties)
+                foreach (var shortcut in _shortcutList.Shortcuts[int.Parse(CategorySelector.SelectedItem.Name, CultureInfo.InvariantCulture)].Properties.Where(s => s.Name.Contains(filter, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    if (shortcut.Name.Contains(filter, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
-                    }
+                    ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
                 }
             }
 

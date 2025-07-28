@@ -119,4 +119,9 @@ internal static partial class NativeMethods
 
         public int Keynum;
     }
+
+    public enum MonitorFromWindowDwFlags
+    {
+        MONITOR_DEFAULTTONEAREST = 2,
+    }
 }
