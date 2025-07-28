@@ -76,5 +76,8 @@
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="LearnMore_ShortcutGuide" Link="https://aka.ms/PowerToysOverview_ShortcutGuide" />
         </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="https://noraajunker.ch" Text="Noraa Junker's work on Shortcut Guide V2" />
+        </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>
