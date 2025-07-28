@@ -367,7 +367,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         // Easiest case: text is literally already a full directory
-        else if (Directory.Exists(trimmed))
+        else if (Directory.Exists(trimmed) && trimmed.EndsWith('\\'))
         {
             directoryPath = trimmed;
             searchPattern = $"*";
