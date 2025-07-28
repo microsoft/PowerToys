@@ -6,11 +6,13 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Windows;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using ShortcutGuide.Helpers;
+using Application = Microsoft.UI.Xaml.Application;
 
 namespace ShortcutGuide
 {
@@ -49,7 +51,15 @@ namespace ShortcutGuide
                 File.Copy(Path.GetDirectoryName(Environment.ProcessPath) + "\\Assets\\ShortcutGuide\\" + file, ManifestInterpreter.GetPathOfInterpretations() + "\\" + file, true);
             }
 
-            Process.Start(Path.GetDirectoryName(Environment.ProcessPath) + "\\PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
+            Process indexGeneration = Process.Start(Path.GetDirectoryName(Environment.ProcessPath) + "\\PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
+            indexGeneration.WaitForExit();
+            if (indexGeneration.ExitCode != 0)
+            {
+                Logger.LogError("Index generation failed with exit code: " + indexGeneration.ExitCode);
+                MessageBox.Show($"Shortcut Guide encountered an error while generating the index file. There is likely a corrupt shortcuts file in \"{ManifestInterpreter.GetPathOfInterpretations()}\". Try deleting this directory.", "Error displaying shortcuts", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             PowerToysShortcutsPopulator.Populate();
 
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
