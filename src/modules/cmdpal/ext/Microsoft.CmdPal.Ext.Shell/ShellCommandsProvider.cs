@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.Shell.Properties;
@@ -13,19 +14,26 @@ namespace Microsoft.CmdPal.Ext.Shell;
 public partial class ShellCommandsProvider : CommandProvider
 {
     private readonly CommandItem _shellPageItem;
-    private readonly SettingsManager _settingsManager = new();
-    private readonly FallbackCommandItem _fallbackItem;
 
-    public ShellCommandsProvider()
+    private readonly SettingsManager _settingsManager = new();
+    private readonly ShellListPage _shellListPage;
+    private readonly FallbackCommandItem _fallbackItem;
+    private readonly IRunHistoryService _historyService;
+
+    public ShellCommandsProvider(IRunHistoryService runHistoryService)
     {
+        _historyService = runHistoryService;
+
         Id = "Run";
         DisplayName = Resources.cmd_plugin_name;
         Icon = Icons.RunV2Icon;
         Settings = _settingsManager.Settings;
 
-        _fallbackItem = new FallbackExecuteItem(_settingsManager);
+        _shellListPage = new ShellListPage(_settingsManager, _historyService);
 
-        _shellPageItem = new CommandItem(new ShellListPage(_settingsManager))
+        _fallbackItem = new FallbackExecuteItem(_settingsManager, _shellListPage.AddToHistory);
+
+        _shellPageItem = new CommandItem(_shellListPage)
         {
             Icon = Icons.RunV2Icon,
             Title = Resources.shell_command_name,
@@ -39,4 +47,6 @@ public partial class ShellCommandsProvider : CommandProvider
     public override ICommandItem[] TopLevelCommands() => [_shellPageItem];
 
     public override IFallbackCommandItem[]? FallbackCommands() => [_fallbackItem];
+
+    public static bool SuppressFileFallbackIf(string query) => FallbackExecuteItem.SuppressFileFallbackIf(query);
 }

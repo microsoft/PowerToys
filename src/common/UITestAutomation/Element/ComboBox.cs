@@ -24,5 +24,16 @@ namespace Microsoft.PowerToys.UITest
         {
             this.Find<NavigationViewItem>(value).Click();
         }
+
+        /// <summary>
+        /// Select a text item from the ComboBox.
+        /// </summary>
+        /// <param name="value">The text to select from the ComboBox.</param>
+        public void SelectTxt(string value)
+        {
+            this.Click(); // First click to expand the ComboBox
+            Thread.Sleep(100); // Wait for the dropdown to appear
+            this.Find<Element>(value).Click(); // Find and click the text item using basic Element type
+        }
     }
 }

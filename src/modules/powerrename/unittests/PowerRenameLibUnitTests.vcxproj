@@ -5,7 +5,7 @@
     <ProjectGuid>{2151F984-E006-4A9F-92EF-C6DDE3DC8413}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PowerRenameLibUnitTests</RootNamespace>
-    <ProjectName>PowerRenameUnitTests</ProjectName>
+    <ProjectName>PowerRename.UnitTests</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

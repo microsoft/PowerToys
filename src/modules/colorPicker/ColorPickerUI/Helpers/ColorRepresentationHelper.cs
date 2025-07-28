@@ -34,7 +34,7 @@ namespace ColorPicker.Helpers
         /// <param name="color">The <see cref="Color"/> for the presentation</param>
         /// <param name="colorRepresentationType">The type of the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
-        internal static string GetStringRepresentation(Color color, string colorRepresentationType, string colorFormat)
+        public static string GetStringRepresentation(Color color, string colorRepresentationType, string colorFormat)
         {
             if (string.IsNullOrEmpty(colorFormat))
             {

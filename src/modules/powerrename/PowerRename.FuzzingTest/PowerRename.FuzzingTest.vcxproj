@@ -7,7 +7,7 @@
     <ProjectGuid>{2694e2fb-dcd5-4bff-a418-b6c3c7ce3b8e}</ProjectGuid>
     <RootNamespace>Test</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
-    <ProjectName>PowerRename.FuzzingTest</ProjectName>
+    <ProjectName>PowerRename.FuzzTests</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

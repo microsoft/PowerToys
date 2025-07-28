@@ -1496,6 +1496,7 @@ SOFTWARE.
 - AdaptiveCards.Templating 2.0.5
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.17
+- CoenM.ImageSharp.ImageHash 1.3.6
 - CommunityToolkit.Common 8.4.0
 - CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock 0.1.250703-build.2173
 - CommunityToolkit.Mvvm 8.4.0

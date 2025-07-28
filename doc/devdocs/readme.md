@@ -67,10 +67,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 - When you'd like the team to take a look (even if the work is not yet fully complete) mark the PR as 'Ready For Review' so that the team can review your work and provide comments, suggestions, and request changes. It may take several cycles, but the end result will be solid, testable, conformant code that is safe for us to merge.
 - When the PR is approved, let the owner of the PR merge it. For community contributions, the reviewer who approved the PR can also merge it.
 - Use the `Squash and merge` option to merge a PR. If you don't want to squash it because there are logically different commits, use `Rebase and merge`.
-- We don't close issues automatically when referenced in a PR, so after the PR is merged:
-  - mark the issue(s) that the PR solved with the `Resolution-Fix-Committed` label, remove the `In progress` label and if the issue is assigned to a project, move the item to the `Done` status.
-  - don't close the issue if it's a bug in the current released version; since users tend to not search for closed issues, we will close the resolved issues when a new version is released.
-  - if it's not a code fix that effects the end user, the issue can be closed (for example a fix in the build or a code refactoring and so on).
+- Close issues automatically when referenced in a PR. You can use [closing keywords](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword) in the body of the PR to have GitHub automatically link your PR to the issue.
 
 ## Compiling PowerToys
 

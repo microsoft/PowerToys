@@ -248,5 +248,14 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Properties {
                 return ResourceManager.GetString("settings_page_name", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search for &quot;{0}&quot;.
+        /// </summary>
+        public static string web_search_fallback_subtitle {
+            get {
+                return ResourceManager.GetString("web_search_fallback_subtitle", resourceCulture);
+            }
+        }
     }
 }

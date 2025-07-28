@@ -38,6 +38,7 @@ ALLAPPS
 ALLCHILDREN
 ALLINPUT
 Allman
+Allmodule
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
@@ -219,6 +220,7 @@ coclass
 CODENAME
 codereview
 Codespaces
+Coen
 COINIT
 colid
 colorconv
@@ -246,6 +248,7 @@ CONTEXTMENUHANDLER
 contractversion
 CONTROLPARENT
 copiedcolorrepresentation
+coppied
 copyable
 COPYPEN
 COREWINDOW
@@ -444,6 +447,7 @@ ERRORIMAGE
 ERRORTITLE
 ESettings
 esrp
+etd
 ETDT
 etl
 etw
@@ -530,8 +534,8 @@ frm
 FROMTOUCH
 fsanitize
 fsmgmt
-fxf
 fuzzingtesting
+fxf
 FZE
 gacutil
 Gaeilge
@@ -738,6 +742,7 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Interlop
+intput
 INTRESOURCE
 INVALIDARG
 invalidoperatioexception
@@ -820,6 +825,7 @@ LMEM
 LMENU
 LOADFROMFILE
 LOBYTE
+localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
@@ -1122,6 +1128,7 @@ oldtheme
 oleaut
 OLECHAR
 onebranch
+OOBEUI
 openas
 opencode
 OPENFILENAME
@@ -1387,8 +1394,8 @@ RIDEV
 RIGHTSCROLLBAR
 riid
 RKey
-RNumber
 Rns
+RNumber
 rop
 ROUNDSMALL
 ROWSETEXT
@@ -1399,6 +1406,7 @@ Rsp
 rstringalnum
 rstringalpha
 rstringdigit
+rtb
 RTB
 RTLREADING
 rtm
@@ -1533,6 +1541,7 @@ SLGP
 sln
 SMALLICON
 smartphone
+smileys
 SMTO
 SNAPPROCESS
 snk
@@ -1619,6 +1628,8 @@ svgz
 SVSI
 SWFO
 SWP
+SWPNOSIZE
+SWPNOZORDER
 SWRESTORE
 symbolrequestprod
 SYMCACHE
@@ -1758,8 +1769,8 @@ Uptool
 urld
 Usb
 USEDEFAULT
-USEINSTALLERFORTEST
 USEFILEATTRIBUTES
+USEINSTALLERFORTEST
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL

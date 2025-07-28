@@ -98,10 +98,13 @@ public partial class App : Application
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
+        var files = new IndexerCommandsProvider();
+        files.SuppressFallbackWhen(ShellCommandsProvider.SuppressFileFallbackIf);
         services.AddSingleton<ICommandProvider>(allApps);
+
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
-        services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
+        services.AddSingleton<ICommandProvider>(files);
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
 
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
@@ -144,6 +147,7 @@ public partial class App : Application
         services.AddSingleton(state);
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<TrayIconService>();
+        services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();

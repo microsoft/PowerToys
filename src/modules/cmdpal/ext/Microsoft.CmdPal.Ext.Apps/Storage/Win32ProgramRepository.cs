@@ -267,8 +267,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
 
     public void IndexPrograms()
     {
-        var applications = Programs.Win32Program.All(_settings);
-
+        var applications = Win32Program.All(_settings);
         SetList(applications);
     }
 }

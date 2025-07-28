@@ -7,6 +7,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>KeyboardManagerEditorTest</RootNamespace>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
+    <ProjectName>KeyboardManager.Editor.UnitTests</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
