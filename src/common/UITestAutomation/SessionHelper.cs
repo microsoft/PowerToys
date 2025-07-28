@@ -216,6 +216,7 @@ namespace Microsoft.PowerToys.UITest
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     CreateNoWindow = true,
+                    Verb = "runas",
                 };
 
                 using var process = Process.Start(processStartInfo);
