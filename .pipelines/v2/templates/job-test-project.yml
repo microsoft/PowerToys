@@ -49,6 +49,10 @@ jobs:
         name: SHINE-INT-Testing-x64
         ${{ if eq(parameters.platform, 'x64Win11') }}:
           demands: ImageOverride -equals SHINE-W11-Testing
+        ${{ elseif eq(parameters.platform, 'x64Win10') }}:
+          demands:
+            - ImageOverride -equals SHINE-W10-Testing
+            - Agent.OSVersion -like 10.0.19*  # Windows 10 build numbers
       ${{ else }}:
         name: SHINE-INT-Testing-arm64
     ${{ else }}:
@@ -56,6 +60,10 @@ jobs:
         name: SHINE-OSS-Testing-x64
         ${{ if eq(parameters.platform, 'x64Win11') }}:
           demands: ImageOverride -equals SHINE-W11-Testing
+        ${{ elseif eq(parameters.platform, 'x64Win10') }}:
+          demands:
+            - ImageOverride -equals SHINE-W10-Testing
+            - Agent.OSVersion -like 10.0.19*  # Windows 10 build numbers
       ${{ else }}:
         name: SHINE-OSS-Testing-arm64
   steps:
