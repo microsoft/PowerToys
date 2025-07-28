@@ -154,11 +154,11 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         else if (pathIsDir)
         {
             var pathItem = new PathListItem(exe, query, _addToHistory);
+            Command = pathItem.Command;
+            MoreCommands = pathItem.MoreCommands;
             Title = pathItem.Title;
             Subtitle = pathItem.Subtitle;
             Icon = pathItem.Icon;
-            Command = pathItem.Command;
-            MoreCommands = pathItem.MoreCommands;
         }
         else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
         {

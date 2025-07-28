@@ -20,15 +20,27 @@ internal sealed partial class PathListItem : ListItem
         : base(new OpenUrlWithHistoryCommand(path, addToHistory))
     {
         var fileName = Path.GetFileName(path);
+        if (string.IsNullOrEmpty(fileName))
+        {
+            fileName = Path.GetFileName(Path.GetDirectoryName(path)) ?? string.Empty;
+        }
+
         _isDirectory = Directory.Exists(path);
         if (_isDirectory)
         {
-            path = path + "\\";
-            fileName = fileName + "\\";
+            if (!path.EndsWith('\\'))
+            {
+                path = path + "\\";
+            }
+
+            if (!fileName.EndsWith('\\'))
+            {
+                fileName = fileName + "\\";
+            }
         }
 
-        Title = fileName;
-        Subtitle = path;
+        Title = fileName; // Just the name of the file is the Title
+        Subtitle = path; // What the user typed is the subtitle
 
         // NOTE ME:
         // If there are spaces on originalDir, trim them off, BEFORE combining originalDir and fileName.
