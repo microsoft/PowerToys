@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static class ResultHelper
 {
-    public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, TypedEventHandler<object, object> handleSave)
+    public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, SettingsManager settings, TypedEventHandler<object, object> handleSave)
     {
         // Return null when the expression is not a valid calculator query.
         if (roundedResult == null)
@@ -32,19 +32,14 @@ public static class ResultHelper
 
         // No TextToSuggest on the main save command item. We don't want to keep suggesting what the result is,
         // as the user is typing it.
-        return new ListItem(saveCommand)
+        return new ListItem(settings.CloseOnEnter ? copyCommandItem.Command : saveCommand)
         {
             // Using CurrentCulture since this is user facing
             Icon = Icons.ResultIcon,
             Title = result,
             Subtitle = query,
             MoreCommands = [
-                new CommandContextItem(copyCommandItem.Command)
-                {
-                    Icon = copyCommandItem.Icon,
-                    Title = copyCommandItem.Title,
-                    Subtitle = copyCommandItem.Subtitle,
-                },
+                new CommandContextItem(settings.CloseOnEnter ? saveCommand : copyCommandItem.Command),
                 ..copyCommandItem.MoreCommands,
             ],
         };

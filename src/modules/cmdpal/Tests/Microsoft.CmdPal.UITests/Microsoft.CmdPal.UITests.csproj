@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
 
 	<PropertyGroup>
 		<RootNamespace>Microsoft.CmdPal.UITests</RootNamespace>
@@ -21,6 +21,6 @@
 		<PackageReference Include="System.Net.Http" />
 		<PackageReference Include="System.Private.Uri" />
 		<PackageReference Include="System.Text.RegularExpressions" />
-		<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+		<ProjectReference Include="..\..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
 	</ItemGroup>
 </Project>

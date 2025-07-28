@@ -187,6 +187,24 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Close on Enter.
+        /// </summary>
+        public static string calculator_settings_close_on_enter {
+            get {
+                return ResourceManager.GetString("calculator_settings_close_on_enter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Makes Copy and close the primary command.
+        /// </summary>
+        public static string calculator_settings_close_on_enter_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_close_on_enter_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use English (United States) number format for input.
         /// </summary>
         public static string calculator_settings_in_en_format {
