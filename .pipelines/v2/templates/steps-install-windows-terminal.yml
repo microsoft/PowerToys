@@ -1,0 +1,62 @@
+parameters:
+  - name: platform
+    type: string
+    default: ""
+
+steps:
+- ${{ if eq(parameters.platform, 'x64Win11') }}:
+  - pwsh: |-
+      try {
+        # Check if already installed
+        if (Get-Command "wt.exe" -ErrorAction SilentlyContinue) {
+          Write-Host "Windows Terminal already installed"
+          return
+        }
+        
+        Write-Host "Installing Windows Terminal via winget..."
+        winget install --id Microsoft.WindowsTerminal --accept-package-agreements --accept-source-agreements
+        Write-Host "Windows Terminal installed via winget"
+      } catch {
+        Write-Warning "Terminal installation via winget failed: $_"
+        Write-Host "Continuing without Terminal..."
+      }
+    displayName: Install Windows Terminal (Win11 - winget)
+
+- ${{ if eq(parameters.platform, 'x64Win10') }}:
+  - pwsh: |-
+      try {
+        # Check if already installed
+        if (Get-Command "wt.exe" -ErrorAction SilentlyContinue) {
+          Write-Host "Windows Terminal already installed"
+          return
+        }
+        
+        # Download and install MSIX directly from GitHub releases
+        Write-Host "Installing Windows Terminal via direct download..."
+        $url = "https://api.github.com/repos/microsoft/terminal/releases/latest"
+        $release = Invoke-RestMethod -Uri $url
+        $msixUrl = ($release.assets | Where-Object { $_.name -like "*msixbundle" }).browser_download_url
+        
+        if ($msixUrl) {
+          $msixFile = "$env:TEMP\WindowsTerminal.msixbundle"
+          Invoke-WebRequest -Uri $msixUrl -OutFile $msixFile
+          Add-AppxPackage -Path $msixFile
+          Remove-Item $msixFile -Force -ErrorAction SilentlyContinue
+          Write-Host "Windows Terminal installed via direct download"
+        } else {
+          Write-Warning "Could not find Terminal MSIX bundle"
+        }
+      } catch {
+        Write-Warning "Terminal installation failed: $_"
+        Write-Host "Continuing without Terminal..."
+      }
+    displayName: Install Windows Terminal (Win10/Others - Direct Download)
+
+- pwsh: |-
+    Write-Host "Checking for Windows Terminal..."
+    if (Get-Command "wt.exe" -ErrorAction SilentlyContinue) {
+      Write-Host "Windows Terminal found and available"
+    } else {
+      Write-Host "##[warning]Windows Terminal not found, but continuing..."
+    }
+  displayName: Check Windows Terminal
