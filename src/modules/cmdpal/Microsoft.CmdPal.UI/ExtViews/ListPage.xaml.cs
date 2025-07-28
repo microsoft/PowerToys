@@ -144,6 +144,18 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedItem != null)
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
+
+            // Automation notification for screen readers
+            var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemsList);
+            if (listViewPeer != null && li != null)
+            {
+                var notificationText = li.Title;
+                listViewPeer.RaiseNotificationEvent(
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.Other,
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.MostRecent,
+                    notificationText,
+                    "CommandPaletteSelectedItemChanged");
+            }
         }
     }
 
