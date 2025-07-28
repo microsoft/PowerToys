@@ -16,7 +16,7 @@ public partial class ShowFileInFolderCommand : InvokableCommand
     public ShowFileInFolderCommand(string path)
     {
         _path = path;
-        Name = "Show in folder";
+        Name = Properties.Resources.ShowFileInFolderCommand_ShowInFolder;
         Icon = Ico;
     }
 

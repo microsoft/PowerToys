@@ -186,6 +186,8 @@
                             x:Load="False"
                             AutomationProperties.AccessibilityView="Raw"
                             CharacterSpacing="15"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontSize="{TemplateBinding FontSize}"
                             Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForeground}}"
                             Text="{TemplateBinding Description}"
                             TextWrapping="{TemplateBinding TextWrapping}" />
