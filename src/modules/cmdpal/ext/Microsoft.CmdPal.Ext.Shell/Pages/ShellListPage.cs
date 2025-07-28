@@ -26,7 +26,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     private readonly IRunHistoryService _historyService;
 
-    private RunExeItem? _exeItem;
+    private ListItem? _exeItem;
     private List<ListItem> _pathItems = [];
     private ListItem? _uriItem;
 
@@ -319,20 +319,19 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             .ToArray();
     }
 
-    internal static RunExeItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
+    internal static ListItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
     {
         // PathToListItem will return a RunExeItem if it can find a executable.
         // It will ALSO add the file search commands to the RunExeItem.
-        return PathToListItem(fullExePath, exe, args, addToHistory) as RunExeItem ??
-               new RunExeItem(exe, args, fullExePath, addToHistory);
+        return PathToListItem(fullExePath, exe, args, addToHistory);
     }
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
     {
         // If we already have an exe item, and the exe is the same, we can just update it
-        if (_exeItem != null && _exeItem.FullExePath.Equals(fullExePath, StringComparison.OrdinalIgnoreCase))
+        if (_exeItem is RunExeItem exeItem && exeItem.FullExePath.Equals(fullExePath, StringComparison.OrdinalIgnoreCase))
         {
-            _exeItem.UpdateArgs(args);
+            exeItem.UpdateArgs(args);
         }
         else
         {
@@ -345,7 +344,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // Is this path an executable?
         // check all the extensions in PATHEXT
         var extensions = Environment.GetEnvironmentVariable("PATHEXT")?.Split(';') ?? Array.Empty<string>();
-        return extensions.Any(ext => string.Equals(Path.GetExtension(path), ext, StringComparison.OrdinalIgnoreCase));
+        var extension = Path.GetExtension(path);
+        return string.IsNullOrEmpty(extension) || extensions.Any(ext => string.Equals(extension, ext, StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task CreatePathItemsAsync(string searchPath, string originalPath, CancellationToken cancellationToken)
