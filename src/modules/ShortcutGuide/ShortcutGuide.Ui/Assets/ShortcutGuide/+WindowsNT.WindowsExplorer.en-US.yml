@@ -1,3 +1,266 @@
 PackageName: +WindowsNT.WindowsExplorer
 WindowFilter: "explorer.exe"
+Name: Windows Explorer
 Shortcuts:
+  - SectionName: General
+    Properties:
+      - Name: Open File Explorer
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "E"
+        Recommended: true
+      - Name: Select the address bar
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "D"
+      - Name: Select the address bar
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "L"
+      - Name: Select the address bar
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "F4"
+      - Name: Select the search box
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "E"
+      - Name: Select the search box
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "F3"
+      - Name: Select the search box
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "F"
+      - Name: Refresh the window
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "F5"
+      - Name: Cycle through elements in the active window
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "F6"
+      - Name: Maximize or restore the active window
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "F11"
+  - SectionName: Navigation
+    Properties:
+      - Name: Navigate to the previous folder
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Left>"
+      - Name: Navigate to the previous folder
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Backspace>"
+      - Name: Navigate to the next folder
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Right>"
+      - Name: Move up a level in the folder path
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Up>"
+  - SectionName: "Window management"
+    Properties:
+      - Name: Open a new window
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "N"
+      - Name: Open a new tab
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "T"
+        Recommended: true
+      - Name: Close the current active tab
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "W"
+      - Name: Move to the next tab
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "Tab"
+      - Name: Move to the previous tab
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - "Tab"
+      - Name: Move to that tab number
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "Number (1-9)"
+      - Name: Show/Hide the preview pane
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "P"
+      - Name: Show/Hide the details pane
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: true
+            Keys:
+              - "P"
+      - Name: Resize all columns to fit text
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "+"
+      - Name: Expand all folders
+        Description: In the navigation pane
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - "E"
+  - SectionName: "File management"
+    Properties:
+      - Name: Display properties for the selected item
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "Enter"
+      - Name: Delete the selected item
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Delete>"
+      - Name: Delete the selected item
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "D"
+      - Name: Delete the selected item permanently
+        Description: "This removes the item without sending it to the Recycle Bin"
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "D"
+      - Name: Create a new folder
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - "N"
+        Recommended: true
+      - Name: Rename the selected item
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "F2"
+      - Name: Select multiple items
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Arrow>"
+      

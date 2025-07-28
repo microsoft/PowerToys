@@ -12,21 +12,6 @@ Shortcuts:
           Alt: true
           Keys:
             - F4
-      - Name: Test shortcut
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - K
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - C
-
       - Name: Open shutdown box
         Description: When no windows are open
         Shortcut:
@@ -203,7 +188,6 @@ Shortcuts:
             Alt: false
             Keys:
               - F4
-        Recommended: true
       - Name: Switch desktop
         Shortcut:
           - Win: true
@@ -212,6 +196,7 @@ Shortcuts:
             Alt: false
             Keys:
               - "<ArrowLR>"
+        Recommended: true
   - SectionName: "Windows key"
     Properties:
       - Name: Open start menu
@@ -222,7 +207,6 @@ Shortcuts:
             Alt: false
             Keys:
               - ""
-        Recommended: true
       - Name: Open Action Center
         Shortcut:
           - Win: true
@@ -314,6 +298,7 @@ Shortcuts:
             Alt: false
             Keys:
               - "Down"
+        Recommended: true
       - Name: Open file Explorer
         Shortcut:
           - Win: true
@@ -338,6 +323,7 @@ Shortcuts:
             Alt: false
             Keys:
               - "F"
+        Recommended: true
       - Name: Start IME reconversion
         Shortcut:
           - Win: true

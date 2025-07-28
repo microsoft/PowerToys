@@ -25,13 +25,24 @@ namespace ShortcutGuide
     {
         private readonly DispatcherTimer _taskbarUpdateTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
         private readonly bool _showTaskbarShortcuts;
-        public static readonly CancellationTokenSource AnimationCancellationTokenSource = new();
+        private static CancellationTokenSource _animationCancellationTokenSource = new();
+
+        public static CancellationTokenSource AnimationCancellationTokenSource
+        {
+            get => _animationCancellationTokenSource;
+            set
+            {
+                _animationCancellationTokenSource?.Cancel();
+                _animationCancellationTokenSource = value;
+            }
+        }
+
         private readonly ShortcutFile _shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
 
         public ShortcutView()
         {
             InitializeComponent();
-            AnimationCancellationTokenSource.TryReset();
+            ShortcutView.AnimationCancellationTokenSource = new();
             DataContext = this;
 
             int i = -1;
@@ -97,7 +108,7 @@ namespace ShortcutGuide
 
             Unloaded += (_, _) =>
             {
-                AnimationCancellationTokenSource.Cancel();
+                AnimationCancellationTokenSource = new();
                 _taskbarUpdateTimer.Tick -= UpdateTaskbarIndicators;
                 _taskbarUpdateTimer.Stop();
             };
