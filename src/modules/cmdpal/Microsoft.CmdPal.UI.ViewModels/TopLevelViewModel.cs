@@ -59,7 +59,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     IContextItem?[] ICommandItem.MoreCommands => _commandItemViewModel.MoreCommands
                                                     .Select(item =>
                                                     {
-                                                        if (item is SeparatorContextItem sep)
+                                                        if (item is ISeparatorContextItem)
                                                         {
                                                             return item as IContextItem;
                                                         }
