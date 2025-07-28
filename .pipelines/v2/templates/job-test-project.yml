@@ -144,12 +144,15 @@ jobs:
           & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine"
         displayName: Install PowerToys (Machine-Level)
 
-  - task: winget-install@0
+  - pwsh: |-
+      try {
+        Write-Host "Installing Windows Terminal via winget..."
+        winget install --id Microsoft.WindowsTerminal --accept-package-agreements --accept-source-agreements --silent
+        Write-Host "Windows Terminal installed successfully"
+      } catch {
+        Write-Host "##[warning]Failed to install Windows Terminal: $($_.Exception.Message)"
+      }
     displayName: Install Windows Terminal
-    inputs:
-      packageId: 'Microsoft.WindowsTerminal'
-      acceptPackageAgreements: true
-      acceptSourceAgreements: true
 
   - ${{ if ne(parameters.platform, 'arm64') }}:
     - task: ScreenResolutionUtility@1
