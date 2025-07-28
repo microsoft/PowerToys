@@ -342,7 +342,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                     var newContextMenu = more
                         .Select(item =>
                         {
-                            if (item is CommandContextItem contextItem)
+                            if (item is ICommandContextItem contextItem)
                             {
                                 return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
                             }

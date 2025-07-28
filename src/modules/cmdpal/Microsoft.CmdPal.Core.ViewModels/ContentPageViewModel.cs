@@ -113,7 +113,7 @@ public abstract partial class ContentPageViewModel : PageViewModel, ICommandBarC
                 .ToList()
                 .Select<IContextItem, IContextItemViewModel>(item =>
                 {
-                    if (item is CommandContextItem contextItem)
+                    if (item is ICommandContextItem contextItem)
                     {
                         return new CommandContextItemViewModel(contextItem, PageContext);
                     }
@@ -172,7 +172,7 @@ public abstract partial class ContentPageViewModel : PageViewModel, ICommandBarC
                             .ToList()
                             .Select(item =>
                             {
-                                if (item is CommandContextItem contextItem)
+                                if (item is ICommandContextItem contextItem)
                                 {
                                     return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
                                 }
