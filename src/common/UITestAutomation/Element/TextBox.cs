@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.UITest
                         }
                         else if (EnvironmentConfig.IsInPipeline)
                         {
-                            Task.Delay(500).Wait();
+                            Task.Delay(50).Wait();
                         }
                     }
                 });
