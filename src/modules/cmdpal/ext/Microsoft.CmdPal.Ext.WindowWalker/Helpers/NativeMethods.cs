@@ -98,15 +98,6 @@ public static partial class NativeMethods
     [DllImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GetFirmwareType(ref FirmwareType FirmwareType);
-
-    [LibraryImport("ole32.dll")]
-    [return: MarshalAs(UnmanagedType.U4)]
-    public static partial uint CoCreateInstance(
-        ref Guid rclsid,
-        IntPtr pUnkOuter,
-        uint dwClsContext,
-        ref Guid riid,
-        out IntPtr rReturnedComObject);
 }
 
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "These are the names used by win32.")]
@@ -1002,7 +993,7 @@ public enum ExtendedWindowStyles : uint
 
     /// <summary>
     /// The window has generic "right-aligned" properties. This depends on the window class. This style has
-    /// an effect only if the shell language supports reading-order alignment, otherwise is ignored.
+    /// an effect only if the shell language supports reading-order alignment; otherwise, is ignored.
     /// </summary>
     WS_EX_RIGHT = 0x1000,
 

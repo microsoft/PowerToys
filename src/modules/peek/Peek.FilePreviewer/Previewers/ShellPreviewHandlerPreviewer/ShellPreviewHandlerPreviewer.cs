@@ -90,15 +90,13 @@ namespace Peek.FilePreviewer.Previewers
                         unsafe
                         {
                             // This runs the preview handler in a separate process (prevhost.exe)
-                            // TODO: Figure out how to get it to run in a low integrity level
                             if (!HandlerFactories.TryGetValue(clsid, out var factory))
                             {
-                                var hr = PInvoke_FilePreviewer.CoGetClassObject(clsid, CLSCTX.CLSCTX_LOCAL_SERVER, null, typeof(IClassFactory).GUID, out var pFactory);
+                                var hr = PInvoke_FilePreviewer.CoGetClassObject(clsid, CLSCTX.CLSCTX_LOCAL_SERVER, null, typeof(IClassFactory).GUID, out object pFactory);
                                 Marshal.ThrowExceptionForHR(hr);
 
                                 // Storing the factory in memory helps makes the handlers load faster
-                                // TODO: Maybe free them after some inactivity or when Peek quits?
-                                factory = (IClassFactory)Marshal.GetObjectForIUnknown((IntPtr)pFactory);
+                                factory = (IClassFactory)pFactory;
                                 factory.LockServer(true);
                                 HandlerFactories.AddOrUpdate(clsid, factory, (_, _) => factory);
                             }
@@ -211,6 +209,20 @@ namespace Peek.FilePreviewer.Previewers
         public static bool IsItemSupported(IFileSystemItem item)
         {
             return !string.IsNullOrEmpty(GetPreviewHandlerGuid(item.Extension));
+        }
+
+        public static void ReleaseHandlerFactories()
+        {
+            foreach (var factory in HandlerFactories.Values)
+            {
+                try
+                {
+                    Marshal.FinalReleaseComObject(factory);
+                }
+                catch
+                {
+                }
+            }
         }
 
         private static string? GetPreviewHandlerGuid(string fileExt)

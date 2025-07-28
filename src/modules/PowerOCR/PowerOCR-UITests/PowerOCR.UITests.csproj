@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <PropertyGroup>
+    <RootNamespace>PowerOCR.UITests</RootNamespace>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+	<OutputType>Library</OutputType>
+	<RunVSTest>false</RunVSTest>
+  </PropertyGroup>
+
+  <PropertyGroup>
+	<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\PowerOCR.UITests\</OutputPath>
+  </PropertyGroup>
+	
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+	<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+  </ItemGroup>
+</Project>

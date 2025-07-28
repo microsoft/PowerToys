@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public sealed partial class OpenUrlCommand : InvokableCommand
+public partial class OpenUrlCommand : InvokableCommand
 {
     private readonly string _target;
 
@@ -13,7 +13,7 @@ public sealed partial class OpenUrlCommand : InvokableCommand
     public OpenUrlCommand(string target)
     {
         _target = target;
-        Name = "Open";
+        Name = Properties.Resources.OpenUrlCommand_Open;
         Icon = new IconInfo("\uE8A7");
     }
 

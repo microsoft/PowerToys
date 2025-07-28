@@ -143,7 +143,7 @@
   </data>
   <data name="Prevpane_Monaco_Settings_Description" xml:space="preserve">
     <value>Developer files Previewer</value>
-  </data>  
+  </data>
   <data name="Prevpane_Md_Settings_Displayname" xml:space="preserve">
     <value>Markdown Previewer</value>
   </data>
@@ -197,5 +197,14 @@
   </data>
   <data name="Qoi_Thumbnail_Provider_Settings_Description" xml:space="preserve">
     <value>Qoi Thumbnail Provider</value>
+  </data>
+  <data name="Prevpane_Bgcode_Settings_Displayname" xml:space="preserve">
+    <value>Binary G-code Previewer</value>
+  </data>
+  <data name="Prevpane_Bgcode_Settings_Description" xml:space="preserve">
+    <value>Binary G-code Previewer</value>
+  </data>
+  <data name="Bgcode_Thumbnail_Provider_Settings_Description" xml:space="preserve">
+    <value>Binary G-code Thumbnail Provider</value>
   </data>
 </root>

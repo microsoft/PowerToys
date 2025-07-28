@@ -7,8 +7,9 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
+using ManagedCommon;
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
-using Microsoft.CmdPal.Ext.Indexer.Native;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 
@@ -29,32 +30,22 @@ internal sealed partial class QueryStringBuilder
     {
         if (queryHelper == null)
         {
-            ComWrappers cw = new StrategyBasedComWrappers();
-            var searchManagerPtr = IntPtr.Zero;
+            ISearchManager searchManager;
 
-            var hr = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.CLSIDSearchManager), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.IIDISearchManager), out searchManagerPtr);
-            if (hr != 0)
+            try
             {
-                throw new ArgumentException($"Failed to create SearchManager instance. HR: 0x{hr:X}");
+                searchManager = ComHelper.CreateComInstance<ISearchManager>(ref Unsafe.AsRef(in CLSID.SearchManager), CLSCTX.LocalServer);
             }
-
-            var searchManager = (ISearchManager)cw.GetOrCreateObjectForComInstance(
-                searchManagerPtr, CreateObjectFlags.None);
-
-            if (searchManager == null)
+            catch (Exception ex)
             {
-                throw new ArgumentException("Failed to get ISearchManager interface");
+                Logger.LogError($"Failed to create searchManager. ex: {ex.Message}");
+                throw;
             }
 
             ISearchCatalogManager catalogManager = searchManager.GetCatalog(SystemIndex);
             if (catalogManager == null)
             {
                 throw new ArgumentException($"Failed to get catalog manager for {SystemIndex}");
-            }
-
-            if (searchManagerPtr != IntPtr.Zero)
-            {
-                Marshal.Release(searchManagerPtr);
             }
 
             queryHelper = catalogManager.GetQueryHelper();
