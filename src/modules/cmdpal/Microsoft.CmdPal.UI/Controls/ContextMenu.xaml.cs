@@ -84,7 +84,7 @@ public sealed partial class ContextMenu : UserControl,
         }
     }
 
-    private void CommandsDropdown_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void CommandsDropdown_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Handled)
         {
@@ -174,8 +174,6 @@ public sealed partial class ContextMenu : UserControl,
 
             e.Handled = true;
         }
-
-        CommandsDropdown_KeyDown(sender, e);
     }
 
     private void ContextFilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -192,6 +190,8 @@ public sealed partial class ContextMenu : UserControl,
 
             e.Handled = true;
         }
+
+        CommandsDropdown_PreviewKeyDown(sender, e);
     }
 
     private void NavigateUp()
