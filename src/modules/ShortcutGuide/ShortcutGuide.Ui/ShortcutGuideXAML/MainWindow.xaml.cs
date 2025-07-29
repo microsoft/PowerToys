@@ -62,9 +62,6 @@ namespace ShortcutGuide
             var windowStyle = GetWindowLongW(hwnd, GWL_STYLE);
             windowStyle &= ~WS_CAPTION;
             _ = SetWindowLongW(hwnd, GWL_STYLE, windowStyle);
-#if !DEBUG
-            SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-#endif
 
             Activated += Window_Activated;
 

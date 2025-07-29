@@ -58,7 +58,7 @@ This file contains one function with the following signature:
 __declspec(dllexport) bool IsCurrentWindowExcludedFromShortcutGuide()
 ```
 
-This function checks if the current window is excluded from the Shortcut Guide overlay. It returns `true` if the current window is excluded, otherwise it returns `false`.
+This function checks if the current window is excluded from the Shortcut Guide overlay. It returns `true` if the current window is excluded otherwise it returns `false`.
 
 #### [`tasklist_positions.cpp`](/src/modules/ShortcutGuide/ShortcutGuide.CPPProject/tasklist_positions.cpp)
 
