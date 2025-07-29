@@ -228,6 +228,6 @@
     <value>Disabled</value>
   </data>
   <data name="builtin_main_list_page_searchbar_placeholder" xml:space="preserve">
-    <value>Type here to search commands...</value>
+    <value>Search for apps, files and commands...</value>
   </data>
 </root>

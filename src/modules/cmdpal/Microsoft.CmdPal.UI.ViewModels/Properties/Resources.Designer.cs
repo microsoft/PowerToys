@@ -322,7 +322,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Type here to search commands....
+        ///   Looks up a localized string similar to Search for apps, files and commands....
         /// </summary>
         public static string builtin_main_list_page_searchbar_placeholder {
             get {
