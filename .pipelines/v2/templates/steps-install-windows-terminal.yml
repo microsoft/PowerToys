@@ -4,32 +4,7 @@ parameters:
     default: ""
 
 steps:
-- ${{ if eq(parameters.platform, 'x64Win11') }}:
-  - pwsh: |-
-      try {
-        # Check if already installed
-        if (Get-Command "wt.exe" -ErrorAction SilentlyContinue) {
-          Write-Host "Windows Terminal already installed"
-          exit 0
-        }
-        
-        Write-Host "Installing Windows Terminal via winget..."
-        $process = Start-Process -FilePath "winget" -ArgumentList "install", "--id", "Microsoft.WindowsTerminal", "--accept-package-agreements", "--accept-source-agreements", "--silent" -Wait -PassThru -NoNewWindow
-        
-        if ($process.ExitCode -eq 0) {
-          Write-Host "Windows Terminal installation completed successfully"
-        } else {
-          Write-Warning "Winget returned exit code $($process.ExitCode), but continuing..."
-        }
-      } catch {
-        Write-Warning "Terminal installation via winget failed: $_"
-        Write-Host "Continuing without Terminal..."
-      }
-      # Always exit with 0 to continue pipeline
-      exit 0
-    displayName: Install Windows Terminal (Win11 - winget)
-
-- ${{ if eq(parameters.platform, 'x64Win10') }}:
+- ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
   - powershell: |-
       try {
         # Check if already installed
@@ -57,7 +32,7 @@ steps:
         Write-Warning "Terminal installation failed: $_"
         Write-Host "Continuing without Terminal..."
       }
-    displayName: Install Windows Terminal (Win10 - Direct Download)
+    displayName: Install Windows Terminal (Direct Download)
 
 - pwsh: |-
     Write-Host "Checking for Windows Terminal..."
