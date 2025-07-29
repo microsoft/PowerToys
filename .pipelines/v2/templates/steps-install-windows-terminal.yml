@@ -23,7 +23,7 @@ steps:
     displayName: Install Windows Terminal (Win11 - winget)
 
 - ${{ if eq(parameters.platform, 'x64Win10') }}:
-  - pwsh: |-
+  - powershell: |-
       try {
         # Check if already installed
         if (Get-Command "wt.exe" -ErrorAction SilentlyContinue) {
@@ -31,8 +31,8 @@ steps:
           return
         }
         
-        # Download and install MSIX directly from GitHub releases
-        Write-Host "Installing Windows Terminal via direct download..."
+        # Download and install Windows Terminal from GitHub
+        Write-Host "Installing Windows Terminal from GitHub releases..."
         $url = "https://api.github.com/repos/microsoft/terminal/releases/latest"
         $release = Invoke-RestMethod -Uri $url
         $msixUrl = ($release.assets | Where-Object { $_.name -like "*msixbundle" }).browser_download_url
@@ -42,7 +42,7 @@ steps:
           Invoke-WebRequest -Uri $msixUrl -OutFile $msixFile
           Add-AppxPackage -Path $msixFile
           Remove-Item $msixFile -Force -ErrorAction SilentlyContinue
-          Write-Host "Windows Terminal installed via direct download"
+          Write-Host "Windows Terminal installed successfully"
         } else {
           Write-Warning "Could not find Terminal MSIX bundle"
         }
