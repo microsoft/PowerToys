@@ -164,6 +164,11 @@ public partial class MainListPage : DynamicListPage,
                 if (_includeApps)
                 {
                     IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
+                    var appIds = apps.Select(app => app.Command.Id).ToArray();
+
+                    // Remove any top level pinned apps and use the apps from AllAppsCommandProvider.Page.GetItems()
+                    // since they contain details.
+                    _filteredItems = _filteredItems.Where(item => item.Command is not AppCommand);
                     _filteredItems = _filteredItems.Concat(apps);
                 }
             }
@@ -263,7 +268,7 @@ public partial class MainListPage : DynamicListPage,
         {
              nameMatch,
              descriptionMatch,
-             isFallback ? 1 : 0, // Always give fallbacks a chance...
+             isFallback ? 1 : 0, // Always give fallbacks a chance
         };
         var max = scores.Max();
 
@@ -273,8 +278,7 @@ public partial class MainListPage : DynamicListPage,
         // above "git" from "whatever"
         max = max + extensionTitleMatch;
 
-        // ... but downweight them
-        var matchSomething = (max / (isFallback ? 3 : 1))
+        var matchSomething = max
             + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
 
         // If we matched title, subtitle, or alias (something real), then

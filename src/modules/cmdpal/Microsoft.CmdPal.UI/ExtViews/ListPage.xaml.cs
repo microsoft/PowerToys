@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -144,6 +145,18 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedItem != null)
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
+
+            // Automation notification for screen readers
+            var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemsList);
+            if (listViewPeer != null && li != null)
+            {
+                var notificationText = li.Title;
+                listViewPeer.RaiseNotificationEvent(
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.Other,
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.MostRecent,
+                    notificationText,
+                    "CommandPaletteSelectedItemChanged");
+            }
         }
     }
 
@@ -262,6 +275,13 @@ public sealed partial class ListPage : Page,
         // the selection from null -> something. Better to just update the
         // selection once, at the end of all the updating.
         if (ItemsList.SelectedItem == null)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
+
+        // Always reset the selected item when the top-level list page changes
+        // its items
+        if (!sender.IsNested)
         {
             ItemsList.SelectedIndex = 0;
         }

@@ -39,6 +39,12 @@ public class SettingsManager : JsonSettingsManager
         Properties.Resources.calculator_settings_out_en_format_description,
         false);
 
+    private readonly ToggleSetting _closeOnEnter = new(
+        Namespaced(nameof(CloseOnEnter)),
+        Properties.Resources.calculator_settings_close_on_enter,
+        Properties.Resources.calculator_settings_close_on_enter_description,
+        true);
+
     public CalculateEngine.TrigMode TrigUnit
     {
         get
@@ -73,6 +79,8 @@ public class SettingsManager : JsonSettingsManager
 
     public bool OutputUseEnglishFormat => _outputUseEnNumberFormat.Value;
 
+    public bool CloseOnEnter => _closeOnEnter.Value;
+
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -89,6 +97,7 @@ public class SettingsManager : JsonSettingsManager
         Settings.Add(_trigUnit);
         Settings.Add(_inputUseEnNumberFormat);
         Settings.Add(_outputUseEnNumberFormat);
+        Settings.Add(_closeOnEnter);
 
         // Load settings from file upon initialization
         LoadSettings();
