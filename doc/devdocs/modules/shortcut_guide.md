@@ -9,12 +9,14 @@
 [Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Shortcut+Guide%22+)
 
 ## Overview
-Shortcut Guide is a PowerToy that displays an overlay of available keyboard shortcuts when the Windows key is pressed and held. It provides a visual reference for Windows key combinations, helping users discover and utilize built-in Windows shortcuts.
+Shortcut Guide is a PowerToy that displays an overlay of available keyboard shortcuts when a user-set keyboard shortcut is pressed. It helps users discover and remember keyboard shortcuts for Windows and apps.
+
+> [!NOTE]
+> The spec for the manifest files is in development and will be linked here once available.
 
 ## Usage
-- Press and hold the Windows key to display the overlay of available shortcuts
-- Press the hotkey again to dismiss the overlay
-- The overlay displays Windows shortcuts with their corresponding actions
+- Press the user-defined hotkey to display the overlay
+- Press the hotkey again or press ESC to dismiss the overlay
 
 ## Build and Debug Instructions
 
@@ -25,67 +27,83 @@ Shortcut Guide is a PowerToy that displays an overlay of available keyboard shor
 4. The executable is named PowerToys.ShortcutGuide.exe
 
 ### Debug
-1. Right-click the ShortcutGuide project and select 'Set as Startup Project'
+1. Right-click the ShortcutGuide.Ui project and select 'Set as Startup Project'
 2. Right-click the project again and select 'Debug'
 
-## Code Structure
+> [!NOTE]
+> When run in debug mode, the window behaves differently than in release mode. It will not automatically close when loosing focus, it will be displayed on top of all other windows, and it is not hidden from the taskbar. 
 
-![Diagram](../images/shortcutguide/diagram.png)
+## Project Structure
 
-### Core Files
+The Shortcut Guide module consists of the following 4 projects:
 
-#### [`dllmain.cpp`](/src/modules/shortcut_guide/dllmain.cpp)
-Contains DLL boilerplate code. Implements the PowertoyModuleIface, including enable/disable functionality and GPO policy handling. Captures hotkey events and starts the PowerToys.ShortcutGuide.exe process to display the shortcut guide window.
+### [`ShortcutGuide.Ui`](/src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuide.Ui.csproj
 
-#### [`shortcut_guide.cpp`](/src/modules/shortcut_guide/shortcut_guide.cpp)
-Contains the module interface code. It initializes the settings values and the keyboard event listener. Defines the OverlayWindow class, which manages the overall logic and event handling for the PowerToys Shortcut Guide.
+This is the main UI project for the Shortcut Guide module. Upon startup it does the following tasks:
 
-#### [`overlay_window.cpp`](/src/modules/shortcut_guide/overlay_window.cpp)
-Contains the code for loading the SVGs, creating and rendering of the overlay window. Manages and displays overlay windows with SVG graphics through two main classes:
-- D2DOverlaySVG: Handles loading, resizing, and manipulation of SVG graphics
-- D2DOverlayWindow: Manages the display and behavior of the overlay window
+1. Copies the built-in manifest files to the users manifest directory (overwriting existing files).
+2. Generate the `index.yml` manifest file.
+3. Populate the PowerToys shortcut manifest with the user-defined shortcuts.
+4. Starts the UI.
 
-#### [`keyboard_state.cpp`](/src/modules/shortcut_guide/keyboard_state.cpp)
-Contains helper methods for checking the current state of the keyboard.
+### [`ShortcutGuide.CPPProject`](/src/modules/ShortcutGuide/ShortcutGuide.CPPProject/ShortcutGuide.CPPProject.vcxproj)
 
-#### [`target_state.cpp`](/src/modules/shortcut_guide/target_state.cpp)
-State machine that handles the keyboard events. It's responsible for deciding when to show the overlay, when to suppress the Start menu (if the overlay is displayed long enough), etc. Handles state transitions and synchronization to ensure the overlay is shown or hidden appropriately based on user interactions.
+This project exports certain functions to be used by the Shortcut Guide module, that were not able to be implemented in C#.
 
-#### [`trace.cpp`](/src/modules/shortcut_guide/trace.cpp)
-Contains code for telemetry.
+#### [`excluded_app.cpp`](/src/modules/ShortcutGuide/ShortcutGuide.CPPProject/excluded_app.cpp)
 
-### Supporting Files
+This file contains one function with the following signature:
 
-#### [`animation.cpp`](/src/modules/shortcut_guide/animation.cpp)
-Handles the timing and interpolation of animations. Calculates the current value of an animation based on elapsed time and a specified easing function.
+```cpp
+__declspec(dllexport) bool IsCurrentWindowExcludedFromShortcutGuide()
+```
 
-#### [`d2d_svg.cpp`](/src/modules/shortcut_guide/d2d_svg.cpp)
-Provides functionality for loading, resizing, recoloring, rendering, and manipulating SVG images using Direct2D.
+This function checks if the current window is excluded from the Shortcut Guide overlay. It returns `true` if the current window is excluded, otherwise it returns `false`.
 
-#### [`d2d_text.cpp`](/src/modules/shortcut_guide/d2d_text.cpp)
-Handles creation, resizing, alignment, and rendering of text using Direct2D and DirectWrite.
+#### [`tasklist_positions.cpp`](/src/modules/ShortcutGuide/ShortcutGuide.CPPProject/tasklist_positions.cpp)
 
-#### [`d2d_window.cpp`](/src/modules/shortcut_guide/d2d_window.cpp)
-Manages a window using Direct2D and Direct3D for rendering. Handles window creation, resizing, rendering, and destruction.
+This file contains helper functions to retrieve the positions of the taskbar buttons. It exports the following function:
 
-#### [`native_event_waiter.cpp`](/src/modules/shortcut_guide/native_event_waiter.cpp)
-Waits for a named event and executes a specified action when the event is triggered. Uses a separate thread to handle event waiting and action execution.
+```cpp
+__declspec(dllexport) TasklistButton* get_buttons(HMONITOR monitor, int* size)
+```
 
-#### [`tasklist_positions.cpp`](/src/modules/shortcut_guide/tasklist_positions.cpp)
-Handles retrieving and updating the positions and information of taskbar buttons in Windows.
+This function retrieves the positions of the taskbar buttons for a given monitor. It returns an array of `TasklistButton` structures (max 10), which contain the position and size of each button.
 
-#### [`main.cpp`](/src/modules/shortcut_guide/main.cpp)
-The entry point for the PowerToys Shortcut Guide application. Handles initialization, ensures single instance execution, manages parent process termination, creates and displays the overlay window, and runs the main event loop.
+`monitor` must be the monitor handle of the monitor containing the taskbar instance of which the buttons should be retrieved.
+
+`size` will contain the resulting array size.
+
+It determines the positions through Windows `FindWindowEx` function.
+For the primary taskbar it searches for:
+* A window called "Shell_TrayWnd"
+* that contains a window called "ReBarWindow32"
+* that contains a window called "MSTaskSwWClass"
+* that contains a window called "MSTaskListWClass"
+
+For any secondary taskbar it searches for:
+* A window called "Shell_SecondaryTrayWnd"
+* that contains a window called "WorkerW"
+* that contains a window called "MSTaskListWClass"
+
+It then enumerates all the button elements inside "MSTaskListWClass" while skipping such with a same name (which implies the user does not use combining taskbar buttons) 
+
+### [`ShortcutGuide.IndexYmlGenerator`](/src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/)
+
+This application generates the `index.yml` manifest file.
+
+It is a separate project so that its code can be easier ported to WinGet in the future.
+
+### [`ShortcutGuideModuleInterface`](/src/modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.vcxproj)
+
+The module interface that handles opening and closing the user interface.
 
 ## Features and Limitations
 
-- The overlay displays Windows shortcuts (Windows key combinations)
-- The module supports localization, but only for the Windows controls on the left side of the overlay
+- Currently the displayed shortcuts (Except the ones from PowerToys) are not localized.
 - It's currently rated as a P3 (lower priority) module
 
 ## Future Development
 
-A community-contributed version 2 is in development that will support:
-- Application-specific shortcuts based on the active application
-- Additional shortcuts beyond Windows key combinations
-- PowerToys shortcuts
+- Implementing with WinGet to get new shortcut manifest files
+- Adding localization support for the built-in manifest files
