@@ -33,9 +33,14 @@ internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
                 li.AllowFocusOnInteraction = false;
                 dataTemplate = Separator;
             }
+            else if (item is CommandContextItemViewModel commandItem)
+            {
+                dataTemplate = commandItem.IsCritical ? Critical : Default;
+            }
             else
             {
-                dataTemplate = ((CommandContextItemViewModel)item).IsCritical ? Critical : Default;
+                // Fallback for unknown types
+                dataTemplate = Default;
             }
         }
 

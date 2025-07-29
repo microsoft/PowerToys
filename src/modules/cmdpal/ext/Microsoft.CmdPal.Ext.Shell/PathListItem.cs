@@ -4,8 +4,10 @@
 
 using System;
 using System.IO;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Shell;
 
@@ -20,15 +22,27 @@ internal sealed partial class PathListItem : ListItem
         : base(new OpenUrlWithHistoryCommand(path, addToHistory))
     {
         var fileName = Path.GetFileName(path);
+        if (string.IsNullOrEmpty(fileName))
+        {
+            fileName = Path.GetFileName(Path.GetDirectoryName(path)) ?? string.Empty;
+        }
+
         _isDirectory = Directory.Exists(path);
         if (_isDirectory)
         {
-            path = path + "\\";
-            fileName = fileName + "\\";
+            if (!path.EndsWith('\\'))
+            {
+                path = path + "\\";
+            }
+
+            if (!fileName.EndsWith('\\'))
+            {
+                fileName = fileName + "\\";
+            }
         }
 
-        Title = fileName;
-        Subtitle = path;
+        Title = fileName; // Just the name of the file is the Title
+        Subtitle = path; // What the user typed is the subtitle
 
         // NOTE ME:
         // If there are spaces on originalDir, trim them off, BEFORE combining originalDir and fileName.
@@ -46,18 +60,15 @@ internal sealed partial class PathListItem : ListItem
         }
 
         TextToSuggest = suggestion;
-        MoreCommands = [
-            new CommandContextItem(new CopyTextCommand(path) { Name = Properties.Resources.copy_path_command_name }) { }
-        ];
 
-        // TODO: Follow-up during 0.4. Add the indexer commands here.
-        // MoreCommands = [
-        //    new CommandContextItem(new OpenWithCommand(indexerItem)),
-        //    new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath) { Name = Resources.Indexer_Command_ShowInFolder }),
-        //    new CommandContextItem(new CopyPathCommand(indexerItem)),
-        //    new CommandContextItem(new OpenInConsoleCommand(indexerItem)),
-        //    new CommandContextItem(new OpenPropertiesCommand(indexerItem)),
-        // ];
+        MoreCommands = [
+            new CommandContextItem(new OpenWithCommand(path)),
+            new CommandContextItem(new ShowFileInFolderCommand(path)) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E) },
+            new CommandContextItem(new CopyPathCommand(path) { Name = Properties.Resources.copy_path_command_name }) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C) },
+            new CommandContextItem(new OpenInConsoleCommand(path)) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R) },
+            new CommandContextItem(new OpenPropertiesCommand(path)),
+         ];
+
         _icon = new Lazy<IconInfo>(() =>
         {
             var iconStream = ThumbnailHelper.GetThumbnail(path).Result;

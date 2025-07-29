@@ -14,8 +14,7 @@ using Windows.System;
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ContextMenuViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>,
-    IRecipient<OpenContextMenuMessage>
+    IRecipient<UpdateCommandBarMessage>
 {
     public ICommandBarContext? SelectedItem
     {
@@ -43,22 +42,11 @@ public partial class ContextMenuViewModel : ObservableObject,
     public ContextMenuViewModel()
     {
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
-        WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
     }
 
     public void Receive(UpdateCommandBarMessage message)
     {
         SelectedItem = message.ViewModel;
-    }
-
-    public void Receive(OpenContextMenuMessage message)
-    {
-        FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
-
-        ResetContextMenu();
-
-        OnPropertyChanging(nameof(FilterOnTop));
-        OnPropertyChanged(nameof(FilterOnTop));
     }
 
     public void UpdateContextItems()
@@ -192,7 +180,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu!]);
     }
 
-    private void ResetContextMenu()
+    public void ResetContextMenu()
     {
         while (ContextMenuStack.Count > 1)
         {

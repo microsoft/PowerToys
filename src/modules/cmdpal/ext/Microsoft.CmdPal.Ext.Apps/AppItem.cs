@@ -3,13 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-internal sealed class AppItem
+public sealed class AppItem
 {
     public string Name { get; set; } = string.Empty;
 
