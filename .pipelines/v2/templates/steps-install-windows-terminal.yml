@@ -10,16 +10,23 @@ steps:
         # Check if already installed
         if (Get-Command "wt.exe" -ErrorAction SilentlyContinue) {
           Write-Host "Windows Terminal already installed"
-          return
+          exit 0
         }
         
         Write-Host "Installing Windows Terminal via winget..."
-        winget install --id Microsoft.WindowsTerminal --accept-package-agreements --accept-source-agreements --silent
-        Write-Host "Windows Terminal installation attempted via winget"
+        $process = Start-Process -FilePath "winget" -ArgumentList "install", "--id", "Microsoft.WindowsTerminal", "--accept-package-agreements", "--accept-source-agreements", "--silent" -Wait -PassThru -NoNewWindow
+        
+        if ($process.ExitCode -eq 0) {
+          Write-Host "Windows Terminal installation completed successfully"
+        } else {
+          Write-Warning "Winget returned exit code $($process.ExitCode), but continuing..."
+        }
       } catch {
         Write-Warning "Terminal installation via winget failed: $_"
         Write-Host "Continuing without Terminal..."
       }
+      # Always exit with 0 to continue pipeline
+      exit 0
     displayName: Install Windows Terminal (Win11 - winget)
 
 - ${{ if eq(parameters.platform, 'x64Win10') }}:
