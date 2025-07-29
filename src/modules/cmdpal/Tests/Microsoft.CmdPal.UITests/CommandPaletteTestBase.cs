@@ -22,7 +22,7 @@ public class CommandPaletteTestBase : UITestBase
 
     protected void SetSearchBox(string text)
     {
-        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true, slowlyInput: true).Text, text);
+        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true).Text, text);
     }
 
     protected void SetFilesExtensionSearchBox(string text)
