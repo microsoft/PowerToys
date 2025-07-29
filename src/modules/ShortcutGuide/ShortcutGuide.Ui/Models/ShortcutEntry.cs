@@ -212,8 +212,8 @@ namespace ShortcutGuide.Models
         /// <summary>
         /// Transforms a key string into a visual representation in the stack panel.
         /// </summary>
-        /// <param name="key">The string reprensentation of the key.</param>
-        /// <param name="shortcutStackPanel">The stackpanel to add the key to.</param>
+        /// <param name="key">The string representation of the key.</param>
+        /// <param name="shortcutStackPanel">The StackPanel to add the key to.</param>
         private static void AddKeyToStackPanel(string key, StackPanel shortcutStackPanel)
         {
             switch (key)
