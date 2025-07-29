@@ -45,12 +45,12 @@
                     ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                     Orientation="Vertical"
                     Spacing="2">
-                    <tkcontrols:SettingsCard
+                   <!-- <tkcontrols:SettingsCard Visibility="Collapsed"
                         x:Uid="AdvancedPaste_EnableToggleControl_HeaderText"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}"
                         IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                    </tkcontrols:SettingsCard> -->
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
                         IsClosable="False"

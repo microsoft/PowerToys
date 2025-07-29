@@ -4,8 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
@@ -18,6 +20,30 @@
             FalseValue="Collapsed"
             GreaterThan="0"
             TrueValue="Visible" />
+        <animations:ImplicitAnimationSet x:Name="ShowTransitions">
+            <animations:OffsetAnimation
+                    EasingMode="EaseOut"
+                    From="0,24,0"
+                    To="0"
+                    Duration="0:0:0.4" />
+            <animations:OpacityAnimation
+                    EasingMode="EaseOut"
+                    From="0"
+                    To="1"
+                    Duration="0:0:0.2" />
+        </animations:ImplicitAnimationSet>
+        <animations:ImplicitAnimationSet x:Name="HideTransitions">
+            <animations:OffsetAnimation
+                    EasingMode="EaseOut"
+                    From="0"
+                    To="0,24,0"
+                    Duration="0:0:0.2" />
+            <animations:OpacityAnimation
+                    EasingMode="EaseOut"
+                    From="1"
+                    To="0"
+                    Duration="0:0:0.1" />
+        </animations:ImplicitAnimationSet>
     </UserControl.Resources>
 
     <Grid Padding="20,0,0,0" RowSpacing="24">
@@ -39,7 +65,9 @@
                 Padding="0,0,20,48"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 RowSpacing="24">
+                
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -49,12 +77,13 @@
                 <Grid
                     MaxWidth="{StaticResource PageMaxWidth}"
                     ColumnSpacing="16"
-                    RowSpacing="16">
+                    RowSpacing="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
@@ -76,8 +105,8 @@
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="{x:Bind ModuleDescription}"
                             TextWrapping="Wrap" />
-
-                        <ItemsControl
+                        <ToggleSwitch IsOn="True"/>
+                        <ItemsControl Visibility="Collapsed"
                             x:Name="PrimaryLinksControl"
                             Margin="0,8,0,0"
                             IsTabStop="False"
@@ -98,18 +127,35 @@
                     </StackPanel>
                 </Grid>
 
-                <!--  Content panel  -->
-                <ContentPresenter
-                    x:Name="ModuleContentPresenter"
-                    Grid.Row="1"
-                    MaxWidth="{StaticResource PageMaxWidth}"
-                    Margin="0,12,0,0"
-                    Content="{x:Bind ModuleContent}" />
+                <Grid MaxWidth="{StaticResource PageMaxWidth}" Grid.Row="1">
+                    <SelectorBar x:Name="PivotBar">
+                        <SelectorBarItem Tag="Settings" Text="Settings" IsSelected="True"/>
+                        <SelectorBarItem Tag="Docs" Text="Documentation"/>
+                    </SelectorBar>
+                </Grid>               
 
+                <toolkit:SwitchPresenter
+                    Grid.Row="2" MaxWidth="{StaticResource PageMaxWidth}"
+                    Value="{Binding SelectedItem.Tag, ElementName=PivotBar}">
+                    <toolkit:Case Value="Settings">
+                        <!--  Content panel  -->
+                        <ContentPresenter
+                        x:Name="ModuleContentPresenter"
+                        Margin="0,12,0,0"
+                        Content="{x:Bind ModuleContent}" />
+                    </toolkit:Case>
+                    <toolkit:Case Value="Docs">
+                        <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1" BorderBrush="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="{StaticResource OverlayCornerRadius}" animations:Implicit.HideAnimations="{StaticResource HideTransitions}"
+                            animations:Implicit.ShowAnimations="{StaticResource ShowTransitions}">
+                            <tk7controls:MarkdownTextBlock Background="Transparent" Margin="16" x:Name="docsTextBlock"/>
+                        </Grid>
+                     
+                    </toolkit:Case>
+                </toolkit:SwitchPresenter>
                 <!--  Bottom panel  -->
                 <StackPanel
                     x:Name="SecondaryLinksPanel"
-                    Grid.Row="2"
+                    Grid.Row="3"
                     MaxWidth="{StaticResource PageMaxWidth}"
                     AutomationProperties.Name="{x:Bind SecondaryLinksHeader}"
                     Orientation="Vertical"
