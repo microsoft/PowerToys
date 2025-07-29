@@ -316,30 +316,51 @@ public sealed partial class ListPage : Page,
         return null;
     }
 
-    private void ItemsList_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    private void ItemsList_OnContextRequested(UIElement sender, ContextRequestedEventArgs e)
     {
-        if (e.OriginalSource is FrameworkElement element &&
-            element.DataContext is ListItemViewModel item)
+        var (item, element) = e.OriginalSource switch
         {
-            if (ItemsList.SelectedItem != item)
-            {
-                ItemsList.SelectedItem = item;
-            }
+            // caused by keyboard shortcut (e.g. Context menu key or Shift+F10)
+            ListViewItem listViewItem => (ItemsList.ItemFromContainer(listViewItem) as ListItemViewModel, listViewItem),
 
-            ViewModel?.UpdateSelectedItemCommand.Execute(item);
+            // caused by right-click on the ListViewItem
+            FrameworkElement { DataContext: ListItemViewModel itemViewModel } frameworkElement => (itemViewModel, frameworkElement),
 
-            var pos = e.GetPosition(element);
+            _ => (null, null),
+        };
 
-            _ = DispatcherQueue.TryEnqueue(
-                () =>
-                    {
-                        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
-                            new OpenContextMenuMessage(
-                                element,
-                                Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                                pos,
-                                ContextMenuFilterLocation.Top));
-                    });
+        if (item == null || element == null)
+        {
+            return;
         }
+
+        if (ItemsList.SelectedItem != item)
+        {
+            ItemsList.SelectedItem = item;
+        }
+
+        ViewModel?.UpdateSelectedItemCommand.Execute(item);
+
+        if (!e.TryGetPosition(element, out var pos))
+        {
+            pos = new(0, element.ActualHeight);
+        }
+
+        _ = DispatcherQueue.TryEnqueue(
+            () =>
+            {
+                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                    new OpenContextMenuMessage(
+                        element,
+                        Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        pos,
+                        ContextMenuFilterLocation.Top));
+            });
+        e.Handled = true;
+    }
+
+    private void ItemsList_OnContextCanceled(UIElement sender, RoutedEventArgs e)
+    {
+        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
     }
 }
