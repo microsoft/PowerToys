@@ -4,7 +4,7 @@
 
   <PropertyGroup>
 
-    <WindowsSdkPackageVersion>10.0.22621.57</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
 
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions.Toolkit</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
