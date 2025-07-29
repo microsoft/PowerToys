@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ public class IndexerTests : CommandPaletteTestBase
 {
     private const string TestFileContent = "This is Indexer UI test sample";
     private const string TestFileName = "indexer_test_item.txt";
+    private const string TestFileBaseName = "indexer_test_item";
     private const string TestFolderName = "Downloads";
 
     public IndexerTests()
@@ -71,7 +73,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(openButton);
 
         openButton.Click();
-        var notepadWindow = this.Find<Window>($"{TestFileName} - Notepad", global: true);
+        var notepadWindow = FindNotepadWindow(TestFileBaseName, global: true);
 
         Assert.IsNotNull(notepadWindow);
     }
@@ -88,7 +90,7 @@ public class IndexerTests : CommandPaletteTestBase
 
         searchItem.DoubleClick();
 
-        var notepadWindow = this.Find<Window>($"{TestFileName} - Notepad", global: true);
+        var notepadWindow = FindNotepadWindow(TestFileBaseName, global: true);
 
         Assert.IsNotNull(notepadWindow);
     }
@@ -202,8 +204,8 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var windowsTerminal = FindWindowsTerminalWindow();
-        Assert.IsNotNull(windowsTerminal, "The console did not open with the expected path.");
+        var textItem = FindByPartialName("C:\\Windows\\system32\\cmd.exe", global: true);
+        Assert.IsNotNull(textItem, "The console did not open with the expected path.");
     }
 
     [TestMethod]
@@ -221,7 +223,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var propertiesWindow = this.Find<Window>($"{TestFileName} Properties", global: true);
+        var propertiesWindow = FindApplicationWindow(TestFileBaseName, "Properties", global: true);
         Assert.IsNotNull(propertiesWindow, "The properties window did not open for the selected file.");
     }
 }

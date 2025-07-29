@@ -1,0 +1,70 @@
+parameters:
+  - name: platform
+    type: string
+    default: ""
+
+steps:
+- ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
+  - powershell: |-
+      try {
+        # Check if already installed
+        if (Get-Command "wt.exe" -ErrorAction SilentlyContinue) {
+          Write-Host "Windows Terminal already installed"
+          return
+        }
+        
+        # Install Microsoft.UI.Xaml.2.8 dependency first
+        Write-Host "Installing Microsoft.UI.Xaml.2.8 dependency..."
+        $xamlUrl = "https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/2.8.6"
+        $xamlZip = "$env:TEMP\Microsoft.UI.Xaml.2.8.6.zip"
+        $xamlExtracted = "$env:TEMP\Microsoft.UI.Xaml.2.8.6"
+        
+        try {
+          Invoke-WebRequest -Uri $xamlUrl -OutFile $xamlZip
+          Expand-Archive -Path $xamlZip -DestinationPath $xamlExtracted -Force
+          
+          # Find and install the x64 appx package
+          $xamlAppx = Get-ChildItem -Path $xamlExtracted -Recurse -Filter "*x64.appx" | Select-Object -First 1
+          if ($xamlAppx) {
+            Add-AppxPackage -Path $xamlAppx.FullName
+            Write-Host "Microsoft.UI.Xaml.2.8 installed successfully"
+          } else {
+            Write-Warning "Could not find Microsoft.UI.Xaml x64 appx package"
+          }
+          
+          # Clean up
+          Remove-Item $xamlZip -Force -ErrorAction SilentlyContinue
+          Remove-Item $xamlExtracted -Recurse -Force -ErrorAction SilentlyContinue
+        } catch {
+          Write-Warning "Failed to install Microsoft.UI.Xaml.2.8: $_"
+        }
+        
+        # Download and install Windows Terminal from GitHub
+        Write-Host "Installing Windows Terminal from GitHub releases..."
+        $url = "https://api.github.com/repos/microsoft/terminal/releases/latest"
+        $release = Invoke-RestMethod -Uri $url
+        $msixUrl = ($release.assets | Where-Object { $_.name -like "*msixbundle" }).browser_download_url
+        
+        if ($msixUrl) {
+          $msixFile = "$env:TEMP\WindowsTerminal.msixbundle"
+          Invoke-WebRequest -Uri $msixUrl -OutFile $msixFile
+          Add-AppxPackage -Path $msixFile
+          Remove-Item $msixFile -Force -ErrorAction SilentlyContinue
+          Write-Host "Windows Terminal installed successfully"
+        } else {
+          Write-Warning "Could not find Terminal MSIX bundle"
+        }
+      } catch {
+        Write-Warning "Terminal installation failed: $_"
+        Write-Host "Continuing without Terminal..."
+      }
+    displayName: Install Windows Terminal (Direct Download)
+
+- pwsh: |-
+    Write-Host "Checking for Windows Terminal..."
+    if (Get-Command "wt.exe" -ErrorAction SilentlyContinue) {
+      Write-Host "Windows Terminal found and available"
+    } else {
+      Write-Host "##[warning]Windows Terminal not found, but continuing..."
+    }
+  displayName: Check Windows Terminal

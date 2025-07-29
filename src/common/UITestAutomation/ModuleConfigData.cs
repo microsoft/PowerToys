@@ -92,9 +92,7 @@ namespace Microsoft.PowerToys.UITest
         private ModuleConfigData()
         {
             // Check if we should use installer paths from environment variable
-            string? useInstallerForTestEnv =
-                            Environment.GetEnvironmentVariable("useInstallerForTest") ?? Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
-            UseInstallerForTest = !string.IsNullOrEmpty(useInstallerForTestEnv) && bool.TryParse(useInstallerForTestEnv, out bool result) && result;
+            UseInstallerForTest = EnvironmentConfig.UseInstallerForTest;
 
             // Module information including executable name, window name, and optional subdirectory
             ModuleInfo = new Dictionary<PowerToysModule, ModuleInfo>

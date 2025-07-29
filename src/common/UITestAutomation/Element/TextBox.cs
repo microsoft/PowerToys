@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Threading.Tasks;
+
 namespace Microsoft.PowerToys.UITest
 {
     /// <summary>
@@ -25,8 +27,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="value">The text to set.</param>
         /// <param name="clearText">A value indicating whether to clear the text before setting it. Default value is true</param>
+        /// <param name="charDelayMS">Delay in milliseconds between each character. Default is 0 (no delay).</param>
         /// <returns>The current TextBox instance.</returns>
-        public TextBox SetText(string value, bool clearText = true, bool slowlyInput = false)
+        public TextBox SetText(string value, bool clearText = true, int charDelayMS = 0)
         {
             if (clearText)
             {
@@ -39,30 +42,28 @@ namespace Microsoft.PowerToys.UITest
                 Task.Delay(500).Wait();
             }
 
-            if (slowlyInput)
+            if (charDelayMS > 0 || EnvironmentConfig.IsInPipeline)
             {
-                // split input by blanks
-                var splitedValues = value.Split(' ');
-                int count = 0;
-
-                // If slowlyInput is true, we will send the keys one by one with a delay
-                foreach (var str in splitedValues)
+                // Send text character by character with delay (if specified or in pipeline)
+                PerformAction((actions, windowElement) =>
                 {
-                    PerformAction((actions, windowElement) =>
+                    foreach (char c in value)
                     {
-                        windowElement.SendKeys(str);
-                        if (count != splitedValues.Length - 1)
+                        windowElement.SendKeys(c.ToString());
+                        if (charDelayMS > 0)
                         {
-                            windowElement.SendKeys(" ");
+                            Task.Delay(charDelayMS).Wait();
                         }
-                    });
-                    count++;
-                }
-
-                return this;
+                        else if (EnvironmentConfig.IsInPipeline)
+                        {
+                            Task.Delay(50).Wait();
+                        }
+                    }
+                });
             }
             else
             {
+                // No character delay - send all text at once (original behavior)
                 PerformAction((actions, windowElement) =>
                 {
                     windowElement.SendKeys(value);
