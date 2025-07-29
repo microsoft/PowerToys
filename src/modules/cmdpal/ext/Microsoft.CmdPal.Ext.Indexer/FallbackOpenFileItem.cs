@@ -60,7 +60,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
         if (Path.Exists(query))
         {
             // Exit 1: The query is a direct path to a file. Great! Return it.
-            var item = new IndexerItem() { FullPath = query, FileName = Path.GetFileName(query) };
+            var item = new IndexerItem(fullPath: query);
             var listItemForUs = new IndexerListItem(item, IncludeBrowseCommand.AsDefault);
             Command = listItemForUs.Command;
             MoreCommands = listItemForUs.MoreCommands;

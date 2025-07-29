@@ -126,6 +126,12 @@
   <data name="CopyTextCommand_CopiedToClipboard" xml:space="preserve">
     <value>Copied to clipboard</value>
   </data>
+  <data name="CopyPathTextCommand_Name" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
+  <data name="CopyPathTextCommand_Result" xml:space="preserve">
+    <value>Copied path to clipboard</value>
+  </data>
   <data name="OpenUrlCommand_Open" xml:space="preserve">
     <value>Open</value>
   </data>

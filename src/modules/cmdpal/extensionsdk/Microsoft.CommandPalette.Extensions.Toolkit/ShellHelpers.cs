@@ -59,4 +59,101 @@ public static class ShellHelpers
         Administrator,
         OtherUser,
     }
+
+    /// <summary>
+    /// Parses the input string to extract the executable and its arguments.
+    /// </summary>
+    public static void ParseExecutableAndArgs(string input, out string executable, out string arguments)
+    {
+        input = input.Trim();
+        executable = string.Empty;
+        arguments = string.Empty;
+
+        if (string.IsNullOrEmpty(input))
+        {
+            return;
+        }
+
+        if (input.StartsWith("\"", System.StringComparison.InvariantCultureIgnoreCase))
+        {
+            // Find the closing quote
+            var closingQuoteIndex = input.IndexOf('\"', 1);
+            if (closingQuoteIndex > 0)
+            {
+                executable = input.Substring(1, closingQuoteIndex - 1);
+                if (closingQuoteIndex + 1 < input.Length)
+                {
+                    arguments = input.Substring(closingQuoteIndex + 1).TrimStart();
+                }
+            }
+        }
+        else
+        {
+            // Executable ends at first space
+            var firstSpaceIndex = input.IndexOf(' ');
+            if (firstSpaceIndex > 0)
+            {
+                executable = input.Substring(0, firstSpaceIndex);
+                arguments = input[(firstSpaceIndex + 1)..].TrimStart();
+            }
+            else
+            {
+                executable = input;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Checks if a file exists somewhere in the PATH.
+    /// If it exists, returns the full path to the file in the out parameter.
+    /// If it does not exist, returns false and the out parameter is set to an empty string.
+    /// <param name="filename">The name of the file to check.</param>
+    /// <param name="fullPath">The full path to the file if it exists; otherwise an empty string.</param>
+    /// <param name="token">An optional cancellation token to cancel the operation.</param>
+    /// <returns>True if the file exists in the PATH; otherwise false.</returns>
+    /// </summary>
+    public static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
+    {
+        fullPath = string.Empty;
+
+        if (File.Exists(filename))
+        {
+            token?.ThrowIfCancellationRequested();
+            fullPath = Path.GetFullPath(filename);
+            return true;
+        }
+        else
+        {
+            var values = Environment.GetEnvironmentVariable("PATH");
+            if (values != null)
+            {
+                foreach (var path in values.Split(';'))
+                {
+                    var path1 = Path.Combine(path, filename);
+                    if (File.Exists(path1))
+                    {
+                        fullPath = Path.GetFullPath(path1);
+                        return true;
+                    }
+
+                    token?.ThrowIfCancellationRequested();
+
+                    var path2 = Path.Combine(path, filename + ".exe");
+                    if (File.Exists(path2))
+                    {
+                        fullPath = Path.GetFullPath(path2);
+                        return true;
+                    }
+
+                    token?.ThrowIfCancellationRequested();
+                }
+
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
 }
