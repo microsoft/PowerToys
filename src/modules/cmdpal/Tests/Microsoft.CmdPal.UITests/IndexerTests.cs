@@ -69,10 +69,13 @@ public class IndexerTests : CommandPaletteTestBase
 
         searchItem.Click();
 
-        var openButton = this.Find<Button>("Open");
+        var openButton = this.Find<Button>("Open with");
         Assert.IsNotNull(openButton);
 
         openButton.Click();
+
+        SendKeys(Key.Enter);
+
         var notepadWindow = FindNotepadWindow(TestFileBaseName, global: true);
 
         Assert.IsNotNull(notepadWindow);
@@ -222,7 +225,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var propertiesWindow = FindApplicationWindow(TestFileBaseName, "Properties", global: true);
+        var propertiesWindow = FindByClassName<Window>("#32770", "Properties", global: true);
         Assert.IsNotNull(propertiesWindow, "The properties window did not open for the selected file.");
     }
 }

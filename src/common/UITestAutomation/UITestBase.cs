@@ -278,24 +278,6 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Checks if an element exists using partial name matching.
-        /// </summary>
-        /// <param name="partialName">Part of the name to search for.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if element exists; otherwise, false.</returns>
-        public bool HasPartialName(string partialName, int timeoutMS = 5000, bool global = false)
-        {
-            try
-            {
-                return Session.FindAll<Element>(By.XPath($"//*[contains(@Name, '{partialName}')]"), timeoutMS, global).Count >= 1;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Finds an element using regular expression pattern matching.
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
@@ -332,96 +314,69 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Finds an application window regardless of whether the file extension is shown in the title.
-        /// Handles multiple formats: "filename.txt - AppName", "filename - AppName", "filename.txt AppName", "filename AppName".
+        /// Finds an element by ClassName and matches its Name attribute using regex pattern matching.
         /// </summary>
-        /// <param name="baseFileName">The base filename without extension (e.g., "test" for "test.txt").</param>
-        /// <param name="appName">The application name (e.g., "Notepad", "Visual Studio Code").</param>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="className">The ClassName to search for (e.g., "Notepad", "CabinetWClass").</param>
+        /// <param name="namePattern">Pattern to match against the Name attribute. Supports regex patterns.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>The found application window element.</returns>
-        protected Element FindApplicationWindow(string baseFileName, string appName, int timeoutMS = 5000, bool global = false)
+        /// <returns>The found element.</returns>
+        protected T FindByClassName<T>(string className, string namePattern, int timeoutMS = 5000, bool global = false)
+            where T : Element, new()
         {
-            // Pattern to match multiple formats:
-            // "filename.txt - AppName", "filename - AppName", "filename.txt AppName", "filename AppName"
-            string pattern = $@"^{Regex.Escape(baseFileName)}(\.\w+)?(\s*-\s*|\s+){Regex.Escape(appName)}$";
-            return FindByPattern(pattern, timeoutMS, global);
+            var elements = Session.FindAll<T>(By.ClassName(className), timeoutMS, global);
+            var regex = new Regex(namePattern, RegexOptions.IgnoreCase);
+
+            foreach (var element in elements)
+            {
+                var name = element.GetAttribute("Name");
+                if (!string.IsNullOrEmpty(name) && regex.IsMatch(name))
+                {
+                    return element;
+                }
+            }
+
+            throw new NoSuchElementException($"No element with ClassName '{className}' found matching name pattern: {namePattern}");
+        }
+
+        /// <summary>
+        /// Finds an element by ClassName and matches its Name attribute using regex pattern matching.
+        /// </summary>
+        /// <param name="className">The ClassName to search for (e.g., "Notepad", "CabinetWClass").</param>
+        /// <param name="namePattern">Pattern to match against the Name attribute. Supports regex patterns.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected Element FindByClassName(string className, string namePattern, int timeoutMS = 5000, bool global = false)
+        {
+            return FindByClassName<Element>(className, namePattern, timeoutMS, global);
         }
 
         /// <summary>
         /// Finds a Notepad window regardless of whether the file extension is shown in the title.
         /// Handles both "filename.txt - Notepad" and "filename - Notepad" formats.
+        /// Uses ClassName to efficiently find Notepad windows first, then matches the filename.
         /// </summary>
         /// <param name="baseFileName">The base filename without extension (e.g., "test" for "test.txt").</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found Notepad window element.</returns>
         protected Element FindNotepadWindow(string baseFileName, int timeoutMS = 5000, bool global = false)
         {
-            return FindApplicationWindow(baseFileName, "Notepad", timeoutMS, global);
+            string pattern = $@"^{Regex.Escape(baseFileName)}(\.\w+)?(\s*-\s*|\s+)Notepad$";
+            return FindByClassName("Notepad", pattern, timeoutMS, global);
         }
 
         /// <summary>
-        /// Checks if an application window exists for the given base filename.
+        /// Finds an Explorer window regardless of the folder or file name display format.
+        /// Handles various Explorer window title formats like "FolderName", "FileName", "FolderName - File Explorer", etc.
+        /// Uses ClassName to efficiently find Explorer windows first, then matches the folder or file name.
         /// </summary>
-        /// <param name="baseFileName">The base filename without extension.</param>
-        /// <param name="appName">The application name.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if application window exists; otherwise, false.</returns>
-        public bool HasApplicationWindow(string baseFileName, string appName, int timeoutMS = 5000, bool global = false)
-        {
-            try
-            {
-                FindApplicationWindow(baseFileName, appName, timeoutMS, global);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Checks if a Notepad window exists for the given base filename.
-        /// </summary>
-        /// <param name="baseFileName">The base filename without extension.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if Notepad window exists; otherwise, false.</returns>
-        public bool HasNotepadWindow(string baseFileName, int timeoutMS = 5000, bool global = false)
-        {
-            return HasApplicationWindow(baseFileName, "Notepad", timeoutMS, global);
-        }
-
-        /// <summary>
-        /// Finds an Explorer window regardless of the folder path display format.
-        /// Handles various Explorer window title formats like "FolderName", "FolderName - File Explorer", etc.
-        /// </summary>
-        /// <param name="folderName">The folder name to search for (e.g., "Documents", "Desktop").</param>
+        /// <param name="folderName">The folder or file name to search for (e.g., "Documents", "Desktop", "test.txt").</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found Explorer window element.</returns>
         protected Element FindExplorerWindow(string folderName, int timeoutMS = 5000, bool global = false)
         {
-            // Pattern to match different Explorer window title formats:
-            // "FolderName", "FolderName - File Explorer", "FolderName - Windows Explorer"
             string pattern = $@"^{Regex.Escape(folderName)}(\s*-\s*(File\s+Explorer|Windows\s+Explorer))?$";
-            return FindByPattern(pattern, timeoutMS, global);
-        }
-
-        /// <summary>
-        /// Checks if an Explorer window exists for the given folder name.
-        /// </summary>
-        /// <param name="folderName">The folder name to search for.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
-        /// <returns>True if Explorer window exists; otherwise, false.</returns>
-        public bool HasExplorerWindow(string folderName, int timeoutMS = 5000, bool global = false)
-        {
-            try
-            {
-                FindExplorerWindow(folderName, timeoutMS, global);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return FindByClassName("CabinetWClass", pattern, timeoutMS, global);
         }
 
         /// <summary>
