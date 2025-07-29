@@ -113,10 +113,6 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  - template: steps-install-windows-terminal.yml
-    parameters:
-      platform: ${{ parameters.platform }}
-
   - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
     - task: DownloadPipelineArtifact@2
       inputs:
