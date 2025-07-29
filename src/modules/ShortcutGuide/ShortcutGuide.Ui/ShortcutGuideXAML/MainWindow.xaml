@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <winuiex:WindowEx
-    xmlns:winuiex="using:WinUIEx"
     x:Class="ShortcutGuide.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiex="using:WinUIEx"
     mc:Ignorable="d">
     <Page x:Name="MainPage">
         <Grid>
@@ -20,29 +20,81 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <SelectorBar Grid.Column="0" Grid.Row="0" x:Name="WindowSelector" SelectionChanged="WindowSelectionChanged" />
-            <Button Margin="0,0,6,0" Grid.Column="1" Grid.Row="0" x:Uid="InformationButton" x:Name="InformationButton" Click="InformationButton_Click">
+            <SelectorBar
+                x:Name="WindowSelector"
+                Grid.Row="0"
+                Grid.Column="0"
+                SelectionChanged="WindowSelectionChanged" />
+            <Button
+                x:Name="InformationButton"
+                x:Uid="InformationButton"
+                Grid.Row="0"
+                Grid.Column="1"
+                Margin="0,0,6,0"
+                Click="InformationButton_Click">
                 <FontIcon Glyph="&#xEA1F;" />
             </Button>
-            <TeachingTip x:Uid="InformationTip" x:Name="InformationTip" Target="{x:Bind InformationButton}">
+            <TeachingTip
+                x:Name="InformationTip"
+                x:Uid="InformationTip"
+                Target="{x:Bind InformationButton}">
                 <StackPanel>
-                    <TextBlock x:Uid="InformationTip1" Margin="0,16,0,0" TextWrapping="WrapWholeWords" />
-                    <TextBlock x:Uid="InformationTip2" Margin="0,16,0,0" TextWrapping="WrapWholeWords" />
-                    <HyperlinkButton x:Uid="ShowOOBE" Click="HyperlinkButton_Click" Margin="-8,0,0,0" />
+                    <TextBlock
+                        x:Uid="InformationTip1"
+                        Margin="0,16,0,0"
+                        TextWrapping="WrapWholeWords" />
+                    <TextBlock
+                        x:Uid="InformationTip2"
+                        Margin="0,16,0,0"
+                        TextWrapping="WrapWholeWords" />
+                    <HyperlinkButton
+                        x:Uid="ShowOOBE"
+                        Margin="-8,0,0,0"
+                        Click="HyperlinkButton_Click" />
                 </StackPanel>
             </TeachingTip>
-            <TextBox Margin="0,0,6,0" Grid.Column="2" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" VerticalContentAlignment="Center" x:Uid="SearchBox" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged">
+            <TextBox
+                x:Name="SearchBox"
+                x:Uid="SearchBox"
+                Grid.Row="0"
+                Grid.Column="2"
+                Width="300"
+                Height="32"
+                Margin="0,0,6,0"
+                HorizontalAlignment="Right"
+                HorizontalContentAlignment="Right"
+                VerticalContentAlignment="Center"
+                TextChanged="SearchBox_TextChanged">
                 <TextBox.KeyboardAccelerators>
-                    <KeyboardAccelerator Modifiers="Control" Key="F" Invoked="SearchBox_KeyboardAcceleratorInvoked" />
+                    <KeyboardAccelerator
+                        Key="F"
+                        Invoked="SearchBox_KeyboardAcceleratorInvoked"
+                        Modifiers="Control" />
                 </TextBox.KeyboardAccelerators>
             </TextBox>
-            <Button Margin="0,0,6,0" Grid.Column="3" Grid.Row="0" HorizontalContentAlignment="Center" x:Uid="SettingsButton" Click="SettingsButton_Clicked">
+            <Button
+                x:Uid="SettingsButton"
+                Grid.Row="0"
+                Grid.Column="3"
+                Margin="0,0,6,0"
+                HorizontalContentAlignment="Center"
+                Click="SettingsButton_Clicked">
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />
             </Button>
-            <Button Margin="0,0,6,0" Grid.Column="4" Grid.Row="0" HorizontalContentAlignment="Center" x:Uid="CloseButton" Click="CloseButton_Clicked">
+            <Button
+                x:Uid="CloseButton"
+                Grid.Row="0"
+                Grid.Column="4"
+                Margin="0,0,6,0"
+                HorizontalContentAlignment="Center"
+                Click="CloseButton_Clicked">
                 <FontIcon Glyph="&#xEF2C;" />
             </Button>
-            <Frame Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="1" x:Name="ContentFrame" />
+            <Frame
+                x:Name="ContentFrame"
+                Grid.Row="1"
+                Grid.Column="0"
+                Grid.ColumnSpan="5" />
         </Grid>
     </Page>
 </winuiex:WindowEx>

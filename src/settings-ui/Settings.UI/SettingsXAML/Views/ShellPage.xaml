@@ -165,7 +165,7 @@
                             helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}">
                             <NavigationViewItem.InfoBadge>
-                                <InfoBadge Style="{StaticResource NewInfoBadge}"></InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
                             </NavigationViewItem.InfoBadge>
                         </NavigationViewItem>
                         <NavigationViewItem

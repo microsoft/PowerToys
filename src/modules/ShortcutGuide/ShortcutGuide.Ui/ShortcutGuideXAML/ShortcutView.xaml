@@ -1,37 +1,61 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="ShortcutGuide.ShortcutView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:ShortcutGuide"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:ShortcutGuide"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    mc:Ignorable="d">
     <Page.Resources>
         <DataTemplate x:Key="ShortcutTemplate" x:DataType="local:ShortcutTemplateDataObject">
-                <Grid HorizontalAlignment="Left" MinWidth="400">
-                    <Grid.ContextFlyout>
-                        <MenuFlyout Opening="MenuFlyout_Opening">
-                            <MenuFlyoutItem Text="Pin" Click="PinShortcut"/>
-                        </MenuFlyout>
-                    </Grid.ContextFlyout>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Padding="6,0,6,0" Margin="6,0,6,0" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{x:Bind Name}" />
-                    <Border BorderThickness="{StaticResource ButtonBorderThemeThickness}" Grid.Row="1" Grid.Column="1" Margin="20,6,6,6" HorizontalAlignment="Right" >
-                        <ContentPresenter CornerRadius="{StaticResource ControlCornerRadius}" Content="{x:Bind Shortcut}" Padding="6,6,6,6" HorizontalAlignment="Stretch" Background="{ThemeResource SystemAltHighColor}" />
-                    </Border>
-                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="6,0,6,0" Padding="6,0,6,0" Text="{x:Bind Description}" />
-                </Grid>
+            <Grid MinWidth="400" HorizontalAlignment="Left">
+                <Grid.ContextFlyout>
+                    <MenuFlyout Opening="MenuFlyout_Opening">
+                        <MenuFlyoutItem Click="PinShortcut" Text="Pin" />
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="6,0,6,0"
+                    Padding="6,0,6,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    Text="{x:Bind Name}" />
+                <Border
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="20,6,6,6"
+                    HorizontalAlignment="Right"
+                    BorderThickness="{StaticResource ButtonBorderThemeThickness}">
+                    <ContentPresenter
+                        Padding="6,6,6,6"
+                        HorizontalAlignment="Stretch"
+                        Background="{ThemeResource SystemAltHighColor}"
+                        Content="{x:Bind Shortcut}"
+                        CornerRadius="{StaticResource ControlCornerRadius}" />
+                </Border>
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Margin="6,0,6,0"
+                    Padding="6,0,6,0"
+                    Text="{x:Bind Description}" />
+            </Grid>
         </DataTemplate>
     </Page.Resources>
     <Grid>
@@ -40,97 +64,284 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <SelectorBar Grid.Row="0" x:Name="CategorySelector" />
-        <TextBlock x:Name="ErrorMessage" Style="{StaticResource SubheaderTextBlockStyle}" Grid.Row="1" Margin="6,0,6,0"></TextBlock>
-        <ScrollViewer Grid.Row="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+        <SelectorBar x:Name="CategorySelector" Grid.Row="0" />
+        <TextBlock
+            x:Name="ErrorMessage"
+            Grid.Row="1"
+            Margin="6,0,6,0"
+            Style="{StaticResource SubheaderTextBlockStyle}" />
+        <ScrollViewer
+            Grid.Row="1"
+            HorizontalScrollBarVisibility="Visible"
+            HorizontalScrollMode="Enabled"
+            VerticalScrollBarVisibility="Disabled"
+            VerticalScrollMode="Disabled">
             <Grid>
-                <StackPanel Height="{Binding ContentHeight}" Orientation="Horizontal" x:Name="OverviewStackPanel">
+                <StackPanel
+                    x:Name="OverviewStackPanel"
+                    Height="{Binding ContentHeight}"
+                    Orientation="Horizontal">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" x:Uid="PinnedListTitle" x:Name="PinnedListTitle" Style="{StaticResource TitleTextBlockStyle}" Margin="6,0,6,0"></TextBlock>
-                        <GridView Grid.Row="1" SelectionMode="None" x:Name="PinnedListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
+                        <TextBlock
+                            x:Name="PinnedListTitle"
+                            x:Uid="PinnedListTitle"
+                            Grid.Row="0"
+                            Margin="6,0,6,0"
+                            Style="{StaticResource TitleTextBlockStyle}" />
+                        <GridView
+                            x:Name="PinnedListElement"
+                            Grid.Row="1"
+                            ItemTemplate="{StaticResource ShortcutTemplate}"
+                            SelectionMode="None">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <ItemsWrapGrid Orientation="Vertical"/>
+                                    <ItemsWrapGrid Orientation="Vertical" />
                                 </ItemsPanelTemplate>
                             </GridView.ItemsPanel>
                         </GridView>
                     </Grid>
                     <StackPanel>
-                        <TextBlock x:Uid="RecommendedListTitle" x:Name="RecommendedListTitle" Style="{StaticResource TitleTextBlockStyle}" Margin="6,0,6,0"></TextBlock>
-                        <GridView SelectionMode="None" x:Name="RecommendedListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
+                        <TextBlock
+                            x:Name="RecommendedListTitle"
+                            x:Uid="RecommendedListTitle"
+                            Margin="6,0,6,0"
+                            Style="{StaticResource TitleTextBlockStyle}" />
+                        <GridView
+                            x:Name="RecommendedListElement"
+                            ItemTemplate="{StaticResource ShortcutTemplate}"
+                            SelectionMode="None">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <ItemsWrapGrid Orientation="Vertical"/>
+                                    <ItemsWrapGrid Orientation="Vertical" />
                                 </ItemsPanelTemplate>
                             </GridView.ItemsPanel>
                         </GridView>
                     </StackPanel>
                     <StackPanel>
-                        <TextBlock x:Uid="TaskbarLaunchShortcutsTitle" x:Name="TaskbarLaunchShortcutsTitle" Style="{StaticResource TitleTextBlockStyle}" Margin="6,0,6,0"></TextBlock>
-                        <TextBlock x:Uid="TaskbarLaunchShortcutsDescription" x:Name="TaskbarLaunchShortcutsDescription" Margin="6,0,6,0"></TextBlock>
-                        <GridView SelectionMode="None" x:Name="TaskbarLaunchShortcutsListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
+                        <TextBlock
+                            x:Name="TaskbarLaunchShortcutsTitle"
+                            x:Uid="TaskbarLaunchShortcutsTitle"
+                            Margin="6,0,6,0"
+                            Style="{StaticResource TitleTextBlockStyle}" />
+                        <TextBlock
+                            x:Name="TaskbarLaunchShortcutsDescription"
+                            x:Uid="TaskbarLaunchShortcutsDescription"
+                            Margin="6,0,6,0" />
+                        <GridView
+                            x:Name="TaskbarLaunchShortcutsListElement"
+                            ItemTemplate="{StaticResource ShortcutTemplate}"
+                            SelectionMode="None">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <ItemsWrapGrid Orientation="Vertical"/>
+                                    <ItemsWrapGrid Orientation="Vertical" />
                                 </ItemsPanelTemplate>
                             </GridView.ItemsPanel>
                         </GridView>
                     </StackPanel>
 
                 </StackPanel>
-                <GridView HorizontalContentAlignment="Left" HorizontalAlignment="Left" Height="{Binding ContentHeight}" SelectionMode="None" x:Name="ShortcutListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
+                <GridView
+                    x:Name="ShortcutListElement"
+                    Height="{Binding ContentHeight}"
+                    HorizontalAlignment="Left"
+                    HorizontalContentAlignment="Left"
+                    ItemTemplate="{StaticResource ShortcutTemplate}"
+                    SelectionMode="None">
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <ItemsWrapGrid HorizontalAlignment="Left" Orientation="Vertical"/>
+                            <ItemsWrapGrid HorizontalAlignment="Left" Orientation="Vertical" />
                         </ItemsPanelTemplate>
                     </GridView.ItemsPanel>
                 </GridView>
             </Grid>
         </ScrollViewer>
-        <Canvas Grid.Row="2" x:Name="TaskbarIndicators" Visibility="Collapsed" Height="20">
-            <Canvas x:Name="TaskbarIndicator1" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="1" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+        <Canvas
+            x:Name="TaskbarIndicators"
+            Grid.Row="2"
+            Height="20"
+            Visibility="Collapsed">
+            <Canvas
+                x:Name="TaskbarIndicator1"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="1"
+                    TextAlignment="Center" />
             </Canvas>
-            <Canvas x:Name="TaskbarIndicator2" Canvas.Left="20" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="2" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            <Canvas
+                x:Name="TaskbarIndicator2"
+                Canvas.Left="20"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="2"
+                    TextAlignment="Center" />
             </Canvas>
-            <Canvas x:Name="TaskbarIndicator3" Canvas.Left="40" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="3" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            <Canvas
+                x:Name="TaskbarIndicator3"
+                Canvas.Left="40"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="3"
+                    TextAlignment="Center" />
             </Canvas>
-            <Canvas x:Name="TaskbarIndicator4" Canvas.Left="60" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="4" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            <Canvas
+                x:Name="TaskbarIndicator4"
+                Canvas.Left="60"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="4"
+                    TextAlignment="Center" />
             </Canvas>
-            <Canvas x:Name="TaskbarIndicator5" Canvas.Left="80" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="5" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            <Canvas
+                x:Name="TaskbarIndicator5"
+                Canvas.Left="80"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="5"
+                    TextAlignment="Center" />
             </Canvas>
-            <Canvas x:Name="TaskbarIndicator6" Canvas.Left="100" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="6" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            <Canvas
+                x:Name="TaskbarIndicator6"
+                Canvas.Left="100"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="6"
+                    TextAlignment="Center" />
             </Canvas>
-            <Canvas x:Name="TaskbarIndicator7" Canvas.Left="120" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="7" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            <Canvas
+                x:Name="TaskbarIndicator7"
+                Canvas.Left="120"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="7"
+                    TextAlignment="Center" />
             </Canvas>
-            <Canvas x:Name="TaskbarIndicator8" Canvas.Left="140" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="8" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            <Canvas
+                x:Name="TaskbarIndicator8"
+                Canvas.Left="140"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="8"
+                    TextAlignment="Center" />
             </Canvas>
-            <Canvas x:Name="TaskbarIndicator9" Canvas.Left="160" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="9" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            <Canvas
+                x:Name="TaskbarIndicator9"
+                Canvas.Left="160"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="9"
+                    TextAlignment="Center" />
             </Canvas>
-            <Canvas x:Name="TaskbarIndicator10" Canvas.Left="180" Height="10" Width="10">
-                <Rectangle Fill="Blue" Height="10" Width="10" />
-                <TextBlock Text="0" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            <Canvas
+                x:Name="TaskbarIndicator10"
+                Canvas.Left="180"
+                Width="10"
+                Height="10">
+                <Rectangle
+                    Width="10"
+                    Height="10"
+                    Fill="Blue" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="0"
+                    TextAlignment="Center" />
             </Canvas>
         </Canvas>
     </Grid>
