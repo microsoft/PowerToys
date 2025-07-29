@@ -18,6 +18,6 @@ extern "C"
 
     // Helper to get the taskbar HWND for the monitor under the cursor
     HWND GetTaskbarHwndForCursorMonitor(HMONITOR monitor);
-    __declspec(dllexport) bool update_buttons(std::vector<TasklistButton>& buttons);
+    bool update_buttons(std::vector<TasklistButton>& buttons);
     __declspec(dllexport) TasklistButton* get_buttons(HMONITOR monitor, int* size);
 }

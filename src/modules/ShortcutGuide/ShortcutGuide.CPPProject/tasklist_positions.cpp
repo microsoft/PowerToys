@@ -41,7 +41,7 @@ extern "C"
         return nullptr;
     }
 
-    __declspec(dllexport) void update(HMONITOR monitor)
+    void update(HMONITOR monitor)
     {
         // Get HWND of the tasklist for the monitor under the cursor
         auto taskbar_hwnd = GetTaskbarHwndForCursorMonitor(monitor);
@@ -95,7 +95,7 @@ extern "C"
         winrt::check_hresult(automation->ElementFromHandle(tasklist_hwnd, element.put()));
     }
 
-    __declspec(dllexport) bool update_buttons(std::vector<TasklistButton>& buttons)
+    bool update_buttons(std::vector<TasklistButton>& buttons)
     {
         if (!automation || !element)
         {
