@@ -117,28 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AnonymousCommand_Invoke" xml:space="preserve">
-    <value>Invoke</value>
+  <data name="Indexer_Command_OpenPathInConsole" xml:space="preserve">
+    <value>Open path in console</value>
   </data>
-  <data name="CopyTextCommand_Copy" xml:space="preserve">
-    <value>Copy</value>
+  <data name="Indexer_Command_OpenProperties" xml:space="preserve">
+    <value>Properties</value>
   </data>
-  <data name="CopyTextCommand_CopiedToClipboard" xml:space="preserve">
-    <value>Copied to clipboard</value>
+  <data name="Indexer_Command_OpenWith" xml:space="preserve">
+    <value>Open with</value>
   </data>
-  <data name="CopyPathTextCommand_Name" xml:space="preserve">
-    <value>Copy path</value>
-  </data>
-  <data name="CopyPathTextCommand_Result" xml:space="preserve">
-    <value>Copied path to clipboard</value>
-  </data>
-  <data name="OpenUrlCommand_Open" xml:space="preserve">
-    <value>Open</value>
-  </data>
-  <data name="Settings" xml:space="preserve">
-    <value>Settings</value>
-  </data>
-  <data name="ShowFileInFolderCommand_ShowInFolder" xml:space="preserve">
+  <data name="Indexer_Command_ShowInFolder" xml:space="preserve">
     <value>Show in folder</value>
   </data>
 </root>

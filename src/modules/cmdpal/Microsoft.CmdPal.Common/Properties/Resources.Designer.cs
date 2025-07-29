@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
+namespace Microsoft.CmdPal.Common.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.CommandPalette.Extensions.Toolkit.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.CmdPal.Common.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,74 +61,38 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invoke.
+        ///   Looks up a localized string similar to Open path in console.
         /// </summary>
-        internal static string AnonymousCommand_Invoke {
+        internal static string Indexer_Command_OpenPathInConsole {
             get {
-                return ResourceManager.GetString("AnonymousCommand_Invoke", resourceCulture);
+                return ResourceManager.GetString("Indexer_Command_OpenPathInConsole", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy path.
+        ///   Looks up a localized string similar to Properties.
         /// </summary>
-        internal static string CopyPathTextCommand_Name {
+        internal static string Indexer_Command_OpenProperties {
             get {
-                return ResourceManager.GetString("CopyPathTextCommand_Name", resourceCulture);
+                return ResourceManager.GetString("Indexer_Command_OpenProperties", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copied path to clipboard.
+        ///   Looks up a localized string similar to Open with.
         /// </summary>
-        internal static string CopyPathTextCommand_Result {
+        internal static string Indexer_Command_OpenWith {
             get {
-                return ResourceManager.GetString("CopyPathTextCommand_Result", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copied to clipboard.
-        /// </summary>
-        internal static string CopyTextCommand_CopiedToClipboard {
-            get {
-                return ResourceManager.GetString("CopyTextCommand_CopiedToClipboard", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copy.
-        /// </summary>
-        internal static string CopyTextCommand_Copy {
-            get {
-                return ResourceManager.GetString("CopyTextCommand_Copy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Open.
-        /// </summary>
-        internal static string OpenUrlCommand_Open {
-            get {
-                return ResourceManager.GetString("OpenUrlCommand_Open", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Settings.
-        /// </summary>
-        internal static string Settings {
-            get {
-                return ResourceManager.GetString("Settings", resourceCulture);
+                return ResourceManager.GetString("Indexer_Command_OpenWith", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Show in folder.
         /// </summary>
-        internal static string ShowFileInFolderCommand_ShowInFolder {
+        internal static string Indexer_Command_ShowInFolder {
             get {
-                return ResourceManager.GetString("ShowFileInFolderCommand_ShowInFolder", resourceCulture);
+                return ResourceManager.GetString("Indexer_Command_ShowInFolder", resourceCulture);
             }
         }
     }
