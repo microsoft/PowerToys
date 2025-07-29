@@ -43,6 +43,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         (!_isFetching) &&
         IsLoading == false;
 
+    public bool IsGridView { get; private set; }
+
+    public IGridProperties? GridProperties { get; private set; }
+
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
     public bool ShowDetails { get; private set; }
@@ -445,6 +449,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         _isDynamic = model is IDynamicListPage;
 
+        IsGridView = model.GridProperties != null;
+        UpdateProperty(nameof(IsGridView));
+
+        GridProperties = model.GridProperties;
+        UpdateProperty(nameof(GridProperties));
+
         ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
 
@@ -464,7 +474,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void LoadMoreIfNeeded()
     {
-        var model = this._model.Unsafe;
+        var model = _model.Unsafe;
         if (model == null)
         {
             return;
@@ -508,7 +518,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         base.FetchProperty(propertyName);
 
-        var model = this._model.Unsafe;
+        var model = _model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -516,14 +526,20 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         switch (propertyName)
         {
+            case nameof(IsGridView):
+                IsGridView = model.GridProperties != null;
+                break;
+            case nameof(GridProperties):
+                GridProperties = model.GridProperties;
+                break;
             case nameof(ShowDetails):
-                this.ShowDetails = model.ShowDetails;
+                ShowDetails = model.ShowDetails;
                 break;
             case nameof(PlaceholderText):
-                this._modelPlaceholderText = model.PlaceholderText;
+                _modelPlaceholderText = model.PlaceholderText;
                 break;
             case nameof(SearchText):
-                this.SearchText = model.SearchText;
+                SearchText = model.SearchText;
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);

@@ -273,10 +273,19 @@ namespace Microsoft.CommandPalette.Extensions
         String Section { get; };
         String TextToSuggest { get; };
     }
-    
+
+    enum GridTileSize
+    {
+        Small,
+        Medium,
+        Large
+    };
+
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IGridProperties  {
-        Windows.Foundation.Size TileSize { get; };
+    interface IGridProperties {
+        GridTileSize Size { get; };
+        Boolean ShowTitle { get; };
+        Boolean ShowSubtitle { get; };
     }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
