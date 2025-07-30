@@ -27,6 +27,7 @@
                 BasedOn="{StaticResource DefaultComboBoxStyle}"
                 TargetType="ComboBox">
                 <Style.Setters>
+                    <Setter Property="Visibility" Value="Collapsed" />
                     <Setter Property="Margin" Value="0,0,12,0" />
                     <Setter Property="Padding" Value="16,4" />
                 </Style.Setters>
