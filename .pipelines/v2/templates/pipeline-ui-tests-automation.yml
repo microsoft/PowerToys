@@ -28,6 +28,10 @@ parameters:
   - name: useCurrentBranchBuild
     type: boolean
     default: false
+  - name: powerToysBuildId
+    type: string
+    default: ""
+    displayName: "PowerToys Build ID (leave empty for latest)"
   - name: uiTestModules
     type: object
     default: []
@@ -93,6 +97,7 @@ stages:
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                powerToysBuildId: ${{ parameters.powerToysBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
             # Additional per-user installation test (when both modes are enabled)
@@ -104,6 +109,7 @@ stages:
                   useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                   useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
                   useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                  powerToysBuildId: ${{ parameters.powerToysBuildId }}
                   uiTestModules: ${{ parameters.uiTestModules }}
                   installMode: 'peruser'
                   jobSuffix: '_PerUser'
@@ -125,6 +131,7 @@ stages:
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                powerToysBuildId: ${{ parameters.powerToysBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
             # Additional per-user installation test (when both modes are enabled)
@@ -136,6 +143,7 @@ stages:
                   useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                   useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
                   useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                  powerToysBuildId: ${{ parameters.powerToysBuildId }}
                   uiTestModules: ${{ parameters.uiTestModules }}
                   installMode: 'peruser'
                   jobSuffix: '_PerUser'
@@ -157,6 +165,7 @@ stages:
               useLatestWebView2: ${{ parameters.useLatestWebView2 }}
               useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
               useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+              powerToysBuildId: ${{ parameters.powerToysBuildId }}
               uiTestModules: ${{ parameters.uiTestModules }}
 
           # Additional per-user installation test (when both modes are enabled)
@@ -168,6 +177,7 @@ stages:
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
                 useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                powerToysBuildId: ${{ parameters.powerToysBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
                 installMode: 'peruser'
                 jobSuffix: '_PerUser'

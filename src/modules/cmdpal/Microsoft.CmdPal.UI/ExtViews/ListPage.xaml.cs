@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -144,6 +145,18 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedItem != null)
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
+
+            // Automation notification for screen readers
+            var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemsList);
+            if (listViewPeer != null && li != null)
+            {
+                var notificationText = li.Title;
+                listViewPeer.RaiseNotificationEvent(
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.Other,
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.MostRecent,
+                    notificationText,
+                    "CommandPaletteSelectedItemChanged");
+            }
         }
     }
 

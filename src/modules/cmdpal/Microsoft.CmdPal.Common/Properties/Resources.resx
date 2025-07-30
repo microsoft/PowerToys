@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,51 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="bookmarks_display_name" xml:space="preserve">
-    <value>Bookmarks</value>
+  <data name="Indexer_Command_OpenPathInConsole" xml:space="preserve">
+    <value>Open path in console</value>
   </data>
-  <data name="bookmarks_add_title" xml:space="preserve">
-    <value>Add a bookmark</value>
+  <data name="Indexer_Command_OpenProperties" xml:space="preserve">
+    <value>Properties</value>
   </data>
-  <data name="bookmarks_edit_name" xml:space="preserve">
-    <value>Edit bookmark</value>
+  <data name="Indexer_Command_OpenWith" xml:space="preserve">
+    <value>Open with</value>
   </data>
-  <data name="bookmarks_add_name" xml:space="preserve">
-    <value>Add bookmark</value>
-  </data>
-  <data name="bookmarks_delete_title" xml:space="preserve">
-    <value>Delete bookmark</value>
-  </data>
-  <data name="bookmarks_delete_name" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="bookmarks_open_in_terminal_name" xml:space="preserve">
-    <value>Open in Terminal</value>
-    <comment>"Terminal" should be the localized name of the Windows Terminal</comment>
-  </data>
-  <data name="bookmarks_form_name_label" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="bookmarks_form_save" xml:space="preserve">
-    <value>Save</value>
-  </data>
-  <data name="bookmarks_form_open" xml:space="preserve">
-    <value>Open</value>
-  </data>
-  <data name="bookmarks_command_name_open" xml:space="preserve">
-    <value>Open</value>
-  </data>
-  <data name="bookmarks_form_name_required" xml:space="preserve">
-    <value>Name is required</value>
-  </data>
-  <data name="bookmarks_form_bookmark_label" xml:space="preserve">
-    <value>URL or file path</value>
-  </data>
-  <data name="bookmarks_form_bookmark_required" xml:space="preserve">
-    <value>URL or file path is required</value>
-  </data>
-  <data name="bookmarks_required_placeholder" xml:space="preserve">
-    <value>{0} is required</value>
-    <comment>{0} will be replaced by a parameter name provided by the user</comment>
+  <data name="Indexer_Command_ShowInFolder" xml:space="preserve">
+    <value>Show in folder</value>
   </data>
 </root>

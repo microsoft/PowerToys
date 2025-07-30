@@ -17,6 +17,10 @@ parameters:
   - name: useCurrentBranchBuild
     type: boolean
     default: false
+  - name: powerToysBuildId
+    type: string
+    default: ""
+    displayName: "PowerToys Build ID (leave empty for latest)"
   - name: uiTestModules
     type: object
     default: []
@@ -113,21 +117,21 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  - template: steps-install-windows-terminal.yml
-    parameters:
-      platform: ${{ parameters.platform }}
-
   - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: 'specific'
         project: 'Dart'
         definition: '76541'
-        buildVersionToDownload: 'latestFromBranch'
-        ${{ if eq(parameters.useCurrentBranchBuild, true) }}:
-          branchName: '$(Build.SourceBranch)'
+        ${{ if ne(parameters.powerToysBuildId, '') }}:
+          buildVersionToDownload: 'specific'
+          buildId: '${{ parameters.powerToysBuildId }}'
         ${{ else }}:
-          branchName: 'refs/heads/main'
+          buildVersionToDownload: 'latestFromBranch'
+          ${{ if eq(parameters.useCurrentBranchBuild, true) }}:
+            branchName: '$(Build.SourceBranch)'
+          ${{ else }}:
+            branchName: 'refs/heads/main'
         artifactName: 'build-$(BuildPlatform)-Release'
         targetPath: '$(Build.ArtifactStagingDirectory)'
         ${{ if eq(parameters.installMode, 'peruser') }}:

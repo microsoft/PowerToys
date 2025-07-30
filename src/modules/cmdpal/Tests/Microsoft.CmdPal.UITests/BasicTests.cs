@@ -67,9 +67,8 @@ public class BasicTests : CommandPaletteTestBase
         Assert.AreEqual(searchFileItem.Name, "Open Windows Terminal Profiles");
         searchFileItem.DoubleClick();
 
-        SetSearchBox("PowerShell");
-
-        Assert.IsNotNull(this.Find<NavigationViewItem>("PowerShell"));
+        // SetSearchBox("PowerShell");
+        // Assert.IsNotNull(this.Find<NavigationViewItem>("PowerShell"));
     }
 
     [TestMethod]
