@@ -114,7 +114,6 @@
     <PackageVersion Include="WixToolset.NetFx.wixext" Version="5.0.2" />
     <PackageVersion Include="WixToolset.Bal.wixext" Version="5.0.2" />
     <PackageVersion Include="WixToolset.BootstrapperApplicationApi" Version="5.0.2" />
-    <PackageVersion Include="FireGiant.HeatWave.BuildTools.wixext" Version="5.0.2" />
     <PackageVersion Include="WixToolset.WixStandardBootstrapperApplicationFunctionApi" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
