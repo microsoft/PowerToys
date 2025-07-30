@@ -123,7 +123,7 @@ jobs:
         buildType: 'specific'
         project: 'Dart'
         definition: '76541'
-        ${{ if and(ne(parameters.powerToysBuildId, ''), ne(parameters.powerToysBuildId, 'latest')) }}:
+        ${{ if and(ne(parameters.powerToysBuildId, 'build'), ne(parameters.powerToysBuildId, 'latest'), ne(parameters.powerToysBuildId, 'current'), ne(parameters.powerToysBuildId, 'specific')) }}:
           buildVersionToDownload: 'specific'
           buildId: '${{ parameters.powerToysBuildId }}'
         ${{ else }}:
