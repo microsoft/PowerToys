@@ -74,7 +74,7 @@ public class IndexerTests : CommandPaletteTestBase
 
         openButton.Click();
 
-        SendKeys(Key.Enter);
+        FindDefaultAppDialogAndClickButton();
 
         var notepadWindow = FindNotepadWindow(TestFileBaseName, global: true);
 
@@ -92,6 +92,8 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(searchItem);
 
         searchItem.DoubleClick();
+
+        FindDefaultAppDialogAndClickButton();
 
         var notepadWindow = FindNotepadWindow(TestFileBaseName, global: true);
 
@@ -225,7 +227,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var propertiesWindow = FindByClassName<Window>("#32770", "Properties", global: true);
+        var propertiesWindow = FindByClassNameAndNamePattern<Window>("#32770", "Properties", global: true);
         Assert.IsNotNull(propertiesWindow, "The properties window did not open for the selected file.");
     }
 }

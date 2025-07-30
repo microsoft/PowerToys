@@ -314,6 +314,32 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Finds an element by ClassName only.
+        /// Returns the first element found with the specified ClassName.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="className">The ClassName to search for (e.g., "Notepad", "CabinetWClass").</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected T FindByClassName<T>(string className, int timeoutMS = 5000, bool global = false)
+            where T : Element, new()
+        {
+            return Session.Find<T>(By.ClassName(className), timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Finds an element by ClassName only.
+        /// Returns the first element found with the specified ClassName.
+        /// </summary>
+        /// <param name="className">The ClassName to search for (e.g., "Notepad", "CabinetWClass").</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>The found element.</returns>
+        protected Element FindByClassName(string className, int timeoutMS = 5000, bool global = false)
+        {
+            return FindByClassName<Element>(className, timeoutMS, global);
+        }
+
+        /// <summary>
         /// Finds an element by ClassName and matches its Name attribute using regex pattern matching.
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
@@ -321,7 +347,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="namePattern">Pattern to match against the Name attribute. Supports regex patterns.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected T FindByClassName<T>(string className, string namePattern, int timeoutMS = 5000, bool global = false)
+        protected T FindByClassNameAndNamePattern<T>(string className, string namePattern, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
             var elements = Session.FindAll<T>(By.ClassName(className), timeoutMS, global);
@@ -346,9 +372,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="namePattern">Pattern to match against the Name attribute. Supports regex patterns.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected Element FindByClassName(string className, string namePattern, int timeoutMS = 5000, bool global = false)
+        protected Element FindByClassNameAndNamePattern(string className, string namePattern, int timeoutMS = 5000, bool global = false)
         {
-            return FindByClassName<Element>(className, namePattern, timeoutMS, global);
+            return FindByClassNameAndNamePattern<Element>(className, namePattern, timeoutMS, global);
         }
 
         /// <summary>
@@ -362,7 +388,7 @@ namespace Microsoft.PowerToys.UITest
         protected Element FindNotepadWindow(string baseFileName, int timeoutMS = 5000, bool global = false)
         {
             string pattern = $@"^{Regex.Escape(baseFileName)}(\.\w+)?(\s*-\s*|\s+)Notepad$";
-            return FindByClassName("Notepad", pattern, timeoutMS, global);
+            return FindByClassNameAndNamePattern("Notepad", pattern, timeoutMS, global);
         }
 
         /// <summary>
@@ -376,7 +402,7 @@ namespace Microsoft.PowerToys.UITest
         protected Element FindExplorerWindow(string folderName, int timeoutMS = 5000, bool global = false)
         {
             string pattern = $@"^{Regex.Escape(folderName)}(\s*-\s*(File\s+Explorer|Windows\s+Explorer))?$";
-            return FindByClassName("CabinetWClass", pattern, timeoutMS, global);
+            return FindByClassNameAndNamePattern("CabinetWClass", pattern, timeoutMS, global);
         }
 
         /// <summary>

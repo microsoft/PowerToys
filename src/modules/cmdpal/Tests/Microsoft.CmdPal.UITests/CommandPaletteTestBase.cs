@@ -45,4 +45,19 @@ public class CommandPaletteTestBase : UITestBase
         Assert.IsNotNull(contextMenuButton, "Context menu button not found.");
         contextMenuButton.Click();
     }
+
+    protected void FindDefaultAppDialogAndClickButton()
+    {
+        try
+        {
+            var chooseDialog = FindByClassName("NamedContainerAutomationPeer", global: true);
+
+            chooseDialog.Find<Button>("Just once").Click();
+        }
+        catch (Exception)
+        {
+            // If the dialog is not found, it means the default application is already set.
+            // We can proceed without clicking "Just once".
+        }
+    }
 }
