@@ -19,9 +19,6 @@ parameters:
   - name: useLatestWebView2
     type: boolean
     default: false
-  - name: testBothInstallModes
-    type: boolean
-    default: true
   - name: buildSource
     type: string
     default: "latestOfficialBuild"
@@ -101,8 +98,8 @@ stages:
                 specificBuildId: ${{ parameters.specificBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
-            # Additional per-user installation test (when both modes are enabled)
-            - ${{ if and(ne(parameters.buildSource, 'buildNow'), eq(parameters.testBothInstallModes, true)) }}:
+            # Additional per-user installation test
+            - ${{ if ne(parameters.buildSource, 'buildNow') }}:
               - template: job-test-project.yml
                 parameters:
                   platform: x64Win10
@@ -133,8 +130,8 @@ stages:
                 specificBuildId: ${{ parameters.specificBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
-            # Additional per-user installation test (when both modes are enabled)
-            - ${{ if and(ne(parameters.buildSource, 'buildNow'), eq(parameters.testBothInstallModes, true)) }}:
+            # Additional per-user installation test
+            - ${{ if ne(parameters.buildSource, 'buildNow') }}:
               - template: job-test-project.yml
                 parameters:
                   platform: x64Win11
@@ -165,8 +162,8 @@ stages:
               specificBuildId: ${{ parameters.specificBuildId }}
               uiTestModules: ${{ parameters.uiTestModules }}
 
-          # Additional per-user installation test (when both modes are enabled)
-          - ${{ if and(ne(parameters.buildSource, 'buildNow'), eq(parameters.testBothInstallModes, true)) }}:
+          # Additional per-user installation test
+          - ${{ if ne(parameters.buildSource, 'buildNow') }}:
             - template: job-test-project.yml
               parameters:
                 platform: ${{ platform }}
