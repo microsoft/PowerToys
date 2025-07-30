@@ -180,12 +180,11 @@ namespace Microsoft.PowerToys.UITest
 
                 ExitExe(runnerProcessInfo.FileName);
                 runner = Process.Start(runnerProcessInfo);
-                Thread.Sleep(5000);
+
+                WaitForWindowAndSetCapability(opts, "PowerToys Settings", 5000, 5);
 
                 // Exit CmdPal UI before launching new process if use installer for test
                 ExitExeByName("Microsoft.CmdPal.UI");
-
-                WaitForWindowAndSetCapability(opts, "PowerToys Settings", 5000, 5);
             }
             catch (Exception ex)
             {
@@ -211,7 +210,6 @@ namespace Microsoft.PowerToys.UITest
 
                 var process = Process.Start(processStartInfo);
                 process?.WaitForExit();
-                Thread.Sleep(3000); // Wait for the app to start
 
                 WaitForWindowAndSetCapability(opts, "Command Palette", 5000, 10);
             }

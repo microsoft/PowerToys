@@ -24,7 +24,18 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 
 - **useLatestOfficialBuild**: When checked, downloads the latest official PowerToys build and installs it for testing. This skips the full solution build and only builds UI test projects.
 
-- **useCurrentBranchBuild**: When checked along with `useLatestOfficialBuild`, downloads the official build from the current branch instead of main.
+- **powerToysBuildId**: Specify a specific PowerToys build ID to download and test against. When provided, the pipeline will download that exact build instead of the latest build.
+
+  **Default value**: Empty (uses latest build)
+  
+  **When to use this**:
+  - Testing against a specific known build for reproducibility
+  - Regression testing against a particular build version
+  - Validating fixes in a specific build before release
+  
+  **Usage**: Enter the build ID number (e.g., `12345`) to download that specific build
+
+- **useCurrentBranchBuild**: When checked along with `useLatestOfficialBuild` (and when `powerToysBuildId` is empty), downloads the official build from the current branch instead of main.
 
   **Default value**: `false` (downloads from main branch)
   
@@ -36,6 +47,7 @@ The PowerToys UI test pipeline provides flexible options for building and testin
     - You are testing PowerToys functionality changes that are only available in your branch's build
   
   **Important notes**:
+  - This parameter is ignored when `powerToysBuildId` is specified
   - The test pipeline itself runs from your specified branch, but by default tests against the main branch's PowerToys build
   - Not all branches have signed builds available - only use this if you're certain your branch has a signed build
   - If enabled but no build exists for your branch, the pipeline may fail or fall back to main

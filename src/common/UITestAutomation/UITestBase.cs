@@ -274,7 +274,34 @@ namespace Microsoft.PowerToys.UITest
         /// <returns>The found element.</returns>
         protected Element FindByPartialName(string partialName, int timeoutMS = 5000, bool global = false)
         {
-            return Session.Find(By.XPath($"//*[contains(@Name, '{partialName}')]"), timeoutMS, global);
+            return FindByPartialName<Element>(partialName, timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Base method for finding elements by selector and filtering by name pattern.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="selector">The selector to find initial candidates.</param>
+        /// <param name="namePattern">Pattern to match against the Name attribute. Supports regex patterns.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <param name="errorMessage">Custom error message when no element is found.</param>
+        /// <returns>The found element.</returns>
+        private T FindByNamePattern<T>(By selector, string namePattern, int timeoutMS = 5000, bool global = false, string? errorMessage = null)
+            where T : Element, new()
+        {
+            var elements = Session.FindAll<T>(selector, timeoutMS, global);
+            var regex = new Regex(namePattern, RegexOptions.IgnoreCase);
+
+            foreach (var element in elements)
+            {
+                var name = element.GetAttribute("Name");
+                if (!string.IsNullOrEmpty(name) && regex.IsMatch(name))
+                {
+                    return element;
+                }
+            }
+
+            throw new NoSuchElementException(errorMessage ?? $"No element found matching pattern: {namePattern}");
         }
 
         /// <summary>
@@ -287,19 +314,7 @@ namespace Microsoft.PowerToys.UITest
         protected T FindByPattern<T>(string pattern, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            var elements = Session.FindAll<T>(By.XPath("//*[@Name]"), timeoutMS, global);
-            var regex = new Regex(pattern, RegexOptions.IgnoreCase);
-
-            foreach (var element in elements)
-            {
-                var name = element.GetAttribute("Name");
-                if (!string.IsNullOrEmpty(name) && regex.IsMatch(name))
-                {
-                    return element;
-                }
-            }
-
-            throw new NoSuchElementException($"No element found matching pattern: {pattern}");
+            return FindByNamePattern<T>(By.XPath("//*[@Name]"), pattern, timeoutMS, global, $"No element found matching pattern: {pattern}");
         }
 
         /// <summary>
@@ -350,19 +365,7 @@ namespace Microsoft.PowerToys.UITest
         protected T FindByClassNameAndNamePattern<T>(string className, string namePattern, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            var elements = Session.FindAll<T>(By.ClassName(className), timeoutMS, global);
-            var regex = new Regex(namePattern, RegexOptions.IgnoreCase);
-
-            foreach (var element in elements)
-            {
-                var name = element.GetAttribute("Name");
-                if (!string.IsNullOrEmpty(name) && regex.IsMatch(name))
-                {
-                    return element;
-                }
-            }
-
-            throw new NoSuchElementException($"No element with ClassName '{className}' found matching name pattern: {namePattern}");
+            return FindByNamePattern<T>(By.ClassName(className), namePattern, timeoutMS, global, $"No element with ClassName '{className}' found matching name pattern: {namePattern}");
         }
 
         /// <summary>
