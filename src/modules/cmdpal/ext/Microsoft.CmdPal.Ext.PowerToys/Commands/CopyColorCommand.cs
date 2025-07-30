@@ -14,7 +14,7 @@ internal sealed partial class CopyColorCommand : InvokableCommand
     public CopyColorCommand(Color color)
     {
         _color = color;
-        Name = $"Copy color {color}";
+        Name = $"Copy color #{color.R:X2}{color.G:X2}{color.B:X2}";
         Icon = new IconInfo("\uE790"); // Color icon (more appropriate than copy icon)
     }
 

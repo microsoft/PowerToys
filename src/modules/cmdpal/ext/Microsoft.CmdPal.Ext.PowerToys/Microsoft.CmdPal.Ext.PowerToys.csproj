@@ -150,6 +150,9 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
+	  <PackageReference Include="System.Drawing.Common" />
+	</ItemGroup>
+	<ItemGroup>
 		<EmbeddedResource Update="Properties\Resources.resx">
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
