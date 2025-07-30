@@ -50,14 +50,22 @@ public class CommandPaletteTestBase : UITestBase
     {
         try
         {
+            // win11
             var chooseDialog = FindByClassName("NamedContainerAutomationPeer", global: true);
 
             chooseDialog.Find<Button>("Just once").Click();
         }
-        catch (Exception)
+        catch
         {
-            // If the dialog is not found, it means the default application is already set.
-            // We can proceed without clicking "Just once".
+            try
+            {
+                // win10
+                var chooseDialog = FindByClassName("Shell_Flyout", global: true);
+                chooseDialog.Find<Button>("OK").Click();
+            }
+            catch
+            {
+            }
         }
     }
 }
