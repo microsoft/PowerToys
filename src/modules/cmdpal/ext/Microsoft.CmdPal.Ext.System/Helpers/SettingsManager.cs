@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.System.Helpers;
 
-public class SettingsManager : JsonSettingsManager
+public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
     private static readonly string _namespace = "system";
 
@@ -37,14 +37,6 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo,
         false);
 
-    public bool ShowDialogToConfirmCommand => _showDialogToConfirmCommand.Value;
-
-    public bool ShowSuccessMessageAfterEmptyingRecycleBin => _showSuccessMessageAfterEmptyingRecycleBin.Value;
-
-    public bool HideEmptyRecycleBin => _hideEmptyRecycleBin.Value;
-
-    public bool HideDisconnectedNetworkInfo => _hideDisconnectedNetworkInfo.Value;
-
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -53,6 +45,16 @@ public class SettingsManager : JsonSettingsManager
         // now, the state is just next to the exe
         return Path.Combine(directory, "settings.json");
     }
+
+    public bool ShowDialogToConfirmCommand() => _showDialogToConfirmCommand.Value;
+
+    public bool ShowSuccessMessageAfterEmptyingRecycleBin() => _showSuccessMessageAfterEmptyingRecycleBin.Value;
+
+    public bool HideEmptyRecycleBin() => _hideEmptyRecycleBin.Value;
+
+    public bool HideDisconnectedNetworkInfo() => _hideDisconnectedNetworkInfo.Value;
+
+    public FirmwareType GetSystemFirmwareType() => Win32Helpers.GetSystemFirmwareType();
 
     public SettingsManager()
     {
