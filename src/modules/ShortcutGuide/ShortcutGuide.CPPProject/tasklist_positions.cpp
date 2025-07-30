@@ -32,8 +32,8 @@ extern "C"
             RECT rc;
             if (GetWindowRect(secondaryTaskbar, &rc))
             {
-                HMONITOR monitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
-                if (monitor == monitor)
+                HMONITOR taskbarMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
+                if (monitor == taskbarMonitor)
                     return secondaryTaskbar;
             }
         }
