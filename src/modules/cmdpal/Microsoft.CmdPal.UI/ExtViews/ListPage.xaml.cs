@@ -8,6 +8,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -145,6 +146,18 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedItem != null)
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
+
+            // Automation notification for screen readers
+            var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemsList);
+            if (listViewPeer != null && li != null)
+            {
+                var notificationText = li.Title;
+                listViewPeer.RaiseNotificationEvent(
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.Other,
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.MostRecent,
+                    notificationText,
+                    "CommandPaletteSelectedItemChanged");
+            }
         }
     }
 
@@ -304,29 +317,49 @@ public sealed partial class ListPage : Page,
         return null;
     }
 
-    private void ItemsList_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    private void ItemsList_OnContextRequested(UIElement sender, ContextRequestedEventArgs e)
     {
-        if (e.OriginalSource is FrameworkElement element &&
-            element.DataContext is ListItemViewModel item)
+        var (item, element) = e.OriginalSource switch
         {
-            if (ItemsList.SelectedItem != item)
-            {
-                ItemsList.SelectedItem = item;
-            }
+            // caused by keyboard shortcut (e.g. Context menu key or Shift+F10)
+            ListViewItem listViewItem => (ItemsList.ItemFromContainer(listViewItem) as ListItemViewModel, listViewItem),
 
-            // ViewModel?.UpdateSelectedItemCommand.Execute(item);
-            var pos = e.GetPosition(element);
+            // caused by right-click on the ListViewItem
+            FrameworkElement { DataContext: ListItemViewModel itemViewModel } frameworkElement => (itemViewModel, frameworkElement),
 
-            _ = DispatcherQueue.TryEnqueue(
-                () =>
-                    {
-                        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
-                            new OpenContextMenuMessage(
-                                element,
-                                Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                                pos,
-                                ContextMenuFilterLocation.Top));
-                    });
+            _ => (null, null),
+        };
+
+        if (item == null || element == null)
+        {
+            return;
         }
+
+        if (ItemsList.SelectedItem != item)
+        {
+            ItemsList.SelectedItem = item;
+        }
+
+        if (!e.TryGetPosition(element, out var pos))
+        {
+            pos = new(0, element.ActualHeight);
+        }
+
+        _ = DispatcherQueue.TryEnqueue(
+            () =>
+            {
+                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                    new OpenContextMenuMessage(
+                        element,
+                        Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        pos,
+                        ContextMenuFilterLocation.Top));
+            });
+        e.Handled = true;
+    }
+
+    private void ItemsList_OnContextCanceled(UIElement sender, RoutedEventArgs e)
+    {
+        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
     }
 }

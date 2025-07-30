@@ -10,7 +10,6 @@ using System.Xml;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
-using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -96,7 +95,7 @@ public class UWPApplication : IProgram
 
         commands.Add(
             new CommandContextItem(
-                new CopyPathCommand(Location))
+                new Commands.CopyPathCommand(Location))
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
             });
