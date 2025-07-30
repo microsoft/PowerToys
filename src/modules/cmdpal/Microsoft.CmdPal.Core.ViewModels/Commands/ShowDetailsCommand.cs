@@ -10,13 +10,17 @@ namespace Microsoft.CmdPal.Core.ViewModels.Commands;
 
 public sealed partial class ShowDetailsCommand : InvokableCommand
 {
+    public static string ShowDetailsCommandId { get; } = "com.microsoft.cmdpal.showDetails";
+
+    private static IconInfo IconInfo { get; } = new IconInfo("\uF000"); // KnowledgeArticle Icon
+
     private DetailsViewModel Details { get; set; }
 
     public ShowDetailsCommand(DetailsViewModel details)
     {
-        Id = "ShowDetailsContextAction";
+        Id = ShowDetailsCommandId;
         Name = "Show Details";
-        Icon = new IconInfo("\uF000");
+        Icon = IconInfo;
         Details = details;
     }
 

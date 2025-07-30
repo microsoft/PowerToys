@@ -170,13 +170,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var model = _commandItemModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
         var more = model.MoreCommands;
-        if (more != null)
+        if (more is not null)
         {
             MoreCommands = more
                 .Select(item =>
@@ -392,17 +392,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 UpdateProperty(nameof(Icon));
                 break;
         }
-    }
-
-    private bool ShouldAddShowDetailsAction()
-    {
-        // Check if the parent page has ShowDetails = false
-        if (PageContext.TryGetTarget(out var pageContext) && pageContext is ListViewModel listViewModel)
-        {
-            return !listViewModel.ShowDetails;
-        }
-
-        return false;
     }
 
     protected override void UnsafeCleanup()

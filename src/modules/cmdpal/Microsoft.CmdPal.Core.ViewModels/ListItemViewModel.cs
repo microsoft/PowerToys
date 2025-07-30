@@ -115,48 +115,28 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
         base.SlowInitializeProperties();
 
-        // This freaking weirdo is getting called despite IsSelectedInitialized
-        // getting set. This is definitely a thread issue. Get it sorted
-        // knucklehead.
-
         // If the parent page has ShowDetails = false and we have details,
         // then we should add a show details action in the context menu.
         if (HasDetails &&
             PageContext.TryGetTarget(out var pageContext) &&
             pageContext is ListViewModel listViewModel &&
-            listViewModel.ShowDetails == false)
+            !listViewModel.ShowDetails)
         {
-            AddShowDetailsAction();
+            // Check if "Show Details" action already exists to prevent duplicates
+            if (!MoreCommands.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
+                                        contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
+            {
+                // Create the view model for the context action
+                var showDetailsCommand = new ShowDetailsCommand(Details);
+                var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
+                var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
+                showDetailsContextItemViewModel.SlowInitializeProperties();
+                MoreCommands.Add(showDetailsContextItemViewModel);
+            }
+
+            UpdateProperty(nameof(MoreCommands));
+            UpdateProperty(nameof(AllCommands));
         }
-    }
-
-    private void AddShowDetailsAction()
-    {
-        if (Details == null)
-        {
-            return;
-        }
-
-        // Check if "Show Details" action already exists to prevent duplicates
-        if (MoreCommands.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
-                                    contextItemViewModel.Command.Id == "ShowDetailsContextAction"))
-        {
-            return;
-        }
-
-        // Create the view model for the context action
-        var showDetailsCommand = new ShowDetailsCommand(Details);
-        var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
-        var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
-        showDetailsContextItemViewModel.InitializeProperties();
-        showDetailsContextItemViewModel.SlowInitializeProperties();
-
-        MoreCommands.Add(showDetailsContextItemViewModel);
-
-        // Update properties to reflect the changes
-        UpdateProperty(nameof(MoreCommands));
-        UpdateProperty(nameof(HasMoreCommands));
-        UpdateProperty(nameof(AllCommands));
     }
 
     private void UpdateTags(ITag[]? newTagsFromModel)

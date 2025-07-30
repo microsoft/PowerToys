@@ -157,16 +157,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
             foreach (var item in firstTwenty)
             {
                 item?.SafeInitializeProperties();
-
-                // Now that we've initialized the properties, we can
-                // check if the item has details. If it does, but
-                // ShowDetails is false, we want to add a context
-                // menu item to the command bar that allows the user to
-                // view the details.
-                if (item?.HasDetails == true && !ShowDetails)
-                {
-                    AddShowDetailsCommand(item);
-                }
             }
 
             // Cancel any ongoing search
@@ -233,39 +223,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
                 _isLoading = false;
             });
-    }
-
-    private void AddShowDetailsCommand(ListItemViewModel item)
-    {
-        // Check if "Show Details" action already exists to prevent duplicates
-        // and ensure we do have details to show.
-        if (!item.HasDetails ||
-            item.MoreCommands.Any(cmd =>
-                cmd is CommandContextItemViewModel contextItemViewModel &&
-                contextItemViewModel.Name == "ShowDetailsContextAction"))
-        {
-            return;
-        }
-
-        // Get localized string for the action title
-        // TODO: Replace with proper localization
-        var showDetailsTitle = "Show Details";
-
-        // Create a "Show Details" context action
-        var showDetailsAction = new CommandContextItem(
-            title: showDetailsTitle,
-            name: "ShowDetailsContextAction",
-            action: () =>
-            {
-                // Send the ShowDetailsMessage when the action is invoked
-                WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
-            });
-
-        // Create the view model for the context action
-        var showDetailsContextItem = new CommandContextItemViewModel(showDetailsAction, PageContext);
-        showDetailsContextItem.InitializeProperties();
-
-        item.MoreCommands.Add(showDetailsContextItem);
     }
 
     private void InitializeItemsTask(CancellationToken ct)

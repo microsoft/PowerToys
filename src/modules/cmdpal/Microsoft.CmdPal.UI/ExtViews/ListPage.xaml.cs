@@ -314,8 +314,7 @@ public sealed partial class ListPage : Page,
                 ItemsList.SelectedItem = item;
             }
 
-            ViewModel?.UpdateSelectedItemCommand.Execute(item);
-
+            // ViewModel?.UpdateSelectedItemCommand.Execute(item);
             var pos = e.GetPosition(element);
 
             _ = DispatcherQueue.TryEnqueue(

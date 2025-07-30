@@ -28,7 +28,7 @@ public sealed partial class AllAppsPage : ListPage
     {
         this.Name = Resources.all_apps;
         this.Icon = Icons.AllAppsIcon;
-        this.ShowDetails = false;
+        this.ShowDetails = true;
         this.IsLoading = true;
         this.PlaceholderText = Resources.search_installed_apps_placeholder;
 
