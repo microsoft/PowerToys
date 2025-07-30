@@ -137,7 +137,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var settings = new Settings(firmwareType: firmwareType);
         var pages = new SystemCommandPage(settings);
         var allCommands = pages.GetItems();
-        var result = Query("UEFT", allCommands);
+        var result = Query("UEFI", allCommands);
 
         // UEFI Firmware Settings command should exist
         Assert.IsNotNull(result);
