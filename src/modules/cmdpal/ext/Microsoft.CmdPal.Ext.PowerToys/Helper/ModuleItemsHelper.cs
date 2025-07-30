@@ -37,6 +37,20 @@ internal static class ModuleItemsHelper
                     };
                 }
 
+            case SettingsWindow.CropAndLock:
+                {
+                    var entry = new PowerToysModuleEntry
+                    {
+                        Module = module,
+                    };
+                    return new ListItem(new OpenInSettingsCommand(entry))
+                    {
+                        Icon = module.ModuleIcon(),
+                        Title = module.ModuleName(),
+                        MoreCommands = [.. entry.GetCommands()],
+                    };
+                }
+
             case SettingsWindow.FancyZones:
             case SettingsWindow.KBM:
             case SettingsWindow.Hosts:
@@ -52,7 +66,6 @@ internal static class ModuleItemsHelper
             case SettingsWindow.FileExplorer:
             case SettingsWindow.MeasureTool:
             case SettingsWindow.PowerOCR:
-            case SettingsWindow.CropAndLock:
             case SettingsWindow.AdvancedPaste:
             case SettingsWindow.CmdPal:
             case SettingsWindow.ZoomIt:

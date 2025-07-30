@@ -56,7 +56,8 @@ internal static class CommandsHelper
             case SettingsWindow.CropAndLock:
                 return new List<ICommandContextItem>()
                             {
-                                new CommandContextItem(new LaunchCommand(entry)),
+                                new CommandContextItem(new CrockAndLockThumbnailCommand()),
+                                new CommandContextItem(new CrockAndLockReparentCommand()),
                             };
             case SettingsWindow.EnvironmentVariables:
                 return new List<ICommandContextItem>()

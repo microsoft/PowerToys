@@ -33,15 +33,8 @@ internal static class WorkspaceItemsHelper
         public List<WorkspaceProject> Workspaces { get; set; } = new();
     }
 
-    private static List<ListItem>? _allItemsCache;
-
     public static List<ListItem> AllWorkspaces()
     {
-        if (_allItemsCache is not null)
-        {
-            return _allItemsCache;
-        }
-
         var items = new List<ListItem>();
 
         try
@@ -50,8 +43,6 @@ internal static class WorkspaceItemsHelper
 
             if (!File.Exists(workspacesFilePath))
             {
-                Logger.LogWarning($"Workspaces file not found: {workspacesFilePath}");
-                _allItemsCache = items;
                 return items;
             }
 
@@ -61,7 +52,6 @@ internal static class WorkspaceItemsHelper
 
             if (workspacesData?.Workspaces == null)
             {
-                _allItemsCache = items;
                 return items;
             }
 
@@ -87,7 +77,6 @@ internal static class WorkspaceItemsHelper
             Logger.LogError($"Error loading workspaces: {ex.Message}");
         }
 
-        _allItemsCache = items;
         return items;
     }
 
@@ -113,11 +102,6 @@ internal static class WorkspaceItemsHelper
 
         matched.Sort((x, y) => y.Item1.CompareTo(x.Item1));
         return [.. matched.Select(x => x.Item2)];
-    }
-
-    public static void ClearCache()
-    {
-        _allItemsCache = null;
     }
 
     private static string GetWorkspacesFilePath()
