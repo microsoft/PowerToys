@@ -6,17 +6,17 @@ using System;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using ManagedCsWin32;
-using Microsoft.CmdPal.Ext.Indexer.Data;
-using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
-using Microsoft.CmdPal.Ext.Indexer.Properties;
+using Microsoft.CmdPal.Common.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace Microsoft.CmdPal.Ext.Indexer.Commands;
+namespace Microsoft.CmdPal.Common.Commands;
 
-internal sealed partial class OpenPropertiesCommand : InvokableCommand
+public partial class OpenPropertiesCommand : InvokableCommand
 {
-    private readonly IndexerItem _item;
+    internal static IconInfo OpenPropertiesIcon { get; } = new("\uE90F");
+
+    private readonly string _path;
 
     private static unsafe bool ShowFileProperties(string filename)
     {
@@ -31,7 +31,7 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
                 LpVerb = propertiesPtr,
                 LpFile = filenamePtr,
                 Show = (int)SHOW_WINDOW_CMD.SW_SHOW,
-                FMask = NativeHelpers.SEEMASKINVOKEIDLIST,
+                FMask = global::Windows.Win32.PInvoke.SEE_MASK_INVOKEIDLIST,
             };
 
             return Shell32.ShellExecuteEx(ref info);
@@ -43,24 +43,24 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
         }
     }
 
-    internal OpenPropertiesCommand(IndexerItem item)
+    public OpenPropertiesCommand(string fullPath)
     {
-        this._item = item;
+        this._path = fullPath;
         this.Name = Resources.Indexer_Command_OpenProperties;
-        this.Icon = new IconInfo("\uE90F");
+        this.Icon = OpenPropertiesIcon;
     }
 
     public override CommandResult Invoke()
     {
         try
         {
-            ShowFileProperties(_item.FullPath);
+            ShowFileProperties(_path);
         }
         catch (Exception ex)
         {
             Logger.LogError("Error showing file properties: ", ex);
         }
 
-        return CommandResult.GoHome();
+        return CommandResult.Dismiss();
     }
 }

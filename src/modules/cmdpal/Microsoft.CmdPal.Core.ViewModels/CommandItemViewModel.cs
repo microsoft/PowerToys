@@ -313,6 +313,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 Command = new(model.Command, PageContext);
                 Command.InitializeProperties();
+
+                // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
+                // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
+                _itemTitle = model.Title;
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
                 UpdateProperty(nameof(Icon));
@@ -338,7 +342,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                     var newContextMenu = more
                         .Select(item =>
                         {
-                            if (item is CommandContextItem contextItem)
+                            if (item is ICommandContextItem contextItem)
                             {
                                 return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
                             }
@@ -385,6 +389,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         switch (propertyName)
         {
             case nameof(Command.Name):
+                // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
+                // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
+                var model = _commandItemModel.Unsafe;
+                if (model != null)
+                {
+                    _itemTitle = model.Title;
+                }
+
                 UpdateProperty(nameof(Title));
                 UpdateProperty(nameof(Name));
                 break;
