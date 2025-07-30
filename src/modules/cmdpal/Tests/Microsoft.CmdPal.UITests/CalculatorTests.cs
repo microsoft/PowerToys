@@ -31,18 +31,17 @@ public class CalculatorTests : CommandPaletteTestBase
     private string ConvertResult(string originalResult, int originalBase, int convertToBase)
     {
         Assert.IsNotEmpty(originalResult, "Original result cannot be empty.");
-        Assert.IsTrue(originalBase is 2 or 8 or 10 or 16, "Original base must be one of the following: 2, 8, 10, or 16.");
-        Assert.IsTrue(convertToBase is 2 or 8 or 10 or 16, "Convert to base must be one of the following: 2, 8, 10, or 16.");
+        Assert.IsTrue(originalBase is 2 or 10 or 16, "Original base must be one of the following: 2, 8, 10, or 16.");
+        Assert.IsTrue(convertToBase is 2 or 10 or 16, "Convert to base must be one of the following: 2, 8, 10, or 16.");
 
         var originalDecimal = Convert.ToInt32(originalResult, originalBase);
 
         // support base two, decimal, hexadecimal, and octal
         return convertToBase switch
         {
-            2 => Convert.ToString(originalDecimal, 2),
-            8 => Convert.ToString(originalDecimal, 8),
+            2 => $"0b{Convert.ToString(originalDecimal, 2)}",
             10 => Convert.ToString(originalDecimal, 10),
-            16 => Convert.ToString(originalDecimal, 16).ToUpper(System.Globalization.CultureInfo.CurrentCulture),
+            16 => $"0x{Convert.ToString(originalDecimal, 16).ToUpper(System.Globalization.CultureInfo.CurrentCulture)}",
             _ => throw new ArgumentOutOfRangeException(nameof(convertToBase), "Unsupported base conversion"),
         };
     }
@@ -163,6 +162,6 @@ public class CalculatorTests : CommandPaletteTestBase
         binaryItem.Click();
 
         var clipboardContent = System.Windows.Forms.Clipboard.GetText();
-        Assert.IsTrue(clipboardContent.Equals(expectation, StringComparison.Ordinal), $"Clipboard content does not equal the expected result. clipboard: {clipboardContent}");
+        Assert.IsTrue(clipboardContent.Equals(binaryResult, StringComparison.Ordinal), $"Clipboard content does not equal the expected result. clipboard: {clipboardContent}");
     }
 }
