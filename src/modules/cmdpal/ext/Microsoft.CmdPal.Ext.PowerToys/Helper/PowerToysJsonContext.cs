@@ -10,9 +10,10 @@ namespace Microsoft.CmdPal.Ext.PowerToys.Helper;
 [JsonSerializable(typeof(WorkspaceItemsHelper.WorkspacesData))]
 [JsonSerializable(typeof(WorkspaceItemsHelper.WorkspaceProject))]
 [JsonSerializable(typeof(WorkspaceItemsHelper.WorkspaceApplication))]
+[JsonSerializable(typeof(List<string>))]
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true)]
-internal sealed partial class WorkspaceJsonContext : JsonSerializerContext
+internal sealed partial class PowerToysJsonContext : JsonSerializerContext
 {
 }

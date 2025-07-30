@@ -57,7 +57,7 @@ internal static class WorkspaceItemsHelper
 
             var jsonContent = File.ReadAllText(workspacesFilePath);
 
-            var workspacesData = JsonSerializer.Deserialize(jsonContent, WorkspaceJsonContext.Default.WorkspacesData);
+            var workspacesData = JsonSerializer.Deserialize(jsonContent, PowerToysJsonContext.Default.WorkspacesData);
 
             if (workspacesData?.Workspaces == null)
             {

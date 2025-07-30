@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.Ext.PowerToys.Classes;
 using Microsoft.CmdPal.Ext.PowerToys.Commands;
+using Microsoft.CmdPal.Ext.PowerToys.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using static Common.UI.SettingsDeepLink;
@@ -20,6 +21,7 @@ internal static class CommandsHelper
                 return new List<ICommandContextItem>()
                             {
                                 new CommandContextItem(new LaunchCommand(entry)),
+                                new CommandContextItem(new ColorPickerListPage()),
                             };
             case SettingsWindow.FancyZones:
                 return new List<ICommandContextItem>()
