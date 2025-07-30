@@ -58,6 +58,8 @@ public sealed partial class MainWindow : WindowEx,
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
 
+    private WindowPosition _currentWindowPosition = new();
+
     public MainWindow()
     {
         InitializeComponent();
@@ -77,6 +79,8 @@ public sealed partial class MainWindow : WindowEx,
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
         PositionCentered();
+        UpdateWindowPositionInMemory();
+
         SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
@@ -144,6 +148,17 @@ public sealed partial class MainWindow : WindowEx,
             centeredPosition.Y += displayArea.WorkArea.Y;
             AppWindow.Move(centeredPosition);
         }
+    }
+
+    private void UpdateWindowPositionInMemory()
+    {
+        _currentWindowPosition = new WindowPosition
+        {
+            X = AppWindow.Position.X,
+            Y = AppWindow.Position.Y,
+            Width = AppWindow.Size.Width,
+            Height = AppWindow.Size.Height,
+        };
     }
 
     private void HotReloadSettings()
@@ -226,8 +241,16 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        var display = GetScreen(hwnd, target);
-        PositionCentered(display);
+        if (target == MonitorBehavior.ToLast)
+        {
+            AppWindow.Resize(new SizeInt32 { Width = _currentWindowPosition.Width, Height = _currentWindowPosition.Height });
+            AppWindow.Move(new PointInt32 { X = _currentWindowPosition.X, Y = _currentWindowPosition.Y });
+        }
+        else
+        {
+            var display = GetScreen(hwnd, target);
+            PositionCentered(display);
+        }
 
         // Just to be sure, SHOW our hwnd.
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
@@ -433,6 +456,9 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
+            // Save the current window position before hiding the window
+            UpdateWindowPositionInMemory();
+
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)
             {
