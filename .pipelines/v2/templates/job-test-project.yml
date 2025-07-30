@@ -19,8 +19,8 @@ parameters:
     default: false
   - name: powerToysBuildId
     type: string
-    default: ""
-    displayName: "PowerToys Build ID (leave empty for latest)"
+    default: "latest"
+    displayName: "PowerToys Build ID (default: latest)"
   - name: uiTestModules
     type: object
     default: []
@@ -123,7 +123,7 @@ jobs:
         buildType: 'specific'
         project: 'Dart'
         definition: '76541'
-        ${{ if ne(parameters.powerToysBuildId, '') }}:
+        ${{ if and(ne(parameters.powerToysBuildId, ''), ne(parameters.powerToysBuildId, 'latest')) }}:
           buildVersionToDownload: 'specific'
           buildId: '${{ parameters.powerToysBuildId }}'
         ${{ else }}:

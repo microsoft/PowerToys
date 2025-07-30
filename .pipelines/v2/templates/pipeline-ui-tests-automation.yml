@@ -30,8 +30,8 @@ parameters:
     default: false
   - name: powerToysBuildId
     type: string
-    default: ""
-    displayName: "PowerToys Build ID (leave empty for latest)"
+    default: "latest"
+    displayName: "PowerToys Build ID (default: latest)"
   - name: uiTestModules
     type: object
     default: []
