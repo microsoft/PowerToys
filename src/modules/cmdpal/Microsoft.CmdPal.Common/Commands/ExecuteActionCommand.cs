@@ -9,11 +9,11 @@ using Windows.AI.Actions.Hosting;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
-internal sealed partial class ExecuteActionCommand : InvokableCommand
+public sealed partial class ExecuteActionCommand : InvokableCommand
 {
     private readonly ActionInstance actionInstance;
 
-    internal ExecuteActionCommand(ActionInstance actionInstance)
+    public ExecuteActionCommand(ActionInstance actionInstance)
     {
         this.actionInstance = actionInstance;
         this.Name = actionInstance.DisplayInfo.Description;

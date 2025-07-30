@@ -5,12 +5,16 @@
 using System;
 using System.Linq;
 using Microsoft.CmdPal.Ext.System.Helpers;
+using Microsoft.CmdPal.Ext.System.Pages;
+using Microsoft.CmdPal.Ext.UnitTestBase;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.System.UnitTests;
 
 [TestClass]
-public class QueryTests
+public class QueryTests : CommandPaletteUnitTestBase
 {
     [DataTestMethod]
     [DataRow("shutdown", "Shutdown")]
@@ -19,87 +23,130 @@ public class QueryTests
     [DataRow("lock", "Lock")]
     [DataRow("sleep", "Sleep")]
     [DataRow("hibernate", "Hibernate")]
-    public void SystemCommandsTest(string typedString, string expectedCommand)
+    [DataRow("open recycle", "Open Recycle Bin")]
+    [DataRow("empty recycle", "Empty Recycle Bin")]
+    [DataRow("uefi", "UEFI Firmware Settings")]
+    public void TopLevelPageQueryTest(string input, string matchedTitle)
     {
-        // Setup
-        var commands = Commands.GetSystemCommands(false, false, false, false);
+        var settings = new Settings();
+        var pages = new SystemCommandPage(settings);
+        var allCommands = pages.GetItems();
 
-        // Act
-        var result = commands.Where(c => c.Title.Contains(expectedCommand, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+        var result = Query(input, allCommands);
 
-        // Assert
+        // Empty recycle bin command should exist
         Assert.IsNotNull(result);
-        Assert.IsTrue(result.Title.Contains(expectedCommand, StringComparison.OrdinalIgnoreCase));
+
+        var firstItem = result.FirstOrDefault();
+
+        Assert.IsNotNull(firstItem, "No items matched the query.");
+        Assert.AreEqual(matchedTitle, firstItem.Title, $"Expected to match '{input}' but got '{firstItem.Title}'");
     }
 
     [TestMethod]
     public void RecycleBinCommandTest()
     {
-        // Setup
-        var commands = Commands.GetSystemCommands(false, false, false, false);
+        var settings = new Settings(hideEmptyRecycleBin: true);
+        var pages = new SystemCommandPage(settings);
+        var allCommands = pages.GetItems();
 
-        // Act
-        var result = commands.Where(c => c.Title.Contains("Recycle", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+        var result = Query("recycle", allCommands);
 
-        // Assert
+        // Empty recycle bin command should exist
         Assert.IsNotNull(result);
+
+        foreach (var item in result)
+        {
+            if (item.Title.Contains("Open Recycle Bin") || item.Title.Contains("Empty Recycle Bin"))
+            {
+                Assert.Fail("Recycle Bin commands should not be available when hideEmptyRecycleBin is true.");
+            }
+        }
+
+        var firstItem = result.FirstOrDefault();
+        Assert.IsNotNull(firstItem, "No items matched the query.");
+        Assert.IsTrue(
+            firstItem.Title.Contains("Recycle Bin", StringComparison.OrdinalIgnoreCase),
+            $"Expected to match 'Recycle Bin' but got '{firstItem.Title}'");
     }
 
     [TestMethod]
     public void NetworkCommandsTest()
     {
-        // Test that network commands can be retrieved
-        try
+        var settings = new Settings();
+        var pages = new SystemCommandPage(settings);
+        var allCommands = pages.GetItems();
+
+        var ipv4Result = Query("IPv4", allCommands);
+
+        Assert.IsNotNull(ipv4Result);
+        Assert.IsTrue(ipv4Result.Length > 0, "No IPv4 commands matched the query.");
+
+        var ipv6Result = Query("IPv6", allCommands);
+        Assert.IsNotNull(ipv6Result);
+        Assert.IsTrue(ipv6Result.Length > 0, "No IPv6 commands matched the query.");
+
+        var macResult = Query("MAC", allCommands);
+        Assert.IsNotNull(macResult);
+        Assert.IsTrue(macResult.Length > 0, "No MAC commands matched the query.");
+
+        var findDisconnectedMACResult = false;
+        foreach (var item in macResult)
         {
-            var networkPropertiesList = NetworkConnectionProperties.GetList();
-            Assert.IsTrue(networkPropertiesList.Count >= 0); // Should not throw exceptions
+            if (item.Details.Body.Contains("Disconnected"))
+            {
+                findDisconnectedMACResult = true;
+                break;
+            }
         }
-        catch (Exception ex)
-        {
-            Assert.Fail($"Network commands should not throw exceptions: {ex.Message}");
-        }
+
+        Assert.IsTrue(findDisconnectedMACResult, "No disconnected MAC address found in the results.");
     }
 
     [TestMethod]
-    public void UefiCommandIsAvailableTest()
+    public void HideDisconnectedNetworkInfoTest()
     {
-        // Setup
-        var firmwareType = Win32Helpers.GetSystemFirmwareType();
-        var isUefiMode = firmwareType == FirmwareType.Uefi;
+        var settings = new Settings(hideDisconnectedNetworkInfo: true);
+        var pages = new SystemCommandPage(settings);
+        var allCommands = pages.GetItems();
 
-        // Act
-        var commands = Commands.GetSystemCommands(isUefiMode, false, false, false);
-        var uefiCommand = commands.Where(c => c.Title.Contains("UEFI", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+        var macResult = Query("MAC", allCommands);
+        Assert.IsNotNull(macResult);
+        Assert.IsTrue(macResult.Length > 0, "No MAC commands matched the query.");
 
-        // Assert
-        if (isUefiMode)
+        var findDisconnectedMACResult = false;
+        foreach (var item in macResult)
         {
-            Assert.IsNotNull(uefiCommand);
+            if (item.Details.Body.Contains("Disconnected"))
+            {
+                findDisconnectedMACResult = true;
+                break;
+            }
         }
-        else
-        {
-            // UEFI command may still exist but be disabled on non-UEFI systems
-            Assert.IsTrue(true); // Test environment independent
-        }
+
+        Assert.IsTrue(!findDisconnectedMACResult, "Disconnected MAC address found in the results.");
     }
 
     [TestMethod]
-    public void FirmwareTypeTest()
+    [DataRow(FirmwareType.Uefi, true)]
+    [DataRow(FirmwareType.Bios, false)]
+    [DataRow(FirmwareType.Max, false)]
+    [DataRow(FirmwareType.Unknown, false)]
+    public void FirmwareSettingsTest(FirmwareType firmwareType, bool hasCommand)
     {
-        // Test that GetSystemFirmwareType returns a valid enum value
-        var firmwareType = Win32Helpers.GetSystemFirmwareType();
-        Assert.IsTrue(Enum.IsDefined(typeof(FirmwareType), firmwareType));
-    }
+        var settings = new Settings(firmwareType: firmwareType);
+        var pages = new SystemCommandPage(settings);
+        var allCommands = pages.GetItems();
+        var result = Query("UEFI", allCommands);
 
-    [TestMethod]
-    public void EmptyRecycleBinCommandTest()
-    {
-        // Test that empty recycle bin command exists
-        var commands = Commands.GetSystemCommands(false, false, false, false);
-        var result = commands.Where(c => c.Title.Contains("Empty", StringComparison.OrdinalIgnoreCase) &&
-                                         c.Title.Contains("Recycle", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-
-        // Empty recycle bin command should exist
+        // UEFI Firmware Settings command should exist
         Assert.IsNotNull(result);
+        var firstItem = result.FirstOrDefault();
+        Assert.IsNotNull(firstItem, "No items matched the query.");
+        var containsFirmwareSettings = firstItem.Title.Contains("UEFI Firmware Settings", StringComparison.OrdinalIgnoreCase);
+
+        Assert.IsTrue(
+            containsFirmwareSettings == hasCommand,
+            $"Expected to match 'UEFI Firmware Settings' but got '{firstItem.Title}'");
     }
 }

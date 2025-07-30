@@ -13,7 +13,8 @@ using Microsoft.CommandPalette.Extensions;
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ShellViewModel : ObservableObject,
-    IRecipient<PerformCommandMessage>
+    IRecipient<PerformCommandMessage>,
+    IRecipient<HandleCommandResultMessage>
 {
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
@@ -77,6 +78,7 @@ public partial class ShellViewModel : ObservableObject,
 
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
+        WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
     }
 
     [RelayCommand]
@@ -356,6 +358,11 @@ public partial class ShellViewModel : ObservableObject,
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
         WeakReferenceMessenger.Default.Send<GoBackMessage>(new(withAnimation, focusSearch));
+    }
+
+    public void Receive(HandleCommandResultMessage message)
+    {
+        UnsafeHandleCommandResult(message.Result.Unsafe);
     }
 
     private void OnUIThread(Action action)

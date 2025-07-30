@@ -89,7 +89,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             return;
         }
 
-        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
 
         // Check for cancellation before file system operations
         cancellationToken.ThrowIfCancellationRequested();
@@ -154,11 +154,11 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         else if (pathIsDir)
         {
             var pathItem = new PathListItem(exe, query, _addToHistory);
+            Command = pathItem.Command;
+            MoreCommands = pathItem.MoreCommands;
             Title = pathItem.Title;
             Subtitle = pathItem.Subtitle;
             Icon = pathItem.Icon;
-            Command = pathItem.Command;
-            MoreCommands = pathItem.MoreCommands;
         }
         else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
         {
@@ -191,7 +191,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             return false;
         }
 
-        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
         var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
         var pathIsDir = Directory.Exists(exe);
 

@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -31,7 +32,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private readonly Lock _listLock = new();
 
-    private bool _isLoading;
+    private InterlockedBoolean _isLoading;
     private bool _isFetching;
 
     public event TypedEventHandler<ListViewModel, object>? ItemsUpdated;
@@ -121,7 +122,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             ItemsUpdated?.Invoke(this, EventArgs.Empty);
             UpdateEmptyContent();
-            _isLoading = false;
+            _isLoading.Clear();
         }
     }
 
@@ -221,7 +222,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
 
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
-                _isLoading = false;
+                _isLoading.Clear();
             });
     }
 
@@ -469,21 +470,38 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return;
         }
 
-        if (model.HasMoreItems && !_isLoading)
+        if (!_isLoading.Set())
         {
-            _isLoading = true;
-            _ = Task.Run(() =>
+            return;
+
+            // NOTE: May miss newly available items until next scroll if model
+            // state changes between our check and this reset
+        }
+
+        _ = Task.Run(() =>
+        {
+            // Execute all COM calls on background thread to avoid reentrancy issues with UI
+            // with the UI thread when COM starts inner message pump
+            try
             {
-                try
+                if (model.HasMoreItems)
                 {
                     model.LoadMore();
+
+                    // _isLoading flag will be set as a result of LoadMore,
+                    // which must raise ItemsChanged to end the loading.
                 }
-                catch (Exception ex)
+                else
                 {
-                    ShowException(ex, model.Name);
+                    _isLoading.Clear();
                 }
-            });
-        }
+            }
+            catch (Exception ex)
+            {
+                _isLoading.Clear();
+                ShowException(ex, model.Name);
+            }
+        });
     }
 
     protected override void FetchProperty(string propertyName)

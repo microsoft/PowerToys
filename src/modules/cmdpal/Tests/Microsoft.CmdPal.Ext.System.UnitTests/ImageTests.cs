@@ -16,56 +16,25 @@ namespace Microsoft.CmdPal.Ext.System.UnitTests;
 [TestClass]
 public class ImageTests
 {
-    [DataTestMethod]
-    [DataRow("shutdown", "ShutdownIcon")]
-    [DataRow("restart", "RestartIcon")]
-    [DataRow("sign out", "LogoffIcon")]
-    [DataRow("lock", "LockIcon")]
-    [DataRow("sleep", "SleepIcon")]
-    [DataRow("hibernate", "SleepIcon")]
-    [DataRow("recycle bin", "RecycleBinIcon")]
-    [DataRow("uefi firmware settings", "FirmwareSettingsIcon")]
-    [DataRow("IPv4 addr", "NetworkAdapterIcon")]
-    [DataRow("IPV6 addr", "NetworkAdapterIcon")]
-    [DataRow("MAC addr", "NetworkAdapterIcon")]
-    public void IconThemeDarkTest(string typedString, string expectedIconPropertyName)
+    [DataRow(true)]
+    [DataRow(false)]
+    [TestMethod]
+    public void IconThemeTest(bool isDarkIcon)
     {
-        var systemPage = new SystemCommandPage(new SettingsManager());
+        var systemPage = new SystemCommandPage(new Settings());
+        var commands = systemPage.GetItems();
 
-        foreach (var item in systemPage.GetItems())
+        foreach (var item in commands)
         {
-            if (item.Title.Contains(typedString, StringComparison.OrdinalIgnoreCase) || item.Subtitle.Contains(typedString, StringComparison.OrdinalIgnoreCase))
+            var icon = item.Icon;
+            Assert.IsNotNull(icon, $"Icon for '{item.Title}' should not be null.");
+            if (isDarkIcon)
             {
-                var icon = item.Icon;
-                Assert.IsNotNull(icon, $"Icon for '{typedString}' should not be null.");
-                Assert.IsNotEmpty(icon.Dark.Icon, $"Icon for '{typedString}' should not be empty.");
+                Assert.IsNotEmpty(icon.Dark.Icon, $"Icon for '{item.Title}' should not be empty.");
             }
-        }
-    }
-
-    [DataTestMethod]
-    [DataRow("shutdown", "ShutdownIcon")]
-    [DataRow("restart", "RestartIcon")]
-    [DataRow("sign out", "LogoffIcon")]
-    [DataRow("lock", "LockIcon")]
-    [DataRow("sleep", "SleepIcon")]
-    [DataRow("hibernate", "SleepIcon")]
-    [DataRow("recycle bin", "RecycleBinIcon")]
-    [DataRow("uefi firmware settings", "FirmwareSettingsIcon")]
-    [DataRow("IPv4 addr", "NetworkAdapterIcon")]
-    [DataRow("IPV6 addr", "NetworkAdapterIcon")]
-    [DataRow("MAC addr", "NetworkAdapterIcon")]
-    public void IconThemeLightTest(string typedString, string expectedIconPropertyName)
-    {
-        var systemPage = new SystemCommandPage(new SettingsManager());
-
-        foreach (var item in systemPage.GetItems())
-        {
-            if (item.Title.Contains(typedString, StringComparison.OrdinalIgnoreCase) || item.Subtitle.Contains(typedString, StringComparison.OrdinalIgnoreCase))
+            else
             {
-                var icon = item.Icon;
-                Assert.IsNotNull(icon, $"Icon for '{typedString}' should not be null.");
-                Assert.IsNotEmpty(icon.Light.Icon, $"Icon for '{typedString}' should not be empty.");
+                Assert.IsNotEmpty(icon.Light.Icon, $"Icon for '{item.Title}' should not be empty.");
             }
         }
     }

@@ -70,6 +70,24 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy path.
+        /// </summary>
+        internal static string CopyPathTextCommand_Name {
+            get {
+                return ResourceManager.GetString("CopyPathTextCommand_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copied path to clipboard.
+        /// </summary>
+        internal static string CopyPathTextCommand_Result {
+            get {
+                return ResourceManager.GetString("CopyPathTextCommand_Result", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copied to clipboard.
         /// </summary>
         internal static string CopyTextCommand_CopiedToClipboard {
