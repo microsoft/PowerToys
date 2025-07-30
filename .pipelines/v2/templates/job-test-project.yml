@@ -11,16 +11,14 @@ parameters:
   - name: useLatestWebView2
     type: boolean
     default: false
-  - name: useLatestOfficialBuild
-    type: boolean
-    default: true
-  - name: useCurrentBranchBuild
-    type: boolean
-    default: false
-  - name: powerToysBuildId
+  - name: buildSource
     type: string
     default: "latest"
-    displayName: "PowerToys Build ID (default: latest)"
+    displayName: "Build Source"
+  - name: specificBuildId
+    type: string
+    default: ""
+    displayName: "Build ID (for specific builds)"
   - name: uiTestModules
     type: object
     default: []
@@ -117,18 +115,18 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+  - ${{ if ne(parameters.buildSource, 'build') }}:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: 'specific'
         project: 'Dart'
         definition: '76541'
-        ${{ if and(ne(parameters.powerToysBuildId, 'build'), ne(parameters.powerToysBuildId, 'latest'), ne(parameters.powerToysBuildId, 'current'), ne(parameters.powerToysBuildId, 'specific')) }}:
+        ${{ if eq(parameters.buildSource, 'specific') }}:
           buildVersionToDownload: 'specific'
-          buildId: '${{ parameters.powerToysBuildId }}'
+          buildId: '${{ parameters.specificBuildId }}'
         ${{ else }}:
           buildVersionToDownload: 'latestFromBranch'
-          ${{ if eq(parameters.useCurrentBranchBuild, true) }}:
+          ${{ if eq(parameters.buildSource, 'current') }}:
             branchName: '$(Build.SourceBranch)'
           ${{ else }}:
             branchName: 'refs/heads/main'
@@ -141,7 +139,7 @@ jobs:
           patterns: |
             **/PowerToysSetup*.exe
 
-  - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+  - ${{ if ne(parameters.buildSource, 'build') }}:
     - ${{ if eq(parameters.installMode, 'peruser') }}:
       - pwsh: |-
           & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "PerUser"
@@ -177,7 +175,7 @@ jobs:
           !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
       env:
         platform: '$(TestPlatform)'
-        useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
+        useInstallerForTest: ${{ ne(parameters.buildSource, 'build') }}
 
   - ${{ if ne(length(parameters.uiTestModules), 0) }}:
     - ${{ each module in parameters.uiTestModules }}:
@@ -199,4 +197,4 @@ jobs:
             !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
         env:
           platform: '$(TestPlatform)'
-          useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
+          useInstallerForTest: ${{ ne(parameters.buildSource, 'build') }}

@@ -98,9 +98,8 @@ stages:
                 platform: x64Win10
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                useLatestOfficialBuild: ${{ ne(parameters.buildSource, 'build') }}
-                useCurrentBranchBuild: ${{ eq(parameters.buildSource, 'current') }}
-                powerToysBuildId: ${{ if eq(parameters.buildSource, 'specific') }}${{ parameters.specificBuildId }}${{ else }}${{ parameters.buildSource }}
+                buildSource: ${{ parameters.buildSource }}
+                specificBuildId: ${{ parameters.specificBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
             # Additional per-user installation test (when both modes are enabled)
@@ -110,9 +109,8 @@ stages:
                   platform: x64Win10
                   configuration: Release
                   useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                  useLatestOfficialBuild: ${{ ne(parameters.buildSource, 'build') }}
-                  useCurrentBranchBuild: ${{ eq(parameters.buildSource, 'current') }}
-                  powerToysBuildId: ${{ if eq(parameters.buildSource, 'specific') }}${{ parameters.specificBuildId }}${{ else }}${{ parameters.buildSource }}
+                  buildSource: ${{ parameters.buildSource }}
+                  specificBuildId: ${{ parameters.specificBuildId }}
                   uiTestModules: ${{ parameters.uiTestModules }}
                   installMode: 'peruser'
                   jobSuffix: '_PerUser'
@@ -132,9 +130,8 @@ stages:
                 platform: x64Win11
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                useLatestOfficialBuild: ${{ ne(parameters.buildSource, 'build') }}
-                useCurrentBranchBuild: ${{ eq(parameters.buildSource, 'current') }}
-                powerToysBuildId: ${{ if eq(parameters.buildSource, 'specific') }}${{ parameters.specificBuildId }}${{ else }}${{ parameters.buildSource }}
+                buildSource: ${{ parameters.buildSource }}
+                specificBuildId: ${{ parameters.specificBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
             # Additional per-user installation test (when both modes are enabled)
@@ -144,9 +141,8 @@ stages:
                   platform: x64Win11
                   configuration: Release
                   useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                  useLatestOfficialBuild: ${{ ne(parameters.buildSource, 'build') }}
-                  useCurrentBranchBuild: ${{ eq(parameters.buildSource, 'current') }}
-                  powerToysBuildId: ${{ if eq(parameters.buildSource, 'specific') }}${{ parameters.specificBuildId }}${{ else }}${{ parameters.buildSource }}
+                  buildSource: ${{ parameters.buildSource }}
+                  specificBuildId: ${{ parameters.specificBuildId }}
                   uiTestModules: ${{ parameters.uiTestModules }}
                   installMode: 'peruser'
                   jobSuffix: '_PerUser'
@@ -166,9 +162,8 @@ stages:
               platform: ${{ platform }}
               configuration: Release
               useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-              useLatestOfficialBuild: ${{ ne(parameters.buildSource, 'build') }}
-              useCurrentBranchBuild: ${{ eq(parameters.buildSource, 'current') }}
-              powerToysBuildId: ${{ if eq(parameters.buildSource, 'specific') }}${{ parameters.specificBuildId }}${{ else }}${{ parameters.buildSource }}
+              buildSource: ${{ parameters.buildSource }}
+              specificBuildId: ${{ parameters.specificBuildId }}
               uiTestModules: ${{ parameters.uiTestModules }}
 
           # Additional per-user installation test (when both modes are enabled)
@@ -178,9 +173,8 @@ stages:
                 platform: ${{ platform }}
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                useLatestOfficialBuild: ${{ ne(parameters.buildSource, 'build') }}
-                useCurrentBranchBuild: ${{ eq(parameters.buildSource, 'current') }}
-                powerToysBuildId: ${{ if eq(parameters.buildSource, 'specific') }}${{ parameters.specificBuildId }}${{ else }}${{ parameters.buildSource }}
+                buildSource: ${{ parameters.buildSource }}
+                specificBuildId: ${{ parameters.specificBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
                 installMode: 'peruser'
                 jobSuffix: '_PerUser'
