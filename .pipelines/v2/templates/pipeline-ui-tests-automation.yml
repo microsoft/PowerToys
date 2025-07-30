@@ -24,24 +24,23 @@ parameters:
     default: true
   - name: buildSource
     type: string
-    default: "latest"
+    default: "latestOfficialBuild"
     displayName: "Build Source"
     values:
-      - latest
-      - current
-      - build
-      - specific
+      - latestOfficialBuild
+      - buildNow
+      - specificBuildId
   - name: specificBuildId
     type: string
-    default: ''
-    displayName: "Specific Build ID (only used when Build Source = specific)"
+    default: 'xxxx'
+    displayName: "Build ID (only used when Build Source = specificBuildId)"
   - name: uiTestModules
     type: object
     default: []
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
-    - ${{ if eq(parameters.buildSource, 'build') }}:
+    - ${{ if eq(parameters.buildSource, 'buildNow') }}:
       - stage: Build_${{ platform }}
         displayName: Build ${{ platform }}
         dependsOn: []
@@ -65,7 +64,7 @@ stages:
               useVSPreview: ${{ parameters.useVSPreview }}
               timeoutInMinutes: 90
 
-    - ${{ if ne(parameters.buildSource, 'build') }}:
+    - ${{ if ne(parameters.buildSource, 'buildNow') }}:
       - stage: BuildUITests_${{ platform }}
         displayName: Build UI Tests Only
         dependsOn: []
@@ -86,7 +85,7 @@ stages:
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win10
         displayName: Test x64Win10
-        ${{ if ne(parameters.buildSource, 'build') }}:
+        ${{ if ne(parameters.buildSource, 'buildNow') }}:
           dependsOn:
             - BuildUITests_${{ platform }}
         ${{ else }}:
@@ -103,7 +102,7 @@ stages:
                 uiTestModules: ${{ parameters.uiTestModules }}
 
             # Additional per-user installation test (when both modes are enabled)
-            - ${{ if and(ne(parameters.buildSource, 'build'), eq(parameters.testBothInstallModes, true)) }}:
+            - ${{ if and(ne(parameters.buildSource, 'buildNow'), eq(parameters.testBothInstallModes, true)) }}:
               - template: job-test-project.yml
                 parameters:
                   platform: x64Win10
@@ -118,7 +117,7 @@ stages:
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win11
         displayName: Test x64Win11
-        ${{ if ne(parameters.buildSource, 'build') }}:
+        ${{ if ne(parameters.buildSource, 'buildNow') }}:
           dependsOn:
             - BuildUITests_${{ platform }}
         ${{ else }}:
@@ -135,7 +134,7 @@ stages:
                 uiTestModules: ${{ parameters.uiTestModules }}
 
             # Additional per-user installation test (when both modes are enabled)
-            - ${{ if and(ne(parameters.buildSource, 'build'), eq(parameters.testBothInstallModes, true)) }}:
+            - ${{ if and(ne(parameters.buildSource, 'buildNow'), eq(parameters.testBothInstallModes, true)) }}:
               - template: job-test-project.yml
                 parameters:
                   platform: x64Win11
@@ -150,7 +149,7 @@ stages:
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
         displayName: Test ${{ platform }}
-        ${{ if ne(parameters.buildSource, 'build') }}:
+        ${{ if ne(parameters.buildSource, 'buildNow') }}:
           dependsOn:
             - BuildUITests_${{ platform }}
         ${{ else }}:
@@ -167,7 +166,7 @@ stages:
               uiTestModules: ${{ parameters.uiTestModules }}
 
           # Additional per-user installation test (when both modes are enabled)
-          - ${{ if and(ne(parameters.buildSource, 'build'), eq(parameters.testBothInstallModes, true)) }}:
+          - ${{ if and(ne(parameters.buildSource, 'buildNow'), eq(parameters.testBothInstallModes, true)) }}:
             - template: job-test-project.yml
               parameters:
                 platform: ${{ platform }}
