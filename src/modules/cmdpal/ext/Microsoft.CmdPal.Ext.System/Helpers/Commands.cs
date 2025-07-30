@@ -136,7 +136,7 @@ internal static class Commands
     /// </summary>
     /// <param name="manager">The tSettingsManager instance</param>
     /// <returns>The list of available results</returns>
-    public static List<IListItem> GetNetworkConnectionResults(SettingsManager manager)
+    public static List<IListItem> GetNetworkConnectionResults(ISettingsInterface manager)
     {
         var results = new List<IListItem>();
 
@@ -151,7 +151,7 @@ internal static class Commands
         CompositeFormat sysIpv4DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip4_description);
         CompositeFormat sysIpv6DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip6_description);
         CompositeFormat sysMacDescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_mac_description);
-        var hideDisconnectedNetworkInfo = manager.HideDisconnectedNetworkInfo;
+        var hideDisconnectedNetworkInfo = manager.HideDisconnectedNetworkInfo();
 
         foreach (NetworkConnectionProperties intInfo in networkPropertiesCache)
         {
@@ -200,7 +200,7 @@ internal static class Commands
         return results;
     }
 
-    public static List<IListItem> GetAllCommands(SettingsManager manager)
+    public static List<IListItem> GetAllCommands(ISettingsInterface manager)
     {
         var list = new List<IListItem>();
         var listLock = new object();
@@ -209,11 +209,11 @@ internal static class Commands
         // On global queries the first word/part has to be 'ip', 'mac' or 'address' for network results
         var networkConnectionResults = Commands.GetNetworkConnectionResults(manager);
 
-        var isBootedInUefiMode = Win32Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
+        var isBootedInUefiMode = manager.GetSystemFirmwareType() == FirmwareType.Uefi;
 
-        var hideEmptyRB = manager.HideEmptyRecycleBin;
-        var confirmSystemCommands = manager.ShowDialogToConfirmCommand;
-        var showSuccessOnEmptyRB = manager.ShowSuccessMessageAfterEmptyingRecycleBin;
+        var hideEmptyRB = manager.HideEmptyRecycleBin();
+        var confirmSystemCommands = manager.ShowDialogToConfirmCommand();
+        var showSuccessOnEmptyRB = manager.ShowSuccessMessageAfterEmptyingRecycleBin();
 
         // normal system commands are fast and can be returned immediately
         var systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
