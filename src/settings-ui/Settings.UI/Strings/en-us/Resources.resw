@@ -5124,35 +5124,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
-  <data name="KeyEnter" xml:space="preserve">
-    <value>Enter key</value>
-    <comment>"Key" as in hardware on the keyboard</comment>
-  </data>
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
-  </data>
-  <data name="KeyShift" xml:space="preserve">
-    <value>Shift key</value>
-    <comment>"Key" as in hardware on the keyboard</comment>
-  </data>
-  <data name="KeyUpArrow" xml:space="preserve">
-    <value>Up arrow key</value>
-    <comment>"Key" as in hardware on the keyboard</comment>
-  </data>
-  <data name="KeyDownArrow" xml:space="preserve">
-    <value>Down arrow key</value>
-    <comment>"Key" as in hardware on the keyboard</comment>
-  </data>
-  <data name="KeyLeftArrow" xml:space="preserve">
-    <value>Left arrow key</value>
-    <comment>"Key" as in hardware on the keyboard</comment>
-  </data>
-  <data name="KeyRightArrow" xml:space="preserve">
-    <value>Right arrow key</value>
-    <comment>"Key" as in hardware on the keyboard</comment>
-  </data>
-  <data name="KeyWindows" xml:space="preserve">
-    <value>Windows key</value>
-    <comment>"Key" as in hardware on the keyboard</comment>
   </data>
 </root>
