@@ -14,9 +14,6 @@
             <RowDefinition MinHeight="110" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-
-        <TextBlock Grid.Row="0" />
-
         <ItemsControl
             x:Name="KeysControl"
             Grid.Row="1"
@@ -34,12 +31,11 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <controls:KeyVisual
-                        Height="56"
-                        Padding="20,8,20,8"
+                        Padding="20,16"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
                         CornerRadius="{StaticResource ControlCornerRadius}"
-                        FontSize="19"
+                        FontSize="16"
                         FontWeight="SemiBold"
                         IsInvalid="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                         IsTabStop="False"

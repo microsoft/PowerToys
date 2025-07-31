@@ -33,8 +33,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <controls:KeyVisual
-                                Height="30              "
-                                Padding="12,4,12,4"
+                                Padding="12,8,12,8"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Content="{Binding}"
