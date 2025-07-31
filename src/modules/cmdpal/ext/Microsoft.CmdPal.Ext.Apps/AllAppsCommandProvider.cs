@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
@@ -38,7 +36,29 @@ public partial class AllAppsCommandProvider : CommandProvider
         PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem, ..Page.GetPinnedApps()];
+    public static int TopLevelResultLimit
+    {
+        get
+        {
+            var limitSetting = AllAppsSettings.Instance.SearchResultLimit;
+
+            if (limitSetting is null)
+            {
+                return -1;
+            }
+
+            var quantity = -1;
+
+            if (int.TryParse(limitSetting, out var result))
+            {
+                quantity = result;
+            }
+
+            return quantity;
+        }
+    }
+
+    public override ICommandItem[] TopLevelCommands() => [_listItem, .. Page.GetPinnedApps()];
 
     public ICommandItem? LookupApp(string displayName)
     {
