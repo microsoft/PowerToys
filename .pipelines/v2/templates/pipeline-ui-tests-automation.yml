@@ -1,3 +1,9 @@
+variables:
+  - name: runCodesignValidationInjectionBG
+    value: false
+  - name: EnablePipelineCache
+    value: true
+
 parameters:
   - name: buildPlatforms
     type: object
@@ -29,17 +35,9 @@ parameters:
     type: object
     default: []
 
-variables:
-  - name: runCodesignValidationInjectionBG
-    value: false
-  - name: EnablePipelineCache
-    value: true
-  - name: isBuildNow
-    value: ${{ eq(parameters.buildSource, 'buildNow') }}
-
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
-    - ${{ if variables.isBuildNow }}:
+    - ${{ if eq(parameters.buildSource, 'buildNow') }}:
       - stage: Build_${{ platform }}
         displayName: Build ${{ platform }}
         dependsOn: []
@@ -63,7 +61,7 @@ stages:
               useVSPreview: ${{ parameters.useVSPreview }}
               timeoutInMinutes: 90
 
-    - ${{ if not(variables.isBuildNow) }}:
+    - ${{ if ne(parameters.buildSource, 'buildNow') }}:
       - stage: BuildUITests_${{ platform }}
         displayName: Build UI Tests Only
         dependsOn: []
@@ -84,7 +82,7 @@ stages:
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win10
         displayName: Test x64Win10
-        ${{ if not(variables.isBuildNow) }}:
+        ${{ if ne(parameters.buildSource, 'buildNow') }}:
           dependsOn:
             - BuildUITests_${{ platform }}
         ${{ else }}:
@@ -101,7 +99,7 @@ stages:
                 uiTestModules: ${{ parameters.uiTestModules }}
 
             # Additional per-user installation test
-            - ${{ if not(variables.isBuildNow) }}:
+            - ${{ if ne(parameters.buildSource, 'buildNow') }}:
               - template: job-test-project.yml
                 parameters:
                   platform: x64Win10
@@ -116,7 +114,7 @@ stages:
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win11
         displayName: Test x64Win11
-        ${{ if not(variables.isBuildNow) }}:
+        ${{ if ne(parameters.buildSource, 'buildNow') }}:
           dependsOn:
             - BuildUITests_${{ platform }}
         ${{ else }}:
@@ -133,7 +131,7 @@ stages:
                 uiTestModules: ${{ parameters.uiTestModules }}
 
             # Additional per-user installation test
-            - ${{ if not(variables.isBuildNow) }}:
+            - ${{ if ne(parameters.buildSource, 'buildNow') }}:
               - template: job-test-project.yml
                 parameters:
                   platform: x64Win11
@@ -148,7 +146,7 @@ stages:
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
         displayName: Test ${{ platform }}
-        ${{ if not(variables.isBuildNow) }}:
+        ${{ if ne(parameters.buildSource, 'buildNow') }}:
           dependsOn:
             - BuildUITests_${{ platform }}
         ${{ else }}:
@@ -165,7 +163,7 @@ stages:
               uiTestModules: ${{ parameters.uiTestModules }}
 
           # Additional per-user installation test
-          - ${{ if not(variables.isBuildNow) }}:
+          - ${{ if ne(parameters.buildSource, 'buildNow') }}:
             - template: job-test-project.yml
               parameters:
                 platform: ${{ platform }}
