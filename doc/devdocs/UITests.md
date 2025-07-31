@@ -23,11 +23,11 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 ### Pipeline Options
 
 - **buildSource**: Select the build type for testing:
-  - `latestOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch
+  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch
   - `buildNow`: Builds PowerToys from current source code and uses it for testing
   - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter
 
-  **Default value**: `latestOfficialBuild`
+  **Default value**: `latestMainOfficialBuild`
 
 - **specificBuildId**: When `buildSource` is set to `specificBuildId`, specify the exact PowerToys build ID to download and test against.
 
@@ -50,7 +50,7 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 
 ### Build Modes
 
-1. **Official Build Testing** (`buildSource = latestOfficialBuild` or `specificBuildId`)
+1. **Official Build Testing** (`buildSource = latestMainOfficialBuild` or `specificBuildId`)
    - Downloads and installs official PowerToys build (latest from main or specific build ID)
    - Builds only UI test projects (all or specific based on `uiTestModules`)
    - Runs UI tests against installed PowerToys
