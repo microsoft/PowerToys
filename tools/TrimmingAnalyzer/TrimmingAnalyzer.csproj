@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <WarningsNotAsErrors />
+    <NoWarn>SA1633;SA1400;SA1518;SA1516;SA1503;SA1111;SA1116;SA1122;SA1028;SA1413;SA1513;CA1311;CA1304;CA1305;CA1860;CA1852</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="TypeAnalyzer.cs" />
+    <Compile Include="ReportGenerator.cs" />
+    <Compile Include="Models\TypeInfo.cs" />
+  </ItemGroup>
+
+</Project>
