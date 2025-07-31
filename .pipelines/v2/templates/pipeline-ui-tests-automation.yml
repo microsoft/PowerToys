@@ -3,6 +3,8 @@ variables:
     value: false
   - name: EnablePipelineCache
     value: true
+  - name: isBuildNow
+    value: ${{ eq(parameters.buildSource, 'buildNow') }}
 
 parameters:
   - name: buildPlatforms
@@ -19,22 +21,25 @@ parameters:
   - name: useLatestWebView2
     type: boolean
     default: false
-  - name: useLatestOfficialBuild
-    type: boolean
-    default: true
-  - name: testBothInstallModes
-    type: boolean
-    default: true
-  - name: useCurrentBranchBuild
-    type: boolean
-    default: false
+  - name: buildSource
+    type: string
+    default: "latestMainOfficialBuild"
+    displayName: "Build Source"
+    values:
+      - latestMainOfficialBuild
+      - buildNow
+      - specificBuildId
+  - name: specificBuildId
+    type: string
+    default: 'xxxx'
+    displayName: "Build ID (only used when Build Source = specificBuildId)"
   - name: uiTestModules
     type: object
     default: []
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
-    - ${{ if eq(parameters.useLatestOfficialBuild, false) }}:
+    - ${{ if variables.isBuildNow }}:
       - stage: Build_${{ platform }}
         displayName: Build ${{ platform }}
         dependsOn: []
@@ -58,7 +63,7 @@ stages:
               useVSPreview: ${{ parameters.useVSPreview }}
               timeoutInMinutes: 90
 
-    - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+    - ${{ if not(variables.isBuildNow) }}:
       - stage: BuildUITests_${{ platform }}
         displayName: Build UI Tests Only
         dependsOn: []
@@ -79,7 +84,7 @@ stages:
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win10
         displayName: Test x64Win10
-        ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+        ${{ if not(variables.isBuildNow) }}:
           dependsOn:
             - BuildUITests_${{ platform }}
         ${{ else }}:
@@ -91,19 +96,19 @@ stages:
                 platform: x64Win10
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
-                useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                buildSource: ${{ parameters.buildSource }}
+                specificBuildId: ${{ parameters.specificBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
-            # Additional per-user installation test (when both modes are enabled)
-            - ${{ if and(eq(parameters.useLatestOfficialBuild, true), eq(parameters.testBothInstallModes, true)) }}:
+            # Additional per-user installation test
+            - ${{ if not(variables.isBuildNow) }}:
               - template: job-test-project.yml
                 parameters:
                   platform: x64Win10
                   configuration: Release
                   useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                  useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
-                  useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                  buildSource: ${{ parameters.buildSource }}
+                  specificBuildId: ${{ parameters.specificBuildId }}
                   uiTestModules: ${{ parameters.uiTestModules }}
                   installMode: 'peruser'
                   jobSuffix: '_PerUser'
@@ -111,7 +116,7 @@ stages:
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win11
         displayName: Test x64Win11
-        ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+        ${{ if not(variables.isBuildNow) }}:
           dependsOn:
             - BuildUITests_${{ platform }}
         ${{ else }}:
@@ -123,19 +128,19 @@ stages:
                 platform: x64Win11
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
-                useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                buildSource: ${{ parameters.buildSource }}
+                specificBuildId: ${{ parameters.specificBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
 
-            # Additional per-user installation test (when both modes are enabled)
-            - ${{ if and(eq(parameters.useLatestOfficialBuild, true), eq(parameters.testBothInstallModes, true)) }}:
+            # Additional per-user installation test
+            - ${{ if not(variables.isBuildNow) }}:
               - template: job-test-project.yml
                 parameters:
                   platform: x64Win11
                   configuration: Release
                   useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                  useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
-                  useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                  buildSource: ${{ parameters.buildSource }}
+                  specificBuildId: ${{ parameters.specificBuildId }}
                   uiTestModules: ${{ parameters.uiTestModules }}
                   installMode: 'peruser'
                   jobSuffix: '_PerUser'
@@ -143,7 +148,7 @@ stages:
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
         displayName: Test ${{ platform }}
-        ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+        ${{ if not(variables.isBuildNow) }}:
           dependsOn:
             - BuildUITests_${{ platform }}
         ${{ else }}:
@@ -155,19 +160,19 @@ stages:
               platform: ${{ platform }}
               configuration: Release
               useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-              useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
-              useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+              buildSource: ${{ parameters.buildSource }}
+              specificBuildId: ${{ parameters.specificBuildId }}
               uiTestModules: ${{ parameters.uiTestModules }}
 
-          # Additional per-user installation test (when both modes are enabled)
-          - ${{ if and(eq(parameters.useLatestOfficialBuild, true), eq(parameters.testBothInstallModes, true)) }}:
+          # Additional per-user installation test
+          - ${{ if not(variables.isBuildNow) }}:
             - template: job-test-project.yml
               parameters:
                 platform: ${{ platform }}
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                useLatestOfficialBuild: ${{ parameters.useLatestOfficialBuild }}
-                useCurrentBranchBuild: ${{ parameters.useCurrentBranchBuild }}
+                buildSource: ${{ parameters.buildSource }}
+                specificBuildId: ${{ parameters.specificBuildId }}
                 uiTestModules: ${{ parameters.uiTestModules }}
                 installMode: 'peruser'
                 jobSuffix: '_PerUser'

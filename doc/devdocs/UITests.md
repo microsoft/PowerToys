@@ -22,23 +22,23 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 
 ### Pipeline Options
 
-- **useLatestOfficialBuild**: When checked, downloads the latest official PowerToys build and installs it for testing. This skips the full solution build and only builds UI test projects.
+- **buildSource**: Select the build type for testing:
+  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch
+  - `buildNow`: Builds PowerToys from current source code and uses it for testing
+  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter
 
-- **useCurrentBranchBuild**: When checked along with `useLatestOfficialBuild`, downloads the official build from the current branch instead of main.
+  **Default value**: `latestMainOfficialBuild`
 
-  **Default value**: `false` (downloads from main branch)
+- **specificBuildId**: When `buildSource` is set to `specificBuildId`, specify the exact PowerToys build ID to download and test against.
+
+  **Default value**: `"xxxx"` (placeholder, enter actual build ID when using specificBuildId option)
   
   **When to use this**:
-  - **Default scenario**: The pipeline tests against the latest signed PowerToys build from the `main` branch, regardless of which branch your test code changes are from
-  - **Custom branch testing**: Only specify `true` when:
-    - Your branch has produced its own signed PowerToys build via the official build pipeline
-    - You want to test against that specific branch's PowerToys build instead of main
-    - You are testing PowerToys functionality changes that are only available in your branch's build
+  - Testing against a specific known build for reproducibility
+  - Regression testing against a particular build version
+  - Validating fixes in a specific build before release
   
-  **Important notes**:
-  - The test pipeline itself runs from your specified branch, but by default tests against the main branch's PowerToys build
-  - Not all branches have signed builds available - only use this if you're certain your branch has a signed build
-  - If enabled but no build exists for your branch, the pipeline may fail or fall back to main
+  **Usage**: Enter the build ID number (e.g., `12345`) to download that specific build. Only used when `buildSource` is set to `specificBuildId`.
 
 - **uiTestModules**: Specify which UI test modules to build and run. This parameter controls both the `.csproj` projects to build and the `.dll` test assemblies to execute. Examples:
   - `['UITests-FancyZones']` - Only FancyZones UI tests
@@ -50,19 +50,19 @@ The PowerToys UI test pipeline provides flexible options for building and testin
 
 ### Build Modes
 
-1. **Official Build + Selective Testing** (`useLatestOfficialBuild = true`)
-   - Downloads and installs official PowerToys build
-   - Builds only specified UI test projects
-   - Runs specified UI tests against installed PowerToys
-   - Controlled by `uiTestModules` parameter
+1. **Official Build Testing** (`buildSource = latestMainOfficialBuild` or `specificBuildId`)
+   - Downloads and installs official PowerToys build (latest from main or specific build ID)
+   - Builds only UI test projects (all or specific based on `uiTestModules`)
+   - Runs UI tests against installed PowerToys
+   - Tests both machine-level and per-user installation modes automatically
 
-2. **Full Build + Testing** (`useLatestOfficialBuild = false`)
-   - Builds entire PowerToys solution
+2. **Current Source Build Testing** (`buildSource = buildNow`)
+   - Builds entire PowerToys solution from current source code
    - Builds UI test projects (all or specific based on `uiTestModules`)
-   - Runs UI tests (all or specific based on `uiTestModules`)
-   - Uses freshly built PowerToys for testing
+   - Runs UI tests against freshly built PowerToys
+   - Uses artifacts from current pipeline build
 
-> **Note**: Both modes support the `uiTestModules` parameter to control which specific UI test modules to build and run.
+> **Note**: All modes support the `uiTestModules` parameter to control which specific UI test modules to build and run. Both machine-level and per-user installation modes are tested automatically when using official builds.
 
 ### Pipeline Access
 - Pipeline: https://microsoft.visualstudio.com/Dart/_build?definitionId=161438&_a=summary
