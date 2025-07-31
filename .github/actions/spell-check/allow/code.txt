@@ -102,6 +102,8 @@ altdown
 BUTTONUP
 bafunctions
 Baf
+Bitness
+BUILDARCHSHORT
 CTRLALTDEL
 Ctrls
 CSilent
@@ -109,6 +111,7 @@ CBal
 CREATEBAFUNCTIONS
 CPrereq
 dirutil
+DUtil
 Editbox
 EXSEL
 HOLDENTER
@@ -158,6 +161,7 @@ shelutil
 thmutil
 uriutil
 VKTAB
+wcautil
 winkey
 wininet
 WMKEYDOWN
