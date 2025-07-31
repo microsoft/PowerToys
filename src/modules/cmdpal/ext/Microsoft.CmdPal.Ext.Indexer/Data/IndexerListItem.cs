@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Common.Commands;
+using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -91,6 +92,7 @@ internal sealed partial class IndexerListItem : ListItem
         commands.Add(new CommandContextItem(new CopyPathCommand(fullPath) { Name = Resources.Indexer_Command_CopyPath }));
         commands.Add(new CommandContextItem(new OpenInConsoleCommand(fullPath)));
         commands.Add(new CommandContextItem(new OpenPropertiesCommand(fullPath)));
+        commands.Add(new CommandContextItem(new UnlockCommand(fullPath)));
 
         if (IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {
