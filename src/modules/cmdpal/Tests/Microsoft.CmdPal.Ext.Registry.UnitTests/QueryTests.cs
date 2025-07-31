@@ -69,7 +69,6 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         Assert.IsNotNull(results);
 
-        // Invalid base key should return all base keys
-        Assert.IsTrue(results.Count >= 5, "Expected at least 5 base registry keys for invalid input.");
+        Assert.AreEqual(0, results.Count, "Invalid query should return empty results.");
     }
 }

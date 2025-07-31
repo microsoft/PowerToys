@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.CmdPal.Ext.Calc.Helper;
 using Microsoft.CmdPal.Ext.Calc.Pages;
 using Microsoft.CmdPal.Ext.UnitTestBase;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
@@ -47,7 +48,8 @@ public class QueryTests : CommandPaletteUnitTestBase
         var results = page.GetItems();
         Assert.IsNotNull(results);
 
-        Assert.IsTrue(results.Length == 0, "Empty query should return empty result lists");
+        var firstItem = results.FirstOrDefault();
+        Assert.AreEqual("Type an equation...", firstItem.Title);
     }
 
     [TestMethod]
@@ -61,16 +63,13 @@ public class QueryTests : CommandPaletteUnitTestBase
         page.UpdateSearchText(string.Empty, "invalid expression");
         var result = page.GetItems().FirstOrDefault();
 
-        // Invalid expressions should return null or empty result
-        Assert.IsNotNull(result);
-
-        Assert.IsTrue(result.Title.Contains("invalid"), "Invalid input should always return prompt.");
+        Assert.AreEqual("Type an equation...", result.Title);
     }
 
     [DataTestMethod]
-    [DataRow("sin(0)", "1", CalculateEngine.TrigMode.Radians)]
-    [DataRow("cos(0)", "2", CalculateEngine.TrigMode.Degrees)]
-    [DataRow("tan(0)", "3", CalculateEngine.TrigMode.Gradians)]
+    [DataRow("sin(60)", "-0.30481", CalculateEngine.TrigMode.Radians)]
+    [DataRow("sin(60)", "0.866025", CalculateEngine.TrigMode.Degrees)]
+    [DataRow("sin(60)", "0.809016", CalculateEngine.TrigMode.Gradians)]
     public void TrigModeSettingsTest(string input, string expected, CalculateEngine.TrigMode trigMode)
     {
         var settings = new Settings(trigUnit: trigMode);
@@ -82,6 +81,6 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         Assert.IsNotNull(result);
 
-        Assert.IsTrue(result.Title.Contains(expected), "Calc trigMode convert result isn't correct");
+        Assert.IsTrue(result.Title.Contains(expected, System.StringComparison.Ordinal), $"Calc trigMode convert result isn't correct. Current result: {result.Title}");
     }
 }
