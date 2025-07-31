@@ -2,13 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Markup;
-using Microsoft.UI.Xaml.Media;
+using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
@@ -39,6 +35,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         public static readonly DependencyProperty IsInvalidProperty = DependencyProperty.Register(nameof(IsInvalid), typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnIsInvalidChanged));
+
+        public bool RenderKeyAsGlyph
+        {
+            get => (bool)GetValue(RenderKeyAsGlyphProperty);
+            set => SetValue(RenderKeyAsGlyphProperty, value);
+        }
+
+        public static readonly DependencyProperty RenderKeyAsGlyphProperty = DependencyProperty.Register(nameof(RenderKeyAsGlyph), typeof(bool), typeof(KeyVisual), new PropertyMetadata(false, OnContentChanged));
 
         public KeyVisual()
         {
@@ -86,57 +90,71 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void Update()
         {
-            if (this != null && this.Content != null)
+            if (Content == null)
             {
-                string accessibleName = string.Empty;
-                _keyPresenter.Content = Content;
+                return;
+            }
 
-                if (Content is int symbol)
+            if (Content is string)
+            {
+                _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
+                return;
+            }
+
+            if (Content is int keyCode)
+            {
+                VirtualKey virtualKey = (VirtualKey)keyCode;
+                switch (virtualKey)
                 {
-                    _keyPresenter.Style = (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"];
+                    case VirtualKey.Enter:
+                        SetGlyphOrText("\uE751", virtualKey);
+                        break;
 
-                    switch (symbol)
-                    {
-                        case 13: // Enter key
-                            _keyPresenter.Content = "\uE751";
-                            break;
+                    case VirtualKey.Back:
+                        SetGlyphOrText("\uE750", virtualKey);
+                        break;
 
-                        case 8: // Back key
-                            _keyPresenter.Content = "\uE750";
-                            break;
+                    case VirtualKey.Shift:
+                    case (VirtualKey)160: // Left Shift
+                    case (VirtualKey)161: // Right Shift
+                        SetGlyphOrText("\uE752", virtualKey);
+                        break;
 
-                        case 16: // Right Shift
-                        case 160: // Left Shift
-                        case 161: // Shift key
-                            _keyPresenter.Content = "\uE752";
-                            break;
+                    case VirtualKey.Up:
+                        _keyPresenter.Content = "\uE0E4";
+                        break;
 
-                        case 38: // Up arrow
-                            _keyPresenter.Content = "\uE0E4";
-                            break;
+                    case VirtualKey.Down:
+                        _keyPresenter.Content = "\uE0E5";
+                        break;
 
-                        case 40: // Down arrow
-                            _keyPresenter.Content = "\uE0E5";
-                            break;
+                    case VirtualKey.Left:
+                        _keyPresenter.Content = "\uE0E2";
+                        break;
 
-                        case 37: // Left arrow
-                            _keyPresenter.Content = "\uE0E2";
-                            break;
+                    case VirtualKey.Right:
+                        _keyPresenter.Content = "\uE0E3";
+                        break;
 
-                        case 39: // Right arrow
-                            _keyPresenter.Content = "\uE0E3";
-                            break;
-
-                        case 91: // Left Windows key
-                        case 92: // Right Windows key
-                            _keyPresenter.Style = (Style)Application.Current.Resources["WindowsKeyCharPresenterStyle"];
-                            break;
-                    }
+                    case VirtualKey.LeftWindows:
+                    case VirtualKey.RightWindows:
+                        _keyPresenter.Style = (Style)Application.Current.Resources["WindowsKeyCharPresenterStyle"];
+                        break;
                 }
-                else
-                {
-                    _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
-                }
+            }
+        }
+
+        private void SetGlyphOrText(string glyph, VirtualKey key)
+        {
+            if (RenderKeyAsGlyph)
+            {
+                _keyPresenter.Content = glyph;
+                _keyPresenter.Style = (Style)Application.Current.Resources["GlyphKeyCharPresenterStyle"];
+            }
+            else
+            {
+                _keyPresenter.Content = key.ToString();
+                _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
             }
         }
 

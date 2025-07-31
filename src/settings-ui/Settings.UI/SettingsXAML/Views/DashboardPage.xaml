@@ -43,7 +43,8 @@
                                 Content="{Binding}"
                                 FontSize="12"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                IsTabStop="False" />
+                                IsTabStop="False"
+                                RenderKeyAsGlyph="True" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
