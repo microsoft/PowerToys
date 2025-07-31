@@ -1,0 +1,49 @@
+parameters:
+  - name: platform
+    type: string
+    default: "x64"
+
+steps:
+  - task: NuGetToolInstaller@1
+    displayName: Install NuGet Tool
+
+  - task: NuGetCommand@2
+    displayName: Install Microsoft.UI.Xaml 2.8.7
+    inputs:
+      command: 'custom'
+      arguments: 'install Microsoft.UI.Xaml -Version 2.8.7 -OutputDirectory $(Agent.TempDirectory)\packages -NonInteractive'
+
+  - powershell: |-
+      $arch = if ('${{ parameters.platform }}' -eq 'ARM64') { 'arm64' } else { 'x64' }
+      & '$(build.sourcesdirectory)\.pipelines\EnsureGitInstalled.ps1' -Architecture $arch
+    displayName: "Ensure Git is installed"
+
+  - pwsh: |-
+      # Check if winget is available
+      try {
+          winget --version > $null 2>&1
+          Write-Host "##[section]Winget is already installed"
+      }
+      catch {
+          Write-Host "##[section]Installing Winget..."
+          
+          # Download and install App Installer (which includes winget)
+          $wingetUrl = "https://aka.ms/getwinget"
+          $installerPath = "$env:TEMP\Microsoft.DesktopAppInstaller.msixbundle"
+          
+          Invoke-WebRequest -Uri $wingetUrl -OutFile $installerPath -UseBasicParsing
+          Add-AppxPackage -Path $installerPath
+          
+          # Clean up
+          Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
+          
+          Write-Host "##[section]Winget installation completed"
+      }
+    displayName: "Ensure Winget is installed"
+
+  - task: VisualStudioTestPlatformInstaller@1
+    displayName: Ensure VSTest Platform
+
+  - powershell: |-
+      & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
+    displayName: Download and install WinAppDriver

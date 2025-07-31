@@ -109,12 +109,9 @@ jobs:
       sdk: true
       version: '9.0'
 
-  - task: VisualStudioTestPlatformInstaller@1
-    displayName: Ensure VSTest Platform
-
-  - pwsh: |-
-      & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
-    displayName: Download and install WinAppDriver
+  - template: steps-install-test-dependencies.yml
+    parameters:
+      platform: ${{ parameters.platform }}
 
   - ${{ if not(variables.isBuildNow) }}:
     - task: DownloadPipelineArtifact@2
