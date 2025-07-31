@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -45,11 +46,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.ModuleEnabledChangedOnSettingsPage();
         }
 
-        private void SWVersionButtonClicked(object sender, RoutedEventArgs e)
-        {
-            ViewModel.SWVersionButtonClicked();
-        }
-
         private void DashboardListItemClick(object sender, RoutedEventArgs e)
         {
             ViewModel.DashboardListItemClick(sender);
@@ -59,11 +55,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             if (App.GetOobeWindow() == null)
             {
-                App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.WhatsNew));
+                App.SetOobeWindow(new OobeWindow(PowerToysModules.WhatsNew));
             }
             else
             {
-                App.GetOobeWindow().SetAppWindow(OOBE.Enums.PowerToysModules.WhatsNew);
+                App.GetOobeWindow().SetAppWindow(PowerToysModules.WhatsNew);
             }
 
             App.GetOobeWindow().Activate();
