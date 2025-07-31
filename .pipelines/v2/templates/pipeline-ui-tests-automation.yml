@@ -1,11 +1,3 @@
-variables:
-  - name: runCodesignValidationInjectionBG
-    value: false
-  - name: EnablePipelineCache
-    value: true
-  - name: isBuildNow
-    value: ${{ eq(parameters.buildSource, 'buildNow') }}
-
 parameters:
   - name: buildPlatforms
     type: object
@@ -36,6 +28,14 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+
+variables:
+  - name: runCodesignValidationInjectionBG
+    value: false
+  - name: EnablePipelineCache
+    value: true
+  - name: isBuildNow
+    value: ${{ eq(parameters.buildSource, 'buildNow') }}
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
