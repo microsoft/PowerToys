@@ -23,6 +23,13 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
         Name = Resources.settings_title;
         Id = "com.microsoft.cmdpal.windowsSettings";
         _windowsSettings = windowsSettings;
+
+        EmptyContent = new CommandItem(new NoOpCommand())
+        {
+            Icon = Icon,
+            Title = Resources.settings_subtitle,
+            Subtitle = Resources.PluginNoResultsMessage + "\n\n" + Resources.PluginNoResultsMessageHelp,
+        };
     }
 
     public WindowsSettingsListPage(Classes.WindowsSettings windowsSettings, string query)
@@ -38,11 +45,21 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
             return new List<ListItem>(0);
         }
 
-        var filteredList = _windowsSettings.Settings
-            .Select(setting => ScoringHelper.SearchScoringPredicate(query, setting))
-            .Where(scoredSetting => scoredSetting.Score > 0)
-            .OrderByDescending(scoredSetting => scoredSetting.Score)
-            .Select(scoredSetting => scoredSetting.Setting);
+        var filteredList = _windowsSettings.Settings;
+        if (!string.IsNullOrEmpty(query))
+        {
+            filteredList = filteredList
+                .Select(setting => ScoringHelper.SearchScoringPredicate(query, setting))
+                .Where(scoredSetting => scoredSetting.Score > 0)
+                .OrderByDescending(scoredSetting => scoredSetting.Score)
+                .Select(scoredSetting => scoredSetting.Setting);
+        }
+        else
+        {
+            filteredList = filteredList
+                .Where(s => s.AppHomepageScore > 0)
+                .OrderByDescending(s => s.AppHomepageScore);
+        }
 
         var newList = ResultHelper.GetResultList(filteredList);
         return newList;

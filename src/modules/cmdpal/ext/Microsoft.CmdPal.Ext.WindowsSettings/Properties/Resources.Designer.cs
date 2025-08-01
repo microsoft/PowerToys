@@ -322,7 +322,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to System settings.
+        ///   Looks up a localized string similar to Settings app.
         /// </summary>
         internal static string AppSettingsApp {
             get {
@@ -3049,7 +3049,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Control Panel (Application homepage).
+        ///   Looks up a localized string similar to Open Control Panel.
         /// </summary>
         internal static string OpenControlPanel {
             get {
@@ -3058,7 +3058,16 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Settings.
+        ///   Looks up a localized string similar to Open Microsoft Management Console.
+        /// </summary>
+        internal static string OpenMMC {
+            get {
+                return ResourceManager.GetString("OpenMMC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open.
         /// </summary>
         internal static string OpenSettings {
             get {
@@ -3067,7 +3076,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Settings (Application homepage).
+        ///   Looks up a localized string similar to Open Settings app.
         /// </summary>
         internal static string OpenSettingsApp {
             get {
@@ -3342,6 +3351,24 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         internal static string PluginDescription {
             get {
                 return ResourceManager.GetString("PluginDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No settings found.
+        /// </summary>
+        internal static string PluginNoResultsMessage {
+            get {
+                return ResourceManager.GetString("PluginNoResultsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tip: Use &apos;:&apos;  to search for setting categories (e.g., Update:), and &gt; to search by setting path (e.g., Settings app&gt;Apps)..
+        /// </summary>
+        internal static string PluginNoResultsMessageHelp {
+            get {
+                return ResourceManager.GetString("PluginNoResultsMessageHelp", resourceCulture);
             }
         }
         

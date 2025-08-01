@@ -6,13 +6,13 @@
       "Type": "AppSettingsApp",
       "AltNames": [ "SettingsApp", "AppSettingsApp" ],
       "Command": "ms-settings:",
-      "ShowAsFirstResult": true
+      "AppHomepageScore": 30
     },
     {
       "Name": "OpenControlPanel",
       "Type": "AppControlPanel",
       "Command": "control.exe",
-      "ShowAsFirstResult": true
+      "AppHomepageScore": 20
     },
     {
       "Name": "AccessWorkOrSchool",
@@ -1834,11 +1834,11 @@
       "Command": "ms-settings-connectabledevices:devicediscovery"
     },
     {
-      "Name": "AppMMC",
+      "Name": "OpenMMC",
       "Type": "AppMMC",
       "AltNames": [ "MMC_mmcexe" ],
       "Command": "mmc.exe",
-      "ShowAsFirstResult" : true
+      "AppHomepageScore" : 10
     },
     {
       "Name": "AuthorizationManager",

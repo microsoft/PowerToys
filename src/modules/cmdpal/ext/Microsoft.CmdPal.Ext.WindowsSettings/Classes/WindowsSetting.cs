@@ -19,7 +19,7 @@ internal sealed class WindowsSetting
         Name = string.Empty;
         Command = string.Empty;
         Type = string.Empty;
-        ShowAsFirstResult = false;
+        AppHomepageScore = 0;
     }
 
     /// <summary>
@@ -65,9 +65,9 @@ internal sealed class WindowsSetting
     public uint? DeprecatedInBuild { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to use a higher score as normal for this setting to show it as one of the first results.
+    /// Gets or sets the score for entries if they are a settings app (homepage). If the score is higher 0 they are shown on empty query.
     /// </summary>
-    public bool ShowAsFirstResult { get; set; }
+    public int AppHomepageScore { get; set; }
 
     /// <summary>
     /// Gets or sets the value with the generated area path as string.
