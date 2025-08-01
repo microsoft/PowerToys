@@ -6,20 +6,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
-
     <UserControl.Resources>
         <x:Double x:Key="PageMaxWidth">1000</x:Double>
         <x:Double x:Key="PageHeaderMaxWidth">1020</x:Double>
-        <tkconverters:DoubleToVisibilityConverter
-            x:Name="doubleToVisibilityConverter"
-            FalseValue="Collapsed"
-            GreaterThan="0"
-            TrueValue="Visible" />
     </UserControl.Resources>
-
     <Grid Padding="20,0,0,0" RowSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -62,7 +54,7 @@
                         MaxWidth="160"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top"
-                        CornerRadius="4">
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
                         <Image AutomationProperties.AccessibilityView="Raw">
                             <Image.Source>
                                 <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
@@ -113,7 +105,7 @@
                     MaxWidth="{StaticResource PageMaxWidth}"
                     AutomationProperties.Name="{x:Bind SecondaryLinksHeader}"
                     Orientation="Vertical"
-                    Visibility="{x:Bind SecondaryLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}">
+                    Visibility="{x:Bind SecondaryLinks.Count, Converter={StaticResource DoubleToVisibilityConverter}}">
                     <TextBlock
                         Margin="2,8,0,0"
                         AutomationProperties.HeadingLevel="Level2"

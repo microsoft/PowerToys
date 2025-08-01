@@ -14,9 +14,6 @@
             <RowDefinition MinHeight="110" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-
-        <TextBlock Grid.Row="0" />
-
         <ItemsControl
             x:Name="KeysControl"
             Grid.Row="1"
@@ -34,12 +31,15 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <controls:KeyVisual
-                        Height="56"
+                        Padding="20,16"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
-                        IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                        CornerRadius="{StaticResource ControlCornerRadius}"
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        IsInvalid="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                         IsTabStop="False"
-                        VisualType="Large" />
+                        Style="{StaticResource AccentKeyVisualStyle}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
@@ -51,14 +51,12 @@
             Orientation="Vertical"
             Spacing="8">
             <Grid Height="62">
-
                 <InfoBar
                     x:Uid="InvalidShortcut"
                     IsClosable="False"
                     IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                     Severity="Error" />
-
                 <InfoBar
                     x:Uid="WarningShortcutAltGr"
                     IsClosable="False"

@@ -11,43 +11,74 @@
     mc:Ignorable="d">
 
     <Grid HorizontalAlignment="Right">
-        <StackPanel Orientation="Horizontal">
-            <Button
-                x:Name="EditButton"
-                Padding="0"
-                Click="OpenDialogButton_Click"
-                CornerRadius="8">
+        <Button
+            x:Name="EditButton"
+            Padding="0"
+            HorizontalAlignment="Right"
+            Click="OpenDialogButton_Click"
+            Style="{StaticResource SubtleButtonStyle}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <ItemsControl
+                    x:Name="PreviewKeysControl"
+                    Margin="2"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
+                    IsTabStop="False"
+                    Visibility="Collapsed">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:KeyVisual
+                                Padding="12,8,12,8"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Content="{Binding}"
+                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                FontWeight="SemiBold"
+                                IsTabStop="False"
+                                Style="{StaticResource AccentKeyVisualStyle}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
                 <StackPanel
-                    Margin="12,6,12,6"
+                    x:Name="PlaceholderPanel"
+                    Padding="8,4"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
                     Orientation="Horizontal"
-                    Spacing="16">
-                    <ItemsControl
-                        x:Name="PreviewKeysControl"
+                    Spacing="8">
+                    <!--<FontIcon
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="12"
+                        Glyph="&#xEDA7;" />-->
+                    <TextBlock
+                        x:Uid="ConfigureShortcutText"
                         VerticalAlignment="Center"
-                        IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
-                        IsTabStop="False">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <controls:KeyVisual
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    Content="{Binding}"
-                                    IsTabStop="False"
-                                    VisualType="Small" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <FontIcon
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        FontSize="16"
-                        Glyph="&#xE70F;" />
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
-            </Button>
-        </StackPanel>
+                <FontIcon
+                    Margin="0,0,4,0"
+                    AutomationProperties.Name=""
+                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                    FontSize="14"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Glyph="&#xE70F;" />
+            </StackPanel>
+        </Button>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Configured">
+                    <VisualState.Setters>
+                        <Setter Target="PlaceholderPanel.Visibility" Value="Collapsed" />
+                        <Setter Target="PreviewKeysControl.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </UserControl>

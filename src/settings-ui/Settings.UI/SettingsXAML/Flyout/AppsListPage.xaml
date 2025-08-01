@@ -7,17 +7,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     mc:Ignorable="d">
-
-    <Page.Resources>
-        <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
-        <tkconverters:BoolToVisibilityConverter
-            x:Key="BoolToInvertedVisibilityConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
-    </Page.Resources>
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -89,7 +80,7 @@
                             VerticalAlignment="Center"
                             FontSize="16"
                             Glyph="&#xE72E;"
-                            Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
+                            Visibility="{x:Bind IsLocked, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
                             <ToolTipService.ToolTip>
                                 <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
                             </ToolTipService.ToolTip>

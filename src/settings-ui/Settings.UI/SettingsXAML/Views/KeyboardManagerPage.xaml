@@ -14,22 +14,23 @@
 
     <Page.Resources>
         <tkconverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
-        <tkconverters:BoolToVisibilityConverter
-            x:Key="BoolToInvertedVisibilityConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
-        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-
         <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
             <Setter Property="IsTabStop" Value="False" />
         </Style>
 
         <DataTemplate x:Key="OriginalKeyTemplate" x:DataType="x:String">
-            <controls:KeyVisual Content="{Binding}" VisualType="SmallOutline" />
+            <controls:KeyVisual
+                Padding="8"
+                Content="{Binding}"
+                CornerRadius="{StaticResource ControlCornerRadius}" />
         </DataTemplate>
 
         <DataTemplate x:Key="RemappedKeyTemplate" x:DataType="x:String">
-            <controls:KeyVisual Content="{Binding}" VisualType="Small" />
+            <controls:KeyVisual
+                Padding="8"
+                Content="{Binding}"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                Style="{StaticResource AccentKeyVisualStyle}" />
         </DataTemplate>
 
         <!--<DataTemplate x:Name="KeysListViewTemplate" x:DataType="Lib:KeysDataModel">
@@ -184,7 +185,7 @@
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
-                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
 
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="Starts"
