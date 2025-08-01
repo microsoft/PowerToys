@@ -39,30 +39,28 @@ namespace ScreenRuler.UITests
             // Launch PowerToys Settings
             LaunchFromSetting();
 
-            // Enable MeasureTool
-            var foundCustom = this.Find<Custom>("Screen Ruler");
-            Assert.IsNotNull(foundCustom, "Screen Ruler group not found.");
+            var toggleSwitch = Find<ToggleSwitch>("Enable Screen Ruler");
+            if (!toggleSwitch.IsOn)
+            {
+                toggleSwitch.Click(msPostAction: 500);
+            }
 
-            // Toggle on MeasureTool
-            foundCustom.Find<ToggleSwitch>("Enable Measure Tool").Toggle(true);
-            Task.Delay(1000).Wait();
+            Assert.IsTrue(toggleSwitch.IsOn, "Screen Ruler toggle switch should be ON");
         }
 
         private void LaunchFromSetting()
         {
-            this.Session.SetMainWindowSize(WindowSize.Medium);
+            Session.SetMainWindowSize(WindowSize.Medium);
+            var screenRulers = FindAll<NavigationViewItem>("Screen Ruler");
 
             // Navigate to Measure Tool settings
-            if (this.FindAll<NavigationViewItem>("Screen Ruler", 2000).Count == 0)
+            if (screenRulers.Count == 0)
             {
-                // Expand Utilities list-group if needed
-                this.Find<NavigationViewItem>("Utilities").Click();
-                Task.Delay(1000).Wait();
+                // Expand System Tools list-group if needed
+                Find<NavigationViewItem>("System Tools", 500).Click(msPostAction: 500);
             }
 
-            Task.Delay(1000).Wait();
-            this.Find<NavigationViewItem>("Screen Ruler").Click();
-            Task.Delay(2000).Wait();
+            Find<NavigationViewItem>("Screen Ruler", 500).Click(msPostAction: 500);
         }
     }
 }
