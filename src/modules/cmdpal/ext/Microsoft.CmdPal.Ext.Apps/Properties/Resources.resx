@@ -180,16 +180,16 @@
     <value>Copied to clipboard!</value>
   </data>
   <data name="enable_start_menu_source" xml:space="preserve">
-    <value>Include apps found in the Start Menu</value>
+    <value>Include Start Menu apps</value>
   </data>
   <data name="enable_desktop_source" xml:space="preserve">
-    <value>Include apps found on the desktop</value>
+    <value>Include Desktop apps</value>
   </data>
   <data name="enable_registry_source" xml:space="preserve">
-    <value>Include apps registered in the Registry</value>
+    <value>Include Registry apps</value>
   </data>
   <data name="enable_path_environment_variable_source" xml:space="preserve">
-    <value>Include apps anywhere on the %PATH%</value>
+    <value>Include %PATH% apps</value>
   </data>
   <data name="use_thumbnails_setting_label" xml:space="preserve">
     <value>Use thumbnails for apps</value>
@@ -204,5 +204,17 @@
   </data>
   <data name="unpin_app" xml:space="preserve">
     <value>Unpin</value>
+  </data>
+  <data name="enable_desktop_source_description" xml:space="preserve">
+    <value>Should apps found on the Desktop be included in search results?</value>
+  </data>
+  <data name="enable_path_environment_variable_source_description" xml:space="preserve">
+    <value>Should apps found on the %PATH% be included in search results?</value>
+  </data>
+  <data name="enable_registry_source_description" xml:space="preserve">
+    <value>Should apps registered in the Windows Registry be included in search results?</value>
+  </data>
+  <data name="enable_start_menu_source_description" xml:space="preserve">
+    <value>Should apps found in the Start Menu be included in search results?</value>
   </data>
 </root>
