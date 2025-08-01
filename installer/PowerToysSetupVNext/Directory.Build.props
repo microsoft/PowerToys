@@ -1,0 +1,11 @@
+<Project>
+  <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
+  <PropertyGroup>
+    <!-- Set BaseIntermediateOutputPath for each project to avoid conflicts -->
+    <BaseIntermediateOutputPath Condition="'$(MSBuildProjectName)' == 'PowerToysInstallerVNext'">obj\Installer\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(MSBuildProjectName)' == 'PowerToysBootstrapperVNext'">obj\Bootstrapper\</BaseIntermediateOutputPath>
+    
+    <!-- Set MSBuildProjectExtensionsPath to use the BaseIntermediateOutputPath -->
+    <MSBuildProjectExtensionsPath Condition="'$(BaseIntermediateOutputPath)' != ''">$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
+</Project>

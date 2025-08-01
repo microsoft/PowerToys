@@ -57,7 +57,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
       call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
       call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
-    </PostBuildEvent>
+      </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <Name>PowerToysInstaller</Name>
