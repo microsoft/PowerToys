@@ -1,18 +1,41 @@
 <#
 .SYNOPSIS
-    Generates a trimming report for CmdPal UI project
+    PowerToys CmdPal AOT Trimming Analysis - Generates assembly comparison reports
+    
 .DESCRIPTION
-     if ($LASTEXITCODE -ne 0) {
-        throw "Failed to build Release AOT version"
-    }
-
-    # Copy AOT Release output to analysis directory
-    $trimmedOutput = Join-Path $cmdPalDir "bin\Release\net9.0-windows10.0.26100.0\win-x64\publish"s script builds CmdPal UI with and without trimming/AOT, then uses TrimmingAnalyzer
-    to analyze the differences and generate reports.
+    This script builds CmdPal UI with and without AOT optimization, then uses TrimmingAnalyzer
+    to analyze the differences and generate reports showing which types are removed by AOT.
+    
+    ANALYSIS PROCESS:
+    1. Build Debug version (no AOT optimization)
+    2. Build Release version (with AOT optimization) 
+    3. Compare assemblies to identify removed types
+    4. Generate reports: TrimmedTypes.md, TrimmedTypes.rd.xml
+    
+    REQUIREMENTS:
+    • Visual Studio 2022 with C++ workload
+    • Windows SDK
+    • Use Developer Command Prompt for VS 2022
+    
+    OUTPUT REPORTS:
+    • TrimmedTypes.md - Human-readable Markdown report
+    • TrimmedTypes.rd.xml - Runtime directives to preserve types
+    • Analysis JSON data for further processing
+    
 .PARAMETER Configuration
     Build configuration (Debug/Release). Defaults to Release
+    
 .PARAMETER EnableAOT
     Whether to enable AOT compilation. Defaults to true
+    
+.EXAMPLE
+    .\Generate-CmdPalTrimmingReport.ps1
+    
+    Runs the complete AOT trimming analysis with default settings
+    
+.NOTES
+    Author: PowerToys CmdPal AOT Analysis Tool
+    Purpose: Show types removed when enabling AOT compilation
 #>
 
 param(
@@ -21,6 +44,14 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+Write-Host "======================================" -ForegroundColor Cyan
+Write-Host "PowerToys CmdPal AOT Trimming Analysis" -ForegroundColor Cyan  
+Write-Host "======================================" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "PURPOSE: Generate reports showing types removed by AOT optimization" -ForegroundColor Yellow
+Write-Host "OUTPUT: TrimmedTypes.md, TrimmedTypes.rd.xml, analysis data" -ForegroundColor Yellow
+Write-Host ""
 
 # Get paths
 $rootDir = Resolve-Path (Join-Path $PSScriptRoot "..\..")
@@ -33,7 +64,12 @@ $tempDir = Join-Path $env:TEMP "CmdPalTrimAnalysis_$(Get-Date -Format 'yyyyMMdd_
 $untrimmedDir = Join-Path $tempDir "untrimmed"
 $trimmedDir = Join-Path $tempDir "trimmed"
 
-Write-Host "===== CmdPal Trimming Analysis =====" -ForegroundColor Cyan
+# Ensure all NuGet packages are restored
+Write-Host "Restoring NuGet packages..." -ForegroundColor Yellow
+& dotnet restore $cmdPalProject
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "Package restore had some issues, but continuing..."
+}
 
 try {
     # Create directories
@@ -49,16 +85,14 @@ try {
 
     # Build Debug mode without AOT (baseline for comparison)
     Write-Host "Building CmdPal in Debug mode without AOT (baseline)..." -ForegroundColor Yellow
-    & msbuild $cmdPalProject `
-        /p:Configuration=Debug `
-        /p:Platform=x64 `
-        /p:PublishTrimmed=false `
-        /p:EnableCmdPalAOT=false `
-        /p:PublishAot=false `
-        /p:RuntimeIdentifier=win-x64 `
-        /p:SelfContained=true `
-        /t:Publish `
-        /verbosity:minimal
+    & dotnet publish $cmdPalProject `
+        --configuration Debug `
+        --runtime win-x64 `
+        --self-contained true `
+        --property:PublishTrimmed=false `
+        --property:EnableCmdPalAOT=false `
+        --property:PublishAot=false `
+        --verbosity minimal
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to build Debug baseline version"
@@ -77,16 +111,14 @@ try {
 
     # Build Release mode with AOT enabled
     Write-Host "Building CmdPal in Release mode with AOT enabled..." -ForegroundColor Yellow
-    & msbuild $cmdPalProject `
-        /p:Configuration=Release `
-        /p:Platform=x64 `
-        /p:PublishTrimmed=false `
-        /p:EnableCmdPalAOT=true `
-        /p:PublishAot=true `
-        /p:RuntimeIdentifier=win-x64 `
-        /p:SelfContained=true `
-        /t:Publish `
-        /verbosity:minimal
+    & dotnet publish $cmdPalProject `
+        --configuration Release `
+        --runtime win-x64 `
+        --self-contained true `
+        --property:PublishTrimmed=false `
+        --property:EnableCmdPalAOT=true `
+        --property:PublishAot=true `
+        --verbosity minimal
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to build AOT+trimmed version"
