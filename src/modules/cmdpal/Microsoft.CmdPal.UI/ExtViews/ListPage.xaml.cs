@@ -6,6 +6,7 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -338,8 +339,6 @@ public sealed partial class ListPage : Page,
         {
             ItemsList.SelectedItem = item;
         }
-
-        ViewModel?.UpdateSelectedItemCommand.Execute(item);
 
         if (!e.TryGetPosition(element, out var pos))
         {
