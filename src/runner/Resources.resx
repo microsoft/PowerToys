@@ -176,10 +176,6 @@
   <data name="DOCUMENTATION_MENU_TEXT" xml:space="preserve">
     <value>Documentation</value>
   </data>
-  <data name="EXIT_MENU_TEXT" xml:space="preserve">
-    <value>Exit</value>
-    <comment>Exit as a verb, as in Exit the application</comment>
-  </data>
   <data name="SUBMIT_BUG_TEXT" xml:space="preserve">
     <value>Report bug</value>
   </data>
@@ -192,5 +188,9 @@
   </data>
   <data name="TRAY_ICON_ADMIN_TOOLTIP" xml:space="preserve">
     <value>Administrator</value>
+  </data>
+  <data name="CLOSE_MENU_TEXT" xml:space="preserve">
+    <value>Close</value>
+    <comment>Close as a verb, as in Close the application</comment>
   </data>
 </root>
