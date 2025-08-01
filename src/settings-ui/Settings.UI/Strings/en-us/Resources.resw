@@ -5127,6 +5127,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="SysHotkeyConflictTooltipText" xml:space="preserve">
     <value>This shortcut is already in use by a default system shortcut.</value>
   </data>
+  <data name="ShortcutConflictWindow_Title" xml:space="preserve">
     <value>PowerToys shortcut conflicts</value>
   </data>
   <data name="ShortcutConflictWindow_TitleTxt.Text" xml:space="preserve">
