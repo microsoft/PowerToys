@@ -1745,6 +1745,7 @@ uncompilable
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
+unins
 uninstalls
 Uniquifies
 unitconverter
