@@ -27,7 +27,7 @@ public sealed partial class TimeDateCalculator
     /// </summary>
     /// <param name="query">Search query object</param>
     /// <returns>List of Wox <see cref="Result"/>s.</returns>
-    public static List<ListItem> ExecuteSearch(SettingsManager settings, string query)
+    public static List<ListItem> ExecuteSearch(ISettingsInterface settings, string query)
     {
         var isEmptySearchInput = string.IsNullOrWhiteSpace(query);
         List<AvailableResult> availableFormats = new List<AvailableResult>();

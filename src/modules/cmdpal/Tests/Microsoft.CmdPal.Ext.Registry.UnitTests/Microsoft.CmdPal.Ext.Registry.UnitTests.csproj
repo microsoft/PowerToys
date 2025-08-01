@@ -18,5 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ext\Microsoft.CmdPal.Ext.Registry\Microsoft.CmdPal.Ext.Registry.csproj" />
+    <ProjectReference Include="..\Microsoft.CmdPal.Ext.UnitTestsBase\Microsoft.CmdPal.Ext.UnitTestBase.csproj" />
   </ItemGroup>
 </Project>

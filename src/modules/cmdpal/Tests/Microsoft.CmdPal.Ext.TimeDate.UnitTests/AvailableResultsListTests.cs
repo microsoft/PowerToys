@@ -367,7 +367,7 @@ public class AvailableResultsListTests
     public void UnixTimestampSecondsFormat()
     {
         // Setup
-        string formatLabel = "Unix epoch time";
+        var formatLabel = "Unix epoch time";
         DateTime timeValue = DateTime.Now.ToUniversalTime();
         var settings = new SettingsManager();
         var helperResults = AvailableResultsList.GetList(true, settings, null, null, timeValue);
@@ -384,7 +384,7 @@ public class AvailableResultsListTests
     public void UnixTimestampMillisecondsFormat()
     {
         // Setup
-        string formatLabel = "Unix epoch time in milliseconds";
+        var formatLabel = "Unix epoch time in milliseconds";
         DateTime timeValue = DateTime.Now.ToUniversalTime();
         var settings = new SettingsManager();
         var helperResults = AvailableResultsList.GetList(true, settings, null, null, timeValue);
@@ -401,7 +401,7 @@ public class AvailableResultsListTests
     public void WindowsFileTimeFormat()
     {
         // Setup
-        string formatLabel = "Windows file time (Int64 number)";
+        var formatLabel = "Windows file time (Int64 number)";
         DateTime timeValue = DateTime.Now;
         var settings = new SettingsManager();
         var helperResults = AvailableResultsList.GetList(true, settings, null, null, timeValue);
@@ -418,7 +418,7 @@ public class AvailableResultsListTests
     public void ValidateEraResult()
     {
         // Setup
-        string formatLabel = "Era";
+        var formatLabel = "Era";
         DateTime timeValue = DateTime.Now;
         var settings = new SettingsManager();
         var helperResults = AvailableResultsList.GetList(true, settings, null, null, timeValue);
@@ -435,7 +435,7 @@ public class AvailableResultsListTests
     public void ValidateEraAbbreviationResult()
     {
         // Setup
-        string formatLabel = "Era abbreviation";
+        var formatLabel = "Era abbreviation";
         DateTime timeValue = DateTime.Now;
         var settings = new SettingsManager();
         var helperResults = AvailableResultsList.GetList(true, settings, null, null, timeValue);

@@ -34,7 +34,7 @@ public static class CalculateEngine
     /// Interpret
     /// </summary>
     /// <param name="cultureInfo">Use CultureInfo.CurrentCulture if something is user facing</param>
-    public static CalculateResult Interpret(SettingsManager settings, string input, CultureInfo cultureInfo, out string error)
+    public static CalculateResult Interpret(ISettingsInterface settings, string input, CultureInfo cultureInfo, out string error)
     {
         error = default;
 

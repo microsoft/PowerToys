@@ -22,7 +22,7 @@ internal static class AvailableResultsList
     /// <param name="firstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the plugin setting.</param>
     /// <param name="firstDayOfWeek">Required for UnitTest: Use custom first day of the week instead the plugin setting.</param>
     /// <returns>List of results</returns>
-    internal static List<AvailableResult> GetList(bool isKeywordSearch, SettingsManager settings, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null)
+    internal static List<AvailableResult> GetList(bool isKeywordSearch, ISettingsInterface settings, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null)
     {
         var results = new List<AvailableResult>();
         var calendar = CultureInfo.CurrentCulture.Calendar;

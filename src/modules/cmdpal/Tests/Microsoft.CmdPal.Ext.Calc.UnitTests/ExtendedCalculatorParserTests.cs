@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,12 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.CmdPal.Ext.Calc.Helper;
+using Microsoft.CmdPal.Ext.UnitTestBase;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
 [TestClass]
-public class ExtendedCalculatorParserTests
+public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
 {
     [DataTestMethod]
     [DataRow(null)]
@@ -28,7 +31,7 @@ public class ExtendedCalculatorParserTests
     [DataRow("[10,10]")] // '[10,10]' is interpreted as array by mages engine
     public void Interpret_NoResult_WhenCalled(string input)
     {
-        var settings = new SettingsManager();
+        var settings = new Settings();
 
         var result = CalculateEngine.Interpret(settings, input, CultureInfo.CurrentCulture, out _);
 
@@ -68,7 +71,7 @@ public class ExtendedCalculatorParserTests
     [DynamicData(nameof(Interpret_NoErrors_WhenCalledWithRounding_Data))]
     public void Interpret_NoErrors_WhenCalledWithRounding(string input, decimal expectedResult)
     {
-        var settings = new SettingsManager();
+        var settings = new Settings();
 
         // Act
         // Using InvariantCulture since this is internal
@@ -90,7 +93,7 @@ public class ExtendedCalculatorParserTests
     public void Interpret_GreaterPrecision_WhenCalled(string input, decimal expectedResult)
     {
         // Arrange
-        var settings = new SettingsManager();
+        var settings = new Settings();
 
         // Act
         // Using InvariantCulture since this is internal
@@ -114,7 +117,7 @@ public class ExtendedCalculatorParserTests
     {
         // Arrange
         var cultureInfo = CultureInfo.GetCultureInfo(cultureName);
-        var settings = new SettingsManager();
+        var settings = new Settings();
 
         // Act
         var result = CalculateEngine.Interpret(settings, input, cultureInfo, out _);
@@ -175,7 +178,7 @@ public class ExtendedCalculatorParserTests
     public void Interpret_MustReturnResult_WhenResultIsZero(string input)
     {
         // Arrange
-        var settings = new SettingsManager();
+        var settings = new Settings();
 
         // Act
         // Using InvariantCulture since this is internal
@@ -203,7 +206,7 @@ public class ExtendedCalculatorParserTests
     public void Interpret_MustReturnExpectedResult_WhenCalled(string input, decimal expectedResult)
     {
         // Arrange
-        var settings = new SettingsManager();
+        var settings = new Settings();
 
         // Act
         // Using en-us culture to have a fixed number style
@@ -226,7 +229,7 @@ public class ExtendedCalculatorParserTests
     {
         // Arrange
         var translator = NumberTranslator.Create(new CultureInfo(sourceCultureName, false), new CultureInfo("en-US", false));
-        var settings = new SettingsManager();
+        var settings = new Settings();
 
         // Act
         // Using en-us culture to have a fixed number style

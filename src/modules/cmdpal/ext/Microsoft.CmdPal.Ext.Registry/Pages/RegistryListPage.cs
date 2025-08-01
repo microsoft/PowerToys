@@ -18,12 +18,14 @@ internal sealed partial class RegistryListPage : DynamicListPage
     public static IconInfo RegistryIcon { get; } = new("\uE74C"); // OEM
 
     private readonly CommandItem _emptyMessage;
+    private readonly ISettingsInterface _settingsManager;
 
-    public RegistryListPage()
+    public RegistryListPage(ISettingsInterface settingsManager)
     {
         Icon = Icons.RegistryIcon;
         Name = Title = Resources.Registry_Page_Title;
         Id = "com.microsoft.cmdpal.registry";
+        _settingsManager = settingsManager;
         _emptyMessage = new CommandItem()
         {
             Icon = Icons.RegistryIcon,

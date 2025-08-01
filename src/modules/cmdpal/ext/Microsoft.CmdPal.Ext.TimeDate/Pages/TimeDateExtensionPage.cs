@@ -19,9 +19,9 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
     private IList<ListItem> _results = new List<ListItem>();
     private bool _dataLoaded;
 
-    private SettingsManager _settingsManager;
+    private ISettingsInterface _settingsManager;
 
-    public TimeDateExtensionPage(SettingsManager settingsManager)
+    public TimeDateExtensionPage(ISettingsInterface settingsManager)
     {
         Icon = Icons.TimeDateExtIcon;
         Title = Resources.Microsoft_plugin_timedate_main_page_title;
