@@ -218,4 +218,7 @@ Click on a section in the header to see this apps shortcuts.</value>
   <data name="OOBEDescription3.Text" xml:space="preserve">
     <value>This page will only be displayed at the first run. To access it again click the "i" icon in the header and then on "Show welcome screen".</value>
   </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
 </root>

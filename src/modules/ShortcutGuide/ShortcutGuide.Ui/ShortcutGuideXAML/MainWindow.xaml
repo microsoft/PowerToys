@@ -79,7 +79,7 @@
                 Margin="0,0,6,0"
                 HorizontalContentAlignment="Center"
                 Click="SettingsButton_Clicked">
-                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />
+                <FontIcon Glyph="&#xE713;" />
             </Button>
             <Button
                 x:Uid="CloseButton"

@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using Windows.UI.Text;
 using static ShortcutGuide.Models.ShortcutEntry;
+using Orientation = Microsoft.UI.Xaml.Controls.Orientation;
 
 namespace ShortcutGuide.Models
 {
@@ -214,6 +215,8 @@ namespace ShortcutGuide.Models
         /// <param name="shortcutStackPanel">The StackPanel to add the key to.</param>
         private static void AddKeyToStackPanel(string key, StackPanel shortcutStackPanel)
         {
+            Microsoft.UI.Xaml.Media.FontFamily monospaceFont = new("Courier New");
+
             switch (key)
             {
                 case "<Copilot>":
@@ -241,11 +244,11 @@ namespace ShortcutGuide.Models
                     TextBlock animatedTextBlock = new()
                     {
                         Text = "A",
-                        Margin = new Thickness(3),
+                        Margin = new Thickness(3, 3, 3, 1),
                         VerticalAlignment = VerticalAlignment.Center,
 
                         // Use monospaced font to ensure the text doesn't move
-                        FontFamily = new("Courier New"),
+                        FontFamily = monospaceFont,
                         TextDecorations = TextDecorations.Underline,
                     };
 
@@ -258,6 +261,7 @@ namespace ShortcutGuide.Models
                     {
                         Text = "→",
                         Margin = new Thickness(3),
+                        FontFamily = monospaceFont,
                         VerticalAlignment = VerticalAlignment.Center,
                     };
 
@@ -270,7 +274,7 @@ namespace ShortcutGuide.Models
                     {
                         Text = "→",
                         Margin = new Thickness(3),
-                        FontFamily = new("Courier New"),
+                        FontFamily = monospaceFont,
                         VerticalAlignment = VerticalAlignment.Center,
                     };
                     shortcutStackPanel.Children.Add(arrowLRTextBlock);
@@ -281,7 +285,7 @@ namespace ShortcutGuide.Models
                     {
                         Text = "↑",
                         Margin = new Thickness(3),
-                        FontFamily = new("Courier New"),
+                        FontFamily = monospaceFont,
                         VerticalAlignment = VerticalAlignment.Center,
                     };
                     shortcutStackPanel.Children.Add(arrowUDTextBlock);

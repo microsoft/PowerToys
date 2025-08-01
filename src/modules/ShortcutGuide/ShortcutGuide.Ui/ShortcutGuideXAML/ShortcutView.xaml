@@ -176,7 +176,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="1"
                     TextAlignment="Center" />
@@ -194,7 +194,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="2"
                     TextAlignment="Center" />
@@ -212,7 +212,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="3"
                     TextAlignment="Center" />
@@ -230,7 +230,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="4"
                     TextAlignment="Center" />
@@ -248,7 +248,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="5"
                     TextAlignment="Center" />
@@ -266,7 +266,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="6"
                     TextAlignment="Center" />
@@ -284,7 +284,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="7"
                     TextAlignment="Center" />
@@ -302,7 +302,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="8"
                     TextAlignment="Center" />
@@ -320,7 +320,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="9"
                     TextAlignment="Center" />
@@ -338,7 +338,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    FontWeight="Bold"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
                     Text="0"
                     TextAlignment="Center" />
