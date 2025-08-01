@@ -140,11 +140,9 @@ namespace ShortcutGuide.Models
                     Viewbox winIconContainer = new()
                     {
                         Child = winIcon,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        Height = 24,
-                        Width = 24,
-                        Margin = new Thickness(3),
+                        Height = 20,
+                        Width = 20,
+                        Margin = new Thickness(3, -1, 3, 2),
                     };
                     shortcutStackPanel.Children.Add(winIconContainer);
                 }
