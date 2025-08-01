@@ -176,6 +176,23 @@ public partial class MainListPage : DynamicListPage,
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
+
+            // Reduce the number of results based on the AllApps settings for
+            // top level results.
+            var appResultLimit = AllAppsCommandProvider.TopLevelResultLimit;
+            if (appResultLimit >= 0)
+            {
+                var appIndexes = _filteredItems
+                                    .Select((item, index) => (item, index))
+                                    .Where((item) => item.item.Command is AppCommand)
+                                    .Select(item => item.index);
+
+                var indexesToRemove = appIndexes.Where((indexInFilteredItems, index) => (index + 1) >= appResultLimit);
+                var itemsToRemove = _filteredItems.Where((item, index) => indexesToRemove.Contains(index));
+
+                _filteredItems = _filteredItems.Except(itemsToRemove).ToList();
+            }
+
             RaiseItemsChanged(_filteredItems.Count());
         }
     }
