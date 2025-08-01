@@ -33,10 +33,7 @@ namespace ShortcutGuide
                 return;
             }
 
-            if (!Directory.Exists(ManifestInterpreter.PathOfManifestFiles))
-            {
-                Directory.CreateDirectory(ManifestInterpreter.PathOfManifestFiles);
-            }
+            Directory.CreateDirectory(ManifestInterpreter.PathOfManifestFiles);
 
             if (NativeMethods.IsCurrentWindowExcludedFromShortcutGuide())
             {
