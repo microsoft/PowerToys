@@ -2,7 +2,12 @@
 .SYNOPSIS
     Generates a trimming report for CmdPal UI project
 .DESCRIPTION
-    This script builds CmdPal UI with and without trimming/AOT, then uses TrimmingAnalyzer
+     if ($LASTEXITCODE -ne 0) {
+        throw "Failed to build Release AOT version"
+    }
+
+    # Copy AOT Release output to analysis directory
+    $trimmedOutput = Join-Path $cmdPalDir "bin\Release\net9.0-windows10.0.26100.0\win-x64\publish"s script builds CmdPal UI with and without trimming/AOT, then uses TrimmingAnalyzer
     to analyze the differences and generate reports.
 .PARAMETER Configuration
     Build configuration (Debug/Release). Defaults to Release
@@ -42,10 +47,10 @@ try {
         throw "Failed to build TrimmingAnalyzer"
     }
 
-    # Build without trimming using MSBuild
-    Write-Host "Building CmdPal without trimming..." -ForegroundColor Yellow
+    # Build Debug mode without AOT (baseline for comparison)
+    Write-Host "Building CmdPal in Debug mode without AOT (baseline)..." -ForegroundColor Yellow
     & msbuild $cmdPalProject `
-        /p:Configuration=$Configuration `
+        /p:Configuration=Debug `
         /p:Platform=x64 `
         /p:PublishTrimmed=false `
         /p:EnableCmdPalAOT=false `
@@ -56,58 +61,72 @@ try {
         /verbosity:minimal
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Failed to build untrimmed version"
+        throw "Failed to build Debug baseline version"
     }
 
-    # Copy untrimmed output to analysis directory
-    $untrimmedOutput = Join-Path $cmdPalDir "x64\$Configuration\WinUI3Apps\CmdPal"
-    Copy-Item "$untrimmedOutput\Microsoft.CmdPal.UI.dll" $untrimmedDir -Force
-    Write-Host "Copied untrimmed DLL from: $untrimmedOutput"
+    # Copy baseline (Debug without AOT) output to analysis directory
+    $baselineOutput = Join-Path $cmdPalDir "bin\Debug\net9.0-windows10.0.26100.0\win-x64\publish"
+    Copy-Item "$baselineOutput\Microsoft.CmdPal.UI.dll" $untrimmedDir -Force
+    # Copy all dependencies to help with assembly resolution
+    Get-ChildItem "$baselineOutput\*.dll" | ForEach-Object { 
+        if ($_.Name -ne "Microsoft.CmdPal.UI.dll") {
+            Copy-Item $_.FullName $untrimmedDir -Force -ErrorAction SilentlyContinue
+        }
+    }
+    Write-Host "Copied Debug baseline DLLs from: $baselineOutput"
 
-    # Build with trimming using MSBuild
-    Write-Host "Building CmdPal with trimming (AOT=$EnableAOT)..." -ForegroundColor Yellow
+    # Build Release mode with AOT enabled
+    Write-Host "Building CmdPal in Release mode with AOT enabled..." -ForegroundColor Yellow
     & msbuild $cmdPalProject `
-        /p:Configuration=$Configuration `
+        /p:Configuration=Release `
         /p:Platform=x64 `
-        /p:PublishTrimmed=true `
-        /p:EnableCmdPalAOT=$EnableAOT `
-        /p:PublishAot=$EnableAOT `
+        /p:PublishTrimmed=false `
+        /p:EnableCmdPalAOT=true `
+        /p:PublishAot=true `
         /p:RuntimeIdentifier=win-x64 `
         /p:SelfContained=true `
-        /p:TrimMode=partial `
-        /p:TreatWarningsAsErrors=false `
-        /p:WarningsAsErrors="" `
-        /p:WarningsNotAsErrors="" `
-        /p:SuppressTrimAnalysisWarnings=true `
-        "/p:NoWarn=IL2104,IL2026,IL2070,IL2072,IL2075,IL2077,IL2080,IL2091,IL2092,IL2093,IL2094,IL2095,IL2096,IL2097,IL2098,IL2099,IL2103,CsWinRT1028" `
         /t:Publish `
         /verbosity:minimal
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Failed to build trimmed version"
+        throw "Failed to build AOT+trimmed version"
     }
 
-    # Copy trimmed output to analysis directory
-    $trimmedOutput = Join-Path $cmdPalDir "x64\$Configuration\WinUI3Apps\CmdPal"
+    # Copy AOT+trimmed output to analysis directory
+    $trimmedOutput = Join-Path $cmdPalDir "bin\$Configuration\net9.0-windows10.0.26100.0\win-x64\publish"
     Copy-Item "$trimmedOutput\Microsoft.CmdPal.UI.dll" $trimmedDir -Force
-    Write-Host "Copied trimmed DLL from: $trimmedOutput"
+    # Copy all dependencies to help with assembly resolution
+    Get-ChildItem "$trimmedOutput\*.dll" | ForEach-Object { 
+        if ($_.Name -ne "Microsoft.CmdPal.UI.dll") {
+            Copy-Item $_.FullName $trimmedDir -Force -ErrorAction SilentlyContinue
+        }
+    }
+    Write-Host "Copied Release AOT DLLs from: $trimmedOutput"
 
-    # Run analyzer
-    Write-Host "Analyzing trimming differences..." -ForegroundColor Yellow
-    & dotnet run --project $analyzerProject -- `
-        "$untrimmedDir\Microsoft.CmdPal.UI.dll" `
-        "$trimmedDir\Microsoft.CmdPal.UI.dll" `
-        $cmdPalDir `
-        "rdxml,markdown"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to analyze trimming"
+    # Use new directory comparison method to compare all types
+    Write-Host "Analyzing differences (Debug baseline vs Release AOT)..." -ForegroundColor Yellow
+    Write-Host "Using advanced directory comparison to detect AOT-optimized types..." -ForegroundColor Cyan
+    
+    # Use the new directory comparison feature
+    & $analyzerPath --compare-directories "$untrimmedDir" "$trimmedDir" "$cmdPalDir" "rdxml,markdown,json" "TrimmedTypes"
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Analysis completed successfully!" -ForegroundColor Green
+    } else {
+        throw "Analysis failed with exit code $LASTEXITCODE"
     }
 
     Write-Host "`n===== Analysis Complete =====" -ForegroundColor Cyan
     Write-Host "Reports generated in: $cmdPalDir" -ForegroundColor Green
-    Write-Host "  - TrimmedTypes.rd.xml" -ForegroundColor Green
-    Write-Host "  - TrimmedTypes.md" -ForegroundColor Green
+    
+    # List the main combined reports
+    $mainReports = @("TrimmedTypes.md", "TrimmedTypes.rd.xml")
+    foreach ($report in $mainReports) {
+        $reportPath = Join-Path $cmdPalDir $report
+        if (Test-Path $reportPath) {
+            Write-Host "  - $report" -ForegroundColor Green
+        }
+    }
 
 } finally {
     # Cleanup

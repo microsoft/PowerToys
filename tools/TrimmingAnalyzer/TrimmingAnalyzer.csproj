@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -17,6 +17,10 @@
     <Compile Include="TypeAnalyzer.cs" />
     <Compile Include="ReportGenerator.cs" />
     <Compile Include="Models\TypeInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
 </Project>
