@@ -5133,22 +5133,21 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Spotlight</value>
   </data>
   <data name="InAppHotkeyConflictTooltipText" xml:space="preserve">
-    <value>This shortcut conflicts with another shortcut.</value>
+    <value>This shortcut is already in use by another utility.</value>
   </data>
   <data name="SysHotkeyConflictTooltipText" xml:space="preserve">
-    <value>This shortcut conflicts with a pre-defined system shortcut.</value>
+    <value>This shortcut is already in use by a default system shortcut.</value>
   </data>
-  <data name="ShortcutConflictWindow.Title" xml:space="preserve">
-    <value>PowerToys Shortcut Conflicts</value>
+    <value>PowerToys shortcut conflicts</value>
   </data>
-  <data name="ShortcutConflictWindow_Title.Text" xml:space="preserve">
-    <value>PowerToys Shortcut Conflicts</value>
+  <data name="ShortcutConflictWindow_TitleTxt.Text" xml:space="preserve">
+    <value>PowerToys shortcut conflicts</value>
   </data>
   <data name="ShortcutConflictWindow_Description.Text" xml:space="preserve">
-    <value>Some PowerToys shortcuts conflict with system or other module shortcuts that may cause unexpected behavior. You can modify shortcuts directly or click on a module card to navigate to its settings.</value>
+    <value>Conflicting shortcuts may cause unexpected behavior. Edit them here or go to the module settings to update them.</value>
   </data>
   <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
-    <value>The following modules are using this shortcut:</value>
+    <value>is conflicting with other shortcuts</value>
   </data>
   <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
     <value>System</value>
@@ -5157,15 +5156,15 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Windows system shortcut</value>
   </data>
   <data name="ShortcutConflictWindow_SystemShortcutMessage.Text" xml:space="preserve">
-    <value>This shortcut cannot be changed.</value>
+    <value>This shortcut can't be changed.</value>
   </data>
   <data name="ShortcutConflictWindow_SystemShortcutTooltip.Content" xml:space="preserve">
-    <value>This shortcut is reserved by Windows and cannot be modified.</value>
+    <value>This shortcut is used by Windows and can't be changed.</value>
   </data>
   <data name="ShortcutConflictWindow_NoConflictsTitle.Text" xml:space="preserve">
     <value>No conflicts detected</value>
   </data>
   <data name="ShortcutConflictWindow_NoConflictsDescription.Text" xml:space="preserve">
-    <value>All shortcuts are working properly</value>
+    <value>All shortcuts function correctly</value>
   </data>
 </root>
