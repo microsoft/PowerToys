@@ -3,21 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
-using System.Windows.Forms;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
-using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
-using Windows.Web.AtomPub;
 using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
@@ -39,6 +34,8 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             DataContext = ViewModel;
             InitializeComponent();
 
+            this.Activated += Window_Activated_SetIcon;
+
             // Set up the custom action name delegate for LocalizationHelper
             LocalizationHelper.GetCustomActionNameDelegate = GetCustomActionName;
 
@@ -46,6 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             this.ExtendsContentIntoTitleBar = true;
 
+            this.Title = resourceLoader.GetString("ShortcutConflictWindow_Title");
             this.CenterOnScreen();
 
             ViewModel.OnPageLoaded();
@@ -101,6 +99,15 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
         {
             LocalizationHelper.GetCustomActionNameDelegate = null;
             ViewModel?.Dispose();
+        }
+
+        private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
+        {
+            // Set window icon
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.SetIcon("Assets\\Settings\\icon.ico");
         }
     }
 }
