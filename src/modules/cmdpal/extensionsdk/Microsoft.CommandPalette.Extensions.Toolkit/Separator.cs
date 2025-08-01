@@ -4,6 +4,6 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class SeparatorContextItem : ISeparatorContextItem
+public partial class Separator : ISeparatorContextItem, ISeparatorFilterItem
 {
 }

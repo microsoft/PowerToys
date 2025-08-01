@@ -131,7 +131,7 @@ internal sealed partial class AppListItem : ListItem
         var newCommands = new List<IContextItem>();
         newCommands.AddRange(commands);
 
-        newCommands.Add(new SeparatorContextItem());
+        newCommands.Add(new Separator());
 
         // 0x50 = P
         // Full key chord would be Ctrl+P
