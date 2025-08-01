@@ -176,8 +176,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="1"
                     TextAlignment="Center" />
             </Canvas>
@@ -194,8 +194,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="2"
                     TextAlignment="Center" />
             </Canvas>
@@ -212,8 +212,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="3"
                     TextAlignment="Center" />
             </Canvas>
@@ -230,8 +230,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="4"
                     TextAlignment="Center" />
             </Canvas>
@@ -248,8 +248,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="5"
                     TextAlignment="Center" />
             </Canvas>
@@ -266,8 +266,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="6"
                     TextAlignment="Center" />
             </Canvas>
@@ -284,8 +284,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="7"
                     TextAlignment="Center" />
             </Canvas>
@@ -302,8 +302,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="8"
                     TextAlignment="Center" />
             </Canvas>
@@ -320,8 +320,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="9"
                     TextAlignment="Center" />
             </Canvas>
@@ -338,8 +338,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="14"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Foreground="White"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
                     Text="0"
                     TextAlignment="Center" />
             </Canvas>
