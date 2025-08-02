@@ -127,28 +127,13 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
 
     auto args = std::wstring{ GetCommandLine() };
     
-    // Try to parse command line arguments first
-    std::vector<std::wstring> cmdLineFiles = ParseCommandLineArgs(args);
-    
-    if (!cmdLineFiles.empty())
-    {
-        // Use command line arguments for UI testing
-        for (const auto& filePath : cmdLineFiles)
-        {
-            g_files.push_back(filePath);
-        }
-        Logger::debug(L"Starting PowerRename with {} files from command line", g_files.size());
-    }
-    else
-    {
-        // Use original pipe/stdin logic for normal operation
-        size_t pos{ args.rfind(L"\\\\.\\pipe\\") };
+    // Check if the command line arguments contains a pipe name first
+    size_t pos{ args.rfind(L"\\\\.\\pipe\\") };
 
-        std::wstring pipe_name;
-        if (pos != std::wstring::npos)
-        {
-            pipe_name = args.substr(pos);
-        }
+    std::wstring pipe_name;
+    if (pos != std::wstring::npos)
+    {
+        pipe_name = args.substr(pos);
 
         HANDLE hStdin;
 
@@ -266,6 +251,21 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         CloseHandle(hStdin);
 #endif
         Logger::debug(L"Starting PowerRename with {} files from pipe/stdin", g_files.size());
+    }
+    else
+    {
+        // Try to parse command files from command line arguments
+        std::vector<std::wstring> cmdLineFiles = ParseCommandLineArgs(args);
+
+        if (!cmdLineFiles.empty())
+        {
+            // Use command line arguments for UI testing
+            for (const auto& filePath : cmdLineFiles)
+            {
+                g_files.push_back(filePath);
+            }
+            Logger::debug(L"Starting PowerRename with {} files from command line", g_files.size());
+        }
     }
 
     window = make<MainWindow>();
