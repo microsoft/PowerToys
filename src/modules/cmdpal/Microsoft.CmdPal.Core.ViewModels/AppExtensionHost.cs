@@ -34,7 +34,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
 #endif
     }
 
-    public virtual IAsyncAction HideStatus(IStatusMessage? message)
+    public IAsyncAction HideStatus(IStatusMessage? message)
     {
         if (message == null)
         {
@@ -140,7 +140,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
             _globalLogPageContext.Scheduler);
     }
 
-    public virtual IAsyncAction ShowStatus(IStatusMessage? message, StatusContext context)
+    public IAsyncAction ShowStatus(IStatusMessage? message, StatusContext context)
     {
         if (message == null)
         {
