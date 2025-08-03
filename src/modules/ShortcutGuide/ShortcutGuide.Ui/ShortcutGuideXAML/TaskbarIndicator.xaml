@@ -9,21 +9,17 @@
     mc:Ignorable="d">
 
     <Canvas
-        x:Name="IndicatorCanvas"
-        Width="10"
-        Height="10">
-        <Rectangle
-            x:Name="IndicatorRectangle"
-            Width="10"
-            Height="10"
-            Fill="Blue" />
+        x:Name="IndicatorCanvas">
+        <Border x:Name="IndicatorRectangle" Padding="0,0,0,0" CornerRadius="3,3,0,0" BorderBrush="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderThickness="1">
+            <Rectangle
+            Fill="{ThemeResource SystemAccentColor}"/>
+        </Border>
         <TextBlock
             x:Name="IndicatorText"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontSize="14"
-            Foreground="White"
-            Style="{StaticResource BodyStrongTextBlockStyle}"
+            Foreground="{ThemeResource TextOnAccentFillColorDefaultBrush}"
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
             TextAlignment="Center" />
     </Canvas>
 </UserControl>

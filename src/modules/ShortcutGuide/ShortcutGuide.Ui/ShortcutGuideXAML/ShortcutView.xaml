@@ -33,20 +33,20 @@
                     Padding="6,0,6,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    Style="{ThemeResource BodyStrongTextBlockStyle}"
                     Text="{x:Bind Name}" />
                 <Border
                     Grid.Row="1"
                     Grid.Column="1"
                     Margin="20,6,6,6"
                     HorizontalAlignment="Right"
-                    BorderThickness="{StaticResource ButtonBorderThemeThickness}">
+                    BorderThickness="{ThemeResource ButtonBorderThemeThickness}">
                     <ContentPresenter
                         Padding="6,6,6,6"
                         HorizontalAlignment="Stretch"
                         Background="{ThemeResource SystemAltHighColor}"
                         Content="{x:Bind Shortcut}"
-                        CornerRadius="{StaticResource ControlCornerRadius}" />
+                        CornerRadius="{ThemeResource ControlCornerRadius}" />
                 </Border>
                 <TextBlock
                     Grid.Row="2"
@@ -91,7 +91,7 @@
                             x:Uid="PinnedListTitle"
                             Grid.Row="0"
                             Margin="6,0,6,0"
-                            Style="{StaticResource TitleTextBlockStyle}" />
+                            Style="{ThemeResource TitleTextBlockStyle}" />
                         <GridView
                             x:Name="PinnedListElement"
                             Grid.Row="1"
@@ -109,7 +109,7 @@
                             x:Name="RecommendedListTitle"
                             x:Uid="RecommendedListTitle"
                             Margin="6,0,6,0"
-                            Style="{StaticResource TitleTextBlockStyle}" />
+                            Style="{ThemeResource TitleTextBlockStyle}" />
                         <GridView
                             x:Name="RecommendedListElement"
                             ItemTemplate="{StaticResource ShortcutTemplate}"
@@ -126,7 +126,7 @@
                             x:Name="TaskbarLaunchShortcutsTitle"
                             x:Uid="TaskbarLaunchShortcutsTitle"
                             Margin="6,0,6,0"
-                            Style="{StaticResource TitleTextBlockStyle}" />
+                            Style="{ThemeResource TitleTextBlockStyle}" />
                         <TextBlock
                             x:Name="TaskbarLaunchShortcutsDescription"
                             x:Uid="TaskbarLaunchShortcutsDescription"
