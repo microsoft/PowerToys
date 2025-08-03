@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="ShortcutGuide.TaskbarIndicator"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ShortcutGuide"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Canvas
+        x:Name="IndicatorCanvas"
+    Width="10"
+    Height="10">
+        <Rectangle
+            x:Name="IndicatorRectangle"
+        Width="10"
+        Height="10"
+        Fill="Blue" />
+        <TextBlock
+            x:Name="IndicatorText"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        FontSize="14"
+        Foreground="White"
+        Style="{StaticResource BodyStrongTextBlockStyle}"
+        TextAlignment="Center" />
+    </Canvas>
+</UserControl>

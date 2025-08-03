@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -131,24 +132,12 @@ namespace ShortcutGuide
         private void UpdateTaskbarIndicators(object? sender, object? e)
         {
             NativeMethods.TasklistButton[] buttons = TasklistPositions.GetButtons();
-            Canvas[] canvases = [
-                TaskbarIndicator1,
-                TaskbarIndicator2,
-                TaskbarIndicator3,
-                TaskbarIndicator4,
-                TaskbarIndicator5,
-                TaskbarIndicator6,
-                TaskbarIndicator7,
-                TaskbarIndicator8,
-                TaskbarIndicator9,
-                TaskbarIndicator10,
-            ];
 
-            for (int i = 0; i < canvases.Length; i++)
+            for (int i = 0; i < TaskbarIndicators.Children.Count; i++)
             {
                 if (i < buttons.Length)
                 {
-                    canvases[i].Visibility = Visibility.Visible;
+                    TaskbarIndicators.Children[i].Visibility = Visibility.Visible;
                     Rect workArea = DisplayHelper.GetWorkAreaForDisplayWithWindow(MainWindow.WindowHwnd);
                     DoubleAnimation animation = new()
                     {
@@ -161,23 +150,19 @@ namespace ShortcutGuide
                     storyboard.Children.Add(animation);
 
                     // Set the target and property
-                    Storyboard.SetTarget(animation, canvases[i]);
+                    Storyboard.SetTarget(animation, TaskbarIndicators.Children[i]);
                     Storyboard.SetTargetProperty(animation, "(Canvas.Left)");
 
                     // Start the animation
                     storyboard.Begin();
 
-                    canvases[i].Width = buttons[i].Width / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
-                    canvases[i].Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
-                    ((Rectangle)canvases[i].Children[0]).Width = buttons[i].Width / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
-                    ((Rectangle)canvases[i].Children[0]).Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
-                    ((TextBlock)canvases[i].Children[1]).Width = buttons[i].Width / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
-                    ((TextBlock)canvases[i].Children[1]).Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+                    ((TaskbarIndicator)TaskbarIndicators.Children[i]).Width = buttons[i].Width / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+                    ((TaskbarIndicator)TaskbarIndicators.Children[i]).Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
 
                     continue;
                 }
 
-                canvases[i].Visibility = Visibility.Collapsed;
+                TaskbarIndicators.Children[i].Visibility = Visibility.Collapsed;
             }
         }
 
