@@ -139,7 +139,7 @@ internal sealed partial class ScriptsTestPage : ListPage
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
 internal sealed class Settings
 {
-    public string ScriptsPath { get; set; } = "d:\\dev\\script-commands-test";
+    public string ScriptsPath { get; set; } = "d:\\dev\\script-commands-test\\windows-commands";
 
     public string BashPath { get; set; } = "wsl -- bash";
 }
