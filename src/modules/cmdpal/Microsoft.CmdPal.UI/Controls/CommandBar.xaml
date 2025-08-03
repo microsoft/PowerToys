@@ -76,44 +76,44 @@
 
         <Grid
             x:Name="IconRoot"
-            Margin="8,0,0,0"
-            Tapped="PageIcon_Tapped"
+            Margin="3,0,-5,0"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}">
-            <InfoBadge Visibility="{x:Bind CurrentPageViewModel.HasStatusMessage, Mode=OneWay}" Value="{x:Bind CurrentPageViewModel.StatusMessages.Count, Mode=OneWay}" />
-            <Grid.ContextFlyout>
-                <Flyout x:Name="StatusMessagesFlyout" Placement="TopEdgeAlignedLeft">
-                    <ItemsRepeater
-                        x:Name="MessagesDropdown"
-                        Margin="-8"
-                        ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
-                        Layout="{StaticResource VerticalStackLayout}">
-                        <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="coreViewModels:StatusMessageViewModel">
-                                <StackPanel
-                                    Grid.Row="0"
-                                    Margin="0"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Bottom"
-                                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-                                    CornerRadius="0">
-                                    <InfoBar
-                                        CornerRadius="{ThemeResource ControlCornerRadius}"
-                                        IsClosable="False"
-                                        IsOpen="True"
-                                        Message="{x:Bind Message, Mode=OneWay}"
-                                        Severity="{x:Bind State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
-                </Flyout>
-            </Grid.ContextFlyout>
+            <Button
+                x:Name="StatusMessagesButton"
+                x:Uid="StatusMessagesButton"
+                Padding="4"
+                Style="{StaticResource SubtleButtonStyle}"
+                Visibility="{x:Bind CurrentPageViewModel.HasStatusMessage, Mode=OneWay}">
+                <InfoBadge Value="{x:Bind CurrentPageViewModel.StatusMessages.Count, Mode=OneWay}" />
+                <Button.Flyout>
+                    <Flyout x:Name="StatusMessagesFlyout" Placement="TopEdgeAlignedLeft">
+                        <ItemsRepeater
+                            x:Name="MessagesDropdown"
+                            Margin="-8"
+                            ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
+                            Layout="{StaticResource VerticalStackLayout}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="coreViewModels:StatusMessageViewModel">
+                                    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
+                                        <InfoBar
+                                            CornerRadius="{ThemeResource ControlCornerRadius}"
+                                            IsClosable="False"
+                                            IsOpen="True"
+                                            Message="{x:Bind Message, Mode=OneWay}"
+                                            Severity="{x:Bind State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
         </Grid>
         <Button
             x:Name="SettingsIconButton"
             x:Uid="SettingsButton"
+            Click="SettingsIcon_Clicked"
             Style="{StaticResource SubtleButtonStyle}"
-            Tapped="SettingsIcon_Tapped"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <FontIcon
@@ -146,8 +146,8 @@
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 AutomationProperties.Name="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
                 Background="Transparent"
+                Click="PrimaryButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
-                Tapped="PrimaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
@@ -169,8 +169,8 @@
                 Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 AutomationProperties.Name="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
+                Click="SecondaryButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
-                Tapped="SecondaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
@@ -200,12 +200,45 @@
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
                 Padding="4"
-                Content="{ui:FontIcon Glyph=&#xE712;,
-                                      FontSize=16}"
+                Click="MoreCommandsButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
-                Tapped="MoreCommandsButton_Tapped"
                 ToolTipService.ToolTip="Ctrl+K"
-                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}" />
+                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="More" />
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Border
+                            Padding="4,2,4,2"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <TextBlock
+                                CharacterSpacing="4"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Ctrl" />
+                        </Border>
+                        <Border
+                            Padding="4,2,4,2"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="K" />
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

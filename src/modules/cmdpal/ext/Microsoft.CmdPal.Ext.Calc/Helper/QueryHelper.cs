@@ -63,7 +63,7 @@ public static partial class QueryHelper
                 return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, query);
             }
 
-            return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, query, handleSave);
+            return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, query, settings, handleSave);
         }
         catch (OverflowException)
         {

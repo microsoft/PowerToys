@@ -23,6 +23,8 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
 
     private uint _queryCookie = 10;
 
+    private Func<string, bool> _suppressCallback;
+
     public FallbackOpenFileItem()
         : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title)
     {
@@ -44,10 +46,21 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
             return;
         }
 
+        if (_suppressCallback != null && _suppressCallback(query))
+        {
+            Command = new NoOpCommand();
+            Title = string.Empty;
+            Subtitle = string.Empty;
+            Icon = null;
+            MoreCommands = null;
+
+            return;
+        }
+
         if (Path.Exists(query))
         {
             // Exit 1: The query is a direct path to a file. Great! Return it.
-            var item = new IndexerItem() { FullPath = query, FileName = Path.GetFileName(query) };
+            var item = new IndexerItem(fullPath: query);
             var listItemForUs = new IndexerListItem(item, IncludeBrowseCommand.AsDefault);
             Command = listItemForUs.Command;
             MoreCommands = listItemForUs.MoreCommands;
@@ -127,5 +140,10 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     {
         _searchEngine.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    public void SuppressFallbackWhen(Func<string, bool> callback)
+    {
+        _suppressCallback = callback;
     }
 }
