@@ -31,14 +31,6 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         PlaceholderText = Resources.Indexer_PlaceholderText;
         _searchEngine = new();
         _queryCookie = 10;
-
-        EmptyContent = new CommandItem(new NoOpCommand())
-        {
-            Icon = Icon,
-            Title = Resources.Indexer_Subtitle,
-            Subtitle = _isEmptyQuery ? "\n\n" + Resources.Indexer_NoResultsMessageTip :
-                Resources.Indexer_NoResultsMessage + "\n\n" + Resources.Indexer_NoResultsMessageTip,
-        };
     }
 
     public IndexerPage(string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
@@ -52,6 +44,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         SearchText = query;
         disposeSearchEngine = false;
     }
+
+    public override ICommandItem? EmptyContent => GetEmptyContent();
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
@@ -77,6 +71,17 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         HasMoreItems = hasMore;
         IsLoading = false;
         RaiseItemsChanged(_indexerListItems.Count);
+    }
+
+    private CommandItem GetEmptyContent()
+    {
+        return new CommandItem(new NoOpCommand())
+        {
+            Icon = Icon,
+            Title = Resources.Indexer_Subtitle,
+            Subtitle = _isEmptyQuery ? "\n\n" + Resources.Indexer_NoResultsMessageTip :
+                Resources.Indexer_NoResultsMessage + "\n\n" + Resources.Indexer_NoResultsMessageTip,
+        };
     }
 
     private void Query(string query)
