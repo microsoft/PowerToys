@@ -21,6 +21,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     private string initialQuery = string.Empty;
 
+    private bool _isEmptyQuery = true;
+
     public IndexerPage()
     {
         Id = "com.microsoft.indexer.fileSearch";
@@ -34,7 +36,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         {
             Icon = Icon,
             Title = Resources.Indexer_Subtitle,
-            Subtitle = Resources.Indexer_NoResultsMessage + "\n\n" + Resources.Indexer_NoResultsMessageTip,
+            Subtitle = _isEmptyQuery ? "\n\n" + Resources.Indexer_NoResultsMessageTip :
+                Resources.Indexer_NoResultsMessage + "\n\n" + Resources.Indexer_NoResultsMessageTip,
         };
     }
 
@@ -56,6 +59,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         {
             _ = Task.Run(() =>
             {
+                _isEmptyQuery = string.IsNullOrWhiteSpace(newSearch);
                 Query(newSearch);
                 LoadMore();
                 initialQuery = string.Empty;
