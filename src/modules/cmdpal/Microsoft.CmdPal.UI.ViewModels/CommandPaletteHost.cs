@@ -5,6 +5,7 @@
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CommandPalette.Extensions;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -35,5 +36,15 @@ public sealed partial class CommandPaletteHost : AppExtensionHost, IExtensionHos
     public override string? GetExtensionDisplayName()
     {
         return Extension?.ExtensionDisplayName;
+    }
+
+    public override IAsyncAction ShowStatus(IStatusMessage? message, StatusContext context)
+    {
+        return Extension == null && this != Instance ? Instance.ShowStatus(message, context) : base.ShowStatus(message, context);
+    }
+
+    public override IAsyncAction HideStatus(IStatusMessage? message)
+    {
+        return Extension == null && this != Instance ? Instance.HideStatus(message) : base.HideStatus(message);
     }
 }
