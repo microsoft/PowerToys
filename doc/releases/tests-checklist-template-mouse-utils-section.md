@@ -40,6 +40,7 @@ Mouse Highlighter:
     - [ ] Radius
     - [ ] Fade delay
     - [ ] Fade duration
+    - [ ] Hilight mode switch to "Spotlight", verify there is a transparent circle and outside it is colored with "Always highlight color", and make sure performance is ok.
 
 Mouse Pointer Crosshairs:
   * Enable Mouse Pointer Crosshairs. Then:
