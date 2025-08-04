@@ -151,7 +151,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         WeakReference<IPageContext> weakSelf = new(this);
         await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
-        List<TopLevelViewModel> newItems = [..sender.TopLevelItems];
+        List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
         {
             if (i.IsEnabled)
@@ -241,7 +241,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             _extensionCommandProviders.Clear();
         }
 
-        if (extensions != null)
+        if (extensions is not null)
         {
             await StartExtensionsAndGetCommands(extensions);
         }
@@ -275,7 +275,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
 
         // Wait for all extensions to start
-        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).Select(w => w!).ToList();
+        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper is not null).Select(w => w!).ToList();
 
         lock (_commandProvidersLock)
         {
@@ -285,7 +285,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         // Load the commands from the providers in parallel
         var loadTasks = wrappers.Select(LoadCommandsWithTimeoutAsync);
 
-        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results != null).Select(r => r!).ToList();
+        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results is not null).Select(r => r!).ToList();
 
         lock (TopLevelCommands)
         {
