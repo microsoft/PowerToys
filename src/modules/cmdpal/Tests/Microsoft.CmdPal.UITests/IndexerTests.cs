@@ -115,7 +115,7 @@ public class IndexerTests : CommandPaletteTestBase
 
         openButton.Click();
 
-        var fileExplorerWindow = FindFileExploerWindow();
+        var fileExplorerWindow = FindFileExplorerWindow();
 
         Assert.IsNotNull(fileExplorerWindow);
     }
@@ -130,7 +130,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(searchItem);
         searchItem.DoubleClick();
 
-        var fileExplorerWindow = FindFileExploerWindow();
+        var fileExplorerWindow = FindFileExplorerWindow();
 
         Assert.IsNotNull(fileExplorerWindow);
     }
@@ -189,7 +189,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(showInFolderButton);
         showInFolderButton.Click();
 
-        var fileExplorerWindow = FindFileExploerWindow();
+        var fileExplorerWindow = FindFileExplorerWindow();
 
         Assert.IsNotNull(fileExplorerWindow);
     }

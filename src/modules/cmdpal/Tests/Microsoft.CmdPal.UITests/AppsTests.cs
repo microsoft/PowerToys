@@ -205,7 +205,7 @@ public class AppsTests : CommandPaletteTestBase
         Assert.IsNotNull(openContainingFolderButton);
         openContainingFolderButton.Click();
 
-        var fileExplorerWindow = FindFileExploerWindow();
+        var fileExplorerWindow = FindFileExplorerWindow();
 
         Assert.IsNotNull(fileExplorerWindow);
     }
@@ -238,7 +238,7 @@ public class AppsTests : CommandPaletteTestBase
         var openLocationButton = this.Find<NavigationViewItem>("Open location");
         Assert.IsNotNull(openLocationButton, "Open location button not found.");
         openLocationButton.Click();
-        var fileExplorerWindow = FindFileExploerWindow();
+        var fileExplorerWindow = FindFileExplorerWindow();
         Assert.IsNotNull(fileExplorerWindow, "File Explorer window not found.");
     }
 
@@ -258,7 +258,7 @@ public class AppsTests : CommandPaletteTestBase
         Assert.IsNotNull(openLocationButton, "Open location button not found.");
         openLocationButton.Click();
 
-        var fileExplore = FindFileExploerWindow();
+        var fileExplore = FindFileExplorerWindow();
         Assert.IsNotNull(fileExplore, "File Explorer window not found.");
     }
 }

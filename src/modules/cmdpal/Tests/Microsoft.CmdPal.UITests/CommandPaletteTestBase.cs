@@ -62,7 +62,7 @@ public class CommandPaletteTestBase : UITestBase
         contextMenuButton.Click();
     }
 
-    protected Window FindFileExploerWindow()
+    protected Window FindFileExplorerWindow()
     {
         var fileExplorerWindow = this.Find<Window>(By.ClassName("CabinetWClass"), global: true, timeoutMS: 5000);
         return fileExplorerWindow;
