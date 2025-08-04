@@ -76,8 +76,8 @@ public class CommandPaletteTestBase : UITestBase
 
     protected Window FindWindowsSettingsWindow()
     {
-        var settingsWinodw = this.Find<Window>("Settings", global: true, timeoutMS: 5000);
-        return settingsWinodw;
+        var settingsWindow = this.Find<Window>("Settings", global: true, timeoutMS: 5000);
+        return settingsWindow;
     }
 
     protected void FindDefaultAppDialogAndClickButton()
