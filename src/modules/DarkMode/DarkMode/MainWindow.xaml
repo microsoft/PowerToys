@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="DarkMode.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DarkMode"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="DarkMode">
+
+  <StackPanel Spacing="15" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+    <!-- Checkboxes to select which mode to control -->
+    <CheckBox x:Name="SystemCheckbox" Content="Change mode for System" />
+    <CheckBox x:Name="AppsCheckbox" Content="Change mode for Apps" />
+
+    <!-- Radio buttons to choose mode -->
+    <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,10,0,0">
+      <RadioButton x:Name="TimeModeRadio" Content="Set Specific Times" IsChecked="True"
+                   Checked="ModeRadio_Checked"/>
+      <RadioButton x:Name="GeoModeRadio" Content="Use Geolocation (Sunrise/Sunset)"
+                   Checked="ModeRadio_Checked"/>
+    </StackPanel>
+
+    <!-- Panel for time pickers + save button -->
+    <StackPanel x:Name="TimePickerPanel" Orientation="Vertical" HorizontalAlignment="Left" Spacing="10" Visibility="Visible">
+      <TextBlock Text="Light:" VerticalAlignment="Center"/>
+      <TimePicker x:Name="LightTimePicker"/>
+      <TextBlock Text="Dark:" VerticalAlignment="Center"/>
+      <TimePicker x:Name="DarkTimePicker"/>
+      <Button Content="Save Times" Click="ApplyButton_Click"/>
+    </StackPanel>
+
+    <!-- Panel for geolocation mode -->
+    <StackPanel x:Name="GeoPanel" Orientation="Vertical" Spacing="8" Visibility="Collapsed">
+      <TextBlock Text="Location:" FontWeight="Bold"/>
+
+      <StackPanel x:Name="LatLongText" Orientation="Horizontal" Spacing="8">
+        <!-- Latitude / Longitude display -->
+        <TextBlock x:Name="LatitudeText" Text="Lat: -" />
+        <TextBlock x:Name="LongitudeText" Text="Long: -" />
+
+        <!-- Get Location Button -->
+        <Button Content="Get Location" Width="150" Margin="0,5,0,0" Click="GetLocation_Click"/>
+      </StackPanel>
+
+      <StackPanel x:Name="SunText" Orientation="Horizontal" Spacing="8">
+        <!-- Show calculated sunrise/sunset -->
+        <TextBlock x:Name="SunriseText" Text="Sunrise: -" />
+        <TextBlock x:Name="SunsetText" Text="Sunset: -" />
+      </StackPanel>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,20,0,0">
+      <Button Content="Force Light Mode" Click="ForceLight_Click" Width="150"/>
+      <Button Content="Force Dark Mode" Click="ForceDark_Click" Width="150"/>
+    </StackPanel>
+  </StackPanel>
+</Window>
