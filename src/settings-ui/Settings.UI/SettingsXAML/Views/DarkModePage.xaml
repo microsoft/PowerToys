@@ -9,10 +9,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI" 
-    xmlns:ViewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    d:DataContext="{d:DesignInstance Type=ViewModel:DarkModeViewModel}"
+    xmlns:ViewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels" xmlns:controls1="using:System.Windows.Controls"
+  d:DataContext="{d:DesignInstance Type=ViewModel:DarkModeViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
+
+  <Page.Resources>
+    <converters:DarkModeInvertBooleanConverter x:Key="InvertBoolToVisibilityConverter" />
+    <converters:DarkModeBoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+  </Page.Resources>
 
   <controls:SettingsPageControl
     x:Uid="DarkMode"
@@ -21,20 +26,93 @@
 
     <controls:SettingsPageControl.ModuleContent>
       <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+
         <tkcontrols:SettingsCard
           x:Uid="DarkMode_EnableSettingsCard"
           HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
           IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
           <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
         </tkcontrols:SettingsCard>
+
         <InfoBar
           x:Uid="GPO_SettingIsManaged"
           IsClosable="False"
           IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
           IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
           Severity="Informational" />
+
+        <controls:SettingsGroup x:Uid="DarkMode_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+
+          <tkcontrols:SettingsCard x:Uid="DarkMode_ModeTargetCard"
+                                   Description="Decide whether to change the system theme, app theme, or both.">
+            <StackPanel>
+              <CheckBox Content="Change system theme"
+                        IsChecked="{x:Bind ViewModel.ChangeSystem, Mode=TwoWay}" />
+              <CheckBox Content="Change app theme"
+                        IsChecked="{x:Bind ViewModel.ChangeApps, Mode=TwoWay}" />
+            </StackPanel>
+          </tkcontrols:SettingsCard>
+
+          <tkcontrols:SettingsCard x:Uid="DarkMode_PickModeCard"
+                                   Description="Choose how the theme should switch between light and dark modes.">
+            <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,10,0,0">
+              <RadioButton x:Name="TimeModeRadio"
+                           Content="Set Specific Times"
+                           GroupName="ThemeSwitchMode"
+                           x:Uid="DarkMode_TimeModeRadio"
+                           IsChecked="{x:Bind ViewModel.ModuleSettings.Properties.UseLocation, Mode=TwoWay, Converter={StaticResource InvertBooleanConverter}}"
+                           Checked="ModeRadio_Checked" />
+              <RadioButton x:Name="GeoModeRadio"
+                           Content="Use Geolocation (Sunrise/Sunset)"
+                           GroupName="ThemeSwitchMode"
+                           x:Uid="DarkMode_LocationModeRadio"
+                           IsChecked="{x:Bind ViewModel.ModuleSettings.Properties.UseLocation, Mode=TwoWay}"
+                           Checked="ModeRadio_Checked" />
+            </StackPanel>
+          </tkcontrols:SettingsCard>
+
+          <!-- Time Settings Panel -->
+          <tkcontrols:SettingsCard Header="Set Specific Times"
+                         Description="Set the times when the theme should switch."
+                         Visibility="{x:Bind ViewModel.IsUseLocationEnabled, Mode=OneWay, Converter={StaticResource InvertBoolToVisibilityConverter}}" >
+
+          <StackPanel>
+              <TextBlock Text="Light Time" />
+              <!-- Replace with appropriate time picker binding if needed -->
+              <TextBox Text="{x:Bind ViewModel.LightTime, Mode=TwoWay}" />
+              <TextBlock Text="Dark Time" />
+              <TextBox Text="{x:Bind ViewModel.DarkTime, Mode=TwoWay}" />
+            </StackPanel>
+          </tkcontrols:SettingsCard>
+
+          <!-- Geolocation Panel -->
+          <tkcontrols:SettingsCard Header="Geolocation Settings"
+                         Description="Use your location to switch theme at sunrise and sunset."
+                         Visibility="{x:Bind ViewModel.IsUseLocationEnabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel Orientation="Vertical" Spacing="8">
+              <TextBlock Text="Location:" FontWeight="Bold"/>
+
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Latitude:" />
+                <TextBlock Text="{x:Bind ViewModel.Latitude}" />
+                <TextBlock Text="Longitude:" />
+                <TextBlock Text="{x:Bind ViewModel.Longitude}" />
+                <Button Content="Get Location" Click="GetLocation_Click" />
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Sunrise:" />
+                <TextBlock Text="0000" />
+                <TextBlock Text="Sunset:" />
+                <TextBlock Text="1800" />
+              </StackPanel>
+            </StackPanel>
+          </tkcontrols:SettingsCard>
+
+        </controls:SettingsGroup>
       </StackPanel>
     </controls:SettingsPageControl.ModuleContent>
+
     <controls:SettingsPageControl.PrimaryLinks>
       <controls:PageLink x:Uid="LearnMore_DarkMode" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
     </controls:SettingsPageControl.PrimaryLinks>

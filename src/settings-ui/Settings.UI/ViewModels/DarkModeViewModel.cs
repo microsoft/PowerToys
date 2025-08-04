@@ -15,6 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         public DarkModeViewModel()
         {
+            // Ensure ModuleSettings is never null
+            _moduleSettings = new DarkModeSettings();
         }
 
         public DarkModeSettings ModuleSettings
