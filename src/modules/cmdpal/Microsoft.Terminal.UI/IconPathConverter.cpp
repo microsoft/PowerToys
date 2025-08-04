@@ -331,7 +331,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         // * C:\Program Files\PowerShell\7\pwsh.exe, 0
 
         const auto swBitmap{ _getBitmapFromIconFileAsync(winrt::hstring{ iconPathWithoutIndex }, index, targetSize) };
-        if (swBitmap is nullptr)
+        if (swBitmap == nullptr)
         {
             return nullptr;
         }
