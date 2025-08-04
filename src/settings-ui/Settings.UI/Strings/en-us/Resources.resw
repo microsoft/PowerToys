@@ -5079,4 +5079,19 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
+  <data name="Shell_DarkMode.Content" xml:space="preserve">
+    <value>DarkMode</value>
+  </data>
+  <data name="DarkMode_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable DarkMode</value>
+  </data>
+  <data name="DarkMode.ModuleDescription" xml:space="preserve">
+    <value>This is a module that allows you to control light/dark theming via set times, sun rise, or directly invoking the change.</value>
+  </data>
+  <data name="DarkMode.ModuleTitle" xml:space="preserve">
+    <value>DarkMode</value>
+  </data>
+  <data name="LearnMore_DarkMode.Text" xml:space="preserve">
+    <value>Learn more about DarkMode</value>
+  </data>
 </root>

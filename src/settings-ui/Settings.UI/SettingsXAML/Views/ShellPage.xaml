@@ -172,7 +172,11 @@
                             x:Uid="Shell_ZoomIt"
                             helpers:NavHelper.NavigateTo="views:ZoomItPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
-                    </NavigationViewItem.MenuItems>
+                        <NavigationViewItem
+                            x:Uid="Shell_DarkMode"
+                            helpers:NavHelper.NavigateTo="views:DarkModePage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />  
+          </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
                 <!--  Windowing & Layouts  -->

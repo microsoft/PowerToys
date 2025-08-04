@@ -513,6 +513,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool darkMode;
+
+        [JsonPropertyName("DarkMode")]
+        public bool DarkMode
+        {
+            get => darkMode;
+            set
+            {
+                if (darkMode != value)
+                {
+                    LogTelemetryEvent(value);
+                    darkMode = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();
