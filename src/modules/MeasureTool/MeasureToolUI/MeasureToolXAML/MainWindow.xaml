@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
+    Title="PowerToys.ScreenRuler"
     IsAlwaysOnTop="True"
     IsMaximizable="False"
     IsMinimizable="False"
@@ -323,6 +324,7 @@
             </ToggleButton>
             <AppBarSeparator />
             <Button
+                AutomationProperties.AutomationId="Button_Close"
                 x:Uid="BtnClosePanel"
                 Click="ClosePanelTool_Click"
                 Content="&#xE8BB;"
