@@ -80,19 +80,6 @@ public class CommandPaletteTestBase : UITestBase
         return settingsWinodw;
     }
 
-    protected void UACConfirm()
-    {
-        FocusOnCenter();
-        Session.SendKey(Key.Tab);
-        Session.SendKey(Key.Enter);
-    }
-
-    protected void HideAllWindow()
-    {
-        Session.SendKeys(Key.Win);
-        Session.SendKeys(Key.Enter);
-    }
-
     protected void FindDefaultAppDialogAndClickButton()
     {
         try
