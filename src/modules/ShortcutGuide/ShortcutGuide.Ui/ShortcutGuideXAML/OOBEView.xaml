@@ -6,68 +6,53 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:ShortcutGuide"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
 
     <Page>
         <Page.Background>
-            <ImageBrush
-                x:Name="HeroImage"
-                AlignmentX="Left"
-                AlignmentY="Top"
-                ImageSource="/Assets/ShortcutGuide/HeroImage.png"
-                Stretch="None">
+            <ImageBrush ImageSource="/Assets/ShortcutGuide/HeroImage.png" AlignmentX="Left" AlignmentY="Top" Stretch="None" x:Name="HeroImage">
                 <ImageBrush.Transform>
-                    <CompositeTransform x:Name="HeroImageCompositeTransform" TranslateX="1200" />
+                    <CompositeTransform x:Name="HeroImageCompositeTransform"></CompositeTransform>
                 </ImageBrush.Transform>
             </ImageBrush>
         </Page.Background>
-        <StackPanel
-            x:Name="MainStackPanel"
-            Margin="32,24"
-            Spacing="12">
+        <StackPanel Margin="32,24" Spacing="12" x:Name="MainStackPanel">
+            <TextBlock x:Uid="OOBETitle" x:Name= "OOBETitle" Style="{StaticResource TitleTextBlockStyle}" />
             <TextBlock
-                x:Name="OOBETitle"
-                x:Uid="OOBETitle"
-                Style="{StaticResource TitleTextBlockStyle}" />
-            <TextBlock
-                x:Name="OOBEDescription1"
-                x:Uid="OOBEDescription1"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                TextWrapping="WrapWholeWords" />
-            <StackPanel x:Name="OOBEDescription1_1StackPanel" Orientation="Horizontal">
+            x:Uid="OOBEDescription1" x:Name= "OOBEDescription1"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextWrapping="WrapWholeWords" />
+            <StackPanel x:Name= "OOBEDescription1_1StackPanel" Orientation="Horizontal">
                 <TextBlock Margin="0,0,8,0" Text="•" />
-                <TextBlock x:Name="OOBEDescription1_1" x:Uid="OOBEDescription1_1" />
+                <TextBlock x:Uid="OOBEDescription1_1" x:Name= "OOBEDescription1_1" />
             </StackPanel>
-            <StackPanel x:Name="OOBEDescription1_2StackPanel" Orientation="Horizontal">
+            <StackPanel x:Name= "OOBEDescription1_2StackPanel" Orientation="Horizontal">
                 <TextBlock Margin="0,0,8,0" Text="•" />
-                <TextBlock x:Name="OOBEDescription1_2" x:Uid="OOBEDescription1_2" />
+                <TextBlock x:Uid="OOBEDescription1_2" x:Name= "OOBEDescription1_2" />
             </StackPanel>
-            <StackPanel x:Name="OOBEDescription1_3StackPanel" Orientation="Horizontal">
+            <StackPanel x:Name= "OOBEDescription1_3StackPanel" Orientation="Horizontal">
                 <TextBlock Margin="0,0,8,0" Text="•" />
-                <TextBlock x:Name="OOBEDescription1_3" x:Uid="OOBEDescription1_3" />
+                <TextBlock x:Uid="OOBEDescription1_3" x:Name= "OOBEDescription1_3" />
             </StackPanel>
-            <StackPanel x:Name="OOBEDescription1_4StackPanel" Orientation="Horizontal">
+            <StackPanel x:Name= "OOBEDescription1_4StackPanel" Orientation="Horizontal">
                 <TextBlock Margin="0,0,8,0" Text="•" />
-                <TextBlock x:Name="OOBEDescription1_4" x:Uid="OOBEDescription1_4" />
+                <TextBlock x:Uid="OOBEDescription1_4" x:Name= "OOBEDescription1_4" />
             </StackPanel>
             <TextBlock
-                x:Name="OOBEDescription2"
-                x:Uid="OOBEDescription2"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                TextWrapping="WrapWholeWords" />
+            x:Uid="OOBEDescription2" x:Name= "OOBEDescription2"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextWrapping="WrapWholeWords" />
             <TextBlock
-                x:Name="OOBEDescription3"
-                x:Uid="OOBEDescription3"
-                FontStyle="Italic"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                TextWrapping="WrapWholeWords" />
+            x:Uid="OOBEDescription3" x:Name= "OOBEDescription3"
+            FontStyle="Italic"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextWrapping="WrapWholeWords" />
             <HyperlinkButton
-                x:Name="OOBELeaveFeedback"
-                x:Uid="OOBELeaveFeedback"
-                Margin="-8,0,0,0"
-                NavigateUri="https://aka.ms/PowerToysGiveFeedback" />
+            x:Uid="OOBELeaveFeedback" x:Name= "OOBELeaveFeedback"
+            Margin="-8,0,0,0"
+            NavigateUri="https://aka.ms/PowerToysGiveFeedback" />
         </StackPanel>
     </Page>
 </Page>

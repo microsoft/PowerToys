@@ -8,11 +8,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Canvas
-        x:Name="IndicatorCanvas">
-        <Border x:Name="IndicatorRectangle" Padding="0,0,0,0" CornerRadius="3,3,0,0" BorderBrush="{ThemeResource ApplicationPageBackgroundThemeBrush}" BorderThickness="1">
-            <Rectangle
-            Fill="{ThemeResource SystemAccentColor}"/>
+    <Canvas x:Name="IndicatorCanvas">
+        <Border
+            x:Name="IndicatorRectangle"
+            Padding="0,0,0,0"
+            BorderBrush="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+            BorderThickness="1"
+            CornerRadius="3,3,0,0">
+            <Rectangle Fill="{ThemeResource SystemAccentColor}" />
         </Border>
         <TextBlock
             x:Name="IndicatorText"
