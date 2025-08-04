@@ -62,29 +62,6 @@ public class CommandPaletteTestBase : UITestBase
         contextMenuButton.Click();
     }
 
-    protected void FindDefaultAppDialogAndClickButton()
-    {
-        try
-        {
-            // win11
-            var chooseDialog = FindByClassName("NamedContainerAutomationPeer", global: true);
-
-            chooseDialog.Find<Button>("Just once").Click();
-        }
-        catch
-        {
-            try
-            {
-                // win10
-                var chooseDialog = FindByClassName("Shell_Flyout", global: true);
-                chooseDialog.Find<Button>("OK").Click();
-            }
-            catch
-            {
-            }
-        }
-    }
-
     protected Window FindFileExploerWindow()
     {
         var fileExplorerWindow = this.Find<Window>(By.ClassName("CabinetWClass"), global: true, timeoutMS: 2000);
