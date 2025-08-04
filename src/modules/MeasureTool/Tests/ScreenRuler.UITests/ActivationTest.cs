@@ -18,49 +18,44 @@ namespace ScreenRuler.UITests
         {
         }
 
-        /// <summary>
-        /// Test MeasureTool keyboard shortcuts
-        /// <list type="bullet">
-        /// <item>
-        /// <description>Validating toolbar appears when MeasureTool is activated</description>
-        /// </item>
-        /// <item>
-        /// <description>Validating Ctrl+1 activates Bounds tool</description>
-        /// </item>
-        /// <item>
-        /// <description>Validating Escape closes the toolbar</description>
-        /// </item>
-        /// </list>
-        /// </summary>
-        [TestMethod("MeasureTool.Shortcuts.ActivateToolbar")]
-        [TestCategory("Measure Tool #1")]
-        public void TestActivateMeasureTool()
+        [TestMethod("ScreenRuler.ModuleToggle")]
+        [TestCategory("Activation")]
+        public void TestToggleScreenRuler()
         {
-            // Launch PowerToys Settings
             LaunchFromSetting();
 
-            var toggleSwitch = Find<ToggleSwitch>("Enable Screen Ruler");
-            if (!toggleSwitch.IsOn)
-            {
-                toggleSwitch.Click(msPostAction: 500);
-            }
+            // First ensure it's disabled
+            SetScreenRulerToggle(enable: false);
+            Assert.IsFalse(Find<ToggleSwitch>("Enable Screen Ruler").IsOn, "Screen Ruler toggle switch should be OFF initially");
 
-            Assert.IsTrue(toggleSwitch.IsOn, "Screen Ruler toggle switch should be ON");
+            // Then enable it
+            SetScreenRulerToggle(enable: true);
+            Assert.IsTrue(Find<ToggleSwitch>("Enable Screen Ruler").IsOn, "Screen Ruler toggle switch should be ON after enabling");
+
+            // Then disable it again
+            SetScreenRulerToggle(enable: false);
+            Assert.IsFalse(Find<ToggleSwitch>("Enable Screen Ruler").IsOn, "Screen Ruler toggle switch should be OFF after disabling");
         }
 
         private void LaunchFromSetting()
         {
-            Session.SetMainWindowSize(WindowSize.Medium);
             var screenRulers = FindAll<NavigationViewItem>("Screen Ruler");
 
-            // Navigate to Measure Tool settings
             if (screenRulers.Count == 0)
             {
-                // Expand System Tools list-group if needed
                 Find<NavigationViewItem>("System Tools", 500).Click(msPostAction: 500);
             }
 
             Find<NavigationViewItem>("Screen Ruler", 500).Click(msPostAction: 500);
+        }
+
+        private void SetScreenRulerToggle(bool enable)
+        {
+            var toggleSwitch = Find<ToggleSwitch>("Enable Screen Ruler");
+            if (toggleSwitch.IsOn != enable)
+            {
+                toggleSwitch.Click(msPostAction: 500);
+            }
         }
     }
 }
