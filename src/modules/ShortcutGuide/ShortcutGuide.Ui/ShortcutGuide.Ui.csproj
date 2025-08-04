@@ -26,6 +26,7 @@
     <Content Remove="Assets\CopilotKey.png" />
     <Content Remove="Assets\ShortcutGuide\+WindowsNT.Shell.en-US.yml" />
     <Content Remove="Assets\ShortcutGuide\+WindowsNT.WindowsExplorer.en-US.yml" />
+    <Content Remove="Assets\ShortcutGuide\HeroImage.png" />
     <Content Remove="Assets\ShortcutGuide\Microsoft.PowerToys.en-US.yml" />
     <Content Remove="Assets\ShortcutGuide\OfficeKey.png" />
     <Content Remove="Assets\ShortcutGuide\ShortcutGuide.ico" />

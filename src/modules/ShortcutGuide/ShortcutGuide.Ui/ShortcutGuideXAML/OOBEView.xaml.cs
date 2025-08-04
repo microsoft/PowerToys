@@ -16,11 +16,10 @@ namespace ShortcutGuide
         {
             InitializeComponent();
 
-            HeroImageCompositeTransform.TranslateX = ActualWidth - 1350;
-            SizeChanged += (_, _) =>
+            /*SizeChanged += (_, _) =>
             {
                 HeroImageCompositeTransform.TranslateX = ActualWidth - 1350;
-            };
+            };*/
 
             HeroImage.ImageSource = ActualTheme == ElementTheme.Dark
                 ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri("ms-appx:///Assets/ShortcutGuide/HeroImage-dark.png"))
@@ -61,7 +60,7 @@ namespace ShortcutGuide
 
                 child.Opacity = 0;
 
-                var opacityAnimation = new DoubleAnimation
+                DoubleAnimation opacityAnimation = new()
                 {
                     From = 0,
                     To = 1,
@@ -72,7 +71,7 @@ namespace ShortcutGuide
                 Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
                 storyboard.Children.Add(opacityAnimation);
 
-                var translateAnimation = new DoubleAnimation
+                DoubleAnimation translateAnimation = new()
                 {
                     From = -30,
                     To = 0,
@@ -85,6 +84,17 @@ namespace ShortcutGuide
 
                 delay += 0.2;
             }
+
+            DoubleAnimation heroImageTranslateAnimation = new()
+            {
+                From = ActualWidth,
+                To = ActualWidth - 1350,
+                Duration = duration,
+                BeginTime = TimeSpan.FromSeconds(delay),
+            };
+            Storyboard.SetTarget(heroImageTranslateAnimation, HeroImage);
+            Storyboard.SetTargetProperty(heroImageTranslateAnimation, "(ImageBrush.Transform).(CompositeTransform.TranslateX)");
+            storyboard.Children.Add(heroImageTranslateAnimation);
 
             storyboard.Begin();
         }
