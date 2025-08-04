@@ -792,6 +792,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DarkMode", "DarkMode", "{CC
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DarkMode", "src\modules\DarkMode\DarkMode\DarkMode.vcxproj", "{D0DE6425-EB5F-46D7-9CD7-4656E27E1192}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DarkModeModuleInterface", "src\modules\DarkMode\DarkModeModuleInterface\DarkModeModuleInterface.vcxproj", "{38177D56-6AD1-4ADF-88C9-2843A7932166}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2866,6 +2868,14 @@ Global
 		{D0DE6425-EB5F-46D7-9CD7-4656E27E1192}.Release|x64.ActiveCfg = Release|x64
 		{D0DE6425-EB5F-46D7-9CD7-4656E27E1192}.Release|x64.Build.0 = Release|x64
 		{D0DE6425-EB5F-46D7-9CD7-4656E27E1192}.Release|x64.Deploy.0 = Release|x64
+		{38177D56-6AD1-4ADF-88C9-2843A7932166}.Debug|ARM64.ActiveCfg = Debug|x64
+		{38177D56-6AD1-4ADF-88C9-2843A7932166}.Debug|ARM64.Build.0 = Debug|x64
+		{38177D56-6AD1-4ADF-88C9-2843A7932166}.Debug|x64.ActiveCfg = Debug|x64
+		{38177D56-6AD1-4ADF-88C9-2843A7932166}.Debug|x64.Build.0 = Debug|x64
+		{38177D56-6AD1-4ADF-88C9-2843A7932166}.Release|ARM64.ActiveCfg = Release|x64
+		{38177D56-6AD1-4ADF-88C9-2843A7932166}.Release|ARM64.Build.0 = Release|x64
+		{38177D56-6AD1-4ADF-88C9-2843A7932166}.Release|x64.ActiveCfg = Release|x64
+		{38177D56-6AD1-4ADF-88C9-2843A7932166}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3179,6 +3189,7 @@ Global
 		{00D8659C-2068-40B6-8B86-759CD6284BBB} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{CC39E616-9FE0-4EBB-8DB6-A0A07B488BDC} = {4574FDD0-F61D-4376-98BF-E5A1262C11EC}
 		{D0DE6425-EB5F-46D7-9CD7-4656E27E1192} = {CC39E616-9FE0-4EBB-8DB6-A0A07B488BDC}
+		{38177D56-6AD1-4ADF-88C9-2843A7932166} = {CC39E616-9FE0-4EBB-8DB6-A0A07B488BDC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

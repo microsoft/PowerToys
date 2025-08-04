@@ -1,9 +1,10 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include <interface/lowlevel_keyboard_event_data.h>
-#include <interface/win_hook_event_data.h>
-#include <common/settings_objects.h>
 #include "trace.h"
+#include <common/logger/logger.h>
+#include <Settings.XamlStyler>
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/SettingsAPI/settings_helpers.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -25,9 +26,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"$projectname$";
+const static wchar_t* MODULE_NAME = L"DarkMode";
 // Add a description that will we shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"<no description>";
+const static wchar_t* MODULE_DESC = L"This is a module that allows you to control light/dark theming via set times, sun rise, or directly invoking the change.";
 
 // These are the properties shown in the Settings page.
 struct ModuleSettings
@@ -43,10 +44,19 @@ struct ModuleSettings
     //std::wstring string_prop = L"The quick brown fox jumps over the lazy dog";
     //std::wstring color_prop = L"#1212FF";
 
+    bool m_changeSystem = true;
+    bool m_changeApps = true;
+    bool m_useLocation = false;
+    int m_lightTime = 480;
+    int m_darkTime = 1200;
+    std::wstring m_latitude = L"0.0";
+    std::wstring m_longitude = L"0.0";
+
+
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class $safeprojectname$ : public PowertoyModuleIface
+class DarkModeInterface : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -55,12 +65,22 @@ private:
     // Load initial settings from the persisted values.
     void init_settings();
 
+    // TODO: write Enable() function that does work to enable the powertoy  
+
+    // TODO: write Disable() function that kills process and logs.
+
 public:
     // Constructor
-    $safeprojectname$()
+    DarkModeInterface()
     {
         init_settings();
     };
+
+    virtual const wchar_t* get_key() override
+    {
+        return L"DarkMode"; // your unique key string
+    }
+
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
@@ -77,75 +97,74 @@ public:
     // Return array of the names of all events that this powertoy listens for, with
     // nullptr as the last element of the array. Nullptr can also be retured for empty
     // list.
-    virtual const wchar_t** get_events() override
-    {
-        static const wchar_t* events[] = { nullptr };
-        // Available events:
-        // - ll_keyboard
-        // - win_hook_event
-        //
-        // static const wchar_t* events[] = { ll_keyboard,
-        //                                   win_hook_event,
-        //                                   nullptr };
+    //virtual const wchar_t** get_events() override
+    //{
+    //    static const wchar_t* events[] = { nullptr };
+    //    // Available events:
+    //    // - ll_keyboard
+    //    // - win_hook_event
+    //    //
+    //    // static const wchar_t* events[] = { ll_keyboard,
+    //    //                                   win_hook_event,
+    //    //                                   nullptr };
 
-        return events;
-    }
+    //    return events;
+    //}
 
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
-        // Create a Settings object.
+        // Create a Settings object with your module name
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
 
-        // Show an overview link in the Settings page
-        //settings.set_overview_link(L"https://");
+        // Boolean toggles
+        settings.add_bool_toggle(
+            L"Change System Theme",
+            L"Automatically switch the system-wide light/dark theme.",
+            g_settings.m_changeSystem);
 
-        // Show a video link in the Settings page.
-        //settings.set_video_link(L"https://");
+        settings.add_bool_toggle(
+            L"Change Apps Theme",
+            L"Automatically switch the app light/dark theme.",
+            g_settings.m_changeApps);
 
-        // A bool property with a toggle editor.
-        //settings.add_bool_toogle(
-        //  L"bool_toggle_1", // property name.
-        //  L"This is what a BoolToggle property looks like", // description or resource id of the localized string.
-        //  g_settings.bool_prop // property value.
-        //);
+        settings.add_bool_toggle(
+            L"Use Geolocation",
+            L"Use your location to switch themes based on sunrise and sunset.",
+            g_settings.m_useLocation);
 
-        // An integer property with a spinner editor.
-        //settings.add_int_spinner(
-        //  L"int_spinner_1", // property name
-        //  L"This is what a IntSpinner property looks like", // description or resource id of the localized string.
-        //  g_settings.int_prop, // property value.
-        //  0, // min value.
-        //  100, // max value.
-        //  10 // incremental step.
-        //);
+        // Integer spinners (for time in minutes since midnight)
+        settings.add_int_spinner(
+            L"Light Theme Time",
+            L"Time to switch to light theme (minutes after midnight).",
+            g_settings.m_lightTime,
+            0,
+            1439,
+            1);
 
-        // A string property with a textbox editor.
-        //settings.add_string(
-        //  L"string_text_1", // property name.
-        //  L"This is what a String property looks like", // description or resource id of the localized string.
-        //  g_settings.string_prop // property value.
-        //);
+        settings.add_int_spinner(
+            L"Dark Theme Time",
+            L"Time to switch to dark theme (minutes after midnight).",
+            g_settings.m_darkTime,
+            0,
+            1439,
+            1);
 
-        // A string property with a color picker editor.
-        //settings.add_color_picker(
-        //  L"color_picker_1", // property name.
-        //  L"This is what a ColorPicker property looks like", // description or resource id of the localized string.
-        //  g_settings.color_prop // property value.
-        //);
+        // Strings for latitude and longitude
+        settings.add_string(
+            L"Latitude",
+            L"Your latitude in decimal degrees (e.g. 39.95).",
+            g_settings.m_latitude);
 
-        // A custom action property. When using this settings type, the "PowertoyModuleIface::call_custom_action()"
-        // method should be overriden as well.
-        //settings.add_custom_action(
-        //  L"custom_action_id", // action name.
-        //  L"This is what a CustomAction property looks like", // label above the field.
-        //  L"Call a custom action", // button text.
-        //  L"Press the button to call a custom action." // display values / extended info.
-        //);
+        settings.add_string(
+            L"Longitude",
+            L"Your longitude in decimal degrees (e.g. -75.16).",
+            g_settings.m_longitude);
 
+        // Serialize to buffer for the PowerToys runner
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
@@ -175,51 +194,62 @@ public:
     {
         try
         {
-            // Parse the input JSON string.
-            PowerToysSettings::PowerToyValues values =
-                PowerToysSettings::PowerToyValues::from_json_string(config);
+            auto values = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            // Update a bool property.
-            //if (auto v = values.get_bool_value(L"bool_toggle_1")) {
-            //  g_settings.bool_prop = *v;
-            //}
+            if (auto v = values.get_bool_value(L"change_system"))
+            {
+                g_settings.m_changeSystem = *v;
+            }
 
-            // Update an int property.
-            //if (auto v = values.get_int_value(L"int_spinner_1")) {
-            //  g_settings.int_prop = *v;
-            //}
+            if (auto v = values.get_bool_value(L"change_apps"))
+            {
+                g_settings.m_changeApps = *v;
+            }
 
-            // Update a string property.
-            //if (auto v = values.get_string_value(L"string_text_1")) {
-            //  g_settings.string_prop = *v;
-            //}
+            if (auto v = values.get_bool_value(L"use_location"))
+            {
+                g_settings.m_useLocation = *v;
+            }
 
-            // Update a color property.
-            //if (auto v = values.get_string_value(L"color_picker_1")) {
-            //  g_settings.color_prop = *v;
-            //}
+            if (auto v = values.get_int_value(L"light_time"))
+            {
+                g_settings.m_lightTime = *v;
+            }
 
-            // If you don't need to do any custom processing of the settings, proceed
-            // to persists the values calling:
+            if (auto v = values.get_int_value(L"dark_time"))
+            {
+                g_settings.m_darkTime = *v;
+            }
+
+            if (auto v = values.get_string_value(L"latitude"))
+            {
+                g_settings.m_latitude = *v;
+            }
+
+            if (auto v = values.get_string_value(L"longitude"))
+            {
+                g_settings.m_longitude = *v;
+            }
+
             values.save_to_settings_file();
-            // Otherwise call a custom function to process the settings before saving them to disk:
-            // save_settings();
         }
-        catch (std::exception&)
+        catch (const std::exception&)
         {
-            // Improper JSON.
+            Logger::error(L"[DarkMode] set_config: Failed to parse or apply config.");
         }
     }
 
     // Enable the powertoy
     virtual void enable()
     {
+        Logger::info("DarkMode enabling");
         m_enabled = true;
     }
 
     // Disable the powertoy
     virtual void disable()
     {
+        Logger::info("DarkMode disabling");
         m_enabled = false;
     }
 
@@ -230,66 +260,66 @@ public:
     }
 
     // Handle incoming event, data is event-specific
-    virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    {
-        if (wcscmp(name, ll_keyboard) == 0)
-        {
-            auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-            // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-            // otherwise return 0.
-            return 0;
-        }
-        else if (wcscmp(name, win_hook_event) == 0)
-        {
-            auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-            // Return value is ignored
-            return 0;
-        }
-        return 0;
-    }
+    //virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
+    //{
+    //    if (wcscmp(name, ll_keyboard) == 0)
+    //    {
+    //        auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
+    //        // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
+    //        // otherwise return 0.
+    //        return 0;
+    //    }
+    //    else if (wcscmp(name, win_hook_event) == 0)
+    //    {
+    //        auto& event = *(reinterpret_cast<WinHookEvent*>(data));
+    //        // Return value is ignored
+    //        return 0;
+    //    }
+    //    return 0;
+    //}
 
-    // This methods are part of an experimental features not fully supported yet
-    virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
-    {
-    }
+    //// This methods are part of an experimental features not fully supported yet
+    //virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
+    //{
+    //}
 
-    virtual void signal_system_menu_action(const wchar_t* name) override
-    {
-    }
+    //virtual void signal_system_menu_action(const wchar_t* name) override
+    //{
+    //}
 };
 
 // Load the settings file.
-void $safeprojectname$::init_settings()
+void DarkModeInterface::init_settings()
 {
     try
     {
-        // Load and parse the settings file for this PowerToy.
         PowerToysSettings::PowerToyValues settings =
-            PowerToysSettings::PowerToyValues::load_from_settings_file($safeprojectname$::get_name());
+            PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
 
-        // Load a bool property.
-        //if (auto v = settings.get_bool_value(L"bool_toggle_1")) {
-        //  g_settings.bool_prop = *v;
-        //}
+        if (auto v = settings.get_bool_value(L"change_system"))
+            g_settings.m_changeSystem = *v;
 
-        // Load an int property.
-        //if (auto v = settings.get_int_value(L"int_spinner_1")) {
-        //  g_settings.int_prop = *v;
-        //}
+        if (auto v = settings.get_bool_value(L"change_apps"))
+            g_settings.m_changeApps = *v;
 
-        // Load a string property.
-        //if (auto v = settings.get_string_value(L"string_text_1")) {
-        //  g_settings.string_prop = *v;
-        //}
+        if (auto v = settings.get_bool_value(L"use_location"))
+            g_settings.m_useLocation = *v;
 
-        // Load a color property.
-        //if (auto v = settings.get_string_value(L"color_picker_1")) {
-        //  g_settings.color_prop = *v;
-        //}
+        if (auto v = settings.get_int_value(L"light_time"))
+            g_settings.m_lightTime = *v;
+
+        if (auto v = settings.get_int_value(L"dark_time"))
+            g_settings.m_darkTime = *v;
+
+        if (auto v = settings.get_string_value(L"latitude"))
+            g_settings.m_latitude = *v;
+
+        if (auto v = settings.get_string_value(L"longitude"))
+            g_settings.m_longitude = *v;
     }
     catch (std::exception&)
     {
-        // Error while loading from the settings file. Let default values stay as they are.
+        // Failed to load, keep default settings
     }
 }
 
@@ -334,5 +364,5 @@ void $safeprojectname$::init_settings()
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new $safeprojectname$();
+    return new DarkModeInterface();
 }
