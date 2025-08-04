@@ -52,7 +52,6 @@ struct ModuleSettings
     std::wstring m_latitude = L"0.0";
     std::wstring m_longitude = L"0.0";
 
-
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
@@ -62,10 +61,12 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
 
+    HANDLE m_process{ nullptr };
+
     // Load initial settings from the persisted values.
     void init_settings();
 
-    // TODO: write Enable() function that does work to enable the powertoy  
+    // TODO: write Enable() function that does work to enable the powertoy
 
     // TODO: write Disable() function that kills process and logs.
 
@@ -80,7 +81,6 @@ public:
     {
         return L"DarkMode"; // your unique key string
     }
-
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
@@ -122,23 +122,23 @@ public:
 
         // Boolean toggles
         settings.add_bool_toggle(
+            L"change_system",
             L"Change System Theme",
-            L"Automatically switch the system-wide light/dark theme.",
             g_settings.m_changeSystem);
 
         settings.add_bool_toggle(
+            L"change_apps",
             L"Change Apps Theme",
-            L"Automatically switch the app light/dark theme.",
             g_settings.m_changeApps);
 
         settings.add_bool_toggle(
-            L"Use Geolocation",
+            L"use_location",
             L"Use your location to switch themes based on sunrise and sunset.",
             g_settings.m_useLocation);
 
         // Integer spinners (for time in minutes since midnight)
         settings.add_int_spinner(
-            L"Light Theme Time",
+            L"light_time",
             L"Time to switch to light theme (minutes after midnight).",
             g_settings.m_lightTime,
             0,
@@ -146,7 +146,7 @@ public:
             1);
 
         settings.add_int_spinner(
-            L"Dark Theme Time",
+            L"dark_time",
             L"Time to switch to dark theme (minutes after midnight).",
             g_settings.m_darkTime,
             0,
@@ -155,12 +155,12 @@ public:
 
         // Strings for latitude and longitude
         settings.add_string(
-            L"Latitude",
+            L"latitude",
             L"Your latitude in decimal degrees (e.g. 39.95).",
             g_settings.m_latitude);
 
         settings.add_string(
-            L"Longitude",
+            L"longitude",
             L"Your longitude in decimal degrees (e.g. -75.16).",
             g_settings.m_longitude);
 
@@ -244,6 +244,24 @@ public:
     {
         Logger::info("DarkMode enabling");
         m_enabled = true;
+
+        unsigned long pid = GetCurrentProcessId();
+        std::wstring args = L"--use-pt-config --pid " + std::to_wstring(pid);
+        std::wstring exe = L"PowerToys.DarkMode.exe";
+        std::wstring cmd = exe + L" " + args;
+
+        STARTUPINFO si = { sizeof(si) };
+        PROCESS_INFORMATION pi;
+
+        if (!CreateProcess(exe.c_str(), cmd.data(), NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
+        {
+            DWORD err = GetLastError();
+            Logger::error(L"Failed to launch DarkMode process: " + std::to_wstring(err));
+        }
+        else
+        {
+            m_process = pi.hProcess;
+        }
     }
 
     // Disable the powertoy
@@ -251,6 +269,24 @@ public:
     {
         Logger::info("DarkMode disabling");
         m_enabled = false;
+
+        if (m_process)
+        {
+            // Try waiting briefly to allow graceful exit, if needed
+            constexpr DWORD timeout_ms = 1500;
+            DWORD result = WaitForSingleObject(m_process, timeout_ms);
+
+            if (result == WAIT_TIMEOUT)
+            {
+                // Force kill if it didn’t exit in time
+                Logger::warn(L"DarkMode: Process didn't exit in time. Forcing termination.");
+                TerminateProcess(m_process, 0);
+            }
+
+            // Always clean up the handle
+            CloseHandle(m_process);
+            m_process = nullptr;
+        }
     }
 
     // Returns if the powertoys is enabled
