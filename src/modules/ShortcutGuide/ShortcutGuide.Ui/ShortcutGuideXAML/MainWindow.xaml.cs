@@ -15,7 +15,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
-using ShortcutGuide.ShortcutGuideXAML;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
