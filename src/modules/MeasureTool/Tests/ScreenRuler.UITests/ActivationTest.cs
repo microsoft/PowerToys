@@ -26,32 +26,32 @@ namespace ScreenRuler.UITests
 
             // First ensure it's disabled
             SetScreenRulerToggle(enable: false);
-            Assert.IsFalse(Find<ToggleSwitch>("Enable Screen Ruler").IsOn, "Screen Ruler toggle switch should be OFF initially");
+            Assert.IsFalse(Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler")).IsOn, "Screen Ruler toggle switch should be OFF initially");
 
             // Then enable it
             SetScreenRulerToggle(enable: true);
-            Assert.IsTrue(Find<ToggleSwitch>("Enable Screen Ruler").IsOn, "Screen Ruler toggle switch should be ON after enabling");
+            Assert.IsTrue(Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler")).IsOn, "Screen Ruler toggle switch should be ON after enabling");
 
             // Then disable it again
             SetScreenRulerToggle(enable: false);
-            Assert.IsFalse(Find<ToggleSwitch>("Enable Screen Ruler").IsOn, "Screen Ruler toggle switch should be OFF after disabling");
+            Assert.IsFalse(Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler")).IsOn, "Screen Ruler toggle switch should be OFF after disabling");
         }
 
         private void LaunchFromSetting()
         {
-            var screenRulers = FindAll<NavigationViewItem>("Screen Ruler");
+            var screenRulers = FindAll<NavigationViewItem>(By.AccessibilityId("Shell_Nav_ScreenRuler"));
 
             if (screenRulers.Count == 0)
             {
-                Find<NavigationViewItem>("System Tools", 500).Click(msPostAction: 500);
+                Find<NavigationViewItem>(By.AccessibilityId("Shell_Nav_TopLevelSystemTools"), 500).Click(msPostAction: 500);
             }
 
-            Find<NavigationViewItem>("Screen Ruler", 500).Click(msPostAction: 500);
+            Find<NavigationViewItem>(By.AccessibilityId("Shell_Nav_ScreenRuler"), 500).Click(msPostAction: 500);
         }
 
         private void SetScreenRulerToggle(bool enable)
         {
-            var toggleSwitch = Find<ToggleSwitch>("Enable Screen Ruler");
+            var toggleSwitch = Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"));
             if (toggleSwitch.IsOn != enable)
             {
                 toggleSwitch.Click(msPostAction: 500);
