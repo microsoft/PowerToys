@@ -12,10 +12,10 @@
     <Grid Padding="16">
         <StackPanel>
             <TextBlock
+                x:Uid="RemapKeysHeader"
                 Margin="10"
                 FontSize="24"
-                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                Text="Remap keys" />
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
 
             <TextBlock
                 Margin="10"
