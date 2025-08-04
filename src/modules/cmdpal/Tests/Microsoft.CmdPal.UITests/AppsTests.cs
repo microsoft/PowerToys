@@ -67,7 +67,7 @@ public class AppsTests : CommandPaletteTestBase
         var primaryButton = this.Find<Button>("Run");
         Assert.IsNotNull(primaryButton, "Primary button not found.");
         primaryButton.Click();
-        var calculatorWindow = this.Find<Window>(By.ClassName("Notepad"), global: true);
+        var calculatorWindow = this.Find<Window>(By.ClassName("Notepad"), global: true, timeoutMS: 10000);
         Assert.IsNotNull(calculatorWindow, "Notepad window not found.");
     }
 

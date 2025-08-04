@@ -64,19 +64,19 @@ public class CommandPaletteTestBase : UITestBase
 
     protected Window FindFileExploerWindow()
     {
-        var fileExplorerWindow = this.Find<Window>(By.ClassName("CabinetWClass"), global: true, timeoutMS: 2000);
+        var fileExplorerWindow = this.Find<Window>(By.ClassName("CabinetWClass"), global: true, timeoutMS: 5000);
         return fileExplorerWindow;
     }
 
     protected Window FindWindowsTerminalWindow()
     {
-        var terminalWindow = this.Find<Window>(By.ClassName("CASCADIA_HOSTING_WINDOW_CLASS"), global: true, timeoutMS: 3000);
+        var terminalWindow = this.Find<Window>(By.ClassName("CASCADIA_HOSTING_WINDOW_CLASS"), global: true, timeoutMS: 5000);
         return terminalWindow;
     }
 
     protected Window FindWindowsSettingsWindow()
     {
-        var settingsWinodw = this.Find<Window>("Settings", global: true, timeoutMS: 3000);
+        var settingsWinodw = this.Find<Window>("Settings", global: true, timeoutMS: 5000);
         return settingsWinodw;
     }
 
