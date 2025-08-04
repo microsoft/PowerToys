@@ -106,7 +106,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include Desktop apps.
+        ///   Looks up a localized string similar to Include apps found on the desktop.
         /// </summary>
         internal static string enable_desktop_source {
             get {
@@ -115,16 +115,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Should apps found on the Desktop be included in search results?.
-        /// </summary>
-        internal static string enable_desktop_source_description {
-            get {
-                return ResourceManager.GetString("enable_desktop_source_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Include %PATH% apps.
+        ///   Looks up a localized string similar to Include apps anywhere on the %PATH%.
         /// </summary>
         internal static string enable_path_environment_variable_source {
             get {
@@ -133,16 +124,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Should apps found on the %PATH% be included in search results?.
-        /// </summary>
-        internal static string enable_path_environment_variable_source_description {
-            get {
-                return ResourceManager.GetString("enable_path_environment_variable_source_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Include Registry apps.
+        ///   Looks up a localized string similar to Include apps registered in the Registry.
         /// </summary>
         internal static string enable_registry_source {
             get {
@@ -151,29 +133,11 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Should apps registered in the Windows Registry be included in search results?.
-        /// </summary>
-        internal static string enable_registry_source_description {
-            get {
-                return ResourceManager.GetString("enable_registry_source_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Include Start Menu apps.
+        ///   Looks up a localized string similar to Include apps found in the Start Menu.
         /// </summary>
         internal static string enable_start_menu_source {
             get {
                 return ResourceManager.GetString("enable_start_menu_source", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Should apps found in the Start Menu be included in search results?.
-        /// </summary>
-        internal static string enable_start_menu_source_description {
-            get {
-                return ResourceManager.GetString("enable_start_menu_source_description", resourceCulture);
             }
         }
         
