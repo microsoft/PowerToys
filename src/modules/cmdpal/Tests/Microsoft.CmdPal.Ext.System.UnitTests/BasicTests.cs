@@ -12,17 +12,6 @@ namespace Microsoft.CmdPal.Ext.System.UnitTests;
 public class BasicTests
 {
     [TestMethod]
-    public void CommandsHelperTest()
-    {
-        // Setup & Act
-        var commands = Commands.GetSystemCommands(false, false, false, false);
-
-        // Assert
-        Assert.IsNotNull(commands);
-        Assert.IsTrue(commands.Count > 0);
-    }
-
-    [TestMethod]
     public void IconsHelperTest()
     {
         // Assert

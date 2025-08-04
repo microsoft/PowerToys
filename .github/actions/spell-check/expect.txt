@@ -1440,6 +1440,7 @@ secpol
 securestring
 SEEMASKINVOKEIDLIST
 SELCHANGE
+selfhost
 SENDCHANGE
 sendvirtualinput
 serverside
@@ -1879,6 +1880,7 @@ winexe
 winforms
 winget
 wingetcreate
+wingetpkgs
 Winhook
 WINL
 winlogon

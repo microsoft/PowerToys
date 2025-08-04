@@ -123,9 +123,7 @@ jobs:
     displayName: Stage UI Test Build Outputs
     inputs:
       sourceFolder: '$(Build.SourcesDirectory)'
-      contents: |
-        $(BuildPlatform)/$(BuildConfiguration)/tests/**/*
-        **/$(BuildPlatform)/$(BuildConfiguration)/tests/**/*
+      contents: '**/$(BuildPlatform)/$(BuildConfiguration)/tests/**/*'
       targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
 
   - publish: $(JobOutputDirectory)
