@@ -230,6 +230,7 @@ namespace ShortcutGuide
 
         private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
+            InformationTip.IsOpen = false;
             if (WindowSelector.Items[0].Name == "<WELCOME>")
             {
                 WindowSelector.SelectedItem = WindowSelector.Items[0];
