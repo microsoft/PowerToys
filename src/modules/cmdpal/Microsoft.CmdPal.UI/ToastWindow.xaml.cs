@@ -7,7 +7,7 @@ using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Helpers;
-using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Windows.Win32;
