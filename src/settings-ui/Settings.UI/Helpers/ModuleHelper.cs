@@ -159,6 +159,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.CmdPal => typeof(CmdPalPage),
                 ModuleType.ColorPicker => typeof(ColorPickerPage),
                 ModuleType.CropAndLock => typeof(CropAndLockPage),
+                ModuleType.DarkMode => typeof(DarkModePage),
                 ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
                 ModuleType.FancyZones => typeof(FancyZonesPage),
                 ModuleType.FileLocksmith => typeof(FileLocksmithPage),

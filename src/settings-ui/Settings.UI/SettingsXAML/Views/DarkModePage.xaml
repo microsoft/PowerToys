@@ -46,7 +46,7 @@
 
           <tkcontrols:SettingsCard x:Uid="DarkMode_ModeTargetCard"
                                    Description="Decide whether to change the system theme, app theme, or both.">
-            <StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,10,0,0">
               <CheckBox Content="Change system theme"
                         IsChecked="{x:Bind ViewModel.ChangeSystem, Mode=TwoWay}" />
               <CheckBox Content="Change app theme"

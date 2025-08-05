@@ -17,6 +17,7 @@ namespace Common.UI
             Awake,
             ColorPicker,
             CmdNotFound,
+            DarkMode,
             FancyZones,
             FileLocksmith,
             Run,
