@@ -3,8 +3,6 @@ variables:
     value: false
   - name: EnablePipelineCache
     value: true
-  - name: isBuildNow
-    value: ${{ eq(parameters.buildSource, 'buildNow') }}
 
 parameters:
   - name: buildPlatforms
@@ -39,140 +37,22 @@ parameters:
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
-    - ${{ if variables.isBuildNow }}:
-      - stage: Build_${{ platform }}
-        displayName: Build ${{ platform }}
-        dependsOn: []
-        jobs:
-          - template: job-build-project.yml
-            parameters:
-              pool:
-                ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
-                  name: SHINE-INT-L
-                ${{ else }}:
-                  name: SHINE-OSS-L
-                ${{ if eq(parameters.useVSPreview, true) }}:
-                  demands: ImageOverride -equals SHINE-VS17-Preview
-              buildPlatforms:
-                - ${{ platform }}
-              buildConfigurations: [Release]
-              enablePackageCaching: true
-              enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
-              runTests: false
-              buildTests: true
-              useVSPreview: ${{ parameters.useVSPreview }}
-              timeoutInMinutes: 90
+    # Full build path: build PowerToys + UI tests + run tests
+    - ${{ if eq(parameters.buildSource, 'buildNow') }}:
+      - template: pipeline-ui-tests-full-build.yml
+        parameters:
+          platform: ${{ platform }}
+          enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+          useVSPreview: ${{ parameters.useVSPreview }}
+          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+          uiTestModules: ${{ parameters.uiTestModules }}
 
-    - ${{ if not(variables.isBuildNow) }}:
-      - stage: BuildUITests_${{ platform }}
-        displayName: Build UI Tests Only
-        dependsOn: []
-        jobs:
-          - template: job-build-ui-tests.yml
-            parameters:
-              pool:
-                ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
-                  name: SHINE-INT-L
-                ${{ else }}:
-                  name: SHINE-OSS-L
-                ${{ if eq(parameters.useVSPreview, true) }}:
-                  demands: ImageOverride -equals SHINE-VS17-Preview
-              buildPlatforms:
-                - ${{ platform }}
-              uiTestModules: ${{ parameters.uiTestModules }}
-
-    - ${{ if eq(platform, 'x64') }}:
-      - stage: Test_x64Win10
-        displayName: Test x64Win10
-        ${{ if not(variables.isBuildNow) }}:
-          dependsOn:
-            - BuildUITests_${{ platform }}
-        ${{ else }}:
-          dependsOn:
-            - Build_${{ platform }}
-        jobs:
-            - template: job-test-project.yml
-              parameters:
-                platform: x64Win10
-                configuration: Release
-                useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                buildSource: ${{ parameters.buildSource }}
-                specificBuildId: ${{ parameters.specificBuildId }}
-                uiTestModules: ${{ parameters.uiTestModules }}
-
-            # Additional per-user installation test
-            - ${{ if not(variables.isBuildNow) }}:
-              - template: job-test-project.yml
-                parameters:
-                  platform: x64Win10
-                  configuration: Release
-                  useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                  buildSource: ${{ parameters.buildSource }}
-                  specificBuildId: ${{ parameters.specificBuildId }}
-                  uiTestModules: ${{ parameters.uiTestModules }}
-                  installMode: 'peruser'
-                  jobSuffix: '_PerUser'
-
-    - ${{ if eq(platform, 'x64') }}:
-      - stage: Test_x64Win11
-        displayName: Test x64Win11
-        ${{ if not(variables.isBuildNow) }}:
-          dependsOn:
-            - BuildUITests_${{ platform }}
-        ${{ else }}:
-          dependsOn:
-            - Build_${{ platform }}
-        jobs:
-            - template: job-test-project.yml
-              parameters:
-                platform: x64Win11
-                configuration: Release
-                useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                buildSource: ${{ parameters.buildSource }}
-                specificBuildId: ${{ parameters.specificBuildId }}
-                uiTestModules: ${{ parameters.uiTestModules }}
-
-            # Additional per-user installation test
-            - ${{ if not(variables.isBuildNow) }}:
-              - template: job-test-project.yml
-                parameters:
-                  platform: x64Win11
-                  configuration: Release
-                  useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                  buildSource: ${{ parameters.buildSource }}
-                  specificBuildId: ${{ parameters.specificBuildId }}
-                  uiTestModules: ${{ parameters.uiTestModules }}
-                  installMode: 'peruser'
-                  jobSuffix: '_PerUser'
-
-    - ${{ if ne(platform, 'x64') }}:
-      - stage: Test_${{ platform }}
-        displayName: Test ${{ platform }}
-        ${{ if not(variables.isBuildNow) }}:
-          dependsOn:
-            - BuildUITests_${{ platform }}
-        ${{ else }}:
-          dependsOn:
-            - Build_${{ platform }}
-        jobs:
-          - template: job-test-project.yml
-            parameters:
-              platform: ${{ platform }}
-              configuration: Release
-              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-              buildSource: ${{ parameters.buildSource }}
-              specificBuildId: ${{ parameters.specificBuildId }}
-              uiTestModules: ${{ parameters.uiTestModules }}
-
-          # Additional per-user installation test
-          - ${{ if not(variables.isBuildNow) }}:
-            - template: job-test-project.yml
-              parameters:
-                platform: ${{ platform }}
-                configuration: Release
-                useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                buildSource: ${{ parameters.buildSource }}
-                specificBuildId: ${{ parameters.specificBuildId }}
-                uiTestModules: ${{ parameters.uiTestModules }}
-                installMode: 'peruser'
-                jobSuffix: '_PerUser'
+    # Official build path: build UI tests only + download official build + run tests  
+    - ${{ if ne(parameters.buildSource, 'buildNow') }}:
+      - template: pipeline-ui-tests-official-build.yml
+        parameters:
+          platform: ${{ platform }}
+          buildSource: ${{ parameters.buildSource }}
+          specificBuildId: ${{ parameters.specificBuildId }}
+          useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+          uiTestModules: ${{ parameters.uiTestModules }}
