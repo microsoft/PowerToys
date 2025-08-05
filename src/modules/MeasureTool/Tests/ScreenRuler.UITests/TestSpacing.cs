@@ -8,19 +8,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ScreenRuler.UITests
 {
     [TestClass]
-    public class TestBounds : UITestBase
+    public class TestSpacing : UITestBase
     {
-        public TestBounds()
+        public TestSpacing()
             : base(PowerToysModule.PowerToysSettings, WindowSize.Large)
         {
         }
 
-        [TestMethod("ScreenRuler.BoundsTool")]
-        [TestCategory("Bounds")]
-        public void TestScreenRulerBoundsTool()
+        [TestMethod("ScreenRuler.SpacingTool")]
+        [TestCategory("Spacing")]
+        public void TestScreenRulerSpacingTool()
         {
-            TestHelper.InitializeTest(this, "bounds test");
-            TestHelper.PerformBoundsToolTest(this);
+            TestHelper.InitializeTest(this, "spacing test");
+            TestHelper.PerformSpacingToolTest(this, TestHelper.SpacingButtonName, "Spacing");
             TestHelper.CleanupTest(this);
         }
     }

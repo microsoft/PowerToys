@@ -267,6 +267,7 @@
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <ToggleButton
+                AutomationProperties.AutomationId="Button_Spacing"
                 Name="btnSpacing"
                 x:Uid="BtnSpacing"
                 Click="MeasureTool_Click"
@@ -284,6 +285,7 @@
             </ToggleButton>
 
             <ToggleButton
+                AutomationProperties.AutomationId="Button_SpacingHorizontal"
                 Name="btnHorizontalSpacing"
                 x:Uid="BtnHorizontalSpacing"
                 Click="HorizontalMeasureTool_Click"
@@ -304,6 +306,7 @@
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <ToggleButton
+                AutomationProperties.AutomationId="Button_SpacingVertical"
                 Name="btnVerticalSpacing"
                 x:Uid="BtnVerticalSpacing"
                 Click="VerticalMeasureTool_Click"
