@@ -249,6 +249,7 @@
             Orientation="Horizontal"
             Spacing="8">
             <ToggleButton
+                AutomationProperties.AutomationId="Button_Bounds"
                 Name="btnBounds"
                 x:Uid="BtnBounds"
                 Click="BoundsTool_Click"

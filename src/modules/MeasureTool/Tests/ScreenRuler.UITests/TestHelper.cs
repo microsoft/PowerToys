@@ -15,11 +15,11 @@ namespace ScreenRuler.UITests
         private static readonly string[] ShortcutSeparators = { " + ", "+", " " };
 
         // Button automation names from Resources.resw
-        public const string BoundsButtonName = "Bounds (Ctrl+1)";
-        public const string SpacingButtonName = "Spacing (Ctrl+2)";
-        public const string HorizontalSpacingButtonName = "Horizontal spacing (Ctrl+3)";
-        public const string VerticalSpacingButtonName = "Vertical spacing (Ctrl+4)";
-        public const string CloseButtonName = "Close (Esc)";
+        public const string BoundsButtonId = "Button_Bounds";
+        public const string SpacingButtonName = "";
+        public const string HorizontalSpacingButtonName = "";
+        public const string VerticalSpacingButtonName = "";
+        public const string CloseButtonId = "Button_Close";
 
         /// <summary>
         /// Navigate to the Screen Ruler (Measure Tool) settings page
@@ -192,7 +192,7 @@ namespace ScreenRuler.UITests
         {
             if (IsScreenRulerUIOpen(testBase))
             {
-                var closeButton = testBase.Session.Find<Button>(By.AccessibilityId("Button_Close"), 10000, true);
+                var closeButton = GetScreenRulerButton(testBase, CloseButtonId, 10000);
                 if (closeButton != null)
                 {
                     closeButton.Click();
@@ -207,51 +207,16 @@ namespace ScreenRuler.UITests
         /// <param name="testBase">The test base instance</param>
         /// <param name="buttonName">The automation name of the button (e.g., "Bounds (Ctrl+1)")</param>
         /// <returns>The button element if found, null otherwise</returns>
-        public static Element? GetScreenRulerButton(UITestBase testBase, string buttonName)
+        public static Element? GetScreenRulerButton(UITestBase testBase, string buttonName, int timeoutMs = 1000)
         {
             try
             {
-                return testBase.Session.Find<Element>(By.Name(buttonName), 1000, true);
+                return testBase.Session.Find<Element>(By.AccessibilityId(buttonName), timeoutMs, true);
             }
             catch
             {
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Click a specific ScreenRulerUI button by its automation name
-        /// </summary>
-        /// <param name="testBase">The test base instance</param>
-        /// <param name="buttonName">The automation name of the button (e.g., "Bounds (Ctrl+1)")</param>
-        /// <returns>True if the button was found and clicked, false otherwise</returns>
-        public static bool ClickScreenRulerButton(UITestBase testBase, string buttonName)
-        {
-            var button = GetScreenRulerButton(testBase, buttonName);
-            if (button != null)
-            {
-                button.Click();
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Check if a specific ScreenRulerUI button is checked
-        /// </summary>
-        /// <param name="testBase">The test base instance</param>
-        /// <param name="buttonName">The automation name of the button (e.g., "Bounds (Ctrl+1)")</param>
-        /// <returns>True if the button is checked, false if unchecked or not found</returns>
-        public static bool IsScreenRulerButtonChecked(UITestBase testBase, string buttonName)
-        {
-            var button = GetScreenRulerButton(testBase, buttonName);
-            if (button != null)
-            {
-                return button.Selected;
-            }
-
-            return false;
         }
     }
 }
