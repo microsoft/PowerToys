@@ -167,3 +167,39 @@
  * Test some Settings:
    - [x] Test the "Hide template filename extension" option in Settings.
    - [x] Test the "Hide template filename starting digits, spaces and dots" option in Settings.
+
+
+## PowerToys Run
+ * Enable PT Run in settings and ensure that the hotkey brings up PT Run
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+ * Check that each of the plugins is working:
+   - [x] Program - launch a Win32 application
+   - [x] Program - launch a Win32 application as admin
+   - [x] Program - launch a packaged application`
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] Windows Search - open a file on the disk.
+   - [x] Windows Search - find a file and copy file path.
+   - [x] Windows Search - find a file and open containing folder.
+   - [x] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
+   - [x] Folder - Search and open a sub-folder on entering the path.
+   - [x] Uri - launch a web page on entering the uri.
+   - [x] Window walker - Switch focus to a running window.
+   - [x] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [x] System - test `lock`.
+   - [x] System - test `empty recycle bin`.
+   - [x] System - test `shutdown`.
+
+ - [x] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
+
+ - [x] Test tab navigation.
+
+ * Test Plugin Manager
+   - [x] Enable/disable plugins and verify changes are picked up by PT Run
+   - [x] Change `Direct activation phrase` and verify changes are picked up by PT Run
+   - [x] Change `Include in global result` and verify changes picked up by PT Run
+   - [x] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
+   - [x] Disable all plugins and verify the warning message is shown.
