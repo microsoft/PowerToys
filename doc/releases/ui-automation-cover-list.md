@@ -957,10 +957,10 @@ Mouse Jump:
 
 ## [Workspaces](tests-checklist-template-workspaces-section.md)
 * Settings
-   - [ ] 1. Launch the Editor by clicking the button on the settings page.
-   - [ ] 2. Launch the Editor from quick access.
-   - [ ] 3. Launch the Editor by the Activation shortcut.
-   - [ ] 4. Disable the module and verify it won't launch by the shortcut.
+   - [X] 1. Launch the Editor by clicking the button on the settings page.
+   - [X] 2. Launch the Editor from quick access.
+   - [X] 3. Launch the Editor by the Activation shortcut.
+   - [X] 4. Disable the module and verify it won't launch by the shortcut.
 
 * Snapshot tool: try with elevated and non-elevated PT
    * Open non-packaged apps, e.g., VisualStudio, VisualStudioCode.
@@ -970,17 +970,17 @@ Mouse Jump:
    * Click `Create Workspace`.
    * Open any other window.
    * Click `Capture`
-   - [ ] 5. Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
+   - [X] 5. Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
    - [ ] 6. Verify windows are in the correct positions.
    - [ ] 7. Verify elevated app has the `Admin` box checked (if captured).
 
 * Editor
-   - [ ] 8. Verify that the new Workspace appears in the list after capturing.
-   - [ ] 9. Verify that the new Workspace doesn't appear after canceling the Capture.
+   - [X] 8. Verify that the new Workspace appears in the list after capturing.
+   - [X] 9. Verify that the new Workspace doesn't appear after canceling the Capture.
    - [ ] 10. Verify `Search` filters Workspaces (by workspace name or app name).
    - [ ] 11. Verify `SortBy` works.
    - [ ] 12. Verify `SortBy` keeps its value when you close and open the editor again.
-   - [ ] 13. Verify `Remove` removes the Workspace from the list.
+   - [X] 13. Verify `Remove` removes the Workspace from the list.
    - [ ] 14. Verify `Edit` opens the Workspace editing page.
    - [ ] 15. Verify clicking at the Workspace opens the Workspace editing page.
    
