@@ -8,10 +8,12 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -29,17 +31,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private readonly string _appName = "DarkMode";
         private readonly SettingsUtils _settingsUtils;
+        private readonly Func<string, int> _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
-        private readonly SettingsRepository<GeneralSettings> _generalSettingsRepository;
-        private readonly SettingsRepository<DarkModeSettings> _moduleSettingsRepository;
+        private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
+        private readonly ISettingsRepository<DarkModeSettings> _moduleSettingsRepository;
+
+        private readonly IFileSystem _fileSystem;
+        private readonly IFileSystemWatcher _fileSystemWatcher;
+        private readonly DispatcherQueue _dispatcherQueue;
 
         private DarkModeViewModel ViewModel { get; set; }
 
         public DarkModePage()
         {
             _settingsUtils = new SettingsUtils();
+            _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
             ViewModel = new DarkModeViewModel();
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             _generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
             _moduleSettingsRepository = SettingsRepository<DarkModeSettings>.GetInstance(_settingsUtils);
@@ -50,6 +59,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
 
             var settingsPath = _settingsUtils.GetSettingsFilePath(_appName);
+
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            _fileSystem = new FileSystem();
+
+            _fileSystemWatcher = _fileSystem.FileSystemWatcher.New();
+            _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(settingsPath);
+            _fileSystemWatcher.Filter = _fileSystem.Path.GetFileName(settingsPath);
+            _fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
+            _fileSystemWatcher.Changed += Settings_Changed;
+            _fileSystemWatcher.EnableRaisingEvents = true;
 
             InitializeComponent();
         }
@@ -74,6 +93,43 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void GetLocation_Click(object sender, RoutedEventArgs e)
         {
             return;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "IsEnabled")
+            {
+                if (ViewModel.IsEnabled != _generalSettingsRepository.SettingsConfig.Enabled.DarkMode)
+                {
+                    _generalSettingsRepository.SettingsConfig.Enabled.DarkMode = ViewModel.IsEnabled;
+
+                    var generalSettingsMessage = new OutGoingGeneralSettings(_generalSettingsRepository.SettingsConfig).ToString();
+                    Logger.LogInfo($"Saved general settings from DarkMode page.");
+
+                    _sendConfigMsg?.Invoke(generalSettingsMessage);
+                }
+            }
+            else
+            {
+                if (ViewModel.ModuleSettings != null)
+                {
+                    SndDarkModeSettings currentSettings = new(_moduleSettingsRepository.SettingsConfig.Properties);
+                    SndModuleSettings<SndDarkModeSettings> csIpcMessage = new(currentSettings);
+
+                    SndDarkModeSettings outSettings = new(ViewModel.ModuleSettings.Properties);
+                    SndModuleSettings<SndDarkModeSettings> outIpcMessage = new(outSettings);
+
+                    string csMessage = csIpcMessage.ToJsonString();
+                    string outMessage = outIpcMessage.ToJsonString();
+
+                    if (!csMessage.Equals(outMessage, StringComparison.Ordinal))
+                    {
+                        Logger.LogInfo($"Saved DarkMode settings from DarkMode page.");
+
+                        _sendConfigMsg?.Invoke(outMessage);
+                    }
+                }
+            }
         }
 
         private void LoadSettings(ISettingsRepository<GeneralSettings> generalSettingsRepository, ISettingsRepository<DarkModeSettings> moduleSettingsRepository)
@@ -115,6 +171,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 throw new ArgumentNullException(nameof(darkSettings));
             }
+        }
+
+        private void Settings_Changed(object sender, FileSystemEventArgs e)
+        {
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                _moduleSettingsRepository.ReloadSettings();
+                LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
+            });
         }
 
         private void UpdateEnabledState(bool recommendedState)

@@ -4,6 +4,8 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -27,6 +29,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_moduleSettings != value)
                 {
                     _moduleSettings = value;
+
+                    _moduleSettings.Properties.PropertyChanged += (_, e) =>
+                    {
+                        if (e.PropertyName == nameof(ModuleSettings.Properties.UseLocation))
+                        {
+                            OnPropertyChanged(nameof(IsUseLocationEnabled));
+                        }
+                    };
+
+                    OnPropertyChanged(nameof(ModuleSettings));
                     RefreshModuleSettings();
                     RefreshEnabledState();
                 }
@@ -93,6 +105,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public bool IsUseLocationEnabled => ModuleSettings.Properties.UseLocation && IsEnabled;
+
+        public bool UseLocation
+        {
+            get => ModuleSettings.Properties.UseLocation;
+            set
+            {
+                if (ModuleSettings.Properties.UseLocation != value)
+                {
+                    ModuleSettings.Properties.UseLocation = value;
+                    OnPropertyChanged(nameof(UseLocation));
+                    OnPropertyChanged(nameof(IsUseLocationEnabled));
+                }
+            }
+        }
 
         public bool ChangeSystem
         {
@@ -192,6 +218,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(DarkTime));
             OnPropertyChanged(nameof(Latitude));
             OnPropertyChanged(nameof(Longitude));
+            OnPropertyChanged(nameof(UseLocation));
+            OnPropertyChanged(nameof(IsUseLocationEnabled));
         }
 
         private bool _enabledStateIsGPOConfigured;

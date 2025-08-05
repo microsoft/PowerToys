@@ -15,7 +15,8 @@
     mc:Ignorable="d">
 
   <Page.Resources>
-    <converters:DarkModeInvertBooleanConverter x:Key="InvertBoolToVisibilityConverter" />
+    <converters:InvertBooleanToVisibilityConverter x:Key="InvertBoolToVisibilityConverter" />
+    <converters:DarkModeInvertBooleanConverter x:Key="InvertBooleanConverter" />
     <converters:DarkModeBoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
   </Page.Resources>
 
@@ -60,13 +61,13 @@
                            Content="Set Specific Times"
                            GroupName="ThemeSwitchMode"
                            x:Uid="DarkMode_TimeModeRadio"
-                           IsChecked="{x:Bind ViewModel.ModuleSettings.Properties.UseLocation, Mode=TwoWay, Converter={StaticResource InvertBooleanConverter}}"
+                           IsChecked="{x:Bind ViewModel.UseLocation, Mode=TwoWay, Converter={StaticResource InvertBooleanConverter}}"
                            Checked="ModeRadio_Checked" />
               <RadioButton x:Name="GeoModeRadio"
                            Content="Use Geolocation (Sunrise/Sunset)"
                            GroupName="ThemeSwitchMode"
                            x:Uid="DarkMode_LocationModeRadio"
-                           IsChecked="{x:Bind ViewModel.ModuleSettings.Properties.UseLocation, Mode=TwoWay}"
+                           IsChecked="{x:Bind ViewModel.UseLocation, Mode=TwoWay}"
                            Checked="ModeRadio_Checked" />
             </StackPanel>
           </tkcontrols:SettingsCard>
@@ -76,7 +77,7 @@
                          Description="Set the times when the theme should switch."
                          Visibility="{x:Bind ViewModel.IsUseLocationEnabled, Mode=OneWay, Converter={StaticResource InvertBoolToVisibilityConverter}}" >
 
-          <StackPanel>
+            <StackPanel>
               <TextBlock Text="Light Time" />
               <!-- Replace with appropriate time picker binding if needed -->
               <TextBox Text="{x:Bind ViewModel.LightTime, Mode=TwoWay}" />

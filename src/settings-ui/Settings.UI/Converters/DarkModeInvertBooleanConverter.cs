@@ -3,21 +3,24 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.UI.Xaml;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public sealed partial class InvertBooleanToVisibilityConverter : IValueConverter
+    public sealed partial class DarkModeInvertBooleanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return value is bool b && !b ? Visibility.Visible : Visibility.Collapsed;
+            return value is bool b ? !b : value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            throw new NotImplementedException();
+            return value is bool b ? !b : value;
         }
     }
 }
