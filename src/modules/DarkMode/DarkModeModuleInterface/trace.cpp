@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "trace.h"
+#include <TraceLoggingProvider.h>
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,

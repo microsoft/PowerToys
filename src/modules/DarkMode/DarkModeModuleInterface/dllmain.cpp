@@ -2,9 +2,10 @@
 #include <interface/powertoy_module_interface.h>
 #include "trace.h"
 #include <common/logger/logger.h>
-#include <Settings.XamlStyler>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
+#include <locale>
+#include <codecvt>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -235,7 +236,7 @@ public:
         }
         catch (const std::exception&)
         {
-            Logger::error(L"[DarkMode] set_config: Failed to parse or apply config.");
+            Logger::error("[DarkMode] set_config: Failed to parse or apply config.");
         }
     }
 
@@ -256,7 +257,8 @@ public:
         if (!CreateProcess(exe.c_str(), cmd.data(), NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
         {
             DWORD err = GetLastError();
-            Logger::error(L"Failed to launch DarkMode process: " + std::to_wstring(err));
+            Logger::error("Failed to launch DarkMode process: " + std::to_string(err));
+
         }
         else
         {
@@ -279,7 +281,7 @@ public:
             if (result == WAIT_TIMEOUT)
             {
                 // Force kill if it didn’t exit in time
-                Logger::warn(L"DarkMode: Process didn't exit in time. Forcing termination.");
+                Logger::warn("DarkMode: Process didn't exit in time. Forcing termination.");
                 TerminateProcess(m_process, 0);
             }
 
@@ -369,6 +371,7 @@ void DarkModeInterface::init_settings()
 //    // Save a bool property.
 //    //values.add_property(
 //    //  L"bool_toggle_1", // property name
+//    //  g_settings.bool_prop // property value
 //    //  g_settings.bool_prop // property value
 //    //);
 //
