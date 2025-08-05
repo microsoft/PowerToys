@@ -10,7 +10,7 @@ using Microsoft.PowerToys.UITest;
 
 namespace ScreenRuler.UITests
 {
-    public static class ScreenRulerTestHelper
+    public static class TestHelper
     {
         private static readonly string[] ShortcutSeparators = { " + ", "+", " " };
 
@@ -60,7 +60,7 @@ namespace ScreenRuler.UITests
         /// <returns>Array of keys representing the activation shortcut</returns>
         public static Key[] ReadActivationShortcut(UITestBase testBase)
         {
-            // Find the ShortcutControl in the MeasureTool_ActivationShortcut settings card
+            // Find the ShortcutControl in the ScreenRuler_ActivationShortcut settings card
             var shortcutCard = testBase.Session.Find<Element>(By.AccessibilityId("Shortcut_ScreenRuler"), 500);
             var shortcutButton = shortcutCard.Find<Element>(By.AccessibilityId("EditButton"), 500);
 
@@ -102,15 +102,6 @@ namespace ScreenRuler.UITests
                     case "alt":
                         keys.Add(Key.Alt);
                         break;
-                    case "m":
-                        keys.Add(Key.M);
-                        break;
-                    case "h":
-                        keys.Add(Key.H);
-                        break;
-                    case "r":
-                        keys.Add(Key.R);
-                        break;
 
                     // Add more key mappings as needed
                     default:
@@ -129,175 +120,94 @@ namespace ScreenRuler.UITests
         }
 
         /// <summary>
-        /// Check if MeasureToolUI window is open
+        /// Check if ScreenRulerUI window is open
         /// </summary>
         /// <param name="testBase">The test base instance</param>
         /// <returns>True if the window is open</returns>
-        public static bool IsMeasureToolUIOpen(UITestBase testBase)
+        public static bool IsScreenRulerUIOpen(UITestBase testBase)
         {
-            // Try different possible window names for MeasureToolUI
-            var possibleNames = new[]
+            if (testBase.IsWindowOpen("PowerToys.ScreenRuler"))
             {
-                "PowerToys.ScreenRuler",
-            };
-
-            foreach (var name in possibleNames)
-            {
-                if (testBase.IsWindowOpen(name))
-                {
-                    return true;
-                }
-            }
-
-            // Alternative approach: try to find specific UI elements that would be present in MeasureToolUI
-            try
-            {
-                // Look for elements with their actual automation names from Resources.resw
-                var measureElements = testBase.Session.FindAll<Element>(By.Name(BoundsButtonName), 500, true);
-                if (measureElements.Count > 0)
-                {
-                    return true;
-                }
-
-                measureElements = testBase.Session.FindAll<Element>(By.Name(SpacingButtonName), 500, true);
-                if (measureElements.Count > 0)
-                {
-                    return true;
-                }
-
-                measureElements = testBase.Session.FindAll<Element>(By.Name(HorizontalSpacingButtonName), 500, true);
-                if (measureElements.Count > 0)
-                {
-                    return true;
-                }
-
-                measureElements = testBase.Session.FindAll<Element>(By.Name(VerticalSpacingButtonName), 500, true);
-                if (measureElements.Count > 0)
-                {
-                    return true;
-                }
-
-                // Also try looking for ToggleButton elements by class name since these are ToggleButtons in the UI
-                measureElements = testBase.Session.FindAll<Element>(By.ClassName("ToggleButton"), 500, true);
-                if (measureElements.Count > 0)
-                {
-                    // Check if any of the toggle buttons have the expected automation names
-                    foreach (var element in measureElements)
-                    {
-                        try
-                        {
-                            var name = element.Name;
-                            if (name.Contains("Bounds") || name.Contains("Spacing"))
-                            {
-                                return true;
-                            }
-                        }
-                        catch
-                        {
-                            // Continue checking other elements
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // Ignore exceptions when searching for elements
+                return true;
             }
 
             return false;
         }
 
         /// <summary>
-        /// Wait for MeasureToolUI to appear within the specified timeout
+        /// Wait for ScreenRulerUI to reach the specified state within the timeout
         /// </summary>
         /// <param name="testBase">The test base instance</param>
+        /// <param name="shouldBeOpen">True to wait for the UI to appear, false to wait for it to disappear</param>
         /// <param name="timeoutMs">Timeout in milliseconds</param>
-        /// <returns>True if MeasureToolUI appeared within timeout</returns>
-        public static bool WaitForMeasureToolUI(UITestBase testBase, int timeoutMs = 5000)
+        /// <param name="pollingIntervalMs">Polling interval in milliseconds</param>
+        /// <returns>True if ScreenRulerUI reached the expected state within timeout</returns>
+        public static bool WaitForScreenRulerUIState(UITestBase testBase, bool shouldBeOpen, int timeoutMs = 5000, int pollingIntervalMs = 100)
         {
             var startTime = DateTime.Now;
             var timeout = TimeSpan.FromMilliseconds(timeoutMs);
 
             while (DateTime.Now - startTime < timeout)
             {
-                if (IsMeasureToolUIOpen(testBase))
+                bool isCurrentlyOpen = IsScreenRulerUIOpen(testBase);
+
+                if (isCurrentlyOpen == shouldBeOpen)
                 {
                     return true;
                 }
 
-                Task.Delay(200).Wait();
+                Task.Delay(pollingIntervalMs).Wait();
             }
 
             return false;
         }
 
         /// <summary>
-        /// Wait for MeasureToolUI to disappear within the specified timeout
+        /// Wait for ScreenRulerUI to appear within the specified timeout
         /// </summary>
         /// <param name="testBase">The test base instance</param>
         /// <param name="timeoutMs">Timeout in milliseconds</param>
-        /// <returns>True if MeasureToolUI disappeared within timeout</returns>
-        public static bool WaitForMeasureToolUIToDisappear(UITestBase testBase, int timeoutMs = 5000)
+        /// <returns>True if ScreenRulerUI appeared within timeout</returns>
+        public static bool WaitForScreenRulerUI(UITestBase testBase, int timeoutMs = 5000)
         {
-            var startTime = DateTime.Now;
-            var timeout = TimeSpan.FromMilliseconds(timeoutMs);
-
-            while (DateTime.Now - startTime < timeout)
-            {
-                if (!IsMeasureToolUIOpen(testBase))
-                {
-                    return true;
-                }
-
-                Task.Delay(200).Wait();
-            }
-
-            return false;
+            return WaitForScreenRulerUIState(testBase, shouldBeOpen: true, timeoutMs);
         }
 
         /// <summary>
-        /// Close MeasureToolUI if it's open
+        /// Wait for ScreenRulerUI to disappear within the specified timeout
         /// </summary>
         /// <param name="testBase">The test base instance</param>
-        public static void CloseMeasureToolUI(UITestBase testBase)
+        /// <param name="timeoutMs">Timeout in milliseconds</param>
+        /// <returns>True if ScreenRulerUI disappeared within timeout</returns>
+        public static bool WaitForScreenRulerUIToDisappear(UITestBase testBase, int timeoutMs = 5000)
         {
-            if (IsMeasureToolUIOpen(testBase))
+            return WaitForScreenRulerUIState(testBase, shouldBeOpen: false, timeoutMs);
+        }
+
+        /// <summary>
+        /// Close ScreenRulerUI if it's open
+        /// </summary>
+        /// <param name="testBase">The test base instance</param>
+        public static void CloseScreenRulerUI(UITestBase testBase)
+        {
+            if (IsScreenRulerUIOpen(testBase))
             {
-                // Try to find and click the close button using the tooltip text
-                try
+                var closeButton = testBase.Session.Find<Button>(By.AccessibilityId("Button_Close"), 10000, true);
+                if (closeButton != null)
                 {
-                    var closeButton = testBase.Session.Find<Button>(By.AccessibilityId("Button_Close"), 1000, true);
-                    if (closeButton != null)
-                    {
-                        closeButton.Click();
-                        return;
-                    }
-                }
-                catch
-                {
-                    // Continue with other methods
-                }
-
-                // Try escape key
-                testBase.SendKeys(Key.Esc);
-                Task.Delay(500).Wait();
-
-                // If still open, try Alt+F4
-                if (IsMeasureToolUIOpen(testBase))
-                {
-                    testBase.SendKeys(Key.Alt, Key.F4);
-                    Task.Delay(500).Wait();
+                    closeButton.Click();
+                    return;
                 }
             }
         }
 
         /// <summary>
-        /// Get a specific MeasureToolUI button by its automation name
+        /// Get a specific ScreenRulerUI button by its automation name
         /// </summary>
         /// <param name="testBase">The test base instance</param>
         /// <param name="buttonName">The automation name of the button (e.g., "Bounds (Ctrl+1)")</param>
         /// <returns>The button element if found, null otherwise</returns>
-        public static Element? GetMeasureToolButton(UITestBase testBase, string buttonName)
+        public static Element? GetScreenRulerButton(UITestBase testBase, string buttonName)
         {
             try
             {
@@ -310,14 +220,14 @@ namespace ScreenRuler.UITests
         }
 
         /// <summary>
-        /// Click a specific MeasureToolUI button by its automation name
+        /// Click a specific ScreenRulerUI button by its automation name
         /// </summary>
         /// <param name="testBase">The test base instance</param>
         /// <param name="buttonName">The automation name of the button (e.g., "Bounds (Ctrl+1)")</param>
         /// <returns>True if the button was found and clicked, false otherwise</returns>
-        public static bool ClickMeasureToolButton(UITestBase testBase, string buttonName)
+        public static bool ClickScreenRulerButton(UITestBase testBase, string buttonName)
         {
-            var button = GetMeasureToolButton(testBase, buttonName);
+            var button = GetScreenRulerButton(testBase, buttonName);
             if (button != null)
             {
                 button.Click();
@@ -328,14 +238,14 @@ namespace ScreenRuler.UITests
         }
 
         /// <summary>
-        /// Check if a specific MeasureToolUI button is checked
+        /// Check if a specific ScreenRulerUI button is checked
         /// </summary>
         /// <param name="testBase">The test base instance</param>
         /// <param name="buttonName">The automation name of the button (e.g., "Bounds (Ctrl+1)")</param>
         /// <returns>True if the button is checked, false if unchecked or not found</returns>
-        public static bool IsMeasureToolButtonChecked(UITestBase testBase, string buttonName)
+        public static bool IsScreenRulerButtonChecked(UITestBase testBase, string buttonName)
         {
-            var button = GetMeasureToolButton(testBase, buttonName);
+            var button = GetScreenRulerButton(testBase, buttonName);
             if (button != null)
             {
                 return button.Selected;
