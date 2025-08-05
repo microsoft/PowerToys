@@ -14,8 +14,8 @@
     * create a virtual desktop and apply the custom grid layout
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
- - [ ] verify the settings are preserved and FancyZones configuration is still the same
- - [ ] test installing as SYSTEM (LocalSystem account)
+ - [X] verify the settings are preserved and FancyZones configuration is still the same
+ - [X] test installing as SYSTEM (LocalSystem account)
    * Remove current PowerToys.
    * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
    * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe`
@@ -27,80 +27,55 @@
    * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
    * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
 
-## Functional tests
-
- Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
-
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
- - [ ] FancyZones Editor
- - [ ] Power Rename (new WinUI 3 may not be localized)
- - [ ] PowerToys Run ("Start typing" string is localized, for example)
- - [ ] Image Resizer
- - [ ] Shortcut Guide (Windows controls are localized)
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [ ] Hosts File Editor
- - [ ] File Locksmith
- - [ ] Registry Preview
- - [ ] Environment Variables
- - [ ] ZoomIt
+ - [X] System tray menu items
+ - [X] Settings
+ - [X] OOBE (What's new)
+ - [X] Keyboard Manager Editor
+ - [X] Color Picker (check the tooltips)
+ - [X] FancyZones Editor
+ - [X] Power Rename (new WinUI 3 may not be localized)
+ - [X] PowerToys Run ("Start typing" string is localized, for example)
+ - [X] Image Resizer
+ - [X] Shortcut Guide (Windows controls are localized)
+ - [X] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [X] Hosts File Editor
+ - [X] File Locksmith
+ - [X] Registry Preview
+ - [X] Environment Variables
+ - [X] ZoomIt
 
 ## [General Settings](tests-checklist-template-settings-section.md)
 
 **Admin mode:**
- - [ ] restart PT and verify it runs as user
- - [ ] restart as admin and set "Always run as admin"
- - [ ] restart PT and verify it  runs as admin
+ - [X] restart PT and verify it runs as user
+ - [X] restart as admin and set "Always run as admin"
+ - [X] restart PT and verify it  runs as admin
  * if it's not on, turn on "Run at startup"
- - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
+ - [X] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
  * turn Always run as admin" off
- - [ ] reboot the machine and verify it now runs as user
+ - [X] reboot the machine and verify it now runs as user
 
 **Modules on/off:**
- - [ ] turn off all the modules and verify all module are off
- - [ ] restart PT and verify that all module are still off in the settings page and they are actually inactive
- - [ ] turn on all the module, all module are now working
- - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
+ - [X] turn off all the modules and verify all module are off
+ - [X] restart PT and verify that all module are still off in the settings page and they are actually inactive
+ - [X] turn on all the module, all module are now working
+ - [X] restart PT and verify that all module are still on in the settings page and they are actually working
 
 **Quick access tray icon flyout:**
- - [ ] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
- - [ ] Try to launch a module from the launch screen in the flyout.
- - [ ] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
- - [ ] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
+ - [X] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
+ - [X] Try to launch a module from the launch screen in the flyout.
+ - [X] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
+ - [X] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
 
 **Settings backup/restore:**
- - [ ] In the General tab, create a backup of the settings.
- - [ ] Change some settings in some PowerToys.
- - [ ] Restore the settings in the General tab and verify the Settings you've applied were reset.
+ - [X] In the General tab, create a backup of the settings.
+ - [X] Change some settings in some PowerToys.
+ - [X] Restore the settings in the General tab and verify the Settings you've applied were reset.
 
 **Tray Icon show/hide:**
- - [ ] In the General toggle "show tray icon", make sure the tray icon show/hide in system tray
-
-
-
-## Color Picker
-* Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
-  - [ ] when PowerToys is running unelevated on start-up
-  - [ ] when PowerToys is running as admin on start-up
-  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
-- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
-- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
-- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
-- [ ] Try to copy color formats to the clipboard from the Editor
-- [ ] Check `Show color name` and verify if color name is shown in the Color picker
-- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [ ] Select a color from the history in the Editor
-- [ ] Remove color from the history in the Editor
-- [ ] Open the Color Picker from the Editor
-- [ ] Open Adjust color from the Editor
-- [ ] Check Color Picker logs for errors
+ - [X] In the General toggle "show tray icon", make sure the tray icon show/hide in system tray
 
 ## [FancyZones Editor](tests-checklist-template-fancyzones-section.md)
 
@@ -276,174 +251,21 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 - [ ] Layout apply
 - [ ] Layout reset
 
-## File Explorer Add-ons
- * Running as user:
-   * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane shows the correct content
-   * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane works for the SVG files
-   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the PDF file
-   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the gcode file
-   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
-   * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
- * Running as admin (or user since recently):
-   * open the Settings and turn off the Preview Pane and Icon Previous toggles
-   * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane doesn't show any content
-   * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane doesn't show the preview for the SVG files
-   * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the PDF file
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the gcode file
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
-   * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
-
-## Image Resizer
-- [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
-- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
-- [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
-- [ ] Resize one image
-- [ ] Resize multiple images
-- [ ] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
-
-- [ ] Resize images with `Fill` option
-- [ ] Resize images with `Fit` option
-- [ ] Resize images with `Stretch` option
-
-- [ ] Resize images using dimension: Centimeters
-- [ ] Resize images using dimension: Inches
-- [ ] Resize images using dimension: Percents
-- [ ] Resize images using dimension: Pixels
-
-- [ ] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
-- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
-- [ ] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
-- [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
-- [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
-
-## [Keyboard Manager](tests-checklist-template-keyboard-manager-section.md)
-
-UI Validation:
-
-  - [ ] In Remap keys, add and remove rows to validate those buttons. While the blank rows are present, pressing the OK button should result in a warning dialog that some mappings are invalid.
-  - [ ] Using only the Type buttons, for both the remap windows, try adding keys/shortcuts in all the columns. The right-side column in both windows should accept both keys and shortcuts, while the left-side column will accept only keys or only shortcuts for Remap keys and Remap shortcuts respectively. Validate that the Hold Enter and Esc accessibility features work as expected.
-  - [ ] Using the drop downs try to add key to key, key to shortcut, shortcut to key and shortcut to shortcut remapping and ensure that you are able to select remapping both by using mouse and by keyboard navigation.
-  - [ ] Validate that remapping can be saved by pressing the OK button and re-opening the windows loads existing remapping.
-
-Remapping Validation:
-
-For all the remapping below, try pressing and releasing the remapped key/shortcut and pressing and holding it. Try different behaviors like releasing the modifier key before the action key and vice versa.
-  - [ ] Test key to key remapping
-    - A->B
-    - Ctrl->A
-    - A->Ctrl
-    - Win->B (make sure Start menu doesn't appear accidentally)
-    - B->Win (make sure Start menu doesn't appear accidentally)
-    - A->Disable
-    - Win->Disable
-  - [ ] Test key to shortcut remapping
-    - A->Ctrl+V
-    - B->Win+A
-  - [ ] Test shortcut to shortcut remapping
-    - Ctrl+A->Ctrl+V
-    - Win+A->Ctrl+V
-    - Ctrl+V->Win+A
-    - Win+A->Win+F
-  - [ ] Test shortcut to key remapping
-    - Ctrl+A->B
-    - Ctrl+A->Win
-    - Win+A->B
-  * Test app-specific remaps
-    - [ ] Similar remaps to above with Edge (entered as `msedge`), VSCode (entered as `code`) and cmd (entered as `windowsterminal`). For cmd try admin and non-admin (requires PT to run as admin)
-    - [ ] Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
-  - [ ] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
-
-## PowerRename
-- [ ] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
-- [ ] Check that with the `Show icon on context menu` icon is shown and vice versa.
-- [ ] Check if `Appear only in extended context menu` works.
-- [ ] Enable/disable autocomplete.
-- [ ] Enable/disable `Show values from last use`.
-* Select several files and folders and check PowerRename options:
-    - [ ] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
-    - [ ] Exclude Folders/Files/Subfolder Items (could be selected several)
-    - [ ] Item Name/Extension Only (one at the time)
-    - [ ] Enumerate Items. Test advanced enumeration using different values for every field ${start=10,increment=2,padding=4}.
-    - [ ] Case Sensitive
-    - [ ] Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
-    * Use regular expressions
-        - [ ] Search with an expression (e.g. `(.*).png`)
-        - [ ] Replace with an expression (e.g. `foo_$1.png`)
-        - [ ] Replace using file creation date and time (e.g. `$hh-$mm-$ss-$fff` `$DD_$MMMM_$YYYY`)
-        - [ ] Turn on `Use Boost library` and test with Perl Regular Expression Syntax (e.g. `(?<=t)est`)
-    * File list filters.
-        - [ ] In the `preview` window uncheck some items to exclude them from renaming.
-        - [ ] Click on the `Renamed` column to filter results.
-        - [ ] Click on the `Original` column to cycle between checked and unchecked items.
-
-## [PowerToys Run](tests-checklist-template-powertoys-runner-section.md)
-
- * Enable PT Run in settings and ensure that the hotkey brings up PT Run
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
- * Check that each of the plugins is working:
-   - [ ] Program - launch a Win32 application
-   - [ ] Program - launch a Win32 application as admin
-   - [ ] Program - launch a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] Windows Search - open a file on the disk.
-   - [ ] Windows Search - find a file and copy file path.
-   - [ ] Windows Search - find a file and open containing folder.
-   - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
-   - [ ] Folder - Search and open a sub-folder on entering the path.
-   - [ ] Uri - launch a web page on entering the uri.
-   - [ ] Window walker - Switch focus to a running window.
-   - [ ] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
-   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] System - test `lock`.
-   - [ ] System - test `empty recycle bin`.
-   - [ ] System - test `shutdown`.
-
- - [ ] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
-
- - [ ] Test tab navigation.
-
- * Test Plugin Manager
-   - [ ] Enable/disable plugins and verify changes are picked up by PT Run
-   - [ ] Change `Direct activation phrase` and verify changes are picked up by PT Run
-   - [ ] Change `Include in global result` and verify changes picked up by PT Run
-   - [ ] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
-   - [ ] Disable all plugins and verify the warning message is shown.
-
 ## Shortcut Guide
  * Run PowerToys as user:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
-   - [ ] Set Shortcut Guide to start with a Windows key press and verify it works.
+   - [X] Verify `Win + Shift + /` opens the guide
+   - [X] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [X] Set Shortcut Guide to start with a Windows key press and verify it works.
  * Restore the `Win + Shift + /` hotkey.
-   - [ ] Open the guide and close it pressing `Esc`
-   - [ ] Open the guide and close it pressing and releasing the `Win` key
+   - [X] Open the guide and close it pressing `Esc`
+   - [X] Open the guide and close it pressing and releasing the `Win` key
  * With PowerToys running as a user, open an elevated app and keep it on foreground:
-   - [ ] Verify `Win + Shift + /` opens the guide
-   - [ ] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
+   - [X] Verify `Win + Shift + /` opens the guide
+   - [X] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
 
 ## OOBE
  * Quit PowerToys
- * Delete %localappdata%\Microsoft\PowerToys
+ * Delete %localappdata%\Microsoft\PowerToys?
  - [ ] Start PowerToys and verify OOBE opens
  * Change version saved on `%localappdata%\Microsoft\PowerToys\last_version.txt`
  - [ ] Start PowerToys and verify OOBE opens in the "What's New" page
@@ -459,232 +281,106 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 
 Find My Mouse:
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press any other key and verify the overlay disappears.
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press a mouse button and verify the overlay disappears.
+    - [X] Press Left Ctrl twice and verify the overlay appears.
+    - [X] Press any other key and verify the overlay disappears.
+    - [X] Press Left Ctrl twice and verify the overlay appears.
+    - [X] Press a mouse button and verify the overlay disappears.
   * Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice.
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
+    - [X] Press Left Ctrl twice and verify the overlay appears.
   * Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
-    - [ ] Verify the overlay no longer appears when you press Left Ctrl twice.
+    - [X] Verify the overlay no longer appears when you press Left Ctrl twice.
   * Disable the "Do not activate on game mode" option. Start playing the same game.
-    - [ ] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
+    - [X] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
   * Test the different settings and verify they apply:
-    - [ ] Overlay opacity
-    - [ ] Background color
-    - [ ] Spotlight color
-    - [ ] Spotlight radius
-    - [ ] Spotlight initial zoom (1x vs 9x will show the difference)
-    - [ ] Animation duration
-    - [ ] Change activation method to shake and activate by shaking your mouse pointer
-    - [ ] Excluded apps
+    - [X] Overlay opacity
+    - [X] Background color
+    - [X] Spotlight color
+    - [X] Spotlight radius
+    - [X] Spotlight initial zoom (1x vs 9x will show the difference)
+    - [X] Animation duration
+    - [X] Change activation method to shake and activate by shaking your mouse pointer
+    - [X] Excluded apps
 
 Mouse Highlighter:
   * Enable Mouse Highlighter. Then:
-    - [ ] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
-    - [ ] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
-    - [ ] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+    - [X] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+    - [X] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [X] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [X] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+    - [X] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
-    - [ ] Change activation shortcut and test it
-    - [ ] Left button highlight color
-    - [ ] Right button highlight color
-    - [ ] Opacity
-    - [ ] Radius
-    - [ ] Fade delay
-    - [ ] Fade duration
-    - [ ] Hilight mode switch to "Spotlight", verify there is a transparent circle and outside it is colored with "Always highlight color", and make sure performance is ok.
+    - [X] Change activation shortcut and test it
+    - [X] Left button highlight color
+    - [X] Right button highlight color
+    - [x] Opacity
+    - [X] Radius
+    - [X] Fade delay
+    - [X] Fade duration
+    - [X] Hilight mode switch to "Spotlight", verify there is a transparent circle and outside it is colored with "Always highlight color", and make sure performance is ok.
 
 Mouse Pointer Crosshairs:
   * Enable Mouse Pointer Crosshairs. Then:
-    - [ ] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
-    - [ ] Press the activation shortcut again and verify the crosshairs disappear.
-    - [ ] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
+    - [X] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
+    - [X] Press the activation shortcut again and verify the crosshairs disappear.
+    - [X] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
-    - [ ] Change activation shortcut and test it
-    - [ ] Crosshairs color
-    - [ ] Crosshairs opacity
-    - [ ] Crosshairs center radius
-    - [ ] Crosshairs thickness
-    - [ ] Crosshairs border color
-    - [ ] Crosshairs border size
+    - [X] Change activation shortcut and test it
+    - [X] Crosshairs color
+    - [X] Crosshairs opacity
+    - [X] Crosshairs center radius
+    - [X] Crosshairs thickness
+    - [X] Crosshairs border color
+    - [X] Crosshairs border size
 
 Mouse Jump:
   * Enable Mouse Jump. Then:
-    - [ ] Press the activation shortcut and verify the screens preview appears.
-    - [ ] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
-    - [ ] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
-    - [ ] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
-    - [ ] Change scaling of screens and confirm that Mouse Jump still works correctly.
-    - [ ] Unplug additional monitors and confirm that Mouse Jump still works correctly.
-    - [ ] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
+    - [X] Press the activation shortcut and verify the screens preview appears.
+    - [X] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+    - [X] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
+    - [X] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
+    - [X] Change scaling of screens and confirm that Mouse Jump still works correctly.
+    - [X] Unplug additional monitors and confirm that Mouse Jump still works correctly.
+    - [X] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [X] Try out the features and see if they work, no list at this time.
 
 ## Always on Top
- - [ ] Pin/unpin a window, verify it's topmost/not topmost.
- - [ ] Pin/unpin a window, verify the border appeared/disappeared.
- - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
- - [ ] Minimize and maximize pinned window, verify the border looks as usual.
- - [ ] Change border color and thickness.
- - [ ] Verify if sound is played according to the sound setting.
- - [ ] Exclude app, try to pin it.
- - [ ] Exclude already pinned app, verify it was unpinned.
+ - [X] Pin/unpin a window, verify it's topmost/not topmost.
+ - [X] Pin/unpin a window, verify the border appeared/disappeared.
+ - [X] Switch virtual desktop, verify border doesn't show up on another desktop.
+ - [X] Minimize and maximize pinned window, verify the border looks as usual.
+ - [X] Change border color and thickness.
+ - [X] Verify if sound is played according to the sound setting.
+ - [X] Exclude app, try to pin it.
+ - [X] Exclude already pinned app, verify it was unpinned.
  - [ ] Try to pin the app in the Game Mode.
-
-## Screen Ruler
- * Enable Screen Ruler. Then:
-   - [ ] Press the activation shortcut and verify the toolbar appears.
-   - [ ] Press the activation shortcut again and verify the toolbar disappears.
-   - [ ] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
-   - [ ] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
-   - [ ] Select the close button in the toolbar and verify it closes the utility.
- * With Screen Ruler enabled and activated:
-   - [ ] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
-   - [ ] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
-   - [ ] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
-   - [ ] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
- * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify that the utilities work well on each monitor, with continuous mode on and off.
-   - [ ] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
-   - [ ] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
-   
- * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] Continous mode
-   - [ ] Per color channel edge detection
-   - [ ] Pixel tolerance for edge detection
-   - [ ] Draw feet on cross
-   - [ ] Line color
-
-## Quick Accent
- * Enable Quick Accent and open notepad. Then:
-   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
- * Test the different settings and verify they are applied:
-   - [ ] Activation key
-   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [ ] Toolbar position (test every option, some had issues before)
-   - [ ] Input delay
-   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [ ] Sort characters by frequency.
-   - [ ] Always start on the first character when using left/right arrows as activation method.
-
-## [Text Extractor](tests-checklist-template-text-extractor-section.md)
- * Enable Text Extractor. Then:
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Press Escape and verify the overlay disappears.
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Right-click and select Cancel. Verify the overlay disappears.
-   - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
- * With Text Extractor enabled and activated:
-   - [ ] Try to select text and verify it is copied to the clipboard.
-   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
- * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify text is correctly captured on all monitors.
- * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] OCR Language
-
-## Hosts File Editor
- * Launch Host File Editor:
-   - [ ] Verify the application exits if "Quit" is clicked on the initial warning.
-   - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
-   - [ ] Enable and disable lines and verify they are applied to the file.
-   - [ ] Add a new entry and verify it's applied.
-   - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
-   - [ ] Try to filter for lines and verify you can find them.
-   - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
- * Test the different settings and verify they are applied:
-   - [ ] Launch as Administrator.
-   - [ ] Show a warning at startup.
-   - [ ] Additional lines position.
-
-## File Locksmith
- * Start the PowerToys installer executable and let it stay in the initial screen.
-   - [ ] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
-   - [ ] End the tasks in File Locksmith UI and verify that closes the installer.
-   - [ ] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
-   - [ ] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
- * Start the PowerToys installer executable again and let it stay in the initial screen.
-   - [ ] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
-   - [ ] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
- * Restart PowerToys as admin.
-   - [ ] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
-   - [ ] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
- - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
- - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [X] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [X] Verify the module is not enabled.
+   - [X] Open settings and verify the module is not enabled and you can't enable it.
+   - [X] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [X] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [X] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [X] Verify the module is enabled.
+   - [X] Open settings and verify the module is enabled and you can't disable it.
+   - [X] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [X] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [X] Verify the module is not enabled. (No context menu entry)
+   - [X] Open settings and verify the module is not enabled and you can't enable it.
+   - [X] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [X] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [X] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
-## Registry Preview
- * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
- * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
-   - [ ] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
-   - [ ] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
-   - [ ] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
-   - [ ] Try opening different registry file by pressing Open file button.
-   - [ ] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
-   
- * Open Registry Preview Settings. Then:
-   - [ ] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
-   - [ ] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
-   - [ ] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
-   - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
-   - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
-   - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
-
-## [Peek](tests-checklist-template-peek-section.md)
- * Open different files to check that they're shown properly
-   - [ ] Image
-   - [ ] Text or dev file
-   - [ ] Markdown file
-   - [ ] PDF
-   - [ ] HTML
-   - [ ] Archive files (.zip, .tar, .rar)
-   - [ ] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
-   
- * Pinning/unpinning
-   - [ ] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
-   - [ ] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
-   - [ ] Unpin the window, switch to a different file, verify the window is moved to the default place.
-   - [ ] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
-
-* Open with a default program
-   - [ ] By clicking a button.
-   - [ ] By pressing enter. 
-  
- - [ ] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
- - [ ] Open multiple files, verify you can switch only between selected files.
- - [ ] Change the shortcut, verify the new one works.
 
 ## [Mouse Without Borders](tests-checklist-template-mouse-without-borders-section.md)
  * Install PowerToys on two PCs in the same local network:
@@ -741,56 +437,12 @@ Mouse Jump:
 
 ## Crop And Lock
  * Thumbnail mode
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [X] Test with win32 app
+   - [X] Test with packaged app
    
  * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
-
-## Environment Variables
- * NOTE: Make backup of USER and SYSTEM Path and TMP variables before testing so you can revert those is something goes wrong!
- * Open Environment Variables settings
-   - [ ] Launch as administrator ON - Launch Environment Variables and confirm that SYSTEM variables ARE editable and Add variable button is enabled
-   - [ ] Launch as administrator OFF - Launch Environment Variables and confirm that SYSTEM variables ARE NOT editable and Add variable button is disabled
-
- * User/System variables
-   - [ ] Add new User variable. Open OS Environment variables window and confirm that added variable is there. Also, confirm that it's added to "Applied variables" list.
-   - [ ] Edit one User variable. Open OS Environment variables window and confirm that variable is changed. Also, confirm that change is applied to "Applied variables" list.
-   - [ ] Remove one User variable. Open OS Environment variables window and confirm that variable is removed. Also, confirm that variable is removed from "Applied variables" list.
-   - Repeat the steps for System variables.
-
- * Profiles - Basic tests
-   - [ ] Add new profile with no variables and name it "Test_profile_1" (referenced below by name)
-   - [ ] Edit "Test_profile_1": Add one new variable to profile e.g. name: "profile_1_variable_1" value: "profile_1_value_1"
-   - [ ] Add new profile "Test_profile_2": From "Add profile dialog" add two new variables (profile_2_variable_1:profile_2_value_1 and profile_2_variable_2:profile_2_value_2). Set profile to enabled and click Save. Open OS Environment variables window and confirm that all variables from the profile are applied correctly. Also, confirm that "Applied variables" list contains all variables from the profile.
-   - [ ] Apply "Test_profile_1" while "Test_profile_2" is still aplpied. Open OS Environment variables window and confirm that all variables from Test_profile_2 are unapplied and that all variables from Test_profile_1 are applied. Also, confirm that state of "Applied variables" list is updated correctly.
-   - [ ] Unapply applied profile. Open OS Environment variables window and confirm that all variables from the profile are unapplied correctly. Also, confirm that "Applied variables" list does not contain variables from the profile.
-
- * Overriding existing variable
-   - [ ] To "Test_profile_1" add one existing variable from USER variables, e.g. TMP. After adding, change it's value to e.g "test_TMP" (or manually add variable named TMP with value test_TMP).
-   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variables has value "test_TMP". Confirm that there is backup variable "TMP_PowerToys_Test_profile_1" with original value of TMP var. Also, confirm that "Applied variables" list is updated correctly - there is TMP profile variable, and backup User variable..
-   - [ ] Unapply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variable has original value and that there is no backup variable. Also, confirm that "Applied variables" list is updated correctly.
-
- * PATH variable
-   - [ ] In "Applied variables" list confirm that PATH variable is shown properly: value of USER Path concatenated to the end of SYSTEM Path.
-   - [ ] To "Test_profile_1" add variable named PATH with value "path1;path2;path3" and click Save. Confirm that PATH variable in profile is shown as list (list of 3 values and not as path1;path2;path3).
-   - [ ] Edit PATH variable from "Test_profile_1". Try different options from ... menu (Delete, Move up, Move down, etc...). Click Save.
-   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that profile is applied correctly - Path value and backup variable. Also, in "Applied variables" list check that Path variable has correct value: value of profile PATH concatenated to the end of SYSTEM Path.
-
- * Loading profiles on startup
-   - [ ] Close the app and reopen it. Confirm that the state of the app is the same as before closing.
-
- - [ ] "Test_profile_1" should still be applied (if not apply it). Delete "Test_profile_1". Confirm that profile is unapplied (both in OS Environment variables window and "Applied variables" list).
- - [ ] Delete "Test_profile_2". Check profiles.json file and confirm that both profiles are gone.
-
-## Command Not Found
- * Go to Command Not Found module settings
- - [ ] If you have PowerShell 7.4 installed, confirm that Install PowerShell 7.4 button is not visible and PowerShell 7.4 is shown as detected. If you don't have PowerShell 7.4, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
- - [ ] If you have Microsoft.WinGet.Client installed, confirm that Install Microsoft.WinGet.Client button is not visible and Microsoft.WinGet.Client is shown as detected. If you don't have Microsoft.WinGet.Client, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
- - [ ] Install the Command Not Found module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is added there. Start new PowerShell 7.4 session and execute "powertoys" (or "atom"). Confirm that suggestion is given to install powertoys (or atom) winget package. (If suggestion is not given, try running the same command few more times, it might take some time for the first time to load the module). Check Installation logs text box bellow and confirm there are no errors.
- - [ ] Uninstall the module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed. Start new PowerShell 7.4 session and confirm no errors are shown on start.
- - [ ] Install module again. Uninstall PowerToys. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed after installer is done.
+   - [X] Test with win32 app
+   - [X] Test with packaged app
 
 ## DSC
  * You need to have some prerequisites installed:
@@ -798,61 +450,20 @@ Mouse Jump:
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
-   - [ ] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [ ] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [X] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
+   - [X] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
+   - [X] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [X] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [X] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [X] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
-## [Advanced Paste](tests-checklist-template-advanced-paste-section.md)
-  NOTES:
-    When using Advanced Paste, make sure that window focused while starting/using Advanced paste is text editor or has text input field focused (e.g. Word).
- * Paste As Plain Text
-   - [ ] Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.).
-   - [ ] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
-   - [ ] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
-   - [ ] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
-   - [ ] Copy some rich text again.
-   - [ ] Open Advanced Paste window using hotkey, click Paste as Plain Text button and confirm that plain text without any formatting is pasted.
-   - [ ] Copy some rich text again.
-   - [ ] Open Advanced Paste window using hotkey, press Ctrl + 1 and confirm that plain text without any formatting is pasted.
- * Paste As Markdown
-   - [ ] Open Settings and set Paste as Markdown directly hotkey
-   - [ ] Copy some text (e.g. some HTML text - convertible to Markdown)
-   - [ ] Paste the text using set hotkey and confirm that pasted text is converted to markdown
-   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
-   - [ ] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
-   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
-   - [ ] Open Advanced Paste window using hotkey, press Ctrl + 2 and confirm that pasted text is converted to markdown
- * Paste As JSON
-   - [ ] Open Settings and set Paste as JSON directly hotkey
-   - [ ] Copy some XML or CSV text (or any other text, it will be converted to simple JSON object)
-   - [ ] Paste the text using set hotkey and confirm that pasted text is converted to JSON
-   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
-   - [ ] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
-   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
-   - [ ] Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
- * Paste as custom format using AI
-   - [ ] Open Settings, navigate to Enable Paste with AI and set OpenAI key.
-   - [ ] Copy some text to clipboard. Any text.
-   - [ ] Open Advanced Paste window using hotkey, and confirm that Custom intput text box is now enabled. Write "Insert smiley after every word" and press Enter. Observe that result preview shows coppied text with smileys between words. Press Enter to paste the result and observe that it is pasted.
-   - [ ] Open Advanced Paste window using hotkey. Input some query (any, feel free to play around) and press Enter. When result is shown, click regenerate button, to see if new result is generated. Select one of the results and paste. Observe that correct result is pasted.
-   - [ ] Create few custom actions. Set up hotkey for custom actions and confirm they work. Enable/disable custom actions and confirm that the change is reflected in Advanced Paste UI - custom action is not listed. Try different ctrl + <num> in-app shortcuts for custom actions. Try moving custom actions up/down and confirm that the change is reflected in Advanced Paste UI.
-   - [ ] Open Settings and disable Custom format preview. Open Advanced Paste window with hotkey, enter some query and press enter. Observe that result is now pasted right away, without showing the preview first.
-   - [ ] Open Settings and Disable Enable Paste with AI. Open Advanced Paste window with hotkey and observe that Custom Input text box is now disabled.
- * Clipboard History
-   - [ ] Open Settings and Enable clipboard history (if not enabled already). Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry. Check OS clipboard history (Win+V), and confirm that the same entry no longer exist.
-   - [ ] Open Advanced Paste window with hotkey, click Clipboard history, and click any entry (but first). Observe that entry is put on top of clipboard history. Check OS clipboard history (Win+V), and confirm that the same entry is on top of the clipboard.
-   - [ ] Open Settings and Disable clipboard history. Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
- * Disable Advanced Paste, try different Advanced Paste hotkeys and confirm that it's disabled and nothing happens.
 
 ## [Workspaces](tests-checklist-template-workspaces-section.md)
 * Settings
-   - [ ] Launch the Editor by clicking the button on the settings page.
-   - [ ] Launch the Editor from quick access.
-   - [ ] Launch the Editor by the Activation shortcut.
-   - [ ] Disable the module and and verify it won't launch by the shortcut.
+   - [X] Launch the Editor by clicking the button on the settings page.
+   - [X] Launch the Editor from quick access.
+   - [X] Launch the Editor by the Activation shortcut.
+   - [X] Disable the module and and verify it won't launch by the shortcut.
 
 * Snapshot tool: try with elevated and non-elevated PT
    * Open non-packaged apps, e.g., VisualStudio, VisualStudioCode.
@@ -862,137 +473,81 @@ Mouse Jump:
    * Click `Create Workspace`.
    * Open any other window.
    * Click `Capture`
-   - [ ] Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
-   - [ ] Verify windows are in the correct positions.
-   - [ ] Verify elevated app has the `Admin` box checked (if captured).
+   - [X] Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
+   - [X] Verify windows are in the correct positions.
+   - [X] Verify elevated app has the `Admin` box checked (if captured).
 
 * Editor
-   - [ ] Verify that the new Workspace appears in the list after capturing.
-   - [ ] Verify that the new Workspace doesn't appear after canceling the Capture.
-   - [ ] Verify `Search` filters Workspaces (by workspace name or app name).
-   - [ ] Verify `SortBy` works.
-   - [ ] Verify `SortBy` keeps its value when you close and open the editor again.
-   - [ ] Verify `Remove` removes the Workspace from the list.
-   - [ ] Verify `Edit` opens the Workspace editing page.
-   - [ ] Verify clicking at the Workspace opens the Workspace editing page.
+   - [X] Verify that the new Workspace appears in the list after capturing.
+   - [X] Verify that the new Workspace doesn't appear after canceling the Capture.
+   - [X] Verify `Search` filters Workspaces (by workspace name or app name).
+   - [X] Verify `SortBy` works.
+   - [X] Verify `SortBy` keeps its value when you close and open the editor again.
+   - [X] Verify `Remove` removes the Workspace from the list.
+   - [X] Verify `Edit` opens the Workspace editing page.
+   - [X] Verify clicking at the Workspace opens the Workspace editing page.
    
    * Editing page
-   - [ ] `Remove` an app and verify it disappeared on the preview.
-   - [ ] `Remove` and `Add back` an app, verify it's returned back to the preview.
-   - [ ] Set an app minimized, check the preview.
-   - [ ] Set an app maximized, check the preview.
-   - [ ] Check `Launch as admin` for the app where it's available.
-   - [ ] Add CLI args, e.g. path to the PowerToys.sln file for VisualStudio.
-   - [ ] Manually change the position for the app, check the preview.
-   - [ ] Change the Workspace name.
-   - [ ] Verify `Save` and `Cancel` work as expected. 
-   - [ ] Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
-   - [ ] Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
-   - [ ] Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
-   - [ ] Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
+   - [X] `Remove` an app and verify it disappeared on the preview.
+   - [X] `Remove` and `Add back` an app, verify it's returned back to the preview.
+   - [X] Set an app minimized, check the preview.
+   - [X] Set an app maximized, check the preview.
+   - [X] Check `Launch as admin` for the app where it's available.
+   - [X] Add CLI args, e.g. path to the PowerToys.sln file for VisualStudio.
+   - [X] Manually change the position for the app, check the preview.
+   - [X] Change the Workspace name.
+   - [X] Verify `Save` and `Cancel` work as expected. 
+   - [X] Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
+   - [X] Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
+   - [X] Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
+   - [X] Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
 
 * Launcher
-   - [ ] Click `Launch` in the editor, verify the Workspace apps launching.
-   - [ ] Launch Workspace by a shortcut, verify the Workspace apps launching.
-   - [ ] Verify a window with launching progress is shown while apps are launching and presents the correct launching state (launching, launched, not launched) for every app.
-   - [ ] Click `Cancel launch`, verify launching is stopped at the current state (opened apps will stay opened), and the window is closed.
-   - [ ] Click `Dismiss` and verify apps keep launching, but the LauncherUI window is closed.
+   - [X] Click `Launch` in the editor, verify the Workspace apps launching.
+   - [X] Launch Workspace by a shortcut, verify the Workspace apps launching.
+   - [X] Verify a window with launching progress is shown while apps are launching and presents the correct launching state (launching, launched, not launched) for every app.
+   - [X] Click `Cancel launch`, verify launching is stopped at the current state (opened apps will stay opened), and the window is closed.
+   - [X] Click `Dismiss` and verify apps keep launching, but the LauncherUI window is closed.
    
 * To verify that the launcher works correctly with different apps, try to capture and launch:   
-   - [ ] Non-packaged app, e.g., VisualStudio code
-      - [ ] As admin
-      - [ ] With CLI args
-      - [ ] PWA apps installed from different profile(Currently only edge and chrome are supported for pwa apps)
-    - [ ] Packaged app, e.g. Terminal
-      - [ ] As admin
-      - [ ] With CLI args
+   - [X] Non-packaged app, e.g., VisualStudio code
+      - [X] As admin
+      - [X] With CLI args
+      - [X] PWA apps installed from different profile(Currently only edge and chrome are supported for pwa apps)
+    - [X] Packaged app, e.g. Terminal
+      - [X] As admin
+      - [X] With CLI args
 
 * Try to launch the Workspace with a different setup
-   - [ ] Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
-   - [ ] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
-
-## New+
- * Enable New+ in Settings.
-   - [ ] Verify NewPlus menu is in Explorer context menu. (Windows 11 tier 1 context menu only. May need Explorer restart.)
- * Disable New+ in Settings.
-   - [ ] Verify NewPlus menu is not in Explorer context menu.
- * Choose a different path for template folder.
-   - [ ] Verify the folder is created and empty.
-   - [ ] Copy a file to the templates folder, verify it's added to the New+ context menu and that if you select it the file is created.
-   - [ ] Copy a folder with files inside to the templates folder, verify it's added to the New+ context menu and that if you select it the folder and files inside are created.
-   - [ ] Delete all files and folders from inside the templates folder. Verify that no templates are available in the context menu.
-   - [ ] Disable and re-Enable New+ while the templates folder is still empty. Verify the default templates were copied over and are available in the context menu.
- * Test some Settings:
-   - [ ] Test the "Hide template filename extension" option in Settings.
-   - [ ] Test the "Hide template filename starting digits, spaces and dots" option in Settings.
+   - [X] Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
+   - [X] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
 
 ## [ZoomIt](tests-checklist-template-zoomit-section.md)
 
  * Enable ZoomIt in Settings.
-   - [ ] Verify ZoomIt tray icon appears in the tray icons, and that when you left-click or right-click, it just shows the 4 action entries: "Break Timer", "Draw", "Zoom" and "Record".
-   - [ ] Turn the "Show tray icon" option off and verify the tray icon is gone.
-   - [ ] Turn the "Show tray icon" option on and verify the tray icon is back.
+   - [X] Verify ZoomIt tray icon appears in the tray icons, and that when you left-click or right-click, it just shows the 4 action entries: "Break Timer", "Draw", "Zoom" and "Record".
+   - [X] Turn the "Show tray icon" option off and verify the tray icon is gone.
+   - [X] Turn the "Show tray icon" option on and verify the tray icon is back.
  * Test the base modes through a shortcuts:
-   - [ ] Press the Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse. You can exit Zoom by pressing Escape or the Hotkey again.
-   - [ ] Press the Live Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse, while the screen still updates instead of showing a still image. You can exit Live Zoom by pressing the Hotkey again.
-   - [ ] Press the Draw without Zoom Hotkey and verify you can draw. You can leave this mode by pressing the Escape.
+   - [X] Press the Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse. You can exit Zoom by pressing Escape or the Hotkey again.
+   - [X] Press the Live Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse, while the screen still updates instead of showing a still image. You can exit Live Zoom by pressing the Hotkey again.
+   - [X] Press the Draw without Zoom Hotkey and verify you can draw. You can leave this mode by pressing the Escape.
    - [ ] Select a text file as the Input file for Demo Type, focus notepad and press the Demo Type hotkey. It should start typing the text file. You can exit Demo Type by pressing Escape.
-   - [ ] Press the Start Break Timer Hotkey and verify it starts the Timer. You can exit by pressing Escape.
-   - [ ] Press the Record Toggle Hotkey to start recording a screen. Press the Record Toggle Hotkey again to exit the mode and save the recording to a file.
-   - [ ] Press the Snip Toggle Hotkey to take a snip of the screen. Paste it to Paint to verify a snip was taken.
+   - [X] Press the Start Break Timer Hotkey and verify it starts the Timer. You can exit by pressing Escape.
+   - [X] Press the Record Toggle Hotkey to start recording a screen. Press the Record Toggle Hotkey again to exit the mode and save the recording to a file.
+   - [X] Press the Snip Toggle Hotkey to take a snip of the screen. Paste it to Paint to verify a snip was taken.
  * Test some Settings to verify the types are being passed correctly to ZoomIt:
-   - [ ] Change the "Animate zoom in and zoom out" setting and activate Zoom mode to verify it applies.
-   - [ ] Change the "Specify the initial level of magnification when zooming in" and activate Zoom mode to verify it applies.
-   - [ ] Change the Type Font to another font. Enter Break mode to quickly verify the font changed.
+   - [X] Change the "Animate zoom in and zoom out" setting and activate Zoom mode to verify it applies.
+   - [X] Change the "Specify the initial level of magnification when zooming in" and activate Zoom mode to verify it applies.
+   - [X] Change the Type Font to another font. Enter Break mode to quickly verify the font changed.
    - [ ] Change the Demo Type typing speed and verify the change applies.
-   - [ ] Change the timer Opacity for Break mode and verify that the change applies.
-   - [ ] Change the timer Position for Break mode and verify that the change applies.
-   - [ ] Select a Background Image file as background for Break mode and verify that the change applies.
-   - [ ] Turn on "Play Sound on Expiration", select a sound file, aset the timer to 1 minute, activate the Break Mode and verify the sound plays after 1 minute. (Alarm1.wav from "C:\Windows\Media" should be long enough to notice)
-   - [ ] Open the Microphone combo box in the Record section and verify it lists your microphones.
+   - [X] Change the timer Opacity for Break mode and verify that the change applies.
+   - [X] Change the timer Position for Break mode and verify that the change applies.
+   - [X] Select a Background Image file as background for Break mode and verify that the change applies.
+   - [X] Turn on "Play Sound on Expiration", select a sound file, aset the timer to 1 minute, activate the Break Mode and verify the sound plays after 1 minute. (Alarm1.wav from "C:\Windows\Media" should be long enough to notice)
+   - [X] Open the Microphone combo box in the Record section and verify it lists your microphones.
  * Test the tray icon actions:
-   - [ ] Verify pressing "Break Timer" enters Break mode.
-   - [ ] Verify pressing "Draw" enters Draw mode.
-   - [ ] Verify pressing "Zoom" enters Zoom mode.
-   - [ ] Verify pressing "Record" enters Record mode.
-
-## [Command Palette](tests-checklist-template-command-palette-section.md)
- * Check if Command Palette successfully install/uninstall with PowerToys.
-   - [ ] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
- * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
- * Check that each of the plugins is working:
-   - [ ] Installed Apps - launch a Win32 application
-   - [ ] Installed Apps - launch a Win32 application as admin
-   - [ ] Installed Apps - launch a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] File Search - open a file on the disk.
-   - [ ] File Search - find a file and copy file path.
-   - [ ] File Search - find a file and open containing folder.
-   - [ ] Run Commands - execute a command. (e.g. `ping google.com`).
-   - [ ] Windows Walker - Switch to another opening window.
-   - [ ] Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [ ] WinGet - Search and install application through WinGet. (eg. `vscode`)
-   - [ ] Web Search - Search anything by this extension.
-   - [ ] Windows Terminal Profiles - Open profile.
-   - [ ] Windows Terminal Profiles - Open profile as Admin.
-   - [ ] Windows Settings - Open settings from extension.
-   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] Windows Service - start, stop, restart windows service.
-   - [ ] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
-   - [ ] Windows System Command - test `lock`.
-   - [ ] Windows System Command - test `empty recycle bin`.
-   - [ ] Windows System Command - test `shutdown`.
-   - [ ] Windows System Command - Click your network adapter item and paste the result at notepad.
-   - [ ] Bookmark - Add bookmarks to command palette.
-   - [ ] Bookmark - Open your bookmarks (in Command Palette).
- - [ ] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
- * Test Extensions Manager
-   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette
-   - [ ] Change `Global hot key` and verify changes are picked up by Command Palette
-   - [ ] Change `Alias` and verify changes picked up by Command Palette
-   - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
+   - [X] Verify pressing "Break Timer" enters Break mode.
+   - [X] Verify pressing "Draw" enters Draw mode.
+   - [X] Verify pressing "Zoom" enters Zoom mode.
+   - [X] Verify pressing "Record" enters Record mode.
