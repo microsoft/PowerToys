@@ -450,8 +450,8 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
     - [ ] 7. Exclude Folders/Files/Subfolder Items (could be selected several)
     - [ ] 8. Item Name/Extension Only (one at the time)
     - [ ] 9. Enumerate Items. Test advanced enumeration using different values for every field ${start=10,increment=2,padding=4}.
-    - [ ] 10. Case Sensitive
-    - [ ] 11. Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
+    - [x] 10. Case Sensitive
+    - [x] 11. Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
     * Use regular expressions
         - [ ] 12. Search with an expression (e.g. `(.*).png`)
         - [ ] 13. Replace with an expression (e.g. `foo_$1.png`)
@@ -1072,20 +1072,20 @@ Mouse Jump:
    - [ ] 4. when PowerToys is running as admin on start-up
    - [ ] 5. when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] 6. Installed Apps - launch a Win32 application
-   - [ ] 7. Installed Apps - launch a Win32 application as admin
-   - [ ] 8. Installed Apps - launch a packaged application
-   - [ ] 9. Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] 10. File Search - open a file on the disk.
-   - [ ] 11. File Search - find a file and copy file path.
-   - [ ] 12. File Search - find a file and open containing folder.
+   - [x] 6. Installed Apps - launch a Win32 application
+   - [x] 7. Installed Apps - launch a Win32 application as admin
+   - [x] 8. Installed Apps - launch a packaged application
+   - [x] 9. Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] 10. File Search - open a file on the disk.
+   - [x] 11. File Search - find a file and copy file path.
+   - [x] 12. File Search - find a file and open containing folder.
    - [ ] 13. Run Commands - execute a command. (e.g. `ping google.com`).
    - [ ] 14. Windows Walker - Switch to another opening window.
    - [ ] 15. Windows Walker - Switch to another opening window when powertoys run as admin.
    - [ ] 16. WinGet - Search and install application through WinGet. (eg. `vscode`)
    - [ ] 17. Web Search - Search anything by this extension.
-   - [ ] 18. Windows Terminal Profiles - Open profile.
-   - [ ] 19. Windows Terminal Profiles - Open profile as Admin.
+   - [x] 18. Windows Terminal Profiles - Open profile.
+   - [x] 19. Windows Terminal Profiles - Open profile as Admin.
    - [ ] 20. Windows Settings - Open settings from extension.
    - [ ] 21. Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
    - [ ] 22. Registry - navigate through the registry tree and copy key path.
@@ -1094,7 +1094,7 @@ Mouse Jump:
    - [ ] 25. Windows System Command - test `lock`.
    - [ ] 26. Windows System Command - test `empty recycle bin`.
    - [ ] 27. Windows System Command - test `shutdown`.
-   - [ ] 28. Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [x] 28. Windows System Command - Click your network adapter item and paste the result at notepad.
    - [ ] 29. Bookmark - Add bookmarks to command palette.
    - [ ] 30. Bookmark - Open your bookmarks (in Command Palette).
  - [ ] 31. Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
