@@ -16,7 +16,7 @@ namespace ScreenRuler.UITests
         }
 
         [TestMethod("ScreenRuler.BoundsTool")]
-        [TestCategory("Bounds")]
+        [TestCategory("Spacing")]
         public void TestScreenRulerBoundsTool()
         {
             TestHelper.InitializeTest(this, "bounds test");

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
-	  <RootNamespace>PowerToys.MeasureToolUI.UITests</RootNamespace>
-	  <AssemblyName>PowerToys.MeasureToolUI.UITests</AssemblyName>
+	  <RootNamespace>PowerToys.ScreenRulerUI.UITests</RootNamespace>
+	  <AssemblyName>PowerToys.ScreenRulerUI.UITests</AssemblyName>
 	  <IsPackable>false</IsPackable>
 	  <IsTestProject>true</IsTestProject>
 	  <Nullable>enable</Nullable>
@@ -12,7 +12,7 @@
 	  <RunVSTest>false</RunVSTest>
   </PropertyGroup>
   <PropertyGroup>
-	  <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\PowerToys.MeasureToolUI.UITests\</OutputPath>
+	  <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\PowerToys.ScreenRulerUI.UITests\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
