@@ -23,6 +23,10 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <EnableCmdPalAOT>true</EnableCmdPalAOT>
+    <CIBuild>True</CIBuild>
+  </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>

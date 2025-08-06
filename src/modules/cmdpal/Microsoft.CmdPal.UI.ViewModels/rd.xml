@@ -1,0 +1,11 @@
+<Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
+	<Application>
+		<!-- <Assembly Name="Microsoft.Bot.AdaptiveExpressions.Core"> -->
+		<!-- <Assembly Name="AdaptiveCards.Rendering.WinUI3"> -->
+		<Assembly Name="AdaptiveCards.ObjectModel.WinUI3">
+			<Type Name="AdaptiveCards.ObjectModel.WinUI3.AdaptiveSubmitAction" Dynamic="Required All" />
+			<Type Name="AdaptiveCards.ObjectModel.WinUI3.AdaptiveExecuteAction" Dynamic="Required All" />
+			<Type Name="AdaptiveCards.ObjectModel.WinUI3.AdaptiveOpenUrlAction" Dynamic="Required All" />
+		</Assembly>
+	</Application>
+</Directives>

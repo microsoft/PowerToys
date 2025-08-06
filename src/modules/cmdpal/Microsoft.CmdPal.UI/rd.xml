@@ -19,5 +19,12 @@
 		<Assembly Name="Microsoft.CmdPal.UI">
 			<Type Name="Microsoft.CmdPal.UI.ContextItemTemplateSelector" Dynamic="Required All" />
 		</Assembly>
+
+		<!-- <Assembly Name="Microsoft.Bot.AdaptiveExpressions.Core"> -->
+		<!-- <Assembly Name="AdaptiveCards.Rendering.WinUI3">
+			<Type Name="AdaptiveCards.ObjectModel.WinUI3.AdaptiveSubmitAction" Dynamic="Required All" />
+			<Type Name="AdaptiveCards.ObjectModel.WinUI3.AdaptiveExecuteAction" Dynamic="Required All" />
+			<Type Name="AdaptiveCards.ObjectModel.WinUI3.AdaptiveOpenUrlAction" Dynamic="Required All" />
+		</Assembly> -->
 	</Application>
 </Directives>
