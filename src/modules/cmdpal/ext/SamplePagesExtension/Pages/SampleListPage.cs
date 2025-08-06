@@ -4,6 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.Win32;
 
@@ -169,6 +170,22 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "Get the name of the Foreground window",
             },
+            new ListItem(new CommandWithProperties())
+            {
+                Title = "I have properties",
+            },
         ];
+    }
+
+    internal sealed partial class CommandWithProperties : InvokableCommand, ICommand2
+    {
+        public override string Name => "Whatever";
+
+        public IPropertySet OtherProperties => new PropertySet()
+        {
+            { "Foo", "bar" },
+            { "Secret", 42 },
+            { "hmm?", null },
+        };
     }
 }
