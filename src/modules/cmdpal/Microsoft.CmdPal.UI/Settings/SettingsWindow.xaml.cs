@@ -60,14 +60,10 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         if (sender is NavigationView navigationView)
         {
-            var announcementText = navigationView.IsPaneOpen ? "Navigation pane opened" : "Navigation pane closed";
-            var peer = FrameworkElementAutomationPeer.FromElement(navigationView)
-                       ?? FrameworkElementAutomationPeer.CreatePeerForElement(navigationView);
-            peer.RaiseNotificationEvent(
-                AutomationNotificationKind.ActionCompleted,
-                AutomationNotificationProcessing.ImportantMostRecent,
-                announcementText,
-                "NavigationViewPaneIsOpenChangeNotificationId");
+            UIHelper.AnnounceActionForAccessibility(
+            ue: (UIElement)sender,
+            (sender as NavigationView)?.IsPaneOpen == true ? "Navigation pane opened" : "Navigation pane closed",
+            "NavigationViewPaneIsOpenChangeNotificationId");
         }
     }
 
