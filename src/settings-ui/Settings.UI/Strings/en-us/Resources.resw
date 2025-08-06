@@ -3155,6 +3155,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
     <value>Pin a window</value>
   </data>
+  <data name="DarkMode_ShortDescription" xml:space="preserve">
+    <value>Control Dark Mode</value>
+  </data>
   <data name="ColorPicker_ShortDescription" xml:space="preserve">
     <value>Pick a color</value>
   </data>

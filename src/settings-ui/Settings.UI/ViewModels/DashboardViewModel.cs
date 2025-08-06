@@ -19,6 +19,7 @@ using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -175,6 +176,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.CmdPal => GetModuleItemsCmdPal(),
                 ModuleType.ColorPicker => GetModuleItemsColorPicker(),
                 ModuleType.CropAndLock => GetModuleItemsCropAndLock(),
+                ModuleType.DarkMode => GetModuleItemsDarkMode(),
                 ModuleType.EnvironmentVariables => GetModuleItemsEnvironmentVariables(),
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FileLocksmith => GetModuleItemsFileLocksmith(),
@@ -239,6 +241,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("ColorPicker_ShortDescription"), Shortcut = hotkey.GetKeysList() },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsDarkMode()
+        {
+            ISettingsRepository<DarkModeSettings> moduleSettingsRepository = SettingsRepository<DarkModeSettings>.GetInstance(new SettingsUtils());
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("DarkMode_ShortDescription"), Shortcut = [] },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
