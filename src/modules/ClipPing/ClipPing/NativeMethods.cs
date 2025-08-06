@@ -15,7 +15,7 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern uint GetDpiForWindow(IntPtr hwnd);
 
-    [DllImport("shcore.dll")]
+    [DllImport("Shcore.dll")]
     public static extern int GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
 
     [DllImport("dwmapi.dll")]
