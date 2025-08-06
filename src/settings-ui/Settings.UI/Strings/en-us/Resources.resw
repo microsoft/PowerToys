@@ -796,7 +796,7 @@
     <value>Information Symbol</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
-    <value>Launch layout editor</value>
+    <value>Open layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
@@ -824,8 +824,11 @@
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Hold Shift key to activate zones while dragging a window</value>
   </data>
+  <data name="FancyZones_ActivationShiftDrag" xml:space="preserve">
+    <value>Hold Shift key</value>
+  </data>
   <data name="FancyZones_ActivationNoShiftDrag" xml:space="preserve">
-    <value>Drag windows to activate zones</value>
+    <value>Drag a window</value>
   </data>
   <data name="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Show zones on all monitors while dragging a window</value>
@@ -1986,7 +1989,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Launch</value>
   </data>
   <data name="Launch_ColorPicker.Content" xml:space="preserve">
-    <value>Launch Color Picker</value>
+    <value>Open Color Picker</value>
   </data>
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
     <value>Learn more about</value>
@@ -2133,7 +2136,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Want a custom size? You can add them in the PowerToys Settings!</value>
   </data>
   <data name="Oobe_KBM_HowToCreateMappings.Text" xml:space="preserve">
-    <value>Launch **PowerToys Settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
+    <value>Open **PowerToys Settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
   </data>
   <data name="Oobe_KBM_TipsAndTricks.Text" xml:space="preserve">
     <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
@@ -2550,10 +2553,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
-    <value>Launch PowerToys Run</value>
+    <value>Open PowerToys Run</value>
   </data>
   <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
-    <value>Launch Shortcut Guide</value>
+    <value>Open Shortcut Guide</value>
   </data>
   <data name="ColorPicker_ColorFormat_ToggleSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
@@ -2848,6 +2851,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
+  <data name="LearnMore.Text" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
     <comment>File type, do not translate</comment>
@@ -3134,7 +3140,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Create and manage Workspaces</value>
   </data>
   <data name="Workspaces_LaunchEditorButtonControl.Header" xml:space="preserve">
-    <value>Launch editor</value>
+    <value>Open editor</value>
   </data>
   <data name="LearnMore_Workspaces.Text" xml:space="preserve">
     <value>Learn more about the Workspaces utility</value>
@@ -3159,10 +3165,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Pick a color</value>
   </data>
   <data name="CropAndLock_Thumbnail" xml:space="preserve">
-    <value>Thumbnail</value>
+    <value>Crop and create a thumbnail</value>
   </data>
   <data name="CropAndLock_Reparent" xml:space="preserve">
-    <value>Reparent</value>
+    <value>Crop an app's window into a cropped window</value>
   </data>
   <data name="FancyZones_OpenEditor" xml:space="preserve">
     <value>Open editor</value>
@@ -3174,7 +3180,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Find the mouse</value>
   </data>
   <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
-    <value>Highlight clicks</value>
+    <value>Turn on clicks highlighter</value>
   </data>
   <data name="MouseJump_ShortDescription" xml:space="preserve">
     <value>Quickly move the mouse pointer</value>
@@ -3192,10 +3198,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more</value>
   </data>
   <data name="Peek_ShortDescription" xml:space="preserve">
-    <value>Quick and easy previewer</value>
+    <value>Preview file</value>
   </data>
   <data name="Run_ShortDescription" xml:space="preserve">
-    <value>A quick launcher</value>
+    <value>Open Run</value>
   </data>
   <data name="PowerAccent_ShortDescription" xml:space="preserve">
     <value>An alternative way to type accented characters</value>
@@ -3205,17 +3211,20 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ScreenRuler_ShortDescription" xml:space="preserve">
-    <value>Measure pixels on your screen</value>
+    <value>Start measurement</value>
   </data>
   <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
-    <value>Show a help overlay with Windows shortcuts</value>
+    <value>Open Shortcut Guide</value>
     <comment>{Locked="Windows"}</comment>
   </data>
   <data name="PowerOcr_ShortDescription" xml:space="preserve">
-    <value>A convenient way to copy text from anywhere on screen</value>
+    <value>Start text extraction</value>
   </data>
   <data name="Dashboard_Activation" xml:space="preserve">
     <value>Activation</value>
+  </data>
+  <data name="Activate_Zones" xml:space="preserve">
+    <value>Activate zones</value>
   </data>
   <data name="DashboardKBMShowMappingsButton.Content" xml:space="preserve">
     <value>Show remappings</value>
@@ -3395,7 +3404,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Text Extractor</value>
   </data>
   <data name="Launch_TextExtractor.Content" xml:space="preserve">
-    <value>Launch Text Extractor</value>
+    <value>Open Text Extractor</value>
   </data>
   <data name="Oobe_TextExtractor.Title" xml:space="preserve">
     <value>Text Extractor</value>
@@ -3620,11 +3629,11 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Hosts File Editor</value>
+    <value>Open Hosts File Editor</value>
     <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Hosts File Editor</value>
+    <value>Open Hosts File Editor</value>
     <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
@@ -3640,7 +3649,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Behavior</value>
   </data>
   <data name="Launch_Hosts.Content" xml:space="preserve">
-    <value>Launch Hosts File Editor</value>
+    <value>Open Hosts File Editor</value>
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="LearnMore_Hosts.Text" xml:space="preserve">
@@ -3659,7 +3668,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Required in order to make changes to the hosts file</value>
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
-    <value>Launch as administrator</value>
+    <value>Open as administrator</value>
   </data>
   <data name="EnvironmentVariables.ModuleDescription" xml:space="preserve">
     <value>A quick utility for managing environment variables.</value>
@@ -3680,13 +3689,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Manage your environment variables</value>
   </data>
   <data name="EnvironmentVariables_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Environment Variables</value>
+    <value>Open Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Environment Variables</value>
+    <value>Open Environment Variables</value>
   </data>
   <data name="Launch_EnvironmentVariables.Content" xml:space="preserve">
-    <value>Launch Environment Variables</value>
+    <value>Open Environment Variables</value>
   </data>
   <data name="LearnMore_EnvironmentVariables.Text" xml:space="preserve">
     <value>Learn more about Environment Variables</value>
@@ -3701,7 +3710,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Required in order to make changes to the system environment variables</value>
   </data>
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
-    <value>Launch as administrator</value>
+    <value>Open as administrator</value>
   </data>
   <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
     <value>Press duration before showing taskbar icon shortcuts (ms)</value>
@@ -3955,6 +3964,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccessTxt.Text" xml:space="preserve">
     <value>Quick access</value>
   </data>
+  <data name="UpdateAvailable.Text" xml:space="preserve">
+    <value>Update available</value>
+  </data>
   <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Header" xml:space="preserve">
     <value>Maximum file size to preview</value>
     <comment>Size refers to the disk space used by a file</comment>
@@ -3997,7 +4009,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Registry Preview is a product name, do not loc</comment>
   </data>
   <data name="Launch_RegistryPreview.Content" xml:space="preserve">
-    <value>Launch Registry Preview</value>
+    <value>Open Registry Preview</value>
     <comment>"Registry Preview" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
@@ -4145,13 +4157,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Consider loopback addresses as duplicates</value>
   </data>
   <data name="RegistryPreview_Launch_GroupSettings.Header" xml:space="preserve">
-    <value>Launch</value>
+    <value>Open</value>
   </data>
   <data name="RegistryPreview_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Registry Preview</value>
+    <value>Open Registry Preview</value>
   </data>
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Registry Preview</value>
+    <value>Open Registry Preview</value>
   </data>
   <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">
     <value>Make Registry Preview the default app for .reg files</value>
@@ -4227,10 +4239,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Title of the settings window when running as administrator</comment>
   </data>
   <data name="DashboardTitle.Text" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>Home</value>
   </data>
   <data name="Shell_Dashboard.Content" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>Home</value>
   </data>
   <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
     <value>Preview</value>
@@ -4486,7 +4498,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Workspaces</value>
   </data>
   <data name="Workspaces_ShortDescription" xml:space="preserve">
-    <value>Create and launch Workspaces</value>
+    <value>Open editor</value>
   </data>
   <data name="Shell_ZoomIt.Content" xml:space="preserve">
     <value>ZoomIt</value>
@@ -4913,6 +4925,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ShortDescription" xml:space="preserve">
     <value>A better quick launcher</value>
   </data>
+  <data name="CmdPal_ActivationDescription" xml:space="preserve">
+    <value>Open Command Palette</value>
+  </data>
   <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
     <value>Enable Command Palette</value>
     <comment>"Command Palette" is the name of the utility.</comment>
@@ -5030,6 +5045,36 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE.Header" xml:space="preserve">
     <value>Binary Geometric Code</value>
   </data>
+  <data name="YoureUpToDate.Text" xml:space="preserve">
+    <value>You're up to date</value>
+  </data>
+  <data name="UpdateAvailableTextBlock.Text" xml:space="preserve">
+    <value>Update Available</value>
+  </data>
+  <data name="GeneralVersion.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="LearnWhatsNew.Text" xml:space="preserve">
+    <value>Learn what's new</value>
+  </data>
+  <data name="ConfigureShortcut" xml:space="preserve">
+    <value>Configure shortcut</value>
+  </data>
+  <data name="ConfigureShortcutText.Text" xml:space="preserve">
+    <value>Configure shortcut</value>
+  </data>
+  <data name="QuickAccessTitle.Title" xml:space="preserve">
+    <value>Quick access</value>
+  </data>
+  <data name="ShortcutsOverview.Title" xml:space="preserve">
+    <value>Shortcuts overview</value>
+  </data>
+  <data name="NoActionsToShow.Text" xml:space="preserve">
+    <value>No actions to show..</value>
+  </data>
+  <data name="NoShortcutsToShow.Text" xml:space="preserve">
+    <value>No shortcuts to show..</value>
+  </data>
   <data name="HighlightMode.Description" xml:space="preserve">
     <value>Highlight the cursor or dim the screen to spotlight it</value>
   </data>
@@ -5078,5 +5123,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
+  </data>
+  <data name="KeyBack" xml:space="preserve">
+    <value>Back key</value>
   </data>
 </root>

@@ -176,7 +176,11 @@ public sealed partial class MainWindow : WindowEx,
 
     private void UpdateAcrylic()
     {
-        _acrylicController?.RemoveAllSystemBackdropTargets();
+        if (_acrylicController != null)
+        {
+            _acrylicController.RemoveAllSystemBackdropTargets();
+            _acrylicController.Dispose();
+        }
 
         _acrylicController = GetAcrylicConfig(Content);
 
