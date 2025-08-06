@@ -15,8 +15,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" 
-                   IsTabStop="True"/>
+        <TextBlock Grid.Row="0" IsTabStop="True" />
 
         <ItemsControl
             x:Name="KeysControl"
