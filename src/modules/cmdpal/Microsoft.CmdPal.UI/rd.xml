@@ -19,6 +19,5 @@
 		<Assembly Name="Microsoft.CmdPal.UI">
 			<Type Name="Microsoft.CmdPal.UI.ContextItemTemplateSelector" Dynamic="Required All" />
 		</Assembly>
-
 	</Application>
 </Directives>
