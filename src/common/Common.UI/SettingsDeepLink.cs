@@ -61,6 +61,8 @@ namespace Common.UI
                     return "ColorPicker";
                 case SettingsWindow.CmdNotFound:
                     return "CmdNotFound";
+                case SettingsWindow.DarkMode:
+                    return "DarkMode";
                 case SettingsWindow.FancyZones:
                     return "FancyZones";
                 case SettingsWindow.FileLocksmith:

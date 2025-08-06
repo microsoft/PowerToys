@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI" 
-    xmlns:ViewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels" xmlns:controls1="using:System.Windows.Controls"
+    xmlns:ViewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
   d:DataContext="{d:DesignInstance Type=ViewModel:DarkModeViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
