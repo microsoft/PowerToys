@@ -3,32 +3,36 @@
 	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
 	<Import Project="..\..\Common.SelfContained.props" />
 
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<UseWinUI>true</UseWinUI>
-		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-		<WindowsPackageType>None</WindowsPackageType>
-		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-		<ApplicationIcon>Assets\Settings\icon.ico</ApplicationIcon>
-		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-		<!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
-		<OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
-		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
-		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
-	</PropertyGroup>
-	<ItemGroup>
-		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
-		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
-	</ItemGroup>
-	<ItemGroup>
-		<Page Remove="SettingsXAML\App.xaml" />
-	</ItemGroup>
-	<ItemGroup>
-		<ApplicationDefinition Include="SettingsXAML\App.xaml" />
-	</ItemGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <UseWinUI>true</UseWinUI>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <ApplicationIcon>Assets\Settings\icon.ico</ApplicationIcon>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
+    <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
+    <None Remove="Assets\Settings\Modules\APDialog.light.png" />
+    <None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
+    <None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
+    <None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Remove="SettingsXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="SettingsXAML\App.xaml" />
+  </ItemGroup>
+
 
 	<!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
 	<PropertyGroup>
@@ -131,23 +135,32 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
-		<None Update="Assets\Settings\Scripts\CheckCmdNotFoundRequirements.ps1">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Assets\Settings\Scripts\InstallWinGetClientModule.ps1">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Assets\Settings\Scripts\InstallPowerShell7.ps1">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Assets\Settings\Scripts\EnableModule.ps1">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Update="Assets\Settings\Scripts\CheckCmdNotFoundRequirements.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Settings\Scripts\InstallWinGetClientModule.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Settings\Scripts\InstallPowerShell7.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Settings\Scripts\EnableModule.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Settings\Scripts\DisableModule.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
 
 	<ItemGroup>
 		<Page Update="SettingsXAML\OOBE\Views\OobeWorkspaces.xaml">

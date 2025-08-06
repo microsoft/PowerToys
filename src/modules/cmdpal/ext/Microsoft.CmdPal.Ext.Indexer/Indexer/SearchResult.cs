@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
-using Microsoft.CmdPal.Ext.Indexer.Native;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 

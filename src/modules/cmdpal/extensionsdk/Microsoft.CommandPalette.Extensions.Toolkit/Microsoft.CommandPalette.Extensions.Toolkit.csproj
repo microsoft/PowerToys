@@ -52,6 +52,21 @@
     <Content Include="$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" Link="Microsoft.CommandPalette.Extensions.winmd" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <PropertyGroup>
     <PublishTrimmed>True</PublishTrimmed>
     <PublishAot>True</PublishAot>

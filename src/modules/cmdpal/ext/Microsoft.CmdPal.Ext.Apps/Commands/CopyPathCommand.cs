@@ -13,14 +13,12 @@ namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
 internal sealed partial class CopyPathCommand : InvokableCommand
 {
-    private static readonly IconInfo TheIcon = new("\ue8c8");
-
     private readonly string _target;
 
     public CopyPathCommand(string target)
     {
         Name = Resources.copy_path;
-        Icon = TheIcon;
+        Icon = Icons.CopyIcon;
 
         _target = target;
     }

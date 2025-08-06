@@ -58,7 +58,7 @@ namespace Peek.UI.Helpers
             object? oNull2 = null;
 
             var serviceProvider = (IServiceProvider)shellWindows.FindWindowSW(ref oNull1, ref oNull2, SWC_DESKTOP, out int pHWND, SWFO_NEEDDISPATCH);
-            var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
+            var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke_PeekUI.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
 
             IShellItemArray? shellItemArray = GetShellItemArray(shellBrowser, onlySelectedFiles);
             return shellItemArray;
@@ -81,7 +81,7 @@ namespace Peek.UI.Helpers
                     if (webBrowserApp.HWND == foregroundWindowHandle)
                     {
                         var serviceProvider = (IServiceProvider)webBrowserApp;
-                        var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
+                        var shellBrowser = (IShellBrowser)serviceProvider.QueryService(PInvoke_PeekUI.SID_STopLevelBrowser, typeof(IShellBrowser).GUID);
                         shellBrowser.GetWindow(out IntPtr shellBrowserHandle);
 
                         if (activeTab == shellBrowserHandle)
@@ -122,7 +122,7 @@ namespace Peek.UI.Helpers
             GUITHREADINFO guiThreadInfo = new() { cbSize = (uint)Marshal.SizeOf<GUITHREADINFO>() };
 
             // Get information for the foreground thread
-            if (PInvoke.GetGUIThreadInfo(0, ref guiThreadInfo))
+            if (PInvoke_PeekUI.GetGUIThreadInfo(0, ref guiThreadInfo))
             {
                 return guiThreadInfo.hwndActive == hwnd && (guiThreadInfo.flags & GUITHREADINFO_FLAGS.GUI_CARETBLINKING) != 0;
             }

@@ -153,9 +153,18 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
-                        x:Uid="FileExplorerPreview_ToggleSwitch_Preview_QOI"
-                        Name="FileExplorerPreviewToggleSwitchPreviewQOI"
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Preview_BGCODE"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
+                        IsEnabled="{x:Bind ViewModel.BGCODERenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsEnabled="{x:Bind ViewModel.BGCODERenderIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsOn="{x:Bind ViewModel.BGCODERenderIsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Preview_QOI"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}"
                         IsEnabled="{x:Bind ViewModel.QOIRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
@@ -222,9 +231,18 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
-                        x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
-                        Name="FileExplorerPreviewToggleSwitchThumbnailQOI"
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
+                        IsEnabled="{x:Bind ViewModel.BGCODEThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsEnabled="{x:Bind ViewModel.BGCODEThumbnailIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsOn="{x:Bind ViewModel.BGCODEThumbnailIsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}"
                         IsEnabled="{x:Bind ViewModel.QOIThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
                             x:Uid="ToggleSwitch"
@@ -256,7 +274,7 @@
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://noraajunker.ch" Text="Noraa Junker's work on developer file preview" />
-            <controls:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code, STL, and QOI" />
+            <controls:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code, Binary G-Code, STL, and QOI" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigatablePage>

@@ -16,9 +16,59 @@
 
 - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`).
 
+## Running tests in pipeline
+
+The PowerToys UI test pipeline provides flexible options for building and testing:
+
+### Pipeline Options
+
+- **buildSource**: Select the build type for testing:
+  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch
+  - `buildNow`: Builds PowerToys from current source code and uses it for testing
+  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter
+
+  **Default value**: `latestMainOfficialBuild`
+
+- **specificBuildId**: When `buildSource` is set to `specificBuildId`, specify the exact PowerToys build ID to download and test against.
+
+  **Default value**: `"xxxx"` (placeholder, enter actual build ID when using specificBuildId option)
+  
+  **When to use this**:
+  - Testing against a specific known build for reproducibility
+  - Regression testing against a particular build version
+  - Validating fixes in a specific build before release
+  
+  **Usage**: Enter the build ID number (e.g., `12345`) to download that specific build. Only used when `buildSource` is set to `specificBuildId`.
+
+- **uiTestModules**: Specify which UI test modules to build and run. This parameter controls both the `.csproj` projects to build and the `.dll` test assemblies to execute. Examples:
+  - `['UITests-FancyZones']` - Only FancyZones UI tests
+  - `['MouseUtils.UITests']` - Only MouseUtils UI tests
+  - `['UITests-FancyZones', 'MouseUtils.UITests']` - Multiple specific modules
+  - Leave empty to build and run all UI test modules
+
+  **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
+
+### Build Modes
+
+1. **Official Build Testing** (`buildSource = latestMainOfficialBuild` or `specificBuildId`)
+   - Downloads and installs official PowerToys build (latest from main or specific build ID)
+   - Builds only UI test projects (all or specific based on `uiTestModules`)
+   - Runs UI tests against installed PowerToys
+   - Tests both machine-level and per-user installation modes automatically
+
+2. **Current Source Build Testing** (`buildSource = buildNow`)
+   - Builds entire PowerToys solution from current source code
+   - Builds UI test projects (all or specific based on `uiTestModules`)
+   - Runs UI tests against freshly built PowerToys
+   - Uses artifacts from current pipeline build
+
+> **Note**: All modes support the `uiTestModules` parameter to control which specific UI test modules to build and run. Both machine-level and per-user installation modes are tested automatically when using official builds.
+
+### Pipeline Access
+- Pipeline: https://microsoft.visualstudio.com/Dart/_build?definitionId=161438&_a=summary
 
 ## How to add the first UI tests for your modules
-
+- Follow the naming convention: ![{ModuleFolder}/Tests/{ModuleName}-{TestType(Fuzz/UI/Unit)}Tests](images/uitests/naming.png)
 - Create a new project and add the following references to the project file. Change the OutputPath to your own module's path.
   ```
     <Project Sdk="Microsoft.NET.Sdk">

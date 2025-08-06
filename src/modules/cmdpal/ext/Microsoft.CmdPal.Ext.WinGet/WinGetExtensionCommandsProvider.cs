@@ -15,7 +15,7 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
     {
         DisplayName = Properties.Resources.winget_display_name;
         Id = "WinGet";
-        Icon = WinGetExtensionPage.WinGetIcon;
+        Icon = Icons.WinGetIcon;
 
         _ = WinGetStatics.Manager;
     }
@@ -34,7 +34,7 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
             new OpenUrlCommand("ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette"))
          {
             Title = Properties.Resources.winget_search_store_title,
-            Icon = IconHelpers.FromRelativePaths("Assets\\Store.light.svg", "Assets\\Store.dark.svg"),
+            Icon = Icons.StoreIcon,
          },
     ];
 

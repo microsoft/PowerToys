@@ -1,4 +1,4 @@
-﻿<local:NavigatablePage
+<local:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.FileLocksmithPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

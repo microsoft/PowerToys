@@ -56,7 +56,7 @@ string validUIDisplayString = Resources.ValidUIDisplayString;
 ```
 
 ## More On Coding Guidance
-Please review these brief docs below relating to our coding standards etc.
+Please review these brief docs below relating to our coding standards, etc.
 
 * [Coding Style](./style.md)
 * [Code Organization](./readme.md)

@@ -3,14 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
-
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
 namespace PowerLauncher.Telemetry.Events
 {
     [EventData]
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
     public class RunPluginsSettingsEvent : EventBase, IEvent
     {
         public RunPluginsSettingsEvent(IDictionary<string, PluginModel> pluginManager)
