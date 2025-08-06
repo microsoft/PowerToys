@@ -2,7 +2,7 @@
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
 	  <RootNamespace>PowerToys.ScreenRulerUI.UITests</RootNamespace>
-	  <AssemblyName>PowerToys.ScreenRulerUI.UITests</AssemblyName>
+	  <AssemblyName>ScreenRulerUI.UITests</AssemblyName>
 	  <IsPackable>false</IsPackable>
 	  <IsTestProject>true</IsTestProject>
 	  <Nullable>enable</Nullable>
@@ -12,7 +12,7 @@
 	  <RunVSTest>false</RunVSTest>
   </PropertyGroup>
   <PropertyGroup>
-	  <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\PowerToys.ScreenRulerUI.UITests\</OutputPath>
+	  <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\ScreenRulerUI.UITests\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
