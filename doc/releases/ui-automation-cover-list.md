@@ -772,26 +772,26 @@ Mouse Jump:
 
 ## [Peek](tests-checklist-template-peek-section.md)
  * Open different files to check that they're shown properly
-   - [ ] 1. Image
-   - [ ] 2. Text or dev file
-   - [ ] 3. Markdown file
+   - [x] 1. Image
+   - [x] 2. Text or dev file
+   - [x] 3. Markdown file
    - [ ] 4. PDF
    - [ ] 5. HTML
-   - [ ] 6. Archive files (.zip, .tar, .rar)
-   - [ ] 7. Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
+   - [x] 6. Archive files (.zip, .tar, .rar)
+   - [x] 7. Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
    
  * Pinning/unpinning
-   - [ ] 8. Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
-   - [ ] 9. Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
-   - [ ] 10. Unpin the window, switch to a different file, verify the window is moved to the default place.
-   - [ ] 11. Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
+   - [x] 8. Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
+   - [x] 9. Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
+   - [x] 10. Unpin the window, switch to a different file, verify the window is moved to the default place.
+   - [x] 11. Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
 
 * Open with a default program
-   - [ ] 12. By clicking a button.
-   - [ ] 13. By pressing enter. 
+   - [x] 12. By clicking a button.
+   - [x] 13. By pressing enter. 
   
- - [ ] 14. Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
- - [ ] 15. Open multiple files, verify you can switch only between selected files.
+ - [x] 14. Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
+ - [x] 15. Open multiple files, verify you can switch only between selected files.
  - [ ] 16. Change the shortcut, verify the new one works.
 
 ## [Mouse Without Borders](tests-checklist-template-mouse-without-borders-section.md)
