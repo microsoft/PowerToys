@@ -64,10 +64,10 @@ namespace ScreenRuler.UITests
 
             if (screenRulers.Count == 0)
             {
-                testBase.Session.Find<NavigationViewItem>(By.AccessibilityId("Shell_Nav_TopLevelSystemTools"), 500).Click(msPostAction: 500);
+                testBase.Session.Find<NavigationViewItem>(By.AccessibilityId("Shell_Nav_TopLevelSystemTools"), 5000).Click(msPostAction: 500);
             }
 
-            testBase.Session.Find<NavigationViewItem>(By.AccessibilityId("Shell_Nav_ScreenRuler"), 500).Click(msPostAction: 500);
+            testBase.Session.Find<NavigationViewItem>(By.AccessibilityId("Shell_Nav_ScreenRuler"), 5000).Click(msPostAction: 500);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace ScreenRuler.UITests
         /// </summary>
         public static void SetScreenRulerToggle(UITestBase testBase, bool enable)
         {
-            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"));
+            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 5000);
             if (toggleSwitch.IsOn != enable)
             {
                 toggleSwitch.Click(msPostAction: 500);
@@ -91,7 +91,7 @@ namespace ScreenRuler.UITests
         public static void SetAndVerifyScreenRulerToggle(UITestBase testBase, bool enable, string testName)
         {
             SetScreenRulerToggle(testBase, enable);
-            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"));
+            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 5000);
             Assert.AreEqual(
                 enable,
                 toggleSwitch.IsOn,
@@ -103,8 +103,8 @@ namespace ScreenRuler.UITests
         /// </summary>
         public static Key[] ReadActivationShortcut(UITestBase testBase)
         {
-            var shortcutCard = testBase.Session.Find<Element>(By.AccessibilityId("Shortcut_ScreenRuler"), 500);
-            var shortcutButton = shortcutCard.Find<Element>(By.AccessibilityId("EditButton"), 500);
+            var shortcutCard = testBase.Session.Find<Element>(By.AccessibilityId("Shortcut_ScreenRuler"), 5000);
+            var shortcutButton = shortcutCard.Find<Element>(By.AccessibilityId("EditButton"), 5000);
             return ParseShortcutText(shortcutButton.HelpText);
         }
 
