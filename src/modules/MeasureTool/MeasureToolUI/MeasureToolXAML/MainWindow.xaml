@@ -249,9 +249,9 @@
             Orientation="Horizontal"
             Spacing="8">
             <ToggleButton
-                AutomationProperties.AutomationId="Button_Bounds"
                 Name="btnBounds"
                 x:Uid="BtnBounds"
+                AutomationProperties.AutomationId="Button_Bounds"
                 Click="BoundsTool_Click"
                 Content="&#xEF20;"
                 KeyboardAcceleratorPlacementMode="Auto"
@@ -267,9 +267,9 @@
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <ToggleButton
-                AutomationProperties.AutomationId="Button_Spacing"
                 Name="btnSpacing"
                 x:Uid="BtnSpacing"
+                AutomationProperties.AutomationId="Button_Spacing"
                 Click="MeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}">
                 <ToolTipService.ToolTip>
@@ -285,9 +285,9 @@
             </ToggleButton>
 
             <ToggleButton
-                AutomationProperties.AutomationId="Button_SpacingHorizontal"
                 Name="btnHorizontalSpacing"
                 x:Uid="BtnHorizontalSpacing"
+                AutomationProperties.AutomationId="Button_SpacingHorizontal"
                 Click="HorizontalMeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}">
                 <ToolTipService.ToolTip>
@@ -306,9 +306,9 @@
                 </ToggleButton.KeyboardAccelerators>
             </ToggleButton>
             <ToggleButton
-                AutomationProperties.AutomationId="Button_SpacingVertical"
                 Name="btnVerticalSpacing"
                 x:Uid="BtnVerticalSpacing"
+                AutomationProperties.AutomationId="Button_SpacingVertical"
                 Click="VerticalMeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}">
                 <ToolTipService.ToolTip>
@@ -328,8 +328,8 @@
             </ToggleButton>
             <AppBarSeparator />
             <Button
-                AutomationProperties.AutomationId="Button_Close"
                 x:Uid="BtnClosePanel"
+                AutomationProperties.AutomationId="Button_Close"
                 Click="ClosePanelTool_Click"
                 Content="&#xE8BB;"
                 Foreground="{StaticResource CloseButtonBackgroundPointerOver}">

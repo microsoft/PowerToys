@@ -159,8 +159,8 @@
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_MeasureTool"
-                            AutomationProperties.AutomationId="Shell_Nav_ScreenRuler"
                             helpers:NavHelper.NavigateTo="views:MeasureToolPage"
+                            AutomationProperties.AutomationId="Shell_Nav_ScreenRuler"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_ShortcutGuide"

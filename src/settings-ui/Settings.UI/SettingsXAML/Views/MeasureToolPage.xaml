@@ -17,7 +17,10 @@
                     x:Uid="MeasureTool_EnableMeasureTool"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="Toggle_ScreenRuler"  IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        AutomationProperties.AutomationId="Toggle_ScreenRuler"
+                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
@@ -31,7 +34,10 @@
                 </InfoBar>
                 <controls:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="MeasureTool_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl AutomationProperties.AutomationId="Shortcut_ScreenRuler" MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="Shortcut_ScreenRuler"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="MeasureTool_DefaultMeasureStyle">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.DefaultMeasureStyle, Mode=TwoWay}">
