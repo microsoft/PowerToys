@@ -83,7 +83,8 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         cancellationToken.ThrowIfCancellationRequested();
 
         var searchText = query.Trim();
-        searchText = Expand(searchText);
+        Expand(ref searchText);
+
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             Command = null;
@@ -186,7 +187,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     internal static bool SuppressFileFallbackIf(string query)
     {
         var searchText = query.Trim();
-        searchText = Expand(searchText);
+        Expand(ref searchText);
 
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
@@ -200,32 +201,56 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         return exeExists || pathIsDir;
     }
 
-    private static string Expand(string searchText)
+    private static void Expand(ref string searchText)
     {
         if (searchText.Length == 0)
         {
-            return searchText;
+            return;
         }
 
         var singleCharQuery = searchText.Length == 1;
-        var firstChar = searchText[0];
 
         searchText = Environment.ExpandEnvironmentVariables(searchText);
 
-        if (firstChar == '~')
+        if (!TryExpandHome(ref searchText))
+        {
+            TryExpandRoot(ref searchText);
+        }
+    }
+
+    private static bool TryExpandHome(ref string searchText)
+    {
+        if (searchText[0] == '~')
         {
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            searchText = searchText.Length < 3 ? home : Path.Combine(home, searchText[2..]);
+
+            if (searchText.Length == 1)
+            {
+                searchText = home;
+            }
+            else if (_systemDirectoryRoots.Contains(searchText[1]))
+            {
+                searchText = Path.Combine(home, searchText[2..]);
+            }
+
+            return true;
         }
-        else if (_systemDirectoryRoots.Contains(firstChar) && (singleCharQuery || !_systemDirectoryRoots.Contains(searchText[1])))
+
+        return false;
+    }
+
+    private static bool TryExpandRoot(ref string searchText)
+    {
+        if (_systemDirectoryRoots.Contains(searchText[0]) && (searchText.Length == 1 || !_systemDirectoryRoots.Contains(searchText[1])))
         {
             var root = Path.GetPathRoot(Environment.SystemDirectory);
             if (root != null)
             {
-                searchText = singleCharQuery ? root : Path.Combine(root, searchText[1..]);
+                searchText = searchText.Length == 1 ? root : Path.Combine(root, searchText[1..]);
+                return true;
             }
         }
 
-        return searchText;
+        return false;
     }
 }
