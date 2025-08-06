@@ -98,78 +98,35 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
 
     public void HandleSubmit(IAdaptiveActionElement action, JsonObject inputs)
     {
-        Logger.LogTrace($"action={action}\ninputs = {inputs.ToString()}");
-        Logger.LogTrace($"action={action.ToJson()}");
         var actionJson = action.ToJson();
 
         if (actionJson.TryGetValue("type", out var actionTypeValue))
         {
-            Logger.LogTrace($"actionTypeValue={actionTypeValue}");
-            var atvs = actionTypeValue.ToString();
-            Logger.LogTrace($"atvs={atvs}");
-            var atString = actionTypeValue.GetString();
-            Logger.LogTrace($"atString={atString}");
+            var actionTypeString = actionTypeValue.GetString();
+            Logger.LogTrace($"atString={actionTypeString}");
 
-            var actionType = atString switch
+            var actionType = actionTypeString switch
             {
                 "Action.Submit" => ActionType.Submit,
                 "Action.Execute" => ActionType.Execute,
                 "Action.OpenUrl" => ActionType.OpenUrl,
                 _ => ActionType.Unsupported,
             };
-            Logger.LogTrace($"actionType={actionType}");
+
+            Logger.LogDebug($"{actionTypeString}->{actionType}");
 
             switch (actionType)
             {
                 case ActionType.OpenUrl:
                     {
-                        Logger.LogTrace($"AdaptiveOpenUrlAction");
-                        if (actionJson.TryGetValue("url", out var actionUrlValue))
-                        {
-                            var actionUrl = actionUrlValue.GetString() ?? string.Empty;
-                            if (Uri.TryCreate(actionUrl, default(UriCreationOptions), out var uri))
-                            {
-                                Logger.LogTrace($"created Uri={uri}");
-                                WeakReferenceMessenger.Default.Send<LaunchUriMessage>(new(uri));
-                            }
-                            else
-                            {
-                                Logger.LogError($"Failed to produce URI for {actionUrlValue}");
-                            }
-                        }
+                        HandleOpenUrlAction(action, actionJson);
                     }
 
                     break;
                 case ActionType.Submit:
                 case ActionType.Execute:
                     {
-                        Logger.LogTrace($"AdaptiveSubmitAction or AdaptiveExecuteAction");
-                        var dataString = string.Empty;
-                        if (actionJson.TryGetValue("data", out var actionDataValue))
-                        {
-                            dataString = actionDataValue.Stringify() ?? string.Empty;
-                        }
-
-                        var inputString = inputs.Stringify();
-                        Logger.LogTrace($"dataString={dataString}");
-                        Logger.LogTrace($"inputString={inputString}");
-                        _ = Task.Run(() =>
-                        {
-                            try
-                            {
-                                var model = _formModel.Unsafe!;
-                                if (model != null)
-                                {
-                                    var result = model.SubmitForm(inputString, dataString);
-                                    Logger.LogTrace($"result={result}");
-                                    WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                ShowException(ex);
-                            }
-                        });
+                        HandleSubmitAction(action, actionJson, inputs);
                     }
 
                     break;
@@ -180,67 +137,55 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
         }
         else
         {
-            Logger.LogTrace($"actionJson.TryGetValue(type) failed");
+            Logger.LogError($"actionJson.TryGetValue(type) failed");
+        }
+    }
+
+    private void HandleOpenUrlAction(IAdaptiveActionElement action, JsonObject actionJson)
+    {
+        if (actionJson.TryGetValue("url", out var actionUrlValue))
+        {
+            var actionUrl = actionUrlValue.GetString() ?? string.Empty;
+            if (Uri.TryCreate(actionUrl, default(UriCreationOptions), out var uri))
+            {
+                WeakReferenceMessenger.Default.Send<LaunchUriMessage>(new(uri));
+            }
+            else
+            {
+                Logger.LogError($"Failed to produce URI for {actionUrlValue}");
+            }
+        }
+    }
+
+    private void HandleSubmitAction(
+        IAdaptiveActionElement action,
+        JsonObject actionJson,
+        JsonObject inputs)
+    {
+        var dataString = string.Empty;
+        if (actionJson.TryGetValue("data", out var actionDataValue))
+        {
+            dataString = actionDataValue.Stringify() ?? string.Empty;
         }
 
-        // try
-        // {
-        //    var isUrl = action is IAdaptiveOpenUrlAction;
-        //    var url = action.As<AdaptiveOpenUrlAction>();
-        //    var iurl = action.As<IAdaptiveOpenUrlAction>();
-        //    Logger.LogTrace($"\n{url}\n{iurl}");
-        //    if (iurl != null)
-        //    {
-        //        Logger.LogTrace($"AdaptiveOpenUrlAction");
-        //        WeakReferenceMessenger.Default.Send<LaunchUriMessage>(new(iurl.Url));
-        //        return;
-        //    }
-        // }
-        // catch (Exception e)
-        // {
-        //    Logger.LogError("yike", e);
-        // }
-
-        // try
-        // {
-        //    var sub = action.As<AdaptiveSubmitAction>();
-        //    var execute = action.As<AdaptiveExecuteAction>();
-        //    var isub = action.As<IAdaptiveSubmitAction>();
-        //    var iexecute = action.As<IAdaptiveExecuteAction>();
-        //    Logger.LogTrace($"\n{sub}\n{execute}\n{isub}\n{iexecute}");
-
-        // if (sub != null || execute != null)
-        //    {
-        //        Logger.LogTrace($"AdaptiveSubmitAction or AdaptiveExecuteAction");
-
-        // // Get the data and inputs
-        //        var dataString = sub?.DataJson.Stringify() ?? string.Empty;
-        //        var inputString = inputs.Stringify();
-        //        Logger.LogTrace($"inputString={inputString}");
-
-        // _ = Task.Run(() =>
-        //        {
-        //            try
-        //            {
-        //                var model = _formModel.Unsafe!;
-        //                if (model != null)
-        //                {
-        //                    var result = model.SubmitForm(inputString, dataString);
-        //                    Logger.LogTrace($"result={result}");
-        //                    WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
-        //                }
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                ShowException(ex);
-        //            }
-        //        });
-        //    }
-        // }
-        // catch (Exception e)
-        // {
-        //    Logger.LogError("yike2", e);
-        // }
+        var inputString = inputs.Stringify();
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                var model = _formModel.Unsafe!;
+                if (model != null)
+                {
+                    var result = model.SubmitForm(inputString, dataString);
+                    Logger.LogDebug($"SubmitForm() returned {result}");
+                    WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowException(ex);
+            }
+        });
     }
 
     private static readonly string ErrorCardJson = """
