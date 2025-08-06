@@ -50,7 +50,7 @@ public partial class TextSetting : Setting<string>
     public override void Update(JsonObject payload)
     {
         // If the key doesn't exist in the payload, don't do anything
-        if (payload[Key] != null)
+        if (payload[Key] is not null)
         {
             Value = payload[Key]?.GetValue<string>();
         }

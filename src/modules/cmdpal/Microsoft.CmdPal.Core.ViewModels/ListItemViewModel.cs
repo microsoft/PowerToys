@@ -27,7 +27,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
     public DetailsViewModel? Details { get; private set; }
 
     [MemberNotNullWhen(true, nameof(Details))]
-    public bool HasDetails => Details != null;
+    public bool HasDetails => Details is not null;
 
     public override void InitializeProperties()
     {
@@ -40,7 +40,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         base.InitializeProperties();
 
         var li = Model.Unsafe;
-        if (li == null)
+        if (li is null)
         {
             return; // throw?
         }
@@ -50,7 +50,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         TextToSuggest = li.TextToSuggest;
         Section = li.Section ?? string.Empty;
         var extensionDetails = li.Details;
-        if (extensionDetails != null)
+        if (extensionDetails is not null)
         {
             Details = new(extensionDetails, PageContext);
             Details.InitializeProperties();
@@ -67,7 +67,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         base.FetchProperty(propertyName);
 
         var model = this.Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -85,7 +85,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
-                Details = extensionDetails != null ? new(extensionDetails, PageContext) : null;
+                Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details));
                 UpdateProperty(nameof(HasDetails));
@@ -136,7 +136,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         Details?.SafeCleanup();
 
         var model = Model.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             // We don't need to revoke the PropChanged event handler here,
             // because we are just overriding CommandItem's FetchProperty and

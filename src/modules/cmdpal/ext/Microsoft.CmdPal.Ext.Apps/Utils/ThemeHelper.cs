@@ -32,7 +32,7 @@ public static class ThemeHelper
 
         // Retrieve the registry value, which is a DWORD (0 or 1)
         var registryValueObj = Registry.GetValue(registryKey, registryValue, null);
-        if (registryValueObj != null)
+        if (registryValueObj is not null)
         {
             // 0 = Dark mode, 1 = Light mode
             var isLightMode = Convert.ToBoolean((int)registryValueObj, CultureInfo.InvariantCulture);

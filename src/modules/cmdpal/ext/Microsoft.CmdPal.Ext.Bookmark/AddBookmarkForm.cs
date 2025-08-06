@@ -63,7 +63,7 @@ internal sealed partial class AddBookmarkForm : FormContent
     public override CommandResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload);
-        if (formInput == null)
+        if (formInput is null)
         {
             return CommandResult.GoHome();
         }

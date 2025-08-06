@@ -28,7 +28,7 @@ public partial class CommandContextItem : CommandItem, ICommandContextItem
             c.Name = name;
         }
 
-        if (result != null)
+        if (result is not null)
         {
             c.Result = result;
         }

@@ -29,7 +29,7 @@ internal static class AvailableResultsList
 
         var timeExtended = timeLongFormat ?? settings.TimeWithSecond;
         var dateExtended = dateLongFormat ?? settings.DateWithWeekday;
-        var isSystemDateTime = timestamp == null;
+        var isSystemDateTime = timestamp is null;
         var dateTimeNow = timestamp ?? DateTime.Now;
         var dateTimeNowUtc = dateTimeNow.ToUniversalTime();
         var firstWeekRule = firstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(settings.FirstWeekOfYear);

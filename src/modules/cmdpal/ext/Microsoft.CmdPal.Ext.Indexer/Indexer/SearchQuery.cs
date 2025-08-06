@@ -12,7 +12,6 @@ using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
-using static Microsoft.CmdPal.Ext.Indexer.Indexer.Utils.NativeHelpers;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -54,14 +53,14 @@ internal sealed partial class SearchQuery : IDisposable
         try
         {
             queryTpTimer = new Timer(QueryTimerCallback, this, Timeout.Infinite, Timeout.Infinite);
-            if (queryTpTimer == null)
+            if (queryTpTimer is null)
             {
                 Logger.LogError("Failed to create query timer");
                 return;
             }
 
             queryCompletedEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
-            if (queryCompletedEvent == null)
+            if (queryCompletedEvent is null)
             {
                 Logger.LogError("Failed to create query completed event");
                 return;
@@ -85,7 +84,7 @@ internal sealed partial class SearchQuery : IDisposable
         // Are we currently doing work? If so, let's cancel
         lock (_lockObject)
         {
-            if (queryTpTimer != null)
+            if (queryTpTimer is not null)
             {
                 queryTpTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 queryTpTimer.Dispose();
@@ -117,7 +116,7 @@ internal sealed partial class SearchQuery : IDisposable
             try
             {
                 // We need to generate a search query string with the search text the user entered above
-                if (currentRowset != null)
+                if (currentRowset is not null)
                 {
                     // We have a previous rowset, this means the user is typing and we should store this
                     // recapture the where ID from this so the next ExecuteSync call will be faster
@@ -146,14 +145,14 @@ internal sealed partial class SearchQuery : IDisposable
         {
             getRow.GetRowFromHROW(null, rowHandle, ref Unsafe.AsRef(in IID.IPropertyStore), out var propertyStore);
 
-            if (propertyStore == null)
+            if (propertyStore is null)
             {
                 Logger.LogError("Failed to get IPropertyStore interface");
                 return false;
             }
 
             var searchResult = SearchResult.Create(propertyStore);
-            if (searchResult == null)
+            if (searchResult is null)
             {
                 Logger.LogError("Failed to create search result");
                 return false;
@@ -171,7 +170,7 @@ internal sealed partial class SearchQuery : IDisposable
 
     public bool FetchRows(int offset, int limit)
     {
-        if (currentRowset == null)
+        if (currentRowset is null)
         {
             Logger.LogError("No rowset to fetch rows from");
             return false;
@@ -241,7 +240,7 @@ internal sealed partial class SearchQuery : IDisposable
     {
         var queryStr = QueryStringBuilder.GeneratePrimingQuery();
         var rowset = ExecuteCommand(queryStr);
-        if (rowset != null)
+        if (rowset is not null)
         {
             reuseRowset = rowset;
             reuseWhereID = GetReuseWhereId(reuseRowset);
@@ -261,7 +260,7 @@ internal sealed partial class SearchQuery : IDisposable
             var guid = typeof(IDBCreateCommand).GUID;
             session.CreateSession(IntPtr.Zero, ref guid, out var ppDBSession);
 
-            if (ppDBSession == null)
+            if (ppDBSession is null)
             {
                 Logger.LogError("CreateSession failed");
                 return null;
@@ -271,7 +270,7 @@ internal sealed partial class SearchQuery : IDisposable
             guid = typeof(ICommandText).GUID;
             createCommand.CreateCommand(IntPtr.Zero, ref guid, out ICommandText commandText);
 
-            if (commandText == null)
+            if (commandText is null)
             {
                 Logger.LogError("Failed to get ICommandText interface");
                 return null;
@@ -342,13 +341,13 @@ internal sealed partial class SearchQuery : IDisposable
     {
         var rowsetInfo = (IRowsetInfo)rowset;
 
-        if (rowsetInfo == null)
+        if (rowsetInfo is null)
         {
             return 0;
         }
 
         var prop = GetPropset(rowsetInfo);
-        if (prop == null)
+        if (prop is null)
         {
             return 0;
         }

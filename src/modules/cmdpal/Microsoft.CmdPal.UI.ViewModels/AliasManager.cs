@@ -35,7 +35,7 @@ public partial class AliasManager : ObservableObject
             try
             {
                 var topLevelCommand = _topLevelCommandManager.LookupCommand(alias.CommandId);
-                if (topLevelCommand != null)
+                if (topLevelCommand is not null)
                 {
                     WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
 
@@ -88,7 +88,7 @@ public partial class AliasManager : ObservableObject
         }
 
         // If we already have _this exact alias_, do nothing
-        if (newAlias != null &&
+        if (newAlias is not null &&
             _aliases.TryGetValue(newAlias.SearchPrefix, out var existingAlias))
         {
             if (existingAlias.CommandId == commandId)
@@ -113,7 +113,7 @@ public partial class AliasManager : ObservableObject
             _aliases.Remove(alias.SearchPrefix);
         }
 
-        if (newAlias != null)
+        if (newAlias is not null)
         {
             AddAlias(newAlias);
         }

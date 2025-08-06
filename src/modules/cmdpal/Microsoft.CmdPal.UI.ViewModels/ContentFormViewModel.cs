@@ -115,7 +115,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
                 try
                 {
                     var model = _formModel.Unsafe!;
-                    if (model != null)
+                    if (model is not null)
                     {
                         var result = model.SubmitForm(inputString, dataString);
                         WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));

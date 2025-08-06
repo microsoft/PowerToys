@@ -22,7 +22,7 @@ public partial class DetailsCommandsViewModel(
     {
         base.InitializeProperties();
         var model = _dataModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }

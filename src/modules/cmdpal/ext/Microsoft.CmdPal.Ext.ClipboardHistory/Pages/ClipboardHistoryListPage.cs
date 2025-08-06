@@ -54,7 +54,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         try
         {
             var allowClipboardHistory = Registry.GetValue(registryKey, "AllowClipboardHistory", null);
-            return allowClipboardHistory != null ? (int)allowClipboardHistory == 0 : false;
+            return allowClipboardHistory is not null ? (int)allowClipboardHistory == 0 : false;
         }
         catch (Exception)
         {
@@ -100,7 +100,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
                 {
                     var imageReceived = await item.Item.Content.GetBitmapAsync();
 
-                    if (imageReceived != null)
+                    if (imageReceived is not null)
                     {
                         item.ImageData = imageReceived;
                     }
@@ -141,7 +141,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         for (var i = 0; i < clipboardHistory.Count; i++)
         {
             var item = clipboardHistory[i];
-            if (item != null)
+            if (item is not null)
             {
                 listItems.Add(item.ToListItem());
             }

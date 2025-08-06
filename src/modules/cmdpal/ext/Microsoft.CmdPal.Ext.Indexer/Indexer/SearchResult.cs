@@ -26,7 +26,7 @@ internal sealed class SearchResult
         ItemUrl = url;
         IsFolder = isFolder;
 
-        if (LaunchUri == null || LaunchUri.Length == 0)
+        if (LaunchUri is null || LaunchUri.Length == 0)
         {
             // Launch the file with the default app, so use the file path
             LaunchUri = filePath;

@@ -23,7 +23,7 @@ internal static class ResultHelper
     /// <returns>List of results</returns>
     internal static List<WindowWalkerListItem> GetResultList(List<SearchResult> searchControllerResults, bool isKeywordSearch)
     {
-        if (searchControllerResults == null || searchControllerResults.Count == 0)
+        if (searchControllerResults is null || searchControllerResults.Count == 0)
         {
             return [];
         }

@@ -35,14 +35,14 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        if (_directoryContents == null)
+        if (_directoryContents is null)
         {
             return;
         }
 
         if (string.IsNullOrEmpty(newSearch))
         {
-            if (_filteredContents != null)
+            if (_filteredContents is not null)
             {
                 _filteredContents = null;
                 RaiseItemsChanged(-1);
@@ -58,7 +58,7 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
             newSearch,
             (s, i) => ListHelpers.ScoreListItem(s, i));
 
-        if (_filteredContents != null)
+        if (_filteredContents is not null)
         {
             lock (_filteredContents)
             {
@@ -75,12 +75,12 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
 
     public override IListItem[] GetItems()
     {
-        if (_filteredContents != null)
+        if (_filteredContents is not null)
         {
             return _filteredContents.ToArray();
         }
 
-        if (_directoryContents != null)
+        if (_directoryContents is not null)
         {
             return _directoryContents.ToArray();
         }
@@ -120,7 +120,7 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
                 try
                 {
                     var stream = ThumbnailHelper.GetThumbnail(item.FilePath).Result;
-                    if (stream != null)
+                    if (stream is not null)
                     {
                         var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
                         icon = new IconInfo(data, data);

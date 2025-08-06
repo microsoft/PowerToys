@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
@@ -35,13 +34,13 @@ public partial class CommandBarViewModel : ObservableObject,
     [NotifyPropertyChangedFor(nameof(HasPrimaryCommand))]
     public partial CommandItemViewModel? PrimaryCommand { get; set; }
 
-    public bool HasPrimaryCommand => PrimaryCommand != null && PrimaryCommand.ShouldBeVisible;
+    public bool HasPrimaryCommand => PrimaryCommand is not null && PrimaryCommand.ShouldBeVisible;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSecondaryCommand))]
     public partial CommandItemViewModel? SecondaryCommand { get; set; }
 
-    public bool HasSecondaryCommand => SecondaryCommand != null;
+    public bool HasSecondaryCommand => SecondaryCommand is not null;
 
     [ObservableProperty]
     public partial bool ShouldShowContextMenu { get; set; } = false;
@@ -58,14 +57,14 @@ public partial class CommandBarViewModel : ObservableObject,
 
     private void SetSelectedItem(ICommandBarContext? value)
     {
-        if (value != null)
+        if (value is not null)
         {
             PrimaryCommand = value.PrimaryCommand;
             value.PropertyChanged += SelectedItemPropertyChanged;
         }
         else
         {
-            if (SelectedItem != null)
+            if (SelectedItem is not null)
             {
                 SelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
             }
@@ -88,7 +87,7 @@ public partial class CommandBarViewModel : ObservableObject,
 
     private void UpdateContextItems()
     {
-        if (SelectedItem == null)
+        if (SelectedItem is null)
         {
             SecondaryCommand = null;
             ShouldShowContextMenu = false;
@@ -127,13 +126,13 @@ public partial class CommandBarViewModel : ObservableObject,
     public ContextKeybindingResult CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
         var keybindings = SelectedItem?.Keybindings();
-        if (keybindings != null)
+        if (keybindings is not null)
         {
             // Does the pressed key match any of the keybindings?
             var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
             if (keybindings.TryGetValue(pressedKeyChord, out var matchedItem))
             {
-                return matchedItem != null ? PerformCommand(matchedItem) : ContextKeybindingResult.Unhandled;
+                return matchedItem is not null ? PerformCommand(matchedItem) : ContextKeybindingResult.Unhandled;
             }
         }
 
@@ -142,7 +141,7 @@ public partial class CommandBarViewModel : ObservableObject,
 
     private ContextKeybindingResult PerformCommand(CommandItemViewModel? command)
     {
-        if (command == null)
+        if (command is null)
         {
             return ContextKeybindingResult.Unhandled;
         }

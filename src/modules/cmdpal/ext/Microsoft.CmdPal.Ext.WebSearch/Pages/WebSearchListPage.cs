@@ -34,7 +34,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage
         Id = "com.microsoft.cmdpal.websearch";
         _settingsManager = settingsManager;
         _historyItems = _settingsManager.ShowHistory != Resources.history_none ? _settingsManager.LoadHistory() : null;
-        if (_historyItems != null)
+        if (_historyItems is not null)
         {
             _allItems.AddRange(_historyItems);
         }
@@ -55,7 +55,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage
         ArgumentNullException.ThrowIfNull(query);
         IEnumerable<ListItem>? filteredHistoryItems = null;
 
-        if (_historyItems != null)
+        if (_historyItems is not null)
         {
             filteredHistoryItems = _settingsManager.ShowHistory != Resources.history_none ? ListHelpers.FilterList(_historyItems, query).OfType<ListItem>() : null;
         }
@@ -74,7 +74,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage
             results.Add(result);
         }
 
-        if (filteredHistoryItems != null)
+        if (filteredHistoryItems is not null)
         {
             results.AddRange(filteredHistoryItems);
         }

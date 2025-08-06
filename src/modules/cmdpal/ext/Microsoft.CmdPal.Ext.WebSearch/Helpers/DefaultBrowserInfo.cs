@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using ManagedCommon;
@@ -87,7 +86,7 @@ public static class DefaultBrowserInfo
                 var appName = GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}\Application", "ApplicationName")
                     ?? GetRegistryValue($@"HKEY_CLASSES_ROOT\{progId}", "FriendlyTypeName");
 
-                if (appName != null)
+                if (appName is not null)
                 {
                     // Handle indirect strings:
                     if (appName.StartsWith('@'))

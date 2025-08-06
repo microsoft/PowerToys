@@ -73,7 +73,7 @@ public partial class UrlCommand : InvokableCommand
         if (string.IsNullOrEmpty(args))
         {
             var uri = GetUri(exe);
-            if (uri != null)
+            if (uri is not null)
             {
                 _ = Launcher.LaunchUriAsync(uri);
             }
@@ -109,7 +109,7 @@ public partial class UrlCommand : InvokableCommand
         // First, try to get the icon from the thumbnail helper
         // This works for local files and folders
         icon = await MaybeGetIconForPath(target);
-        if (icon != null)
+        if (icon is not null)
         {
             return icon;
         }
@@ -142,7 +142,7 @@ public partial class UrlCommand : InvokableCommand
         {
             // If the executable exists, try to get the icon from the file
             icon = await MaybeGetIconForPath(fullExePath);
-            if (icon != null)
+            if (icon is not null)
             {
                 return icon;
             }
@@ -154,7 +154,7 @@ public partial class UrlCommand : InvokableCommand
         try
         {
             var uri = GetUri(baseString);
-            if (uri != null)
+            if (uri is not null)
             {
                 var hostname = uri.Host;
                 var faviconUrl = $"{uri.Scheme}://{hostname}/favicon.ico";
@@ -176,7 +176,7 @@ public partial class UrlCommand : InvokableCommand
         try
         {
             var stream = await ThumbnailHelper.GetThumbnail(target);
-            if (stream != null)
+            if (stream is not null)
             {
                 var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
                 return new IconInfo(data, data);

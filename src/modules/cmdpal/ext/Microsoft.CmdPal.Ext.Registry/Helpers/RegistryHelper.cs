@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using ManagedCommon;
 using Microsoft.CmdPal.Ext.Registry.Classes;
 using Microsoft.CmdPal.Ext.Registry.Constants;
 using Microsoft.CmdPal.Ext.Registry.Properties;
@@ -118,7 +117,7 @@ internal static class RegistryHelper
                 subKey = result.First().Key;
             }
 
-            if (result.Count > 1 || subKey == null)
+            if (result.Count > 1 || subKey is null)
             {
                 break;
             }
@@ -183,7 +182,7 @@ internal static class RegistryHelper
                 if (string.Equals(subKey, searchSubKey, StringComparison.OrdinalIgnoreCase))
                 {
                     var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
-                    if (key != null)
+                    if (key is not null)
                     {
                         list.Add(new RegistryEntry(key));
                     }
@@ -194,7 +193,7 @@ internal static class RegistryHelper
                 try
                 {
                     var key = parentKey.OpenSubKey(subKey, RegistryKeyPermissionCheck.ReadSubTree);
-                    if (key != null)
+                    if (key is not null)
                     {
                         list.Add(new RegistryEntry(key));
                     }

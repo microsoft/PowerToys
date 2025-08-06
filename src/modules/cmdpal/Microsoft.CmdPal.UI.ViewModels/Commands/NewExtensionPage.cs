@@ -14,7 +14,7 @@ public partial class NewExtensionPage : ContentPage
 
     public override IContent[] GetContent()
     {
-        return _resultForm != null ? [_resultForm] : [_inputForm];
+        return _resultForm is not null ? [_resultForm] : [_inputForm];
     }
 
     public NewExtensionPage()
@@ -28,13 +28,13 @@ public partial class NewExtensionPage : ContentPage
 
     private void FormSubmitted(NewExtensionFormBase sender, NewExtensionFormBase? args)
     {
-        if (_resultForm != null)
+        if (_resultForm is not null)
         {
             _resultForm.FormSubmitted -= FormSubmitted;
         }
 
         _resultForm = args;
-        if (_resultForm != null)
+        if (_resultForm is not null)
         {
             _resultForm.FormSubmitted += FormSubmitted;
         }

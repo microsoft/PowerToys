@@ -22,7 +22,7 @@ public partial class LogMessageViewModel : ExtensionObjectViewModel
     public override void InitializeProperties()
     {
         var model = _model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }

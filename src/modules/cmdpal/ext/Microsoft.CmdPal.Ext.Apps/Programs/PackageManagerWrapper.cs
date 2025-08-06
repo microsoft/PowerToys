@@ -22,11 +22,11 @@ public class PackageManagerWrapper : IPackageManager
     {
         var user = WindowsIdentity.GetCurrent().User;
 
-        if (user != null)
+        if (user is not null)
         {
             var pkgs = _packageManager.FindPackagesForUser(user.Value);
 
-            return pkgs.Select(PackageWrapper.GetWrapperFromPackage).Where(package => package != null);
+            return pkgs.Select(PackageWrapper.GetWrapperFromPackage).Where(package => package is not null);
         }
 
         return Enumerable.Empty<IPackage>();
