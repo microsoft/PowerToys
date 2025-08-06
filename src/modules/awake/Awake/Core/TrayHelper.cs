@@ -61,11 +61,8 @@ namespace Awake.Core
 
             Bridge.SetForegroundWindow(hWnd);
 
-            // Get cursor position and convert it to client coordinates
+            // Get cursor position in screen coordinates
             Bridge.GetCursorPos(out Models.Point cursorPos);
-            
-            // LEON: Disabled, because TrackPopupMenuEx() below expects screen coords.
-            //Bridge.ScreenToClient(hWnd, ref cursorPos);
 
             // Set menu information
             MenuInfo menuInfo = new()
