@@ -21,7 +21,11 @@ public partial class AppStateModel : ObservableObject
 
     ///////////////////////////////////////////////////////////////////////////
     // STATE HERE
-    public RecentCommandsManager RecentCommands { get; private set; } = new();
+    // Make sure that you make the setters public (JsonSerializer.Deserialize will fail silently otherwise)!
+    // Make sure that any new types you add are added to JsonSerializationContext!
+    public RecentCommandsManager RecentCommands { get; set; } = new();
+
+    public List<string> RunHistory { get; set; } = [];
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
@@ -86,7 +90,7 @@ public partial class AppStateModel : ObservableObject
                 {
                     foreach (var item in newSettings)
                     {
-                        savedSettings[item.Key] = item.Value != null ? item.Value.DeepClone() : null;
+                        savedSettings[item.Key] = item.Value?.DeepClone();
                     }
 
                     var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.AppStateModel.Options);
@@ -121,20 +125,4 @@ public partial class AppStateModel : ObservableObject
         // now, the settings is just next to the exe
         return Path.Combine(directory, "state.json");
     }
-
-    // [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
-    // private static readonly JsonSerializerOptions _serializerOptions = new()
-    // {
-    //    WriteIndented = true,
-    //    Converters = { new JsonStringEnumConverter() },
-    // };
-
-    // private static readonly JsonSerializerOptions _deserializerOptions = new()
-    // {
-    //    PropertyNameCaseInsensitive = true,
-    //    IncludeFields = true,
-    //    AllowTrailingCommas = true,
-    //    PreferredObjectCreationHandling = JsonObjectCreationHandling.Populate,
-    //    ReadCommentHandling = JsonCommentHandling.Skip,
-    // };
 }

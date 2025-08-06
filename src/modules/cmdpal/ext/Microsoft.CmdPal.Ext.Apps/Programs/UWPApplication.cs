@@ -11,7 +11,9 @@ using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
 using Windows.Win32;
 using Windows.Win32.Storage.Packaging.Appx;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
@@ -69,34 +71,51 @@ public class UWPApplication : IProgram
         return Resources.packaged_application;
     }
 
-    public List<CommandContextItem> GetCommands()
+    public string GetAppIdentifier()
     {
-        List<CommandContextItem> commands = [];
+        // Use UserModelId for UWP apps as it's unique
+        return UserModelId;
+    }
+
+    public List<IContextItem> GetCommands()
+    {
+        List<IContextItem> commands = [];
 
         if (CanRunElevated)
         {
             commands.Add(
                 new CommandContextItem(
-                    new RunAsAdminCommand(UniqueIdentifier, string.Empty, true)));
+                    new RunAsAdminCommand(UniqueIdentifier, string.Empty, true))
+                {
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter),
+                });
 
             // We don't add context menu to 'run as different user', because UWP applications normally installed per user and not for all users.
         }
 
         commands.Add(
             new CommandContextItem(
-                new CopyPathCommand(Location)));
+                new Commands.CopyPathCommand(Location))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
+            });
 
         commands.Add(
             new CommandContextItem(
                 new OpenPathCommand(Location)
                 {
                     Name = Resources.open_containing_folder,
-                    Icon = new("\ue838"),
-                }));
+                })
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E),
+            });
 
         commands.Add(
         new CommandContextItem(
-            new OpenInConsoleCommand(Package.Location)));
+            new OpenInConsoleCommand(Package.Location))
+        {
+            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
+        });
 
         return commands;
     }
@@ -469,7 +488,7 @@ public class UWPApplication : IProgram
         }
         else
         {
-            // for C:\Windows\MiracastView etc
+            // for C:\Windows\MiracastView, etc.
             path = Path.Combine(Package.Location, "Assets", uri);
         }
 
@@ -496,6 +515,25 @@ public class UWPApplication : IProgram
             LogoPath = string.Empty;
             LogoType = LogoType.Error;
         }
+    }
+
+    internal AppItem ToAppItem()
+    {
+        var app = this;
+        var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;
+        var item = new AppItem()
+        {
+            Name = app.Name,
+            Subtitle = app.Description,
+            Type = UWPApplication.Type(),
+            IcoPath = iconPath,
+            DirPath = app.Location,
+            UserModelId = app.UserModelId,
+            IsPackaged = true,
+            Commands = app.GetCommands(),
+            AppIdentifier = app.GetAppIdentifier(),
+        };
+        return item;
     }
 
     /*

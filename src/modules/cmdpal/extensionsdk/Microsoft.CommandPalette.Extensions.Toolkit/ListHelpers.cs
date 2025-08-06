@@ -43,7 +43,6 @@ public partial class ListHelpers
     }
 
     public static IEnumerable<T> FilterList<T>(IEnumerable<T> items, string query, Func<string, T, int> scoreFunction)
-        where T : class
     {
         var scores = items
             .Select(li => new Scored<T>() { Item = li, Score = scoreFunction(query, li) })

@@ -6,6 +6,8 @@ SetForegroundWindow
 GetWindowRect
 GetCursorPos
 SetWindowPos
+HWND_TOPMOST
+HWND_BOTTOM
 IsIconic
 RegisterHotKey
 UnregisterHotKey
@@ -20,7 +22,6 @@ SetActiveWindow
 MonitorFromWindow
 GetMonitorInfo
 GetDpiForMonitor
-CoAllowSetForegroundWindow
 WM_HOTKEY
 WM_NCLBUTTONDBLCLK
 
@@ -43,3 +44,7 @@ MessageBox
 DwmGetWindowAttribute
 DwmSetWindowAttribute
 DWM_CLOAKED_APP
+
+CoWaitForMultipleObjects
+INFINITE
+CWMO_FLAGS 

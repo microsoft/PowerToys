@@ -29,11 +29,14 @@ RUS
 AYUV
 bak
 Bcl
+bgcode
+Deflatealgorithm
 exa
 exabyte
 Gbits
 Gbps
 gcode
+Heatshrink
 Mbits
 MBs
 mkv
@@ -279,3 +282,12 @@ xef
 xes
 PACKAGEVERSIONNUMBER
 APPXMANIFESTVERSION
+
+# MRU lists
+CACHEWRITE
+MRUCMPPROC
+MRUINFO
+REGSTR
+
+# Misc Win32 APIs and PInvokes
+INVOKEIDLIST
