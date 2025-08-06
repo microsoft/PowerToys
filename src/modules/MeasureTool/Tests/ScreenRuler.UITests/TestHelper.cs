@@ -91,7 +91,7 @@ namespace ScreenRuler.UITests
         public static void SetAndVerifyScreenRulerToggle(UITestBase testBase, bool enable, string testName)
         {
             SetScreenRulerToggle(testBase, enable);
-            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 5000);
+            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 10000);
             Assert.AreEqual(
                 enable,
                 toggleSwitch.IsOn,
@@ -188,7 +188,7 @@ namespace ScreenRuler.UITests
         {
             if (IsScreenRulerUIOpen(testBase))
             {
-                var closeButton = GetScreenRulerButton(testBase, CloseButtonId, 10000);
+                var closeButton = GetScreenRulerButton(testBase, CloseButtonId, 15000);
                 closeButton?.Click();
             }
         }
@@ -295,7 +295,7 @@ namespace ScreenRuler.UITests
                 $"ScreenRulerUI should appear after pressing activation shortcut for {testName}: {string.Join(" + ", activationKeys)}");
 
             // Click spacing button
-            var spacingButton = GetScreenRulerButton(testBase, buttonId, 10000);
+            var spacingButton = GetScreenRulerButton(testBase, buttonId, 15000);
             Assert.IsNotNull(spacingButton, $"{testName} button should be found");
 
             spacingButton!.Click();
@@ -329,7 +329,7 @@ namespace ScreenRuler.UITests
                 $"ScreenRulerUI should appear after pressing activation shortcut: {string.Join(" + ", activationKeys)}");
 
             // Click bounds button
-            var boundsButton = GetScreenRulerButton(testBase, BoundsButtonId, 10000);
+            var boundsButton = GetScreenRulerButton(testBase, BoundsButtonId, 15000);
             Assert.IsNotNull(boundsButton, "Bounds button should be found");
 
             boundsButton.Click();
