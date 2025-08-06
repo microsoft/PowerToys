@@ -34,7 +34,7 @@ namespace ScreenRuler.UITests
             LaunchFromSetting(testBase);
             SetScreenRulerToggle(testBase, enable: true);
 
-            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"));
+            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 5000);
             Assert.IsTrue(
                 toggleSwitch.IsOn,
                 $"Screen Ruler toggle switch should be ON for {testName}");
@@ -78,7 +78,7 @@ namespace ScreenRuler.UITests
             var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 5000);
             if (toggleSwitch.IsOn != enable)
             {
-                toggleSwitch.Click(msPostAction: 500);
+                toggleSwitch.Click(msPostAction: 2000);
             }
         }
 
