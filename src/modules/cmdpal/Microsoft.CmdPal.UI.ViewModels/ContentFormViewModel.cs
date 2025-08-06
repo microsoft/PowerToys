@@ -98,6 +98,19 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
 
     public void HandleSubmit(IAdaptiveActionElement action, JsonObject inputs)
     {
+        // BODGY circa GH #40979
+        // Usually, you're supposed to try to cast the action to a specific
+        // type, and use those objects to get the data you need.
+        // However, there's something weird with AdaptiveCards and the way it
+        // works when we consume it when built in Release, with AOT (and
+        // trimming) enabled. Any sort of `action.As<IAdaptiveSubmitAction>()`
+        // or similar will throw a System.InvalidCastException.
+        //
+        // Instead we have this horror show.
+        //
+        // The `action.ToJson()` blob ACTUALLY CONTAINS THE `type` field, which
+        // we can use to determine what kind of action it is. Then we can parse
+        // the JSON manually based on the type.
         var actionJson = action.ToJson();
 
         if (actionJson.TryGetValue("type", out var actionTypeValue))
