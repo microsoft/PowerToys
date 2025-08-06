@@ -1,6 +1,6 @@
 namespace Microsoft.CommandPalette.Extensions
 {
-    [contractversion(1)]
+    [contractversion(2)]
     apicontract ExtensionsContract {}
 
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
@@ -59,6 +59,11 @@ namespace Microsoft.CommandPalette.Extensions
         String Name{ get; };
         String Id{ get; };
         IIconInfo Icon{ get; };
+    }
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 2)]
+    interface ICommand2 {
+        Windows.Foundation.Collections.IPropertySet OtherProperties { get; };
     }
     
     enum CommandResultKind {
