@@ -9,7 +9,7 @@ using Windows.Foundation.Collections;
 
 namespace SamplePagesExtension;
 
-public partial class SamplePagesCommandsProvider : CommandProvider
+public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProvider2
 {
     public SamplePagesCommandsProvider()
     {
@@ -18,7 +18,6 @@ public partial class SamplePagesCommandsProvider : CommandProvider
     }
 
     private readonly ICommandItem[] _commands = [
-        new CommandItem(new SupportCommandsWithProperties()),
        new CommandItem(new SamplesListPage())
        {
            Title = "Sample Pages",
@@ -29,6 +28,11 @@ public partial class SamplePagesCommandsProvider : CommandProvider
     public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
+    }
+
+    public object[] GetApiExtensionStubs()
+    {
+        return [new SupportCommandsWithProperties()];
     }
 
     private sealed partial class SupportCommandsWithProperties : ICommand2

@@ -153,6 +153,19 @@ public sealed class CommandProviderWrapper
             // On a BG thread here
             fallbacks = model.FallbackCommands();
 
+            if (model is ICommandProvider2 two)
+            {
+                var apiExtensions = two.GetApiExtensionStubs();
+                Logger.LogDebug($"Found extensions {apiExtensions.Select(a => a.ToString())}");
+                foreach (var a in apiExtensions)
+                {
+                    if (a is ICommand2 command2)
+                    {
+                        Logger.LogDebug($"Found an ICommand2");
+                    }
+                }
+            }
+
             Id = model.Id;
             DisplayName = model.DisplayName;
             Icon = new(model.Icon);
