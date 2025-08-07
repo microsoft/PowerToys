@@ -3,13 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Timers;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualBasic;
 
 namespace SamplePagesExtension;
 
-public partial class SampleUpdatingItemsPage : ListPage
+internal sealed partial class SampleUpdatingItemsPage : ListPage
 {
     private readonly ListItem hourItem = new(new NoOpCommand());
     private readonly ListItem minuteItem = new(new NoOpCommand());

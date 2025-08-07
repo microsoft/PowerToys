@@ -14,6 +14,10 @@
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 
+  <PropertyGroup>
+      <CsWinRTComponent>true</CsWinRTComponent>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />

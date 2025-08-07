@@ -10,7 +10,7 @@ using Shmuelie.WinRTServer.CsWinRT;
 
 namespace SamplePagesExtension;
 
-public class Program
+internal class Program
 {
     [MTAThread]
     public static void Main(string[] args)
