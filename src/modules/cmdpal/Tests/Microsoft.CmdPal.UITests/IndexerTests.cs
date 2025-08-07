@@ -114,9 +114,10 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(openButton);
 
         openButton.Click();
-        var fileExplorer = FindExplorerWindow(TestFolderName, global: true);
 
-        Assert.IsNotNull(fileExplorer);
+        var fileExplorerWindow = FindFileExplorerWindow();
+
+        Assert.IsNotNull(fileExplorerWindow);
     }
 
     [TestMethod]
@@ -129,9 +130,9 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(searchItem);
         searchItem.DoubleClick();
 
-        var fileExplorer = FindExplorerWindow(TestFolderName, global: true);
+        var fileExplorerWindow = FindFileExplorerWindow();
 
-        Assert.IsNotNull(fileExplorer);
+        Assert.IsNotNull(fileExplorerWindow);
     }
 
     [TestMethod]
@@ -188,9 +189,9 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(showInFolderButton);
         showInFolderButton.Click();
 
-        var fileExplorer = FindExplorerWindow(TestFolderName, global: true, timeoutMS: 20000);
+        var fileExplorerWindow = FindFileExplorerWindow();
 
-        Assert.IsNotNull(fileExplorer);
+        Assert.IsNotNull(fileExplorerWindow);
     }
 
     [TestMethod]
@@ -208,8 +209,8 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var textItem = FindByPartialName("C:\\Windows\\system32\\cmd.exe", global: true);
-        Assert.IsNotNull(textItem, "The console did not open with the expected path.");
+        var terminalWindow = FindWindowsTerminalWindow();
+        Assert.IsNotNull(terminalWindow, "The console did not open with the expected path.");
     }
 
     [TestMethod]
