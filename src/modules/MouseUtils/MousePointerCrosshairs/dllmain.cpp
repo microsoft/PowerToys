@@ -21,8 +21,6 @@ namespace
     const wchar_t JSON_KEY_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED[] = L"crosshairs_is_fixed_length_enabled";
     const wchar_t JSON_KEY_CROSSHAIRS_FIXED_LENGTH[] = L"crosshairs_fixed_length";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
-
-    const wchar_t ACTIVATION_SHORTCUT_NAME[] = L"ActivationShortcut";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -395,10 +393,6 @@ public:
             Logger::info("Mouse Pointer Crosshairs  is going to use default shortcut");
             m_hotkey.modifiersMask = MOD_WIN | MOD_ALT;
             m_hotkey.vkCode = 0x50; // P key
-        }
-        if (m_hotkey.name == nullptr)
-        {
-            m_hotkey.name = ACTIVATION_SHORTCUT_NAME;
         }
         m_inclusiveCrosshairsSettings = inclusiveCrosshairsSettings;
     }

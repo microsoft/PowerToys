@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class ShortcutGuideProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultOpenShortcutGuide => new HotkeySettings(true, false, false, true, 0xBF, "OpenShortcutGuide", ShortcutGuideSettings.ModuleName);
+        public HotkeySettings DefaultOpenShortcutGuide => new HotkeySettings(true, false, false, true, 0xBF);
 
         public ShortcutGuideProperties()
         {

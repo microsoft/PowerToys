@@ -31,7 +31,6 @@ namespace
     const wchar_t JSON_KEY_RUN_SNAPSHOT_TOOL_HOTKEY[] = L"run-snapshot-tool-hotkey";
     const wchar_t JSON_KEY_RUN_LAUNCHER_HOTKEY[] = L"run-launcher-hotkey";
     const wchar_t JSON_KEY_VALUE[] = L"value";
-    const wchar_t ACTIVATION_HOTKEY_NAME[] = L"Hotkey";
 }
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -308,7 +307,6 @@ private:
                 }
 
                 m_hotkey.vkCode = static_cast<WORD>(hotkey.get_code());
-                m_hotkey.name = ACTIVATION_HOTKEY_NAME;
             }
         }
     }

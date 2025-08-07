@@ -18,7 +18,6 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -57,15 +56,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             { SocketStatus.SendError, new SolidColorBrush(Colors.Maroon) },
             { SocketStatus.Connected, new SolidColorBrush(Colors.Green) },
         };
-
-        private bool _toggleEasyMouseShortcutHasConflict;
-        private string _toggleEasyMouseShortcutTooltip;
-        private bool _lockMachinesShortcutHasConflict;
-        private string _lockMachinesShortcutTooltip;
-        private bool _hotKeySwitch2AllPCHasConflict;
-        private string _hotKeySwitch2AllPCTooltip;
-        private bool _reconnectShortcutHasConflict;
-        private string _reconnectShortcutTooltip;
 
         private bool _connectFieldsVisible;
 
@@ -452,7 +442,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             moduleSettings = SettingsUtils.GetSettingsOrDefault<MouseWithoutBordersSettings>("MouseWithoutBorders");
 
             LoadViewModelFromSettings(moduleSettings);
-            CheckAndUpdateHotkeyName();
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -528,149 +517,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
-        {
-            UpdateHotkeyConflictStatus(e.Conflicts);
-
-            // Update properties using setters to trigger PropertyChanged
-            void UpdateConflictProperties()
-            {
-                ToggleEasyMouseShortcutHasConflict = GetHotkeyConflictStatus(MouseWithoutBordersProperties.DefaultHotKeyToggleEasyMouse.HotkeyName);
-                LockMachinesShortcutHasConflict = GetHotkeyConflictStatus(MouseWithoutBordersProperties.DefaultHotKeyLockMachine.HotkeyName);
-                HotKeySwitch2AllPCHasConflict = GetHotkeyConflictStatus(MouseWithoutBordersProperties.DefaultHotKeySwitch2AllPC.HotkeyName);
-                ReconnectShortcutHasConflict = GetHotkeyConflictStatus(MouseWithoutBordersProperties.DefaultHotKeyReconnect.HotkeyName);
-
-                ToggleEasyMouseShortcutTooltip = GetHotkeyConflictTooltip(MouseWithoutBordersProperties.DefaultHotKeyToggleEasyMouse.HotkeyName);
-                LockMachinesShortcutTooltip = GetHotkeyConflictTooltip(MouseWithoutBordersProperties.DefaultHotKeyLockMachine.HotkeyName);
-                HotKeySwitch2AllPCTooltip = GetHotkeyConflictTooltip(MouseWithoutBordersProperties.DefaultHotKeySwitch2AllPC.HotkeyName);
-                ReconnectShortcutTooltip = GetHotkeyConflictTooltip(MouseWithoutBordersProperties.DefaultHotKeyReconnect.HotkeyName);
-            }
-
-            _ = Task.Run(() =>
-            {
-                try
-                {
-                    var settingsWindow = App.GetSettingsWindow();
-                    if (settingsWindow?.DispatcherQueue != null)
-                    {
-                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
-                    }
-                    else
-                    {
-                        UpdateConflictProperties();
-                    }
-                }
-                catch
-                {
-                    UpdateConflictProperties();
-                }
-            });
-        }
-
-        public bool ToggleEasyMouseShortcutHasConflict
-        {
-            get => _toggleEasyMouseShortcutHasConflict;
-            set
-            {
-                if (_toggleEasyMouseShortcutHasConflict != value)
-                {
-                    _toggleEasyMouseShortcutHasConflict = value;
-                    OnPropertyChanged(nameof(ToggleEasyMouseShortcutHasConflict));
-                }
-            }
-        }
-
-        public string ToggleEasyMouseShortcutTooltip
-        {
-            get => _toggleEasyMouseShortcutTooltip;
-            set
-            {
-                if (_toggleEasyMouseShortcutTooltip != value)
-                {
-                    _toggleEasyMouseShortcutTooltip = value;
-                    OnPropertyChanged(nameof(ToggleEasyMouseShortcutTooltip));
-                }
-            }
-        }
-
-        public bool LockMachinesShortcutHasConflict
-        {
-            get => _lockMachinesShortcutHasConflict;
-            set
-            {
-                if (_lockMachinesShortcutHasConflict != value)
-                {
-                    _lockMachinesShortcutHasConflict = value;
-                    OnPropertyChanged(nameof(LockMachinesShortcutHasConflict));
-                }
-            }
-        }
-
-        public string LockMachinesShortcutTooltip
-        {
-            get => _lockMachinesShortcutTooltip;
-            set
-            {
-                if (_lockMachinesShortcutTooltip != value)
-                {
-                    _lockMachinesShortcutTooltip = value;
-                    OnPropertyChanged(nameof(LockMachinesShortcutTooltip));
-                }
-            }
-        }
-
-        public bool HotKeySwitch2AllPCHasConflict
-        {
-            get => _hotKeySwitch2AllPCHasConflict;
-            set
-            {
-                if (_hotKeySwitch2AllPCHasConflict != value)
-                {
-                    _hotKeySwitch2AllPCHasConflict = value;
-                    OnPropertyChanged(nameof(HotKeySwitch2AllPCHasConflict));
-                }
-            }
-        }
-
-        public string HotKeySwitch2AllPCTooltip
-        {
-            get => _hotKeySwitch2AllPCTooltip;
-            set
-            {
-                if (_hotKeySwitch2AllPCTooltip != value)
-                {
-                    _hotKeySwitch2AllPCTooltip = value;
-                    OnPropertyChanged(nameof(HotKeySwitch2AllPCTooltip));
-                }
-            }
-        }
-
-        public bool ReconnectShortcutHasConflict
-        {
-            get => _reconnectShortcutHasConflict;
-            set
-            {
-                if (_reconnectShortcutHasConflict != value)
-                {
-                    _reconnectShortcutHasConflict = value;
-                    OnPropertyChanged(nameof(ReconnectShortcutHasConflict));
-                }
-            }
-        }
-
-        public string ReconnectShortcutTooltip
-        {
-            get => _reconnectShortcutTooltip;
-            set
-            {
-                if (_reconnectShortcutTooltip != value)
-                {
-                    _reconnectShortcutTooltip = value;
-                    OnPropertyChanged(nameof(ReconnectShortcutTooltip));
-                }
-            }
-        }
-
         private void InitializePolicyValues()
         {
             // Policies supporting only enabled state
@@ -698,6 +544,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Special policies
             _policyDefinedIpMappingRulesGPOData = GPOWrapper.GetConfiguredMwbPolicyDefinedIpMappingRules();
             _policyDefinedIpMappingRulesIsGPOConfigured = !string.IsNullOrWhiteSpace(_policyDefinedIpMappingRulesGPOData);
+        }
+
+        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
+        {
+            var hotkeyAccessors = new List<HotkeyAccessor>
+            {
+                new HotkeyAccessor(
+                    () => ToggleEasyMouseShortcut,
+                    value => ToggleEasyMouseShortcut = value),
+                new HotkeyAccessor(
+                    () => LockMachinesShortcut,
+                    value => LockMachinesShortcut = value),
+                new HotkeyAccessor(
+                    () => HotKeySwitch2AllPC,
+                    value => HotKeySwitch2AllPC = value),
+                new HotkeyAccessor(
+                    () => ReconnectShortcut,
+                    value => ReconnectShortcut = value),
+            };
+
+            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
+            {
+                [ModuleName] = hotkeyAccessors.ToArray(),
+            };
+
+            return hotkeysDict;
         }
 
         private void LoadViewModelFromSettings(MouseWithoutBordersSettings moduleSettings)
@@ -1436,43 +1308,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowInfobarRunAsAdminText
         {
             get { return !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
-        }
-
-        private void CheckAndUpdateHotkeyName()
-        {
-            bool hasChange = false;
-            if (Settings.Properties.ToggleEasyMouseShortcut.HotkeyName == string.Empty)
-            {
-                Settings.Properties.ToggleEasyMouseShortcut.HotkeyName = "HotKeyToggleEasyMouse";
-                Settings.Properties.ToggleEasyMouseShortcut.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
-                hasChange = true;
-            }
-
-            if (Settings.Properties.LockMachineShortcut.HotkeyName == string.Empty)
-            {
-                Settings.Properties.LockMachineShortcut.HotkeyName = "HotKeyLockMachine";
-                Settings.Properties.LockMachineShortcut.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
-                hasChange = true;
-            }
-
-            if (Settings.Properties.ReconnectShortcut.HotkeyName == string.Empty)
-            {
-                Settings.Properties.ReconnectShortcut.HotkeyName = "HotKeyReconnect";
-                Settings.Properties.ReconnectShortcut.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
-                hasChange = true;
-            }
-
-            if (Settings.Properties.Switch2AllPCShortcut.HotkeyName == string.Empty)
-            {
-                Settings.Properties.Switch2AllPCShortcut.HotkeyName = "HotKeySwitch2AllPC";
-                Settings.Properties.Switch2AllPCShortcut.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
-                hasChange = true;
-            }
-
-            if (hasChange)
-            {
-                SettingsUtils.SaveSettings(Settings.ToJsonString(), MouseWithoutBordersSettings.ModuleName);
-            }
         }
     }
 }

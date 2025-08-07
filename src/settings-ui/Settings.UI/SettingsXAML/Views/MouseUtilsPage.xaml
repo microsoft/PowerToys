@@ -95,8 +95,6 @@
                                 <!--  Visible for the Shortcut activation method  -->
                                 <controls:ShortcutControl 
                                     MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                                    HasConflict="{x:Bind Path=ViewModel.FindMyMouseActivationShortcutHasConflict, Mode=TwoWay}"
-                                    Tooltip="{x:Bind Path=ViewModel.FindMyMouseActivationShortcutTooltip, Mode=TwoWay}"
                                     HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
@@ -212,8 +210,6 @@
                         IsExpanded="True">
                         <controls:ShortcutControl 
                             MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcutHasConflict, Mode=TwoWay}"
-                            Tooltip="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcutTooltip, Mode=TwoWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
@@ -301,8 +297,6 @@
                         IsExpanded="True">
                         <controls:ShortcutControl 
                             MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcutHasConflict, Mode=TwoWay}"
-                            Tooltip="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcutTooltip, Mode=TwoWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">

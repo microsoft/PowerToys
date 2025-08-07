@@ -38,16 +38,12 @@
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
-                            HasConflict="{x:Bind Path=ViewModel.ThumbnailHotkeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.ThumbnailHotkeyTooltip, Mode=OneWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.ThumbnailActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="CropAndLock_ReparentActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
-                            HasConflict="{x:Bind Path=ViewModel.ReparentHotkeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.ReparentHotkeyTooltip, Mode=OneWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.ReparentActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>

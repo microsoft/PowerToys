@@ -154,6 +154,8 @@ void send_json_config_to_module(const std::wstring& module_key, const std::wstri
     if (moduleIt != modules().end())
     {
         moduleIt->second->set_config(settings.c_str());
+
+        moduleIt->second.remove_hotkey_records();
         moduleIt->second.update_hotkeys();
         moduleIt->second.UpdateHotkeyEx();
     }
@@ -262,11 +264,9 @@ void dispatch_received_json(const std::wstring& json_to_parse)
                 hotkey.key = static_cast<unsigned char>(value.GetObjectW().GetNamedNumber(L"key", 0));
 
                 std::wstring requestId = value.GetObjectW().GetNamedString(L"request_id", L"").c_str();
-                std::wstring moduleName = value.GetObjectW().GetNamedString(L"moduleName", L"").c_str();
-                std::wstring hotkeyName = value.GetObjectW().GetNamedString(L"hotkeyName", L"").c_str();
 
                 auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
-                bool hasConflict = hkmng.HasConflict(hotkey, moduleName.c_str(), hotkeyName.c_str());
+                bool hasConflict = hkmng.HasConflict(hotkey);
 
                 json::JsonObject response;
                 response.SetNamedValue(L"response_type", json::JsonValue::CreateStringValue(L"hotkey_conflict_result"));
@@ -284,7 +284,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
                         {
                             json::JsonObject conflictObj;
                             conflictObj.SetNamedValue(L"module", json::JsonValue::CreateStringValue(conflict.moduleName));
-                            conflictObj.SetNamedValue(L"hotkey_name", json::JsonValue::CreateStringValue(conflict.hotkeyName));
+                            conflictObj.SetNamedValue(L"hotkeyID", json::JsonValue::CreateNumberValue(conflict.hotkeyID));
                             allConflicts.Append(conflictObj);
                         }
                         response.SetNamedValue(L"all_conflicts", allConflicts);

@@ -4,13 +4,15 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Windows.Web.AtomPub;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
 {
     public class ModuleHotkeyData : INotifyPropertyChanged
     {
         private string _moduleName;
-        private string _hotkeyName;
+        private int _hotkeyID;
         private HotkeySettings _hotkeySettings;
         private bool _isSystemConflict;
 
@@ -37,14 +39,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
             }
         }
 
-        public string HotkeyName
+        public int HotkeyID
         {
-            get => _hotkeyName;
+            get => _hotkeyID;
             set
             {
-                if (_hotkeyName != value)
+                if (_hotkeyID != value)
                 {
-                    _hotkeyName = value;
+                    _hotkeyID = value;
                 }
             }
         }
@@ -78,25 +80,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
         {
             return moduleName?.ToLowerInvariant() switch
             {
-                "advancedpaste" => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
-                "alwaysontop" => "ms-appx:///Assets/Settings/Icons/AlwaysOnTop.png",
-                "colorpicker" => "ms-appx:///Assets/Settings/Icons/ColorPicker.png",
-                "cropandlock" => "ms-appx:///Assets/Settings/Icons/CropAndLock.png",
-                "fancyzones" => "ms-appx:///Assets/Settings/Icons/FancyZones.png",
-                "mousehighlighter" => "ms-appx:///Assets/Settings/Icons/MouseHighlighter.png",
-                "mousepointercrosshairs" => "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png",
-                "findmymouse" => "ms-appx:///Assets/Settings/Icons/FindMyMouse.png",
-                "mousejump" => "ms-appx:///Assets/Settings/Icons/MouseJump.png",
-                "peek" => "ms-appx:///Assets/Settings/Icons/Peek.png",
-                "powertoys run" => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
-                "measuretool" => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
-                "shortcut guide" => "ms-appx:///Assets/Settings/Icons/ShortcutGuide.png",
-                "textextractor" => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
-                "workspaces" => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
-                "cmdpal" => "ms-appx:///Assets/Settings/Icons/CmdPal.png",
-                "mousewithoutborders" => "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png",
-                "zoomit" => "ms-appx:///Assets/Settings/Icons/ZoomIt.png",
-                "measure tool" => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
+                ModuleNames.AdvancedPaste => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
+                ModuleNames.AlwaysOnTop => "ms-appx:///Assets/Settings/Icons/AlwaysOnTop.png",
+                ModuleNames.CmdPal => "ms-appx:///Assets/Settings/Icons/CmdPal.png",
+                ModuleNames.ColorPicker => "ms-appx:///Assets/Settings/Icons/ColorPicker.png",
+                ModuleNames.CropAndLock => "ms-appx:///Assets/Settings/Icons/CropAndLock.png",
+                ModuleNames.FancyZones => "ms-appx:///Assets/Settings/Icons/FancyZones.png",
+                ModuleNames.FindMyMouse => "ms-appx:///Assets/Settings/Icons/FindMyMouse.png",
+                ModuleNames.MeasureTool => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
+                ModuleNames.MouseHighlighter => "ms-appx:///Assets/Settings/Icons/MouseHighlighter.png",
+                ModuleNames.MouseJump => "ms-appx:///Assets/Settings/Icons/MouseJump.png",
+                ModuleNames.MousePointerCrosshairs => "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png",
+                ModuleNames.MouseWithoutBorders => "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png",
+                ModuleNames.Peek => "ms-appx:///Assets/Settings/Icons/Peek.png",
+                ModuleNames.PowerLauncher => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
+                ModuleNames.ShortcutGuide => "ms-appx:///Assets/Settings/Icons/ShortcutGuide.png",
+                ModuleNames.TextExtractor => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
+                ModuleNames.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
+                ModuleNames.ZoomIt => "ms-appx:///Assets/Settings/Icons/ZoomIt.png",
                 _ => "ms-appx:///Assets/Settings/Icons/PowerToys.png",
             };
         }

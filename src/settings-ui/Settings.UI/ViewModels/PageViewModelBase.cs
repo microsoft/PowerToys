@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -36,11 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 
-        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-        };
-
         /// <summary>
         /// Handles updates to hotkey conflicts for the module. This method is called when the
         /// <see cref="GlobalHotkeyConflictManager"/> raises the <c>ConflictsUpdated</c> event.
@@ -53,34 +50,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </remarks>
         protected virtual void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
-            try
+            UpdateHotkeyConflictStatus(e.Conflicts);
+            var allHotkeyAccessors = GetAllHotkeyAccessors();
+
+            void UpdateConflictProperties()
             {
-                Debug.WriteLine($"=== {ModuleName}: HOTKEY CONFLICTS DATA RECEIVED ===");
-
-                var moduleRelatedConflicts = GetModuleRelatedConflicts(e.Conflicts);
-
-                if (moduleRelatedConflicts.HasConflicts)
+                if (allHotkeyAccessors != null)
                 {
-                    var filteredData = JsonSerializer.Serialize(moduleRelatedConflicts, JsonOptions);
-                    Debug.WriteLine($"{ModuleName} - Filtered JSON Data:\n{filteredData}");
+                    foreach (KeyValuePair<string, HotkeyAccessor[]> kvp in allHotkeyAccessors)
+                    {
+                        var module = kvp.Key;
+                        var hotkeyAccessorList = kvp.Value;
 
-                    Debug.WriteLine($"{ModuleName} - Module Related InApp Conflicts: {moduleRelatedConflicts.InAppConflicts.Count}");
-                    Debug.WriteLine($"{ModuleName} - Module Related System Conflicts: {moduleRelatedConflicts.SystemConflicts.Count}");
-
-                    PrintModuleConflictDetails(moduleRelatedConflicts);
+                        for (int i = 0; i < hotkeyAccessorList.Length; i++)
+                        {
+                            var key = $"{module.ToLowerInvariant()}_{i}";
+                            hotkeyAccessorList[i].Value.HasConflict = GetHotkeyConflictStatus(key);
+                            hotkeyAccessorList[i].Value.ConflictDescription = GetHotkeyConflictTooltip(key);
+                        }
+                    }
                 }
-                else
-                {
-                    Debug.WriteLine($"{ModuleName} - No conflicts found for this module.");
-                }
-
-                Debug.WriteLine($"=== {ModuleName}: END HOTKEY CONFLICTS DATA ===\n");
             }
-            catch (Exception ex)
+
+            _ = Task.Run(() =>
             {
-                Debug.WriteLine($"{ModuleName} - Error printing IPC hotkey conflicts data: {ex.Message}");
-                Debug.WriteLine($"{ModuleName} - Exception details: {ex}");
-            }
+                try
+                {
+                    var settingsWindow = App.GetSettingsWindow();
+                    settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
+                }
+                catch
+                {
+                    UpdateConflictProperties();
+                }
+            });
+        }
+
+        public virtual Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
+        {
+            return null;
         }
 
         protected ModuleConflictsData GetModuleRelatedConflicts(AllHotkeyConflictsData allConflicts)
@@ -112,46 +120,100 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return moduleConflicts;
         }
 
+        private void ProcessMouseUtilsConflictGroup(HotkeyConflictGroupData conflict, HashSet<string> mouseUtilsModules, bool isSysConflict)
+        {
+            // Check if any of the modules in this conflict are MouseUtils submodules
+            var involvedMouseUtilsModules = conflict.Modules
+                .Where(module => mouseUtilsModules.Contains(module.ModuleName))
+                .ToList();
+
+            if (involvedMouseUtilsModules.Count != 0)
+            {
+                // For each involved MouseUtils module, mark the hotkey as having a conflict
+                foreach (var module in involvedMouseUtilsModules)
+                {
+                    string hotkeyKey = $"{module.ModuleName.ToLowerInvariant()}_{module.HotkeyID}";
+                    _hotkeyConflictStatus[hotkeyKey] = true;
+                    _hotkeyConflictTooltips[hotkeyKey] = isSysConflict
+                        ? ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText")
+                        : ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
+                }
+            }
+        }
+
         protected virtual void UpdateHotkeyConflictStatus(AllHotkeyConflictsData allConflicts)
         {
             _hotkeyConflictStatus.Clear();
             _hotkeyConflictTooltips.Clear();
 
-            var moduleRelatedConflicts = GetModuleRelatedConflicts(allConflicts);
-
-            if (moduleRelatedConflicts.InAppConflicts.Count > 0)
+            // Since MouseUtils in Settings consolidates four modules: Find My Mouse, Mouse Highlighter, Mouse Pointer Crosshairs, and Mouse Jump
+            // We need to handle this case separately here.
+            if (string.Equals(ModuleName, ModuleNames.MouseUtils, StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var conflictGroup in moduleRelatedConflicts.InAppConflicts)
+                var mouseUtilsModules = new HashSet<string>
                 {
-                    foreach (var conflict in conflictGroup.Modules)
-                    {
-                        _hotkeyConflictStatus[conflict.HotkeyName] = true;
-                        _hotkeyConflictTooltips[conflict.HotkeyName] = ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
-                    }
+                    FindMyMouseSettings.ModuleName,
+                    MouseHighlighterSettings.ModuleName,
+                    MousePointerCrosshairsSettings.ModuleName,
+                    MouseJumpSettings.ModuleName,
+                };
+
+                // Process in-app conflicts
+                foreach (var conflict in allConflicts.InAppConflicts)
+                {
+                    ProcessMouseUtilsConflictGroup(conflict, mouseUtilsModules, false);
+                }
+
+                // Process system conflicts
+                foreach (var conflict in allConflicts.SystemConflicts)
+                {
+                    ProcessMouseUtilsConflictGroup(conflict, mouseUtilsModules, true);
                 }
             }
-
-            if (moduleRelatedConflicts.SystemConflicts.Count > 0)
+            else
             {
-                foreach (var conflictGroup in moduleRelatedConflicts.SystemConflicts)
+                if (allConflicts.InAppConflicts.Count > 0)
                 {
-                    foreach (var conflict in conflictGroup.Modules)
+                    foreach (var conflictGroup in allConflicts.InAppConflicts)
                     {
-                        _hotkeyConflictStatus[conflict.HotkeyName] = true;
-                        _hotkeyConflictTooltips[conflict.HotkeyName] = ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText");
+                        foreach (var conflict in conflictGroup.Modules)
+                        {
+                            if (string.Equals(conflict.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                var keyName = $"{conflict.ModuleName.ToLowerInvariant()}_{conflict.HotkeyID}";
+                                _hotkeyConflictStatus[keyName] = true;
+                                _hotkeyConflictTooltips[keyName] = ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
+                            }
+                        }
+                    }
+                }
+
+                if (allConflicts.SystemConflicts.Count > 0)
+                {
+                    foreach (var conflictGroup in allConflicts.SystemConflicts)
+                    {
+                        foreach (var conflict in conflictGroup.Modules)
+                        {
+                            if (string.Equals(conflict.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                var keyName = $"{conflict.ModuleName.ToLowerInvariant()}_{conflict.HotkeyID}";
+                                _hotkeyConflictStatus[keyName] = true;
+                                _hotkeyConflictTooltips[keyName] = ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText");
+                            }
+                        }
                     }
                 }
             }
         }
 
-        protected virtual bool GetHotkeyConflictStatus(string hotkeyName)
+        protected virtual bool GetHotkeyConflictStatus(string key)
         {
-            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
+            return _hotkeyConflictStatus.ContainsKey(key) && _hotkeyConflictStatus[key];
         }
 
-        protected virtual string GetHotkeyConflictTooltip(string hotkeyName)
+        protected virtual string GetHotkeyConflictTooltip(string key)
         {
-            return _hotkeyConflictTooltips.TryGetValue(hotkeyName, out string value) ? value : null;
+            return _hotkeyConflictTooltips.TryGetValue(key, out string value) ? value : null;
         }
 
         private bool IsModuleInvolved(HotkeyConflictGroupData conflict)
@@ -163,53 +225,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             return conflict.Modules.Any(module =>
                 string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase));
-        }
-
-        private void PrintModuleConflictDetails(ModuleConflictsData conflicts)
-        {
-            if (conflicts.InAppConflicts.Count > 0)
-            {
-                Debug.WriteLine($"\n{ModuleName} - InApp Conflicts:");
-                for (int i = 0; i < conflicts.InAppConflicts.Count; i++)
-                {
-                    var conflict = conflicts.InAppConflicts[i];
-                    Debug.WriteLine($"  Conflict #{i + 1}:");
-                    Debug.WriteLine($"    Hotkey: Win={conflict.Hotkey?.Win}, Ctrl={conflict.Hotkey?.Ctrl}, Alt={conflict.Hotkey?.Alt}, Shift={conflict.Hotkey?.Shift}, Key={conflict.Hotkey?.Key}");
-
-                    if (conflict.Modules != null)
-                    {
-                        Debug.WriteLine($"    Involved Modules ({conflict.Modules.Count}):");
-                        foreach (var module in conflict.Modules)
-                        {
-                            var isCurrentModule = string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase);
-                            var marker = isCurrentModule ? " [THIS MODULE]" : string.Empty;
-                            Debug.WriteLine($"      - {module.ModuleName}:{module.HotkeyName}{marker}");
-                        }
-                    }
-                }
-            }
-
-            if (conflicts.SystemConflicts.Count > 0)
-            {
-                Debug.WriteLine($"\n{ModuleName} - System Conflicts:");
-                for (int i = 0; i < conflicts.SystemConflicts.Count; i++)
-                {
-                    var conflict = conflicts.SystemConflicts[i];
-                    Debug.WriteLine($"  Conflict #{i + 1}:");
-                    Debug.WriteLine($"    Hotkey: Win={conflict.Hotkey?.Win}, Ctrl={conflict.Hotkey?.Ctrl}, Alt={conflict.Hotkey?.Alt}, Shift={conflict.Hotkey?.Shift}, Key={conflict.Hotkey?.Key}");
-
-                    if (conflict.Modules != null)
-                    {
-                        Debug.WriteLine($"    Involved Modules ({conflict.Modules.Count}):");
-                        foreach (var module in conflict.Modules)
-                        {
-                            var isCurrentModule = string.Equals(module.ModuleName, ModuleName, StringComparison.OrdinalIgnoreCase);
-                            var marker = isCurrentModule ? " [THIS MODULE]" : string.Empty;
-                            Debug.WriteLine($"      - {module.ModuleName}:{module.HotkeyName}{marker}");
-                        }
-                    }
-                }
-            }
         }
 
         public virtual void Dispose()

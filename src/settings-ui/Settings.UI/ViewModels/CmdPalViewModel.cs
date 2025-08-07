@@ -10,12 +10,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
@@ -27,9 +26,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public class CmdPalViewModel : PageViewModelBase
     {
         protected override string ModuleName => "CmdPal";
-
-        private bool _hotkeyHasConflict;
-        private string _hotkeyTooltip;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _isEnabled;
@@ -96,62 +92,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
         {
-            UpdateHotkeyConflictStatus(e.Conflicts);
-
-            // Update properties using setters to trigger PropertyChanged
-            void UpdateConflictProperties()
+            var hotkeyAccessors = new List<HotkeyAccessor>
             {
-                HotkeyHasConflict = GetHotkeyConflictStatus(CmdPalProperties.DefaultHotkeyValue.HotkeyName);
-                HotkeyTooltip = GetHotkeyConflictTooltip(CmdPalProperties.DefaultHotkeyValue.HotkeyName);
-            }
+                new HotkeyAccessor(
+                    () => Hotkey,
+                    value => Hotkey = value),
+            };
 
-            _ = Task.Run(() =>
+            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
             {
-                try
-                {
-                    var settingsWindow = App.GetSettingsWindow();
-                    if (settingsWindow?.DispatcherQueue != null)
-                    {
-                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
-                    }
-                    else
-                    {
-                        UpdateConflictProperties();
-                    }
-                }
-                catch
-                {
-                    UpdateConflictProperties();
-                }
-            });
-        }
+                [ModuleName] = hotkeyAccessors.ToArray(),
+            };
 
-        public bool HotkeyHasConflict
-        {
-            get => _hotkeyHasConflict;
-            set
-            {
-                if (_hotkeyHasConflict != value)
-                {
-                    _hotkeyHasConflict = value;
-                    OnPropertyChanged(nameof(HotkeyHasConflict));
-                }
-            }
-        }
-
-        public string HotkeyTooltip
-        {
-            get => _hotkeyTooltip;
-            set
-            {
-                if (_hotkeyTooltip != value)
-                {
-                    _hotkeyTooltip = value;
-                    OnPropertyChanged(nameof(HotkeyTooltip));
-                }
-            }
+            return hotkeysDict;
         }
 
         public bool IsEnabled

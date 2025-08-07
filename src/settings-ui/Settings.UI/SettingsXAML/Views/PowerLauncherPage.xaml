@@ -345,8 +345,6 @@
                         IsExpanded="True">
                         <controls:ShortcutControl 
                             MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.OpenPowerLauncherHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.OpenPowerLauncherTooltip, Mode=OneWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">

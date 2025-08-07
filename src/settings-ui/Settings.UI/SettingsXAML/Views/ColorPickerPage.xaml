@@ -41,9 +41,7 @@
                     <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            HasConflict="{x:Bind ViewModel.ActivationShortcutHasConflict, Mode=OneWay}"
-                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
-                            Tooltip="{x:Bind ViewModel.ActivationShortcutTooltip, Mode=OneWay}" />
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">

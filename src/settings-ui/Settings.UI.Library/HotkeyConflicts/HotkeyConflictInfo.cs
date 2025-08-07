@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
 
         public string ConflictingModuleName { get; set; }
 
-        public string ConflictingHotkeyName { get; set; }
+        public int ConflictingHotkeyID { get; set; }
 
         public List<string> AllConflictingModules { get; set; } = new List<string>();
     }

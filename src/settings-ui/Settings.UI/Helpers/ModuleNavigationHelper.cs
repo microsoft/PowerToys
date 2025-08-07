@@ -67,31 +67,5 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
             return false;
         }
-
-        /// <summary>
-        /// Gets the page type for the specified module
-        /// </summary>
-        /// <param name="moduleName">The name of the module</param>
-        /// <returns>The page type if found, null otherwise</returns>
-        public static Type GetModulePageType(string moduleName)
-        {
-            if (string.IsNullOrEmpty(moduleName))
-            {
-                return null;
-            }
-
-            ModulePageMapping.TryGetValue(moduleName, out Type pageType);
-            return pageType;
-        }
-
-        /// <summary>
-        /// Checks if a module has a corresponding settings page
-        /// </summary>
-        /// <param name="moduleName">The name of the module</param>
-        /// <returns>True if the module has a settings page, false otherwise</returns>
-        public static bool HasModulePage(string moduleName)
-        {
-            return !string.IsNullOrEmpty(moduleName) && ModulePageMapping.ContainsKey(moduleName);
-        }
     }
 }

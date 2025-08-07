@@ -19,7 +19,6 @@ namespace
     const wchar_t JSON_KEY_HIGHLIGHT_FADE_DURATION_MS[] = L"highlight_fade_duration_ms";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_SPOTLIGHT_MODE[] = L"spotlight_mode";
-    const wchar_t ACTIVATION_HOTKEY_NAME[] = L"ActivationShortcut";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -389,10 +388,6 @@ public:
             Logger::info("Mouse Highlighter is going to use default shortcut");
             m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
             m_hotkey.vkCode = 0x48; // H key
-        }
-        if (m_hotkey.name == nullptr)
-        {
-            m_hotkey.name = ACTIVATION_HOTKEY_NAME;
         }
         m_highlightSettings = highlightSettings;
     }

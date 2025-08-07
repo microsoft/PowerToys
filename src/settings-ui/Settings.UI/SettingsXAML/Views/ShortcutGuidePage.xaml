@@ -43,8 +43,6 @@
                         Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <controls:ShortcutControl 
                             MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.OpenShortcutGuideHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.OpenShortcutGuideTooltip, Mode=OneWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 

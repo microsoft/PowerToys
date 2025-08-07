@@ -52,11 +52,7 @@
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_ZoomGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Zoom_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl 
-                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.ZoomToggleKeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.ZoomToggleKeyTooltip, Mode=OneWay}"
-                            HotkeySettings="{x:Bind Path=ViewModel.ZoomToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ZoomToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Toggle_AnimateZoom">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AnimateZoom, Mode=TwoWay}" />
@@ -74,20 +70,12 @@
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_LiveZoomGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_LiveZoom_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl 
-                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.LiveZoomToggleKeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.LiveZoomToggleKeyTooltip, Mode=OneWay}"
-                            HotkeySettings="{x:Bind Path=ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_DrawGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Draw_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl 
-                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.DrawToggleKeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.DrawToggleKeyTooltip, Mode=OneWay}"
-                            HotkeySettings="{x:Bind Path=ViewModel.DrawToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DrawToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_TypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -109,11 +97,7 @@
                         <Button x:Uid="ZoomIt_DemoType_File_BrowseButton" Command="{x:Bind ViewModel.SelectDemoTypeFileCommand, Mode=OneWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl 
-                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.DemoTypeToggleKeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.DemoTypeToggleKeyTooltip, Mode=OneWay}"
-                            HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_DemoType_Toggle_UserDrivenMode">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.DemoTypeUserDrivenMode, Mode=TwoWay}" />
@@ -129,11 +113,7 @@
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_BreakGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl 
-                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.BreakTimerKeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.BreakTimerKeyTooltip, Mode=OneWay}"
-                            HotkeySettings="{x:Bind Path=ViewModel.BreakTimerKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.BreakTimerKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Break_Timeout">
                         <NumberBox
@@ -210,11 +190,7 @@
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_RecordGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl 
-                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.RecordToggleKeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.RecordToggleKeyTooltip, Mode=OneWay}"
-                            HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.RecordToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Record_Scaling">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.RecordScalingIndex, Mode=TwoWay}">
@@ -244,11 +220,7 @@
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="ZoomIt_Snip_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl 
-                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.SnipToggleKeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.SnipToggleKeyTooltip, Mode=OneWay}"
-                            HotkeySettings="{x:Bind Path=ViewModel.SnipToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.SnipToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>

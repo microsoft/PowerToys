@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Name,
         }
 
-        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, true, false, false, 0xC0, "Hotkey", WorkspacesSettings.ModuleName);
+        public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, true, false, false, 0xC0);
 
         public WorkspacesProperties()
         {

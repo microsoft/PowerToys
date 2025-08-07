@@ -14,25 +14,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         [CmdConfigureIgnore]
-        public static HotkeySettings DefaultToggleKey => new HotkeySettings(false, true, false, false, '1', "ToggleKey", ZoomItSettings.ModuleName); // Ctrl+1
+        public static HotkeySettings DefaultToggleKey => new HotkeySettings(false, true, false, false, '1'); // Ctrl+1
 
         [CmdConfigureIgnore]
-        public static HotkeySettings DefaultLiveZoomToggleKey => new HotkeySettings(false, true, false, false, '4', "LiveZoomToggleKey", ZoomItSettings.ModuleName); // Ctrl+4
+        public static HotkeySettings DefaultLiveZoomToggleKey => new HotkeySettings(false, true, false, false, '4'); // Ctrl+4
 
         [CmdConfigureIgnore]
-        public static HotkeySettings DefaultDrawToggleKey => new HotkeySettings(false, true, false, false, '2', "DrawToggleKey", ZoomItSettings.ModuleName); // Ctrl+2
+        public static HotkeySettings DefaultDrawToggleKey => new HotkeySettings(false, true, false, false, '2'); // Ctrl+2
 
         [CmdConfigureIgnore]
-        public static HotkeySettings DefaultRecordToggleKey => new HotkeySettings(false, true, false, false, '5', "RecordToggleKey", ZoomItSettings.ModuleName); // Ctrl+5
+        public static HotkeySettings DefaultRecordToggleKey => new HotkeySettings(false, true, false, false, '5'); // Ctrl+5
 
         [CmdConfigureIgnore]
-        public static HotkeySettings DefaultSnipToggleKey => new HotkeySettings(false, true, false, false, '6', "SnipToggleKey", ZoomItSettings.ModuleName); // Ctrl+6
+        public static HotkeySettings DefaultSnipToggleKey => new HotkeySettings(false, true, false, false, '6'); // Ctrl+6
 
         [CmdConfigureIgnore]
-        public static HotkeySettings DefaultBreakTimerKey => new HotkeySettings(false, true, false, false, '3', "BreakTimerKey", ZoomItSettings.ModuleName); // Ctrl+3
+        public static HotkeySettings DefaultBreakTimerKey => new HotkeySettings(false, true, false, false, '3'); // Ctrl+3
 
         [CmdConfigureIgnore]
-        public static HotkeySettings DefaultDemoTypeToggleKey => new HotkeySettings(false, true, false, false, '7', "DemoTypeToggleKey", ZoomItSettings.ModuleName); // Ctrl+7
+        public static HotkeySettings DefaultDemoTypeToggleKey => new HotkeySettings(false, true, false, false, '7'); // Ctrl+7
 
         public KeyboardKeysProperty ToggleKey { get; set; }
 

@@ -86,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                             var conflictObj = conflictItem.GetObject();
 
                             string moduleName = string.Empty;
-                            string hotkeyName = string.Empty;
+                            int hotkeyID = -1;
 
                             if (conflictObj.TryGetValue("module", out IJsonValue moduleValue) &&
                                 moduleValue.ValueType == JsonValueType.String)
@@ -94,16 +94,16 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                                 moduleName = moduleValue.GetString();
                             }
 
-                            if (conflictObj.TryGetValue("hotkey_name", out IJsonValue hotkeyValue) &&
-                                hotkeyValue.ValueType == JsonValueType.String)
+                            if (conflictObj.TryGetValue("hotkeyID", out IJsonValue hotkeyValue) &&
+                                hotkeyValue.ValueType == JsonValueType.Number)
                             {
-                                hotkeyName = hotkeyValue.GetString();
+                                hotkeyID = (int)hotkeyValue.GetNumber();
                             }
 
                             allConflicts.Add(new ModuleHotkeyData
                             {
                                 ModuleName = moduleName,
-                                HotkeyName = hotkeyName,
+                                HotkeyID = hotkeyID,
                             });
                         }
                     }
@@ -184,12 +184,12 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             {
                 var moduleObj = module.GetObject();
                 string moduleName = moduleObj.TryGetValue("moduleName", out var modNameVal) ? modNameVal.GetString() : string.Empty;
-                string hotkeyName = moduleObj.TryGetValue("hotkeyName", out var hotkeyNameVal) ? hotkeyNameVal.GetString() : string.Empty;
+                int hotkeyID = moduleObj.TryGetValue("hotkeyID", out var hotkeyIDVal) ? (int)hotkeyIDVal.GetNumber() : -1;
 
                 conflictGroup.Modules.Add(new ModuleHotkeyData
                 {
                     ModuleName = moduleName,
-                    HotkeyName = hotkeyName,
+                    HotkeyID = hotkeyID,
                 });
             }
 

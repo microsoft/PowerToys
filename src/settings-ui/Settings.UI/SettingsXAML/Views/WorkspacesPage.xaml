@@ -36,8 +36,6 @@
                     <tkcontrols:SettingsCard x:Uid="Workspaces_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl 
                             MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HasConflict="{x:Bind Path=ViewModel.HotkeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.HotkeyTooltip, Mode=OneWay}"
                             HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 

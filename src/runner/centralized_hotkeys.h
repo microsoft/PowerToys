@@ -20,13 +20,13 @@ namespace CentralizedHotkeys
     {
         WORD modifiersMask;
         WORD vkCode;
-        const wchar_t* hotkeyName;
+        int hotkeyID;
 
-        Shortcut(WORD modifiersMask = 0, WORD vkCode = 0, const wchar_t* hotkeyName = nullptr)
+        Shortcut(WORD modifiersMask = 0, WORD vkCode = 0, const int hotkeyID = 0)
         {
             this->modifiersMask = modifiersMask;
             this->vkCode = vkCode;
-            this->hotkeyName = hotkeyName;
+            this->hotkeyID = hotkeyID;
         }
 
         bool operator<(const Shortcut& key) const
@@ -37,7 +37,7 @@ namespace CentralizedHotkeys
 
     std::wstring ToWstring(const Shortcut& shortcut);
 
-    bool AddHotkeyAction(Shortcut shortcut, Action action, std::wstring moduleName, bool isEnabled);
+    bool AddHotkeyAction(Shortcut shortcut, Action action);
 
     void UnregisterHotkeysForModule(std::wstring moduleName);
 
