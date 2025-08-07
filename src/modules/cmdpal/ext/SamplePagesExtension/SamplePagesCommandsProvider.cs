@@ -4,6 +4,8 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 
 namespace SamplePagesExtension;
 
@@ -16,6 +18,7 @@ public partial class SamplePagesCommandsProvider : CommandProvider
     }
 
     private readonly ICommandItem[] _commands = [
+        new CommandItem(new SupportCommandsWithProperties()),
        new CommandItem(new SamplesListPage())
        {
            Title = "Sample Pages",
@@ -26,5 +29,22 @@ public partial class SamplePagesCommandsProvider : CommandProvider
     public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
+    }
+
+    private sealed partial class SupportCommandsWithProperties : ICommand2
+    {
+        public IPropertySet OtherProperties => null;
+
+        public IIconInfo Icon => null;
+
+        public string Id => string.Empty;
+
+        public string Name => string.Empty;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
+        {
+            add { }
+            remove { }
+        }
     }
 }

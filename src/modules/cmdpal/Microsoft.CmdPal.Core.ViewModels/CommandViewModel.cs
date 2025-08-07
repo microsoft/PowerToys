@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Windows.Foundation.Collections;
 using WinRT;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
@@ -84,14 +85,16 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
         if (model is ICommand2 command2)
         {
-            var p = command2.OtherProperties;
-            Debug.WriteLine($"{Name} had properties = {{");
-            foreach (var kv in p)
+            if (command2.OtherProperties is IPropertySet p)
             {
-                Debug.WriteLine($"\t{kv.Key}: {kv.Value}");
-            }
+                Debug.WriteLine($"{Name} had properties = {{");
+                foreach (var kv in p)
+                {
+                    Debug.WriteLine($"\t{kv.Key}: {kv.Value}");
+                }
 
-            Debug.WriteLine("}");
+                Debug.WriteLine("}");
+            }
         }
 
         if (model is IHaveProperties command3)
@@ -106,7 +109,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
             Debug.WriteLine("}");
         }
 
-        if (Name == "Whatever" || Name == "Revetahw" || Name == "Another")
+        if (Name == "Whatever" || Name == "Revetahw" || Name == "Another" || Name == "JustHasProps")
         {
             var invokable = model as IInvokableCommand;
             var page = model as IPage;

@@ -172,10 +172,11 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "Get the name of the Foreground window",
             },
-            new ListItem(new JustHasProps())
-            {
-                Title = "Not actually invokable",
-            },
+
+            // new ListItem(new JustHasProps())
+            // {
+            //    Title = "Not actually invokable",
+            // },
             new ListItem(new CommandWithProperties())
             {
                 Title = "I have properties",
