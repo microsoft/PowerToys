@@ -60,16 +60,6 @@ namespace Microsoft.CommandPalette.Extensions
         String Id{ get; };
         IIconInfo Icon{ get; };
     }
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ICommand2 requires ICommand {
-        Windows.Foundation.Collections.IPropertySet OtherProperties { get; };
-    }
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IHaveProperties {
-        Windows.Foundation.Collections.IPropertySet Properties{ get; };
-    }
     
     enum CommandResultKind {
         Dismiss,    // Reset the palette to the main page and dismiss
@@ -375,8 +365,16 @@ namespace Microsoft.CommandPalette.Extensions
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandWithProperties requires ICommand
+    {
+        Windows.Foundation.Collections.IPropertySet Properties { get; };
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandProvider2 requires ICommandProvider
     {
         Object[] GetApiExtensionStubs();
     };
+    
+
 }

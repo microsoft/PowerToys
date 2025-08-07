@@ -155,15 +155,7 @@ public sealed class CommandProviderWrapper
 
             if (model is ICommandProvider2 two)
             {
-                var apiExtensions = two.GetApiExtensionStubs();
-                Logger.LogDebug($"Found extensions {apiExtensions.Select(a => a.ToString())}");
-                foreach (var a in apiExtensions)
-                {
-                    if (a is ICommand2 command2)
-                    {
-                        Logger.LogDebug($"Found an ICommand2");
-                    }
-                }
+                UnsafePreCacheApiAdditons(ProviderId, two);
             }
 
             Id = model.Id;
@@ -213,6 +205,19 @@ public sealed class CommandProviderWrapper
             FallbackItems = fallbacks
                 .Select(c => makeAndAdd(c, true))
                 .ToArray();
+        }
+    }
+
+    private void UnsafePreCacheApiAdditons(ICommandProvider2 provider)
+    {
+        var apiExtensions = provider.GetApiExtensionStubs();
+        Logger.LogDebug($"Provider supports {apiExtensions.Length} extensions");
+        foreach (var a in apiExtensions)
+        {
+            if (a is ICommandWithProperties command2)
+            {
+                Logger.LogDebug($"{ProviderId}: Found an ICommand2");
+            }
         }
     }
 
