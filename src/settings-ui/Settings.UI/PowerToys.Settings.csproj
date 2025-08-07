@@ -25,7 +25,6 @@
     <None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
     <None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
     <None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
-    <None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictDialogContentControl.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />
@@ -137,9 +136,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictDialogContentControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml">

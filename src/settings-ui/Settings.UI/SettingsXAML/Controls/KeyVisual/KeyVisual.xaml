@@ -192,7 +192,7 @@
     <Style
         x:Key="ConflictKeyVisualStyle"
         BasedOn="{StaticResource DefaultKeyVisualStyle}"
-        TargetType="controls:KeyVisual">
+        TargetType="local:KeyVisual">
         <Setter Property="Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
@@ -200,51 +200,51 @@
         <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="controls:KeyVisual">
-                    <ContentPresenter
-                        x:Name="KeyPresenter"
-                        Width="{TemplateBinding Width}"
-                        Height="{TemplateBinding Height}"
+                <ControlTemplate TargetType="local:KeyVisual">
+                    <Grid
+                        x:Name="KeyHolder"
                         MinWidth="{TemplateBinding MinWidth}"
                         MinHeight="{TemplateBinding MinHeight}"
-                        Padding="{TemplateBinding Padding}"
                         HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                         VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        Content="{TemplateBinding Content}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        FontSize="{TemplateBinding FontSize}"
-                        FontWeight="{TemplateBinding FontWeight}"
-                        Foreground="{TemplateBinding Foreground}"
-                        TextLineBounds="Tight">
-                        <ContentPresenter.BackgroundTransition>
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <Grid.BackgroundTransition>
                             <BrushTransition Duration="0:0:0.083" />
-                        </ContentPresenter.BackgroundTransition>
+                        </Grid.BackgroundTransition>
+                        <local:KeyCharPresenter
+                            x:Name="KeyPresenter"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw"
+                            Content="{TemplateBinding Content}"
+                            FontSize="{TemplateBinding FontSize}"
+                            FontWeight="{TemplateBinding FontWeight}"
+                            Foreground="{TemplateBinding Foreground}" />
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="KeyPresenter.Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
-                                        <Setter Target="KeyPresenter.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultSolidBrush}" />
+                                        <Setter Target="KeyHolder.Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
+                                        <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource CardStrokeColorDefaultSolidBrush}" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Invalid">
                                     <VisualState.Setters>
-                                        <Setter Target="KeyPresenter.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
-                                        <Setter Target="KeyPresenter.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
-                                        <Setter Target="KeyPresenter.BorderThickness" Value="2" />
+                                        <Setter Target="KeyHolder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
+                                        <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                        <Setter Target="KeyHolder.BorderThickness" Value="2" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                    </ContentPresenter>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
