@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-public partial class SamplePagesCommandsProvider : CommandProvider
+internal partial class SamplePagesCommandsProvider : CommandProvider
 {
     public SamplePagesCommandsProvider()
     {

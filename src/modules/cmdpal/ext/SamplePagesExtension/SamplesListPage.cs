@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-public partial class SamplesListPage : ListPage
+internal partial class SamplesListPage : ListPage
 {
     private readonly IListItem[] _commands = [
 
