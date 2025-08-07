@@ -14,6 +14,11 @@
         EmptyValue="Visible"
         NotEmptyValue="Collapsed" />
 
+    <converters:StringVisibilityConverter
+        x:Key="StringVisibilityConverter"
+        EmptyValue="Collapsed"
+        NotEmptyValue="Visible" />
+
     <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
         <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
         <Setter Property="Background" Value="Transparent" />
@@ -175,9 +180,9 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             FontSize="{TemplateBinding FontSize}"
-                            IsTabStop="False"
+                            IsTabStop="True"
                             Style="{StaticResource DeleteButtonStyle}"
-                            Visibility="Collapsed" />
+                            Visibility="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource StringVisibilityConverter}, Mode=OneWay}" />
                         <TextBlock
                             x:Name="DescriptionPresenter"
                             Grid.Column="1"
