@@ -14,8 +14,8 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 {
     public enum EntryType
     {
+        SettingsPage,
         SettingsCard,
-        SettingsExpander,
     }
 
     public class Program
@@ -90,11 +90,37 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                 XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
                 XNamespace controls = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
                 XNamespace labs = "using:CommunityToolkit.Labs.WinUI";
-                XNamespace winui = "using:CommunityToolkit.WinUI.UI.Controls";                // Extract SettingsCards and SettingsExpanders
+                XNamespace winui = "using:CommunityToolkit.WinUI.UI.Controls";
+
+                // Extract SettingsPageControl elements
+                var settingsPageElements = doc.Descendants()
+                    .Where(e => e.Name.LocalName == "SettingsPageControl")
+                    .Where(e => e.Attribute(x + "Uid") != null);
+
+                // Extract SettingsCard elements
                 var settingsElements = doc.Descendants()
-                    .Where(e => e.Name.LocalName == "SettingsCard" || e.Name.LocalName == "SettingsExpander")
+                    .Where(e => e.Name.LocalName == "SettingsCard")
                     .Where(e => e.Attribute("Name") != null || e.Attribute(x + "Uid") != null);
 
+                // Process SettingsPageControl elements
+                foreach (var element in settingsPageElements)
+                {
+                    var elementUid = GetElementUid(element, x);
+
+                    if (!string.IsNullOrEmpty(elementUid))
+                    {
+                        elements.Add(new SearchableElementMetadata
+                        {
+                            PageName = pageName,
+                            Type = EntryType.SettingsPage,
+                            ParentElementName = string.Empty,
+                            ElementName = string.Empty,
+                            ElementUid = elementUid,
+                        });
+                    }
+                }
+
+                // Process SettingsCard elements
                 foreach (var element in settingsElements)
                 {
                     var elementName = GetElementName(element, x);
@@ -102,13 +128,12 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 
                     if (!string.IsNullOrEmpty(elementName) || !string.IsNullOrEmpty(elementUid))
                     {
-                        var entryType = element.Name.LocalName == "SettingsCard" ? EntryType.SettingsCard : EntryType.SettingsExpander;
                         var parentElementName = GetParentElementName(element, x);
 
                         elements.Add(new SearchableElementMetadata
                         {
                             PageName = pageName,
-                            Type = entryType,
+                            Type = EntryType.SettingsCard,
                             ParentElementName = parentElementName,
                             ElementName = elementName,
                             ElementUid = elementUid,
@@ -140,19 +165,8 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 
         public static string GetParentElementName(XElement element, XNamespace x)
         {
-            // Check if the parent is a SettingsExpander
-            var parent = element.Parent;
-            while (parent != null)
-            {
-                if (parent.Name.LocalName == "SettingsExpander")
-                {
-                    // Return the parent's Name attribute
-                    return parent.Attribute("Name")?.Value ?? string.Empty;
-                }
-
-                parent = parent.Parent;
-            }
-
+            // Since expanders are no longer supported, we can return empty string
+            // or implement other parent element logic if needed in the future
             return string.Empty;
         }
     }

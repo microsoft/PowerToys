@@ -20,6 +20,13 @@ SettingsPageControl
 
 > For indexing purposes, we are specifically targeting all SettingsCard elements. These are the smallest units of user interaction and correspond to individual configurable settings.
 
+### Module
+Module is a primary type that needs to be indexed, for modules, we need to index the 'ModuleTitle' and the 'ModuleDescription'. 
+So these two should be passed in by x:Uid and binding with a key. 
+
+
+### SettingsCard
+
 Each SettingsCard should have an x:Uid for localization and indexing. The associated display strings are defined in the .resw files:
 
 {x:Uid}.Header – The visible label/title of the setting.

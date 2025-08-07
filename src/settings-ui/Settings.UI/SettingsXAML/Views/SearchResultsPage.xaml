@@ -1,0 +1,182 @@
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.SearchResultsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.Services"
+    xmlns:vm="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    x:Name="RootPage"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <Grid>
+        <ScrollViewer>
+            <StackPanel Margin="24" Spacing="24">
+                <!-- Header -->
+                <TextBlock 
+                    x:Name="PageTitle"
+                    Style="{StaticResource TitleTextBlockStyle}"
+                    Text="Search results" />
+                
+                <!-- Search Query Display -->
+                <TextBlock 
+                    x:Name="SearchQueryText"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                <!-- Modules Section -->
+                <StackPanel x:Name="ModulesSection" Spacing="8">
+                    <TextBlock 
+                        Text="Modules"
+                        Style="{StaticResource SubtitleTextBlockStyle}" />
+                    
+                    <ItemsControl x:Name="ModulesItemsControl" ItemsSource="{x:Bind ViewModel.ModuleResults, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:SettingEntry">
+                                <Border 
+                                    Margin="0,0,0,2"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8">
+                                    <Button
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Left"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Click="ModuleButton_Click"
+                                        Padding="16,12">
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <!-- Module Icon -->
+                                            <Border
+                                                Width="32"
+                                                Height="32"
+                                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                CornerRadius="4">
+                                                <FontIcon 
+                                                    FontSize="16"
+                                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                                    Glyph="&#xE8B7;" />
+                                            </Border>
+                                            
+                                            <!-- Module Info -->
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock
+                                                    x:Uid="{}"
+                                                    Text="{x:Bind Header}"
+                                                    Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                            </StackPanel>
+
+                                            <!-- Arrow Icon -->
+                                            <FontIcon 
+                                                HorizontalAlignment="Right"
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Glyph="&#xE76C;" />
+                                        </StackPanel>
+                                    </Button>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- Settings Groups -->
+                <ItemsControl x:Name="SettingsGroupsItemsControl" ItemsSource="{x:Bind ViewModel.GroupedSettingsResults, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SettingsGroup">
+                            <StackPanel Spacing="8" Margin="0,0,0,24">
+                                <!-- Group Header -->
+                                <TextBlock 
+                                    Text="{x:Bind GroupName}"
+                                    Style="{StaticResource SubtitleTextBlockStyle}" />
+                                
+                                <!-- Settings in Group -->
+                                <ItemsControl ItemsSource="{x:Bind Settings}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:SettingEntry">
+                                            <Border 
+                                                Margin="0,0,0,2"
+                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8">
+                                                <Button
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Left"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Click="SettingButton_Click"
+                                                    Tag="{Binding}"
+                                                    Padding="16,12">
+                                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                                        <!-- Setting Icon -->
+                                                        <Border
+                                                            Width="32"
+                                                            Height="32"
+                                                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                                            CornerRadius="4">
+                                                            <FontIcon 
+                                                                FontSize="16"
+                                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                                Glyph="&#xE713;" />
+                                                        </Border>
+                                                        
+                                                        <!-- Setting Info -->
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock 
+                                                                Text="{x:Bind Header}"
+                                                                Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                                            <TextBlock 
+                                                                Text="{x:Bind Description}"
+                                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Visibility="{x:Bind Description, Converter={StaticResource StringVisibilityConverter}}" />
+                                                        </StackPanel>
+
+                                                        <!-- Arrow Icon -->
+                                                        <FontIcon 
+                                                            HorizontalAlignment="Right"
+                                                            FontSize="12"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Glyph="&#xE76C;" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- No Results Message -->
+                <StackPanel 
+                    x:Name="NoResultsPanel"
+                    HorizontalAlignment="Center"
+                    Spacing="16"
+                    Visibility="{x:Bind ViewModel.HasNoResults, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <FontIcon 
+                        FontSize="48"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xE71C;" />
+                    <TextBlock 
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource SubtitleTextBlockStyle}"
+                        Text="No results found" />
+                    <TextBlock 
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Try a different search term or check your spelling." />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

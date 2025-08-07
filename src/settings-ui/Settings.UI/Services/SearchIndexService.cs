@@ -23,8 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 {
     public enum EntryType
     {
+        SettingsPage,
         SettingsCard,
-        SettingsExpander,
     }
 
 #pragma warning disable SA1649 // File name should match first type name
@@ -32,7 +32,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 #pragma warning restore SA1649 // File name should match first type name
     {
         public readonly EntryType Type;
-        public readonly string Module;
         public readonly string Header;
         public readonly string PageTypeName;
         public readonly string ElementName;
@@ -40,10 +39,9 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         public readonly string ParentElementName;
         public readonly string Description;
 
-        public SettingEntry(EntryType type, string module, string header, string pageTypeName, string elementName, string elementUid, string parentElementName = null, string description = null)
+        public SettingEntry(EntryType type, string header, string pageTypeName, string elementName, string elementUid, string parentElementName = null, string description = null)
         {
             Type = type;
-            Module = module;
             Header = header;
             PageTypeName = pageTypeName;
             ElementName = elementName;
@@ -51,45 +49,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             ParentElementName = parentElementName;
             Description = description;
         }
-    }
-
-    public readonly struct SearchHit
-    {
-        public readonly string Module;
-        public readonly string Caption;
-        public readonly string Description;
-        public readonly double Score;
-        public readonly Type PageType;
-        public readonly string ElementName;
-        public readonly string ElementUid;
-        public readonly string ParentElementName;
-
-        public SearchHit(string module, string caption, string description, double score, Type pageType, string elementName, string elementUid, string parentElementName = null)
-        {
-            Module = module;
-            Caption = caption;
-            Description = description;
-            Score = score;
-            PageType = pageType;
-            ElementName = elementName;
-            ElementUid = elementUid;
-            ParentElementName = parentElementName;
-        }
-    }
-
-#pragma warning disable SA1402 // File may only contain a single type
-    internal sealed class SearchableElementMetadata
-#pragma warning restore SA1402 // File may only contain a single type
-    {
-        public string PageName { get; set; }
-
-        public EntryType Type { get; set; }
-
-        public string ParentElementName { get; set; }
-
-        public string ElementName { get; set; }
-
-        public string ElementUid { get; set; }
     }
 
     public static class SearchIndexService
@@ -197,35 +156,38 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 return;
             }
 
-            foreach (var metadata in metadataList.OrderBy(m => m.PageName))
+            foreach (var metadata in metadataList)
             {
-                string moduleName = GetModuleNameFromTypeName(metadata.PageName);
+                string header, description;
 
-                var (header, description) = GetLocalizedHeaderAndDescription(resourceLoader, metadata.ElementUid);
+                if (metadata.Type == EntryType.SettingsPage)
+                {
+                    (header, description) = GetLocalizedModuleTitleAndDescription(resourceLoader, metadata.ElementUid);
+                }
+                else
+                {
+                    (header, description) = GetLocalizedSettingHeaderAndDescription(resourceLoader, metadata.ElementUid);
+                }
 
                 if (string.IsNullOrEmpty(header))
                 {
-                    Debug.WriteLine($"[SearchIndexService] WARNING: Missing primary localization for ElementUid: '{metadata.ElementUid}' in Page: '{metadata.PageName}'. Skipping.");
                     continue;
                 }
 
                 builder.Add(new SettingEntry(
                     metadata.Type,
-                    moduleName,
-                    header,
-                    metadata.PageName,
+                    header, // header
+                    metadata.PageName, // pageTypeName
                     metadata.ElementName,
                     metadata.ElementUid,
                     metadata.ParentElementName,
                     description));
-
-                Debug.WriteLine($"[SearchIndexService] ADDED: [{metadata.Type}] {moduleName} - {header} (ElementName: {metadata.ElementName}, ElementUid: {metadata.ElementUid}, Page: {metadata.PageName}, Parent: {metadata.ParentElementName ?? "None"})");
             }
 
             Debug.WriteLine($"[SearchIndexService] Finished loading index. Total entries: {builder.Count}");
         }
 
-        private static (string Header, string Description) GetLocalizedHeaderAndDescription(ResourceLoader resourceLoader, string elementUid)
+        private static (string Header, string Description) GetLocalizedSettingHeaderAndDescription(ResourceLoader resourceLoader, string elementUid)
         {
             string header = GetString(resourceLoader, $"{elementUid}/Header");
             string description = GetString(resourceLoader, $"{elementUid}/Description");
@@ -236,6 +198,14 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
 
             return (header, description);
+        }
+
+        private static (string Title, string Description) GetLocalizedModuleTitleAndDescription(ResourceLoader resourceLoader, string elementUid)
+        {
+            string title = GetString(resourceLoader, $"{elementUid}/ModuleTitle");
+            string description = GetString(resourceLoader, $"{elementUid}/ModuleDescription");
+
+            return (title, description);
         }
 
         private static string GetString(ResourceLoader rl, string key)
@@ -251,41 +221,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
         }
 
-        private static string GetModuleNameFromTypeName(string typeName) => typeName switch
-        {
-            "GeneralPage" => "General",
-            "DashboardPage" => "Dashboard",
-            "AdvancedPastePage" => "Advanced Paste",
-            "AlwaysOnTopPage" => "Always On Top",
-            "AwakePage" => "Awake",
-            "CmdPalPage" => "Command Palette",
-            "ColorPickerPage" => "Color Picker",
-            "CropAndLockPage" => "Crop And Lock",
-            "EnvironmentVariablesPage" => "Environment Variables",
-            "FancyZonesPage" => "FancyZones",
-            "FileLocksmithPage" => "File Locksmith",
-            "HostsPage" => "Hosts File Editor",
-            "ImageResizerPage" => "Image Resizer",
-            "KeyboardManagerPage" => "Keyboard Manager",
-            "MeasureToolPage" => "Screen Ruler",
-            "MouseUtilsPage" => "Mouse Utilities",
-            "MouseWithoutBordersPage" => "Mouse Without Borders",
-            "NewPlusPage" => "New+",
-            "PeekPage" => "Peek",
-            "PowerAccentPage" => "Quick Accent",
-            "PowerLauncherPage" => "PowerToys Run",
-            "PowerOcrPage" => "Text Extractor",
-            "PowerPreviewPage" => "File Explorer Add-ons",
-            "PowerRenamePage" => "PowerRename",
-            "RegistryPreviewPage" => "Registry Preview",
-            "ShortcutGuidePage" => "Shortcut Guide",
-            "WorkspacesPage" => "Workspaces",
-            "ZoomItPage" => "ZoomIt",
-            _ when typeName.EndsWith("Page", StringComparison.InvariantCultureIgnoreCase) => typeName.Substring(0, typeName.Length - 4),
-            _ => typeName,
-        };
-
-        public static List<SearchHit> Search(string query, int maxResults = 20)
+        public static List<SettingEntry> Search(string query)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
@@ -300,7 +236,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
 
             var normalizedQuery = NormalizeString(query);
-            var results = new List<(SearchHit Hit, double Score)>();
+            var results = new List<(SettingEntry Hit, double Score)>();
 
             foreach (var entry in currentIndex)
             {
@@ -321,23 +257,13 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     var pageType = GetPageTypeFromName(entry.PageTypeName);
                     if (pageType != null)
                     {
-                        var hit = new SearchHit(
-                            entry.Module,
-                            entry.Header,
-                            entry.Description,
-                            score,
-                            pageType,
-                            entry.ElementName,
-                            entry.ElementUid,
-                            entry.ParentElementName);
-                        results.Add((hit, score));
+                        results.Add((entry, score));
                     }
                 }
             }
 
             return results
                 .OrderByDescending(r => r.Score)
-                .Take(maxResults)
                 .Select(r => r.Hit)
                 .ToList();
         }
@@ -368,5 +294,20 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             return stringBuilder.ToString();
         }
+    }
+
+#pragma warning disable SA1402 // File may only contain a single type
+    public class SearchableElementMetadata
+#pragma warning restore SA1402 // File may only contain a single type
+    {
+        public string PageName { get; set; }
+
+        public EntryType Type { get; set; }
+
+        public string ParentElementName { get; set; }
+
+        public string ElementName { get; set; }
+
+        public string ElementUid { get; set; }
     }
 }

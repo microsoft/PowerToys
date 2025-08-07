@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
         private List<string> _searchSuggestions = new();
         private ISearchService<NavigationViewItem> _searchService;
-        private List<SearchHit> _currentSearchResults = new();
+        private List<SettingEntry> _currentSearchResults = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -483,18 +483,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-                var query = sender.Text;
-
-                _currentSearchResults = SearchIndexService.Search(query, 10);
-
-                var suggestions = _currentSearchResults
-                    .Select(hit => $"{hit.Caption} ({hit.Module})")
-                    .ToList();
-
-                sender.ItemsSource = suggestions.Distinct().Take(15);
-            }
+            return;
         }
 
         private void CtrlF_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -520,22 +509,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            // First try to find a match in our detailed search results
-            var selectedText = args.ChosenSuggestion?.ToString() ?? queryText;
-            var searchHit = _currentSearchResults.FirstOrDefault(hit =>
-                selectedText.Equals($"{hit.Caption} ({hit.Module})", StringComparison.OrdinalIgnoreCase));
+            var matched = SearchIndexService.Search(queryText);
 
-            if (searchHit.PageType != null)
+            // Navigate to search results page with the matched items
+            if (matched != null && matched.Count > 0)
             {
-                // Navigate to the specific page from search results
-                var matchedNavItem = ViewModel.NavItems
-                    .FirstOrDefault(item =>
-                        (item.GetValue(NavHelper.NavigateToProperty) as Type) == searchHit.PageType);
-                if (matchedNavItem != null)
-                {
-                    NavigateToItem(matchedNavItem, searchHit.ElementName, searchHit.ParentElementName);
-                    return;
-                }
+                var searchParams = new SearchResultsNavigationParams(queryText, matched);
+                NavigationService.Navigate(typeof(SearchResultsPage), searchParams);
+            }
+            else
+            {
+                // Still navigate to show "no results" message
+                var searchParams = new SearchResultsNavigationParams(queryText, new List<SettingEntry>());
+                NavigationService.Navigate(typeof(SearchResultsPage), searchParams);
             }
         }
 
