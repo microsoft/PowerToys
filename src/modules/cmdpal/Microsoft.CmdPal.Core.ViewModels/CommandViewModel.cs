@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using WinRT;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -91,6 +92,39 @@ public partial class CommandViewModel : ExtensionObjectViewModel
             }
 
             Debug.WriteLine("}");
+        }
+
+        if (model is IHaveProperties command3)
+        {
+            var p = command3.Properties;
+            Debug.WriteLine($"{Name} can haz properties = {{");
+            foreach (var kv in p)
+            {
+                Debug.WriteLine($"\t{kv.Key}: {kv.Value}");
+            }
+
+            Debug.WriteLine("}");
+        }
+
+        if (Name == "Whatever" || Name == "Revetahw" || Name == "Another")
+        {
+            var invokable = model as IInvokableCommand;
+            var page = model as IPage;
+            var props = model as IHaveProperties;
+            var com2 = model as ICommand2;
+            Debug.WriteLine($"{invokable},{page},{props},{com2}");
+
+            var f = model as IWinRTObject;
+            if (f != null)
+            {
+                var types = f.AdditionalTypeData;
+                foreach (var t in types)
+                {
+                    Debug.WriteLine($"{t.Key}, {t.Value}");
+                }
+
+                Debug.WriteLine(string.Empty);
+            }
         }
 
         model.PropChanged += Model_PropChanged;
