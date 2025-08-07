@@ -26,6 +26,7 @@
     <RootNamespace>DarkModeModuleInterface</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>DarkModeModuleInterface</ProjectName>
+    <TargetName>PowerToys.DarkModeModuleInterface</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

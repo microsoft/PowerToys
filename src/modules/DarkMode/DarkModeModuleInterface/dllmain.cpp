@@ -241,7 +241,7 @@ public:
     }
 
     // Enable the powertoy
-    virtual void enable()
+    /* virtual void enable()
     {
         Logger::info("DarkMode enabling");
         m_enabled = true;
@@ -264,6 +264,32 @@ public:
         {
             m_process = pi.hProcess;
         }
+    } */
+
+    virtual void enable()
+    {
+        m_enabled = true;
+        Logger::trace(L"Starting DarkMode process");
+        unsigned long powertoys_pid = GetCurrentProcessId();
+
+        std::wstring executable_args = L"";
+        executable_args.append(std::to_wstring(powertoys_pid));
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"DarkMode.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei))
+        {
+            Logger::trace("Successfully started the DarkMode process");
+        }
+        else
+        {
+            Logger::error(L"DarkMode failed to start. {}", get_last_error_or_default(GetLastError()));
+        }
+
+        m_process = sei.hProcess;
     }
 
     // Disable the powertoy

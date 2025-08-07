@@ -16,12 +16,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Company Name"
-            VALUE "FileDescription", "$projectname$ Module"
+            VALUE "FileDescription", "DarkMode Module"
             VALUE "FileVersion", "0.1.0.0"
-            VALUE "InternalName", "$projectname$"
+            VALUE "InternalName", "DarkMode"
             VALUE "LegalCopyright", "Copyright (C) 2019 Company Name"
-            VALUE "OriginalFilename", "$projectname$.dll"
-            VALUE "ProductName", "$projectname$"
+            VALUE "OriginalFilename", "PowerToys.DarkModeModuleInterface.dll"
+            VALUE "ProductName", "DarkMode"
             VALUE "ProductVersion", "0.1.0.0"
         END
     END
