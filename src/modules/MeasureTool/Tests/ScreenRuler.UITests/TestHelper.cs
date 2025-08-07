@@ -85,10 +85,11 @@ namespace ScreenRuler.UITests
         public static ToggleSwitch SetScreenRulerToggle(UITestBase testBase, bool enable)
         {
             var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 5000);
-
-            if (toggleSwitch.IsOn != enable)
+            var attempts = 0;
+            while (toggleSwitch.IsOn != enable && attempts < 3)
             {
                 toggleSwitch.Click(msPreAction: 1000, msPostAction: 2000);
+                attempts++;
             }
 
             return toggleSwitch;
