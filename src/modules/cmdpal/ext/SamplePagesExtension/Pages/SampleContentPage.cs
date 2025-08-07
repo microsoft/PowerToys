@@ -225,11 +225,6 @@ internal sealed partial class SampleContentForm : FormContent
                     }
                 ]
             }
-        },
-        {
-            "type": "Action.OpenUrl",
-            "title": "Action.OpenUrl",
-            "url": "https://adaptivecards.microsoft.com/"
         }
     ]
 }
