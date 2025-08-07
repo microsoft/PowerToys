@@ -1,4 +1,4 @@
-namespace DarkMode
+namespace PowerToys.DarkMode
 {
     [default_interface]
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window

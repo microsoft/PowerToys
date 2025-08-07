@@ -16,7 +16,7 @@ using namespace winrt::Windows::Devices::Geolocation;
 using namespace Microsoft::UI::Xaml;
 using namespace Windows::Foundation;
 
-namespace winrt::DarkMode::implementation
+namespace winrt::PowerToys::DarkMode::implementation
 {
     MainWindow::MainWindow()
     {

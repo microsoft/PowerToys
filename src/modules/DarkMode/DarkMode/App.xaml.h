@@ -2,7 +2,7 @@
 
 #include "App.xaml.g.h"
 
-namespace winrt::DarkMode::implementation
+namespace winrt::PowerToys::DarkMode::implementation
 {
   struct App : AppT<App>
   {

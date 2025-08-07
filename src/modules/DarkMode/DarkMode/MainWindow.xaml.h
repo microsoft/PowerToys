@@ -1,7 +1,7 @@
 #pragma once
 #include "MainWindow.g.h"
 
-namespace winrt::DarkMode::implementation
+namespace winrt::PowerToys::DarkMode::implementation
 {
   struct MainWindow : MainWindowT<MainWindow>
   {
@@ -45,7 +45,7 @@ namespace winrt::DarkMode::implementation
   };
 }
 
-namespace winrt::DarkMode::factory_implementation
+namespace winrt::PowerToys::DarkMode::factory_implementation
 {
   struct MainWindow : MainWindowT<MainWindow, implementation::MainWindow>
   {

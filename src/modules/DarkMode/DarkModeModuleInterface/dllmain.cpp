@@ -6,6 +6,7 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <locale>
 #include <codecvt>
+#include <common/utils/logger_helper.h>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -76,6 +77,7 @@ public:
     DarkModeInterface()
     {
         init_settings();
+        LoggerHelpers::init_logger(L"DarkMode", L"ModuleInterface", LogSettings::darkModeLoggerName);
     };
 
     virtual const wchar_t* get_key() override
@@ -277,7 +279,7 @@ public:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"DarkMode.exe";
+        sei.lpFile = L"PowerToys.DarkMode.exe";
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))

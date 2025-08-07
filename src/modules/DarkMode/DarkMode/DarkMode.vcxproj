@@ -9,7 +9,7 @@
     <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{d0de6425-eb5f-46d7-9cd7-4656e27e1192}</ProjectGuid>
     <ProjectName>DarkMode</ProjectName>
-    <RootNamespace>DarkMode</RootNamespace>
+    <RootNamespace>PowerToys.DarkMode</RootNamespace>
     <!--
       $(TargetName) should be same as $(RootNamespace) so that the produced binaries (.exe/.pri/etc.)
       have a name that matches the .winmd
@@ -138,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="MainWindow.idl">
+      <Namespace>PowerToys.DarkMode</Namespace>
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Midl>
