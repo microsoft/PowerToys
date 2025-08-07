@@ -14,6 +14,10 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <local:IconConverter x:Key="IconConverter" />
+    </Page.Resources>
+
     <Grid>
         <ScrollViewer>
             <StackPanel Margin="24" Spacing="24">
@@ -22,7 +26,7 @@
                     x:Name="PageTitle"
                     Style="{StaticResource TitleTextBlockStyle}"
                     Text="Search results" />
-                
+
                 <!-- Search Query Display -->
                 <TextBlock 
                     x:Name="SearchQueryText"
@@ -34,53 +38,16 @@
                     <TextBlock 
                         Text="Modules"
                         Style="{StaticResource SubtitleTextBlockStyle}" />
-                    
+
                     <ItemsControl x:Name="ModulesItemsControl" ItemsSource="{x:Bind ViewModel.ModuleResults, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:SettingEntry">
-                                <Border 
-                                    Margin="0,0,0,2"
-                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8">
-                                    <Button
-                                        HorizontalAlignment="Stretch"
-                                        HorizontalContentAlignment="Left"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Click="ModuleButton_Click"
-                                        Padding="16,12">
-                                        <StackPanel Orientation="Horizontal" Spacing="12">
-                                            <!-- Module Icon -->
-                                            <Border
-                                                Width="32"
-                                                Height="32"
-                                                Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                                CornerRadius="4">
-                                                <FontIcon 
-                                                    FontSize="16"
-                                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                                                    Glyph="&#xE8B7;" />
-                                            </Border>
-                                            
-                                            <!-- Module Info -->
-                                            <StackPanel VerticalAlignment="Center">
-                                                <TextBlock
-                                                    x:Uid="{}"
-                                                    Text="{x:Bind Header}"
-                                                    Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                            </StackPanel>
-
-                                            <!-- Arrow Icon -->
-                                            <FontIcon 
-                                                HorizontalAlignment="Right"
-                                                FontSize="12"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Glyph="&#xE76C;" />
-                                        </StackPanel>
-                                    </Button>
-                                </Border>
+                                <tkcontrols:SettingsCard
+                                    Header="{x:Bind Header}"
+                                    HeaderIcon="{x:Bind Icon, Converter={StaticResource IconConverter}, ConverterParameter=&#xE8B7;}"
+                                    IsClickEnabled="True"
+                                    Click="ModuleButton_Click"
+                                    Margin="0,0,0,2" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -95,59 +62,18 @@
                                 <TextBlock 
                                     Text="{x:Bind GroupName}"
                                     Style="{StaticResource SubtitleTextBlockStyle}" />
-                                
+
                                 <!-- Settings in Group -->
                                 <ItemsControl ItemsSource="{x:Bind Settings}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="models:SettingEntry">
-                                            <Border 
-                                                Margin="0,0,0,2"
-                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="8">
-                                                <Button
-                                                    HorizontalAlignment="Stretch"
-                                                    HorizontalContentAlignment="Left"
-                                                    Background="Transparent"
-                                                    BorderThickness="0"
-                                                    Click="SettingButton_Click"
-                                                    Tag="{Binding}"
-                                                    Padding="16,12">
-                                                    <StackPanel Orientation="Horizontal" Spacing="12">
-                                                        <!-- Setting Icon -->
-                                                        <Border
-                                                            Width="32"
-                                                            Height="32"
-                                                            Background="{ThemeResource ControlFillColorDefaultBrush}"
-                                                            CornerRadius="4">
-                                                            <FontIcon 
-                                                                FontSize="16"
-                                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                                                Glyph="&#xE713;" />
-                                                        </Border>
-                                                        
-                                                        <!-- Setting Info -->
-                                                        <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock 
-                                                                Text="{x:Bind Header}"
-                                                                Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                                            <TextBlock 
-                                                                Text="{x:Bind Description}"
-                                                                Style="{StaticResource CaptionTextBlockStyle}"
-                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                Visibility="{x:Bind Description, Converter={StaticResource StringVisibilityConverter}}" />
-                                                        </StackPanel>
-
-                                                        <!-- Arrow Icon -->
-                                                        <FontIcon 
-                                                            HorizontalAlignment="Right"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Glyph="&#xE76C;" />
-                                                    </StackPanel>
-                                                </Button>
-                                            </Border>
+                                            <tkcontrols:SettingsCard
+                                                Header="{x:Bind Header}"
+                                                Description="{x:Bind Description}"
+                                                HeaderIcon="{x:Bind Icon, Converter={StaticResource IconConverter}, ConverterParameter=&#xE713;}"
+                                                IsClickEnabled="True"
+                                                Click="SettingButton_Click"
+                                                Margin="0,0,0,2" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>

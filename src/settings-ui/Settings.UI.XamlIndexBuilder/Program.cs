@@ -16,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
     {
         SettingsPage,
         SettingsCard,
+        SettingsExpander,
     }
 
     public class Program
@@ -102,10 +103,16 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                     .Where(e => e.Name.LocalName == "SettingsCard")
                     .Where(e => e.Attribute("Name") != null || e.Attribute(x + "Uid") != null);
 
+                // Extract SettingsExpander elements
+                var settingsExpanderElements = doc.Descendants()
+                    .Where(e => e.Name.LocalName == "SettingsExpander")
+                    .Where(e => e.Attribute("Name") != null || e.Attribute(x + "Uid") != null);
+
                 // Process SettingsPageControl elements
                 foreach (var element in settingsPageElements)
                 {
                     var elementUid = GetElementUid(element, x);
+                    var moduleImageSource = element.Attribute("ModuleImageSource")?.Value;
 
                     if (!string.IsNullOrEmpty(elementUid))
                     {
@@ -116,6 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                             ParentElementName = string.Empty,
                             ElementName = string.Empty,
                             ElementUid = elementUid,
+                            Icon = moduleImageSource,
                         });
                     }
                 }
@@ -125,6 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                 {
                     var elementName = GetElementName(element, x);
                     var elementUid = GetElementUid(element, x);
+                    var headerIcon = ExtractIconValue(element);
 
                     if (!string.IsNullOrEmpty(elementName) || !string.IsNullOrEmpty(elementUid))
                     {
@@ -137,6 +146,30 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                             ParentElementName = parentElementName,
                             ElementName = elementName,
                             ElementUid = elementUid,
+                            Icon = headerIcon,
+                        });
+                    }
+                }
+
+                // Process SettingsExpander elements
+                foreach (var element in settingsExpanderElements)
+                {
+                    var elementName = GetElementName(element, x);
+                    var elementUid = GetElementUid(element, x);
+                    var headerIcon = ExtractIconValue(element);
+
+                    if (!string.IsNullOrEmpty(elementName) || !string.IsNullOrEmpty(elementUid))
+                    {
+                        var parentElementName = GetParentElementName(element, x);
+
+                        elements.Add(new SearchableElementMetadata
+                        {
+                            PageName = pageName,
+                            Type = EntryType.SettingsExpander,
+                            ParentElementName = parentElementName,
+                            ElementName = elementName,
+                            ElementUid = elementUid,
+                            Icon = headerIcon,
                         });
                     }
                 }
@@ -169,6 +202,46 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
             // or implement other parent element logic if needed in the future
             return string.Empty;
         }
+
+        public static string ExtractIconValue(XElement element)
+        {
+            var headerIconAttribute = element.Attribute("HeaderIcon")?.Value;
+
+            if (string.IsNullOrEmpty(headerIconAttribute))
+            {
+                return null;
+            }
+
+            // Parse different icon markup extensions
+            // Example: {ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}
+            if (headerIconAttribute.Contains("BitmapIcon") && headerIconAttribute.Contains("Source="))
+            {
+                var sourceStart = headerIconAttribute.IndexOf("Source=", StringComparison.OrdinalIgnoreCase) + "Source=".Length;
+                var sourceEnd = headerIconAttribute.IndexOf('}', sourceStart);
+                if (sourceEnd == -1)
+                {
+                    sourceEnd = headerIconAttribute.Length;
+                }
+
+                return headerIconAttribute.Substring(sourceStart, sourceEnd - sourceStart).Trim();
+            }
+
+            // Example: {ui:FontIcon Glyph=&#xEDA7;}
+            if (headerIconAttribute.Contains("FontIcon") && headerIconAttribute.Contains("Glyph="))
+            {
+                var glyphStart = headerIconAttribute.IndexOf("Glyph=", StringComparison.OrdinalIgnoreCase) + "Glyph=".Length;
+                var glyphEnd = headerIconAttribute.IndexOf('}', glyphStart);
+                if (glyphEnd == -1)
+                {
+                    glyphEnd = headerIconAttribute.Length;
+                }
+
+                return headerIconAttribute.Substring(glyphStart, glyphEnd - glyphStart).Trim();
+            }
+
+            // If it doesn't match known patterns, return the original value
+            return headerIconAttribute;
+        }
     }
 
 #pragma warning disable SA1402 // File may only contain a single type
@@ -184,5 +257,7 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
         public string ElementName { get; set; }
 
         public string ElementUid { get; set; }
+
+        public string Icon { get; set; }
     }
 }

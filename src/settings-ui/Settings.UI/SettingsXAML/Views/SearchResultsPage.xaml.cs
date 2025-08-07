@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ModuleButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is SettingEntry tagEntry)
+            if (sender is CommunityToolkit.WinUI.Controls.SettingsCard card && card.DataContext is SettingEntry tagEntry)
             {
                 NavigateToModule(tagEntry);
             }
@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SettingButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.DataContext is SettingEntry tagEntry)
+            if (sender is CommunityToolkit.WinUI.Controls.SettingsCard card && card.DataContext is SettingEntry tagEntry)
             {
                 NavigateToSetting(tagEntry);
             }

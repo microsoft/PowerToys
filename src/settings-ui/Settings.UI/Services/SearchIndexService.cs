@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
     {
         SettingsPage,
         SettingsCard,
+        SettingsExpander,
     }
 
 #pragma warning disable SA1649 // File name should match first type name
@@ -38,8 +39,9 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         public readonly string ElementUid;
         public readonly string ParentElementName;
         public readonly string Description;
+        public readonly string Icon;
 
-        public SettingEntry(EntryType type, string header, string pageTypeName, string elementName, string elementUid, string parentElementName = null, string description = null)
+        public SettingEntry(EntryType type, string header, string pageTypeName, string elementName, string elementUid, string parentElementName = null, string description = null, string icon = null)
         {
             Type = type;
             Header = header;
@@ -48,13 +50,15 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             ElementUid = elementUid;
             ParentElementName = parentElementName;
             Description = description;
+            Icon = icon;
         }
     }
 
     public static class SearchIndexService
     {
         private static readonly object _lockObject = new();
-        private static ImmutableArray<SettingEntry> _index = ImmutableArray<SettingEntry>.Empty;
+        private static readonly Dictionary<string, string> _pageNameCache = [];
+        private static ImmutableArray<SettingEntry> _index = [];
         private static bool _isIndexBuilt;
         private static bool _isIndexBuilding;
         private const string PrebuiltIndexResourceName = "Microsoft.PowerToys.Settings.UI.Assets.search.index.json";
@@ -181,7 +185,14 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     metadata.ElementName,
                     metadata.ElementUid,
                     metadata.ParentElementName,
-                    description));
+                    description,
+                    metadata.Icon));
+
+                // Cache the page name mapping for SettingsPage entries
+                if (metadata.Type == EntryType.SettingsPage && !string.IsNullOrEmpty(header))
+                {
+                    _pageNameCache[metadata.PageName] = header;
+                }
             }
 
             Debug.WriteLine($"[SearchIndexService] Finished loading index. Total entries: {builder.Count}");
@@ -294,6 +305,11 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             return stringBuilder.ToString();
         }
+
+        public static string GetLocalizedPageName(string pageTypeName)
+        {
+            return _pageNameCache.TryGetValue(pageTypeName, out string cachedName) ? cachedName : string.Empty;
+        }
     }
 
 #pragma warning disable SA1402 // File may only contain a single type
@@ -309,5 +325,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         public string ElementName { get; set; }
 
         public string ElementUid { get; set; }
+
+        public string Icon { get; set; }
     }
 }

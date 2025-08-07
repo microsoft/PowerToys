@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Group settings by their page/module
             var groupedSettings = settings
-                .GroupBy(s => s.Header)
+                .GroupBy(s => SearchIndexService.GetLocalizedPageName(s.PageTypeName))
                 .Select(g => new SettingsGroup
                 {
                     GroupName = g.Key,
