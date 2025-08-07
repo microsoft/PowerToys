@@ -155,7 +155,7 @@ public sealed class CommandProviderWrapper
 
             if (model is ICommandProvider2 two)
             {
-                UnsafePreCacheApiAdditons(ProviderId, two);
+                UnsafePreCacheApiAdditons(two);
             }
 
             Id = model.Id;

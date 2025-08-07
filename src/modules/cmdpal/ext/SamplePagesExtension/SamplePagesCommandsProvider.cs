@@ -35,9 +35,9 @@ public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProv
         return [new SupportCommandsWithProperties()];
     }
 
-    private sealed partial class SupportCommandsWithProperties : ICommand2
+    private sealed partial class SupportCommandsWithProperties : ICommandWithProperties
     {
-        public IPropertySet OtherProperties => null;
+        public IPropertySet Properties => null;
 
         public IIconInfo Icon => null;
 
