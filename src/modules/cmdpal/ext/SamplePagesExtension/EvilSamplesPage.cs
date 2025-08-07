@@ -4,12 +4,13 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
 namespace SamplePagesExtension;
 
-internal sealed partial class EvilSamplesPage : ListPage
+public partial class EvilSamplesPage : ListPage
 {
     private readonly IListItem[] _commands = [
        new ListItem(new EvilSampleListPage())

@@ -172,11 +172,10 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "Get the name of the Foreground window",
             },
-
-            // new ListItem(new JustHasProps())
-            // {
-            //    Title = "Not actually invokable",
-            // },
+            new ListItem(new JustHasProps())
+            {
+                Title = "Not actually invokable",
+            },
             new ListItem(new CommandWithProperties())
             {
                 Title = "I have properties",
@@ -192,7 +191,7 @@ internal sealed partial class SampleListPage : ListPage
         ];
     }
 
-    public sealed partial class CommandWithProperties : InvokableCommand, ICommand2
+    internal sealed partial class CommandWithProperties : InvokableCommand, ICommand2
     {
         public override string Name => "Whatever";
 
@@ -205,7 +204,7 @@ internal sealed partial class SampleListPage : ListPage
     }
 
 #nullable enable
-    public sealed partial class OtherCommandWithProperties : ICommand2, IInvokableCommand
+    internal sealed partial class OtherCommandWithProperties : ICommand2, IInvokableCommand
     {
         public string Name => "Revetahw";
 
@@ -229,7 +228,7 @@ internal sealed partial class SampleListPage : ListPage
         };
     }
 
-    public sealed partial class JustHasProps : ICommand2
+    internal sealed partial class JustHasProps : ICommand2
     {
         public string Name => "JustHasProps";
 
@@ -253,7 +252,7 @@ internal sealed partial class SampleListPage : ListPage
         };
     }
 
-    public sealed partial class AnotherCommandWithProperties : InvokableCommand, IHaveProperties
+    internal sealed partial class AnotherCommandWithProperties : InvokableCommand, IHaveProperties
     {
         [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IHaveProperties))]
         static AnotherCommandWithProperties()

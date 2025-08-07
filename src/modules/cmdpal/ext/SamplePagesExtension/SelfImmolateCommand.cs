@@ -3,11 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-internal sealed partial class SelfImmolateCommand : InvokableCommand
+public partial class SelfImmolateCommand : InvokableCommand
 {
     public override ICommandResult Invoke()
     {
