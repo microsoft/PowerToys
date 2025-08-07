@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.CmdPal.Common.Helpers;
 
@@ -21,13 +22,30 @@ public static class DiagnosticsHelper
     {
         var locationHint = string.IsNullOrWhiteSpace(extensionHint) ? "application" : $"'{extensionHint}' extension";
 
+        // let's try to get a message from the exception or inferred it from the HRESULT
+        // to show at least something
+        var message = exception.Message;
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            var temp = Marshal.GetExceptionForHR(exception.HResult)?.Message;
+            if (!string.IsNullOrWhiteSpace(temp))
+            {
+                message = temp + $" (inferred from HRESULT 0x{exception.HResult:X8})";
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            message = "[No message available]";
+        }
+
         // note: keep date time kind and format consistent with the log
         return $"""
                 ============================================================
                 😢 An unexpected error occurred in the {locationHint}.
 
                 Summary:
-                  Message:    {(string.IsNullOrWhiteSpace(exception.Message) ? "[No message available]" : exception.Message )}
+                  Message:    {message}
                   Type:       {exception.GetType().FullName}
                   Source:     {exception.Source ?? "N/A"}
                   Time:       {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fffffff}
