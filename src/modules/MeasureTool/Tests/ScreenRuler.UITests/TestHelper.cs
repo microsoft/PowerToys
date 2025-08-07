@@ -73,13 +73,15 @@ namespace ScreenRuler.UITests
         /// <summary>
         /// Set the Screen Ruler toggle switch to the specified state
         /// </summary>
-        public static void SetScreenRulerToggle(UITestBase testBase, bool enable)
+        public static ToggleSwitch SetScreenRulerToggle(UITestBase testBase, bool enable)
         {
             var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 5000);
             if (toggleSwitch.IsOn != enable)
             {
                 toggleSwitch.Click(msPostAction: 2000);
             }
+
+            return toggleSwitch;
         }
 
         /// <summary>
@@ -90,8 +92,7 @@ namespace ScreenRuler.UITests
         /// <param name="testName">Name of the test for assertion messages</param>
         public static void SetAndVerifyScreenRulerToggle(UITestBase testBase, bool enable, string testName)
         {
-            SetScreenRulerToggle(testBase, enable);
-            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 10000);
+            var toggleSwitch = SetScreenRulerToggle(testBase, enable);
             Assert.AreEqual(
                 enable,
                 toggleSwitch.IsOn,
