@@ -72,6 +72,7 @@
             Style="{StaticResource SubheaderTextBlockStyle}" />
         <ScrollViewer
             Grid.Row="1"
+            x:Name="ShortcutsScrollViewer"
             HorizontalScrollBarVisibility="Visible"
             HorizontalScrollMode="Enabled"
             VerticalScrollBarVisibility="Disabled"

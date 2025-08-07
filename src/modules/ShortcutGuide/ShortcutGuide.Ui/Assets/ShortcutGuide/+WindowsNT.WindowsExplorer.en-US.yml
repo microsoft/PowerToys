@@ -1,6 +1,6 @@
 PackageName: +WindowsNT.WindowsExplorer
 WindowFilter: "explorer.exe"
-Name: Windows Explorer
+Name: File Explorer
 Shortcuts:
   - SectionName: General
     Properties:
