@@ -101,68 +101,45 @@ public abstract partial class NavigatablePage : Page
 
         // Create a subtle glow effect using drop shadow
         var dropShadow = compositor.CreateDropShadow();
-        dropShadow.Color = Microsoft.UI.Colors.Gold;
-        dropShadow.BlurRadius = 15f;
+        dropShadow.Color = Microsoft.UI.Colors.Gray;
+        dropShadow.BlurRadius = 8f;
         dropShadow.Opacity = 0f;
         dropShadow.Offset = new Vector3(0, 0, 0);
 
         var spriteVisual = compositor.CreateSpriteVisual();
-        spriteVisual.Size = new Vector2((float)target.ActualWidth + 30, (float)target.ActualHeight + 30);
+        spriteVisual.Size = new Vector2((float)target.ActualWidth + 16, (float)target.ActualHeight + 16);
         spriteVisual.Shadow = dropShadow;
-        spriteVisual.Offset = new Vector3(-15, -15, 0);
+        spriteVisual.Offset = new Vector3(-8, -8, 0);
 
         // Insert the shadow visual behind the target element
         ElementCompositionPreview.SetElementChildVisual(target, spriteVisual);
 
-        // Create smooth animations with more natural easing
-        var fadeInAnimation = compositor.CreateScalarKeyFrameAnimation();
-        fadeInAnimation.InsertKeyFrame(0f, 0f);
-        fadeInAnimation.InsertKeyFrame(0.4f, 0.6f, compositor.CreateCubicBezierEasingFunction(new Vector2(0.25f, 0.1f), new Vector2(0.25f, 1f)));
-        fadeInAnimation.InsertKeyFrame(1f, 0f, compositor.CreateCubicBezierEasingFunction(new Vector2(0.25f, 0f), new Vector2(0.75f, 0.9f)));
-        fadeInAnimation.Duration = TimeSpan.FromMilliseconds(800);
+        // Create a simple fade in/out animation
+        var fadeAnimation = compositor.CreateScalarKeyFrameAnimation();
+        fadeAnimation.InsertKeyFrame(0f, 0f);
+        fadeAnimation.InsertKeyFrame(0.5f, 0.3f);
+        fadeAnimation.InsertKeyFrame(1f, 0f);
+        fadeAnimation.Duration = TimeSpan.FromMilliseconds(400);
 
-        // Create a subtle scale animation
-        var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
-        scaleAnimation.InsertKeyFrame(0f, new Vector3(1f, 1f, 1f));
-        scaleAnimation.InsertKeyFrame(0.3f, new Vector3(1.015f, 1.015f, 1f), compositor.CreateCubicBezierEasingFunction(new Vector2(0.25f, 0.1f), new Vector2(0.25f, 1f)));
-        scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1f), compositor.CreateCubicBezierEasingFunction(new Vector2(0.25f, 0f), new Vector2(0.75f, 0.9f)));
-        scaleAnimation.Duration = TimeSpan.FromMilliseconds(400);
-
-        // Create a subtle blur radius animation for pulsing effect
-        var blurAnimation = compositor.CreateScalarKeyFrameAnimation();
-        blurAnimation.InsertKeyFrame(0f, 15f);
-        blurAnimation.InsertKeyFrame(0.4f, 25f, compositor.CreateCubicBezierEasingFunction(new Vector2(0.25f, 0.1f), new Vector2(0.25f, 1f)));
-        blurAnimation.InsertKeyFrame(1f, 15f, compositor.CreateCubicBezierEasingFunction(new Vector2(0.25f, 0f), new Vector2(0.75f, 0.9f)));
-        blurAnimation.Duration = TimeSpan.FromMilliseconds(800);
-
-        // Apply animations
-        dropShadow.StartAnimation("Opacity", fadeInAnimation);
-        dropShadow.StartAnimation("BlurRadius", blurAnimation);
-        visual.StartAnimation("Scale", scaleAnimation);
+        // Apply animation
+        dropShadow.StartAnimation("Opacity", fadeAnimation);
 
         // If it's a control, add a subtle background highlight
         if (target is Control ctrl)
         {
             var originalBackground = ctrl.Background;
 
-            // Create a gradient brush for modern highlight effect
-            var gradientBrush = new LinearGradientBrush();
-            gradientBrush.StartPoint = new Point(0, 0);
-            gradientBrush.EndPoint = new Point(1, 1);
-
-            var color1 = Microsoft.UI.Colors.LightGoldenrodYellow;
-            color1.A = 20; // Very subtle
-            var color2 = Microsoft.UI.Colors.PaleGoldenrod;
-            color2.A = 15; // Even more subtle
-
-            gradientBrush.GradientStops.Add(new GradientStop { Color = color1, Offset = 0 });
-            gradientBrush.GradientStops.Add(new GradientStop { Color = color2, Offset = 1 });
+            // Create a simple semi-transparent gray brush
+            var highlightBrush = new SolidColorBrush();
+            var grayColor = Microsoft.UI.Colors.Gray;
+            grayColor.A = 25; // Very subtle transparency
+            highlightBrush.Color = grayColor;
 
             // Apply the highlight
-            ctrl.Background = gradientBrush;
+            ctrl.Background = highlightBrush;
 
             // Wait for animation to complete
-            await Task.Delay(800);
+            await Task.Delay(400);
 
             // Restore original background
             ctrl.Background = originalBackground;
@@ -170,7 +147,7 @@ public abstract partial class NavigatablePage : Page
         else
         {
             // For non-control elements, just wait for the glow animation
-            await Task.Delay(800);
+            await Task.Delay(400);
         }
 
         // Clean up the shadow visual
