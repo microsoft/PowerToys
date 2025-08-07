@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -11,14 +10,15 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
+using System.Windows.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
-using Microsoft.UI.Xaml.Shapes;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using Windows.Foundation;
+using Grid = Microsoft.UI.Xaml.Controls.Grid;
 
 namespace ShortcutGuide
 {
@@ -74,6 +74,7 @@ namespace ShortcutGuide
                 if (_showTaskbarShortcuts)
                 {
                     TaskbarIndicators.Visibility = Visibility.Visible;
+                    ShortcutsScrollViewer.Margin = new Thickness(0, 0, 0, 20);
                     _taskbarIconsUpdateTimer.Tick += UpdateTaskbarIndicators;
                     _taskbarIconsUpdateTimer.Start();
                 }
@@ -232,6 +233,8 @@ namespace ShortcutGuide
 
             if (_showTaskbarShortcuts)
             {
+                TaskbarIndicators.Visibility = Visibility.Visible;
+                ShortcutsScrollViewer.Margin = new Thickness(0, 0, 0, 20);
                 TaskbarLaunchShortcutsListElement.Visibility = Visibility.Visible;
                 TaskbarLaunchShortcutsListElement.Items.Clear();
                 TaskbarLaunchShortcutsTitle.Visibility = Visibility.Visible;
@@ -258,6 +261,8 @@ namespace ShortcutGuide
 
         public void FilterBy(string filter)
         {
+            TaskbarIndicators.Visibility = Visibility.Collapsed;
+            ShortcutsScrollViewer.Margin = new Thickness(0);
             ShortcutListElement.Items.Clear();
             ShortcutListElement.Visibility = Visibility.Visible;
             ErrorMessage.Visibility = Visibility.Collapsed;
@@ -308,6 +313,8 @@ namespace ShortcutGuide
             TaskbarLaunchShortcutsTitle.Visibility = Visibility.Collapsed;
             TaskbarLaunchShortcutsDescription.Visibility = Visibility.Collapsed;
             ShortcutListElement.Visibility = Visibility.Visible;
+            TaskbarIndicators.Visibility = Visibility.Collapsed;
+            ShortcutsScrollViewer.Margin = new Thickness(0);
 
             try
             {
