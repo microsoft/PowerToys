@@ -31,22 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _jumpEnabledStateIsGPOConfigured;
         private bool _isMouseJumpEnabled;
 
-        private bool _mouseJumpActivationShortcutHasConflict;
-        private string _mouseJumpActivationShortcutTooltip;
-
         internal MouseJumpSettings MouseJumpSettingsConfig { get; set; }
 
         private void InitializeMouseJumpSettings(ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository)
         {
             ArgumentNullException.ThrowIfNull(mouseJumpSettingsRepository);
             this.MouseJumpSettingsConfig = mouseJumpSettingsRepository.SettingsConfig;
-
-            if (this.MouseJumpSettingsConfig.Properties.ActivationShortcut.HotkeyName == string.Empty)
-            {
-                this.MouseJumpSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
-                this.MouseJumpSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = MouseJumpSettings.ModuleName;
-                SettingsUtils.SaveSettings(MouseJumpSettingsConfig.ToJsonString(), MouseJumpSettings.ModuleName);
-            }
 
             this.MouseJumpSettingsConfig.Properties.ThumbnailSize.PropertyChanged += this.MouseJumpThumbnailSizePropertyChanged;
         }
@@ -110,32 +100,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     MouseJumpSettingsConfig.Properties.ActivationShortcut = value ?? MouseJumpSettingsConfig.Properties.DefaultActivationShortcut;
                     NotifyMouseJumpPropertyChanged();
-                }
-            }
-        }
-
-        public bool MouseJumpActivationShortcutHasConflict
-        {
-            get => _mouseJumpActivationShortcutHasConflict;
-            set
-            {
-                if (_mouseJumpActivationShortcutHasConflict != value)
-                {
-                    _mouseJumpActivationShortcutHasConflict = value;
-                    OnPropertyChanged(nameof(MouseJumpActivationShortcutHasConflict));
-                }
-            }
-        }
-
-        public string MouseJumpActivationShortcutTooltip
-        {
-            get => _mouseJumpActivationShortcutTooltip;
-            set
-            {
-                if (_mouseJumpActivationShortcutTooltip != value)
-                {
-                    _mouseJumpActivationShortcutTooltip = value;
-                    OnPropertyChanged(nameof(MouseJumpActivationShortcutTooltip));
                 }
             }
         }

@@ -47,8 +47,6 @@
             IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
             <controls:ShortcutControl 
                 MinWidth="{StaticResource SettingActionControlMinWidth}"
-                HasConflict="{x:Bind Path=ViewModel.MouseJumpActivationShortcutHasConflict, Mode=OneWay}"
-                Tooltip="{x:Bind Path=ViewModel.MouseJumpActivationShortcutTooltip, Mode=OneWay}"
                 HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
         </tkcontrols:SettingsCard>
 

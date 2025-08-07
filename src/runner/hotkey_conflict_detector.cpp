@@ -34,7 +34,7 @@ namespace HotkeyConflictDetector
         return *instance;
     }
 
-    HotkeyConflictType HotkeyConflictManager::HasConflict(Hotkey const& _hotkey, const wchar_t* _moduleName, const wchar_t* _hotkeyName)
+    HotkeyConflictType HotkeyConflictManager::HasConflict(Hotkey const& _hotkey, const wchar_t* _moduleName, const int _hotkeyID)
     {
         if (disabledHotkeys.find(_moduleName) != disabledHotkeys.end())
         {
@@ -68,10 +68,42 @@ namespace HotkeyConflictDetector
                 HotkeyConflictType::NoConflict;
         }
 
-        if (wcscmp(it->second.moduleName.c_str(), _moduleName) == 0 && wcscmp(it->second.hotkeyName.c_str(), _hotkeyName) == 0)
+        if (wcscmp(it->second.moduleName.c_str(), _moduleName) == 0 && it->second.hotkeyID == _hotkeyID)
         {
             // A shortcut matching its own assignment is not considered a conflict.
             return HotkeyConflictType::NoConflict;
+        }
+
+        return HotkeyConflictType::InAppConflict;
+    }
+
+    HotkeyConflictType HotkeyConflictManager::HasConflict(Hotkey const& _hotkey)
+    {
+        uint16_t handle = GetHotkeyHandle(_hotkey);
+
+        if (handle == 0)
+        {
+            return HotkeyConflictType::NoConflict;
+        }
+
+        // The order is important, first to check sys conflict and then inapp conflict
+        if (sysConflictHotkeyMap.find(handle) != sysConflictHotkeyMap.end())
+        {
+            return HotkeyConflictType::SystemConflict;
+        }
+
+        if (inAppConflictHotkeyMap.find(handle) != inAppConflictHotkeyMap.end())
+        {
+            return HotkeyConflictType::InAppConflict;
+        }
+
+        auto it = hotkeyMap.find(handle);
+
+        if (it == hotkeyMap.end())
+        {
+            return HasConflictWithSystemHotkey(_hotkey) ?
+                       HotkeyConflictType::SystemConflict :
+                       HotkeyConflictType::NoConflict;
         }
 
         return HotkeyConflictType::InAppConflict;
@@ -104,7 +136,7 @@ namespace HotkeyConflictDetector
             HotkeyConflictInfo systemConflict;
             systemConflict.hotkey = _hotkey;
             systemConflict.moduleName = L"System";
-            systemConflict.hotkeyName = L"System Hotkey";
+            systemConflict.hotkeyID = 0;
 
             conflicts.push_back(systemConflict);
 
@@ -124,17 +156,17 @@ namespace HotkeyConflictDetector
         HotkeyConflictInfo systemConflict;
         systemConflict.hotkey = _hotkey;
         systemConflict.moduleName = L"System";
-        systemConflict.hotkeyName = L"System Hotkey";
+        systemConflict.hotkeyID = 0;
         conflicts.push_back(systemConflict);
 
         return conflicts;
     }
 
-    bool HotkeyConflictManager::AddHotkey(Hotkey const& _hotkey, const wchar_t* _moduleName, const wchar_t* _hotkeyName, bool isEnabled)
+    bool HotkeyConflictManager::AddHotkey(Hotkey const& _hotkey, const wchar_t* _moduleName, const int _hotkeyID, bool isEnabled)
     {
         if (!isEnabled)
         {
-            disabledHotkeys[_moduleName].push_back({ _hotkey, _moduleName, _hotkeyName });
+            disabledHotkeys[_moduleName].push_back({ _hotkey, _moduleName, _hotkeyID });
             return true;
         }
 
@@ -145,13 +177,13 @@ namespace HotkeyConflictDetector
             return false;
         }
 
-        HotkeyConflictType conflictType = HasConflict(_hotkey, _moduleName, _hotkeyName );
+        HotkeyConflictType conflictType = HasConflict(_hotkey, _moduleName, _hotkeyID);
         if (conflictType != HotkeyConflictType::NoConflict)
         {
             if (conflictType == HotkeyConflictType::InAppConflict)
             {
                 auto hotkeyFound = hotkeyMap.find(handle);
-                inAppConflictHotkeyMap[handle].insert({ _hotkey, _moduleName, _hotkeyName });
+                inAppConflictHotkeyMap[handle].insert({ _hotkey, _moduleName, _hotkeyID });
 
                 if (hotkeyFound != hotkeyMap.end())
                 {
@@ -161,105 +193,18 @@ namespace HotkeyConflictDetector
             }
             else
             {
-                sysConflictHotkeyMap[handle].insert({ _hotkey, _moduleName, _hotkeyName });
+                sysConflictHotkeyMap[handle].insert({ _hotkey, _moduleName, _hotkeyID });
             }
             return false;
         }
 
         HotkeyConflictInfo hotkeyInfo;
         hotkeyInfo.moduleName = _moduleName;
-        hotkeyInfo.hotkeyName = _hotkeyName;
+        hotkeyInfo.hotkeyID = _hotkeyID;
         hotkeyInfo.hotkey = _hotkey;
         hotkeyMap[handle] = hotkeyInfo;
 
         return true;
-    }
-
-    bool HotkeyConflictManager::RemoveHotkey(Hotkey const& _hotkey, const std::wstring& moduleName)
-    {
-        uint16_t handle = GetHotkeyHandle(_hotkey);
-        bool foundRecord = false;
-
-        if (disabledHotkeys.find(moduleName) != disabledHotkeys.end())
-        {
-            auto& hotkeys = disabledHotkeys[moduleName];
-            for (auto it = hotkeys.begin(); it != hotkeys.end();)
-            {
-                if (it->hotkey == _hotkey)
-                {
-                    it = hotkeys.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-            if (hotkeys.empty())
-            {
-                disabledHotkeys.erase(moduleName);
-            }
-        }
-
-        auto it = hotkeyMap.find(handle);
-        if (it != hotkeyMap.end() && it->second.moduleName == moduleName)
-        {
-            hotkeyMap.erase(it);
-            foundRecord = true;
-        }
-
-        auto it_sys = sysConflictHotkeyMap.find(handle);
-        if (it_sys != sysConflictHotkeyMap.end())
-        {
-            auto& sysConflicts = it_sys->second;
-            for (auto it_conf = sysConflicts.begin(); it_conf != sysConflicts.end();)
-            {
-                if (it_conf->moduleName == moduleName)
-                {
-                    it_conf = sysConflicts.erase(it_conf);
-                    foundRecord = true;
-                }
-                else
-                {
-                    ++it_conf;
-                }
-            }
-
-            if (sysConflicts.empty())
-            {
-                sysConflictHotkeyMap.erase(it_sys);
-            }
-        }
-
-        auto it_inApp = inAppConflictHotkeyMap.find(handle);
-        if (it_inApp != inAppConflictHotkeyMap.end())
-        {
-            auto& inAppConflicts = it_inApp->second;
-            for (auto it_conf = inAppConflicts.begin(); it_conf != inAppConflicts.end();)
-            {
-                if (it_conf->moduleName == moduleName)
-                {
-                    it_conf = inAppConflicts.erase(it_conf);
-                    foundRecord = true;
-                }
-                else
-                {
-                    ++it_conf;
-                }
-            }
-
-            if (inAppConflicts.size() == 1)
-            {
-                const auto& onlyConflict = *inAppConflicts.begin();
-                hotkeyMap[handle] = onlyConflict;
-                inAppConflictHotkeyMap.erase(it_inApp);
-            }
-            if (inAppConflicts.empty())
-            {
-                inAppConflictHotkeyMap.erase(it_inApp);
-            }
-        }
-
-        return foundRecord;
     }
 
     std::vector<HotkeyConflictInfo> HotkeyConflictManager::RemoveHotkeyByModule(const std::wstring& moduleName)
@@ -376,7 +321,7 @@ namespace HotkeyConflictDetector
         for (const auto& hotkeyInfo : hotkeys)
         {
             // Re-add the hotkey as enabled
-            AddHotkey(hotkeyInfo.hotkey, moduleName.c_str(), hotkeyInfo.hotkeyName.c_str(), true);
+            AddHotkey(hotkeyInfo.hotkey, moduleName.c_str(), hotkeyInfo.hotkeyID, true);
         }   
     }
 
@@ -473,7 +418,7 @@ namespace HotkeyConflictDetector
                 {
                     JsonObject moduleInfo;
                     moduleInfo.Insert(L"moduleName", value(info.moduleName));
-                    moduleInfo.Insert(L"hotkeyName", value(info.hotkeyName));
+                    moduleInfo.Insert(L"hotkeyID", value(info.hotkeyID));
                     modules.Append(moduleInfo);
                 }
 
@@ -498,7 +443,7 @@ namespace HotkeyConflictDetector
                 {
                     JsonObject moduleInfo;
                     moduleInfo.Insert(L"moduleName", value(info.moduleName));
-                    moduleInfo.Insert(L"hotkeyName", value(info.hotkeyName));
+                    moduleInfo.Insert(L"hotkeyID", value(info.hotkeyID));
                     modules.Append(moduleInfo);
                 }
 

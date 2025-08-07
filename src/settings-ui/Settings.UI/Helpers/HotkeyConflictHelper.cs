@@ -38,8 +38,6 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ["shift"] = hotkeySettings.Shift,
                 ["alt"] = hotkeySettings.Alt,
                 ["key"] = hotkeySettings.Code,
-                ["moduleName"] = hotkeySettings.OwnerModuleName,
-                ["hotkeyName"] = hotkeySettings.HotkeyName,
             };
 
             var requestObject = new JsonObject

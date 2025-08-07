@@ -40,9 +40,7 @@
                         IsExpanded="True">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}" 
-                            HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}"
-                            HasConflict="{x:Bind Path=ViewModel.HotkeyHasConflict, Mode=OneWay}"
-                            Tooltip="{x:Bind Path=ViewModel.HotkeyTooltip, Mode=OneWay}"/>
+                            HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />

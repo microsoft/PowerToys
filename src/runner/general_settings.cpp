@@ -322,7 +322,7 @@ void start_enabled_powertoys()
             powertoy->enable();
             auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
             hkmng.EnableHotkeyByModule(name);
-            // powertoy.UpdateHotkeyEx();
+            powertoy.UpdateHotkeyEx();
         }
     }
 }

@@ -4,66 +4,79 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using AllExperiments;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
     internal sealed class LocalizationHelper
     {
-        private static readonly Dictionary<(string ModuleName, string HotkeyName), string> HotkeyToResourceKeyMap = new()
+        private static readonly Dictionary<(string ModuleName, int HotkeyID), string> HotkeyToResourceKeyMap = new()
         {
             // AdvancedPaste module mappings
-            { ("advancedpaste", "AdvancedPasteUIShortcut"), "AdvancedPasteUI_Shortcut" },
-            { ("advancedpaste", "PasteAsPlainTextShortcut"), "PasteAsPlainText_Shortcut" },
-            { ("advancedpaste", "PasteAsMarkdownShortcut"), "PasteAsMarkdown_Shortcut" },
-            { ("advancedpaste", "PasteAsJsonShortcut"), "PasteAsJson_Shortcut" },
-            { ("advancedpaste", "ImageToTextShortcut"), "ImageToText" },
-            { ("advancedpaste", "PasteAsTxtFileShortcut"), "PasteAsTxtFile" },
-            { ("advancedpaste", "PasteAsPngFileShortcut"), "PasteAsPngFile" },
-            { ("advancedpaste", "PasteAsHtmlFileShortcut"), "PasteAsHtmlFile" },
-            { ("advancedpaste", "TranscodeToMp3Shortcut"), "TranscodeToMp3" },
-            { ("advancedpaste", "TranscodeToMp4Shortcut"), "TranscodeToMp4" },
+            { (ModuleNames.AdvancedPaste, 0), "PasteAsPlainText_Shortcut" },
+            { (ModuleNames.AdvancedPaste, 1), "AdvancedPasteUI_Shortcut" },
+            { (ModuleNames.AdvancedPaste, 2), "PasteAsMarkdown_Shortcut" },
+            { (ModuleNames.AdvancedPaste, 3), "PasteAsJson_Shortcut" },
+            { (ModuleNames.AdvancedPaste, 4), "ImageToText" },
+            { (ModuleNames.AdvancedPaste, 5), "PasteAsTxtFile" },
+            { (ModuleNames.AdvancedPaste, 6), "PasteAsPngFile" },
+            { (ModuleNames.AdvancedPaste, 7), "PasteAsHtmlFile" },
+            { (ModuleNames.AdvancedPaste, 8), "TranscodeToMp3" },
+            { (ModuleNames.AdvancedPaste, 9), "TranscodeToMp4" },
 
             // AlwaysOnTop module mappings
-            { ("alwaysontop", "Hotkey"), "AlwaysOnTop_ActivationShortcut" },
+            { (ModuleNames.AlwaysOnTop, 0), "AlwaysOnTop_ActivationShortcut" },
 
             // ColorPicker module mappings
-            { ("colorpicker", "ActivationShortcut"), "Activation_Shortcut" },
+            { (ModuleNames.ColorPicker, 0), "Activation_Shortcut" },
 
             // CropAndLock module mappings
-            { ("cropandlock", "ThumbnailHotkey"), "CropAndLock_ThumbnailActivation_Shortcut" },
-            { ("cropandlock", "ReparentHotkey"), "CropAndLock_ReparentActivation_Shortcut" },
+            { (ModuleNames.CropAndLock, 0), "CropAndLock_ReparentActivation_Shortcut" },
+            { (ModuleNames.CropAndLock, 1), "CropAndLock_ThumbnailActivation_Shortcut" },
 
             // MeasureTool module mappings
-            { ("measure tool", "ActivationShortcut"), "MeasureTool_ActivationShortcut" },
+            { (ModuleNames.MeasureTool, 0), "MeasureTool_ActivationShortcut" },
 
             // ShortcutGuide module mappings
-            { ("shortcut guide", "OpenShortcutGuide"), "Activation_Shortcut" },
+            { (ModuleNames.ShortcutGuide, 0), "Activation_Shortcut" },
 
             // PowerOCR/TextExtractor module mappings
-            { ("textextractor", "ActivationShortcut"), "Activation_Shortcut" },
+            { (ModuleNames.PowerOcr, 0), "Activation_Shortcut" },
+            { (ModuleNames.TextExtractor, 0), "Activation_Shortcut" },
 
             // Workspaces module mappings
-            { ("workspaces", "Hotkey"), "Workspaces_ActivationShortcut" },
+            { (ModuleNames.Workspaces, 0), "Workspaces_ActivationShortcut" },
 
             // Peek module mappings
-            { ("peek", "ActivationShortcut"), "Activation_Shortcut" },
+            { (ModuleNames.Peek, 0), "Activation_Shortcut" },
 
             // PowerLauncher module mappings
-            { ("powertoys run", "OpenPowerLauncher"), "PowerLauncher_OpenPowerLauncher" },
+            { (ModuleNames.PowerLauncher, 0), "PowerLauncher_OpenPowerLauncher" },
 
             // MouseUtils module mappings
-            { ("mousehighlighter", "ActivationShortcut"), "MouseUtils_MouseHighlighter_ActivationShortcut" },
-            { ("mousejump", "ActivationShortcut"), "MouseUtils_MouseJump_ActivationShortcut" },
-            { ("mousepointercrosshairs", "ActivationShortcut"), "MouseUtils_MousePointerCrosshairs_ActivationShortcut" },
-            { ("findmymouse", "ActivationShortcut"), "MouseUtils_FindMyMouse_ActivationShortcut" },
+            { (ModuleNames.MouseHighlighter, 0), "MouseUtils_MouseHighlighter_ActivationShortcut" },
+            { (ModuleNames.MouseJump, 0), "MouseUtils_MouseJump_ActivationShortcut" },
+            { (ModuleNames.MousePointerCrosshairs, 0), "MouseUtils_MousePointerCrosshairs_ActivationShortcut" },
+            { (ModuleNames.FindMyMouse, 0), "MouseUtils_FindMyMouse_ActivationShortcut" },
 
             // Mouse without borders module mappings
-            { ("mousewithoutborders", "HotKeySwitch2AllPC"), "MouseWithoutBorders_Switch2AllPcShortcut" },
-            { ("mousewithoutborders", "HotKeyLockMachine"), "MouseWithoutBorders_LockMachinesShortcut" },
-            { ("mousewithoutborders", "HotKeyReconnect"), "MouseWithoutBorders_ReconnectShortcut" },
-            { ("mousewithoutborders", "HotKeyToggleEasyMouse"), "MouseWithoutBorders_ToggleEasyMouseShortcut" },
+            { (ModuleNames.MouseWithoutBorders, 0), "MouseWithoutBorders_ToggleEasyMouseShortcut" },
+            { (ModuleNames.MouseWithoutBorders, 1), "MouseWithoutBorders_LockMachinesShortcut" },
+            { (ModuleNames.MouseWithoutBorders, 2), "MouseWithoutBorders_Switch2AllPcShortcut" },
+            { (ModuleNames.MouseWithoutBorders, 3), "MouseWithoutBorders_ReconnectShortcut" },
+
+            // ZoomIt module mappings
+            { (ModuleNames.ZoomIt, 0), "ZoomIt_Zoom_Shortcut" },
+            { (ModuleNames.ZoomIt, 1), "ZoomIt_LiveZoom_Shortcut" },
+            { (ModuleNames.ZoomIt, 2), "ZoomIt_Draw_Shortcut" },
+            { (ModuleNames.ZoomIt, 3), "ZoomIt_Record_Shortcut" },
+            { (ModuleNames.ZoomIt, 4), "ZoomIt_Snip_Shortcut" },
+            { (ModuleNames.ZoomIt, 5), "ZoomIt_Break_Shortcut" },
+            { (ModuleNames.ZoomIt, 6), "ZoomIt_DemoType_Shortcut" },
         };
 
         // Delegate for getting custom action names
@@ -73,16 +86,16 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         /// Gets the localized header text based on module name and hotkey name
         /// </summary>
         /// <param name="moduleName">The name of the module (case-insensitive)</param>
-        /// <param name="hotkeyName">The name of the hotkey</param>
+        /// <param name="hotkeyID">The ID of the hotkey</param>
         /// <returns>The localized header text, or the hotkey name if no resource is found</returns>
-        public static string GetLocalizedHotkeyHeader(string moduleName, string hotkeyName)
+        public static string GetLocalizedHotkeyHeader(string moduleName, int hotkeyID)
         {
-            if (string.IsNullOrEmpty(moduleName) || string.IsNullOrEmpty(hotkeyName))
+            if (string.IsNullOrEmpty(moduleName) || hotkeyID < 0)
             {
-                return hotkeyName ?? string.Empty;
+                return string.Empty;
             }
 
-            var key = (moduleName.ToLowerInvariant(), hotkeyName);
+            var key = (moduleName.ToLowerInvariant(), hotkeyID);
 
             // Try to get from resource file using resource key mapping
             if (HotkeyToResourceKeyMap.TryGetValue(key, out string resourceKey))
@@ -94,15 +107,14 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 }
             }
 
-            // Handle custom actions for AdvancedPaste
-            if (moduleName.Equals("advancedpaste", StringComparison.OrdinalIgnoreCase) &&
-                hotkeyName.StartsWith("CustomAction_", StringComparison.OrdinalIgnoreCase))
+            // Handle custom actions for AdvancedPaste, whose IDs start from 10
+            if (moduleName.Equals(ModuleNames.AdvancedPaste, StringComparison.OrdinalIgnoreCase) && hotkeyID > 9)
             {
                 // Try to get the custom action name using the delegate
-                if (GetCustomActionNameDelegate != null &&
-                    int.TryParse(hotkeyName.AsSpan("CustomAction_".Length), out int actionId))
+                if (GetCustomActionNameDelegate != null)
                 {
-                    var customActionName = GetCustomActionNameDelegate(moduleName, actionId);
+                    var actionID = hotkeyID - 10; // Adjust ID for custom actions
+                    var customActionName = GetCustomActionNameDelegate(moduleName, actionID);
                     if (!string.IsNullOrEmpty(customActionName))
                     {
                         return customActionName;
@@ -117,16 +129,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 }
             }
 
-            // Try to generate resource key from hotkey name
-            var fallbackResourceKey = GenerateResourceKeyFromHotkeyName(moduleName, hotkeyName);
-            var fallbackText = GetLocalizedStringFromResource(fallbackResourceKey);
-            if (!string.IsNullOrEmpty(fallbackText))
-            {
-                return fallbackText;
-            }
-
-            // Final fallback: return the hotkey name as-is
-            return hotkeyName;
+            return string.Empty;
         }
 
         /// <summary>
@@ -145,72 +148,17 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             try
             {
                 var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-                if (resourceLoader != null)
+                var result = resourceLoader.GetString($"{resourceKey}/Header");
+                if (!string.IsNullOrEmpty(result))
                 {
-                    // Try different variations of the resource key
-                    string[] keyVariations =
-                    {
-                        $"{resourceKey}.Header",  // Try with .Header suffix first
-                        resourceKey,              // Try the key as-is
-                        $"{resourceKey}/Header",  // Try with /Header suffix (some resources use this format)
-                        $"{resourceKey}_Header",   // Try with _Header suffix
-                    };
-
-                    foreach (var keyVariation in keyVariations)
-                    {
-                        try
-                        {
-                            var result = resourceLoader.GetString(keyVariation);
-                            if (!string.IsNullOrEmpty(result))
-                            {
-                                return result;
-                            }
-                        }
-                        catch
-                        {
-                            // Continue to next variation
-                            continue;
-                        }
-                    }
+                    return result;
                 }
             }
             catch (Exception)
             {
-                // If resource loading fails, return null to allow fallback
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Generates a resource key from module name and hotkey name
-        /// </summary>
-        /// <param name="moduleName">The module name</param>
-        /// <param name="hotkeyName">The hotkey name</param>
-        /// <returns>Generated resource key</returns>
-        private static string GenerateResourceKeyFromHotkeyName(string moduleName, string hotkeyName)
-        {
-            if (string.IsNullOrEmpty(moduleName) || string.IsNullOrEmpty(hotkeyName))
-            {
-                return string.Empty;
-            }
-
-            // Clean module name - capitalize first letter and make rest lowercase
-            var cleanModuleName = char.ToUpperInvariant(moduleName[0]) + moduleName.Substring(1).ToLowerInvariant();
-
-            // Clean hotkey name
-            string cleanHotkeyName = hotkeyName;
-            if (hotkeyName.EndsWith("Shortcut", StringComparison.OrdinalIgnoreCase))
-            {
-                cleanHotkeyName = hotkeyName.Substring(0, hotkeyName.Length - "Shortcut".Length);
-            }
-            else if (cleanHotkeyName.EndsWith("Hotkey", StringComparison.OrdinalIgnoreCase))
-            {
-                cleanHotkeyName = cleanHotkeyName.Substring(0, cleanHotkeyName.Length - "Hotkey".Length);
-            }
-
-            // Generate resource key pattern: ModuleName_HotkeyName_Shortcut
-            return $"{cleanModuleName}_{cleanHotkeyName}_Shortcut";
         }
     }
 }

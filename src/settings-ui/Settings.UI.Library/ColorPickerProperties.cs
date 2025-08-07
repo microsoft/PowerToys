@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class ColorPickerProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x43, "ActivationShortcut", ColorPickerSettings.ModuleName);
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x43);
 
         public ColorPickerProperties()
         {

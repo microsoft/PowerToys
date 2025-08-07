@@ -10,13 +10,12 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -25,9 +24,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class PowerLauncherViewModel : PageViewModelBase, IDisposable
     {
-        private bool _openPowerLauncherHasConflict;
-        private string _openPowerLauncherTooltip;
-
         private int _themeIndex;
         private int _monitorPositionIndex;
 
@@ -85,12 +81,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         JsonSerializer.Serialize(s, SourceGenerationContextContext.Default.PowerLauncherSettings)));
             };
 
-            if (string.IsNullOrEmpty(settings.Properties.OpenPowerLauncher.HotkeyName))
-            {
-                settings.Properties.OpenPowerLauncher.HotkeyName = "OpenPowerLauncher";
-                settings.Properties.OpenPowerLauncher.OwnerModuleName = PowerLauncherSettings.ModuleName;
-            }
-
             switch (settings.Properties.Theme)
             {
                 case Theme.Dark:
@@ -135,62 +125,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
         {
-            UpdateHotkeyConflictStatus(e.Conflicts);
-
-            // Update properties using setters to trigger PropertyChanged
-            void UpdateConflictProperties()
+            var hotkeyAccessors = new List<HotkeyAccessor>
             {
-                OpenPowerLauncherHasConflict = GetHotkeyConflictStatus("OpenPowerLauncher");
-                OpenPowerLauncherTooltip = GetHotkeyConflictTooltip("OpenPowerLauncher");
-            }
+                new HotkeyAccessor(
+                    () => OpenPowerLauncher,
+                    value => OpenPowerLauncher = value),
+            };
 
-            _ = Task.Run(() =>
+            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
             {
-                try
-                {
-                    var settingsWindow = App.GetSettingsWindow();
-                    if (settingsWindow?.DispatcherQueue != null)
-                    {
-                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
-                    }
-                    else
-                    {
-                        UpdateConflictProperties();
-                    }
-                }
-                catch
-                {
-                    UpdateConflictProperties();
-                }
-            });
-        }
+                [ModuleName] = hotkeyAccessors.ToArray(),
+            };
 
-        public bool OpenPowerLauncherHasConflict
-        {
-            get => _openPowerLauncherHasConflict;
-            set
-            {
-                if (_openPowerLauncherHasConflict != value)
-                {
-                    _openPowerLauncherHasConflict = value;
-                    OnPropertyChanged(nameof(OpenPowerLauncherHasConflict));
-                }
-            }
-        }
-
-        public string OpenPowerLauncherTooltip
-        {
-            get => _openPowerLauncherTooltip;
-            set
-            {
-                if (_openPowerLauncherTooltip != value)
-                {
-                    _openPowerLauncherTooltip = value;
-                    OnPropertyChanged(nameof(OpenPowerLauncherTooltip));
-                }
-            }
+            return hotkeysDict;
         }
 
         private void OnPluginInfoChange(object sender, PropertyChangedEventArgs e)
@@ -754,36 +703,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             OnPropertyChanged(nameof(Plugins));
-        }
-
-        private void CheckAndUpdateHotkeyName()
-        {
-            bool hasChange = false;
-            if (settings.Properties.OpenPowerLauncher.HotkeyName == string.Empty)
-            {
-                settings.Properties.OpenPowerLauncher.HotkeyName = "OpenPowerLauncher";
-                settings.Properties.OpenPowerLauncher.OwnerModuleName = PowerLauncherSettings.ModuleName;
-                hasChange = true;
-            }
-
-            if (settings.Properties.OpenFileLocation.HotkeyName == string.Empty)
-            {
-                settings.Properties.OpenFileLocation.HotkeyName = "OpenFileLocation";
-                settings.Properties.OpenFileLocation.OwnerModuleName = PowerLauncherSettings.ModuleName;
-                hasChange = true;
-            }
-
-            if (settings.Properties.CopyPathLocation.HotkeyName == string.Empty)
-            {
-                settings.Properties.CopyPathLocation.HotkeyName = "CopyPathLocation";
-                settings.Properties.CopyPathLocation.OwnerModuleName = PowerLauncherSettings.ModuleName;
-                hasChange = true;
-            }
-
-            if (hasChange)
-            {
-                UpdateSettings();
-            }
         }
 
         public override void Dispose()

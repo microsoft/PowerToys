@@ -7,11 +7,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
@@ -20,9 +19,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class MeasureToolViewModel : PageViewModelBase
     {
         protected override string ModuleName => MeasureToolSettings.ModuleName;
-
-        private bool _activationShortcutHasConflict;
-        private string _activationShortcutTooltip;
 
         private ISettingsUtils SettingsUtils { get; set; }
 
@@ -48,13 +44,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Settings = measureToolSettingsRepository.SettingsConfig;
 
-            if (Settings.Properties.ActivationShortcut.HotkeyName == string.Empty)
-            {
-                Settings.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
-                Settings.Properties.ActivationShortcut.OwnerModuleName = MeasureToolSettings.ModuleName;
-                settingsUtils.SaveSettings(Settings.ToJsonString(), MeasureToolSettings.ModuleName);
-            }
-
             SendConfigMSG = ipcMSGCallBackFunc;
         }
 
@@ -73,62 +62,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
         {
-            UpdateHotkeyConflictStatus(e.Conflicts);
-
-            // Update properties using setters to trigger PropertyChanged
-            void UpdateConflictProperties()
+            var hotkeyAccessors = new List<HotkeyAccessor>
             {
-                ActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
-                ActivationShortcutTooltip = GetHotkeyConflictTooltip("ActivationShortcut");
-            }
+                new HotkeyAccessor(
+                    () => ActivationShortcut,
+                    value => ActivationShortcut = value),
+            };
 
-            _ = Task.Run(() =>
+            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
             {
-                try
-                {
-                    var settingsWindow = App.GetSettingsWindow();
-                    if (settingsWindow?.DispatcherQueue != null)
-                    {
-                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
-                    }
-                    else
-                    {
-                        UpdateConflictProperties();
-                    }
-                }
-                catch
-                {
-                    UpdateConflictProperties();
-                }
-            });
-        }
+                [ModuleName] = hotkeyAccessors.ToArray(),
+            };
 
-        public bool ActivationShortcutHasConflict
-        {
-            get => _activationShortcutHasConflict;
-            set
-            {
-                if (_activationShortcutHasConflict != value)
-                {
-                    _activationShortcutHasConflict = value;
-                    OnPropertyChanged(nameof(ActivationShortcutHasConflict));
-                }
-            }
-        }
-
-        public string ActivationShortcutTooltip
-        {
-            get => _activationShortcutTooltip;
-            set
-            {
-                if (_activationShortcutTooltip != value)
-                {
-                    _activationShortcutTooltip = value;
-                    OnPropertyChanged(nameof(ActivationShortcutTooltip));
-                }
-            }
+            return hotkeysDict;
         }
 
         public bool IsEnabled

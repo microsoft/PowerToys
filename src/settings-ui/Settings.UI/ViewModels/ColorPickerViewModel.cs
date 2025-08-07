@@ -11,10 +11,10 @@ using System.Text.Json;
 using System.Timers;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
@@ -42,10 +42,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isEnabled;
         private int _colorFormatPreviewIndex;
 
-        // Conflict detection properties
-        private bool _activationShortcutHasConflict;
-        private string _activationShortcutTooltip;
-
         private Func<string, int> SendConfigMSG { get; }
 
         private Dictionary<string, string> _colorFormatsPreview;
@@ -65,13 +61,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig;
 
-            if (_colorPickerSettings.Properties.ActivationShortcut.HotkeyName == string.Empty)
-            {
-                _colorPickerSettings.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
-                _colorPickerSettings.Properties.ActivationShortcut.OwnerModuleName = ColorPickerSettings.ModuleName;
-                _settingsUtils.SaveSettings(_colorPickerSettings.ToJsonString(), ColorPickerSettings.ModuleName);
-            }
-
             InitializeEnabledValue();
 
             // set the callback functions value to handle outgoing IPC message.
@@ -83,74 +72,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.AutoReset = false;
 
             InitializeColorFormats();
-
-            // Initialize conflict properties
-            InitializeConflictPropertiesDefaults();
-        }
-
-        private void InitializeConflictPropertiesDefaults()
-        {
-            ActivationShortcutHasConflict = false;
-            ActivationShortcutTooltip = null;
-        }
-
-        // Conflict detection properties
-        public bool ActivationShortcutHasConflict
-        {
-            get => _activationShortcutHasConflict;
-            set
-            {
-                if (_activationShortcutHasConflict != value)
-                {
-                    _activationShortcutHasConflict = value;
-                    OnPropertyChanged(nameof(ActivationShortcutHasConflict));
-                }
-            }
-        }
-
-        public string ActivationShortcutTooltip
-        {
-            get => _activationShortcutTooltip;
-            set
-            {
-                if (_activationShortcutTooltip != value)
-                {
-                    _activationShortcutTooltip = value;
-                    OnPropertyChanged(nameof(ActivationShortcutTooltip));
-                }
-            }
-        }
-
-        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
-        {
-            UpdateHotkeyConflictStatus(e.Conflicts);
-
-            // Update properties using setters to trigger PropertyChanged
-            void UpdateConflictProperties()
-            {
-                ActivationShortcutHasConflict = GetHotkeyConflictStatus("ActivationShortcut");
-                ActivationShortcutTooltip = GetHotkeyConflictTooltip("ActivationShortcut");
-            }
-
-            _ = System.Threading.Tasks.Task.Run(() =>
-            {
-                try
-                {
-                    var settingsWindow = App.GetSettingsWindow();
-                    if (settingsWindow?.DispatcherQueue != null)
-                    {
-                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
-                    }
-                    else
-                    {
-                        UpdateConflictProperties();
-                    }
-                }
-                catch
-                {
-                    UpdateConflictProperties();
-                }
-            });
         }
 
         private void InitializeEnabledValue()
@@ -166,6 +87,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.ColorPicker;
             }
+        }
+
+        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
+        {
+            var hotkeyAccessors = new List<HotkeyAccessor>
+            {
+                new HotkeyAccessor(
+                    () => ActivationShortcut,
+                    value => ActivationShortcut = value),
+            };
+
+            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
+            {
+                [ModuleName] = hotkeyAccessors.ToArray(),
+            };
+
+            return hotkeysDict;
         }
 
         public bool IsEnabled

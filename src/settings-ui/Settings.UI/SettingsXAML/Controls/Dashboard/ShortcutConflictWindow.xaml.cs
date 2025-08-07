@@ -6,6 +6,7 @@ using System;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -87,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
         /// <returns>The custom action name, or null if not found</returns>
         private string GetCustomActionName(string moduleName, int actionId)
         {
-            if (!moduleName.Equals("advancedpaste", StringComparison.OrdinalIgnoreCase))
+            if (!moduleName.Equals(ModuleNames.AdvancedPaste, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }

@@ -45,7 +45,10 @@ public:
         bool shift = false;
         bool alt = false;
         unsigned char key = 0;
-        const wchar_t* name = nullptr;
+        // The id is used to identify the hotkey in the module. The order in module interface should be the same as in the settings.
+        int id = 0;
+        // Currently, this is only used by AdvancedPaste to determine if the hotkey is shown in the settings.
+        bool isShown = true;
 
         std::strong_ordering operator<=>(const Hotkey& other) const
         {
@@ -79,7 +82,7 @@ public:
     {
         WORD modifiersMask = 0;
         WORD vkCode = 0;
-        const wchar_t* name = nullptr;
+        int id = 0;
     };
 
     /* Returns the localized name of the PowerToy*/

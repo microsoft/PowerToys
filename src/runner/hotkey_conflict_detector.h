@@ -18,17 +18,14 @@ namespace HotkeyConflictDetector
     {
         Hotkey hotkey;
         std::wstring moduleName;
-        std::wstring hotkeyName;
-        bool usingKBHook = true;
+        int hotkeyID = 0;
 
         inline bool operator==(const HotkeyConflictInfo& other) const  
         {  
            return hotkey == other.hotkey &&  
                   moduleName == other.moduleName &&  
-                  hotkeyName == other.hotkeyName;  
+                  hotkeyID == other.hotkeyID;  
         }
-
-
     };
 
     Hotkey ShortcutToHotkey(const CentralizedHotkeys::Shortcut& shortcut);
@@ -45,10 +42,10 @@ namespace HotkeyConflictDetector
     public:
         static HotkeyConflictManager& GetInstance();
 
-        HotkeyConflictType HasConflict(const Hotkey& hotkey, const wchar_t* moduleName, const wchar_t* hotkeyName);
-        std::vector<HotkeyConflictInfo> HotkeyConflictManager::GetAllConflicts(Hotkey const& _hotkey);
-        bool AddHotkey(const Hotkey& hotkey, const wchar_t* moduleName, const wchar_t* hotkeyName, bool isEnabled);
-        bool RemoveHotkey(const Hotkey& hotkey, const std::wstring& moduleName);
+        HotkeyConflictType HasConflict(const Hotkey& hotkey, const wchar_t* moduleName, const int hotkeyID);
+        HotkeyConflictType HotkeyConflictManager::HasConflict(Hotkey const& _hotkey);
+        std::vector<HotkeyConflictInfo> HotkeyConflictManager::GetAllConflicts(Hotkey const& hotkey);
+        bool AddHotkey(const Hotkey& hotkey, const wchar_t* moduleName, const int hotkeyID, bool isEnabled);
         std::vector<HotkeyConflictInfo> RemoveHotkeyByModule(const std::wstring& moduleName);
         
         void EnableHotkeyByModule(const std::wstring& moduleName);
@@ -93,11 +90,11 @@ namespace std
                 (static_cast<size_t>(info.hotkey.key) << 4);
 
             size_t moduleHash = std::hash<std::wstring>{}(info.moduleName);
-            size_t nameHash = std::hash<std::wstring>{}(info.hotkeyName);
+            size_t idHash = std::hash<int>{}(info.hotkeyID);
 
             return hotkeyHash ^ 
                 ((moduleHash << 1) | (moduleHash >> (sizeof(size_t) * 8 - 1))) ^    // rotate left 1 bit
-                ((nameHash << 2) | (nameHash >> (sizeof(size_t) * 8 - 2)));         // rotate left 2 bits
+                ((idHash << 2) | (idHash >> (sizeof(size_t) * 8 - 2)));         // rotate left 2 bits
         }
     };
 }

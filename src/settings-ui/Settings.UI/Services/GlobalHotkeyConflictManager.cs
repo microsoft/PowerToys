@@ -46,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             ConflictsUpdated?.Invoke(this, e);
         }
 
-        public bool HasConflictForHotkey(HotkeySettings hotkey, string moduleName = null, string hotkeyName = null)
+        public bool HasConflictForHotkey(HotkeySettings hotkey, string moduleName, int hotkeyID)
         {
             if (hotkey == null)
             {
@@ -59,11 +59,11 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             {
                 if (IsHotkeyMatch(hotkey, group.Hotkey))
                 {
-                    if (!string.IsNullOrEmpty(moduleName) && !string.IsNullOrEmpty(hotkeyName))
+                    if (!string.IsNullOrEmpty(moduleName) && hotkeyID >= 0)
                     {
                         var selfModule = group.Modules.FirstOrDefault(m =>
                             m.ModuleName.Equals(moduleName, StringComparison.OrdinalIgnoreCase) &&
-                            m.HotkeyName.Equals(hotkeyName, StringComparison.OrdinalIgnoreCase));
+                            m.HotkeyID == hotkeyID);
 
                         if (selfModule != null && group.Modules.Count == 1)
                         {
@@ -99,8 +99,8 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                         {
                             IsSystemConflict = group.IsSystemConflict,
                             ConflictingModuleName = firstModule.ModuleName,
-                            ConflictingHotkeyName = firstModule.HotkeyName,
-                            AllConflictingModules = conflictModules.Select(m => $"{m.ModuleName}:{m.HotkeyName}").ToList(),
+                            ConflictingHotkeyID = firstModule.HotkeyID,
+                            AllConflictingModules = conflictModules.Select(m => $"{m.ModuleName}:{m.HotkeyID}").ToList(),
                         };
                     }
                 }

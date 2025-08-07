@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -32,6 +33,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private bool _isActive;
         private bool disposedValue;
 
+        private bool _hasConflict;
+        private string _tooltip;
+
         public string Header { get; set; }
 
         public string Keys { get; set; }
@@ -39,10 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register("Enabled", typeof(bool), typeof(ShortcutControl), null);
         public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(ShortcutControl), null);
         public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
-
-        // New dependency properties for conflict status and tooltip
-        public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnHasConflictChanged));
-        public static readonly DependencyProperty TooltipProperty = DependencyProperty.Register("Tooltip", typeof(string), typeof(ShortcutControl), new PropertyMetadata(null, OnTooltipChanged));
 
         private static ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
@@ -99,14 +99,26 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public bool HasConflict
         {
-            get => (bool)GetValue(HasConflictProperty);
-            set => SetValue(HasConflictProperty, value);
+            get => _hasConflict;
+            set
+            {
+                if (_hasConflict != value)
+                {
+                    _hasConflict = value;
+                }
+            }
         }
 
         public string Tooltip
         {
-            get => (string)GetValue(TooltipProperty);
-            set => SetValue(TooltipProperty, value);
+            get => _tooltip;
+            set
+            {
+                if (_tooltip != value)
+                {
+                    _tooltip = value;
+                }
+            }
         }
 
         public bool Enabled
@@ -143,11 +155,51 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (hotkeySettings != value)
                 {
+                    // Unsubscribe from old settings
+                    if (hotkeySettings != null)
+                    {
+                        hotkeySettings.PropertyChanged -= OnHotkeySettingsPropertyChanged;
+                    }
+
                     hotkeySettings = value;
                     SetValue(HotkeySettingsProperty, value);
+
+                    // Subscribe to new settings
+                    if (hotkeySettings != null)
+                    {
+                        hotkeySettings.PropertyChanged += OnHotkeySettingsPropertyChanged;
+
+                        // Update UI based on conflict properties
+                        UpdateConflictStatusFromHotkeySettings();
+                    }
+
                     SetKeys();
-                    c.Keys = HotkeySettings.GetKeysList();
+                    c.Keys = HotkeySettings?.GetKeysList();
                 }
+            }
+        }
+
+        private void OnHotkeySettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(HotkeySettings.HasConflict) ||
+                e.PropertyName == nameof(HotkeySettings.ConflictDescription))
+            {
+                UpdateConflictStatusFromHotkeySettings();
+            }
+        }
+
+        private void UpdateConflictStatusFromHotkeySettings()
+        {
+            if (hotkeySettings != null)
+            {
+                // Update the ShortcutControl's conflict properties from HotkeySettings
+                HasConflict = hotkeySettings.HasConflict;
+                Tooltip = hotkeySettings.HasConflict ? hotkeySettings.ConflictDescription : null;
+            }
+            else
+            {
+                HasConflict = false;
+                Tooltip = null;
             }
         }
 
@@ -210,6 +262,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             if (App.GetSettingsWindow() != null)
             {
                 App.GetSettingsWindow().Activated -= ShortcutDialog_SettingsWindow_Activated;
+            }
+
+            // Unsubscribe from HotkeySettings property changes
+            if (hotkeySettings != null)
+            {
+                hotkeySettings.PropertyChanged -= OnHotkeySettingsPropertyChanged;
             }
 
             // Dispose the HotkeySettingsControlHook object to terminate the hook threads when the textbox is unloaded
@@ -408,9 +466,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     EnableKeys();
                     if (lastValidSettings.IsValid())
                     {
-                        lastValidSettings.HotkeyName = hotkeySettings.HotkeyName;
-                        lastValidSettings.OwnerModuleName = hotkeySettings.OwnerModuleName;
-                        CheckForConflicts(lastValidSettings);
+                        if (string.Equals(lastValidSettings.ToString(), hotkeySettings.ToString(), StringComparison.OrdinalIgnoreCase))
+                        {
+                            c.HasConflict = hotkeySettings.HasConflict;
+                            c.ConflictMessage = hotkeySettings.ConflictDescription;
+                        }
+                        else
+                        {
+                            // Check for conflicts with the new hotkey settings
+                            CheckForConflicts(lastValidSettings);
+                        }
                     }
                 }
             }
@@ -541,9 +606,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             c.Keys = null;
             c.Keys = HotkeySettings.GetKeysList();
 
-            // Reset conflict status when opening dialog
-            c.HasConflict = false;
-            c.ConflictMessage = string.Empty;
+            c.HasConflict = hotkeySettings.HasConflict;
+            c.ConflictMessage = hotkeySettings.ConflictDescription;
 
             // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
             // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore

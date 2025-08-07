@@ -5,11 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -18,16 +17,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         protected override string ModuleName => ShortcutGuideSettings.ModuleName;
 
-        private bool _openShortcutGuideHasConflict;
-        private string _openShortcutGuideTooltip;
-
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private ShortcutGuideSettings Settings { get; set; }
-
-        private const string ModuleNameConst = ShortcutGuideSettings.ModuleName;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -51,12 +45,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(moduleSettingsRepository);
 
             Settings = moduleSettingsRepository.SettingsConfig;
-
-            if (string.IsNullOrEmpty(Settings.Properties.OpenShortcutGuide.HotkeyName))
-            {
-                Settings.Properties.OpenShortcutGuide.HotkeyName = Settings.Properties.DefaultOpenShortcutGuide.HotkeyName;
-                Settings.Properties.OpenShortcutGuide.OwnerModuleName = Settings.Properties.DefaultOpenShortcutGuide.OwnerModuleName;
-            }
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -92,62 +80,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
         {
-            UpdateHotkeyConflictStatus(e.Conflicts);
-
-            // Update properties using setters to trigger PropertyChanged
-            void UpdateConflictProperties()
+            var hotkeyAccessors = new List<HotkeyAccessor>
             {
-                OpenShortcutGuideHasConflict = GetHotkeyConflictStatus("OpenShortcutGuide");
-                OpenShortcutGuideTooltip = GetHotkeyConflictTooltip("OpenShortcutGuide");
-            }
+                new HotkeyAccessor(
+                    () => OpenShortcutGuide,
+                    value => OpenShortcutGuide = value),
+            };
 
-            _ = Task.Run(() =>
+            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
             {
-                try
-                {
-                    var settingsWindow = App.GetSettingsWindow();
-                    if (settingsWindow?.DispatcherQueue != null)
-                    {
-                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
-                    }
-                    else
-                    {
-                        UpdateConflictProperties();
-                    }
-                }
-                catch
-                {
-                    UpdateConflictProperties();
-                }
-            });
-        }
+                [ModuleName] = hotkeyAccessors.ToArray(),
+            };
 
-        public bool OpenShortcutGuideHasConflict
-        {
-            get => _openShortcutGuideHasConflict;
-            set
-            {
-                if (_openShortcutGuideHasConflict != value)
-                {
-                    _openShortcutGuideHasConflict = value;
-                    OnPropertyChanged(nameof(OpenShortcutGuideHasConflict));
-                }
-            }
-        }
-
-        public string OpenShortcutGuideTooltip
-        {
-            get => _openShortcutGuideTooltip;
-            set
-            {
-                if (_openShortcutGuideTooltip != value)
-                {
-                    _openShortcutGuideTooltip = value;
-                    OnPropertyChanged(nameof(OpenShortcutGuideTooltip));
-                }
-            }
+            return hotkeysDict;
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
@@ -326,7 +273,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string GetSettingsSubPath()
         {
-            return _settingsConfigFileFolder + "\\" + ModuleNameConst;
+            return _settingsConfigFileFolder + "\\" + ModuleName;
         }
 
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
@@ -336,7 +283,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SndShortcutGuideSettings outsettings = new SndShortcutGuideSettings(Settings);
             SndModuleSettings<SndShortcutGuideSettings> ipcMessage = new SndModuleSettings<SndShortcutGuideSettings>(outsettings);
             SendConfigMSG(ipcMessage.ToJsonString());
-            SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleNameConst);
+            SettingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
 
         public void RefreshEnabledState()

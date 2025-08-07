@@ -5,14 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.Utilities;
 
@@ -21,17 +18,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class MouseUtilsViewModel : PageViewModelBase
     {
         protected override string ModuleName => "MouseUtils";
-
-        // Conflict tracking dictionaries
-        private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
-        private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
-
-        private bool _findMyMouseActivationShortcutHasConflict;
-        private bool _mouseHighlighterActivationShortcutHasConflict;
-        private bool _mousePointerCrosshairsActivationShortcutHasConflict;
-        private string _findMyMouseActivationShortcutTooltip;
-        private string _mouseHighlighterActivationShortcutTooltip;
-        private string _mousePointerCrosshairsActivationShortcutTooltip;
 
         private ISettingsUtils SettingsUtils { get; set; }
 
@@ -96,13 +82,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
             _highlighterAutoActivate = MouseHighlighterSettingsConfig.Properties.AutoActivate.Value;
 
-            if (MouseHighlighterSettingsConfig.Properties.ActivationShortcut.HotkeyName == string.Empty)
-            {
-                MouseHighlighterSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
-                MouseHighlighterSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = MouseHighlighterSettings.ModuleName;
-                SettingsUtils.SaveSettings(MouseHighlighterSettingsConfig.ToJsonString(), MouseHighlighterSettings.ModuleName);
-            }
-
             this.InitializeMouseJumpSettings(mouseJumpSettingsRepository);
 
             ArgumentNullException.ThrowIfNull(mousePointerCrosshairsSettingsRepository);
@@ -124,28 +103,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
 
-            // Set the hotkey names
-            if (string.IsNullOrEmpty(MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut.HotkeyName))
-            {
-                MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
-                MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = MousePointerCrosshairsSettings.ModuleName;
-            }
-
-            if (string.IsNullOrEmpty(FindMyMouseSettingsConfig.Properties.ActivationShortcut.HotkeyName))
-            {
-                FindMyMouseSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
-                FindMyMouseSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = FindMyMouseSettings.ModuleName;
-            }
-
-            if (string.IsNullOrEmpty(MouseHighlighterSettingsConfig.Properties.ActivationShortcut.HotkeyName))
-            {
-                MouseHighlighterSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
-                MouseHighlighterSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = MouseHighlighterSettings.ModuleName;
-            }
-
             int isEnabled = 0;
 
-            // Using Utilities.NativeMethods to access system parameters for animation settings.
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
             _isAnimationEnabledBySystem = isEnabled != 0;
 
@@ -194,179 +153,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        protected override void UpdateHotkeyConflictStatus(AllHotkeyConflictsData allConflicts)
+        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
         {
-            _hotkeyConflictStatus.Clear();
-            _hotkeyConflictTooltips.Clear();
-
-            // Define the four MouseUtils submodule names
-            var mouseUtilsModules = new HashSet<string>
+            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
             {
-                FindMyMouseSettings.ModuleName,        // "FindMyMouse"
-                MouseHighlighterSettings.ModuleName,   // "MouseHighlighter"
-                MousePointerCrosshairsSettings.ModuleName, // "MousePointerCrosshairs"
-                MouseJumpSettings.ModuleName,           // "MouseJump"
+                [FindMyMouseSettings.ModuleName] = [
+                    new HotkeyAccessor(
+                        () => FindMyMouseActivationShortcut,
+                        value => FindMyMouseActivationShortcut = value),],
+                [MouseHighlighterSettings.ModuleName] = [
+                    new HotkeyAccessor(
+                        () => MouseHighlighterActivationShortcut,
+                        value => MouseHighlighterActivationShortcut = value),],
+                [MousePointerCrosshairsSettings.ModuleName] = [
+                    new HotkeyAccessor(
+                        () => MousePointerCrosshairsActivationShortcut,
+                        value => MousePointerCrosshairsActivationShortcut = value),],
+                [MouseJumpSettings.ModuleName] = [
+                    new HotkeyAccessor(
+                        () => MouseJumpActivationShortcut,
+                        value => MouseJumpActivationShortcut = value),],
             };
 
-            // Process in-app conflicts
-            foreach (var conflict in allConflicts.InAppConflicts)
-            {
-                ProcessConflictGroup(conflict, mouseUtilsModules, false);
-            }
-
-            // Process system conflicts
-            foreach (var conflict in allConflicts.SystemConflicts)
-            {
-                ProcessConflictGroup(conflict, mouseUtilsModules, true);
-            }
-        }
-
-        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, HashSet<string> mouseUtilsModules, bool isSysConflict)
-        {
-            // Check if any of the modules in this conflict are MouseUtils submodules
-            var involvedMouseUtilsModules = conflict.Modules
-                .Where(module => mouseUtilsModules.Contains(module.ModuleName))
-                .ToList();
-
-            if (involvedMouseUtilsModules.Count != 0)
-            {
-                // For each involved MouseUtils module, mark the hotkey as having a conflict
-                foreach (var module in involvedMouseUtilsModules)
-                {
-                    string hotkeyKey = $"{module.ModuleName}_{module.HotkeyName}";
-                    _hotkeyConflictStatus[hotkeyKey] = true;
-                    _hotkeyConflictTooltips[hotkeyKey] = isSysConflict
-                        ? ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText")
-                        : ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
-                }
-            }
-        }
-
-        protected override bool GetHotkeyConflictStatus(string hotkeyName)
-        {
-            return _hotkeyConflictStatus.ContainsKey(hotkeyName) && _hotkeyConflictStatus[hotkeyName];
-        }
-
-        protected override string GetHotkeyConflictTooltip(string hotkeyName)
-        {
-            return _hotkeyConflictTooltips.TryGetValue(hotkeyName, out string value) ? value : null;
-        }
-
-        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
-        {
-            UpdateHotkeyConflictStatus(e.Conflicts);
-
-            // Update properties using setters to trigger PropertyChanged
-            void UpdateConflictProperties()
-            {
-                FindMyMouseActivationShortcutHasConflict = GetHotkeyConflictStatus($"{FindMyMouseSettings.ModuleName}_ActivationShortcut");
-                MouseHighlighterActivationShortcutHasConflict = GetHotkeyConflictStatus($"{MouseHighlighterSettings.ModuleName}_ActivationShortcut");
-                MousePointerCrosshairsActivationShortcutHasConflict = GetHotkeyConflictStatus($"{MousePointerCrosshairsSettings.ModuleName}_ActivationShortcut");
-                MouseJumpActivationShortcutHasConflict = GetHotkeyConflictStatus($"{MouseJumpSettings.ModuleName}_ActivationShortcut");
-
-                FindMyMouseActivationShortcutTooltip = GetHotkeyConflictTooltip($"{FindMyMouseSettings.ModuleName}_ActivationShortcut");
-                MouseHighlighterActivationShortcutTooltip = GetHotkeyConflictTooltip($"{MouseHighlighterSettings.ModuleName}_ActivationShortcut");
-                MousePointerCrosshairsActivationShortcutTooltip = GetHotkeyConflictTooltip($"{MousePointerCrosshairsSettings.ModuleName}_ActivationShortcut");
-                MouseJumpActivationShortcutTooltip = GetHotkeyConflictTooltip($"{MouseJumpSettings.ModuleName}_ActivationShortcut");
-            }
-
-            _ = Task.Run(() =>
-            {
-                try
-                {
-                    var settingsWindow = App.GetSettingsWindow();
-                    if (settingsWindow?.DispatcherQueue != null)
-                    {
-                        settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
-                    }
-                    else
-                    {
-                        UpdateConflictProperties();
-                    }
-                }
-                catch
-                {
-                    UpdateConflictProperties();
-                }
-            });
-        }
-
-        public bool FindMyMouseActivationShortcutHasConflict
-        {
-            get => _findMyMouseActivationShortcutHasConflict;
-            set
-            {
-                if (_findMyMouseActivationShortcutHasConflict != value)
-                {
-                    _findMyMouseActivationShortcutHasConflict = value;
-                    OnPropertyChanged(nameof(FindMyMouseActivationShortcutHasConflict));
-                }
-            }
-        }
-
-        public bool MouseHighlighterActivationShortcutHasConflict
-        {
-            get => _mouseHighlighterActivationShortcutHasConflict;
-            set
-            {
-                if (_mouseHighlighterActivationShortcutHasConflict != value)
-                {
-                    _mouseHighlighterActivationShortcutHasConflict = value;
-                    OnPropertyChanged(nameof(MouseHighlighterActivationShortcutHasConflict));
-                }
-            }
-        }
-
-        public bool MousePointerCrosshairsActivationShortcutHasConflict
-        {
-            get => _mousePointerCrosshairsActivationShortcutHasConflict;
-            set
-            {
-                if (_mousePointerCrosshairsActivationShortcutHasConflict != value)
-                {
-                    _mousePointerCrosshairsActivationShortcutHasConflict = value;
-                    OnPropertyChanged(nameof(MousePointerCrosshairsActivationShortcutHasConflict));
-                }
-            }
-        }
-
-        public string FindMyMouseActivationShortcutTooltip
-        {
-            get => _findMyMouseActivationShortcutTooltip;
-            set
-            {
-                if (_findMyMouseActivationShortcutTooltip != value)
-                {
-                    _findMyMouseActivationShortcutTooltip = value;
-                    OnPropertyChanged(nameof(FindMyMouseActivationShortcutTooltip));
-                }
-            }
-        }
-
-        public string MouseHighlighterActivationShortcutTooltip
-        {
-            get => _mouseHighlighterActivationShortcutTooltip;
-            set
-            {
-                if (_mouseHighlighterActivationShortcutTooltip != value)
-                {
-                    _mouseHighlighterActivationShortcutTooltip = value;
-                    OnPropertyChanged(nameof(MouseHighlighterActivationShortcutTooltip));
-                }
-            }
-        }
-
-        public string MousePointerCrosshairsActivationShortcutTooltip
-        {
-            get => _mousePointerCrosshairsActivationShortcutTooltip;
-            set
-            {
-                if (_mousePointerCrosshairsActivationShortcutTooltip != value)
-                {
-                    _mousePointerCrosshairsActivationShortcutTooltip = value;
-                    OnPropertyChanged(nameof(MousePointerCrosshairsActivationShortcutTooltip));
-                }
-            }
+            return hotkeysDict;
         }
 
         public bool IsFindMyMouseEnabled
