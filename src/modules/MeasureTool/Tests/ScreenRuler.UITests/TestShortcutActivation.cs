@@ -37,6 +37,8 @@ namespace ScreenRuler.UITests
                 $"ScreenRulerUI should disappear after pressing activation shortcut again: {string.Join(" + ", activationKeys)}");
 
             // Test 3: Disable Screen Ruler and verify that the activation shortcut no longer activates the utility
+            // Ensure we're attached to settings UI before toggling
+            Session.Attach(PowerToysModule.PowerToysSettings);
             TestHelper.SetAndVerifyScreenRulerToggle(this, enable: false, "disabled state test");
 
             // Try to activate with shortcut while disabled
@@ -47,6 +49,8 @@ namespace ScreenRuler.UITests
                 "ScreenRulerUI should not appear when Screen Ruler is disabled");
 
             // Test 4: Enable Screen Ruler and press the activation shortcut and verify the toolbar appears
+            // Ensure we're attached to settings UI before toggling
+            Session.Attach(PowerToysModule.PowerToysSettings);
             TestHelper.SetAndVerifyScreenRulerToggle(this, enable: true, "re-enabled state test");
 
             SendKeys(activationKeys);

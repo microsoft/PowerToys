@@ -32,9 +32,8 @@ namespace ScreenRuler.UITests
         public static Key[] InitializeTest(UITestBase testBase, string testName)
         {
             LaunchFromSetting(testBase);
-            SetScreenRulerToggle(testBase, enable: true);
 
-            var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 5000);
+            var toggleSwitch = SetScreenRulerToggle(testBase, enable: true);
             Assert.IsTrue(
                 toggleSwitch.IsOn,
                 $"Screen Ruler toggle switch should be ON for {testName}");
@@ -53,6 +52,16 @@ namespace ScreenRuler.UITests
         public static void CleanupTest(UITestBase testBase)
         {
             CloseScreenRulerUI(testBase);
+
+            // Ensure we're attached to settings after cleanup
+            try
+            {
+                testBase.Session.Attach(PowerToysModule.PowerToysSettings);
+            }
+            catch
+            {
+                // Ignore attachment errors - this is just cleanup
+            }
         }
 
         /// <summary>
@@ -76,9 +85,10 @@ namespace ScreenRuler.UITests
         public static ToggleSwitch SetScreenRulerToggle(UITestBase testBase, bool enable)
         {
             var toggleSwitch = testBase.Session.Find<ToggleSwitch>(By.AccessibilityId("Toggle_ScreenRuler"), 5000);
+
             if (toggleSwitch.IsOn != enable)
             {
-                toggleSwitch.Click(msPostAction: 2000);
+                toggleSwitch.Click(msPreAction: 1000, msPostAction: 2000);
             }
 
             return toggleSwitch;
@@ -189,8 +199,29 @@ namespace ScreenRuler.UITests
         {
             if (IsScreenRulerUIOpen(testBase))
             {
-                var closeButton = GetScreenRulerButton(testBase, CloseButtonId, 15000);
-                closeButton?.Click();
+                try
+                {
+                    // Attach to ScreenRuler window before trying to find and click close button
+                    testBase.Session.Attach(PowerToysModule.ScreenRuler);
+                    var closeButton = testBase.Session.Find<Element>(By.AccessibilityId(CloseButtonId), 15000, true);
+                    closeButton?.Click();
+                }
+                catch
+                {
+                    // If we can't find the close button, ignore - the window might have closed already
+                }
+                finally
+                {
+                    // Attach back to settings after closing
+                    try
+                    {
+                        testBase.Session.Attach(PowerToysModule.PowerToysSettings);
+                    }
+                    catch
+                    {
+                        // Ignore attachment errors
+                    }
+                }
             }
         }
 
@@ -201,11 +232,26 @@ namespace ScreenRuler.UITests
         {
             try
             {
+                // Attach to ScreenRuler window before trying to find buttons
+                testBase.Session.Attach(PowerToysModule.ScreenRuler);
                 return testBase.Session.Find<Element>(By.AccessibilityId(buttonName), timeoutMs, true);
             }
             catch
             {
                 return null;
+            }
+            finally
+            {
+                // Attach back to settings if needed for further operations
+                // This ensures we don't break the test flow
+                try
+                {
+                    testBase.Session.Attach(PowerToysModule.PowerToysSettings);
+                }
+                catch
+                {
+                    // Ignore attachment errors - the calling code will handle as needed
+                }
             }
         }
 
@@ -295,20 +341,21 @@ namespace ScreenRuler.UITests
                 WaitForScreenRulerUI(testBase, 2000),
                 $"ScreenRulerUI should appear after pressing activation shortcut for {testName}: {string.Join(" + ", activationKeys)}");
 
-            // Click spacing button
-            var spacingButton = GetScreenRulerButton(testBase, buttonId, 15000);
+            // Attach to ScreenRuler window and click spacing button
+            testBase.Session.Attach(PowerToysModule.ScreenRuler);
+            var spacingButton = testBase.Session.Find<Element>(By.AccessibilityId(buttonId), 15000, true);
             Assert.IsNotNull(spacingButton, $"{testName} button should be found");
 
             spacingButton!.Click();
             Task.Delay(500).Wait();
 
-            // Perform measurement action
+            // Perform measurement action (stay attached to ScreenRuler for this)
             PerformMeasurementAction(testBase);
 
             // Validate results
             ValidateClipboardResults(testName);
 
-            // Cleanup
+            // Cleanup - this will handle session attachment properly
             CloseScreenRulerUI(testBase);
             Assert.IsTrue(
                 WaitForScreenRulerUIToDisappear(testBase, 2000),
@@ -329,14 +376,15 @@ namespace ScreenRuler.UITests
                 WaitForScreenRulerUI(testBase, 2000),
                 $"ScreenRulerUI should appear after pressing activation shortcut: {string.Join(" + ", activationKeys)}");
 
-            // Click bounds button
-            var boundsButton = GetScreenRulerButton(testBase, BoundsButtonId, 15000);
+            // Attach to ScreenRuler window and click bounds button
+            testBase.Session.Attach(PowerToysModule.ScreenRuler);
+            var boundsButton = testBase.Session.Find<Element>(By.AccessibilityId(BoundsButtonId), 15000, true);
             Assert.IsNotNull(boundsButton, "Bounds button should be found");
 
             boundsButton.Click();
             Task.Delay(500).Wait();
 
-            // Perform drag operation to create 100x100 box
+            // Perform drag operation to create 100x100 box (stay attached to ScreenRuler)
             var currentPos = testBase.GetMousePosition();
             int startX = currentPos.Item1;
             int startY = currentPos.Item2 + 200;
@@ -365,7 +413,7 @@ namespace ScreenRuler.UITests
                 clipboardText.Contains("100 × 100"),
                 $"Clipboard should contain '100 × 100', but contained: '{clipboardText}'");
 
-            // Cleanup
+            // Cleanup - this will handle session attachment properly
             CloseScreenRulerUI(testBase);
             Assert.IsTrue(
                 WaitForScreenRulerUIToDisappear(testBase, 2000),
