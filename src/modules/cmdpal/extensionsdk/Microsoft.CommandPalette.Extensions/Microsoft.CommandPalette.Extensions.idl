@@ -425,7 +425,11 @@ namespace Microsoft.CommandPalette.Extensions
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+<<<<<<< HEAD
     interface IExtendedAttributesProvider
+=======
+    interface IHaveProperties
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
     {
         Windows.Foundation.Collections.IMap<String, Object> GetProperties();
     };

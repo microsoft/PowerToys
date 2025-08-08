@@ -47,6 +47,7 @@ public partial class IconDataViewModel : ObservableObject, IIconData
         Icon = model.Icon;
         Data = new(model.Data);
 
+<<<<<<< HEAD:src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/IconDataViewModel.cs
         if (model is IExtendedAttributesProvider icon2)
         {
             var props = icon2.GetProperties();
@@ -59,6 +60,11 @@ public partial class IconDataViewModel : ObservableObject, IIconData
             // marshal-by-value the property set, then you don't want to throw it away and
             // re-marshal it for every property. MAKE SURE YOU CACHE IT.
             if (props?.TryGetValue(WellKnownExtensionAttributes.FontFamily, out var family) ?? false)
+=======
+        if (model is IHaveProperties icon2)
+        {
+            if (icon2.Properties?.TryGetValue("FontFamily", out var family) ?? false)
+>>>>>>> 940e71f2a (stupid levels returning to nominal values):src/modules/cmdpal/Microsoft.CmdPal.Core.ViewModels/IconDataViewModel.cs
             {
                 FontFamily = family as string;
             }

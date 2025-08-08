@@ -3,14 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using Windows.Foundation;
+using Windows.Foundation.Collections;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
+<<<<<<< HEAD
 public abstract partial class CommandProvider :
     ICommandProvider,
     ICommandProvider2,
     ICommandProvider3,
     ICommandProvider4
+=======
+public abstract partial class CommandProvider : ICommandProvider, ICommandProvider2
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
 {
     public virtual string Id { get; protected set; } = string.Empty;
 
@@ -55,6 +60,7 @@ public abstract partial class CommandProvider :
     }
 
     /// <summary>
+<<<<<<< HEAD
     /// Get the dock bands provided by this command provider. Dock bands are
     /// strips of items that appear on various UI surfaces in CmdPal, such as a
     /// toolbar. Each ICommandItem returned from this method will be treated as
@@ -70,6 +76,8 @@ public abstract partial class CommandProvider :
     }
 
     /// <summary>
+=======
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
     /// This is used to manually populate the WinRT type cache in CmdPal with
     /// any interfaces that might not follow a straight linear path of requires.
     ///
@@ -82,6 +90,7 @@ public abstract partial class CommandProvider :
     }
 
     /// <summary>
+<<<<<<< HEAD
     /// A stub class which implements IExtendedAttributesProvider. Just marshalling this
     /// across the ABI will be enough for CmdPal to store IExtendedAttributesProvider in
     /// its type cache.
@@ -89,5 +98,14 @@ public abstract partial class CommandProvider :
     private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider
     {
         public IDictionary<string, object>? GetProperties() => null;
+=======
+    /// A stub class which implements IHaveProperties. Just marshalling this
+    /// across the ABI will be enough for CmdPal to store IHaveProperties in
+    /// its type cache.
+    /// </summary>
+    private sealed partial class SupportCommandsWithProperties : IHaveProperties
+    {
+        public IPropertySet? Properties => null;
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
     }
 }

@@ -28,6 +28,7 @@ public partial class SamplePagesCommandsProvider : CommandProvider
     {
         return _commands;
     }
+<<<<<<< HEAD
 
     public override ICommandItem[] GetDockBands()
     {
@@ -39,4 +40,6 @@ public partial class SamplePagesCommandsProvider : CommandProvider
 
         return bands.ToArray();
     }
+=======
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
 }

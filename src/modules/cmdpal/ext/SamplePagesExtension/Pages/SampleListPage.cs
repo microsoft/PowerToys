@@ -198,11 +198,19 @@ internal sealed partial class SampleListPage : ListPage
         ];
     }
 
+<<<<<<< HEAD
     internal sealed partial class CommandWithProperties : InvokableCommand, IExtendedAttributesProvider
     {
         private FontIconData _icon = new("\u0026", "Wingdings");
 
         public override IconInfo Icon => new(_icon, _icon);
+=======
+    internal sealed partial class CommandWithProperties : InvokableCommand, IHaveProperties
+    {
+        private FontIconData _icon = new("\u0026", "Wingdings");
+
+        public override IconInfo Icon => new IconInfo(_icon, _icon);
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
 
         public override string Name => "Whatever";
 
@@ -217,7 +225,12 @@ internal sealed partial class SampleListPage : ListPage
         };
     }
 
+<<<<<<< HEAD
     internal sealed partial class OtherCommandWithProperties : IExtendedAttributesProvider, IInvokableCommand
+=======
+#nullable enable
+    internal sealed partial class OtherCommandWithProperties : IHaveProperties, IInvokableCommand
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
     {
         public string Name => "Whatever 2";
 
@@ -233,15 +246,20 @@ internal sealed partial class SampleListPage : ListPage
             return CommandResult.ShowToast("whoop");
         }
 
+<<<<<<< HEAD
         // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
         // backing store for Properties. A regular `Dictionary<string, object>`
         // will not work across the ABI
         public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
+=======
+        public IPropertySet Properties => new PropertySet()
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
         {
             { "yo", "dog" },
             { "Secret", 12345 },
             { "hmm?", null },
         };
+<<<<<<< HEAD
     }
 
     internal sealed partial class EverChangingCommand : InvokableCommand, IDisposable
@@ -315,5 +333,7 @@ internal sealed partial class SampleListPage : ListPage
             _state = (_state + 1) % _commands.Length;
             this.Command = _commands[_state];
         }
+=======
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
     }
 }

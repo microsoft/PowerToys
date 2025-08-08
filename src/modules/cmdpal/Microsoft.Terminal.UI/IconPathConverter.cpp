@@ -173,7 +173,11 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     // Return Value:
     // - An IconElement with its IconSource set, if possible.
     template<typename TIconSource>
+<<<<<<< HEAD
     TIconSource _getIconSource(const winrt::hstring& iconPath, const winrt::hstring& fontFamily, const int targetSize)
+=======
+    TIconSource _getIconSource(const winrt::hstring& iconPath, bool monochrome, const winrt::hstring& fontFamily, const int targetSize)
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
     {
         TIconSource iconSource{ nullptr };
 
@@ -208,6 +212,11 @@ namespace winrt::Microsoft::Terminal::UI::implementation
                         // Emoji and other symbols go in the Segoe UI Emoji font.
                         // Some emojis (e.g. 2️⃣) would be rendered as emoji glyphs otherwise.
                         family = L"Segoe UI Emoji, Segoe UI";
+                    }
+                    else if (!fontFamily.empty())
+                    {
+                        icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ fontFamily });
+
                     }
                     else
                     {
@@ -250,9 +259,15 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     //     return _getIconSource<Windows::UI::Xaml::Controls::IconSource>(path, false);
     // }
 
+<<<<<<< HEAD
     static Microsoft::UI::Xaml::Controls::IconSource _IconSourceMUX(const hstring& path, const winrt::hstring& fontFamily, const int targetSize)
     {
         return _getIconSource<Microsoft::UI::Xaml::Controls::IconSource>(path, fontFamily, targetSize);
+=======
+    static Microsoft::UI::Xaml::Controls::IconSource _IconSourceMUX(const hstring& path, bool monochrome, const winrt::hstring& fontFamily, const int targetSize)
+    {
+        return _getIconSource<Microsoft::UI::Xaml::Controls::IconSource>(path, monochrome, fontFamily, targetSize);
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
     }
 
     static SoftwareBitmap _convertToSoftwareBitmap(HICON hicon,
@@ -367,6 +382,10 @@ namespace winrt::Microsoft::Terminal::UI::implementation
     }
 
     MUX::Controls::IconSource IconPathConverter::IconSourceMUX(const winrt::hstring& iconPath,
+<<<<<<< HEAD
+=======
+                                                               const bool monochrome,
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
                                                                const winrt::hstring& fontFamily,
                                                                const int targetSize)
     {
@@ -374,7 +393,11 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         const auto indexOpt = _getIconIndex(iconPath, iconPathWithoutIndex);
         if (!indexOpt.has_value())
         {
+<<<<<<< HEAD
             return _IconSourceMUX(iconPath, fontFamily, targetSize);
+=======
+            return _IconSourceMUX(iconPath, monochrome, fontFamily, targetSize);
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
         }
 
         const auto bitmapSource = _getImageIconSourceForBinary(iconPathWithoutIndex, indexOpt.value(), targetSize);
@@ -396,7 +419,11 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         const auto indexOpt = _getIconIndex(iconPath, iconPathWithoutIndex);
         if (!indexOpt.has_value())
         {
+<<<<<<< HEAD
             auto source = IconSourceMUX(iconPath, L"", targetSize);
+=======
+            auto source = IconSourceMUX(iconPath, false, L"", targetSize);
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
             Microsoft::UI::Xaml::Controls::IconSourceElement icon;
             icon.IconSource(source);
             return icon;

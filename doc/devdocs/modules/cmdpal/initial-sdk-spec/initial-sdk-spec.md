@@ -1971,7 +1971,11 @@ So that's exactly what we're going to do, because it works. As an example,
 we're going to add the following interface to our API:
 
 ```csharp
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 interface IExtendedAttributesProvider
+=======
+interface IHaveProperties
+>>>>>>> 940e71f2a (stupid levels returning to nominal values):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 {
     Windows.Foundation.Collections.IMap<String, Object> GetProperties();
 };
@@ -1982,6 +1986,7 @@ interface ICommandProvider2 requires ICommandProvider
 };
 ```
 
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 `IExtendedAttributesProvider` is just a simple interface, indicating that there's some
 property bag of additional values that the host could read. We're starting with
 this, because it's a helpful tool for us to add arbitrary properties to object
@@ -1989,26 +1994,49 @@ in an experimental fashion. We can continue to add more things we read from
 this property set, without breaking the ABI.
 
 As an example, `ICommand` proves uniquely challenging to extend, because it has
+=======
+`IHaveProperties` is just a simple interface, indicating that there's
+some property bag of additional values that the host could read. 
+
+AS an example, `ICommand` proves uniquely challenging to extend, because it has
+>>>>>>> 940e71f2a (stupid levels returning to nominal values):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 both the `IInvokableCommand` and `IPage` family trees of interfaces which
 extend from it. Typically, it would be impossible for a class to be defined as
 
 ```cs
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 class MyCommandWithProperties : IInvokableCommand, IExtendedAttributesProvider { ... }
+=======
+class MyCommandWithProperties : IInvokableCommand, IHaveProperties { ... }
+>>>>>>> 940e71f2a (stupid levels returning to nominal values):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 ```
 
 because Command Palette would only ever see the _first_ interface
 (`IInvokableCommand`) via MBM, and would never be able to check if an extension
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 object was an `IExtendedAttributesProvider`. But a class defined like
 
 ```cs
 class CommandWithOnlyProperties : IExtendedAttributesProvider { ... }
+=======
+object was an `IHaveProperties`. But a class defined like
+
+```cs
+class CommandWithOnlyProperties : IHaveProperties { ... }
+>>>>>>> 940e71f2a (stupid levels returning to nominal values):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 ```
 
 will populate the WinRT type cache in Command Palette with the type information
 for `ICommandWithProperties`. In fact, if Command Palette has the
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 `IExtendedAttributesProvider` type info in it's cache, and then later receives a new
 `MyCommandWithProperties` object, it'll actually be able to know that
 `MyCommandWithProperties` is an `IExtendedAttributesProvider`. WinRT is just weird
+=======
+`IHaveProperties` type info in it's cache, and then later recieves a new
+`MyCommandWithProperties` object, it'll actually be able to know that
+`MyCommandWithProperties` is an `IHaveProperties`. WinRT is just weird
+>>>>>>> 940e71f2a (stupid levels returning to nominal values):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 like that some times.
 
 `ICommandProvider2` is where the magic happens. This is a _linear_ addition to
@@ -2036,8 +2064,17 @@ public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProv
     public object[] GetApiExtensionStubs() {
         return [new SupportCommandsWithProperties()];
     }
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
     private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider {
         public IDictionary<string, object>? GetProperties() => null;
+=======
+    private sealed partial class SupportCommandsWithProperties : IHaveProperties {
+        public IPropertySet OtherProperties => null;
+        public IIconInfo Icon => null;
+        public string Id => string.Empty;
+        public string Name => string.Empty;
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged { add { } remove { } }
+>>>>>>> 940e71f2a (stupid levels returning to nominal values):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
     }
 }
 

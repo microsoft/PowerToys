@@ -427,6 +427,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         Logger.LogDebug($"Provider supports {apiExtensions.Length} extensions");
         foreach (var a in apiExtensions)
         {
+<<<<<<< HEAD
             if (a is IExtendedAttributesProvider command2)
             {
                 Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
@@ -434,6 +435,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             else if (a is ICommandItem[] commands)
             {
                 Logger.LogDebug($"{ProviderId}: Found an ICommandItem[]");
+=======
+            if (a is IHaveProperties command2)
+            {
+                Logger.LogDebug($"{ProviderId}: Found an IHaveProperties");
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
             }
         }
     }

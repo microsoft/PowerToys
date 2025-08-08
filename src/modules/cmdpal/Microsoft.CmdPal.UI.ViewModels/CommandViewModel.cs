@@ -92,7 +92,11 @@ public partial class CommandViewModel : ExtensionObjectViewModel
             UpdateProperty(nameof(Icon));
         }
 
+<<<<<<< HEAD:src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandViewModel.cs
         if (model is IExtendedAttributesProvider command2)
+=======
+        if (model is IHaveProperties command2)
+>>>>>>> 940e71f2a (stupid levels returning to nominal values):src/modules/cmdpal/Microsoft.CmdPal.Core.ViewModels/CommandViewModel.cs
         {
             UpdatePropertiesFromExtension(command2);
         }
@@ -163,6 +167,20 @@ public partial class CommandViewModel : ExtensionObjectViewModel
                 Icon = new(iconInfo);
                 Icon.InitializeProperties();
                 break;
+<<<<<<< HEAD:src/modules/cmdpal/Microsoft.CmdPal.UI.ViewModels/CommandViewModel.cs
+=======
+            case nameof(IHaveProperties.Properties):
+                if (model is IHaveProperties command2)
+                {
+                    Properties = command2.Properties;
+                }
+                else
+                {
+                    Properties = null;
+                }
+
+                break;
+>>>>>>> 940e71f2a (stupid levels returning to nominal values):src/modules/cmdpal/Microsoft.CmdPal.Core.ViewModels/CommandViewModel.cs
         }
 
         UpdateProperty(propertyName);

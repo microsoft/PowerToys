@@ -10,7 +10,11 @@ namespace winrt::Microsoft::Terminal::UI::implementation
 
         //static Windows::UI::Xaml::Controls::IconElement IconWUX(const winrt::hstring& iconPath);
         //static Windows::UI::Xaml::Controls::IconSource IconSourceWUX(const winrt::hstring& iconPath);
+<<<<<<< HEAD
         static Microsoft::UI::Xaml::Controls::IconSource IconSourceMUX(const winrt::hstring& iconPath, const winrt::hstring& fontFamily, const int targetSize=24);
+=======
+        static Microsoft::UI::Xaml::Controls::IconSource IconSourceMUX(const winrt::hstring& iconPath, bool convertToGrayscale, const winrt::hstring& fontFamily, const int targetSize=24);
+>>>>>>> 940e71f2a (stupid levels returning to nominal values)
         static Microsoft::UI::Xaml::Controls::IconElement IconMUX(const winrt::hstring& iconPath);
         static Microsoft::UI::Xaml::Controls::IconElement IconMUX(const winrt::hstring& iconPath, const int targetSize);
 
