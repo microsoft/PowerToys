@@ -89,7 +89,7 @@ public class SupersedingAsyncGate : IDisposable
                 }
                 catch (OperationCanceledException)
                 {
-                    CompleteIfCurrent(currentTcs, currentCallId, tcs => tcs.SetCanceled(currentCts.Token));
+                    CompleteIfCurrent(currentTcs, currentCallId, tcs => tcs.TrySetCanceled(currentCts.Token));
                 }
                 catch (Exception ex)
                 {
