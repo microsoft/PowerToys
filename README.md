@@ -101,9 +101,9 @@ In this release, we focused on new features, stability, optimization improvement
 
  - PowerToys settings debuts a modern, card-based dashboard with clearer descriptions and faster navigation for a streamlined user experience.  
  - Command Palette is in full Ahead-of-Time (AOT) compilation mode, reducing installation size by 55%, startup memory usage by 16%, and load time by 40%. 
- - Command Palette now offers improved reliability and accessibility, with fixes for window appearance, navigation shortcuts, and enhanced screen reader support. [@jiripolasek](https://github.com/jiripolasek), [@PesBandi](https://github.com/PesBandi), [@davidegiacometti](https://github.com/davidegiacometti), and [@MaoShengelia](https://github.com/MaoShengelia)!
  - Peek now supports instant previews and embedded thumbnails for Binary G-code (.bgcode) 3D printing files, making it easy to inspect models at a glance. Thanks [@pedrolamas](https://github.com/pedrolamas)!
  - Mouse Utilities introduces a new spotlight highlighting mode that dims the screen and draws attention to your cursor, perfect for presentations.
+ - Test coverage improvements for multiple PowerToys modules including Command Palette, Advanced Paste, Peek, Text Extractor, and PowerRename — ensuring better reliability and quality, with over 600 new unit tests (mostly for Command Palette) and doubled UI automation coverage.
 
 ### Command Palette
 
@@ -111,7 +111,7 @@ In this release, we focused on new features, stability, optimization improvement
  - Added mouse back button support for easier navigation. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Fixed Alt+Left Arrow navigation not working when search box contains text. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Updated back button tooltip to show keyboard shortcut information. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Added settings to each provider to control which fallback commands are enabled
+ - Added settings to each provider to control which fallback commands are enabled.
  - Fixed Command Palette window staying hidden from taskbar after Windows Explorer restarts. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Ensured screen readers are notified when the selected item in the list changes for better accessibility.
  - Fixed command title changes not being properly notified to screen readers. Thanks [@jiripolasek](https://github.com/jiripolasek)!
@@ -132,10 +132,10 @@ In this release, we focused on new features, stability, optimization improvement
  - Fixed loading of top-level commands to prevent thread-safety issues. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added thread safety to recent commands to prevent crashes. Thanks [@MaoShengelia](https://github.com/MaoShengelia)!
  - Fixed Command Palette window to always appear on top when shown and move to bottom when hidden. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed keyboard shortcuts to work better in text boxes and context menus
+ - Fixed keyboard shortcuts to work better in text boxes and context menus.
 
 ### Command Palette extensions
-
+ - Added sample code showing how Command Palette extensions can track when their pages are loaded or unloaded. [Check out here](./src/modules/cmdpal/ext/SamplePagesExtension/OnLoadPage.cs).
  - Fixed *Calculator* to accept regular spaces in numbers that use space separators. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Added a new setting to *Calculator* to make "Copy" the primary button (replacing “Save”) and enable "Close on Enter", streamlining the workflow. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Improved *Apps* indexing error handling and removed obsolete code. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
@@ -143,14 +143,14 @@ In this release, we focused on new features, stability, optimization improvement
  - Added ability to pin/unpin *Apps* using Ctrl+P shortcut.
  - Added keyboard shortcuts to *Apps* context menu items for faster access. 
  - Added all file context menu options to the *Apps* items context menu, making all file actions available there for better functionality.
- - Re-enabled *clipboard history* feature with proper window handling
- - Added command history to the *Run* page for easier access to previous commands
- - Fixed directory path handling in *Run* fallback for better file navigation
+ - Re-enabled *clipboard history* feature with proper window handling.
+ - Added command history to the *Run* page for easier access to previous commands.
+ - Fixed directory path handling in *Run* fallback for better file navigation.
  - Fixed URL fallback item hiding properly in *Web Search* extension when search query becomes invalid. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added proper empty state message for *Web Search* extension when no results found. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added fallback command to *Windows Settings* extension for better search results.
  - Updated terminology from "Kill process" to "End task" in *Window Walker* for consistency with Windows.
- - Improved *Add Bookmark* extension to automatically detect file, folder, or URL types without manual input
+ - Improved *Add Bookmark* extension to automatically detect file, folder, or URL types without manual input.
 
 ### Mouse Utilities
  - Added a new spotlight highlighting mode that creates a large transparent circle around your cursor with a backdrop effect, providing an alternative to the traditional circle highlight. Perfect for presentations where you want to focus attention on a specific area while dimming the rest of the screen.
@@ -163,21 +163,30 @@ In this release, we focused on new features, stability, optimization improvement
  - Added Vietnamese language support to Quick Accent, mappings for Vietnamese vowels (a, e, i, o, u, y) and the letter d. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
 
 ### Settings
- - Completely redesigned the Settings dashboard with a modern card-based layout featuring organized sections for quick actions and shortcuts overview, replacing the old module list
- - Rewrote setting descriptions to be more concise and follow Windows writing style guidelines, making them easier to understand
- - Improved formatting and readability of release notes in the "What's New" section with better typography and spacing
- - Added missing deep link support for various settings pages (Peek, PowerAccent, PowerLauncher, etc.) so you can jump directly to specific settings
- - Resolved an issue where the settings page header would drift away from its position when resizing the settings window
+ - Completely redesigned the Settings dashboard with a modern card-based layout featuring organized sections for quick actions and shortcuts overview, replacing the old module list.
+ - Rewrote setting descriptions to be more concise and follow Windows writing style guidelines, making them easier to understand.
+ - Improved formatting and readability of release notes in the "What's New" section with better typography and spacing.
+ - Added missing deep link support for various settings pages (Peek, PowerAccent, PowerLauncher, etc.) so you can jump directly to specific settings.
+ - Resolved an issue where the settings page header would drift away from its position when resizing the settings window.
  - Resolved a settings crash related to incompatible property names in ZoomIt configuration.
 
 ### Documentation
+ - Added detailed step-by-step instructions for first-time developers building the Command Palette module, including prerequisites and Visual Studio setup guidance. Thanks [@chatasweetie](https://github.com/chatasweetie)!
+ - **Fixed Broken SDK Link**: Corrected a broken markdown link in the Command Palette SDK README that was pointing to an incorrect directory path. Thanks [@ChrisGuzak](https://github.com/ChrisGuzak)!
+ - Added documentation for the "Open With Cursor" plugin that enables opening Visual Studio and VS Code recent files using Cursor AI. Thanks [@VictorNoxx](https://github.com/VictorNoxx)!
+ - Added documentation for two new community plugins - Hotkeys plugin for creating custom keyboard shortcuts, and RandomGen plugin for generating random data like passwords, colors, and placeholder text. Thanks [@ruslanlap](https://github.com/ruslanlap)!
 
 ### Development
-
- - Replaced NuGet feed with Azure Artifacts for better package management
-
-### General
-
+ - Updated .NET libraries to 9.0.7 for performance and security. Thanks [@snickler](https://github.com/snickler)!
+ - Updated the spell check system to version 0.0.25 with better GitHub integration and SARIF reporting, plus fixed numerous spelling errors throughout the codebase including property names and documentation. Thanks [@jsoref](https://github.com/jsoref)!
+ - Cleaned up spelling check configuration to eliminate false positives and excessive noise that was appearing in every pull request, making the development process smoother.
+ - Replaced NuGet feed with Azure Artifacts for better package management.
+ - Implemented configurable UI test pipeline that can use pre-built official releases instead of building everything from scratch, reducing test execution time from 2+ hours.
+ - Replaced brittle pixel-by-pixel image comparison with perceptual hash (pHash) technology that's more robust to minor rendering differences - no more test failures due to anti-aliasing or compression artifacts.
+ - Reduced CI/fuzzing/UI test timeouts from 4 hours to 90 minutes, dramatically improving developer feedback loops and preventing long waits when builds get stuck.
+ - Standardized test project naming across the entire codebase and improved pipeline result identification by adding platform/install mode context to test run titles. Thanks [@khmyznikov](https://github.com/khmyznikov)!
+ - Added comprehensive UI test suites for multiple PowerToys modules including Command Palette, Advanced Paste, Peek, Text Extractor, and PowerRename - ensuring better reliability and quality.
+ - Enhanced UI test automation with command-line argument support, better session management, and improved element location methods using pattern matching to avoid failures from minor differences in exact matches.
 
 ### What is being planned for version 0.94
 
