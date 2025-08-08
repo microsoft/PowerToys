@@ -44,7 +44,6 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
         Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
         Application.Current.MainWindow.ShowActivated = false;
-        Application.Current.MainWindow.Topmost = true;
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -64,6 +63,8 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
     {
+        this.Topmost = isActive;
+
         CharacterNameVisibility = _powerAccent.ShowUnicodeDescription ? Visibility.Visible : Visibility.Collapsed;
 
         if (isActive)
