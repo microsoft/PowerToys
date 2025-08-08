@@ -35,6 +35,7 @@ enum class ESettingsWindowNames
     NewPlus,
     CmdPal,
     ZoomIt,
+    ClipPing,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);
