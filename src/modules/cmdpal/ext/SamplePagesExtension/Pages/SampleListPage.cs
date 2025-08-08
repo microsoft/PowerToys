@@ -218,7 +218,7 @@ internal sealed partial class SampleListPage : ListPage
 
         public IPropertySet Properties => new PropertySet()
         {
-            { "yo", "dawg" },
+            { "yo", "dog" },
             { "Secret", 12345 },
             { "hmm?", null },
         };

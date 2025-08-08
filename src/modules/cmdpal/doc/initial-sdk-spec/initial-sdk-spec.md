@@ -1936,22 +1936,22 @@ When displaying a page:
 * The title will be `IPage.Title ?? ICommand.Name`
 * The icon will be `ICommand.Icon`
 
-## Adenda I: API additions (ICommandProvider2)
+## Addenda I: API additions (ICommandProvider2)
 
 In experiments with extending our API, we've found some quirks with the way
 that we use WinRT's metadata-based marshalling (MBM). Typically, you'd add
 another contract version, add the new runtimeclass under the new contract
 version, and then have the client app just check if that contract is available.
 
-However, we're not using runtimeclasses that are exposed from the extensions.
-Everything is being transfered over MBM, based on the
+However, we're not using `runtimeclass`es that are exposed from the extensions.
+Everything is being transferred over MBM, based on the
 `Microsoft.CommandPalette.Extensions.winmd`. And out-of-proc MBM has some
 limitations. You can essentially only have a linear chain of requires for
 extension interfaces.
 
 > E.g. if it implements `IWidget2` and `IWidget2 requires IWidget`, and the object's `GetRuntimeClassName` gives `IWidget2`, we know to look at `IWidget2` directly and `IWidget` due to requires. 
 >
-> The unfortunate thing for the developer experience when authoring an extension with cppwinrt/cswinrt implementations of interfaces, is they implement each interface separately. So the `IInspectable::GetRuntimeClassName` method inherited by `Interface1` gives `"Interface1"` and the method inherited by `Interface2` gives `"Interface2"`. 
+> The unfortunate thing for the developer experience when authoring an extension with cppwinrt/CsWinRT implementations of interfaces, is they implement each interface separately. So the `IInspectable::GetRuntimeClassName` method inherited by `Interface1` gives `"Interface1"` and the method inherited by `Interface2` gives `"Interface2"`. 
 >
 > Only one of these interfaces can be what the object responds to with a QI for `IInspectable`, and that's the implementation that MBM calls.
 
@@ -2004,7 +2004,7 @@ class CommandWithOnlyProperties : IHaveProperties { ... }
 
 will populate the WinRT type cache in Command Palette with the type information
 for `ICommandWithProperties`. In fact, if Command Palette has the
-`IHaveProperties` type info in it's cache, and then later recieves a new
+`IHaveProperties` type info in it's cache, and then later receives a new
 `MyCommandWithProperties` object, it'll actually be able to know that
 `MyCommandWithProperties` is an `IHaveProperties`. WinRT is just weird
 like that some times.
@@ -2323,7 +2323,7 @@ this prevents us from being able to use `[contract]` attributes to add to the
 interfaces. We'll instead need to rely on the tried-and-true method of adding a
 `IFoo2` when we want to add methods to `IFoo`.
 
-[Addenda I](#adenda-i-api-additions-icommandprovider2) talks a little more on some of the challenges with adding more APIs.
+[Addenda I](#addenda-i-api-additions-icommandprovider2) talks a little more on some of the challenges with adding more APIs.
 
 [^1]: In this example, as in other places, I've referenced a
     `Microsoft.DevPal.Extensions.InvokableCommand` class, as the base for that action.

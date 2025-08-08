@@ -155,7 +155,7 @@ public sealed class CommandProviderWrapper
 
             if (model is ICommandProvider2 two)
             {
-                UnsafePreCacheApiAdditons(two);
+                UnsafePreCacheApiAdditions(two);
             }
 
             Id = model.Id;
@@ -208,7 +208,7 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void UnsafePreCacheApiAdditons(ICommandProvider2 provider)
+    private void UnsafePreCacheApiAdditions(ICommandProvider2 provider)
     {
         var apiExtensions = provider.GetApiExtensionStubs();
         Logger.LogDebug($"Provider supports {apiExtensions.Length} extensions");
