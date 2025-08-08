@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = moduleType,
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
-                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
+                IsEnabled = GetModuleEnableStage(moduleType),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                 EnabledChangedCallback = EnabledChangedOnUI,
@@ -81,9 +81,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             });
         }
 
+        private bool GetModuleEnableStage(ModuleType moduleType)
+        {
+            GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
+            var result = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType));
+            return result;
+        }
+
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
-            Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
+            Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, GetModuleEnableStage(dashboardListItem.Tag));
 
             if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
             {
