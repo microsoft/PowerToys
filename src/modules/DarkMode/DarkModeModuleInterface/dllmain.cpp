@@ -271,27 +271,54 @@ public:
     virtual void enable()
     {
         m_enabled = true;
-        Logger::trace(L"Starting DarkMode process");
+        Logger::info(L"Enabling DarkMode module...");
+
         unsigned long powertoys_pid = GetCurrentProcessId();
+        std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
+        std::wstring exe_name = L"DarkModeService\\PowerToys.DarkModeService.exe";
 
-        std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
+        // Resolve the executable path
+        std::wstring resolved_path(MAX_PATH, L'\0');
+        DWORD result = SearchPathW(
+            nullptr,
+            exe_name.c_str(),
+            nullptr,
+            static_cast<DWORD>(resolved_path.size()),
+            resolved_path.data(),
+            nullptr);
 
-        SHELLEXECUTEINFOW sei{ sizeof(sei) };
-        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"PowerToys.DarkMode.exe";
-        sei.nShow = SW_SHOWNORMAL;
-        sei.lpParameters = executable_args.data();
-        if (ShellExecuteExW(&sei))
+        if (result == 0 || result >= resolved_path.size())
         {
-            Logger::trace("Successfully started the DarkMode process");
-        }
-        else
-        {
-            Logger::error(L"DarkMode failed to start. {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Failed to locate DarkMode executable: '{}'", exe_name);
+            return;
         }
 
-        m_process = sei.hProcess;
+        resolved_path.resize(result);
+        Logger::debug(L"Resolved executable path: {}", resolved_path);
+
+        std::wstring command_line = L"\"" + resolved_path + L"\" " + args;
+
+        STARTUPINFO si = { sizeof(si) };
+        PROCESS_INFORMATION pi;
+
+        if (!CreateProcessW(
+                resolved_path.c_str(), // lpApplicationName
+                command_line.data(), // lpCommandLine (must be mutable)
+                nullptr,
+                nullptr,
+                TRUE,
+                0,
+                nullptr,
+                nullptr,
+                &si,
+                &pi))
+        {
+            Logger::error(L"Failed to launch DarkMode process. {}", get_last_error_or_default(GetLastError()));
+            return;
+        }
+
+        Logger::info(L"DarkMode process launched successfully (PID: {}).", pi.dwProcessId);
+        m_process = pi.hProcess;
     }
 
     // Disable the powertoy

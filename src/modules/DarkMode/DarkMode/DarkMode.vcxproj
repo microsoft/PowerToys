@@ -8,13 +8,9 @@
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{d0de6425-eb5f-46d7-9cd7-4656e27e1192}</ProjectGuid>
-    <ProjectName>DarkMode</ProjectName>
+    <ProjectName>DarkModeUI</ProjectName>
     <RootNamespace>PowerToys.DarkMode</RootNamespace>
-    <!--
-      $(TargetName) should be same as $(RootNamespace) so that the produced binaries (.exe/.pri/etc.)
-      have a name that matches the .winmd
-    -->
-    <TargetName>$(RootNamespace)</TargetName>
+    <TargetName>PowerToys.DarkModeUI</TargetName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <AppContainerApplication>false</AppContainerApplication>
