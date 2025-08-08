@@ -73,19 +73,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = moduleType,
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
-                IsEnabled = GetModuleEnableStage(moduleType),
+                IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                 EnabledChangedCallback = EnabledChangedOnUI,
                 DashboardModuleItems = GetModuleItems(moduleType),
             });
-        }
-
-        private bool GetModuleEnableStage(ModuleType moduleType)
-        {
-            GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
-            var result = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType));
-            return result;
         }
 
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
