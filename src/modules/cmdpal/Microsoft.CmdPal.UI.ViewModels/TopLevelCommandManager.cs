@@ -192,7 +192,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             }
 
             clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
-            clone.InsertRange(startIndex, newItems);
+            clone.InsertRange(startIndex != -1 ? startIndex : clone.Count, newItems);
             ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
         }
     }
