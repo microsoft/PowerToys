@@ -511,18 +511,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var matched = SearchIndexService.Search(queryText);
 
-            // Navigate to search results page with the matched items
-            if (matched != null && matched.Count > 0)
-            {
-                var searchParams = new SearchResultsNavigationParams(queryText, matched);
-                NavigationService.Navigate(typeof(SearchResultsPage), searchParams);
-            }
-            else
-            {
-                // Still navigate to show "no results" message
-                var searchParams = new SearchResultsNavigationParams(queryText, new List<SettingEntry>());
-                NavigationService.Navigate(typeof(SearchResultsPage), searchParams);
-            }
+            var searchParams = new SearchResultsNavigationParams(queryText, matched);
+            NavigationService.Navigate<SearchResultsPage>(searchParams);
         }
 
         private void NavigateToItem(NavigationViewItem item, string elementName = null, string parentElementName = null)

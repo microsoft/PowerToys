@@ -198,8 +198,37 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 
         public static string GetParentElementName(XElement element, XNamespace x)
         {
-            // Since expanders are no longer supported, we can return empty string
-            // or implement other parent element logic if needed in the future
+            // Look for parent SettingsExpander
+            var current = element.Parent;
+            while (current != null)
+            {
+                // Check if we're inside a SettingsExpander.Items or just directly inside SettingsExpander
+                if (current.Name.LocalName == "Items")
+                {
+                    // Check if the parent of Items is SettingsExpander
+                    var expanderParent = current.Parent;
+                    if (expanderParent?.Name.LocalName == "SettingsExpander")
+                    {
+                        var expanderName = expanderParent.Attribute("Name")?.Value;
+                        if (!string.IsNullOrEmpty(expanderName))
+                        {
+                            return expanderName;
+                        }
+                    }
+                }
+                else if (current.Name.LocalName == "SettingsExpander")
+                {
+                    // Direct child of SettingsExpander
+                    var expanderName = current.Attribute("Name")?.Value;
+                    if (!string.IsNullOrEmpty(expanderName))
+                    {
+                        return expanderName;
+                    }
+                }
+
+                current = current.Parent;
+            }
+
             return string.Empty;
         }
 
