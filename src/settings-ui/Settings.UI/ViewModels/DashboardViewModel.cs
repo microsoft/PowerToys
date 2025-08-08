@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
-            Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, GetModuleEnableStage(dashboardListItem.Tag));
+            Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
 
             if (dashboardListItem.Tag == ModuleType.NewPlus && dashboardListItem.IsEnabled == true)
             {
@@ -129,13 +129,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ShortcutModules.Add(new DashboardListItem
                     {
-                        EnabledChangedCallback = x.EnabledChangedCallback,
                         Icon = x.Icon,
                         IsLocked = x.IsLocked,
                         Label = x.Label,
                         Tag = x.Tag,
                         IsEnabled = x.IsEnabled,
                         DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
+                        EnabledChangedCallback = x.EnabledChangedCallback,
                     });
                 }
             }
@@ -150,13 +150,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ActionModules.Add(new DashboardListItem
                     {
-                        EnabledChangedCallback = x.EnabledChangedCallback,
                         Icon = x.Icon,
                         IsLocked = x.IsLocked,
                         Label = x.Label,
                         Tag = x.Tag,
                         IsEnabled = x.IsEnabled,
                         DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
+                        EnabledChangedCallback = x.EnabledChangedCallback,
                     });
                 }
             }
