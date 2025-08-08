@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace PowerToys.DSC.Options;
 
-internal sealed class InputOption : Option<string?>
+internal sealed class InputOption : Option<string>
 {
     public InputOption()
         : base("--input", "The JSON input")
@@ -18,7 +18,7 @@ internal sealed class InputOption : Option<string?>
 
     private void OptionValidator(OptionResult result)
     {
-        var value = result.GetValueOrDefault<string?>() ?? string.Empty;
+        var value = result.GetValueOrDefault<string>() ?? string.Empty;
 
         try
         {

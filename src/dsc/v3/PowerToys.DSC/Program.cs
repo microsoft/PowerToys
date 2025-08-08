@@ -2,15 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.DSC.Commands;
-using PowerToys.DSC.Options;
 
 namespace PowerToys.DSC;
 

@@ -2,14 +2,35 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace PowerToys.DSC.Models;
 
-internal sealed class SettingsResourceObject<T> : BaseResourceObject
-    where T : ISettingsConfig
+internal sealed class SettingsResourceObject<TSettingsConfig> : BaseResourceObject, ISettingsResourceObject
+    where TSettingsConfig : ISettingsConfig, new()
 {
-    [JsonPropertyName("settings")]
-    public T? Settings { get; set; }
+    public const string SettingsJsonPropertyName = "settings";
+
+    [JsonPropertyName(SettingsJsonPropertyName)]
+    [Required]
+    [Description("The settings content for the module.")]
+    public TSettingsConfig Settings { get; set; } = new();
+
+    public ISettingsConfig GetSettings()
+    {
+        return Settings;
+    }
+
+    public void SetSettings(ISettingsConfig settings)
+    {
+        Settings = (TSettingsConfig)settings;
+    }
+
+    public void SetInDesiredState(bool inDesiredState)
+    {
+        InDesiredState = inDesiredState;
+    }
 }

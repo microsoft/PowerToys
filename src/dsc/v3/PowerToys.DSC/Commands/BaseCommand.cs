@@ -21,7 +21,7 @@ internal abstract class BaseCommand : Command
 
     protected string? Input { get; private set; }
 
-    private string? Module { get; set; }
+    protected string? Module { get; private set; }
 
     public BaseCommand(string name, string description)
         : base(name, description)

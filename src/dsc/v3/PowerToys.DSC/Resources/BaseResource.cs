@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using NJsonSchema.Generation;
@@ -33,6 +34,12 @@ internal abstract class BaseResource
     public abstract bool Manifest(string? outputDir);
 
     public abstract IList<string> GetSupportedModules();
+
+    protected void WriteJsonOutputLine(JsonNode output)
+    {
+        var json = output.ToJsonString(new() { WriteIndented = false });
+        WriteJsonOutputLine(json);
+    }
 
     protected void WriteJsonOutputLine(string output)
     {
