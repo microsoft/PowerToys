@@ -99,8 +99,9 @@ In this release, we focused on new features, stability, optimization improvement
 
 **✨Highlights**
 
- - PowerToys settings debuts a modern, card-based dashboard with clearer descriptions and faster navigation for a streamlined user experience.  
- - Command Palette is in full Ahead-of-Time (AOT) compilation mode, reducing installation size by 55%, startup memory usage by 16%, and load time by 40%. 
+ - PowerToys settings debuts a modern, card-based dashboard with clearer descriptions and faster navigation for a streamlined user experience.
+ - Command Palette had over 99 issues resolved, including bringing back Clipboard History, adding context menu shortcuts, pinning favorite apps, and supporting history in Run.
+ - Command Palette is in full Ahead-of-Time (AOT) compilation mode, reducing installation size by ~55%, startup memory usage by ~15%, load time by ~40%, and built-in extensions loading time by ~70%.
  - Peek now supports instant previews and embedded thumbnails for Binary G-code (.bgcode) 3D printing files, making it easy to inspect models at a glance. Thanks [@pedrolamas](https://github.com/pedrolamas)!
  - Mouse Utilities introduces a new spotlight highlighting mode that dims the screen and draws attention to your cursor, perfect for presentations.
  - Test coverage improvements for multiple PowerToys modules including Command Palette, Advanced Paste, Peek, Text Extractor, and PowerRename — ensuring better reliability and quality, with over 600 new unit tests (mostly for Command Palette) and doubled UI automation coverage.
@@ -109,7 +110,7 @@ In this release, we focused on new features, stability, optimization improvement
 
  - Ensured screen readers are notified when the selected item in the list changes for better accessibility.
  - Fixed command title changes not being properly notified to screen readers. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Made icon controls unfocusable by default for better accessibility. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Made icon controls excluded from keyboard navigation by default for better accessibility. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Improved UI design with better text sizing and alignment.
  - Fixed keyboard shortcuts to work better in text boxes and context menus.
  - Added right-click context menus with critical command styling and separators.
@@ -126,15 +127,14 @@ In this release, we focused on new features, stability, optimization improvement
  - Fixed window hiding to properly work on UI thread. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Fixed crashes and improved stability with better synchronization of Command list updates. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Improved extension disposal with better error handling to prevent crashes. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed crashes when loading more items by preventing re-entrancy issues. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Improved stability by fixing a UI threading issue when loading more results, preventing possible crashes and ensuring the loading state resets if loading fails. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Enhanced icon loading stability with better exception handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed loading of top-level commands to prevent thread-safety issues. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added thread safety to recent commands to prevent crashes. Thanks [@MaoShengelia](https://github.com/MaoShengelia)!
  - Fixed acrylic (frosted glass) system backdrop display issues by ensuring proper UI thread handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Command Palette extensions
 
- - Added settings to each provider to control which fallback commands are enabled.
+ - Added settings to each provider to control which fallback commands are enabled. Thanks [@jiripolasek](https://github.com/jiripolasek)! for fixing a regression in this feature.
  - Added sample code showing how Command Palette extensions can track when their pages are loaded or unloaded. [Check it out here](./src/modules/cmdpal/ext/SamplePagesExtension/OnLoadPage.cs).
  - Fixed *Calculator* to accept regular spaces in numbers that use space separators. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Added a new setting to *Calculator* to make "Copy" the primary button (replacing “Save”) and enable "Close on Enter", streamlining the workflow. Thanks [@PesBandi](https://github.com/PesBandi)!
@@ -143,6 +143,7 @@ In this release, we focused on new features, stability, optimization improvement
  - Added ability to pin/unpin *Apps* using Ctrl+P shortcut.
  - Added keyboard shortcuts to the *Apps* context menu items for faster access. 
  - Added all file context menu options to the *Apps* items context menu, making all file actions available there for better functionality.
+ - Streamlined All *Apps* extension settings by removing redundant descriptions, making the UI clearer.
  - Added command history to the *Run* page for easier access to previous commands.
  - Fixed directory path handling in *Run* fallback for better file navigation.
  - Fixed URL fallback item hiding properly in *Web Search* extension when search query becomes invalid. Thanks [@jiripolasek](https://github.com/jiripolasek)!
