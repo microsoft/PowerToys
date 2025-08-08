@@ -14,6 +14,10 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:IndexBitFieldToVisibilityConverter x:Key="IndexBitFieldToVisibilityConverter" />
+        <tkconverters:BoolToVisibilityConverter
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -89,7 +93,9 @@
                                 HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                                 Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x8}">
                                 <!--  Visible for the Shortcut activation method  -->
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
+                                <controls:ShortcutControl 
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}" 
+                                    HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}" />
@@ -149,7 +155,7 @@
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Informational"
-                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToReverseVisibilityConverter}}">
+                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>
@@ -198,7 +204,9 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl 
+                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
+                            HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MouseHighlighterAutoActivate, Mode=TwoWay}" />
@@ -283,7 +291,9 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}"
                         IsExpanded="True">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl 
+                            MinWidth="{StaticResource SettingActionControlMinWidth}" 
+                            HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoActivate, Mode=TwoWay}" />

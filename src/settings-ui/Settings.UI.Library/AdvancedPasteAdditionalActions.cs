@@ -28,16 +28,23 @@ public sealed class AdvancedPasteAdditionalActions
 
     public IEnumerable<IAdvancedPasteAction> GetAllActions()
     {
-        Queue<IAdvancedPasteAction> queue = new([ImageToText, PasteAsFile, Transcode]);
+        return GetAllActionsRecursive([ImageToText, PasteAsFile, Transcode]);
+    }
 
-        while (queue.Count != 0)
+    /// <summary>
+    /// Changed to depth-first traversal to ensure ordered output
+    /// </summary>
+    /// <param name="actions">The collection of actions to traverse</param>
+    /// <returns>All actions returned in depth-first order</returns>
+    private static IEnumerable<IAdvancedPasteAction> GetAllActionsRecursive(IEnumerable<IAdvancedPasteAction> actions)
+    {
+        foreach (var action in actions)
         {
-            var action = queue.Dequeue();
             yield return action;
 
-            foreach (var subAction in action.SubActions)
+            foreach (var subAction in GetAllActionsRecursive(action.SubActions))
             {
-                queue.Enqueue(subAction);
+                yield return subAction;
             }
         }
     }

@@ -20,11 +20,13 @@ namespace CentralizedHotkeys
     {
         WORD modifiersMask;
         WORD vkCode;
+        int hotkeyID;
 
-        Shortcut(WORD modifiersMask = 0, WORD vkCode = 0)
+        Shortcut(WORD modifiersMask = 0, WORD vkCode = 0, const int hotkeyID = 0)
         {
             this->modifiersMask = modifiersMask;
             this->vkCode = vkCode;
+            this->hotkeyID = hotkeyID;
         }
 
         bool operator<(const Shortcut& key) const

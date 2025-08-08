@@ -51,6 +51,7 @@
     <ClCompile Include="bug_report.cpp" />
     <ClCompile Include="centralized_hotkeys.cpp" />
     <ClCompile Include="general_settings.cpp" />
+    <ClCompile Include="hotkey_conflict_detector.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
@@ -71,6 +72,7 @@
     <ClInclude Include="bug_report.h" />
     <ClInclude Include="centralized_hotkeys.h" />
     <ClInclude Include="general_settings.h" />
+    <ClInclude Include="hotkey_conflict_detector.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="centralized_kb_hook.h" />
     <ClInclude Include="settings_telemetry.h" />
