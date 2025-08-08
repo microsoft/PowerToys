@@ -20,6 +20,7 @@ internal static class TypePreservation
     /// These types are used dynamically in XAML and would otherwise be trimmed.
     /// </summary>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.UI.Xaml.Controls.FontIconSource))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.UI.Xaml.Controls.PathIcon))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.UI.Xaml.DataTemplate))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.UI.Xaml.Controls.DataTemplateSelector))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.UI.Xaml.Controls.ListViewItem))]
