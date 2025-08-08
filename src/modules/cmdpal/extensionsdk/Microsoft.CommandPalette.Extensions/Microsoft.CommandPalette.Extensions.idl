@@ -365,7 +365,7 @@ namespace Microsoft.CommandPalette.Extensions
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface ICommandWithProperties requires ICommand
+    interface IHaveProperties
     {
         Windows.Foundation.Collections.IPropertySet Properties { get; };
     };

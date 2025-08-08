@@ -27,6 +27,8 @@ public partial class IconDataViewModel : ObservableObject, IIconData
 
     IRandomAccessStreamReference? IIconData.Data => Data.Unsafe;
 
+    public string? FontFamily { get; private set; }
+
     public IconDataViewModel(IIconData? icon)
     {
         _model = new(icon);
@@ -43,5 +45,13 @@ public partial class IconDataViewModel : ObservableObject, IIconData
 
         Icon = model.Icon;
         Data = new(model.Data);
+
+        if (model is IHaveProperties icon2)
+        {
+            if (icon2.Properties?.TryGetValue("FontFamily", out var family) ?? false)
+            {
+                FontFamily = family as string;
+            }
+        }
     }
 }

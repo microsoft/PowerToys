@@ -214,9 +214,9 @@ public sealed class CommandProviderWrapper
         Logger.LogDebug($"Provider supports {apiExtensions.Length} extensions");
         foreach (var a in apiExtensions)
         {
-            if (a is ICommandWithProperties command2)
+            if (a is IHaveProperties command2)
             {
-                Logger.LogDebug($"{ProviderId}: Found an ICommand2");
+                Logger.LogDebug($"{ProviderId}: Found an IHaveProperties");
             }
         }
     }

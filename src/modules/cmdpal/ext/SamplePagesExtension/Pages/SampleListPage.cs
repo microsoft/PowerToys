@@ -172,10 +172,6 @@ internal sealed partial class SampleListPage : ListPage
                 Title = "Get the name of the Foreground window",
             },
 
-            // new ListItem(new JustHasProps())
-            // {
-            //    Title = "Not actually invokable",
-            // },
             new ListItem(new CommandWithProperties())
             {
                 Title = "I have properties",
@@ -187,8 +183,12 @@ internal sealed partial class SampleListPage : ListPage
         ];
     }
 
-    internal sealed partial class CommandWithProperties : InvokableCommand, ICommandWithProperties
+    internal sealed partial class CommandWithProperties : InvokableCommand, IHaveProperties
     {
+        private FontIconData _icon = new("\u0026", "Wingdings");
+
+        public override IconInfo Icon => new IconInfo(_icon, _icon);
+
         public override string Name => "Whatever";
 
         public IPropertySet Properties => new PropertySet()
@@ -200,7 +200,7 @@ internal sealed partial class SampleListPage : ListPage
     }
 
 #nullable enable
-    internal sealed partial class OtherCommandWithProperties : ICommandWithProperties, IInvokableCommand
+    internal sealed partial class OtherCommandWithProperties : IHaveProperties, IInvokableCommand
     {
         public string Name => "Whatever 2";
 
@@ -216,13 +216,11 @@ internal sealed partial class SampleListPage : ListPage
             return CommandResult.ShowToast("whoop");
         }
 
-        public IPropertySet OtherProperties => new PropertySet()
+        public IPropertySet Properties => new PropertySet()
         {
             { "yo", "dawg" },
             { "Secret", 12345 },
             { "hmm?", null },
         };
-
-        public IPropertySet Properties => throw new System.NotImplementedException();
     }
 }

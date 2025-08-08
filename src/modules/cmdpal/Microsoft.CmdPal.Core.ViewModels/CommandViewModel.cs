@@ -83,7 +83,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
             UpdateProperty(nameof(Icon));
         }
 
-        if (model is ICommandWithProperties command2)
+        if (model is IHaveProperties command2)
         {
             Properties = command2.Properties;
         }
@@ -121,8 +121,8 @@ public partial class CommandViewModel : ExtensionObjectViewModel
                 Icon = new(iconInfo);
                 Icon.InitializeProperties();
                 break;
-            case nameof(ICommandWithProperties.Properties):
-                if (model is ICommandWithProperties command2)
+            case nameof(IHaveProperties.Properties):
+                if (model is IHaveProperties command2)
                 {
                     Properties = command2.Properties;
                 }

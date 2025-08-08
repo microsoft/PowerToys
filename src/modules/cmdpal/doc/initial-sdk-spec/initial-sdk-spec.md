@@ -1969,7 +1969,7 @@ So that's exactly what we're going to do, because it works. As an example,
 we're going to add the following interface to our API:
 
 ```csharp
-interface ICommandWithProperties requires ICommand
+interface IHaveProperties
 {
     Windows.Foundation.Collections.IPropertySet Properties { get; };
 };
@@ -1980,30 +1980,30 @@ interface ICommandProvider2 requires ICommandProvider
 };
 ```
 
-`ICommandWithProperties` is just a simple interface, indicating that there's
-some property bag of additional values that the host could read. `ICommand`
-proves uniquely challenging to extend, because it has both the
-`IInvokableCommand` and `IPage` family trees of interfaces which extend from
-it. 
-Typically, it would be impossible for a class to be defined as 
+`IHaveProperties` is just a simple interface, indicating that there's
+some property bag of additional values that the host could read. 
+
+AS an example, `ICommand` proves uniquely challenging to extend, because it has
+both the `IInvokableCommand` and `IPage` family trees of interfaces which
+extend from it. Typically, it would be impossible for a class to be defined as
 
 ```cs
-class MyCommandWithProperties : IInvokableCommand, ICommandWithProperties { ... }
+class MyCommandWithProperties : IInvokableCommand, IHaveProperties { ... }
 ```
 
 because Command Palette would only ever see the _first_ interface
 (`IInvokableCommand`) via MBM, and would never be able to check if an extension
-object was an `ICommandWithProperties`. But a class defined like
+object was an `IHaveProperties`. But a class defined like
 
 ```cs
-class CommandWithOnlyProperties : ICommandWithProperties { ... }
+class CommandWithOnlyProperties : IHaveProperties { ... }
 ```
 
 will populate the WinRT type cache in Command Palette with the type information
 for `ICommandWithProperties`. In fact, if Command Palette has the
-`ICommandWithProperties` type info in it's cache, and then later recieves a new
+`IHaveProperties` type info in it's cache, and then later recieves a new
 `MyCommandWithProperties` object, it'll actually be able to know that
-`MyCommandWithProperties` is an `ICommandWithProperties`. WinRT is just weird
+`MyCommandWithProperties` is an `IHaveProperties`. WinRT is just weird
 like that some times.
 
 `ICommandProvider2` is where the magic happens. This is a _linear_ addition to
@@ -2031,7 +2031,7 @@ public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProv
     public object[] GetApiExtensionStubs() {
         return [new SupportCommandsWithProperties()];
     }
-    private sealed partial class SupportCommandsWithProperties : ICommand2 {
+    private sealed partial class SupportCommandsWithProperties : IHaveProperties {
         public IPropertySet OtherProperties => null;
         public IIconInfo Icon => null;
         public string Id => string.Empty;

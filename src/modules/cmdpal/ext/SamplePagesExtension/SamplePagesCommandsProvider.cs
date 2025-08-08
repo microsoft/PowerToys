@@ -4,12 +4,10 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 namespace SamplePagesExtension;
 
-public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProvider2
+public partial class SamplePagesCommandsProvider : CommandProvider
 {
     public SamplePagesCommandsProvider()
     {
@@ -28,27 +26,5 @@ public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProv
     public override ICommandItem[] TopLevelCommands()
     {
         return _commands;
-    }
-
-    public object[] GetApiExtensionStubs()
-    {
-        return [new SupportCommandsWithProperties()];
-    }
-
-    private sealed partial class SupportCommandsWithProperties : ICommandWithProperties
-    {
-        public IPropertySet Properties => null;
-
-        public IIconInfo Icon => null;
-
-        public string Id => string.Empty;
-
-        public string Name => string.Empty;
-
-        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
-        {
-            add { }
-            remove { }
-        }
     }
 }
