@@ -14,7 +14,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [Command Palette](https://aka.ms/PowerToysOverview_CmdPal) |
 | [Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
 | [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) |
-| [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse utilities](https://aka.ms/PowerToysOverview_MouseUtilities) |
+| [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse Utilities](https://aka.ms/PowerToysOverview_MouseUtilities) |
 | [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) | [New+](https://aka.ms/PowerToysOverview_NewPlus) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) |
 | [Peek](https://aka.ms/PowerToysOverview_Peek) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) |
 | [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
@@ -107,52 +107,54 @@ In this release, we focused on new features, stability, optimization improvement
 
 ### Command Palette
 
- - Fixed Command Palette window not appearing properly when activated. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Added mouse back button support for easier navigation. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed Alt+Left Arrow navigation not working when search box contains text. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Updated back button tooltip to show keyboard shortcut information. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Added settings to each provider to control which fallback commands are enabled.
- - Fixed Command Palette window staying hidden from taskbar after Windows Explorer restarts. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Ensured screen readers are notified when the selected item in the list changes for better accessibility.
  - Fixed command title changes not being properly notified to screen readers. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Made icon controls unfocusable by default for better accessibility. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed window focus not returning to previous app properly.
- - Fixed "Reload" command to work with both uppercase and lowercase letters.
- - Fixed context menu crashes with better type handling.
  - Improved UI design with better text sizing and alignment.
- - Fixed minor grammar error in SamplePagesExtension code comments. Thanks [@purofle](https://github.com/purofle)!
+ - Fixed keyboard shortcuts to work better in text boxes and context menus.
  - Added right-click context menus with critical command styling and separators.
  - Improved various context menu issues, improving item selection, handling of long titles, search bar text scaling, initial item behavior, and primary button functionality.
+ - Fixed context menu crashes with better type handling.
+ - Fixed "Reload" command to work with both uppercase and lowercase letters.
+ - Added mouse back button support for easier navigation. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixed Alt+Left Arrow navigation not working when search box contains text. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Updated back button tooltip to show keyboard shortcut information. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixed Command Palette window not appearing properly when activated. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixed Command Palette window staying hidden from taskbar after File Explorer restarts. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixed window focus not returning to previous app properly.
+ - Fixed Command Palette window to always appear on top when shown and move to bottom when hidden. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixed window hiding to properly work on UI thread. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Fixed crashes and improved stability with better synchronization of Command list updates. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed acrylic (frosted glass) system backdrop display issues by ensuring proper UI thread handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Improved extension disposal with better error handling to prevent crashes. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Fixed crashes when loading more items by preventing re-entrancy issues. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Enhanced icon loading stability with better exception handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed window hiding to properly work on UI thread. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Fixed loading of top-level commands to prevent thread-safety issues. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added thread safety to recent commands to prevent crashes. Thanks [@MaoShengelia](https://github.com/MaoShengelia)!
- - Fixed Command Palette window to always appear on top when shown and move to bottom when hidden. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed keyboard shortcuts to work better in text boxes and context menus.
+ - Fixed acrylic (frosted glass) system backdrop display issues by ensuring proper UI thread handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Command Palette extensions
- - Added sample code showing how Command Palette extensions can track when their pages are loaded or unloaded. [Check out here](./src/modules/cmdpal/ext/SamplePagesExtension/OnLoadPage.cs).
+
+ - Added settings to each provider to control which fallback commands are enabled.
+ - Added sample code showing how Command Palette extensions can track when their pages are loaded or unloaded. [Check it out here](./src/modules/cmdpal/ext/SamplePagesExtension/OnLoadPage.cs).
  - Fixed *Calculator* to accept regular spaces in numbers that use space separators. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Added a new setting to *Calculator* to make "Copy" the primary button (replacing “Save”) and enable "Close on Enter", streamlining the workflow. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Improved *Apps* indexing error handling and removed obsolete code. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Prevented apps from showing in search when Installed *Apps* extension is disabled. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Prevented apps from showing in search when the *Apps* extension is disabled. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added ability to pin/unpin *Apps* using Ctrl+P shortcut.
- - Added keyboard shortcuts to *Apps* context menu items for faster access. 
+ - Added keyboard shortcuts to the *Apps* context menu items for faster access. 
  - Added all file context menu options to the *Apps* items context menu, making all file actions available there for better functionality.
- - Re-enabled *clipboard history* feature with proper window handling.
  - Added command history to the *Run* page for easier access to previous commands.
  - Fixed directory path handling in *Run* fallback for better file navigation.
  - Fixed URL fallback item hiding properly in *Web Search* extension when search query becomes invalid. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added proper empty state message for *Web Search* extension when no results found. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Added fallback command to *Windows Settings* extension for better search results.
- - Updated terminology from "Kill process" to "End task" in *Window Walker* for consistency with Windows.
+ - Re-enabled *Clipboard History* feature with proper window handling.
  - Improved *Add Bookmark* extension to automatically detect file, folder, or URL types without manual input.
+ - Updated terminology from "Kill process" to "End task" in *Window Walker* for consistency with Windows.
+ - Fixed minor grammar error in SamplePagesExtension code comments. Thanks [@purofle](https://github.com/purofle)!
 
 ### Mouse Utilities
+
  - Added a new spotlight highlighting mode that creates a large transparent circle around your cursor with a backdrop effect, providing an alternative to the traditional circle highlight. Perfect for presentations where you want to focus attention on a specific area while dimming the rest of the screen.
 
 ### Peek
@@ -160,23 +162,27 @@ In this release, we focused on new features, stability, optimization improvement
  - Added preview and thumbnail support for Binary G-code (.bgcode) files used in 3D printing. You can now see embedded thumbnails and preview these compressed 3D printing files directly in Peek and File Explorer. Thanks [@pedrolamas](https://github.com/pedrolamas)!
 
 ### Quick Accent
+
  - Added Vietnamese language support to Quick Accent, mappings for Vietnamese vowels (a, e, i, o, u, y) and the letter d. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
 
 ### Settings
+
  - Completely redesigned the Settings dashboard with a modern card-based layout featuring organized sections for quick actions and shortcuts overview, replacing the old module list.
  - Rewrote setting descriptions to be more concise and follow Windows writing style guidelines, making them easier to understand.
  - Improved formatting and readability of release notes in the "What's New" section with better typography and spacing.
- - Added missing deep link support for various settings pages (Peek, PowerAccent, PowerLauncher, etc.) so you can jump directly to specific settings.
+ - Added missing deep link support for various settings pages (Peek, Quick Accent, PowerToys Run, etc.) so you can jump directly to specific settings.
  - Resolved an issue where the settings page header would drift away from its position when resizing the settings window.
  - Resolved a settings crash related to incompatible property names in ZoomIt configuration.
 
 ### Documentation
+
  - Added detailed step-by-step instructions for first-time developers building the Command Palette module, including prerequisites and Visual Studio setup guidance. Thanks [@chatasweetie](https://github.com/chatasweetie)!
  - **Fixed Broken SDK Link**: Corrected a broken markdown link in the Command Palette SDK README that was pointing to an incorrect directory path. Thanks [@ChrisGuzak](https://github.com/ChrisGuzak)!
  - Added documentation for the "Open With Cursor" plugin that enables opening Visual Studio and VS Code recent files using Cursor AI. Thanks [@VictorNoxx](https://github.com/VictorNoxx)!
  - Added documentation for two new community plugins - Hotkeys plugin for creating custom keyboard shortcuts, and RandomGen plugin for generating random data like passwords, colors, and placeholder text. Thanks [@ruslanlap](https://github.com/ruslanlap)!
 
 ### Development
+
  - Updated .NET libraries to 9.0.7 for performance and security. Thanks [@snickler](https://github.com/snickler)!
  - Updated the spell check system to version 0.0.25 with better GitHub integration and SARIF reporting, plus fixed numerous spelling errors throughout the codebase including property names and documentation. Thanks [@jsoref](https://github.com/jsoref)!
  - Cleaned up spelling check configuration to eliminate false positives and excessive noise that was appearing in every pull request, making the development process smoother.
