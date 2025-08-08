@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ManagedCommon;
@@ -18,41 +20,45 @@ internal sealed class SettingsResource : BaseResource
     private sealed record ModuleActions(Func<string> Get, Action<string> Set, Func<string> Schema);
 
     public const string ResourceName = "settings";
+    public const string AppModule = "App";
     private static readonly SettingsUtils _settingsUtils = new();
-    private readonly Dictionary<ModuleType, ModuleActions> _moduleActions;
+    private readonly Dictionary<string, ModuleActions> _moduleActions;
 
-    public SettingsResource(ModuleType module)
+    public string ModuleOrDefault => Module ?? AppModule;
+
+    public SettingsResource(string? module)
         : base(module)
     {
-        _moduleActions = new Dictionary<ModuleType, ModuleActions>()
+        _moduleActions = new Dictionary<string, ModuleActions>()
         {
-            { ModuleType.AdvancedPaste,             CreateModuleActions<AdvancedPasteSettings>() },
-            { ModuleType.AlwaysOnTop,               CreateModuleActions<AlwaysOnTopSettings>() },
-            { ModuleType.Awake,                     CreateModuleActions<AwakeSettings>() },
-            { ModuleType.ColorPicker,               CreateModuleActions<ColorPickerSettings>() },
-            { ModuleType.CropAndLock,               CreateModuleActions<CropAndLockSettings>() },
-            { ModuleType.EnvironmentVariables,      CreateModuleActions<EnvironmentVariablesSettings>() },
-            { ModuleType.FancyZones,                CreateModuleActions<FancyZonesSettings>() },
-            { ModuleType.FileLocksmith,             CreateModuleActions<FileLocksmithSettings>() },
-            { ModuleType.FindMyMouse,               CreateModuleActions<FindMyMouseSettings>() },
-            { ModuleType.Hosts,                     CreateModuleActions<HostsSettings>() },
-            { ModuleType.ImageResizer,              CreateModuleActions<ImageResizerSettings>() },
-            { ModuleType.KeyboardManager,           CreateModuleActions<KeyboardManagerSettings>() },
-            { ModuleType.MouseHighlighter,          CreateModuleActions<MouseHighlighterSettings>() },
-            { ModuleType.MouseJump,                 CreateModuleActions<MouseJumpSettings>() },
-            { ModuleType.MousePointerCrosshairs,    CreateModuleActions<MousePointerCrosshairsSettings>() },
-            { ModuleType.MouseWithoutBorders,       CreateModuleActions<MouseWithoutBordersSettings>() },
-            { ModuleType.NewPlus,                   CreateModuleActions<NewPlusSettings>() },
-            { ModuleType.Peek,                      CreateModuleActions<PeekSettings>() },
-            { ModuleType.PowerRename,               CreateModuleActions<PowerRenameSettings>() },
-            { ModuleType.PowerLauncher,             CreateModuleActions<PowerLauncherSettings>() },
-            { ModuleType.PowerAccent,               CreateModuleActions<PowerAccentSettings>() },
-            { ModuleType.RegistryPreview,           CreateModuleActions<RegistryPreviewSettings>() },
-            { ModuleType.MeasureTool,               CreateModuleActions<MeasureToolSettings>() },
-            { ModuleType.ShortcutGuide,             CreateModuleActions<ShortcutGuideSettings>() },
-            { ModuleType.PowerOCR,                  CreateModuleActions<PowerOcrSettings>() },
-            { ModuleType.Workspaces,                CreateModuleActions<WorkspacesSettings>() },
-            { ModuleType.ZoomIt,                    CreateModuleActions<ZoomItSettings>() },
+            { AppModule,                                    CreateModuleActions<GeneralSettings>() },
+            { nameof(ModuleType.AdvancedPaste),             CreateModuleActions<AdvancedPasteSettings>() },
+            { nameof(ModuleType.AlwaysOnTop),               CreateModuleActions<AlwaysOnTopSettings>() },
+            { nameof(ModuleType.Awake),                     CreateModuleActions<AwakeSettings>() },
+            { nameof(ModuleType.ColorPicker),               CreateModuleActions<ColorPickerSettings>() },
+            { nameof(ModuleType.CropAndLock),               CreateModuleActions<CropAndLockSettings>() },
+            { nameof(ModuleType.EnvironmentVariables),      CreateModuleActions<EnvironmentVariablesSettings>() },
+            { nameof(ModuleType.FancyZones),                CreateModuleActions<FancyZonesSettings>() },
+            { nameof(ModuleType.FileLocksmith),             CreateModuleActions<FileLocksmithSettings>() },
+            { nameof(ModuleType.FindMyMouse),               CreateModuleActions<FindMyMouseSettings>() },
+            { nameof(ModuleType.Hosts),                     CreateModuleActions<HostsSettings>() },
+            { nameof(ModuleType.ImageResizer),              CreateModuleActions<ImageResizerSettings>() },
+            { nameof(ModuleType.KeyboardManager),           CreateModuleActions<KeyboardManagerSettings>() },
+            { nameof(ModuleType.MouseHighlighter),          CreateModuleActions<MouseHighlighterSettings>() },
+            { nameof(ModuleType.MouseJump),                 CreateModuleActions<MouseJumpSettings>() },
+            { nameof(ModuleType.MousePointerCrosshairs),    CreateModuleActions<MousePointerCrosshairsSettings>() },
+            { nameof(ModuleType.MouseWithoutBorders),       CreateModuleActions<MouseWithoutBordersSettings>() },
+            { nameof(ModuleType.NewPlus),                   CreateModuleActions<NewPlusSettings>() },
+            { nameof(ModuleType.Peek),                      CreateModuleActions<PeekSettings>() },
+            { nameof(ModuleType.PowerRename),               CreateModuleActions<PowerRenameSettings>() },
+            { nameof(ModuleType.PowerLauncher),             CreateModuleActions<PowerLauncherSettings>() },
+            { nameof(ModuleType.PowerAccent),               CreateModuleActions<PowerAccentSettings>() },
+            { nameof(ModuleType.RegistryPreview),           CreateModuleActions<RegistryPreviewSettings>() },
+            { nameof(ModuleType.MeasureTool),               CreateModuleActions<MeasureToolSettings>() },
+            { nameof(ModuleType.ShortcutGuide),             CreateModuleActions<ShortcutGuideSettings>() },
+            { nameof(ModuleType.PowerOCR),                  CreateModuleActions<PowerOcrSettings>() },
+            { nameof(ModuleType.Workspaces),                CreateModuleActions<WorkspacesSettings>() },
+            { nameof(ModuleType.ZoomIt),                    CreateModuleActions<ZoomItSettings>() },
         };
     }
 
@@ -63,7 +69,7 @@ internal sealed class SettingsResource : BaseResource
 
     public override bool Get(string? input)
     {
-        if (_moduleActions.TryGetValue(Module, out ModuleActions? actions))
+        if (_moduleActions.TryGetValue(ModuleOrDefault, out ModuleActions? actions))
         {
             WriteJsonOutputLine(actions.Get());
             return true;
@@ -81,7 +87,7 @@ internal sealed class SettingsResource : BaseResource
             return false;
         }
 
-        if (_moduleActions.TryGetValue(Module, out ModuleActions? actions))
+        if (_moduleActions.TryGetValue(ModuleOrDefault, out ModuleActions? actions))
         {
             actions.Set(input!);
             return true;
@@ -99,9 +105,9 @@ internal sealed class SettingsResource : BaseResource
 
     public override bool Schema()
     {
-        if (_moduleActions.TryGetValue(Module, out ModuleActions? actions))
+        if (_moduleActions.TryGetValue(ModuleOrDefault, out ModuleActions? actions))
         {
-            WriteJsonOutputLine(actions.Get());
+            WriteJsonOutputLine(actions.Schema());
             return true;
         }
 
@@ -111,10 +117,38 @@ internal sealed class SettingsResource : BaseResource
 
     public override bool Manifest(string? outputDir)
     {
-        foreach (var moduleType in _moduleActions.Keys)
+        List<(string Name, string Manifest)> manifests = [];
+        if (!string.IsNullOrEmpty(Module))
         {
-            var manifest = GenerateManifest(moduleType);
-            WriteJsonOutputLine(manifest);
+            if (!_moduleActions.ContainsKey(Module))
+            {
+                WriteMessageOutputLine(DscMessageLevel.Error, $"Unsupported module type: {Module}");
+                return false;
+            }
+
+            manifests.Add((Module, GenerateManifest(Module)));
+        }
+        else
+        {
+            foreach (var module in GetSupportedModules())
+            {
+                manifests.Add((module, GenerateManifest(module)));
+            }
+        }
+
+        if (!string.IsNullOrEmpty(outputDir))
+        {
+            foreach (var (name, manifest) in manifests)
+            {
+                File.WriteAllText(Path.Combine(outputDir, $"microsoft.powertoys.{name}.settings.dsc.resource.json"), manifest);
+            }
+        }
+        else
+        {
+            foreach (var (_, manifest) in manifests)
+            {
+                WriteJsonOutputLine(manifest);
+            }
         }
 
         return true;
@@ -141,33 +175,33 @@ internal sealed class SettingsResource : BaseResource
         return new(GetSettings<TSettings>, SaveSettings<TSettings>, GenerateSchema<SettingsResourceObject<TSettings>>);
     }
 
-    private string GenerateManifest(ModuleType moduleType)
+    private string GenerateManifest(string module)
     {
         var manifest = new JsonObject()
         {
             ["$schema"] = "https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.vscode.json",
-            ["description"] = $"Allows management of {moduleType} settings state via the DSC v3 command line interface protocol.",
-            ["type"] = "Microsoft.PowerToys/AwakeSettings",
+            ["description"] = $"Allows management of {module} settings state via the DSC v3 command line interface protocol.",
+            ["type"] = $"Microsoft.PowerToys/{module}Settings",
             ["version"] = "0.1.0",
-            ["tag"] = new JsonArray("PowerToys"),
+            ["tags"] = new JsonArray("PowerToys"),
             ["export"] = new JsonObject
             {
-                ["executable"] = "PowerToys.Dsc.exe",
+                ["executable"] = "PowerToys.Dsc",
                 ["input"] = "stdin",
-                ["args"] = new JsonArray("export", "--module", moduleType.ToString(), "--resource", "settings"),
+                ["args"] = new JsonArray("export", "--module", module, "--resource", "settings"),
             },
             ["get"] = new JsonObject
             {
-                ["executable"] = "PowerToys.Dsc.exe",
+                ["executable"] = "PowerToys.Dsc",
                 ["input"] = "stdin",
-                ["args"] = new JsonArray("get", "--module", moduleType.ToString(), "--resource", "settings"),
+                ["args"] = new JsonArray("get", "--module", module, "--resource", "settings"),
             },
             ["set"] = new JsonObject
             {
-                ["executable"] = "PowerToys.Dsc.exe",
+                ["executable"] = "PowerToys.Dsc",
                 ["implementsPretest"] = false,
                 ["return"] = "stateAndDiff",
-                ["args"] = new JsonArray("set", "--module", moduleType.ToString(), "--resource", "settings", new JsonObject
+                ["args"] = new JsonArray("set", "--module", module, "--resource", "settings", new JsonObject
                 {
                     ["jsonInputArg"] = "--input",
                     ["mandatory"] = true,
@@ -177,12 +211,17 @@ internal sealed class SettingsResource : BaseResource
             {
                 ["command"] = new JsonObject
                 {
-                    ["executable"] = "PowerToys.Dsc.exe",
-                    ["args"] = new JsonArray("schema", "--module", moduleType.ToString(), "--resource", "settings"),
+                    ["executable"] = "PowerToys.Dsc",
+                    ["args"] = new JsonArray("schema", "--module", module, "--resource", "settings"),
                 },
             },
         };
 
-        return manifest.ToJsonString(new() { WriteIndented = false });
+        return manifest.ToJsonString(new() { WriteIndented = true });
+    }
+
+    public override IList<string> GetSupportedModules()
+    {
+        return [.. _moduleActions.Keys.Order()];
     }
 }

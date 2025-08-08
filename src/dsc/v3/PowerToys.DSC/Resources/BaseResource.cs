@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using ManagedCommon;
 using Newtonsoft.Json;
 using NJsonSchema.Generation;
 using PowerToys.DSC.Models;
@@ -14,9 +13,9 @@ namespace PowerToys.DSC.Resources;
 
 internal abstract class BaseResource
 {
-    public ModuleType Module { get; }
+    public string? Module { get; }
 
-    public BaseResource(ModuleType module)
+    public BaseResource(string? module)
     {
         Module = module;
     }
@@ -32,6 +31,8 @@ internal abstract class BaseResource
     public abstract bool Schema();
 
     public abstract bool Manifest(string? outputDir);
+
+    public abstract IList<string> GetSupportedModules();
 
     protected void WriteJsonOutputLine(string output)
     {

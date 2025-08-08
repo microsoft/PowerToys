@@ -15,6 +15,7 @@ internal sealed class ManifestCommand : BaseCommand
         : base("manifest", "Get the manifest of the dsc resource")
     {
         _outputDirectoryOption = new OutputDirectoryOption();
+        AddOption(_outputDirectoryOption);
     }
 
     public override void CommandHandlerInternal(InvocationContext context)

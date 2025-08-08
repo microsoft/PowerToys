@@ -25,6 +25,7 @@ public class Program
         rootCommand.AddCommand(new TestCommand());
         rootCommand.AddCommand(new SchemaCommand());
         rootCommand.AddCommand(new ManifestCommand());
+        rootCommand.AddCommand(new ModulesCommand());
         return await rootCommand.InvokeAsync(args);
     }
 }

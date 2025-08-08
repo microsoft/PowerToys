@@ -5,7 +5,7 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using ManagedCommon;
+using System.CommandLine.IO;
 using PowerToys.DSC.Options;
 using PowerToys.DSC.Resources;
 
@@ -17,11 +17,11 @@ internal abstract class BaseCommand : Command
     private readonly ResourceOption _resourceOption;
     private readonly InputOption _inputOption;
 
-    protected ModuleType Module { get; private set; }
-
     protected BaseResource? Resource { get; private set; }
 
     protected string? Input { get; private set; }
+
+    private string? Module { get; set; }
 
     public BaseCommand(string name, string description)
         : base(name, description)
@@ -40,16 +40,23 @@ internal abstract class BaseCommand : Command
 
     public void CommandHandler(InvocationContext context)
     {
-        var moduleName = context.ParseResult.GetValueForOption(_moduleOption);
         var resourceName = context.ParseResult.GetValueForOption(_resourceOption);
 
         Input = context.ParseResult.GetValueForOption(_inputOption);
-        Module = Enum.Parse<ModuleType>(moduleName!, ignoreCase: true);
+        Module = context.ParseResult.GetValueForOption(_moduleOption);
         Resource = resourceName switch
         {
             SettingsResource.ResourceName => new SettingsResource(Module),
             _ => throw new ArgumentException($"Unknown resource name: {resourceName}"),
         };
+
+        var supportedModules = Resource.GetSupportedModules();
+        if (!string.IsNullOrEmpty(Module) && !supportedModules.Contains(Module))
+        {
+            context.Console.Error.WriteLine($"Module '{Module}' is not supported for the resource {resourceName}. Supported modules are: {string.Join(", ", supportedModules)}");
+            context.ExitCode = 1;
+            return;
+        }
 
         CommandHandlerInternal(context);
     }
