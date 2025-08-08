@@ -59,6 +59,7 @@
                     <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
                     <Setter Property="BorderThickness" Value="1" />
                     <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="MinWidth" Value="20" />
                 </Style.Setters>
             </Style>
 
