@@ -120,7 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (filteredItems.Count != 0)
                 {
-                    ShortcutModules.Add(new DashboardListItem
+                    var newItem = new DashboardListItem
                     {
                         Icon = x.Icon,
                         IsLocked = x.IsLocked,
@@ -128,8 +128,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         Tag = x.Tag,
                         IsEnabled = x.IsEnabled,
                         DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
-                        EnabledChangedCallback = x.EnabledChangedCallback,
-                    });
+                    };
+
+                    ShortcutModules.Add(newItem);
+                    newItem.EnabledChangedCallback = x.EnabledChangedCallback;
                 }
             }
 
@@ -141,7 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (filteredItems.Count != 0)
                 {
-                    ActionModules.Add(new DashboardListItem
+                    var newItem = new DashboardListItem
                     {
                         Icon = x.Icon,
                         IsLocked = x.IsLocked,
@@ -149,8 +151,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         Tag = x.Tag,
                         IsEnabled = x.IsEnabled,
                         DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
-                        EnabledChangedCallback = x.EnabledChangedCallback,
-                    });
+                    };
+
+                    ActionModules.Add(newItem);
+                    newItem.EnabledChangedCallback = x.EnabledChangedCallback;
                 }
             }
         }
