@@ -69,16 +69,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void AddDashboardListItem(ModuleType moduleType)
         {
             GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
-            AllModules.Add(new DashboardListItem()
+            var newItem = new DashboardListItem()
             {
                 Tag = moduleType,
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
                 IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                EnabledChangedCallback = EnabledChangedOnUI,
                 DashboardModuleItems = GetModuleItems(moduleType),
-            });
+            };
+
+            AllModules.Add(newItem);
+            newItem.EnabledChangedCallback = EnabledChangedOnUI;
         }
 
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
