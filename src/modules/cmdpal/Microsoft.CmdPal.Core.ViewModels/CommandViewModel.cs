@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -28,6 +29,8 @@ public partial class CommandViewModel : ExtensionObjectViewModel
     public string Name { get; private set; } = string.Empty;
 
     public IconInfoViewModel Icon { get; private set; }
+
+    public IPropertySet? Properties { get; private set; }
 
     public CommandViewModel(ICommand? command, WeakReference<IPageContext> pageContext)
         : base(pageContext)
@@ -80,6 +83,11 @@ public partial class CommandViewModel : ExtensionObjectViewModel
             UpdateProperty(nameof(Icon));
         }
 
+        if (model is IHaveProperties command2)
+        {
+            Properties = command2.Properties;
+        }
+
         model.PropChanged += Model_PropChanged;
     }
 
@@ -112,6 +120,17 @@ public partial class CommandViewModel : ExtensionObjectViewModel
                 var iconInfo = model.Icon;
                 Icon = new(iconInfo);
                 Icon.InitializeProperties();
+                break;
+            case nameof(IHaveProperties.Properties):
+                if (model is IHaveProperties command2)
+                {
+                    Properties = command2.Properties;
+                }
+                else
+                {
+                    Properties = null;
+                }
+
                 break;
         }
 

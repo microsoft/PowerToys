@@ -7,7 +7,7 @@ namespace Microsoft.Terminal.UI
     {
         // static Windows.UI.Xaml.Controls.IconElement IconWUX(String path);
         // static Windows.UI.Xaml.Controls.IconSource IconSourceWUX(String path);
-        static Microsoft.UI.Xaml.Controls.IconSource IconSourceMUX(String path, Boolean convertToGrayscale);
+        static Microsoft.UI.Xaml.Controls.IconSource IconSourceMUX(String path, Boolean convertToGrayscale, String fontFamily);
         static Microsoft.UI.Xaml.Controls.IconElement IconMUX(String path);
         static Microsoft.UI.Xaml.Controls.IconElement IconMUX(String path, Int32 targetSize);
     };

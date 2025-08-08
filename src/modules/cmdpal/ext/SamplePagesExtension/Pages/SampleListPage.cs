@@ -4,6 +4,8 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.Win32;
 
@@ -169,6 +171,56 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "Get the name of the Foreground window",
             },
+
+            new ListItem(new CommandWithProperties())
+            {
+                Title = "I have properties",
+            },
+            new ListItem(new OtherCommandWithProperties())
+            {
+                Title = "I also have properties",
+            },
         ];
+    }
+
+    internal sealed partial class CommandWithProperties : InvokableCommand, IHaveProperties
+    {
+        private FontIconData _icon = new("\u0026", "Wingdings");
+
+        public override IconInfo Icon => new IconInfo(_icon, _icon);
+
+        public override string Name => "Whatever";
+
+        public IPropertySet Properties => new PropertySet()
+        {
+            { "Foo", "bar" },
+            { "Secret", 42 },
+            { "hmm?", null },
+        };
+    }
+
+#nullable enable
+    internal sealed partial class OtherCommandWithProperties : IHaveProperties, IInvokableCommand
+    {
+        public string Name => "Whatever 2";
+
+        public IIconInfo Icon => new IconInfo("\uF146");
+
+        public string Id => string.Empty;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
+
+        public ICommandResult Invoke(object sender)
+        {
+            PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Name)));
+            return CommandResult.ShowToast("whoop");
+        }
+
+        public IPropertySet Properties => new PropertySet()
+        {
+            { "yo", "dog" },
+            { "Secret", 12345 },
+            { "hmm?", null },
+        };
     }
 }

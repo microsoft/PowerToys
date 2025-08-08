@@ -27,6 +27,12 @@ public partial class IconInfo : IIconInfo
         Dark = dark;
     }
 
+    public IconInfo(IconData icon)
+    {
+        Light = icon;
+        Dark = icon;
+    }
+
     internal IconInfo()
         : this(string.Empty)
     {
