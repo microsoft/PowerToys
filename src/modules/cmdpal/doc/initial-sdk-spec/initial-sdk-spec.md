@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2025-03-10
+last updated: 2025-08-08
 issue id: n/a
 ---
 
@@ -1980,10 +1980,13 @@ interface ICommandProvider2 requires ICommandProvider
 };
 ```
 
-`IHaveProperties` is just a simple interface, indicating that there's
-some property bag of additional values that the host could read. 
+`IHaveProperties` is just a simple interface, indicating that there's some
+property bag of additional values that the host could read. We're starting with
+this, because it's a helpful tool for us to add arbitrary properties to object
+in an experimental fashion. We can continue to add more things we read from
+this property set, without breaking the ABI.
 
-AS an example, `ICommand` proves uniquely challenging to extend, because it has
+As an example, `ICommand` proves uniquely challenging to extend, because it has
 both the `IInvokableCommand` and `IPage` family trees of interfaces which
 extend from it. Typically, it would be impossible for a class to be defined as
 
@@ -2041,6 +2044,11 @@ public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProv
 }
 
 ```
+
+Fortunately, we can put all of that (`GetApiExtensionStubs`,
+`SupportCommandsWithProperties`) directly in `Toolkit.CommandProvider`, so
+developers won't have to do anything. The toolkit will just do the right thing
+for them.
 
 ## Class diagram
 
@@ -2314,6 +2322,8 @@ Almost all of the SDK defined here is in terms of interfaces. Unfortunately,
 this prevents us from being able to use `[contract]` attributes to add to the
 interfaces. We'll instead need to rely on the tried-and-true method of adding a
 `IFoo2` when we want to add methods to `IFoo`.
+
+[Addenda I](#adenda-i-api-additions-icommandprovider2) talks a little more on some of the challenges with adding more APIs.
 
 [^1]: In this example, as in other places, I've referenced a
     `Microsoft.DevPal.Extensions.InvokableCommand` class, as the base for that action.
