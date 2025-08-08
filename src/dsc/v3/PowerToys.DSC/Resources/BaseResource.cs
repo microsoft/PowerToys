@@ -4,37 +4,38 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using System.Text.Json.Serialization;
+using ManagedCommon;
+using Newtonsoft.Json;
+using NJsonSchema.Generation;
 using PowerToys.DSC.Models;
 
 namespace PowerToys.DSC.Resources;
 
 internal abstract class BaseResource
 {
-    public string ModuleName { get; }
+    public ModuleType Module { get; }
 
-    public BaseResource(string? moduleName)
+    public BaseResource(ModuleType module)
     {
-        ModuleName = moduleName ?? throw new ArgumentNullException(nameof(moduleName), "Module name cannot be null.");
+        Module = module;
     }
 
-    public abstract bool Get();
+    public abstract bool Get(string? input);
 
-    public abstract bool Set();
+    public abstract bool Set(string? input);
 
-    public abstract bool Test();
+    public abstract bool Test(string? input);
 
-    public abstract bool Export();
+    public abstract bool Export(string? input);
 
-    public abstract void Schema();
+    public abstract bool Schema();
 
-    public abstract void Manifest();
+    public abstract bool Manifest(string? outputDir);
 
-    protected void WriteJsonOutputLine<T>(T obj)
+    protected void WriteJsonOutputLine(string output)
     {
-        var settingsJson = JsonSerializer.Serialize(obj);
-        Console.WriteLine(settingsJson);
+        Console.WriteLine(output);
     }
 
     protected void WriteMessageOutputLine(DscMessageLevel level, string message)
@@ -43,8 +44,30 @@ internal abstract class BaseResource
         {
             [GetMessageLevel(level)] = message,
         };
-        var messageJson = JsonSerializer.Serialize(messageObj);
+        var messageJson = System.Text.Json.JsonSerializer.Serialize(messageObj);
         Console.Error.WriteLine(messageJson);
+    }
+
+    protected static string GenerateSchema<T>()
+        where T : BaseResourceObject
+    {
+        var settings = new SystemTextJsonSchemaGeneratorSettings()
+        {
+            FlattenInheritanceHierarchy = true,
+            UseXmlDocumentation = true,
+            GenerateEnumMappingDescription = false,
+            SerializerOptions =
+            {
+                IgnoreReadOnlyFields = true,
+                Converters =
+                {
+                    new JsonStringEnumConverter(),
+                },
+            },
+        };
+        var generator = new JsonSchemaGenerator(settings);
+        var schema = generator.Generate(typeof(T));
+        return schema.ToJson(Formatting.None);
     }
 
     /// <summary>

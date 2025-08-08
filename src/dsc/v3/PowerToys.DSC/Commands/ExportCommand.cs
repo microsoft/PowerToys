@@ -15,5 +15,6 @@ internal sealed class ExportCommand : BaseCommand
 
     public override void CommandHandlerInternal(InvocationContext context)
     {
+        context.ExitCode = Resource!.Export(Input) ? 0 : 1;
     }
 }

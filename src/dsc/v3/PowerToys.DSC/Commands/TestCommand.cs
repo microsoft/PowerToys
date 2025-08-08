@@ -15,5 +15,6 @@ internal sealed class TestCommand : BaseCommand
 
     public override void CommandHandlerInternal(InvocationContext context)
     {
+        context.ExitCode = Resource!.Test(Input) ? 0 : 1;
     }
 }

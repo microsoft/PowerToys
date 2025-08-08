@@ -15,6 +15,6 @@ internal sealed class GetCommand : BaseCommand
 
     public override void CommandHandlerInternal(InvocationContext context)
     {
-        context.ExitCode = Resource!.Get() ? 0 : 1;
+        context.ExitCode = Resource!.Get(Input) ? 0 : 1;
     }
 }

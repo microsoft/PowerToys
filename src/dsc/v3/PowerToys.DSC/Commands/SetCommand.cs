@@ -15,5 +15,6 @@ internal sealed class SetCommand : BaseCommand
 
     public override void CommandHandlerInternal(InvocationContext context)
     {
+        context.ExitCode = Resource!.Set(Input) ? 0 : 1;
     }
 }

@@ -2,28 +2,31 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using ManagedCommon;
+using System.Text.Json;
 
 namespace PowerToys.DSC.Options;
 
-internal sealed class ModuleOption : Option<string>
+internal sealed class InputOption : Option<string>
 {
-    public ModuleOption()
-        : base("--module", "The module name")
+    public InputOption()
+        : base("--input", "The JSON input")
     {
-        IsRequired = true;
         AddValidator(OptionValidator);
     }
 
     private void OptionValidator(OptionResult result)
     {
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
-        if (!Enum.TryParse<ModuleType>(value, ignoreCase: true, out _))
+
+        try
         {
-            result.ErrorMessage = $"Invalid module name. Valid values are: {string.Join(", ", Enum.GetValues<ModuleType>())}";
+            JsonDocument.Parse(value);
+        }
+        catch (JsonException e)
+        {
+            result.ErrorMessage = $"Invalid JSON input: {e.Message}";
         }
     }
 }

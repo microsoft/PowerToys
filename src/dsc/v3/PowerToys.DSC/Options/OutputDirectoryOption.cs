@@ -2,28 +2,26 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using ManagedCommon;
 
 namespace PowerToys.DSC.Options;
 
-internal sealed class ModuleOption : Option<string>
+internal sealed class OutputDirectoryOption : Option<string>
 {
-    public ModuleOption()
-        : base("--module", "The module name")
+    public OutputDirectoryOption()
+        : base("--outputDir", "The output directory")
     {
-        IsRequired = true;
         AddValidator(OptionValidator);
     }
 
     private void OptionValidator(OptionResult result)
     {
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
-        if (!Enum.TryParse<ModuleType>(value, ignoreCase: true, out _))
+
+        if (!System.IO.Directory.Exists(value))
         {
-            result.ErrorMessage = $"Invalid module name. Valid values are: {string.Join(", ", Enum.GetValues<ModuleType>())}";
+            result.ErrorMessage = $"Invalid directory: {value}";
         }
     }
 }

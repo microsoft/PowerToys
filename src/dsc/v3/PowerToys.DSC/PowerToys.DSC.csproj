@@ -17,10 +17,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Update="*.dsc.resource.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

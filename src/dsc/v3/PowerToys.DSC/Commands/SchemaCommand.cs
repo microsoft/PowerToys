@@ -15,5 +15,6 @@ internal sealed class SchemaCommand : BaseCommand
 
     public override void CommandHandlerInternal(InvocationContext context)
     {
+        context.ExitCode = Resource!.Schema() ? 0 : 1;
     }
 }
