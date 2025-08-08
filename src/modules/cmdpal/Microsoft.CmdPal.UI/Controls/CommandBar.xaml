@@ -199,7 +199,7 @@
             <Button
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
-                Padding="4"
+                Padding="6,4,4,4"
                 Click="MoreCommandsButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="Ctrl+K"
@@ -209,31 +209,21 @@
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="More" />
-                    <StackPanel Orientation="Horizontal" Spacing="2">
-                        <Border
-                            Padding="4,2,4,2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Style="{StaticResource HotkeyStyle}"
+                                Padding="4,2,4,2">
                             <TextBlock
                                 CharacterSpacing="4"
                                 FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                 Text="Ctrl" />
                         </Border>
-                        <Border
-                            Padding="4,2,4,2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
+                        <Border Style="{StaticResource HotkeyStyle}"
+                                Padding="4,2,4,2">
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                 Text="K" />
                         </Border>
                     </StackPanel>
