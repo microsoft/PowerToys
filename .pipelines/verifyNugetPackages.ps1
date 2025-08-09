@@ -21,4 +21,13 @@ if (-not $?)
     exit 1
 }
 
+# Ignore NU1503 on vcxproj files 
+dotnet restore $solution /nowarn:NU1503 
+if ($lastExitCode -ne 0)
+{
+    $result = $lastExitCode
+    Write-Error "Error running dotnet restore, with the exit code $lastExitCode. Please verify logs on the nuget package versions."
+    exit $result
+}
+
 exit 0
