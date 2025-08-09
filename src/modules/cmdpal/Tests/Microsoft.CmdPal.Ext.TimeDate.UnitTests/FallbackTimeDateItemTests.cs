@@ -40,7 +40,7 @@ public class FallbackTimeDateItemTests
     public void FallbackQueryTests(string query, string expectedTitle)
     {
         // Setup
-        var settingsManager = new SettingsManager();
+        var settingsManager = new Settings();
         DateTime now = new DateTime(2025, 7, 1, 12, 0, 0); // Fixed date for testing
         var fallbackItem = new FallbackTimeDateItem(settingsManager, now);
 
@@ -66,7 +66,7 @@ public class FallbackTimeDateItemTests
     public void InvalidQueryTests(string query)
     {
         // Setup
-        var settingsManager = new SettingsManager();
+        var settingsManager = new Settings();
         DateTime now = new DateTime(2025, 7, 1, 12, 0, 0); // Fixed date for testing
         var fallbackItem = new FallbackTimeDateItem(settingsManager, now);
 
@@ -77,6 +77,28 @@ public class FallbackTimeDateItemTests
 
             Assert.AreEqual(string.Empty, fallbackItem.Title, "Title should be empty for invalid queries");
             Assert.AreEqual(string.Empty, fallbackItem.Subtitle, "Subtitle should be empty for invalid queries");
+        }
+        catch (Exception ex)
+        {
+            Assert.Fail($"UpdateQuery should not throw exceptions: {ex.Message}");
+        }
+    }
+
+    [DataTestMethod]
+    public void DisableFallbackItemTest()
+    {
+        // Setup
+        var settingsManager = new Settings(enableFallbackItems: false);
+        DateTime now = new DateTime(2025, 7, 1, 12, 0, 0); // Fixed date for testing
+        var fallbackItem = new FallbackTimeDateItem(settingsManager, now);
+
+        // Act & Assert - Test that UpdateQuery doesn't throw exceptions
+        try
+        {
+            fallbackItem.UpdateQuery("now");
+
+            Assert.AreEqual(string.Empty, fallbackItem.Title, "Title should be empty when disable fallback item");
+            Assert.AreEqual(string.Empty, fallbackItem.Subtitle, "Subtitle should be empty when disable fallback item");
         }
         catch (Exception ex)
         {
