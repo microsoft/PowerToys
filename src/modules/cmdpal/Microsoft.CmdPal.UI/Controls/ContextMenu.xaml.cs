@@ -270,7 +270,7 @@ public sealed partial class ContextMenu : UserControl,
 
     private bool IsSeparator(object item)
     {
-        return item is SeparatorContextItemViewModel;
+        return item is SeparatorViewModel;
     }
 
     private void UpdateUiForStackChange()

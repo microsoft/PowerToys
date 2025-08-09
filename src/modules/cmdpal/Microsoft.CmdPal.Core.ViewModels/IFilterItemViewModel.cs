@@ -4,6 +4,6 @@
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public interface IContextItemViewModel
+public interface IFilterItemViewModel
 {
 }
