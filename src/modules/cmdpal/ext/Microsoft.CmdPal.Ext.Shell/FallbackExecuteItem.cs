@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
@@ -15,6 +16,8 @@ namespace Microsoft.CmdPal.Ext.Shell;
 
 internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDisposable
 {
+    private static readonly char[] _systemDirectoryRoots = ['\\', '/'];
+
     private readonly Action<string>? _addToHistory;
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _currentUpdateTask;
@@ -80,8 +83,8 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         cancellationToken.ThrowIfCancellationRequested();
 
         var searchText = query.Trim();
-        var expanded = Environment.ExpandEnvironmentVariables(searchText);
-        searchText = expanded;
+        Expand(ref searchText);
+
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             Command = null;
@@ -184,8 +187,8 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     internal static bool SuppressFileFallbackIf(string query)
     {
         var searchText = query.Trim();
-        var expanded = Environment.ExpandEnvironmentVariables(searchText);
-        searchText = expanded;
+        Expand(ref searchText);
+
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             return false;
@@ -196,5 +199,58 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         var pathIsDir = Directory.Exists(exe);
 
         return exeExists || pathIsDir;
+    }
+
+    private static void Expand(ref string searchText)
+    {
+        if (searchText.Length == 0)
+        {
+            return;
+        }
+
+        var singleCharQuery = searchText.Length == 1;
+
+        searchText = Environment.ExpandEnvironmentVariables(searchText);
+
+        if (!TryExpandHome(ref searchText))
+        {
+            TryExpandRoot(ref searchText);
+        }
+    }
+
+    private static bool TryExpandHome(ref string searchText)
+    {
+        if (searchText[0] == '~')
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            if (searchText.Length == 1)
+            {
+                searchText = home;
+            }
+            else if (_systemDirectoryRoots.Contains(searchText[1]))
+            {
+                searchText = Path.Combine(home, searchText[2..]);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryExpandRoot(ref string searchText)
+    {
+        if (_systemDirectoryRoots.Contains(searchText[0]) && (searchText.Length == 1 || !_systemDirectoryRoots.Contains(searchText[1])))
+        {
+            var root = Path.GetPathRoot(Environment.SystemDirectory);
+            if (root != null)
+            {
+                searchText = searchText.Length == 1 ? root : Path.Combine(root, searchText[1..]);
+                return true;
+            }
+        }
+
+        return false;
     }
 }
