@@ -12,7 +12,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -151,7 +151,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         WeakReference<IPageContext> weakSelf = new(this);
         await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
-        List<TopLevelViewModel> newItems = [..sender.TopLevelItems];
+        List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
         {
             if (i.IsEnabled)

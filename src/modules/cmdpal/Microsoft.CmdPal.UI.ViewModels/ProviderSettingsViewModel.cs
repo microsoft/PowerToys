@@ -7,7 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.Extensions.DependencyInjection;
 
