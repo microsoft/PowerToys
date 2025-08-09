@@ -64,6 +64,9 @@ public partial class App : Application
 
         this.InitializeComponent();
 
+        // Ensure types used in XAML are preserved for AOT compilation
+        TypePreservation.PreserveTypes();
+
         NativeEventWaiter.WaitForEventLoop(
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
