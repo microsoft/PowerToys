@@ -305,8 +305,8 @@ Generate-FileComponents -fileListName "ValueGeneratorImagesCmpFiles" -wxsFilePat
 ## Plugins
 
 #ShortcutGuide
-Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideSvgFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\ShortcutGuide\"
-Generate-FileComponents -fileListName "ShortcutGuideSvgFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot
+Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideAssetsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\"
+Generate-FileComponents -fileListName "ShortcutGuideAssetsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot
 
 #Settings
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\"
