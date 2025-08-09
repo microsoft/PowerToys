@@ -62,6 +62,8 @@ public partial class App : Application
     {
         Services = ConfigureServices();
 
+        GlobalErrorHandler.Register(this);
+
         this.InitializeComponent();
 
         NativeEventWaiter.WaitForEventLoop(
