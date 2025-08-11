@@ -163,7 +163,7 @@ internal sealed class SettingsResource : BaseResource
             .AddStdinMethod("export", ["export", "--module", module, "--resource", "settings"])
             .AddStdinMethod("get", ["get", "--module", module, "--resource", "settings"])
             .AddJsonInputMethod("set", "--input", ["set", "--module", module, "--resource", "settings"], implementsPretest: true, stateAndDiff: true)
-            .AddJsonInputMethod("test", "--input", ["test", "--module", module, "--resource", "settings"], implementsPretest: true, stateAndDiff: true)
+            .AddJsonInputMethod("test", "--input", ["test", "--module", module, "--resource", "settings"], stateAndDiff: true)
             .AddCommandMethod("schema", ["schema", "--module", module, "--resource", "settings"])
             .ToJson();
     }

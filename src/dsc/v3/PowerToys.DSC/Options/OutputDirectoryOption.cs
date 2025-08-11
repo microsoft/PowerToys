@@ -4,6 +4,8 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
+using System.IO;
 
 namespace PowerToys.DSC.Options;
 
@@ -18,8 +20,11 @@ internal sealed class OutputDirectoryOption : Option<string>
     private void OptionValidator(OptionResult result)
     {
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
-
-        if (!System.IO.Directory.Exists(value))
+        if (string.IsNullOrEmpty(value))
+        {
+            result.ErrorMessage = "Output directory cannot be empty.";
+        }
+        else if (!Directory.Exists(value))
         {
             result.ErrorMessage = $"Invalid directory: {value}";
         }

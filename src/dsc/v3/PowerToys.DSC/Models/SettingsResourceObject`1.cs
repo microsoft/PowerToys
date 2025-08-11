@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using NJsonSchema.Annotations;
 
 namespace PowerToys.DSC.Models;
 
@@ -17,6 +18,7 @@ internal sealed class SettingsResourceObject<TSettingsConfig> : BaseResourceObje
     [JsonPropertyName(SettingsJsonPropertyName)]
     [Required]
     [Description("The settings content for the module.")]
+    [JsonSchemaType(typeof(object))]
     public TSettingsConfig Settings { get; set; } = new();
 
     public ISettingsConfig GetSettings()

@@ -17,4 +17,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
+
+  <Target Name="GenerateDscResourceJsonFiles" Condition="'$(Configuration)' == 'Debug'" AfterTargets="Build">
+    <Message Text="Generating DSC resource JSON files inside ..." Importance="high" />
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; manifest --resource settings --outputDir &quot;$(TargetDir)\&quot;" />
+  </Target>
 </Project>

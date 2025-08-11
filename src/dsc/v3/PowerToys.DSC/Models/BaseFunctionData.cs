@@ -16,15 +16,9 @@ internal class BaseFunctionData
         var settings = new SystemTextJsonSchemaGeneratorSettings()
         {
             FlattenInheritanceHierarchy = true,
-            UseXmlDocumentation = true,
-            GenerateEnumMappingDescription = false,
             SerializerOptions =
             {
                 IgnoreReadOnlyFields = true,
-                Converters =
-                {
-                    new JsonStringEnumConverter(),
-                },
             },
         };
         var generator = new JsonSchemaGenerator(settings);

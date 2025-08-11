@@ -5,9 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using Newtonsoft.Json;
-using NJsonSchema.Generation;
 using PowerToys.DSC.Models;
 
 namespace PowerToys.DSC.Resources;
@@ -54,28 +51,6 @@ internal abstract class BaseResource
         };
         var messageJson = System.Text.Json.JsonSerializer.Serialize(messageObj);
         Console.Error.WriteLine(messageJson);
-    }
-
-    protected static string GenerateSchema<T>()
-        where T : BaseResourceObject
-    {
-        var settings = new SystemTextJsonSchemaGeneratorSettings()
-        {
-            FlattenInheritanceHierarchy = true,
-            UseXmlDocumentation = true,
-            GenerateEnumMappingDescription = false,
-            SerializerOptions =
-            {
-                IgnoreReadOnlyFields = true,
-                Converters =
-                {
-                    new JsonStringEnumConverter(),
-                },
-            },
-        };
-        var generator = new JsonSchemaGenerator(settings);
-        var schema = generator.Generate(typeof(T));
-        return schema.ToJson(Formatting.None);
     }
 
     /// <summary>
