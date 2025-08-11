@@ -142,14 +142,10 @@
                                 Style="{ThemeResource AccentButtonStyle}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPasteUI_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                            <controls:ShortcutControl
-                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="PasteAsPlainText_Shortcut">
-                            <controls:ShortcutControl
-                                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="PasteAsMarkdown_Shortcut">
                             <controls:ShortcutControl

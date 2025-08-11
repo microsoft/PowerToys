@@ -45,9 +45,7 @@
             x:Uid="MouseUtils_MouseJump_ActivationShortcut"
             HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
             IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
-            <controls:ShortcutControl 
-                MinWidth="{StaticResource SettingActionControlMinWidth}"
-                HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
+            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseJumpActivationShortcut, Mode=TwoWay}" />
         </tkcontrols:SettingsCard>
 
         <tkcontrols:SettingsCard

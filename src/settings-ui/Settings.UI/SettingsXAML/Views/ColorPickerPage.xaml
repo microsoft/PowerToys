@@ -39,9 +39,7 @@
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
