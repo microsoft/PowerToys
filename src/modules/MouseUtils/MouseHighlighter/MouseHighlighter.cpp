@@ -67,7 +67,11 @@ private:
     winrt::CompositionSpriteShape m_leftPointer{ nullptr };
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
     winrt::CompositionSpriteShape m_alwaysPointer{ nullptr };
-    winrt::CompositionSpriteShape m_spotlightPointer{ nullptr };
+    // Spotlight overlay (mask-based "hole"):
+    winrt::SpriteVisual m_overlay{ nullptr };
+    winrt::CompositionMaskBrush m_spotlightMask{ nullptr };
+    winrt::CompositionRadialGradientBrush m_spotlightMaskGradient{ nullptr };
+    winrt::CompositionColorBrush m_spotlightSource{ nullptr };
 
     bool m_leftPointerEnabled = true;
     bool m_rightPointerEnabled = true;
@@ -123,6 +127,37 @@ bool Highlighter::CreateHighlighter()
         m_shape.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_root.Children().InsertAtTop(m_shape);
 
+        // Spotlight overlay using CompositionMaskBrush (inverse alpha circle)
+        m_overlay = m_compositor.CreateSpriteVisual();
+        m_overlay.RelativeSizeAdjustment({ 1.0f, 1.0f });
+
+        m_spotlightSource = m_compositor.CreateColorBrush(m_alwaysColor);
+
+        m_spotlightMaskGradient = m_compositor.CreateRadialGradientBrush();
+        m_spotlightMaskGradient.MappingMode(winrt::CompositionMappingMode::Absolute);
+        {
+            auto stop0 = m_compositor.CreateColorGradientStop();
+            stop0.Offset(0.0f);
+            stop0.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+            auto stop1 = m_compositor.CreateColorGradientStop();
+            stop1.Offset(0.9995f);
+            stop1.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+            auto stop2 = m_compositor.CreateColorGradientStop();
+            stop2.Offset(1.0f);
+            stop2.Color(winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 255, 255));
+            m_spotlightMaskGradient.ColorStops().Append(stop0);
+            m_spotlightMaskGradient.ColorStops().Append(stop1);
+            m_spotlightMaskGradient.ColorStops().Append(stop2);
+        }
+
+        m_spotlightMask = m_compositor.CreateMaskBrush();
+        m_spotlightMask.Source(m_spotlightSource);
+        m_spotlightMask.Mask(m_spotlightMaskGradient);
+
+        m_overlay.Brush(m_spotlightMask);
+        m_overlay.IsVisible(false);
+        m_root.Children().InsertAtTop(m_overlay);
+
         return true;
     }
     catch (...)
@@ -144,7 +179,8 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     // Converts to client area of the Windows.
     ScreenToClient(m_hwnd, &pt);
 
-    // Create circle and add it.
+    // Create circle only for click-highlighters (left/right/always).
+    // Spotlight path no longer appends shapes; it uses the overlay.
     auto circleGeometry = m_compositor.CreateEllipseGeometry();
     circleGeometry.Radius({ m_radius, m_radius });
 
@@ -165,12 +201,21 @@ void Highlighter::AddDrawingPoint(MouseButton button)
         // always
         if (m_spotlightMode)
         {
-            float borderThickness = static_cast<float>(std::hypot(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN)));
-            circleGeometry.Radius({ static_cast<float>(borderThickness / 2.0 + m_radius), static_cast<float>(borderThickness / 2.0 + m_radius) });
-            circleShape.FillBrush(nullptr);
-            circleShape.StrokeBrush(m_compositor.CreateColorBrush(m_alwaysColor));
-            circleShape.StrokeThickness(borderThickness);
-            m_spotlightPointer = circleShape;
+            if (m_spotlightMaskGradient)
+            {
+                m_spotlightMaskGradient.EllipseCenter({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+                m_spotlightMaskGradient.EllipseRadius({ m_radius, m_radius });
+            }
+            if (m_spotlightSource)
+            {
+                m_spotlightSource.Color(m_alwaysColor);
+            }
+            if (m_overlay)
+            {
+                m_overlay.IsVisible(true);
+            }
+            // Do not append a shape for spotlight.
+            return;
         }
         else
         {
@@ -184,8 +229,7 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     // TODO: We're leaking shapes for long drawing sessions.
     // Perhaps add a task to the Dispatcher every X circles to clean up.
 
-    // Get back on top in case other Window is now the topmost.
-    // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
+    // Avoid doing SetWindowPos on every call for spotlight. Bring-to-front timer handles Z-order churn.
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
 }
 
@@ -209,20 +253,17 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
     }
     else
     {
-        // always
+        // always / spotlight idle
         if (m_spotlightMode)
         {
-            if (m_spotlightPointer)
+            if (m_spotlightMaskGradient)
             {
-                m_spotlightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+                m_spotlightMaskGradient.EllipseCenter({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
             }
         }
-        else
+        else if (m_alwaysPointer)
         {
-            if (m_alwaysPointer)
-            {
-                m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
-            }
+            m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
         }
     }
 }
@@ -266,10 +307,10 @@ void Highlighter::ClearDrawingPoint()
 {
     if (m_spotlightMode)
     {
-        if (m_spotlightPointer)
-        {
-            m_spotlightPointer.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
-        }
+        // Hide overlay instead of writing transparent color every time.
+        if (m_overlay)
+            m_overlay.IsVisible(false);
+        return;
     }
     else
     {
@@ -421,7 +462,8 @@ void Highlighter::StopDrawing()
     m_leftPointer = nullptr;
     m_rightPointer = nullptr;
     m_alwaysPointer = nullptr;
-    m_spotlightPointer = nullptr;
+    if (m_overlay)
+        m_overlay.IsVisible(false);
     ShowWindow(m_hwnd, SW_HIDE);
     UnhookWindowsHookEx(m_mouseHook);
     ClearDrawing();
@@ -450,6 +492,16 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings)
     {
         m_leftPointerEnabled = false;
         m_rightPointerEnabled = false;
+    }
+
+    // Keep spotlight brush colors in sync
+    if (m_spotlightSource)
+    {
+        m_spotlightSource.Color(m_alwaysColor);
+    }
+    if (!m_spotlightMode && m_overlay)
+    {
+        m_overlay.IsVisible(false);
     }
 
     if (instance->m_visible)
