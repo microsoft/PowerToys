@@ -236,6 +236,9 @@ namespace ScreenRuler.UITests
         /// </summary>
         public static Element? GetScreenRulerButton(UITestBase testBase, string buttonName, int timeoutMs = 1000)
         {
+            return testBase.Session.Find<Element>(By.AccessibilityId(buttonName), timeoutMs, true);
+
+            /*
             try
             {
                 // Attach to ScreenRuler window before trying to find buttons
@@ -259,6 +262,7 @@ namespace ScreenRuler.UITests
                     // Ignore attachment errors - the calling code will handle as needed
                 }
             }
+            */
         }
 
         /// <summary>
@@ -348,7 +352,7 @@ namespace ScreenRuler.UITests
                 $"ScreenRulerUI should appear after pressing activation shortcut for {testName}: {string.Join(" + ", activationKeys)}");
 
             // Attach to ScreenRuler window and click spacing button
-            testBase.Session.Attach(PowerToysModule.ScreenRuler);
+            // testBase.Session.Attach(PowerToysModule.ScreenRuler);
             var spacingButton = testBase.Session.Find<Element>(By.AccessibilityId(buttonId), 15000, true);
             Assert.IsNotNull(spacingButton, $"{testName} button should be found");
 
@@ -383,7 +387,7 @@ namespace ScreenRuler.UITests
                 $"ScreenRulerUI should appear after pressing activation shortcut: {string.Join(" + ", activationKeys)}");
 
             // Attach to ScreenRuler window and click bounds button
-            testBase.Session.Attach(PowerToysModule.ScreenRuler);
+            // testBase.Session.Attach(PowerToysModule.ScreenRuler);
             var boundsButton = testBase.Session.Find<Element>(By.AccessibilityId(BoundsButtonId), 15000, true);
             Assert.IsNotNull(boundsButton, "Bounds button should be found");
 
