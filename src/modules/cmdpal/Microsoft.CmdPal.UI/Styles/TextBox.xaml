@@ -171,12 +171,13 @@
                             Visibility="{Binding Description, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ReverseStringVisibilityConverter}, Mode=OneWay}" />
                         <Button
                             x:Name="DeleteButton"
+                            x:Uid="DeleteButton"
                             Grid.Column="2"
                             Margin="0,0,8,0"
                             Padding="4"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            AutomationProperties.AccessibilityView="Raw"
+                            AutomationProperties.AccessibilityView="Content"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Command="{Binding ClearSearchCommand, ElementName=RootSearchBar}"
                             CornerRadius="{TemplateBinding CornerRadius}"
