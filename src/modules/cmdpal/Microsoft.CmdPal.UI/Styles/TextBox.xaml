@@ -178,9 +178,11 @@
                             VerticalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            Command="{Binding ClearSearchCommand, ElementName=RootSearchBar}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             FontSize="{TemplateBinding FontSize}"
                             IsTabStop="True"
+                            KeyDown="DeleteButton_KeyDown"
                             Style="{StaticResource DeleteButtonStyle}"
                             Visibility="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource StringVisibilityConverter}, Mode=OneWay}" />
                         <TextBlock

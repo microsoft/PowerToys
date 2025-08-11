@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
@@ -35,6 +37,9 @@ public sealed partial class SearchBar : UserControl,
     private bool _inSuggestion;
     private string? _lastText;
     private string? _deletedSuggestion;
+
+    // An ICommand for clearing the search box, allowing the DeleteButton to invoke this logic via MVVM command binding.
+    public ICommand ClearSearchCommand { get; }
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -75,6 +80,11 @@ public sealed partial class SearchBar : UserControl,
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
+
+        // Attach a keydown event handler Clear Button within the FilterBox to trigger search clearing logic.
+        FilterBox.AddHandler(Button.KeyDownEvent, new KeyEventHandler(DeleteButton_KeyDown), true);
+
+        ClearSearchCommand = new RelayCommand(() => ExecuteDeleteButtonAction());
     }
 
     public void ClearSearch()
@@ -90,6 +100,20 @@ public sealed partial class SearchBar : UserControl,
                 CurrentPageViewModel.Filter = string.Empty;
             }
         }));
+    }
+
+    public void DeleteButton_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Enter)
+        {
+            ExecuteDeleteButtonAction();
+        }
+    }
+
+    private void ExecuteDeleteButtonAction()
+    {
+        ClearSearch();
+        FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
     }
 
     public void SelectSearch()
