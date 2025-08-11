@@ -2,6 +2,12 @@
 #include <tchar.h>
 #include "ThemeScheduler.h"
 #include "ThemeHelper.h"
+#include <stdio.h>
+
+// Global service variables
+SERVICE_STATUS g_ServiceStatus = {};
+SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
+HANDLE g_ServiceStopEvent = nullptr;
 
 // Forward declarations of service functions (we’ll define them later)
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
@@ -11,46 +17,77 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam);
 // Entry point for the executable
 int _tmain(int argc, TCHAR* argv[])
 {
-    // OPTIONAL: Run as a console for debugging
-    if (argc > 1 && _tcscmp(argv[1], _T("--debug")) == 0)
+    // Parse args
+    DWORD parentPid = 0;
+    bool debug = false;
+    for (int i = 1; i < argc; ++i)
     {
-        ServiceWorkerThread(nullptr);
+        if (_tcscmp(argv[i], _T("--debug")) == 0)
+            debug = true;
+        else if (_tcscmp(argv[i], _T("--pid")) == 0 && i + 1 < argc)
+            parentPid = _tstoi(argv[++i]);
+    }
+
+    if (debug)
+    {
+        // Create a console window for debug output
+        AllocConsole();
+        FILE* f;
+        freopen_s(&f, "CONOUT$", "w", stdout);
+        freopen_s(&f, "CONOUT$", "w", stderr);
+
+        // Optional: set a title so you can find it easily
+        SetConsoleTitle(L"DarkModeService Debug");
+
+        // Console mode (debug)
+        g_ServiceStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+        ServiceWorkerThread(reinterpret_cast<void*>(static_cast<ULONG_PTR>(parentPid)));
+        CloseHandle(g_ServiceStopEvent);
+
+        // Keep window open until a key is pressed (optional)
+        // system("pause");
+
+        FreeConsole();
         return 0;
     }
 
+    // Try to connect to SCM
     wchar_t serviceName[] = L"DarkModeService";
+    SERVICE_TABLE_ENTRYW table[] = { { serviceName, ServiceMain }, { nullptr, nullptr } };
 
-    SERVICE_TABLE_ENTRYW ServiceTable[] = {
-        { serviceName, ServiceMain },
-        { nullptr, nullptr }
-    };
-
-    if (!StartServiceCtrlDispatcher(ServiceTable))
+    if (!StartServiceCtrlDispatcherW(table))
     {
-        return GetLastError();
+        DWORD err = GetLastError();
+        if (err == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) // not launched by SCM
+        {
+            g_ServiceStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+            HANDLE hThread = CreateThread(
+                nullptr, 0, ServiceWorkerThread, reinterpret_cast<void*>(static_cast<ULONG_PTR>(parentPid)), 0, nullptr);
+
+            // Wait so the process stays alive
+            WaitForSingleObject(hThread, INFINITE);
+            CloseHandle(hThread);
+            CloseHandle(g_ServiceStopEvent);
+            return 0;
+        }
+        return static_cast<int>(err);
     }
 
     return 0;
 }
 
-// Global service variables
-SERVICE_STATUS g_ServiceStatus = {};
-SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
-HANDLE g_ServiceStopEvent = nullptr;
-
 // Called when the service is launched by Windows
-VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
+VOID WINAPI ServiceMain(DWORD, LPTSTR*)
 {
     g_StatusHandle = RegisterServiceCtrlHandler(_T("DarkModeService"), ServiceCtrlHandler);
     if (!g_StatusHandle)
         return;
 
     g_ServiceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+    g_ServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN;
     g_ServiceStatus.dwCurrentState = SERVICE_START_PENDING;
-    g_ServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
     SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 
-    // Create an event used to signal when the service should stop
     g_ServiceStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
     if (!g_ServiceStopEvent)
     {
@@ -60,17 +97,16 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv)
         return;
     }
 
-    // Service is now running
     g_ServiceStatus.dwCurrentState = SERVICE_RUNNING;
     SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 
-    // Start service work on a background thread
     HANDLE hThread = CreateThread(nullptr, 0, ServiceWorkerThread, nullptr, 0, nullptr);
     WaitForSingleObject(hThread, INFINITE);
+    CloseHandle(hThread);
 
-    // Cleanup when the worker thread exits
     CloseHandle(g_ServiceStopEvent);
     g_ServiceStatus.dwCurrentState = SERVICE_STOPPED;
+    g_ServiceStatus.dwWin32ExitCode = 0;
     SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 }
 
@@ -94,49 +130,116 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
     }
 }
 
-DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
+struct ThemeSettings
 {
+    bool useLocation = true;
+    int lightHour = 7;
+    int lightMinute = 0;
+    int darkHour = 19;
+    int darkMinute = 0;
+    double latitude = 39.9526;
+    double longitude = -75.1652;
+    bool forceDark = false;
+    bool forceLight = false;
+};
+
+ThemeSettings settings;
+
+DWORD WINAPI ServiceWorkerThread(void* lpParam)
+{
+    DWORD parentPid = static_cast<DWORD>(reinterpret_cast<ULONG_PTR>(lpParam));
+    HANDLE hParent = nullptr;
+    if (parentPid)
+        hParent = OpenProcess(SYNCHRONIZE, FALSE, parentPid); // may be null if not passed
+
     OutputDebugString(L"[DarkModeService] Worker thread starting...\n");
 
-    while (WaitForSingleObject(g_ServiceStopEvent, 0) != WAIT_OBJECT_0)
+    for (;;)
     {
+        HANDLE waits[2] = { g_ServiceStopEvent, hParent };
+        DWORD count = hParent ? 2 : 1;
+
+        // Do the work for this minute
         SYSTEMTIME st;
         GetLocalTime(&st);
 
-        // Hardcoded location for now (Philadelphia)
-        double latitude = 39.9526;
-        double longitude = -75.1652;
+        SunTimes sun = CalculateSunriseSunset(
+            settings.latitude, settings.longitude, st.wYear, st.wMonth, st.wDay);
 
-        SunTimes sun = CalculateSunriseSunset(latitude, longitude, st.wYear, st.wMonth, st.wDay);
+        int nowMin = st.wHour * 60 + st.wMinute;
+        int lightMin = settings.useLocation ? sun.sunriseHour * 60 + sun.sunriseMinute : settings.lightHour * 60 + settings.lightMinute;
+        int darkMin = settings.useLocation ? sun.sunsetHour * 60 + sun.sunsetMinute : settings.darkHour * 60 + settings.darkMinute;
 
-        // Convert current time to minutes since midnight
-        int nowMinutes = st.wHour * 60 + st.wMinute;
-        int sunriseMinutes = sun.sunriseHour * 60 + sun.sunriseMinute;
-        int sunsetMinutes = sun.sunsetHour * 60 + sun.sunsetMinute;
+        // Print light/dark minutes and HH:MM forms
+        wchar_t msg[160];
+        swprintf_s(
+            msg,
+            L"[DarkModeService] lightMin=%d (%02d:%02d) | darkMin=%d (%02d:%02d)\n",
+            lightMin,
+            lightMin / 60,
+            lightMin % 60,
+            darkMin,
+            darkMin / 60,
+            darkMin % 60);
+        OutputDebugString(msg);
 
-        // Switch to light theme at sunrise
-        if (nowMinutes == sunriseMinutes)
+        // If you allocated a console in --debug mode, also print to it
+        #ifdef _DEBUG
+                wprintf(L"%ls", msg);
+        #endif
+
+        // Apply theme with a 1-minute window to avoid jitter misses
+        auto within = [](int a, int b) { return std::abs(a - b) <= 0; }; // set to 0 or 1 if you want tolerance
+
+        if (settings.forceLight)
         {
-            SetSystemTheme(true); // light
+            SetSystemTheme(true);
             SetAppsTheme(true);
-            OutputDebugString(L"[DarkModeService] Switched to LIGHT theme\n");
         }
-
-        // Switch to dark theme at sunset
-        if (nowMinutes == sunsetMinutes)
+        else if (settings.forceDark)
         {
-            SetSystemTheme(false); // dark
+            SetSystemTheme(false);
             SetAppsTheme(false);
-            OutputDebugString(L"[DarkModeService] Switched to DARK theme\n");
+        }
+        else
+        {
+            if (within(nowMin, lightMin))
+            {
+                SetSystemTheme(true);
+                SetAppsTheme(true);
+            }
+            if (within(nowMin, darkMin))
+            {
+                SetSystemTheme(false);
+                SetAppsTheme(false);
+            }
         }
 
-        // Sleep until next minute
+        // Sleep until the top of next minute, but wake early if stop or parent dies
+        GetLocalTime(&st);
         int msToNextMinute = (60 - st.wSecond) * 1000 - st.wMilliseconds;
-        if (msToNextMinute < 0)
-            msToNextMinute = 0;
-        Sleep(msToNextMinute);
+        if (msToNextMinute < 50)
+            msToNextMinute = 50;
+
+        DWORD wait = WaitForMultipleObjects(count, waits, FALSE, msToNextMinute);
+        if (wait == WAIT_OBJECT_0)
+            break; // stop event
+        if (hParent && wait == WAIT_OBJECT_0 + 1)
+            break; // parent exited
+        // else timeout, loop again
     }
 
-    OutputDebugString(L"[DarkModeService] Worker thread is stopping...\n");
+    if (hParent)
+        CloseHandle(hParent);
+    OutputDebugString(L"[DarkModeService] Worker thread stopping...\n");
     return 0;
+}
+
+int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
+{
+    int argc = 0;
+    LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+    int rc = _tmain(argc, argv); // reuse your existing logic
+    LocalFree(argv);
+    return rc;
 }
