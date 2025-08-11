@@ -242,6 +242,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         _settingsWindow.Activate();
+        _settingsWindow.BringToFront();
     }
 
     public void Receive(ShowDetailsMessage message)
