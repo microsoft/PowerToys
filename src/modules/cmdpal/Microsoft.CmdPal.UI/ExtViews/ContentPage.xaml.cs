@@ -51,8 +51,15 @@ public sealed partial class ContentPage : Page,
             ViewModel = vm;
         }
 
-        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
+        if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSelectedListItemMessage>(this))
+        {
+            WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
+        }
+
+        if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSecondaryCommandMessage>(this))
+        {
+            WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
+        }
 
         base.OnNavigatedTo(e);
     }
