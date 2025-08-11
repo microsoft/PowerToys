@@ -146,7 +146,8 @@ namespace ScreenRuler.UITests
                     "ctrl" or "control" => Key.Ctrl,
                     "shift" => Key.Shift,
                     "alt" => Key.Alt,
-                    _ when cleanPart.Length == 1 && char.IsLetter(cleanPart[0]) =>
+                    _ when cleanPart.Length == 1 && char.IsLetter(cleanPart[0]) &&
+                         cleanPart[0] >= 'a' && cleanPart[0] <= 'z' =>
                         (Key)Enum.Parse(typeof(Key), cleanPart.ToUpperInvariant()),
                     _ => (Key?)null,
                 };
