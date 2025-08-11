@@ -154,31 +154,6 @@ public abstract partial class NavigatablePage : Page
         ElementCompositionPreview.SetElementChildVisual(target, null);
     }
 
-    protected static FrameworkElement FindElementByAutomationId(DependencyObject root, string automationId)
-    {
-        if (root is FrameworkElement fe)
-        {
-            var id = AutomationProperties.GetAutomationId(fe);
-            if (!string.IsNullOrEmpty(id) && id == automationId)
-            {
-                return fe;
-            }
-        }
-
-        int count = VisualTreeHelper.GetChildrenCount(root);
-        for (int i = 0; i < count; i++)
-        {
-            var child = VisualTreeHelper.GetChild(root, i);
-            var result = FindElementByAutomationId(child, automationId);
-            if (result != null)
-            {
-                return result;
-            }
-        }
-
-        return null;
-    }
-
     protected static FrameworkElement FindElementByName(DependencyObject root, string name)
     {
         if (root is FrameworkElement fe)
