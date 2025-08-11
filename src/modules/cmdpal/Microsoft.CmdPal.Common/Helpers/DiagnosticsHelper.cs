@@ -58,8 +58,9 @@ public static class DiagnosticsHelper
                 {exception}
 
                 ℹ️ If you need further assistance, please include this information in your support request.
+                ℹ️ Before sending, take a quick look to make sure it doesn't contain any personal or sensitive information.
                 ============================================================
-                
+
                 """;
     }
 }
