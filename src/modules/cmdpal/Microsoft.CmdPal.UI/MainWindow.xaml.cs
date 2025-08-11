@@ -129,21 +129,7 @@ public sealed partial class MainWindow : WindowEx,
     private void PositionCentered()
     {
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
-        PositionCentered(displayArea);
-    }
-
-    private void PositionCentered(DisplayArea displayArea)
-    {
-        if (displayArea is not null)
-        {
-            var centeredPosition = AppWindow.Position;
-            centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
-            centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
-
-            centeredPosition.X += displayArea.WorkArea.X;
-            centeredPosition.Y += displayArea.WorkArea.Y;
-            AppWindow.Move(centeredPosition);
-        }
+        MonitorHelper.PositionCentered(AppWindow, displayArea);
     }
 
     private void HotReloadSettings()
@@ -230,8 +216,7 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        var display = GetScreen(hwnd, target);
-        PositionCentered(display);
+        MonitorHelper.PositionCentered(hwnd, AppWindow, target);
 
         // Just to be sure, SHOW our hwnd.
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
@@ -245,52 +230,6 @@ public sealed partial class MainWindow : WindowEx,
         // Push our window to the top of the Z-order and make it the topmost, so that it appears above all other windows.
         // We want to remove the topmost status when we hide the window (because we cloak it instead of hiding it).
         PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
-    }
-
-    private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
-    {
-        // Leaving a note here, in case we ever need it:
-        // https://github.com/microsoft/microsoft-ui-xaml/issues/6454
-        // If we need to ever FindAll, we'll need to iterate manually
-        var displayAreas = Microsoft.UI.Windowing.DisplayArea.FindAll();
-        switch (target)
-        {
-            case MonitorBehavior.InPlace:
-                if (PInvoke.GetWindowRect(currentHwnd, out var bounds))
-                {
-                    RectInt32 converted = new(bounds.X, bounds.Y, bounds.Width, bounds.Height);
-                    return DisplayArea.GetFromRect(converted, DisplayAreaFallback.Nearest);
-                }
-
-                break;
-
-            case MonitorBehavior.ToFocusedWindow:
-                var foregroundWindowHandle = PInvoke.GetForegroundWindow();
-                if (foregroundWindowHandle != IntPtr.Zero)
-                {
-                    if (PInvoke.GetWindowRect(foregroundWindowHandle, out var fgBounds))
-                    {
-                        RectInt32 converted = new(fgBounds.X, fgBounds.Y, fgBounds.Width, fgBounds.Height);
-                        return DisplayArea.GetFromRect(converted, DisplayAreaFallback.Nearest);
-                    }
-                }
-
-                break;
-
-            case MonitorBehavior.ToPrimary:
-                return DisplayArea.Primary;
-
-            case MonitorBehavior.ToMouse:
-            default:
-                if (PInvoke.GetCursorPos(out var cursorPos))
-                {
-                    return DisplayArea.GetFromPoint(new PointInt32(cursorPos.X, cursorPos.Y), DisplayAreaFallback.Nearest);
-                }
-
-                break;
-        }
-
-        return DisplayArea.Primary;
     }
 
     public void Receive(ShowWindowMessage message)

@@ -47,4 +47,11 @@ DWM_CLOAKED_APP
 
 CoWaitForMultipleObjects
 INFINITE
-CWMO_FLAGS 
+CWMO_FLAGS
+
+GetSystemMenu
+RemoveMenu
+DrawMenuBar
+MENU_ITEM_FLAGS
+SC_CLOSE
+IsWindow

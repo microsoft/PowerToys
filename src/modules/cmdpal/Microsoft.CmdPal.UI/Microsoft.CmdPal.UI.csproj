@@ -65,6 +65,7 @@
     <None Remove="Pages\Settings\ExtensionsPage.xaml" />
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
+    <None Remove="Settings\InternalPage.xaml" />
     <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Button.xaml" />
     <None Remove="Styles\Colors.xaml" />
@@ -186,6 +187,18 @@
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Settings\InternalPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="ErrorReportWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\Colors.xaml">
