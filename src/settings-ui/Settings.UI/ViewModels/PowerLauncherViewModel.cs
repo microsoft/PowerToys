@@ -710,10 +710,5 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             OnPropertyChanged(nameof(Plugins));
         }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-        }
     }
 }
