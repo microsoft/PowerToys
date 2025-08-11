@@ -92,7 +92,7 @@ extends:
               versionNumber: ${{ parameters.versionNumber }}
               publishArtifacts: false # 1ES PT handles publication for us.
               official: true
-              codeSign: true
+              codeSign: false
               runTests: false
               signingIdentity:
                 serviceName: $(SigningServiceName)
