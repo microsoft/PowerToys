@@ -46,9 +46,10 @@ public partial class IconDataViewModel : ObservableObject, IIconData
         Icon = model.Icon;
         Data = new(model.Data);
 
-        if (model is IHaveProperties icon2)
+        if (model is IExtendedAttributesProvider icon2)
         {
-            if (icon2.Properties?.TryGetValue("FontFamily", out var family) ?? false)
+            var props = icon2.Properties;
+            if (props?.TryGetValue("FontFamily", out var family) ?? false)
             {
                 FontFamily = family as string;
             }

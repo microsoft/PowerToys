@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Windows.Foundation.Collections;
-
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 /// <summary>
@@ -16,7 +14,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// UI for any other glyphs. This class is only needed if you want a non-Segoe
 /// font icon.
 /// </summary>
-public partial class FontIconData : IconData, IHaveProperties
+public partial class FontIconData : IconData, IExtendedAttributesProvider
 {
     public string FontFace { get; set; }
 
@@ -26,7 +24,7 @@ public partial class FontIconData : IconData, IHaveProperties
         FontFace = fontFace;
     }
 
-    public IPropertySet Properties => new PropertySet()
+    public IDictionary<string, object>? Properties => new Dictionary<string, object>()
         {
             { "FontFamily", FontFace },
         };

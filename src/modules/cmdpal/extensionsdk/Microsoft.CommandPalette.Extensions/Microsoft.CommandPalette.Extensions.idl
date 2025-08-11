@@ -365,9 +365,9 @@ namespace Microsoft.CommandPalette.Extensions
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IHaveProperties
+    interface IExtendedAttributesProvider
     {
-        Windows.Foundation.Collections.IPropertySet Properties { get; };
+        Windows.Foundation.Collections.IMap<String, Object> Properties { get; };
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]

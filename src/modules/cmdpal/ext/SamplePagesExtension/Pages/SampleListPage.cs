@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.Win32;
 
@@ -183,7 +183,7 @@ internal sealed partial class SampleListPage : ListPage
         ];
     }
 
-    internal sealed partial class CommandWithProperties : InvokableCommand, IHaveProperties
+    internal sealed partial class CommandWithProperties : InvokableCommand, IExtendedAttributesProvider
     {
         private FontIconData _icon = new("\u0026", "Wingdings");
 
@@ -191,7 +191,7 @@ internal sealed partial class SampleListPage : ListPage
 
         public override string Name => "Whatever";
 
-        public IPropertySet Properties => new PropertySet()
+        public IDictionary<string, object> Properties => new Dictionary<string, object>()
         {
             { "Foo", "bar" },
             { "Secret", 42 },
@@ -199,8 +199,7 @@ internal sealed partial class SampleListPage : ListPage
         };
     }
 
-#nullable enable
-    internal sealed partial class OtherCommandWithProperties : IHaveProperties, IInvokableCommand
+    internal sealed partial class OtherCommandWithProperties : IExtendedAttributesProvider, IInvokableCommand
     {
         public string Name => "Whatever 2";
 
@@ -208,7 +207,7 @@ internal sealed partial class SampleListPage : ListPage
 
         public string Id => string.Empty;
 
-        public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged;
 
         public ICommandResult Invoke(object sender)
         {
@@ -216,7 +215,7 @@ internal sealed partial class SampleListPage : ListPage
             return CommandResult.ShowToast("whoop");
         }
 
-        public IPropertySet Properties => new PropertySet()
+        public IDictionary<string, object> Properties => new Dictionary<string, object>()
         {
             { "yo", "dog" },
             { "Secret", 12345 },

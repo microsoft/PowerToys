@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -62,12 +61,12 @@ public abstract partial class CommandProvider : ICommandProvider, ICommandProvid
     }
 
     /// <summary>
-    /// A stub class which implements IHaveProperties. Just marshalling this
-    /// across the ABI will be enough for CmdPal to store IHaveProperties in
+    /// A stub class which implements IExtendedAttributesProvider. Just marshalling this
+    /// across the ABI will be enough for CmdPal to store IExtendedAttributesProvider in
     /// its type cache.
     /// </summary>
-    private sealed partial class SupportCommandsWithProperties : IHaveProperties
+    private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider
     {
-        public IPropertySet? Properties => null;
+        IDictionary<string, object>? IExtendedAttributesProvider.Properties => null;
     }
 }
