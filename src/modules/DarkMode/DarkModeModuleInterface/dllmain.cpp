@@ -122,6 +122,7 @@ public:
         // Create a Settings object with your module name
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
+        settings.set_overview_link(L"https://aka.ms/powertoys");
 
         // Boolean toggles
         settings.add_bool_toggle(
@@ -241,32 +242,6 @@ public:
             Logger::error("[DarkMode] set_config: Failed to parse or apply config.");
         }
     }
-
-    // Enable the powertoy
-    /* virtual void enable()
-    {
-        Logger::info("DarkMode enabling");
-        m_enabled = true;
-
-        unsigned long pid = GetCurrentProcessId();
-        std::wstring args = L"--use-pt-config --pid " + std::to_wstring(pid);
-        std::wstring exe = L"PowerToys.DarkMode.exe";
-        std::wstring cmd = exe + L" " + args;
-
-        STARTUPINFO si = { sizeof(si) };
-        PROCESS_INFORMATION pi;
-
-        if (!CreateProcess(exe.c_str(), cmd.data(), NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
-        {
-            DWORD err = GetLastError();
-            Logger::error("Failed to launch DarkMode process: " + std::to_string(err));
-
-        }
-        else
-        {
-            m_process = pi.hProcess;
-        }
-    } */
 
     virtual void enable()
     {
