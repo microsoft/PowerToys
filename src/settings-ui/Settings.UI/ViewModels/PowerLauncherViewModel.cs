@@ -158,6 +158,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             UpdateSettings();
         }
 
+        public PowerLauncherViewModel(PowerLauncherSettings settings, SendCallback callback)
+        {
+            this.settings = settings;
+            this.callback = callback;
+        }
+
         private void UpdateSettings([CallerMemberName] string propertyName = null)
         {
             // Notify UI of property change
