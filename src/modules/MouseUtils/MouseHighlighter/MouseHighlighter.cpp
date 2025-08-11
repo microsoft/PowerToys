@@ -71,7 +71,6 @@ private:
     winrt::CompositionSpriteShape m_leftPointer{ nullptr };
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
     winrt::CompositionSpriteShape m_alwaysPointer{ nullptr };
-    winrt::CompositionSpriteShape m_spotlightPointer{ nullptr }; // legacy (unused in new spotlight)
     // Spotlight overlay (mask with soft feathered edge)
     winrt::SpriteVisual m_overlay{ nullptr };
     winrt::CompositionMaskBrush m_spotlightMask{ nullptr };
@@ -206,9 +205,8 @@ void Highlighter::AddDrawingPoint(MouseButton button)
         // always
         if (m_spotlightMode)
         {
-            // Use overlay instead of giant stroke; update mask center/radius with DPI-aware feather
             UpdateSpotlightMask(static_cast<float>(pt.x), static_cast<float>(pt.y), m_radius, true);
-            return; // do not append a shape for spotlight
+            return;
         }
         else
         {
@@ -457,7 +455,6 @@ void Highlighter::StopDrawing()
     {
         m_overlay.IsVisible(false);
     }
-    m_spotlightPointer = nullptr;
     ShowWindow(m_hwnd, SW_HIDE);
     UnhookWindowsHookEx(m_mouseHook);
     ClearDrawing();
@@ -609,32 +606,9 @@ void Highlighter::Terminate()
     }
 }
 
-// DPI helper implementation
 float Highlighter::GetDpiScale() const
 {
-    UINT dpi = 96;
-    if (m_hwnd)
-    {
-        UINT wDpi = GetDpiForWindow(m_hwnd);
-        if (wDpi)
-        {
-            dpi = wDpi;
-        }
-        else
-        {
-            HDC hdc = GetDC(nullptr);
-            if (hdc)
-            {
-                int dpix = GetDeviceCaps(hdc, LOGPIXELSX);
-                ReleaseDC(nullptr, hdc);
-                if (dpix > 0)
-                {
-                    dpi = static_cast<UINT>(dpix);
-                }
-            }
-        }
-    }
-    return static_cast<float>(dpi) / 96.0f;
+    return static_cast<float>(GetDpiForWindow(m_hwnd)) / 96.0f;
 }
 
 // Update spotlight radial mask center/radius with DPI-aware feather
@@ -648,7 +622,6 @@ void Highlighter::UpdateSpotlightMask(float cx, float cy, float radius, bool sho
     m_spotlightMaskGradient.EllipseCenter({ cx, cy });
     m_spotlightMaskGradient.EllipseRadius({ radius, radius });
 
-    // Feather width: ~2 px @100% DPI, scaled by DPI, min 1 px, capped to 25% of radius
     const float dpiScale = GetDpiScale();
     // Target a very fine edge: ~1 physical pixel, convert to DIPs: 1 / dpiScale
     const float featherDip = 1.0f / (dpiScale > 0.0f ? dpiScale : 1.0f);
