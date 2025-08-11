@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -9,6 +10,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBarContext
 {
     public ExtensionObject<ICommandItem> Model => _commandItemModel;
