@@ -155,11 +155,7 @@
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Informational"
-<<<<<<< HEAD
-                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
-=======
                         Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
->>>>>>> 90e07874f (Fixed mouse utils crash issue.)
                         <InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>
