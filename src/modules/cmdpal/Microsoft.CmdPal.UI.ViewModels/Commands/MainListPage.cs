@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CommandPalette.Extensions;
@@ -28,6 +29,9 @@ public partial class MainListPage : DynamicListPage,
     private IEnumerable<IListItem>? _filteredItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
+
+    private InterlockedBoolean _refreshRunning;
+    private InterlockedBoolean _refreshRequested;
 
     public MainListPage(IServiceProvider serviceProvider)
     {
@@ -83,18 +87,47 @@ public partial class MainListPage : DynamicListPage,
 
     private void ReapplySearchInBackground()
     {
-        _ = Task.Run(() =>
+        _refreshRequested.Set();
+        if (!_refreshRunning.Set())
         {
-            try
+            return;
+        }
+
+        _ = Task.Run(RunRefreshLoop);
+    }
+
+    private void RunRefreshLoop()
+    {
+        try
+        {
+            do
             {
+                _refreshRequested.Clear();
+                lock (_tlcManager.TopLevelCommands)
+                {
+                    if (_filteredItemsIncludesApps == _includeApps)
+                    {
+                        break;
+                    }
+                }
+
                 var currentSearchText = SearchText;
                 UpdateSearchText(currentSearchText, currentSearchText);
             }
-            catch (Exception e)
+            while (_refreshRequested.Value);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Failed to reload search", e);
+        }
+        finally
+        {
+            _refreshRunning.Clear();
+            if (_refreshRequested.Value && _refreshRunning.Set())
             {
-                Logger.LogError("Failed to reload search", e);
+                _ = Task.Run(RunRefreshLoop);
             }
-        });
+        }
     }
 
     public override IListItem[] GetItems()
@@ -126,6 +159,15 @@ public partial class MainListPage : DynamicListPage,
             var aliases = _serviceProvider.GetService<AliasManager>()!;
             if (aliases.CheckAlias(newSearch))
             {
+                if (_filteredItemsIncludesApps != _includeApps)
+                {
+                    lock (_tlcManager.TopLevelCommands)
+                    {
+                        _filteredItemsIncludesApps = _includeApps;
+                        _filteredItems = null;
+                    }
+                }
+
                 return;
             }
         }
@@ -138,6 +180,7 @@ public partial class MainListPage : DynamicListPage,
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
             if (string.IsNullOrEmpty(newSearch))
             {
+                _filteredItemsIncludesApps = _includeApps;
                 _filteredItems = null;
                 RaiseItemsChanged(commands.Count);
                 return;
