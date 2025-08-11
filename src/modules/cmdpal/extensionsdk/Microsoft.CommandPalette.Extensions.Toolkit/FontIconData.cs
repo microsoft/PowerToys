@@ -31,8 +31,6 @@ public partial class FontIconData : IconData, IExtendedAttributesProvider
             { WellKnownExtensionAttributes.FontFamily, FontFamily },
 =======
 
-using Windows.Foundation.Collections;
-
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 /// <summary>
@@ -45,7 +43,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// UI for any other glyphs. This class is only needed if you want a non-Segoe
 /// font icon.
 /// </summary>
-public partial class FontIconData : IconData, IHaveProperties
+public partial class FontIconData : IconData, IExtendedAttributesProvider
 {
     public string FontFace { get; set; }
 
@@ -55,7 +53,7 @@ public partial class FontIconData : IconData, IHaveProperties
         FontFace = fontFace;
     }
 
-    public IPropertySet Properties => new PropertySet()
+    public IDictionary<string, object>? Properties => new Dictionary<string, object>()
         {
             { "FontFamily", FontFace },
 >>>>>>> 940e71f2a (stupid levels returning to nominal values)
