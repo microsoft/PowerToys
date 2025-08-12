@@ -142,11 +142,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         // UEFI Firmware Settings command should exist
         Assert.IsNotNull(result);
         var firstItem = result.FirstOrDefault();
-        Assert.IsNotNull(firstItem, "No items matched the query.");
-        var containsFirmwareSettings = firstItem.Title.Contains("UEFI Firmware Settings", StringComparison.OrdinalIgnoreCase);
-
-        Assert.IsTrue(
-            containsFirmwareSettings == hasCommand,
-            $"Expected to match 'UEFI Firmware Settings' but got '{firstItem.Title}'");
+        var firstItemIsUefiCommand = firstItem?.Title.Contains("UEFI", StringComparison.OrdinalIgnoreCase) ?? false;
+        Assert.AreEqual(hasCommand, firstItemIsUefiCommand, $"Expected to match (or not match) 'UEFI Firmware Settings' but got '{firstItem?.Title}'");
     }
 }
