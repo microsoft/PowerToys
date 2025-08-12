@@ -102,11 +102,27 @@ public sealed partial class SearchBar : UserControl,
         }));
     }
 
+    private Button? GetDeleteButton()
+    {
+        // Try to find the DeleteButton in the FilterBox's template
+        return FilterBox?.FindName("DeleteButton") as Button;
+    }
+
+    private bool IsDeleteButtonFocused()
+    {
+        var deleteButton = GetDeleteButton();
+        var focusedElement = FocusManager.GetFocusedElement() as Button;
+        return deleteButton != null && focusedElement == deleteButton;
+    }
+
     public void DeleteButton_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key == VirtualKey.Enter)
+        if (IsDeleteButtonFocused())
         {
-            ExecuteDeleteButtonAction();
+            if (e.Key == VirtualKey.Enter)
+            {
+                ExecuteDeleteButtonAction();
+            }
         }
     }
 
