@@ -41,7 +41,7 @@ public partial class ContentIcon : FontIcon
                 return;
             }
 
-            if (Content is FrameworkElement { Parent: not null } element)
+            if (Content is FrameworkElement element && element.Parent is not null)
             {
                 Debug.Assert(false, $"IconBoxElement Content is already parented to {element.Parent.GetType().Name}");
                 return;
