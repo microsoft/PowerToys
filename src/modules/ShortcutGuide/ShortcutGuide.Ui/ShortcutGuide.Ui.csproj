@@ -33,9 +33,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ShortcutGuideXAML\CustomNavigationViewStyle.xaml" />
     <None Remove="ShortcutGuideXAML\OOBEView.xaml" />
     <None Remove="ShortcutGuideXAML\ShortcutView.xaml" />
     <None Remove="ShortcutGuideXAML\TaskbarIndicator.xaml" />
+    <None Remove="ShortcutGuideXAML\TaskbarWindow.xaml" />
     <None Include="Assets\ShortcutGuide\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -82,6 +84,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+	<PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="WinUIEx" />
     <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
     <PackageReference Include="System.Text.Json" />
@@ -103,6 +106,16 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ShortcutGuide.CPPProject\ShortcutGuide.CPPProject.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ShortcutGuideXAML\CustomNavigationViewStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ShortcutGuideXAML\TaskbarWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="ShortcutGuideXAML\TaskbarIndicator.xaml">

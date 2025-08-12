@@ -6,35 +6,70 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsShownInSwitchers="False"
     mc:Ignorable="d">
+    <winuiex:WindowEx.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
     <Page x:Name="MainPage">
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="48" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <SelectorBar
+            <TitleBar Title="Shortcut Guide">
+                <TitleBar.Content>
+                    <TextBox
+                        x:Name="SearchBox"
+                        x:Uid="SearchBox"
+                        Width="300"
+                        VerticalAlignment="Center"
+                        TextChanged="SearchBox_TextChanged">
+                        <TextBox.KeyboardAccelerators>
+                            <KeyboardAccelerator
+                                Key="F"
+                                Invoked="SearchBox_KeyboardAcceleratorInvoked"
+                                Modifiers="Control" />
+                        </TextBox.KeyboardAccelerators>
+                    </TextBox>
+                </TitleBar.Content>
+                <TitleBar.RightHeader>
+                    <Button x:Uid="CloseButton" Click="CloseButton_Clicked">
+                        <FontIcon FontSize="14" Glyph="&#xE711;" />
+                    </Button>
+                </TitleBar.RightHeader>
+            </TitleBar>
+
+            <NavigationView
                 x:Name="WindowSelector"
-                Grid.Row="0"
-                Grid.Column="0"
-                SelectionChanged="WindowSelectionChanged" />
-            <Button
+                Grid.Row="1"
+                IsBackButtonVisible="Collapsed"
+                IsSettingsVisible="True"
+                SelectionChanged="WindowSelector_SelectionChanged"
+                Style="{StaticResource RailNavigationViewStyle}">
+                <NavigationView.MenuItems />
+                <Frame
+                    x:Name="ContentFrame"
+                    Grid.Row="1"
+                    Grid.ColumnSpan="5" />
+                <NavigationView.Resources>
+                    <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                    <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+                </NavigationView.Resources>
+            </NavigationView>
+
+            <!--<Button
                 x:Name="InformationButton"
                 x:Uid="InformationButton"
-                Grid.Row="0"
                 Grid.Column="1"
                 Margin="0,0,6,0"
                 Click="InformationButton_Click">
-                <FontIcon Glyph="&#xEA1F;" />
-            </Button>
-            <TeachingTip
+                <FontIcon FontSize="14" Glyph="&#xEA1F;" />
+            </Button>-->
+            <!--<TeachingTip
                 x:Name="InformationTip"
                 x:Uid="InformationTip"
                 Target="{x:Bind InformationButton}">
@@ -52,49 +87,18 @@
                         Margin="-8,0,0,0"
                         Click="HyperlinkButton_Click" />
                 </StackPanel>
-            </TeachingTip>
-            <TextBox
-                x:Name="SearchBox"
-                x:Uid="SearchBox"
-                Grid.Row="0"
-                Grid.Column="2"
-                Width="300"
-                Height="32"
-                Margin="0,0,6,0"
-                HorizontalAlignment="Right"
-                HorizontalContentAlignment="Right"
-                VerticalContentAlignment="Center"
-                TextChanged="SearchBox_TextChanged">
-                <TextBox.KeyboardAccelerators>
-                    <KeyboardAccelerator
-                        Key="F"
-                        Invoked="SearchBox_KeyboardAcceleratorInvoked"
-                        Modifiers="Control" />
-                </TextBox.KeyboardAccelerators>
-            </TextBox>
-            <Button
+            </TeachingTip>-->
+
+            <!--<Button
                 x:Uid="SettingsButton"
-                Grid.Row="0"
                 Grid.Column="3"
                 Margin="0,0,6,0"
                 HorizontalContentAlignment="Center"
                 Click="SettingsButton_Clicked">
-                <FontIcon Glyph="&#xE713;" />
-            </Button>
-            <Button
-                x:Uid="CloseButton"
-                Grid.Row="0"
-                Grid.Column="4"
-                Margin="0,0,6,0"
-                HorizontalContentAlignment="Center"
-                Click="CloseButton_Clicked">
-                <FontIcon Glyph="&#xEF2C;" />
-            </Button>
-            <Frame
-                x:Name="ContentFrame"
-                Grid.Row="1"
-                Grid.Column="0"
-                Grid.ColumnSpan="5" />
+                <FontIcon FontSize="14" Glyph="&#xE713;" />
+            </Button>-->
+
+
         </Grid>
     </Page>
 </winuiex:WindowEx>

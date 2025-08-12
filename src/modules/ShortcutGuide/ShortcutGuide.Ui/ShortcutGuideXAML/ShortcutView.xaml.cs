@@ -22,7 +22,7 @@ using Grid = Microsoft.UI.Xaml.Controls.Grid;
 
 namespace ShortcutGuide
 {
-    public sealed partial class ShortcutView : INotifyPropertyChanged
+    public sealed partial class ShortcutView
     {
         private readonly DispatcherTimer _taskbarIconsUpdateTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
         private readonly ShortcutFile _shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
@@ -63,7 +63,6 @@ namespace ShortcutGuide
                     ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
                 }
 
-                ShortcutPageParameters.FrameHeight.FrameHeightChanged += ContentHeightChanged;
                 ShortcutPageParameters.SearchFilter.FilterChanged += SearchFilter_FilterChanged;
 
                 if (!ShortcutPageParameters.PinnedShortcuts.TryGetValue(ShortcutPageParameters.CurrentPageName, out var _))
@@ -165,30 +164,6 @@ namespace ShortcutGuide
 
                 TaskbarIndicators.Children[i].Visibility = Visibility.Collapsed;
             }
-        }
-
-        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private double _contentHeight;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public double ContentHeight
-        {
-            get => _contentHeight - CategorySelector.ActualHeight;
-            set
-            {
-                _contentHeight = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public void ContentHeightChanged(object? sender, double e)
-        {
-            ContentHeight = e;
         }
 
         private void OpenOverview()

@@ -6,41 +6,45 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:ShortcutGuide"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     mc:Ignorable="d">
     <Page.Resources>
         <DataTemplate x:Key="ShortcutTemplate" x:DataType="local:ShortcutTemplateDataObject">
-            <Grid MinWidth="400" HorizontalAlignment="Left">
+            <Grid Margin="0,0,48,0" HorizontalAlignment="Left">
                 <Grid.ContextFlyout>
                     <MenuFlyout Opening="MenuFlyout_Opening">
                         <MenuFlyoutItem Click="PinShortcut" Text="Pin" />
                     </MenuFlyout>
                 </Grid.ContextFlyout>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <TextBlock
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Margin="6,0,6,0"
-                    Padding="6,0,6,0"
-                    HorizontalAlignment="Left"
+                <StackPanel
+                    Grid.RowSpan="2"
                     VerticalAlignment="Center"
-                    Style="{ThemeResource BodyStrongTextBlockStyle}"
-                    Text="{x:Bind Name}" />
+                    Orientation="Vertical">
+                    <TextBlock
+                        Grid.Row="1"
+                        Style="{ThemeResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind Name}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind Description}" />
+                </StackPanel>
+
                 <Border
-                    Grid.Row="1"
                     Grid.Column="1"
-                    Margin="20,6,6,6"
+                    Margin="0"
                     HorizontalAlignment="Right"
-                    BorderThickness="{ThemeResource ButtonBorderThemeThickness}">
+                    BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource ControlCornerRadius}">
                     <ContentPresenter
                         Padding="6,6,6,6"
                         HorizontalAlignment="Stretch"
@@ -48,13 +52,6 @@
                         Content="{x:Bind Shortcut}"
                         CornerRadius="{ThemeResource ControlCornerRadius}" />
                 </Border>
-                <TextBlock
-                    Grid.Row="2"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Margin="6,0,6,0"
-                    Padding="6,0,6,0"
-                    Text="{x:Bind Description}" />
             </Grid>
         </DataTemplate>
     </Page.Resources>
@@ -68,16 +65,15 @@
         <TextBlock
             x:Name="ErrorMessage"
             Grid.Row="1"
-            Margin="6,0,6,0"
             Style="{StaticResource SubheaderTextBlockStyle}" />
-        <ScrollViewer
-            Grid.Row="1"
-            x:Name="ShortcutsScrollViewer"
-            HorizontalScrollBarVisibility="Visible"
-            HorizontalScrollMode="Enabled"
-            VerticalScrollBarVisibility="Disabled"
-            VerticalScrollMode="Disabled">
-            <Grid>
+        <ScrollViewer x:Name="ShortcutsScrollViewer" Grid.Row="1">
+            <Grid
+                Margin="12"
+                Padding="12"
+                Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource OverlayCornerRadius}">
                 <StackPanel
                     x:Name="OverviewStackPanel"
                     Height="{Binding ContentHeight}"
@@ -91,79 +87,51 @@
                             x:Name="PinnedListTitle"
                             x:Uid="PinnedListTitle"
                             Grid.Row="0"
-                            Margin="6,0,6,0"
-                            Style="{ThemeResource TitleTextBlockStyle}" />
-                        <GridView
+                            Style="{ThemeResource SubtitleTextBlockStyle}" />
+                        <ListView
                             x:Name="PinnedListElement"
                             Grid.Row="1"
                             ItemTemplate="{StaticResource ShortcutTemplate}"
-                            SelectionMode="None">
-                            <GridView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <ItemsWrapGrid Orientation="Vertical" />
-                                </ItemsPanelTemplate>
-                            </GridView.ItemsPanel>
-                        </GridView>
+                            SelectionMode="None" />
                     </Grid>
                     <StackPanel>
                         <TextBlock
                             x:Name="RecommendedListTitle"
                             x:Uid="RecommendedListTitle"
-                            Margin="6,0,6,0"
-                            Style="{ThemeResource TitleTextBlockStyle}" />
-                        <GridView
+                            Style="{ThemeResource SubtitleTextBlockStyle}" />
+                        <ListView
                             x:Name="RecommendedListElement"
                             ItemTemplate="{StaticResource ShortcutTemplate}"
                             SelectionMode="None">
-                            <GridView.ItemsPanel>
+                            <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid Orientation="Vertical" />
                                 </ItemsPanelTemplate>
-                            </GridView.ItemsPanel>
-                        </GridView>
+                            </ListView.ItemsPanel>
+                        </ListView>
                     </StackPanel>
                     <StackPanel>
                         <TextBlock
                             x:Name="TaskbarLaunchShortcutsTitle"
                             x:Uid="TaskbarLaunchShortcutsTitle"
-                            Margin="6,0,6,0"
-                            Style="{ThemeResource TitleTextBlockStyle}" />
-                        <TextBlock
-                            x:Name="TaskbarLaunchShortcutsDescription"
-                            x:Uid="TaskbarLaunchShortcutsDescription"
-                            Margin="6,0,6,0" />
-                        <GridView
+                            Style="{ThemeResource SubtitleTextBlockStyle}" />
+                        <TextBlock x:Name="TaskbarLaunchShortcutsDescription" x:Uid="TaskbarLaunchShortcutsDescription" />
+                        <ListView
                             x:Name="TaskbarLaunchShortcutsListElement"
                             ItemTemplate="{StaticResource ShortcutTemplate}"
-                            SelectionMode="None">
-                            <GridView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <ItemsWrapGrid Orientation="Vertical" />
-                                </ItemsPanelTemplate>
-                            </GridView.ItemsPanel>
-                        </GridView>
+                            SelectionMode="None" />
                     </StackPanel>
-
                 </StackPanel>
-                <GridView
+                <ListView
                     x:Name="ShortcutListElement"
-                    Height="{Binding ContentHeight}"
-                    HorizontalAlignment="Left"
-                    HorizontalContentAlignment="Left"
                     ItemTemplate="{StaticResource ShortcutTemplate}"
-                    SelectionMode="None">
-                    <GridView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <ItemsWrapGrid HorizontalAlignment="Left" Orientation="Vertical" />
-                        </ItemsPanelTemplate>
-                    </GridView.ItemsPanel>
-                </GridView>
+                    SelectionMode="None" />
             </Grid>
         </ScrollViewer>
         <Canvas
             x:Name="TaskbarIndicators"
             Grid.Row="2"
-            Height="20"
+            Height="48"
             Visibility="Collapsed">
             <local:TaskbarIndicator IndicatorNumber="1" />
             <local:TaskbarIndicator IndicatorNumber="2" />

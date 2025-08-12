@@ -11,18 +11,18 @@
     <Canvas x:Name="IndicatorCanvas">
         <Border
             x:Name="IndicatorRectangle"
-            Padding="0,0,0,0"
-            BorderBrush="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+            Background="{ThemeResource AccentFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}"
             BorderThickness="1"
-            CornerRadius="3,3,0,0">
-            <Rectangle Fill="{ThemeResource SystemAccentColor}" />
+            CornerRadius="4,4,0,0">
+            <TextBlock
+                x:Name="IndicatorText"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{ThemeResource TextOnAccentFillColorDefaultBrush}"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                TextAlignment="Center" />
         </Border>
-        <TextBlock
-            x:Name="IndicatorText"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Foreground="{ThemeResource TextOnAccentFillColorDefaultBrush}"
-            Style="{ThemeResource BodyStrongTextBlockStyle}"
-            TextAlignment="Center" />
+
     </Canvas>
 </UserControl>
