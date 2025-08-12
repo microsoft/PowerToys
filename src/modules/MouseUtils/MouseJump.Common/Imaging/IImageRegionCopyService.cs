@@ -10,7 +10,7 @@ public interface IImageRegionCopyService
 {
     /// <summary>
     /// Copies the source region from the provider's source image (e.g. the interactive desktop,
-    /// a static image, etc) to the target region on the specified Graphics object.
+    /// a static image, etc.) to the target region on the specified Graphics object.
     /// </summary>
     /// <remarks>
     /// Implementations of this interface are used to capture regions of the interactive desktop

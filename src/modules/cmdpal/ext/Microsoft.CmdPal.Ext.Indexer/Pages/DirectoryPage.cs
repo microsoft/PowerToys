@@ -24,7 +24,7 @@ public sealed partial class DirectoryPage : ListPage
     public DirectoryPage(string path)
     {
         _path = path;
-        Icon = Icons.FileExplorer;
+        Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Command_Browse;
         Title = path;
     }
@@ -52,7 +52,7 @@ public sealed partial class DirectoryPage : ListPage
             EmptyContent = new CommandItem(
                 title: Resources.Indexer_File_Is_File_Not_Folder, subtitle: $"{_path}")
             {
-                Icon = Icons.Document,
+                Icon = Icons.DocumentIcon,
             };
             return [];
         }
@@ -66,7 +66,7 @@ public sealed partial class DirectoryPage : ListPage
             EmptyContent = new CommandItem(
                 title: Resources.Indexer_Folder_Is_Empty, subtitle: $"{_path}")
             {
-                Icon = Icons.FolderOpen,
+                Icon = Icons.FolderOpenIcon,
                 Command = listItemForUs.Command,
                 MoreCommands = listItemForUs.MoreCommands,
             };
