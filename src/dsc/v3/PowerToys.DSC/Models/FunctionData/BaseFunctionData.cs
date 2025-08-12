@@ -11,7 +11,7 @@ namespace PowerToys.DSC.Models.FunctionData;
 /// <summary>
 /// Base class for function data objects.
 /// </summary>
-internal class BaseFunctionData
+public class BaseFunctionData
 {
     /// <summary>
     /// Generates a JSON schema for the specified resource object type.

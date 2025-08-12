@@ -12,7 +12,7 @@ namespace PowerToys.DSC.Options;
 /// <summary>
 /// Represents an option for specifying the resource name for the dsc command.
 /// </summary>
-internal sealed class ResourceOption : Option<string>
+public sealed class ResourceOption : Option<string>
 {
     private readonly IList<string> _resources = [];
 

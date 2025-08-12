@@ -12,7 +12,7 @@ namespace PowerToys.DSC.Resources;
 /// <summary>
 /// Base class for all DSC resources.
 /// </summary>
-internal abstract class BaseResource
+public abstract class BaseResource
 {
     /// <summary>
     /// Gets the name of the resource.
@@ -35,28 +35,28 @@ internal abstract class BaseResource
     /// </summary>
     /// <param name="input">The input string, if any.</param>
     /// <returns>True if the operation was successful, otherwise false.</returns>
-    public abstract bool Get(string? input);
+    public abstract bool GetState(string? input);
 
     /// <summary>
     /// Calls the set method on the resource.
     /// </summary>
     /// <param name="input">The input string, if any.</param>
     /// <returns>True if the operation was successful, otherwise false.</returns>
-    public abstract bool Set(string? input);
+    public abstract bool SetState(string? input);
 
     /// <summary>
     /// Calls the test method on the resource.
     /// </summary>
     /// <param name="input">The input string, if any.</param>
     /// <returns>True if the operation was successful, otherwise false.</returns>
-    public abstract bool Test(string? input);
+    public abstract bool TestState(string? input);
 
     /// <summary>
     /// Calls the export method on the resource.
     /// </summary>
     /// <param name="input"> The input string, if any.</param>
     /// <returns>True if the operation was successful, otherwise false.</returns>
-    public abstract bool Export(string? input);
+    public abstract bool ExportState(string? input);
 
     /// <summary>
     /// Calls the schema method on the resource.

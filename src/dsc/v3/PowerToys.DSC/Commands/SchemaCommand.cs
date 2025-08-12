@@ -9,7 +9,7 @@ namespace PowerToys.DSC.Commands;
 /// <summary>
 /// Command to output the schema of the resource.
 /// </summary>
-internal sealed class SchemaCommand : BaseCommand
+public sealed class SchemaCommand : BaseCommand
 {
     public SchemaCommand()
         : base("schema", "Outputs schema of the resource")

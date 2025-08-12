@@ -12,7 +12,7 @@ namespace PowerToys.DSC.Options;
 /// <summary>
 /// Represents an option for specifying JSON input for the dsc command.
 /// </summary>
-internal sealed class InputOption : Option<string>
+public sealed class InputOption : Option<string>
 {
     public InputOption()
         : base("--input", "The JSON input")

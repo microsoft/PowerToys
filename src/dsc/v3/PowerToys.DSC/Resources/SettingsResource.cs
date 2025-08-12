@@ -18,7 +18,7 @@ namespace PowerToys.DSC.Resources;
 /// <summary>
 /// Represents the DSC resource for managing PowerToys settings.
 /// </summary>
-internal sealed class SettingsResource : BaseResource
+public sealed class SettingsResource : BaseResource
 {
     public const string AppModule = "App";
     public const string ResourceName = "settings";
@@ -64,22 +64,22 @@ internal sealed class SettingsResource : BaseResource
     }
 
     /// <inheritdoc/>
-    public override bool Export(string? input)
+    public override bool ExportState(string? input)
     {
         var data = CreateFunctionData();
-        data.Get();
+        data.GetState();
         WriteJsonOutputLine(data.Output.ToJson());
         return true;
     }
 
     /// <inheritdoc/>
-    public override bool Get(string? input)
+    public override bool GetState(string? input)
     {
-        return Export(input);
+        return ExportState(input);
     }
 
     /// <inheritdoc/>
-    public override bool Set(string? input)
+    public override bool SetState(string? input)
     {
         if (string.IsNullOrEmpty(input))
         {
@@ -88,17 +88,17 @@ internal sealed class SettingsResource : BaseResource
         }
 
         var data = CreateFunctionData(input);
-        data.Get();
+        data.GetState();
 
         // Capture the diff before updating the output
         var diff = data.GetDiffJson();
 
         // Only call Set if the desired state is different from the current state
-        if (!data.Test())
+        if (!data.TestState())
         {
             var inputSettings = data.Input.SettingsInternal;
             data.Output.SettingsInternal = inputSettings;
-            data.Set();
+            data.SetState();
         }
 
         WriteJsonOutputLine(data.Output.ToJson());
@@ -107,7 +107,7 @@ internal sealed class SettingsResource : BaseResource
     }
 
     /// <inheritdoc/>
-    public override bool Test(string? input)
+    public override bool TestState(string? input)
     {
         if (string.IsNullOrEmpty(input))
         {
@@ -116,8 +116,8 @@ internal sealed class SettingsResource : BaseResource
         }
 
         var data = CreateFunctionData(input);
-        data.Get();
-        data.Output.InDesiredState = data.Test();
+        data.GetState();
+        data.Output.InDesiredState = data.TestState();
 
         WriteJsonOutputLine(data.Output.ToJson());
         WriteJsonOutputLine(data.GetDiffJson());

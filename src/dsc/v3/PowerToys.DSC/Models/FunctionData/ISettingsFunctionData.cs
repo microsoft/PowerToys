@@ -10,7 +10,7 @@ namespace PowerToys.DSC.Models.FunctionData;
 /// <summary>
 /// Interface for function data related to settings.
 /// </summary>
-internal interface ISettingsFunctionData
+public interface ISettingsFunctionData
 {
     /// <summary>
     /// Gets the input settings resource object.
@@ -25,18 +25,18 @@ internal interface ISettingsFunctionData
     /// <summary>
     /// Gets the current settings.
     /// </summary>
-    public void Get();
+    public void GetState();
 
     /// <summary>
     /// Sets the current settings.
     /// </summary>
-    public void Set();
+    public void SetState();
 
     /// <summary>
     /// Tests if the current settings and the desired state are valid.
     /// </summary>
     /// <returns>True if the current settings match the desired state, otherwise false.</returns>
-    public bool Test();
+    public bool TestState();
 
     /// <summary>
     /// Gets the difference between the current settings and the desired state in JSON format.

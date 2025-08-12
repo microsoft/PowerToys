@@ -15,7 +15,7 @@ namespace PowerToys.DSC.Models.FunctionData;
 /// Represents function data for the settings DSC resource.
 /// </summary>
 /// <typeparam name="TSettingsConfig">The module settings configuration type.</typeparam>
-internal sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, ISettingsFunctionData
+public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, ISettingsFunctionData
     where TSettingsConfig : ISettingsConfig, new()
 {
     private static readonly SettingsUtils _settingsUtils = new();
@@ -37,20 +37,20 @@ internal sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, 
     }
 
     /// <inheritdoc/>
-    public void Get()
+    public void GetState()
     {
         _output.Settings = GetSettings();
     }
 
     /// <inheritdoc/>
-    public void Set()
+    public void SetState()
     {
         Debug.Assert(_output.Settings != null, "Output settings should not be null");
         SaveSettings(_output.Settings);
     }
 
     /// <inheritdoc/>
-    public bool Test()
+    public bool TestState()
     {
         var input = JsonSerializer.SerializeToNode(_input.Settings);
         var output = JsonSerializer.SerializeToNode(_output.Settings);
@@ -61,7 +61,7 @@ internal sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, 
     public JsonArray GetDiffJson()
     {
         var diff = new JsonArray();
-        if (!Test())
+        if (!TestState())
         {
             diff.Add(SettingsResourceObject<TSettingsConfig>.SettingsJsonPropertyName);
         }

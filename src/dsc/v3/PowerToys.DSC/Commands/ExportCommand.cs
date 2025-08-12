@@ -9,7 +9,7 @@ namespace PowerToys.DSC.Commands;
 /// <summary>
 /// Command to export all state instances.
 /// </summary>
-internal sealed class ExportCommand : BaseCommand
+public sealed class ExportCommand : BaseCommand
 {
     public ExportCommand()
         : base("export", "Get all state instances")
@@ -19,6 +19,6 @@ internal sealed class ExportCommand : BaseCommand
     /// <inheritdoc/>
     public override void CommandHandlerInternal(InvocationContext context)
     {
-        context.ExitCode = Resource!.Export(Input) ? 0 : 1;
+        context.ExitCode = Resource!.ExportState(Input) ? 0 : 1;
     }
 }

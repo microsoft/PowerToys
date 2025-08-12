@@ -9,7 +9,7 @@ namespace PowerToys.DSC.Options;
 /// <summary>
 /// Represents an option for specifying the module name for the dsc command.
 /// </summary>
-internal sealed class ModuleOption : Option<string?>
+public sealed class ModuleOption : Option<string?>
 {
     public ModuleOption()
         : base("--module", "The module name")

@@ -11,7 +11,7 @@ namespace PowerToys.DSC.Options;
 /// <summary>
 /// Represents an option for specifying the output directory for the dsc command.
 /// </summary>
-internal sealed class OutputDirectoryOption : Option<string>
+public sealed class OutputDirectoryOption : Option<string>
 {
     public OutputDirectoryOption()
         : base("--outputDir", "The output directory")

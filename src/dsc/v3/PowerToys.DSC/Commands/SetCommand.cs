@@ -9,7 +9,7 @@ namespace PowerToys.DSC.Commands;
 /// <summary>
 /// Command to set the resource state.
 /// </summary>
-internal sealed class SetCommand : BaseCommand
+public sealed class SetCommand : BaseCommand
 {
     public SetCommand()
         : base("set", "Set the resource state")
@@ -19,6 +19,6 @@ internal sealed class SetCommand : BaseCommand
     /// <inheritdoc/>
     public override void CommandHandlerInternal(InvocationContext context)
     {
-        context.ExitCode = Resource!.Set(Input) ? 0 : 1;
+        context.ExitCode = Resource!.SetState(Input) ? 0 : 1;
     }
 }

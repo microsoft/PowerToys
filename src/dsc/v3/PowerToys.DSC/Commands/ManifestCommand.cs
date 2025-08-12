@@ -10,7 +10,7 @@ namespace PowerToys.DSC.Commands;
 /// <summary>
 /// Command to get the manifest of the DSC resource.
 /// </summary>
-internal sealed class ManifestCommand : BaseCommand
+public sealed class ManifestCommand : BaseCommand
 {
     /// <summary>
     /// Option to specify the output directory for the manifest.

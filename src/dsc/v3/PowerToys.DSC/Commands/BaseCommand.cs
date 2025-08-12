@@ -16,7 +16,7 @@ namespace PowerToys.DSC.Commands;
 /// <summary>
 /// Base class for all DSC commands.
 /// </summary>
-internal abstract class BaseCommand : Command
+public abstract class BaseCommand : Command
 {
     // Shared options for all commands
     private readonly ModuleOption _moduleOption;

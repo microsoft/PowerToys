@@ -13,7 +13,7 @@ namespace PowerToys.DSC.Models.ResourceObjects;
 /// <summary>
 /// Base class for all resource objects.
 /// </summary>
-internal class BaseResourceObject
+public class BaseResourceObject
 {
     private readonly JsonSerializerOptions _options;
 
@@ -21,7 +21,6 @@ internal class BaseResourceObject
     {
         _options = new()
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             WriteIndented = false,
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
@@ -32,6 +31,7 @@ internal class BaseResourceObject
     /// </summary>
     [JsonPropertyName("_inDesiredState")]
     [Description("Indicates whether an instance is in the desired state")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? InDesiredState { get; set; }
 
     /// <summary>

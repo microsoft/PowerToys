@@ -9,7 +9,7 @@ namespace PowerToys.DSC.Commands;
 /// <summary>
 /// Command to get the resource state.
 /// </summary>
-internal sealed class GetCommand : BaseCommand
+public sealed class GetCommand : BaseCommand
 {
     public GetCommand()
         : base("get", "Get the resource state")
@@ -19,6 +19,6 @@ internal sealed class GetCommand : BaseCommand
     /// <inheritdoc/>
     public override void CommandHandlerInternal(InvocationContext context)
     {
-        context.ExitCode = Resource!.Get(Input) ? 0 : 1;
+        context.ExitCode = Resource!.GetState(Input) ? 0 : 1;
     }
 }

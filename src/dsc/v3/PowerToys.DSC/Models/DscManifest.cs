@@ -10,7 +10,7 @@ namespace PowerToys.DSC.Models;
 /// <summary>
 /// Class for building a DSC manifest for PowerToys resources.
 /// </summary>
-internal sealed class DscManifest
+public sealed class DscManifest
 {
     private const string Schema = "https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.vscode.json";
     private const string Executable = @"PowerToys.DSC.exe";

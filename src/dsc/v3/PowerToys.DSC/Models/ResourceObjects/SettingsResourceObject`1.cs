@@ -14,7 +14,7 @@ namespace PowerToys.DSC.Models.ResourceObjects;
 /// Represents a settings resource object for a module's settings configuration.
 /// </summary>
 /// <typeparam name="TSettingsConfig">The type of the settings configuration.</typeparam>
-internal sealed class SettingsResourceObject<TSettingsConfig> : BaseResourceObject, ISettingsResourceObject
+public sealed class SettingsResourceObject<TSettingsConfig> : BaseResourceObject, ISettingsResourceObject
     where TSettingsConfig : ISettingsConfig, new()
 {
     public const string SettingsJsonPropertyName = "settings";

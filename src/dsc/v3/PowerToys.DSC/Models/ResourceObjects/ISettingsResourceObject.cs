@@ -10,7 +10,7 @@ namespace PowerToys.DSC.Models.ResourceObjects;
 /// <summary>
 /// Interface for settings resource objects.
 /// </summary>
-internal interface ISettingsResourceObject
+public interface ISettingsResourceObject
 {
     /// <summary>
     /// Gets or sets the settings configuration.

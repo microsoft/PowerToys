@@ -9,7 +9,7 @@ namespace PowerToys.DSC.Commands;
 /// <summary>
 /// Command to test the resource state.
 /// </summary>
-internal sealed class TestCommand : BaseCommand
+public sealed class TestCommand : BaseCommand
 {
     public TestCommand()
         : base("test", "Test the resource state")
@@ -19,6 +19,6 @@ internal sealed class TestCommand : BaseCommand
     /// <inheritdoc/>
     public override void CommandHandlerInternal(InvocationContext context)
     {
-        context.ExitCode = Resource!.Test(Input) ? 0 : 1;
+        context.ExitCode = Resource!.TestState(Input) ? 0 : 1;
     }
 }
