@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static class ResultHelper
 {
-    public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, SettingsManager settings, TypedEventHandler<object, object> handleSave)
+    public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, ISettingsInterface settings, TypedEventHandler<object, object> handleSave)
     {
         // Return null when the expression is not a valid calculator query.
         if (roundedResult == null)

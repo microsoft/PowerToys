@@ -23,7 +23,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Pages;
 public sealed partial class CalculatorListPage : DynamicListPage
 {
     private readonly Lock _resultsLock = new();
-    private readonly SettingsManager _settingsManager;
+    private readonly ISettingsInterface _settingsManager;
     private readonly List<ListItem> _items = [];
     private readonly List<ListItem> history = [];
     private readonly ListItem _emptyItem;
@@ -32,7 +32,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
     // We need to avoid the double calculation. This may cause some wierd behaviors.
     private string skipQuerySearchText = string.Empty;
 
-    public CalculatorListPage(SettingsManager settings)
+    public CalculatorListPage(ISettingsInterface settings)
     {
         _settingsManager = settings;
         Icon = Icons.CalculatorIcon;
