@@ -156,4 +156,154 @@
   <data name="RemappingsPage_NewKeys" xml:space="preserve">
     <value>New key(s)</value>
   </data>
+  <data name="TextPage_Instruction" xml:space="preserve">
+    <value>Text shortcuts allow you to insert text in any input field when you use the configured keyboard shortcut</value>
+  </data>
+  <data name="TextPage_NewText" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="TextPage_OriginalKeys" xml:space="preserve">
+    <value>Original key(s)</value>
+  </data>
+  <data name="TextPage_ApplicableApps" xml:space="preserve">
+    <value>Applicable apps</value>
+  </data>
+  <data name="TextPage_Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="TextPage_DeleteTip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="TextPage_KeyDialogTitle" xml:space="preserve">
+    <value>Text shortcut</value>
+  </data>
+  <data name="TextPage_KeyDialogPrimary" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="TextPage_KeyDialogSecondary" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="TextPage_ValidationTipClose" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ProgramsPage_Instruction" xml:space="preserve">
+    <value>Program shortcuts allow you to open specific applications when you use the configured shortcut</value>
+  </data>
+  <data name="ProgramsPage_KeyDialogTitle" xml:space="preserve">
+    <value>New program shortcut</value>
+  </data>
+  <data name="ProgramsPage_ExampleKey1" xml:space="preserve">
+    <value>Win (Left)</value>
+  </data>
+  <data name="ProgramsPage_ExampleKey2" xml:space="preserve">
+    <value>T</value>
+  </data>
+  <data name="ProgramsPage_ExampleHeader" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="ProgramsPage_ExampleApp" xml:space="preserve">
+    <value>WindowsTerminal.exe</value>
+  </data>
+  <data name="ProgramsPage_New" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="ProgramsPage_Shortcut" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="ProgramsPage_Program" xml:space="preserve">
+    <value>Program</value>
+  </data>
+  <data name="ProgramsPage_Arguments" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="ProgramsPage_Args" xml:space="preserve">
+    <value>-config json</value>
+  </data>
+  <data name="ProgramsPage_StartDir" xml:space="preserve">
+    <value>Starting directory:</value>
+  </data>
+  <data name="ProgramsPage_StartDirVal" xml:space="preserve">
+    <value>C:\Users\Dev\PowerToys\bin</value>
+  </data>
+  <data name="ProgramsPage_LaunchState" xml:space="preserve">
+    <value>Launch state:</value>
+  </data>
+  <data name="ProgramsPage_LaunchStateVal" xml:space="preserve">
+    <value>Minimized</value>
+  </data>
+  <data name="ProgramsPage_KeyDialogPrimary" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ProgramsPage_KeyDialogSecondary" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ProgramsPage_KeyDialogStartHeader" xml:space="preserve">
+    <value>Start in directory</value>
+  </data>
+  <data name="ProgramsPage_KeyDialogStartVal" xml:space="preserve">
+    <value>C:\Program Files\WindowsApps\Microsoft.WindowsTerminal_1.21.10351.0_x64__8wekyb3d8bbwe</value>
+  </data>
+  <data name="ProgramsPage_KeyDialogLaunchHeader" xml:space="preserve">
+    <value>Launch state</value>
+  </data>
+  <data name="ProgramsPage_KeyDialogLaunchShow" xml:space="preserve">
+    <value>Show window</value>
+  </data>
+  <data name="UrlPage_Instruction" xml:space="preserve">
+    <value>URL shortcuts allow you to open a URL when you use the configured shortcut</value>
+  </data>
+  <data name="UrlPage_New" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="UrlPage_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="UrlPage_Shortcut" xml:space="preserve">
+    <value>Shortcut</value>
+  </data>
+  <data name="UrlPage_KeyDialogTitle" xml:space="preserve">
+    <value>New URL shortcut</value>
+  </data>
+  <data name="UrlPage_WinLeft" xml:space="preserve">
+    <value>Win (Left)</value>
+  </data>
+  <data name="UrlPage_B" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="UrlPage_KeyDialogPrimary" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="UrlPage_KeyDialogSecondary" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="UrlPage_UrlHeader" xml:space="preserve">
+    <value>URL to open</value>
+  </data>
+  <data name="UrlPage_UrlVal" xml:space="preserve">
+    <value>https://www.bing.com</value>
+  </data>
+  <data name="InputControl_OriginalKeys" xml:space="preserve">
+    <value>Original key(s)</value>
+  </data>
+  <data name="InputControl_NewKeys" xml:space="preserve">
+    <value>New key(s)</value>
+  </data>
+  <data name="InputControl_AllAppsCheckboxText" xml:space="preserve">
+    <value>Only apply this remapping to a specific application</value>
+  </data>
+  <data name="InputControl_AllAppsTextboxPlaceholder" xml:space="preserve">
+    <value>e.g.: outlook.exe</value>
+  </data>
+  <data name="InputControl_AllAppsTextboxHeader" xml:space="preserve">
+    <value>Application name</value>
+  </data>
+  <data name="TextPageInputControl_ShortcutKeys" xml:space="preserve">
+    <value>Shortcut key(s)</value>
+  </data>
+  <data name="TextPageInputControl_TextContentBoxPlaceholder" xml:space="preserve">
+    <value>Enter text that will be inserted when the shortcut is pressed</value>
+  </data>
+  <data name="TextPageInputControl_TextContentBoxHeader" xml:space="preserve">
+    <value>Text to insert</value>
+  </data>
 </root>

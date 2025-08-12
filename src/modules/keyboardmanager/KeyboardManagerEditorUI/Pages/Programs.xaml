@@ -14,7 +14,7 @@
         <StackPanel Orientation="Vertical" Spacing="12">
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Program shortcuts allow you to open specific applications when you use the configured shortcut"
+                Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Instruction')}"
                 TextWrapping="Wrap" />
             <Button
                 x:Name="NewShortcutBtn"
@@ -26,7 +26,9 @@
                         FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
-                    <TextBlock VerticalAlignment="Center" Text="New" />
+                    <TextBlock 
+                        VerticalAlignment="Center" 
+                        Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_New')}" />
                 </StackPanel>
             </Button>
             <Grid
@@ -50,7 +52,7 @@
                     Margin="16,-2,0,0"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Shortcut" />
+                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Shortcut')}" />
                 <AppBarSeparator
                     Grid.Column="1"
                     Margin="-6,4,0,4"
@@ -61,7 +63,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Program" />
+                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Program')}" />
                 <Rectangle
                     Grid.ColumnSpan="4"
                     Height="1"
@@ -114,7 +116,7 @@
                                     Grid.Column="1"
                                     Orientation="Horizontal"
                                     Spacing="8">
-                                    <TextBlock VerticalAlignment="Center" Text="WindowsTerminal.exe" />
+                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleApp')}" />
                                     <FontIcon
                                         VerticalAlignment="Center"
                                         FontSize="14"
@@ -122,14 +124,14 @@
                                         Glyph="&#xE946;">
                                         <ToolTipService.ToolTip>
                                             <TextBlock>
-                                                <Run FontWeight="SemiBold" Text="Arguments:" />
-                                                <Run Text="-config json" />
+                                                <Run FontWeight="SemiBold" Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Arguments')}" />
+                                                <Run Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Args')}" />
                                                 <LineBreak />
-                                                <Run FontWeight="SemiBold" Text="Starting directory:" />
-                                                <Run Text="C:\Users\Dev\PowerToys\bin" />
+                                                <Run FontWeight="SemiBold" Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_StartDir')}" />
+                                                <Run Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_StartDirVal')}" />
                                                 <LineBreak />
-                                                <Run FontWeight="SemiBold" Text="Launch state:" />
-                                                <Run Text="Minimized" />
+                                                <Run FontWeight="SemiBold" Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_LaunchState')}" />
+                                                <Run Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_LaunchStateVal')}" />
                                             </TextBlock>
                                         </ToolTipService.ToolTip>
                                     </FontIcon>
@@ -149,15 +151,15 @@
         </StackPanel>
         <ContentDialog
             x:Name="KeyDialog"
-            Title="New program shortcut"
+            Title="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogTitle')}"
             Width="480"
             MinWidth="600"
             MaxWidth="600"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-            PrimaryButtonText="Save"
-            SecondaryButtonText="Cancel">
+            PrimaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogPrimary')}"
+            SecondaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogSecondary')}">
             <StackPanel Width="480" Orientation="Vertical">
-                <TextBlock Margin="0,12,0,8" Text="Shortcut" />
+                <TextBlock Margin="0,12,0,8" Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Shortcut')}" />
                 <ToggleButton
                     x:Name="OriginalToggleBtn"
                     Padding="0,24,0,24"
@@ -165,8 +167,8 @@
                     Style="{StaticResource CustomShortcutToggleButtonStyle}">
                     <ToggleButton.Content>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <styles:KeyVisual Content="Win (Left)" VisualType="SmallOutline" />
-                            <styles:KeyVisual Content="T" VisualType="SmallOutline" />
+                            <styles:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleKey1')}" VisualType="SmallOutline" />
+                            <styles:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleKey2')}" VisualType="SmallOutline" />
                         </StackPanel>
                     </ToggleButton.Content>
                 </ToggleButton>
@@ -185,7 +187,9 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBox Header="Application" Text="WindowsTerminal.exe" />
+                    <TextBox 
+                        Header="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleHeader')}"
+                        Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleApp')}" />
                     <Button
                         Grid.Column="1"
                         Height="32"
@@ -194,12 +198,12 @@
                     </Button>
                     <TextBox
                         Grid.Row="1"
-                        Header="Arguments"
-                        Text="-config" />
+                        Header="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Arguments')}"
+                        Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_Args')}" />
                     <TextBox
                         Grid.Row="2"
-                        Header="Start in directory"
-                        Text="C:\Program Files\WindowsApps\Microsoft.WindowsTerminal_1.21.10351.0_x64__8wekyb3d8bbwe" />
+                        Header="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogStartHeader')}"
+                        Text="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogStartVal')}" />
                     <Button
                         Grid.Row="2"
                         Grid.Column="1"
@@ -209,10 +213,10 @@
                     </Button>
                     <ComboBox
                         Grid.Row="3"
-                        Header="Launch state"
+                        Header="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogLaunchHeader')}"
                         SelectedIndex="0">
-                        <ComboBoxItem Content="Show window" />
-                        <ComboBoxItem Content="Minimized" />
+                        <ComboBoxItem Content="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_KeyDialogLaunchShow')}" />
+                        <ComboBoxItem Content="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_LaunchStateVal')}" />
                     </ComboBox>
                 </Grid>
             </StackPanel>

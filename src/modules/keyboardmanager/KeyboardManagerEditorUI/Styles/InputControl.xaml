@@ -6,7 +6,8 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:KeyboardManagerEditorUI.Styles"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
@@ -22,9 +23,9 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Margin="0,12,0,0" Text="Original key(s)" />
+            <TextBlock Margin="0,12,0,0" Text="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_OriginalKeys')}" />
             <Grid Grid.Column="2">
-                <TextBlock Margin="0,12,0,0" Text="New key(s)" />
+                <TextBlock Margin="0,12,0,0" Text="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_NewKeys')}" />
             </Grid>
             <Grid Grid.Row="1" Margin="0,8,0,0">
                 <ToggleButton
@@ -90,11 +91,11 @@
         <CheckBox
             x:Name="AllAppsCheckBox"
             Margin="0,24,0,12"
-            Content="Only apply this remapping to a specific application" />
+            Content="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_AllAppsCheckboxText')}" />
         <TextBox
             x:Name="AppNameTextBox"
-            Header="Application name"
+            Header="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_AllAppsTextboxHeader')}"
             IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}"
-            PlaceholderText="e.g.: outlook.exe" />
+            PlaceholderText="{x:Bind helper:ResourceLoaderInstance.GetString('InputControl_AllAppsTextboxPlaceholder')}" />
     </StackPanel>
 </UserControl>

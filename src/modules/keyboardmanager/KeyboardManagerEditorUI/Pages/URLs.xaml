@@ -14,7 +14,7 @@
         <StackPanel Orientation="Vertical" Spacing="12">
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="URL shortcuts allow you to open a URL when you use the configured shortcut"
+                Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_Instruction')}"
                 TextWrapping="Wrap" />
             <Button
                 x:Name="NewShortcutBtn"
@@ -26,7 +26,7 @@
                         FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
-                    <TextBlock VerticalAlignment="Center" Text="New" />
+                    <TextBlock VerticalAlignment="Center" Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_New')}" />
                 </StackPanel>
             </Button>
 
@@ -51,7 +51,7 @@
                     Margin="16,-2,0,0"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Shortcut" />
+                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_Shortcut')}" />
                 <AppBarSeparator
                     Grid.Column="1"
                     Margin="-6,4,0,4"
@@ -62,7 +62,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="URL" />
+                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_Url')}" />
                 <Rectangle
                     Grid.ColumnSpan="4"
                     Height="1"
@@ -130,19 +130,19 @@
         </StackPanel>
         <ContentDialog
             x:Name="KeyDialog"
-            Title="New URL shortcut"
+            Title="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_KeyDialogTitle')}"
             Width="480"
             Height="360"
             MinWidth="600"
             MaxWidth="600"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-            PrimaryButtonText="Save"
-            SecondaryButtonText="Cancel">
+            PrimaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_KeyDialogPrimary')}"
+            SecondaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_KeyDialogSecondary')}">
             <StackPanel
                 Width="320"
                 Height="264"
                 Orientation="Vertical">
-                <TextBlock Margin="0,12,0,8" Text="Shortcut" />
+                <TextBlock Margin="0,12,0,8" Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_Shortcut')}" />
                 <ToggleButton
                     x:Name="OriginalToggleBtn"
                     Padding="0,24,0,24"
@@ -150,15 +150,15 @@
                     Style="{StaticResource CustomShortcutToggleButtonStyle}">
                     <ToggleButton.Content>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <styles:KeyVisual Content="Win (Left)" VisualType="SmallOutline" />
-                            <styles:KeyVisual Content="B" VisualType="SmallOutline" />
+                            <styles:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_WinLeft')}" VisualType="SmallOutline" />
+                            <styles:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_B')}" VisualType="SmallOutline" />
                         </StackPanel>
                     </ToggleButton.Content>
                 </ToggleButton>
                 <TextBox
                     Margin="0,24,0,0"
-                    Header="URL to open"
-                    Text="https://www.bing.com" />
+                    Header="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_UrlHeader')}"
+                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_UrlVal')}" />
             </StackPanel>
         </ContentDialog>
     </Grid>

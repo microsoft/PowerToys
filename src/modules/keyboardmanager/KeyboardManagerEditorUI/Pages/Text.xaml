@@ -15,7 +15,7 @@
         <StackPanel Orientation="Vertical" Spacing="12">
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Text shortcuts allow you to insert text in any input field when you use the configured keyboard shortcut"
+                Text="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_Instruction')}"
                 TextWrapping="Wrap" />
             <Button
                 x:Name="NewShortcutBtn"
@@ -27,7 +27,7 @@
                         FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
-                    <TextBlock VerticalAlignment="Center" Text="New" />
+                    <TextBlock VerticalAlignment="Center" Text="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_NewText')}" />
                 </StackPanel>
             </Button>
             <Grid
@@ -51,7 +51,7 @@
                     Margin="16,-2,0,0"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Original key(s)" />
+                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_OriginalKeys')}" />
                 <AppBarSeparator
                     Grid.Column="1"
                     Margin="-6,4,0,4"
@@ -62,7 +62,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Text" />
+                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_Text')}" />
                 <AppBarSeparator
                     Grid.Column="2"
                     Margin="-6,4,0,4"
@@ -73,7 +73,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Applicable apps" />
+                    Text="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_ApplicableApps')}" />
 
                 <Rectangle
                     Grid.Row="0"
@@ -164,7 +164,7 @@
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Click="DeleteButton_Click"
-                                    ToolTipService.ToolTip="Delete">
+                                    ToolTipService.ToolTip="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_DeleteTip')}">
                                     <FontIcon
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                                         FontSize="16"
@@ -180,15 +180,15 @@
 
         <ContentDialog
             x:Name="KeyDialog"
-            Title="Text Shortcut"
+            Title="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_KeyDialogTitle')}"
             Width="480"
             Height="360"
             MinWidth="600"
             MaxWidth="600"
             PrimaryButtonClick="KeyDialog_PrimaryButtonClick"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-            PrimaryButtonText="Save"
-            SecondaryButtonText="Cancel">
+            PrimaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_KeyDialogPrimary')}"
+            SecondaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_KeyDialogSecondary')}">
             <Grid>
                 <styles:TextPageInputControl x:Name="TextInputControl" />
             </Grid>
@@ -196,7 +196,7 @@
 
         <TeachingTip
             x:Name="ValidationTip"
-            CloseButtonContent="OK"
+            CloseButtonContent="{x:Bind helper:ResourceLoaderInstance.GetString('TextPage_ValidationTipClose')}"
             IsLightDismissEnabled="True"
             PreferredPlacement="Center">
             <TeachingTip.IconSource>
