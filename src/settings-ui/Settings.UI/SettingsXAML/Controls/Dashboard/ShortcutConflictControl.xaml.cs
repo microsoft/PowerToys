@@ -62,10 +62,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 var count = ConflictCount;
                 return count switch
                 {
-                    // Todo: localization support
-                    0 => "No conflicts found",
-                    1 => "1 conflict found",
-                    _ => $"{count} conflicts found",
+                    0 => ResourceLoader.GetString("ShortcutConflictControl_NoConflictsFound"),
+                    1 => ResourceLoader.GetString("ShortcutConflictControl_SingleConflictFound"),
+                    _ => string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        ResourceLoader.GetString("ShortcutConflictControl_MultipleConflictsFound"),
+                        count),
                 };
             }
         }

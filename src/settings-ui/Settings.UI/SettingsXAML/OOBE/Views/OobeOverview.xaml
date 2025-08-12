@@ -37,6 +37,28 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind EnableDataDiagnostics, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
+                    <TextBlock
+                        x:Uid="Oobe_Overview_Hotkey_Conflict_Title"
+                        Margin="0,20,0,0"
+                        Style="{StaticResource SubtitleTextBlockStyle}"
+                        Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <TextBlock 
+                        x:Uid="Oobe_Overview_Hotkey_Conflict_Desc" 
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    
+                    <tkcontrols:SettingsCard
+                        Description="Shortcuts configured by PowerToys are conflicting"
+                        Header="{x:Bind ConflictText, Mode=OneWay}"
+                        Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <tkcontrols:SettingsCard.HeaderIcon>
+                            <FontIcon 
+                                Glyph="&#xE814;" 
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                        </tkcontrols:SettingsCard.HeaderIcon>
+                        <Button x:Uid="ResolveConflicts_Button" Click="ShortcutConflictBtn_Click" />
+                    </tkcontrols:SettingsCard>
+
                     <HyperlinkButton
                         x:Uid="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link"
                         Margin="-8,0,0,0"

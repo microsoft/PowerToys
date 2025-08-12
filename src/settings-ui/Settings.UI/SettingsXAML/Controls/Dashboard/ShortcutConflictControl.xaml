@@ -21,7 +21,7 @@
                     Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                     Glyph="&#xE814;" />
                 <StackPanel Grid.Column="1" Orientation="Vertical">
-                    <TextBlock FontWeight="SemiBold" Text="Shortcut conflicts" />
+                    <TextBlock x:Uid="ShortcutConflictControl_Title" FontWeight="SemiBold" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Style="{StaticResource CaptionTextBlockStyle}"
