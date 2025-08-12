@@ -6,14 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
+using System.Windows;
 using System.Windows.Threading;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -25,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private AllHotkeyConflictsData _conflictsData = new();
         private ObservableCollection<HotkeyConflictGroupData> _conflictItems = new();
+        private ResourceLoader resourceLoader;
 
         public ShortcutConflictViewModel(
             ISettingsUtils settingsUtils,
@@ -32,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Func<string, int> ipcMSGCallBackFunc)
         {
             _dispatcher = Dispatcher.CurrentDispatcher;
+            resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
             // Create ViewModelFactory with all necessary dependencies
             _viewModelFactory = new ViewModelFactory(
@@ -138,10 +144,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void SetupModuleData(ModuleHotkeyData module, bool isSystemConflict)
         {
+            var viewModel = GetOrCreateViewModel(GetModuleKey(module.ModuleName));
+            var hotkeyAccessor = HotkeyAccessorHelper.GetHotkeyAccessor(viewModel, module.ModuleName, module.HotkeyID);
+            var headerKey = HotkeyAccessorHelper.GetHotkeyLocalizationHeaderKey(hotkeyAccessor);
             module.PropertyChanged += OnModuleHotkeyDataPropertyChanged;
-            module.HotkeySettings = GetHotkeySettingsFromViewModel(module.ModuleName, module.HotkeyID);
-            module.Header = LocalizationHelper.GetLocalizedHotkeyHeader(module.ModuleName, module.HotkeyID);
+
+            module.HotkeySettings = HotkeyAccessorHelper.GetHotkeySettings(hotkeyAccessor);
+            module.Header = GetHotkeyLocalizationHeader(module.ModuleName, module.HotkeyID, headerKey);
             module.IsSystemConflict = isSystemConflict;
+
+            var moduleType = ModuleNames.ToModuleType(module.ModuleName);
+            if (moduleType.HasValue)
+            {
+                var displayName = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType.Value));
+                module.DisplayName = displayName;
+                module.IconPath = ModuleHelper.GetModuleTypeFluentIconName(moduleType.Value);
+            }
 
             if (module.HotkeySettings != null)
             {
@@ -179,12 +197,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private HotkeySettings GetHotkeySettingsFromViewModel(string moduleName, int hotkeyID)
+        private string GetHotkeyLocalizationHeader(string moduleName, int hotkeyID, string headerKey)
         {
+            // Handle AdvancedPaste custom actions
+            if (string.Equals(moduleName, ModuleNames.AdvancedPaste, StringComparison.OrdinalIgnoreCase)
+                && hotkeyID > 9)
+            {
+                return headerKey;
+            }
+
             try
             {
-                var viewModel = GetOrCreateViewModel(GetModuleKey(moduleName));
-                return HotkeyAccessorHelper.GetHotkeySettings(viewModel, moduleName, hotkeyID);
+                return resourceLoader.GetString($"{headerKey}/Header");
             }
             catch (Exception ex)
             {

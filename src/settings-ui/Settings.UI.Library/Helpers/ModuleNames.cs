@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
 {
@@ -75,6 +76,32 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
         };
 
         /// <summary>
+        /// Module name to ModuleType mapping for conversion
+        /// </summary>
+        private static readonly Dictionary<string, ModuleType> ModuleNameToTypeMapping = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { AdvancedPaste, ModuleType.AdvancedPaste },
+            { AlwaysOnTop, ModuleType.AlwaysOnTop },
+            { CmdPal, ModuleType.CmdPal },
+            { ColorPicker, ModuleType.ColorPicker },
+            { CropAndLock, ModuleType.CropAndLock },
+            { FancyZones, ModuleType.FancyZones },
+            { FindMyMouse, ModuleType.FindMyMouse },
+            { MeasureTool, ModuleType.MeasureTool },
+            { MouseHighlighter, ModuleType.MouseHighlighter },
+            { MouseJump, ModuleType.MouseJump },
+            { MousePointerCrosshairs, ModuleType.MousePointerCrosshairs },
+            { MouseWithoutBorders, ModuleType.MouseWithoutBorders },
+            { Peek, ModuleType.Peek },
+            { PowerLauncher, ModuleType.PowerLauncher },
+            { PowerOcr, ModuleType.PowerOCR },
+            { ShortcutGuide, ModuleType.ShortcutGuide },
+            { TextExtractor, ModuleType.PowerOCR },
+            { Workspaces, ModuleType.Workspaces },
+            { ZoomIt, ModuleType.ZoomIt },
+        };
+
+        /// <summary>
         /// Gets the module key used for ViewModel factories and internal routing
         /// </summary>
         public static string GetModuleKey(string moduleName)
@@ -95,6 +122,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
         public static bool IsMouseUtilsModule(string moduleName)
         {
             return MouseUtilsModules.Contains(moduleName?.ToLowerInvariant());
+        }
+
+        /// <summary>
+        /// Converts a module name string to the corresponding ManagedCommon.ModuleType enum value
+        /// </summary>
+        /// <param name="moduleName">The module name to convert</param>
+        /// <returns>The corresponding ModuleType enum value, or null if no match is found</returns>
+        public static ModuleType? ToModuleType(string moduleName)
+        {
+            if (string.IsNullOrEmpty(moduleName))
+            {
+                return null;
+            }
+
+            return ModuleNameToTypeMapping.TryGetValue(moduleName.Trim(), out var moduleType)
+                ? moduleType
+                : null;
         }
     }
 }

@@ -552,16 +552,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new HotkeyAccessor(
                     () => ToggleEasyMouseShortcut,
-                    value => ToggleEasyMouseShortcut = value),
+                    value => ToggleEasyMouseShortcut = value,
+                    "MouseWithoutBorders_ToggleEasyMouseShortcut"),
                 new HotkeyAccessor(
                     () => LockMachinesShortcut,
-                    value => LockMachinesShortcut = value),
+                    value => LockMachinesShortcut = value,
+                    "MouseWithoutBorders_LockMachinesShortcut"),
                 new HotkeyAccessor(
                     () => HotKeySwitch2AllPC,
-                    value => HotKeySwitch2AllPC = value),
+                    value => HotKeySwitch2AllPC = value,
+                    "MouseWithoutBorders_Switch2AllPcShortcut"),
                 new HotkeyAccessor(
                     () => ReconnectShortcut,
-                    value => ReconnectShortcut = value),
+                    value => ReconnectShortcut = value,
+                    "MouseWithoutBorders_ReconnectShortcut"),
             };
 
             var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>

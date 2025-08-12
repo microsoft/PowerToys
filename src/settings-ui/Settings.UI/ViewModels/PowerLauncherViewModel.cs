@@ -131,7 +131,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new HotkeyAccessor(
                     () => OpenPowerLauncher,
-                    value => OpenPowerLauncher = value),
+                    value => OpenPowerLauncher = value,
+                    "PowerLauncher_OpenPowerLauncher"),
             };
 
             var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>

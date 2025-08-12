@@ -112,7 +112,7 @@
                                             <tkcontrols:SettingsCard
                                                 Margin="0,0,0,4"
                                                 Click="SettingsCard_Click"
-                                                Description="{x:Bind ModuleName}"
+                                                Description="{x:Bind DisplayName}"
                                                 Header="{x:Bind Header}"
                                                 IsClickEnabled="True">
                                                 <tkcontrols:SettingsCard.HeaderIcon>

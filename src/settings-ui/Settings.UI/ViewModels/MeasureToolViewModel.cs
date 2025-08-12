@@ -68,7 +68,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new HotkeyAccessor(
                     () => ActivationShortcut,
-                    value => ActivationShortcut = value),
+                    value => ActivationShortcut = value,
+                    "MeasureTool_ActivationShortcut"),
             };
 
             var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>

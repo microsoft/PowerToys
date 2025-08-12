@@ -75,10 +75,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new HotkeyAccessor(
                     () => ReparentActivationShortcut,
-                    value => ReparentActivationShortcut = value),
+                    value => ReparentActivationShortcut = value,
+                    "CropAndLock_ReparentActivation_Shortcut"),
                 new HotkeyAccessor(
                     () => ThumbnailActivationShortcut,
-                    value => ThumbnailActivationShortcut = value),
+                    value => ThumbnailActivationShortcut = value,
+                    "CropAndLock_ThumbnailActivation_Shortcut"),
             };
 
             var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>

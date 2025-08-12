@@ -160,19 +160,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 [FindMyMouseSettings.ModuleName] = [
                     new HotkeyAccessor(
                         () => FindMyMouseActivationShortcut,
-                        value => FindMyMouseActivationShortcut = value),],
+                        value => FindMyMouseActivationShortcut = value,
+                        "MouseUtils_FindMyMouse_ActivationShortcut"),],
                 [MouseHighlighterSettings.ModuleName] = [
                     new HotkeyAccessor(
                         () => MouseHighlighterActivationShortcut,
-                        value => MouseHighlighterActivationShortcut = value),],
+                        value => MouseHighlighterActivationShortcut = value,
+                        "MouseUtils_MouseHighlighter_ActivationShortcut"),],
                 [MousePointerCrosshairsSettings.ModuleName] = [
                     new HotkeyAccessor(
                         () => MousePointerCrosshairsActivationShortcut,
-                        value => MousePointerCrosshairsActivationShortcut = value),],
+                        value => MousePointerCrosshairsActivationShortcut = value,
+                        "MouseUtils_MousePointerCrosshairs_ActivationShortcut"),],
                 [MouseJumpSettings.ModuleName] = [
                     new HotkeyAccessor(
                         () => MouseJumpActivationShortcut,
-                        value => MouseJumpActivationShortcut = value),],
+                        value => MouseJumpActivationShortcut = value,
+                        "MouseUtils_MouseJump_ActivationShortcut"),],
             };
 
             return hotkeysDict;

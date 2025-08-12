@@ -17,10 +17,11 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public Action<HotkeySettings> Setter { get; }
 
-        public HotkeyAccessor(Func<HotkeySettings> getter, Action<HotkeySettings> setter)
+        public HotkeyAccessor(Func<HotkeySettings> getter, Action<HotkeySettings> setter, string localizationHeaderKey = "")
         {
             Getter = getter ?? throw new ArgumentNullException(nameof(getter));
             Setter = setter ?? throw new ArgumentNullException(nameof(setter));
+            LocalizationHeaderKey = localizationHeaderKey;
         }
 
         public HotkeySettings Value
@@ -28,5 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             get => Getter();
             set => Setter(value);
         }
+
+        public string LocalizationHeaderKey { get; set; }
     }
 }

@@ -37,9 +37,6 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
             this.Activated += Window_Activated_SetIcon;
 
-            // Set up the custom action name delegate for LocalizationHelper
-            LocalizationHelper.GetCustomActionNameDelegate = GetCustomActionName;
-
             // Set localized window title
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             this.ExtendsContentIntoTitleBar = true;
@@ -80,25 +77,8 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             }
         }
 
-        /// <summary>
-        /// Gets the custom action name for AdvancedPaste
-        /// </summary>
-        /// <param name="moduleName">The module name</param>
-        /// <param name="actionId">The custom action ID</param>
-        /// <returns>The custom action name, or null if not found</returns>
-        private string GetCustomActionName(string moduleName, int actionId)
-        {
-            if (!moduleName.Equals(ModuleNames.AdvancedPaste, StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
-
-            return ViewModel?.GetAdvancedPasteCustomActionName(actionId);
-        }
-
         private void WindowEx_Closed(object sender, WindowEventArgs args)
         {
-            LocalizationHelper.GetCustomActionNameDelegate = null;
             ViewModel?.Dispose();
         }
 

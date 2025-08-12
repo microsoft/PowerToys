@@ -86,7 +86,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new HotkeyAccessor(
                     () => OpenShortcutGuide,
-                    value => OpenShortcutGuide = value),
+                    value => OpenShortcutGuide = value,
+                    "Activation_Shortcut"),
             };
 
             var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>

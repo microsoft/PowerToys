@@ -18,7 +18,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public string IconPath => GetModuleIconPath(ModuleName);
+        public string IconPath { get; set; }
+
+        public string DisplayName { get; set; }
 
         public string Header { get; set; }
 
@@ -74,32 +76,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
                     _isSystemConflict = value;
                 }
             }
-        }
-
-        private static string GetModuleIconPath(string moduleName)
-        {
-            return moduleName?.ToLowerInvariant() switch
-            {
-                ModuleNames.AdvancedPaste => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
-                ModuleNames.AlwaysOnTop => "ms-appx:///Assets/Settings/Icons/AlwaysOnTop.png",
-                ModuleNames.CmdPal => "ms-appx:///Assets/Settings/Icons/CmdPal.png",
-                ModuleNames.ColorPicker => "ms-appx:///Assets/Settings/Icons/ColorPicker.png",
-                ModuleNames.CropAndLock => "ms-appx:///Assets/Settings/Icons/CropAndLock.png",
-                ModuleNames.FancyZones => "ms-appx:///Assets/Settings/Icons/FancyZones.png",
-                ModuleNames.FindMyMouse => "ms-appx:///Assets/Settings/Icons/FindMyMouse.png",
-                ModuleNames.MeasureTool => "ms-appx:///Assets/Settings/Icons/ScreenRuler.png",
-                ModuleNames.MouseHighlighter => "ms-appx:///Assets/Settings/Icons/MouseHighlighter.png",
-                ModuleNames.MouseJump => "ms-appx:///Assets/Settings/Icons/MouseJump.png",
-                ModuleNames.MousePointerCrosshairs => "ms-appx:///Assets/Settings/Icons/MouseCrosshairs.png",
-                ModuleNames.MouseWithoutBorders => "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png",
-                ModuleNames.Peek => "ms-appx:///Assets/Settings/Icons/Peek.png",
-                ModuleNames.PowerLauncher => "ms-appx:///Assets/Settings/Icons/PowerToysRun.png",
-                ModuleNames.ShortcutGuide => "ms-appx:///Assets/Settings/Icons/ShortcutGuide.png",
-                ModuleNames.TextExtractor => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
-                ModuleNames.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
-                ModuleNames.ZoomIt => "ms-appx:///Assets/Settings/Icons/ZoomIt.png",
-                _ => "ms-appx:///Assets/Settings/Icons/PowerToys.png",
-            };
         }
     }
 }

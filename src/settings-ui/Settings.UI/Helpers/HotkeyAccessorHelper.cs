@@ -15,10 +15,20 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     /// </summary>
     public static class HotkeyAccessorHelper
     {
+        /// <summary>Gets hotkey settings from a ViewModel using the standardized accessor pattern</summary>
+        public static HotkeySettings GetHotkeySettings(HotkeyAccessor accessor) => accessor?.Value;
+
+        /// <summary>Gets the localization header key for a hotkey</summary>
+        public static string GetHotkeyLocalizationHeaderKey(HotkeyAccessor accessor) => accessor?.LocalizationHeaderKey;
+
         /// <summary>
-        /// Gets hotkey settings from a ViewModel using the standardized accessor pattern
+        /// Retrieves a HotkeyAccessor for a specific module and hotkey ID from a ViewModel.
         /// </summary>
-        public static HotkeySettings GetHotkeySettings(PageViewModelBase viewModel, string moduleName, int hotkeyID)
+        /// <param name="viewModel">The PageViewModelBase containing hotkey settings</param>
+        /// <param name="moduleName">The name of the module to get the hotkey accessor for</param>
+        /// <param name="hotkeyID">The index of the hotkey within the module's collection</param>
+        /// <returns>The HotkeyAccessor if found</returns>
+        public static HotkeyAccessor GetHotkeyAccessor(PageViewModelBase viewModel, string moduleName, int hotkeyID)
         {
             var hotkeyAccessors = viewModel?.GetAllHotkeyAccessors();
             if (hotkeyAccessors == null)
@@ -32,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
             if (kvp.Key != null && hotkeyID >= 0 && hotkeyID < kvp.Value.Length)
             {
-                return kvp.Value[hotkeyID].Value;
+                return kvp.Value[hotkeyID];
             }
 
             return null;
