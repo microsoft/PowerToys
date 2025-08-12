@@ -3,63 +3,112 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+using System.Diagnostics;
 using PowerToys.DSC.Options;
 using PowerToys.DSC.Resources;
 
 namespace PowerToys.DSC.Commands;
 
+/// <summary>
+/// Base class for all DSC commands.
+/// </summary>
 internal abstract class BaseCommand : Command
 {
+    // Shared options for all commands
     private readonly ModuleOption _moduleOption;
     private readonly ResourceOption _resourceOption;
     private readonly InputOption _inputOption;
 
+    /// <summary>
+    /// Gets the DSC resource to be used by the command.
+    /// </summary>
     protected BaseResource? Resource { get; private set; }
 
+    /// <summary>
+    /// Gets the input JSON provided by the user.
+    /// </summary>
     protected string? Input { get; private set; }
 
+    /// <summary>
+    /// Get the PowerToys module to be used by the command.
+    /// </summary>
     protected string? Module { get; private set; }
+
+    /// <summary>
+    /// The dictionary of available resources and their factories.
+    /// </summary>
+    private readonly Dictionary<string, Func<string?, BaseResource>> _resourceFactories;
 
     public BaseCommand(string name, string description)
         : base(name, description)
     {
+        // Register the resources available.
+        _resourceFactories = new()
+        {
+            { SettingsResource.ResourceName, module => new SettingsResource(module) },
+
+            // Add other resources here
+        };
+
+        // Register the common options for all commands
         _moduleOption = new ModuleOption();
         AddOption(_moduleOption);
 
-        _resourceOption = new ResourceOption();
+        _resourceOption = new ResourceOption([.. _resourceFactories.Keys]);
         AddOption(_resourceOption);
 
         _inputOption = new InputOption();
         AddOption(_inputOption);
 
+        // Register the command handler
         this.SetHandler(CommandHandler);
     }
 
+    /// <summary>
+    /// Handles the command invocation.
+    /// </summary>
+    /// <param name="context">The invocation context containing the parsed command options.</param>
     public void CommandHandler(InvocationContext context)
     {
-        var resourceName = context.ParseResult.GetValueForOption(_resourceOption);
-
         Input = context.ParseResult.GetValueForOption(_inputOption);
         Module = context.ParseResult.GetValueForOption(_moduleOption);
-        Resource = resourceName switch
-        {
-            SettingsResource.ResourceName => new SettingsResource(Module),
-            _ => throw new ArgumentException($"Unknown resource name: {resourceName}"),
-        };
+        Resource = ResolvedResource(context);
 
+        // Validate the module against the resource's supported modules
         var supportedModules = Resource.GetSupportedModules();
         if (!string.IsNullOrEmpty(Module) && !supportedModules.Contains(Module))
         {
-            context.Console.Error.WriteLine($"Module '{Module}' is not supported for the resource {resourceName}. Supported modules are: {string.Join(", ", supportedModules)}");
+            context.Console.Error.WriteLine($"Module '{Module}' is not supported for the resource {Resource.Name}. Supported modules are: {string.Join(", ", supportedModules)}");
             context.ExitCode = 1;
             return;
         }
 
+        // Continue with the command handler logic
         CommandHandlerInternal(context);
     }
 
+    /// <summary>
+    /// Handles the command logic internally.
+    /// </summary>
+    /// <param name="context"></param>
     public abstract void CommandHandlerInternal(InvocationContext context);
+
+    /// <summary>
+    /// Resolves the resource from the provided resource name in the context.
+    /// </summary>
+    /// <param name="context">Invocation context containing the parsed command options.</param>
+    /// <returns>The resolved <see cref="BaseResource"/> instance.</returns>
+    private BaseResource ResolvedResource(InvocationContext context)
+    {
+        // Resource option has already been validated before the command
+        // handler is invoked.
+        var resourceName = context.ParseResult.GetValueForOption(_resourceOption);
+        Debug.Assert(!string.IsNullOrEmpty(resourceName), "Resource name must not be null or empty.");
+        Debug.Assert(_resourceFactories.ContainsKey(resourceName), $"Resource '{resourceName}' is not registered.");
+        return _resourceFactories[resourceName](Module);
+    }
 }

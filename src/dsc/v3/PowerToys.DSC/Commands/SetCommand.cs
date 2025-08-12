@@ -6,6 +6,9 @@ using System.CommandLine.Invocation;
 
 namespace PowerToys.DSC.Commands;
 
+/// <summary>
+/// Command to set the resource state.
+/// </summary>
 internal sealed class SetCommand : BaseCommand
 {
     public SetCommand()
@@ -13,6 +16,7 @@ internal sealed class SetCommand : BaseCommand
     {
     }
 
+    /// <inheritdoc/>
     public override void CommandHandlerInternal(InvocationContext context)
     {
         context.ExitCode = Resource!.Set(Input) ? 0 : 1;

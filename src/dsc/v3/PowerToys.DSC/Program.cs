@@ -9,6 +9,9 @@ using PowerToys.DSC.Commands;
 
 namespace PowerToys.DSC;
 
+/// <summary>
+/// Main entry point for the PowerToys Desired State Configuration CLI application.
+/// </summary>
 public class Program
 {
     public static async Task<int> Main(string[] args)

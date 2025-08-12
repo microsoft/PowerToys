@@ -4,11 +4,13 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.Diagnostics;
 using System.IO;
 
 namespace PowerToys.DSC.Options;
 
+/// <summary>
+/// Represents an option for specifying the output directory for the dsc command.
+/// </summary>
 internal sealed class OutputDirectoryOption : Option<string>
 {
     public OutputDirectoryOption()
@@ -17,6 +19,10 @@ internal sealed class OutputDirectoryOption : Option<string>
         AddValidator(OptionValidator);
     }
 
+    /// <summary>
+    /// Validates the output directory option.
+    /// </summary>
+    /// <param name="result">The option result to validate.</param>
     private void OptionValidator(OptionResult result)
     {
         var value = result.GetValueOrDefault<string>() ?? string.Empty;

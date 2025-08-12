@@ -9,6 +9,12 @@ using System.Diagnostics;
 
 namespace PowerToys.DSC.Commands;
 
+/// <summary>
+/// Command to get all supported modules for a specific resource.
+/// </summary>
+/// <remarks>
+/// This class is primarly used for debugging purposes and for build scripts.
+/// </remarks>
 internal sealed class ModulesCommand : BaseCommand
 {
     public ModulesCommand()
@@ -16,8 +22,13 @@ internal sealed class ModulesCommand : BaseCommand
     {
     }
 
+    /// <inheritdoc/>
     public override void CommandHandlerInternal(InvocationContext context)
     {
+        // Module is optional, if not provided, all supported modules for the
+        // resource will be printed. If provided, it must be one of the
+        // supported modules since it has been validated before this command is
+        // executed.
         if (!string.IsNullOrEmpty(Module))
         {
             Debug.Assert(Resource!.GetSupportedModules().Contains(Module), "Module must be present in the list of supported modules.");

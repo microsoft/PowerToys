@@ -6,6 +6,9 @@ using System.CommandLine.Invocation;
 
 namespace PowerToys.DSC.Commands;
 
+/// <summary>
+/// Command to output the schema of the resource.
+/// </summary>
 internal sealed class SchemaCommand : BaseCommand
 {
     public SchemaCommand()
@@ -13,6 +16,7 @@ internal sealed class SchemaCommand : BaseCommand
     {
     }
 
+    /// <inheritdoc/>
     public override void CommandHandlerInternal(InvocationContext context)
     {
         context.ExitCode = Resource!.Schema() ? 0 : 1;

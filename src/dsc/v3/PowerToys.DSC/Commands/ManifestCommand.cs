@@ -7,8 +7,14 @@ using PowerToys.DSC.Options;
 
 namespace PowerToys.DSC.Commands;
 
+/// <summary>
+/// Command to get the manifest of the DSC resource.
+/// </summary>
 internal sealed class ManifestCommand : BaseCommand
 {
+    /// <summary>
+    /// Option to specify the output directory for the manifest.
+    /// </summary>
     private readonly OutputDirectoryOption _outputDirectoryOption;
 
     public ManifestCommand()
@@ -18,10 +24,10 @@ internal sealed class ManifestCommand : BaseCommand
         AddOption(_outputDirectoryOption);
     }
 
+    /// <inheritdoc/>
     public override void CommandHandlerInternal(InvocationContext context)
     {
         var outputDir = context.ParseResult.GetValueForOption(_outputDirectoryOption);
-
         context.ExitCode = Resource!.Manifest(outputDir) ? 0 : 1;
     }
 }

@@ -2,20 +2,24 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace PowerToys.DSC.Models;
+namespace PowerToys.DSC.Models.ResourceObjects;
 
+/// <summary>
+/// Base class for all resource objects.
+/// </summary>
 internal class BaseResourceObject
 {
-    private readonly JsonSerializerOptions _serializerOptions;
+    private readonly JsonSerializerOptions _options;
 
     public BaseResourceObject()
     {
-        _serializerOptions = new JsonSerializerOptions
+        _options = new()
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             WriteIndented = false,
@@ -23,11 +27,19 @@ internal class BaseResourceObject
         };
     }
 
+    /// <summary>
+    /// Gets or sets whether an instance is in the desired state.
+    /// </summary>
     [JsonPropertyName("_inDesiredState")]
+    [Description("Indicates whether an instance is in the desired state")]
     public bool? InDesiredState { get; set; }
 
+    /// <summary>
+    /// Generates a JSON representation of the resource object.
+    /// </summary>
+    /// <returns></returns>
     public JsonNode ToJson()
     {
-        return JsonSerializer.SerializeToNode(this, GetType(), _serializerOptions) ?? new JsonObject();
+        return JsonSerializer.SerializeToNode(this, GetType(), _options) ?? new JsonObject();
     }
 }

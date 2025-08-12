@@ -6,6 +6,9 @@ using System.CommandLine.Invocation;
 
 namespace PowerToys.DSC.Commands;
 
+/// <summary>
+/// Command to test the resource state.
+/// </summary>
 internal sealed class TestCommand : BaseCommand
 {
     public TestCommand()
@@ -13,6 +16,7 @@ internal sealed class TestCommand : BaseCommand
     {
     }
 
+    /// <inheritdoc/>
     public override void CommandHandlerInternal(InvocationContext context)
     {
         context.ExitCode = Resource!.Test(Input) ? 0 : 1;

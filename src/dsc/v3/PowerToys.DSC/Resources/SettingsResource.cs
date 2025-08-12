@@ -7,24 +7,28 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.Json.Nodes;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using PowerToys.DSC.Models;
+using PowerToys.DSC.Models.FunctionData;
 
 namespace PowerToys.DSC.Resources;
 
+/// <summary>
+/// Represents the DSC resource for managing PowerToys settings.
+/// </summary>
 internal sealed class SettingsResource : BaseResource
 {
     public const string AppModule = "App";
     public const string ResourceName = "settings";
+
     private readonly Dictionary<string, Func<string?, ISettingsFunctionData>> _moduleFunctionData;
 
-    public string ModuleOrDefault => Module ?? AppModule;
+    public string ModuleOrDefault => string.IsNullOrEmpty(Module) ? AppModule : Module;
 
     public SettingsResource(string? module)
-        : base(module)
+        : base(ResourceName, module)
     {
         _moduleFunctionData = new()
         {
@@ -59,19 +63,22 @@ internal sealed class SettingsResource : BaseResource
         };
     }
 
+    /// <inheritdoc/>
     public override bool Export(string? input)
     {
         var data = CreateFunctionData();
         data.Get();
-        this.WriteJsonOutputLine(data.GetOutput().ToJson());
+        WriteJsonOutputLine(data.Output.ToJson());
         return true;
     }
 
+    /// <inheritdoc/>
     public override bool Get(string? input)
     {
-        return this.Export(input);
+        return Export(input);
     }
 
+    /// <inheritdoc/>
     public override bool Set(string? input)
     {
         if (string.IsNullOrEmpty(input))
@@ -84,20 +91,22 @@ internal sealed class SettingsResource : BaseResource
         data.Get();
 
         // Capture the diff before updating the output
-        var diff = data.DiffJson();
+        var diff = data.GetDiffJson();
 
+        // Only call Set if the desired state is different from the current state
         if (!data.Test())
         {
-            var inputSettings = data.GetInput().GetSettings();
-            data.GetOutput().SetSettings(inputSettings);
+            var inputSettings = data.Input.SettingsInternal;
+            data.Output.SettingsInternal = inputSettings;
             data.Set();
         }
 
-        WriteJsonOutputLine(data.GetOutput().ToJson());
+        WriteJsonOutputLine(data.Output.ToJson());
         WriteJsonOutputLine(diff);
         return true;
     }
 
+    /// <inheritdoc/>
     public override bool Test(string? input)
     {
         if (string.IsNullOrEmpty(input))
@@ -107,15 +116,15 @@ internal sealed class SettingsResource : BaseResource
         }
 
         var data = CreateFunctionData(input);
-
         data.Get();
-        data.GetOutput().SetInDesiredState(data.Test());
+        data.Output.InDesiredState = data.Test();
 
-        this.WriteJsonOutputLine(data.GetOutput().ToJson());
-        this.WriteJsonOutputLine(data.DiffJson());
+        WriteJsonOutputLine(data.Output.ToJson());
+        WriteJsonOutputLine(data.GetDiffJson());
         return true;
     }
 
+    /// <inheritdoc/>
     public override bool Schema()
     {
         var data = CreateFunctionData();
@@ -123,7 +132,47 @@ internal sealed class SettingsResource : BaseResource
         return true;
     }
 
+    /// <inheritdoc/>
+    /// <remarks>
+    /// If an output directory is specified, write the manifests to files,
+    /// otherwise output them to the console.
+    /// </remarks>
     public override bool Manifest(string? outputDir)
+    {
+        var manifests = GenerateManifests();
+
+        if (!string.IsNullOrEmpty(outputDir))
+        {
+            try
+            {
+                foreach (var (name, manifest) in manifests)
+                {
+                    File.WriteAllText(Path.Combine(outputDir, $"microsoft.powertoys.{name}.settings.dsc.resource.json"), manifest);
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteMessageOutputLine(DscMessageLevel.Error, $"Failed to write manifests to directory '{outputDir}': {ex.Message}");
+                return false;
+            }
+        }
+        else
+        {
+            foreach (var (_, manifest) in manifests)
+            {
+                WriteJsonOutputLine(manifest);
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Generates manifests for the specified module or all supported modules
+    /// if no module is specified.
+    /// </summary>
+    /// <returns>A list of tuples containing the module name and its corresponding manifest JSON.</returns>
+    private List<(string Name, string Manifest)> GenerateManifests()
     {
         List<(string Name, string Manifest)> manifests = [];
         if (!string.IsNullOrEmpty(Module))
@@ -138,27 +187,17 @@ internal sealed class SettingsResource : BaseResource
             }
         }
 
-        if (!string.IsNullOrEmpty(outputDir))
-        {
-            foreach (var (name, manifest) in manifests)
-            {
-                File.WriteAllText(Path.Combine(outputDir, $"microsoft.powertoys.{name}.settings.dsc.resource.json"), manifest);
-            }
-        }
-        else
-        {
-            foreach (var (_, manifest) in manifests)
-            {
-                WriteJsonOutputLine(manifest);
-            }
-        }
-
-        return true;
+        return manifests;
     }
 
+    /// <summary>
+    /// Gemerate a DSC resource JSON manifest for the specified module.
+    /// </summary>
+    /// <param name="module">The name of the module for which to generate the manifest.</param>
+    /// <returns>A JSON string representing the DSC resource manifest.</returns>
     private string GenerateManifest(string module)
     {
-        return new Manifest($"{module}Settings", "0.1.0")
+        return new DscManifest($"{module}Settings", "0.1.0")
             .AddDescription($"Allows management of {module} settings state via the DSC v3 command line interface protocol.")
             .AddStdinMethod("export", ["export", "--module", module, "--resource", "settings"])
             .AddStdinMethod("get", ["get", "--module", module, "--resource", "settings"])
@@ -168,17 +207,29 @@ internal sealed class SettingsResource : BaseResource
             .ToJson();
     }
 
+    /// <inheritdoc/>
     public override IList<string> GetSupportedModules()
     {
         return [.. _moduleFunctionData.Keys.Order()];
     }
 
+    /// <summary>
+    /// Creates the function data for the specified module or the default module if none is specified.
+    /// </summary>
+    /// <param name="input">The input string, if any.</param>
+    /// <returns>An instance of <see cref="ISettingsFunctionData"/> for the specified module.</returns>
     public ISettingsFunctionData CreateFunctionData(string? input = null)
     {
         Debug.Assert(_moduleFunctionData.ContainsKey(ModuleOrDefault), "Module should be supported by the resource.");
         return _moduleFunctionData[ModuleOrDefault](input);
     }
 
+    /// <summary>
+    /// Creates the function data for a specific settings configuration type.
+    /// </summary>
+    /// <typeparam name="TSettingsConfig">The type of settings configuration to create function data for.</typeparam>
+    /// <param name="input">The input string, if any.</param>
+    /// <returns>An instance of <see cref="ISettingsFunctionData"/> for the specified settings configuration type.</returns>
     private ISettingsFunctionData CreateModuleFunctionData<TSettingsConfig>(string? input)
     where TSettingsConfig : ISettingsConfig, new()
     {

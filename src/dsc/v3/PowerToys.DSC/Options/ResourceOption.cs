@@ -9,22 +9,31 @@ using PowerToys.DSC.Resources;
 
 namespace PowerToys.DSC.Options;
 
+/// <summary>
+/// Represents an option for specifying the resource name for the dsc command.
+/// </summary>
 internal sealed class ResourceOption : Option<string>
 {
-    public ResourceOption()
+    private readonly IList<string> _resources = [];
+
+    public ResourceOption(IList<string> resources)
         : base("--resource", "The resource name")
     {
+        _resources = resources;
         IsRequired = true;
         AddValidator(OptionValidator);
     }
 
+    /// <summary>
+    /// Validates the resource option to ensure that the specified resource name is valid.
+    /// </summary>
+    /// <param name="result">The option result to validate.</param>
     private void OptionValidator(OptionResult result)
     {
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
-        List<string> validValues = [SettingsResource.ResourceName];
-        if (!validValues.Contains(value))
+        if (!_resources.Contains(value))
         {
-            result.ErrorMessage = $"Invalid resource name. Valid values are: {string.Join(", ", validValues)}";
+            result.ErrorMessage = $"Invalid resource name. Valid values are: {string.Join(", ", _resources)}";
         }
     }
 }
