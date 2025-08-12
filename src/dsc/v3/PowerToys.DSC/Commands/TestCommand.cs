@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.CommandLine.Invocation;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Commands;
 
@@ -12,7 +13,7 @@ namespace PowerToys.DSC.Commands;
 public sealed class TestCommand : BaseCommand
 {
     public TestCommand()
-        : base("test", "Test the resource state")
+        : base("test", Resources.TestCommandDescription)
     {
     }
 

@@ -5,7 +5,10 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Options;
 
@@ -14,8 +17,10 @@ namespace PowerToys.DSC.Options;
 /// </summary>
 public sealed class InputOption : Option<string>
 {
+    private static readonly CompositeFormat InvalidJsonInputError = CompositeFormat.Parse(Resources.InvalidJsonInputError);
+
     public InputOption()
-        : base("--input", "The JSON input")
+        : base("--input", Resources.InputOptionDescription)
     {
         AddValidator(OptionValidator);
     }
@@ -29,7 +34,7 @@ public sealed class InputOption : Option<string>
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
         if (string.IsNullOrEmpty(value))
         {
-            result.ErrorMessage = "Input cannot be empty.";
+            result.ErrorMessage = Resources.InputEmptyOrNullError;
         }
         else
         {
@@ -39,7 +44,7 @@ public sealed class InputOption : Option<string>
             }
             catch (Exception e)
             {
-                result.ErrorMessage = $"Invalid JSON input: {e.Message}";
+                result.ErrorMessage = string.Format(CultureInfo.InvariantCulture, InvalidJsonInputError, e.Message);
             }
         }
     }

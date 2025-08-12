@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using PowerToys.DSC.Models;
 
-namespace PowerToys.DSC.Resources;
+namespace PowerToys.DSC.DSCResources;
 
 /// <summary>
 /// Base class for all DSC resources.

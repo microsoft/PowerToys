@@ -5,7 +5,9 @@
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using PowerToys.DSC.Resources;
+using System.Globalization;
+using System.Text;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Options;
 
@@ -14,10 +16,12 @@ namespace PowerToys.DSC.Options;
 /// </summary>
 public sealed class ResourceOption : Option<string>
 {
+    private static readonly CompositeFormat InvalidResourceNameError = CompositeFormat.Parse(Resources.InvalidResourceNameError);
+
     private readonly IList<string> _resources = [];
 
     public ResourceOption(IList<string> resources)
-        : base("--resource", "The resource name")
+        : base("--resource", Resources.ResourceOptionDescription)
     {
         _resources = resources;
         IsRequired = true;
@@ -33,7 +37,7 @@ public sealed class ResourceOption : Option<string>
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
         if (!_resources.Contains(value))
         {
-            result.ErrorMessage = $"Invalid resource name. Valid values are: {string.Join(", ", _resources)}";
+            result.ErrorMessage = string.Format(CultureInfo.InvariantCulture, InvalidResourceNameError, string.Join(", ", _resources));
         }
     }
 }

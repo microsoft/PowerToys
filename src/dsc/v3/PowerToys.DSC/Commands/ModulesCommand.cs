@@ -6,6 +6,7 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Commands;
 
@@ -18,7 +19,7 @@ namespace PowerToys.DSC.Commands;
 public sealed class ModulesCommand : BaseCommand
 {
     public ModulesCommand()
-        : base("modules", "Get all supported modules for a specific resource")
+        : base("modules", Resources.ModulesCommandDescription)
     {
     }
 

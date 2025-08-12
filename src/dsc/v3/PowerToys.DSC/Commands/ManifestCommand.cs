@@ -4,6 +4,7 @@
 
 using System.CommandLine.Invocation;
 using PowerToys.DSC.Options;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Commands;
 
@@ -18,7 +19,7 @@ public sealed class ManifestCommand : BaseCommand
     private readonly OutputDirectoryOption _outputDirectoryOption;
 
     public ManifestCommand()
-        : base("manifest", "Get the manifest of the dsc resource")
+        : base("manifest", Resources.ManifestCommandDescription)
     {
         _outputDirectoryOption = new OutputDirectoryOption();
         AddOption(_outputDirectoryOption);

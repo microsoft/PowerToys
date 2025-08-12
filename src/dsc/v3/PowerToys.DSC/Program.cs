@@ -16,7 +16,7 @@ public class Program
 {
     public static async Task<int> Main(string[] args)
     {
-        var rootCommand = new RootCommand("PowerToys Desired State Configuration CLI");
+        var rootCommand = new RootCommand(Properties.Resources.PowerToysDSC);
         rootCommand.AddCommand(new GetCommand());
         rootCommand.AddCommand(new SetCommand());
         rootCommand.AddCommand(new ExportCommand());

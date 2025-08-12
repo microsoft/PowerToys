@@ -8,8 +8,11 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using PowerToys.DSC.DSCResources;
 using PowerToys.DSC.Options;
-using PowerToys.DSC.Resources;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Commands;
 
@@ -18,6 +21,8 @@ namespace PowerToys.DSC.Commands;
 /// </summary>
 public abstract class BaseCommand : Command
 {
+    private static readonly CompositeFormat ModuleNotSupportedByResource = CompositeFormat.Parse(Resources.ModuleNotSupportedByResource);
+
     // Shared options for all commands
     private readonly ModuleOption _moduleOption;
     private readonly ResourceOption _resourceOption;
@@ -82,7 +87,8 @@ public abstract class BaseCommand : Command
         var supportedModules = Resource.GetSupportedModules();
         if (!string.IsNullOrEmpty(Module) && !supportedModules.Contains(Module))
         {
-            context.Console.Error.WriteLine($"Module '{Module}' is not supported for the resource {Resource.Name}. Supported modules are: {string.Join(", ", supportedModules)}");
+            var errorMessage = string.Format(CultureInfo.InvariantCulture, ModuleNotSupportedByResource, Module, Resource.Name);
+            context.Console.Error.WriteLine(errorMessage);
             context.ExitCode = 1;
             return;
         }

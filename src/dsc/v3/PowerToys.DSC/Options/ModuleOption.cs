@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.CommandLine;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Options;
 
@@ -12,7 +13,7 @@ namespace PowerToys.DSC.Options;
 public sealed class ModuleOption : Option<string?>
 {
     public ModuleOption()
-        : base("--module", "The module name")
+        : base("--module", Resources.ModuleOptionDescription)
     {
     }
 }

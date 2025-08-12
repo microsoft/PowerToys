@@ -4,7 +4,10 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Globalization;
 using System.IO;
+using System.Text;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Options;
 
@@ -13,8 +16,10 @@ namespace PowerToys.DSC.Options;
 /// </summary>
 public sealed class OutputDirectoryOption : Option<string>
 {
+    private static readonly CompositeFormat InvalidOutputDirectoryError = CompositeFormat.Parse(Resources.InvalidOutputDirectoryError);
+
     public OutputDirectoryOption()
-        : base("--outputDir", "The output directory")
+        : base("--outputDir", Resources.OutputDirectoryOptionDescription)
     {
         AddValidator(OptionValidator);
     }
@@ -28,11 +33,11 @@ public sealed class OutputDirectoryOption : Option<string>
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
         if (string.IsNullOrEmpty(value))
         {
-            result.ErrorMessage = "Output directory cannot be empty.";
+            result.ErrorMessage = Resources.OutputDirectoryEmptyOrNullError;
         }
         else if (!Directory.Exists(value))
         {
-            result.ErrorMessage = $"Invalid directory: {value}";
+            result.ErrorMessage = string.Format(CultureInfo.InvariantCulture, InvalidOutputDirectoryError, value);
         }
     }
 }

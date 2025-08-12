@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.CommandLine.Invocation;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Commands;
 
@@ -12,7 +13,7 @@ namespace PowerToys.DSC.Commands;
 public sealed class ExportCommand : BaseCommand
 {
     public ExportCommand()
-        : base("export", "Get all state instances")
+        : base("export", Resources.ExportCommandDescription)
     {
     }
 

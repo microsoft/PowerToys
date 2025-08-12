@@ -5,21 +5,26 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using PowerToys.DSC.Models;
 using PowerToys.DSC.Models.FunctionData;
+using PowerToys.DSC.Properties;
 
-namespace PowerToys.DSC.Resources;
+namespace PowerToys.DSC.DSCResources;
 
 /// <summary>
 /// Represents the DSC resource for managing PowerToys settings.
 /// </summary>
 public sealed class SettingsResource : BaseResource
 {
+    private static readonly CompositeFormat FailedToWriteManifests = CompositeFormat.Parse(Resources.FailedToWriteManifests);
+
     public const string AppModule = "App";
     public const string ResourceName = "settings";
 
@@ -48,11 +53,8 @@ public sealed class SettingsResource : BaseResource
             { nameof(ModuleType.MouseHighlighter),          CreateModuleFunctionData<MouseHighlighterSettings> },
             { nameof(ModuleType.MouseJump),                 CreateModuleFunctionData<MouseJumpSettings> },
             { nameof(ModuleType.MousePointerCrosshairs),    CreateModuleFunctionData<MousePointerCrosshairsSettings> },
-            { nameof(ModuleType.MouseWithoutBorders),       CreateModuleFunctionData<MouseWithoutBordersSettings> },
-            { nameof(ModuleType.NewPlus),                   CreateModuleFunctionData<NewPlusSettings> },
             { nameof(ModuleType.Peek),                      CreateModuleFunctionData<PeekSettings> },
             { nameof(ModuleType.PowerRename),               CreateModuleFunctionData<PowerRenameSettings> },
-            { nameof(ModuleType.PowerLauncher),             CreateModuleFunctionData<PowerLauncherSettings> },
             { nameof(ModuleType.PowerAccent),               CreateModuleFunctionData<PowerAccentSettings> },
             { nameof(ModuleType.RegistryPreview),           CreateModuleFunctionData<RegistryPreviewSettings> },
             { nameof(ModuleType.MeasureTool),               CreateModuleFunctionData<MeasureToolSettings> },
@@ -60,6 +62,11 @@ public sealed class SettingsResource : BaseResource
             { nameof(ModuleType.PowerOCR),                  CreateModuleFunctionData<PowerOcrSettings> },
             { nameof(ModuleType.Workspaces),                CreateModuleFunctionData<WorkspacesSettings> },
             { nameof(ModuleType.ZoomIt),                    CreateModuleFunctionData<ZoomItSettings> },
+
+            // The following modules are not currently supported:
+            // - MouseWithoutBorders    Contains sensitive configuration values, making export/import potentially insecure.
+            // - PowerLauncher          Uses absolute file paths in its settings, which are not portable across systems.
+            // - NewPlus                Uses absolute file paths in its settings, which are not portable across systems.
         };
     }
 
@@ -83,7 +90,7 @@ public sealed class SettingsResource : BaseResource
     {
         if (string.IsNullOrEmpty(input))
         {
-            WriteMessageOutputLine(DscMessageLevel.Error, "Input cannot be null.");
+            WriteMessageOutputLine(DscMessageLevel.Error, Resources.InputEmptyOrNullError);
             return false;
         }
 
@@ -111,7 +118,7 @@ public sealed class SettingsResource : BaseResource
     {
         if (string.IsNullOrEmpty(input))
         {
-            WriteMessageOutputLine(DscMessageLevel.Error, "Input cannot be null.");
+            WriteMessageOutputLine(DscMessageLevel.Error, Resources.InputEmptyOrNullError);
             return false;
         }
 
@@ -152,7 +159,8 @@ public sealed class SettingsResource : BaseResource
             }
             catch (Exception ex)
             {
-                WriteMessageOutputLine(DscMessageLevel.Error, $"Failed to write manifests to directory '{outputDir}': {ex.Message}");
+                var errorMessage = string.Format(CultureInfo.InvariantCulture, FailedToWriteManifests, outputDir, ex.Message);
+                WriteMessageOutputLine(DscMessageLevel.Error, errorMessage);
                 return false;
             }
         }
@@ -197,6 +205,8 @@ public sealed class SettingsResource : BaseResource
     /// <returns>A JSON string representing the DSC resource manifest.</returns>
     private string GenerateManifest(string module)
     {
+        // Note: The description is not localized because because the generated
+        // manifest file will be part of the package
         return new DscManifest($"{module}Settings", "0.1.0")
             .AddDescription($"Allows management of {module} settings state via the DSC v3 command line interface protocol.")
             .AddStdinMethod("export", ["export", "--module", module, "--resource", "settings"])
