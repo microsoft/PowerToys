@@ -101,7 +101,7 @@ In this release, we focused on new features, stability, optimization improvement
 
  - PowerToys settings debuts a modern, card-based dashboard with clearer descriptions and faster navigation for a streamlined user experience.
  - Command Palette had over 99 issues resolved, including bringing back Clipboard History, adding context menu shortcuts, pinning favorite apps, and supporting history in Run.
- - Command Palette is in full Ahead-of-Time (AOT) compilation mode, reducing installation size by ~55%, startup memory usage by ~15%, load time by ~40%, and built-in extensions loading time by ~70%.
+ - Command Palette reduced its startup memory usage by ~15%, load time by ~40%, built-in extensions loading time by ~70%, and installation size by ~55%—all due to using the full Ahead-of-Time (AOT) compilation mode in Windows App SDK.
  - Peek now supports instant previews and embedded thumbnails for Binary G-code (.bgcode) 3D printing files, making it easy to inspect models at a glance. Thanks [@pedrolamas](https://github.com/pedrolamas)!
  - Mouse Utilities introduces a new spotlight highlighting mode that dims the screen and draws attention to your cursor, perfect for presentations.
  - Test coverage improvements for multiple PowerToys modules including Command Palette, Advanced Paste, Peek, Text Extractor, and PowerRename — ensuring better reliability and quality, with over 600 new unit tests (mostly for Command Palette) and doubled UI automation coverage.
@@ -184,7 +184,7 @@ In this release, we focused on new features, stability, optimization improvement
 
 ### Development
 
- - Updated .NET libraries to 9.0.7 for performance and security. Thanks [@snickler](https://github.com/snickler)!
+ - Updated .NET libraries to 9.0.8 for performance and security. Thanks [@snickler](https://github.com/snickler)!
  - Updated the spell check system to version 0.0.25 with better GitHub integration and SARIF reporting, plus fixed numerous spelling errors throughout the codebase including property names and documentation. Thanks [@jsoref](https://github.com/jsoref)!
  - Cleaned up spelling check configuration to eliminate false positives and excessive noise that was appearing in every pull request, making the development process smoother.
  - Replaced NuGet feed with Azure Artifacts for better package management.
@@ -195,15 +195,17 @@ In this release, we focused on new features, stability, optimization improvement
  - Added comprehensive UI test suites for multiple PowerToys modules including Command Palette, Advanced Paste, Peek, Text Extractor, and PowerRename - ensuring better reliability and quality.
  - Enhanced UI test automation with command-line argument support, better session management, and improved element location methods using pattern matching to avoid failures from minor differences in exact matches.
 
-### What is being planned for version 0.94
+### What is being planned over the next few releases
 
 For [v0.94][github-next-release-work], we'll work on the items below:
 
  - Continued Command Palette polish
- - New UI automation tests
- - Working on installer upgrades
+ - Working on Shortcut Guide v2 (Thanks [@noraa-junker](https://github.com/noraa-junker)!)
+ - Working on upgrading the installer to WiX 5
  - Working on shortcut conflict detection
+ - Working on setting search
  - Upgrading Keyboard Manager's editor UI
+ - New UI automation tests
  - Stability, bug fixes
 
 ## PowerToys Community
