@@ -98,35 +98,107 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
 
     public void HandleSubmit(IAdaptiveActionElement action, JsonObject inputs)
     {
-        if (action is AdaptiveOpenUrlAction openUrlAction)
-        {
-            WeakReferenceMessenger.Default.Send<LaunchUriMessage>(new(openUrlAction.Url));
-            return;
-        }
+        // BODGY circa GH #40979
+        // Usually, you're supposed to try to cast the action to a specific
+        // type, and use those objects to get the data you need.
+        // However, there's something weird with AdaptiveCards and the way it
+        // works when we consume it when built in Release, with AOT (and
+        // trimming) enabled. Any sort of `action.As<IAdaptiveSubmitAction>()`
+        // or similar will throw a System.InvalidCastException.
+        //
+        // Instead we have this horror show.
+        //
+        // The `action.ToJson()` blob ACTUALLY CONTAINS THE `type` field, which
+        // we can use to determine what kind of action it is. Then we can parse
+        // the JSON manually based on the type.
+        var actionJson = action.ToJson();
 
-        if (action is AdaptiveSubmitAction or AdaptiveExecuteAction)
+        if (actionJson.TryGetValue("type", out var actionTypeValue))
         {
-            // Get the data and inputs
-            var dataString = (action as AdaptiveSubmitAction)?.DataJson.Stringify() ?? string.Empty;
-            var inputString = inputs.Stringify();
+            var actionTypeString = actionTypeValue.GetString();
+            Logger.LogTrace($"atString={actionTypeString}");
 
-            _ = Task.Run(() =>
+            var actionType = actionTypeString switch
             {
-                try
-                {
-                    var model = _formModel.Unsafe!;
-                    if (model != null)
+                "Action.Submit" => ActionType.Submit,
+                "Action.Execute" => ActionType.Execute,
+                "Action.OpenUrl" => ActionType.OpenUrl,
+                _ => ActionType.Unsupported,
+            };
+
+            Logger.LogDebug($"{actionTypeString}->{actionType}");
+
+            switch (actionType)
+            {
+                case ActionType.OpenUrl:
                     {
-                        var result = model.SubmitForm(inputString, dataString);
-                        WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
+                        HandleOpenUrlAction(action, actionJson);
                     }
-                }
-                catch (Exception ex)
-                {
-                    ShowException(ex);
-                }
-            });
+
+                    break;
+                case ActionType.Submit:
+                case ActionType.Execute:
+                    {
+                        HandleSubmitAction(action, actionJson, inputs);
+                    }
+
+                    break;
+                default:
+                    Logger.LogError($"{actionType} was an unexpected action `type`");
+                    break;
+            }
         }
+        else
+        {
+            Logger.LogError($"actionJson.TryGetValue(type) failed");
+        }
+    }
+
+    private void HandleOpenUrlAction(IAdaptiveActionElement action, JsonObject actionJson)
+    {
+        if (actionJson.TryGetValue("url", out var actionUrlValue))
+        {
+            var actionUrl = actionUrlValue.GetString() ?? string.Empty;
+            if (Uri.TryCreate(actionUrl, default(UriCreationOptions), out var uri))
+            {
+                WeakReferenceMessenger.Default.Send<LaunchUriMessage>(new(uri));
+            }
+            else
+            {
+                Logger.LogError($"Failed to produce URI for {actionUrlValue}");
+            }
+        }
+    }
+
+    private void HandleSubmitAction(
+        IAdaptiveActionElement action,
+        JsonObject actionJson,
+        JsonObject inputs)
+    {
+        var dataString = string.Empty;
+        if (actionJson.TryGetValue("data", out var actionDataValue))
+        {
+            dataString = actionDataValue.Stringify() ?? string.Empty;
+        }
+
+        var inputString = inputs.Stringify();
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                var model = _formModel.Unsafe!;
+                if (model != null)
+                {
+                    var result = model.SubmitForm(inputString, dataString);
+                    Logger.LogDebug($"SubmitForm() returned {result}");
+                    WeakReferenceMessenger.Default.Send<HandleCommandResultMessage>(new(new(result)));
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowException(ex);
+            }
+        });
     }
 
     private static readonly string ErrorCardJson = """

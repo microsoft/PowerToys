@@ -85,6 +85,10 @@ internal sealed partial class IndexerListItem : ListItem
                 commands.Add(new CommandContextItem(openCommand));
             }
         }
+        else
+        {
+            commands.Add(new CommandContextItem(openCommand));
+        }
 
         commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));
         commands.Add(new CommandContextItem(new ShowFileInFolderCommand(fullPath) { Name = Resources.Indexer_Command_ShowInFolder }));

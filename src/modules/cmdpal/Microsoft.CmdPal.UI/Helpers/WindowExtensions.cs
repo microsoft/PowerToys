@@ -29,7 +29,7 @@ public static class WindowExtensions
         }
         catch (NotImplementedException)
         {
-            // SetShownInSwitchers failed. This can happen if the Explorer is not running.
+            // Setting IsShownInSwitchers failed. This can happen if the Explorer is not running.
         }
     }
 }
