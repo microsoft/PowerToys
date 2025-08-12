@@ -99,7 +99,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveOpenUrlAction))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveSubmitAction))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveSubmitAction))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AdaptiveExecuteAction))]
     public void HandleSubmit(IAdaptiveActionElement action, JsonObject inputs)
     {
         if (action is AdaptiveOpenUrlAction openUrlAction)
