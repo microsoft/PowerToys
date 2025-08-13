@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ public class IndexerTests : CommandPaletteTestBase
 {
     private const string TestFileContent = "This is Indexer UI test sample";
     private const string TestFileName = "indexer_test_item.txt";
+    private const string TestFileBaseName = "indexer_test_item";
     private const string TestFolderName = "Downloads";
 
     public IndexerTests()
@@ -67,11 +69,14 @@ public class IndexerTests : CommandPaletteTestBase
 
         searchItem.Click();
 
-        var openButton = this.Find<Button>("Open");
+        var openButton = this.Find<Button>("Open with");
         Assert.IsNotNull(openButton);
 
         openButton.Click();
-        var notepadWindow = this.Find<Window>($"{TestFileName} - Notepad", global: true);
+
+        FindDefaultAppDialogAndClickButton();
+
+        var notepadWindow = FindNotepadWindow(TestFileBaseName, global: true);
 
         Assert.IsNotNull(notepadWindow);
     }
@@ -88,7 +93,9 @@ public class IndexerTests : CommandPaletteTestBase
 
         searchItem.DoubleClick();
 
-        var notepadWindow = this.Find<Window>($"{TestFileName} - Notepad", global: true);
+        FindDefaultAppDialogAndClickButton();
+
+        var notepadWindow = FindNotepadWindow(TestFileBaseName, global: true);
 
         Assert.IsNotNull(notepadWindow);
     }
@@ -107,9 +114,9 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(openButton);
 
         openButton.Click();
-        var notepadWindow = this.Find<Window>($"{TestFolderName} - File Explorer", global: true);
+        var fileExplorer = FindExplorerWindow(TestFolderName, global: true);
 
-        Assert.IsNotNull(notepadWindow);
+        Assert.IsNotNull(fileExplorer);
     }
 
     [TestMethod]
@@ -122,7 +129,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(searchItem);
         searchItem.DoubleClick();
 
-        var fileExplorer = this.Find<Window>($"{TestFolderName} - File Explorer", global: true);
+        var fileExplorer = FindExplorerWindow(TestFolderName, global: true);
 
         Assert.IsNotNull(fileExplorer);
     }
@@ -181,7 +188,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(showInFolderButton);
         showInFolderButton.Click();
 
-        var fileExplorer = this.Find<Window>($"{TestFolderName} - File Explorer", global: true, timeoutMS: 20000);
+        var fileExplorer = FindExplorerWindow(TestFolderName, global: true, timeoutMS: 20000);
 
         Assert.IsNotNull(fileExplorer);
     }
@@ -201,7 +208,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var textItem = this.Find<Window>("C:\\Windows\\system32\\cmd.exe", global: true);
+        var textItem = FindByPartialName("C:\\Windows\\system32\\cmd.exe", global: true);
         Assert.IsNotNull(textItem, "The console did not open with the expected path.");
     }
 
@@ -220,7 +227,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(copyPathButton);
         copyPathButton.Click();
 
-        var propertiesWindow = this.Find<Window>($"{TestFileName} Properties", global: true);
+        var propertiesWindow = FindByClassNameAndNamePattern<Window>("#32770", "Properties", global: true);
         Assert.IsNotNull(propertiesWindow, "The properties window did not open for the selected file.");
     }
 }
