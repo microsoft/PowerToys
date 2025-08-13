@@ -5,6 +5,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>PowerToys.DSC</AssemblyName>
+    <AssemblyDescription>PowerToys DSC</AssemblyDescription>
     <RootNamespace>PowerToys.DSC</RootNamespace>
     <Nullable>enable</Nullable>
     </PropertyGroup>

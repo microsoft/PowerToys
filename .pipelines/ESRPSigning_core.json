@@ -53,7 +53,6 @@
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
 
-
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
             "PowerToys.FancyZonesEditorCommon.dll",
@@ -228,7 +227,10 @@
 
             "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",
-            "*Microsoft.CmdPal.UI_*.msix"
+            "*Microsoft.CmdPal.UI_*.msix",
+
+            "PowerToys.DSC.dll",
+            "PowerToys.DSC.exe"
           ],
             "SigningInfo": {
                 "Operations": [
