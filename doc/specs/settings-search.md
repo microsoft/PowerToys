@@ -20,17 +20,18 @@ SettingsPageControl
 
 > For indexing purposes, we are specifically targeting all SettingsCard elements. These are the smallest units of user interaction and correspond to individual configurable settings.
 
+> There could be setting item in expander, so we also need to index expander items as well.
+
 ### Module
 Module is a primary type that needs to be indexed, for modules, we need to index the 'ModuleTitle' and the 'ModuleDescription'. 
 So these two should be passed in by x:Uid and binding with a key. 
 
 
-### SettingsCard
+### SettingsCard/SettingsExpander
 
-Each SettingsCard should have an x:Uid for localization and indexing. The associated display strings are defined in the .resw files:
+Each SettingsCard/SettingsExpander should have an x:Uid for localization and indexing. The associated display strings are defined in the .resw files:
 
 {x:Uid}.Header – The visible label/title of the setting.
-
 {x:Uid}.Description – (optional) The tooltip or explanatory text.
 
 The index should be built around these SettingsCard elements and their x:Uid-bound resources, as they represent the actual settings users will search for.
@@ -43,26 +44,27 @@ The index should be built around these SettingsCard elements and their x:Uid-bou
 ```csharp
 enum EntryType
 {
+    SettingsPage,
     SettingsCard,
-    SettingsExpandar
+    SettingsExpander,
 }
-struct SettingEntry
-{
-    string    PageName;         // Navigation among pages
-    
-    EntryType Type;             // Whether I need to expand my parent Expander
-    string    ParentElementName // Empty if 
-    string    ElementName;             // ElementName
 
-    string    ElementUid;       // UID 
-    string    DisplayedText;    // Localized Text For Setting Entry
+public class SearchableElementMetadata
+{
+    public string PageName { get; set; }    // Used to navigate to a specific page
+    public EntryType Type { get; set; }     // Used to know how should we navigate(As a page, a settingscard or an expander?)
+    public string ParentElementName { get; set; }
+    public string ElementName { get; set; }
+    public string ElementUid { get; set; }
+    public string Icon { get; set; }
 }
 ```
 
 ### Navigation
-We need to do two phase navigation to locate the setting entry
+The steps for navigate to an item:
 * Navigate among pages
-* Navigate within page
+* [optional] Expand the expander if setting entry is inside an expander
+* [optional] Navigate within page
 
 > Use page name for navigation:
 ```csharp
@@ -93,7 +95,7 @@ Page.OnNavigateTo(ElementName， ParentElementName){
 }
 ```
 
-## 3. Search
+## 3. Runtime Search
 When user start typing for an entry, e.g. shortcut or 快捷键(cn version of shortcut),
 we need to go through all the entries to see if an entry matches the search text.
 
@@ -125,15 +127,48 @@ struct MatchResult{
 }
 ```
 
+## 4. Search Result Page
+![search result page](./search-result.png)
+After we got matched items, map these items to a search result page according to spec.
+```c#
+ObservableCollection<SettingEntry> ModuleResult;
+ObservableCollection<SettingsGroup> GroupedSettingsResults;
 
-## 4. Index 
-So, the entry is good enough for search&navigation, now We need to build all the entries in our settings.
+public class SettingsGroup : INotifyPropertyChanged
+{
+    private string _groupName;
+    private ObservableCollection<SettingEntry> _settings;
+    public string GroupName
+    {
+        get => _groupName;
+        set
+        {
+            _groupName = value;
+            OnPropertyChanged();
+        }
+    }
+    public ObservableCollection<SettingEntry> Settings
+    {
+        get => _settings;
+        set
+        {
+            _settings = value;
+            OnPropertyChanged();
+        }
+    }
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+```
+
+## 5. How to do Index
+### Runtime index or build time index?
+Now We need to build all the entries in our settings.
 
 Most of the entry properties are static, and in runtime, the `SettingsCard` is compied into native winUI3 controls <small>(I suppose, please correct here if it's wrong)</small>, it's hard to locate all the `SettingsCard`, and performance is terrible if we do dfs for all the pages' elements.
-
-## 4.1 Future settings
-To be able to be auto indexed and searchable, you need to wrap the setting in SettingsCard, and give it a name, UID,
-then it can be automatically picked up.
 
 ### Build time indexing
 We can rely on xmal file parsing to get all the SettingsCard Entries. 
@@ -182,37 +217,19 @@ foreach(var entry in entries){
 So now we have all the entries and entry properties.
 
 ## Overrall flow:
-Runtime:
-```mermaid
-flowchart TD
-    A("User launches Settings (ShellPage)") --> B("Start building index in background (<1s)")
-    B --> C("User types into AutoSuggestBox")
-    C --> D("Search for matched settings items")
-    D --> E("Populate AutoSuggestBox with matches")
-    E --> F("User selects a suggestion")
-    F --> G("Navigate to target settings page")
-    G --> H("On PageLoaded: locate and scroll to item")
-    H --> I("Optionally apply visual highlight")
-```
 
+![search workflow](./workflow.png)
 
-## 5. Tests
-
-
-
-## 6. Performance targets [TBD]
+## 6. Performance targets & estimation [TBD]
 | Metric        | Target                                        |
 | ------------- | --------------------------------------------- |
 | Memory        | ≤ 150 kB for 1 000 entries                    |
-| Query latency | ≤ 20 ms 95-pctl per keystroke                 |
+| Query latency | ≤ 500 ms page result shown per search         |
 
 
 
 
-## 7.  Design options evaluated
-
-
-## 8. Corner cases we can't perform a search
+## 7. Corner cases we can't perform a search
 1. Some SettingsCard does not x:Uid binded, so no text is shown.
 ```
 // e.g. Mouse Utils:
@@ -223,4 +240,4 @@ flowchart TD
 
 2. CmdPal page is not in scope of this effort, that needs additional effort&design to launch and search within cmdpal settings page.
 
-3. 
+3. Go back button
