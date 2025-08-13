@@ -17,7 +17,7 @@
                     </MenuFlyout>
                 </Grid.ContextFlyout>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
@@ -133,16 +133,6 @@
             Grid.Row="2"
             Height="48"
             Visibility="Collapsed">
-            <local:TaskbarIndicator IndicatorNumber="1" />
-            <local:TaskbarIndicator IndicatorNumber="2" />
-            <local:TaskbarIndicator IndicatorNumber="3" />
-            <local:TaskbarIndicator IndicatorNumber="4" />
-            <local:TaskbarIndicator IndicatorNumber="5" />
-            <local:TaskbarIndicator IndicatorNumber="6" />
-            <local:TaskbarIndicator IndicatorNumber="7" />
-            <local:TaskbarIndicator IndicatorNumber="8" />
-            <local:TaskbarIndicator IndicatorNumber="9" />
-            <local:TaskbarIndicator IndicatorNumber="10" />
         </Canvas>
     </Grid>
 </Page>

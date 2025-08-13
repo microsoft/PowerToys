@@ -7,22 +7,22 @@
     xmlns:local="using:ShortcutGuide"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
-    <Canvas x:Name="IndicatorCanvas">
+    <Grid HorizontalAlignment="Stretch">
         <Border
             x:Name="IndicatorRectangle"
-            Background="{ThemeResource AccentFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}"
+            MaxWidth="36" MaxHeight="36"
+            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource ControlElevationBorderBrush}"
             BorderThickness="1"
-            CornerRadius="4,4,0,0">
+            CornerRadius="{StaticResource ControlCornerRadius}">
             <TextBlock
                 x:Name="IndicatorText"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Foreground="{ThemeResource TextOnAccentFillColorDefaultBrush}"
+                VerticalAlignment="Center" FontSize="18"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="{x:Bind Label, Mode=OneWay}"
                 TextAlignment="Center" />
         </Border>
+    </Grid>
 
-    </Canvas>
 </UserControl>

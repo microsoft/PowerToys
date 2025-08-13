@@ -8,7 +8,7 @@
     xmlns:winuiex="using:WinUIEx"
     IsMaximizable="False"
     IsMinimizable="False"
-    IsResizable="False"
+    IsResizable="true"
     IsShownInSwitchers="False"
     mc:Ignorable="d">
     <winuiex:WindowEx.SystemBackdrop>

@@ -17,7 +17,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
+using ShortcutGuide.ShortcutGuideXAML;
 using Windows.Foundation;
+using WinUIEx;
 using Grid = Microsoft.UI.Xaml.Controls.Grid;
 
 namespace ShortcutGuide
@@ -27,6 +29,7 @@ namespace ShortcutGuide
         private readonly DispatcherTimer _taskbarIconsUpdateTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
         private readonly ShortcutFile _shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
         private bool _showTaskbarShortcuts;
+        private TaskbarWindow? _taskbarWindow;
         private static CancellationTokenSource _animationCancellationTokenSource = new();
 
         /// <summary>
@@ -75,6 +78,8 @@ namespace ShortcutGuide
                     TaskbarIndicators.Visibility = Visibility.Visible;
                     ShortcutsScrollViewer.Margin = new Thickness(0, 0, 0, 20);
                     _taskbarIconsUpdateTimer.Tick += UpdateTaskbarIndicators;
+                    _taskbarWindow = new TaskbarWindow();
+                    _taskbarWindow.Activate();
                     _taskbarIconsUpdateTimer.Start();
                 }
 
@@ -132,7 +137,8 @@ namespace ShortcutGuide
         private void UpdateTaskbarIndicators(object? sender, object? e)
         {
             NativeMethods.TasklistButton[] buttons = TasklistPositions.GetButtons();
-
+            double widthPos = 0;
+            double xPos = 0;
             for (int i = 0; i < TaskbarIndicators.Children.Count; i++)
             {
                 if (i < buttons.Length)
@@ -145,6 +151,8 @@ namespace ShortcutGuide
                         Duration = TimeSpan.FromMilliseconds(500),
                     };
 
+                    widthPos = widthPos = (buttons[i].X - workArea.Left) / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+
                     // Create the storyboard
                     Storyboard storyboard = new();
                     storyboard.Children.Add(animation);
@@ -155,6 +163,13 @@ namespace ShortcutGuide
 
                     // Start the animation
                     storyboard.Begin();
+
+                    var o = DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+
+                    if (i == 1)
+                    {
+                        xPos = (buttons[i].X - workArea.Left) / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+                    }
 
                     ((TaskbarIndicator)TaskbarIndicators.Children[i]).Width = buttons[i].Width / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
                     ((TaskbarIndicator)TaskbarIndicators.Children[i]).Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());

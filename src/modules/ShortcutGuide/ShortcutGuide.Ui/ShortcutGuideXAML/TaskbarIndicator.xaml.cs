@@ -3,47 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace ShortcutGuide;
 
 public sealed partial class TaskbarIndicator : UserControl
 {
-    private int _indicatorNumber;
-
-    public int IndicatorNumber
+    public string Label
     {
-        get => _indicatorNumber;
-        set
-        {
-            _indicatorNumber = value;
-            IndicatorText.Text = value > 9 ? "0" : value.ToString(CultureInfo.InvariantCulture);
-        }
+        get => (string)GetValue(LabelProperty);
+        set => SetValue(LabelProperty, value);
     }
 
-    public new double Width
-    {
-        get => (double)GetValue(WidthProperty);
-        set
-        {
-            SetValue(WidthProperty, value);
-            IndicatorText.Width = Width;
-            IndicatorCanvas.Width = Width;
-            IndicatorRectangle.Width = Width;
-        }
-    }
-
-    public new double Height
-    {
-        get => (double)GetValue(HeightProperty);
-        set
-        {
-            SetValue(HeightProperty, value);
-            IndicatorText.Height = Height;
-            IndicatorCanvas.Height = Height;
-            IndicatorRectangle.Height = Height;
-        }
-    }
+    public static readonly DependencyProperty LabelProperty = DependencyProperty.Register(nameof(Label), typeof(string), typeof(TaskbarIndicator), new PropertyMetadata(default(string)));
 
     public TaskbarIndicator()
     {

@@ -4,15 +4,27 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:ShortcutGuide.ShortcutGuideXAML"
+    xmlns:local="using:ShortcutGuide"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
     Title="TaskbarWindow"
+    Width="600"
+    Height="200"
+    IsAlwaysOnTop="True"
+    IsMaximizable="False"
+    IsMinimizable="False"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
-        <MicaBackdrop />
+        <DesktopAcrylicBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid Background="Red" />
+    <Grid CornerRadius="8" Loaded="Grid_Loaded">
+        <Grid.Resources />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="120" x:Name="PrefixColumn" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Canvas x:Name="KeyHolder" Grid.Column="1" />
+    </Grid>
 </winuiex:WindowEx>
