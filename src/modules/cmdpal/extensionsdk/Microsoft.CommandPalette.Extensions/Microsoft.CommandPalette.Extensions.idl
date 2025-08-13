@@ -431,7 +431,7 @@ namespace Microsoft.CommandPalette.Extensions
     interface IHaveProperties
 >>>>>>> 940e71f2a (stupid levels returning to nominal values)
     {
-        Windows.Foundation.Collections.IMap<String, Object> Properties { get; };
+        Windows.Foundation.Collections.IMap<String, Object> GetProperties();
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
