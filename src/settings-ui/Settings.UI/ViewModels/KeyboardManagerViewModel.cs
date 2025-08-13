@@ -280,15 +280,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // Only read the registry value if the experimentation toggle is enabled
                     if (isExperimentationEnabled)
                     {
-                        // Read the registry value to determine which editor to launch
-                        var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\PowerToys\Keyboard Manager");
-                        if (key != null && (int?)key.GetValue("UseNewEditor") == 1)
-                        {
-                            editorPath = KeyboardManagerEditorUIPath;
-                        }
-
-                        // Close the registry key
-                        key?.Close();
+                        editorPath = KeyboardManagerEditorUIPath;
                     }
                 }
                 catch (Exception e)
