@@ -71,7 +71,7 @@ public abstract partial class NavigatablePage : Page
                     expander.IsExpanded = true;
 
                     // Give time for the expander to animate
-                    await Task.Delay(200);
+                    await Task.Delay(500);
                 }
             }
 
