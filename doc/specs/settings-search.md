@@ -80,8 +80,8 @@ NavigationService.Navigate(PageType, ElementName，ParentElementName);
 > Use ElementName and ParentElementName for in page navigation:
 ```csharp
 Page.OnNavigateTo(ElementName， ParentElementName){
-    UIElement element = Reflection.GetType(Name);
-    UIElement parentElement = Reflection.GetType(ParentElementName);
+    var element = this.FindName(name) as FrameworkElement;
+    var parentElement = this.FindName(ParentElementName) as FrameworkElement;
 
     if(parentElement) {
         expander = (Expander)parentElement;

@@ -506,6 +506,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var queryText = args.QueryText?.Trim();
             if (string.IsNullOrWhiteSpace(queryText))
             {
+                NavigationService.Navigate<DashboardPage>();
                 return;
             }
 

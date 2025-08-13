@@ -119,7 +119,7 @@
                     HorizontalAlignment="Stretch"
                     BorderThickness="1"
                     GotFocus="SearchBox_GotFocus"
-                    PlaceholderText="Search for modules"
+                    PlaceholderText="Search for settings"
                     QueryIcon="Find"
                     QuerySubmitted="SearchBox_QuerySubmitted"
                     TextChanged="SearchBox_TextChanged">
