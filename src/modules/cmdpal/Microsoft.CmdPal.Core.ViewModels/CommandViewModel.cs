@@ -29,7 +29,14 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public IconInfoViewModel Icon { get; private set; }
 
-    public IDictionary<string, object>? Properties { get; private set; }
+    // UNDER NO CIRCUMSTANCES MAY SOMEONE WRITE TO THIS DICTIONARY.
+    // This is oour copy of the data from the extension.
+    // Adding values to it does not add to the extension.
+    // Modifying it will not modify the extension
+    // (except it might, if the dictionary was passed by ref)
+    private Dictionary<string, ExtensionObject<object>>? _properties;
+
+    public IReadOnlyDictionary<string, ExtensionObject<object>>? Properties => _properties?.AsReadOnly();
 
     public CommandViewModel(ICommand? command, WeakReference<IPageContext> pageContext)
         : base(pageContext)
@@ -84,7 +91,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
         if (model is IExtendedAttributesProvider command2)
         {
-            Properties = command2.Properties;
+            UpdatePropertiesFromExtension(command2);
         }
 
         model.PropChanged += Model_PropChanged;
@@ -120,15 +127,8 @@ public partial class CommandViewModel : ExtensionObjectViewModel
                 Icon = new(iconInfo);
                 Icon.InitializeProperties();
                 break;
-            case nameof(IExtendedAttributesProvider.Properties):
-                if (model is IExtendedAttributesProvider command2)
-                {
-                    Properties = command2.Properties;
-                }
-                else
-                {
-                    Properties = null;
-                }
+            case nameof(_properties):
+                UpdatePropertiesFromExtension(model as IExtendedAttributesProvider);
 
                 break;
         }
@@ -146,6 +146,28 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         if (model != null)
         {
             model.PropChanged -= Model_PropChanged;
+        }
+    }
+
+    private void UpdatePropertiesFromExtension(IExtendedAttributesProvider? model)
+    {
+        var propertiesFromExtension = model?.GetProperties();
+        if (propertiesFromExtension == null)
+        {
+            _properties = null;
+            return;
+        }
+
+        _properties = [];
+
+        // COPY the properties into us.
+        // The IDictionary that was passed to us may be marshalled by-ref or by-value, we _don't know_.
+        //
+        // If it's by-ref, the values are arbitrary objects that are out-of-proc.
+        // If it's bu-value, then everything is in-proc, and we can't mutate the data.
+        foreach (var property in propertiesFromExtension)
+        {
+            _properties.Add(property.Key, new(property.Value));
         }
     }
 }

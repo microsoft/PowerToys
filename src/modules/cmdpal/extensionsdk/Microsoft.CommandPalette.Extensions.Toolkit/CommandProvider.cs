@@ -67,6 +67,6 @@ public abstract partial class CommandProvider : ICommandProvider, ICommandProvid
     /// </summary>
     private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider
     {
-        IDictionary<string, object>? IExtendedAttributesProvider.Properties => null;
+        public IDictionary<string, object>? GetProperties() => null;
     }
 }
