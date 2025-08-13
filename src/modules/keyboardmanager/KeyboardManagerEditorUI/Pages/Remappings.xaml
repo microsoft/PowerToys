@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="KeyboardManagerEditorUI.Pages.Remappings"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -15,8 +15,8 @@
         <StackPanel Orientation="Vertical" Spacing="12">
             <TextBlock
                 x:Name="RemapInstruction"
-                Text="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_Instruction')}"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_Instruction')}"
                 TextWrapping="Wrap" />
             <Button
                 x:Name="NewRemappingBtn"

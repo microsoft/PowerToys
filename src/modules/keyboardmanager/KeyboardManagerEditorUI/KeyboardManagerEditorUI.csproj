@@ -24,7 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Pages\ExistingUI.xaml" />
     <None Remove="Pages\Programs.xaml" />
     <None Remove="Pages\Text.xaml" />
     <None Remove="Pages\URLs.xaml" />
@@ -95,11 +94,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\KeyVisual.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Pages\ExistingUI.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
