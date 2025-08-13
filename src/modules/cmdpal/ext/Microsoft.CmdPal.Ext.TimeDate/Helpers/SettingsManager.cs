@@ -11,7 +11,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-public class SettingsManager : JsonSettingsManager
+public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
     // Line break character used in WinUI3 TextBox and TextBlock.
     private const char TEXTBOXNEWLINE = '\r';

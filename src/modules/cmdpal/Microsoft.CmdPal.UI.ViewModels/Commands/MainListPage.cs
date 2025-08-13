@@ -60,6 +60,7 @@ public partial class MainListPage : DynamicListPage,
         var settings = _serviceProvider.GetService<SettingsModel>()!;
         settings.SettingsChanged += SettingsChangedHandler;
         HotReloadSettings(settings);
+        _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
         IsLoading = true;
     }

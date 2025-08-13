@@ -149,7 +149,7 @@
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Informational"
-                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToReverseVisibilityConverter}}">
+                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>
