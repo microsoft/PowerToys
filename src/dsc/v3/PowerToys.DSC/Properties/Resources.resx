@@ -177,7 +177,7 @@
     <comment>{Locked="{0}"}</comment>
   </data>
   <data name="InvalidResourceNameError" xml:space="preserve">
-    <value>$"Invalid resource name. Valid resource names are: {0}"</value>
+    <value>Invalid resource name. Valid resource names are: {0}</value>
     <comment>{Locked="{0}"}</comment>
   </data>
 </root>

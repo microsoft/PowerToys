@@ -5,7 +5,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerToys.DSC.Commands;
 using PowerToys.DSC.DSCResources;
-using PowerToys.DSC.Models;
 
 namespace PowerToys.DSC.UnitTests;
 
@@ -13,30 +12,26 @@ namespace PowerToys.DSC.UnitTests;
 public sealed class CommandTest : BaseDscTest
 {
     [TestMethod]
-    public void Set_EmptyInput_Fail()
+    public void GetResource_Found_Success()
     {
         // Act
-        var result = ExecuteDscCommand<SetCommand>("--resource", SettingsResource.ResourceName, "--module", "Awake");
-        var messages = result.Messages();
+        var result = ExecuteDscCommand<GetCommand>("--resource", SettingsResource.ResourceName);
 
         // Assert
-        Assert.IsFalse(result.Success);
-        Assert.AreEqual(1, messages.Count);
-        Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
-        Assert.AreEqual(GetResourceString("InputEmptyOrNullError"), messages[0].Message);
+        Assert.IsTrue(result.Success);
     }
 
     [TestMethod]
-    public void Test_EmptyInput_Fail()
+    public void GetResource_NotFound_Fail()
     {
+        // Arrange
+        var availableResources = string.Join(", ", BaseCommand.AvailableResources);
+
         // Act
-        var result = ExecuteDscCommand<TestCommand>("--resource", SettingsResource.ResourceName, "--module", "Awake");
-        var messages = result.Messages();
+        var result = ExecuteDscCommand<GetCommand>("--resource", "ResourceNotFound");
 
         // Assert
         Assert.IsFalse(result.Success);
-        Assert.AreEqual(1, messages.Count);
-        Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
-        Assert.AreEqual(GetResourceString("InputEmptyOrNullError"), messages[0].Message);
+        Assert.Contains(GetResourceString("InvalidResourceNameError", availableResources), result.Error);
     }
 }

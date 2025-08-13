@@ -124,7 +124,7 @@ namespace PowerToys.DSC.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to $&quot;Invalid resource name. Valid resource names are: {0}&quot;.
+        ///   Looks up a localized string similar to Invalid resource name. Valid resource names are: {0}.
         /// </summary>
         internal static string InvalidResourceNameError {
             get {

@@ -28,6 +28,19 @@ public abstract class BaseCommand : Command
     private readonly ResourceOption _resourceOption;
     private readonly InputOption _inputOption;
 
+    // The dictionary of available resources and their factories.
+    private static readonly Dictionary<string, Func<string?, BaseResource>> _resourceFactories = new()
+    {
+        { SettingsResource.ResourceName, module => new SettingsResource(module) },
+
+        // Add other resources here
+    };
+
+    /// <summary>
+    /// Gets the list of available DSC resources that can be used with the command.
+    /// </summary>
+    public static List<string> AvailableResources => [.._resourceFactories.Keys];
+
     /// <summary>
     /// Gets the DSC resource to be used by the command.
     /// </summary>
@@ -39,31 +52,18 @@ public abstract class BaseCommand : Command
     protected string? Input { get; private set; }
 
     /// <summary>
-    /// Get the PowerToys module to be used by the command.
+    /// Gets the PowerToys module to be used by the command.
     /// </summary>
     protected string? Module { get; private set; }
-
-    /// <summary>
-    /// The dictionary of available resources and their factories.
-    /// </summary>
-    private readonly Dictionary<string, Func<string?, BaseResource>> _resourceFactories;
 
     public BaseCommand(string name, string description)
         : base(name, description)
     {
-        // Register the resources available.
-        _resourceFactories = new()
-        {
-            { SettingsResource.ResourceName, module => new SettingsResource(module) },
-
-            // Add other resources here
-        };
-
         // Register the common options for all commands
         _moduleOption = new ModuleOption();
         AddOption(_moduleOption);
 
-        _resourceOption = new ResourceOption([.. _resourceFactories.Keys]);
+        _resourceOption = new ResourceOption(AvailableResources);
         AddOption(_resourceOption);
 
         _inputOption = new InputOption();
@@ -100,7 +100,7 @@ public abstract class BaseCommand : Command
     /// <summary>
     /// Handles the command logic internally.
     /// </summary>
-    /// <param name="context"></param>
+    /// <param name="context">Invocation context containing the parsed command options.</param>
     public abstract void CommandHandlerInternal(InvocationContext context);
 
     /// <summary>
