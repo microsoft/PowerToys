@@ -24,6 +24,8 @@ public sealed partial class ListPage : Page,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
+    private InputSource _lastInputSource;
+
     private ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
@@ -39,6 +41,8 @@ public sealed partial class ListPage : Page,
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
         this.ItemsList.Loaded += ItemsList_Loaded;
+        this.ItemsList.PreviewKeyDown += ItemsList_PreviewKeyDown;
+        this.ItemsList.PointerPressed += ItemsList_PointerPressed;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -98,6 +102,12 @@ public sealed partial class ListPage : Page,
     {
         if (e.ClickedItem is ListItemViewModel item)
         {
+            if (_lastInputSource == InputSource.Keyboard)
+            {
+                ViewModel?.InvokeItemCommand.Execute(item);
+                return;
+            }
+
             var settings = App.Current.Services.GetService<SettingsModel>()!;
             if (settings.SingleClickActivates)
             {
@@ -362,5 +372,16 @@ public sealed partial class ListPage : Page,
     private void ItemsList_OnContextCanceled(UIElement sender, RoutedEventArgs e)
     {
         _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
+    }
+
+    private void ItemsList_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;
+
+    private void ItemsList_PreviewKeyDown(object sender, KeyRoutedEventArgs e) => _lastInputSource = InputSource.Keyboard;
+
+    private enum InputSource
+    {
+        None,
+        Keyboard,
+        Pointer,
     }
 }
