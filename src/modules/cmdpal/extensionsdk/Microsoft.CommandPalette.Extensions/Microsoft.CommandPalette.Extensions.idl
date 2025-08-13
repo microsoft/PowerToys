@@ -367,7 +367,7 @@ namespace Microsoft.CommandPalette.Extensions
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IExtendedAttributesProvider
     {
-        Windows.Foundation.Collections.IMap<String, Object> GetProperties();
+        Windows.Foundation.Collections.IMap<String, Object> Properties { get; };
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]

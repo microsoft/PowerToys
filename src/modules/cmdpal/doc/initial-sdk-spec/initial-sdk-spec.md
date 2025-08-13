@@ -1971,7 +1971,7 @@ we're going to add the following interface to our API:
 ```csharp
 interface IExtendedAttributesProvider
 {
-    Windows.Foundation.Collections.IMap<String, Object> GetProperties();
+    Windows.Foundation.Collections.IMap<String, Object> Properties { get; };
 };
 
 interface ICommandProvider2 requires ICommandProvider
@@ -2035,7 +2035,11 @@ public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProv
         return [new SupportCommandsWithProperties()];
     }
     private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider {
-        public IDictionary<string, object>? GetProperties() => null;
+        public IPropertySet OtherProperties => null;
+        public IIconInfo Icon => null;
+        public string Id => string.Empty;
+        public string Name => string.Empty;
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged { add { } remove { } }
     }
 }
 
