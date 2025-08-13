@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using Windows.System;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
@@ -376,7 +377,13 @@ public sealed partial class ListPage : Page,
 
     private void ItemsList_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;
 
-    private void ItemsList_PreviewKeyDown(object sender, KeyRoutedEventArgs e) => _lastInputSource = InputSource.Keyboard;
+    private void ItemsList_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key is VirtualKey.Enter or VirtualKey.Space)
+        {
+            _lastInputSource = InputSource.Keyboard;
+        }
+    }
 
     private enum InputSource
     {
