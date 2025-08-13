@@ -41,13 +41,25 @@
                 <Style.Setters>
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="Padding" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <Setter Property="Transitions">
+                        <Setter.Value>
+                            <TransitionCollection />
+                        </Setter.Value>
+                    </Setter>
                 </Style.Setters>
             </Style>
 
             <Flyout
                 x:Name="ContextMenuFlyout"
                 FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
-                Opened="ContextMenuFlyout_Opened">
+                Opened="ContextMenuFlyout_Opened"
+                ShouldConstrainToRootBounds="False">
+                <Flyout.SystemBackdrop>
+                    <!-- Backdrop requires ShouldConstrainToRootBounds="False" -->
+                    <DesktopAcrylicBackdrop />
+                </Flyout.SystemBackdrop>
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
 
