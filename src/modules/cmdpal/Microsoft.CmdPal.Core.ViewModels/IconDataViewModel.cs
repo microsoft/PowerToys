@@ -48,7 +48,15 @@ public partial class IconDataViewModel : ObservableObject, IIconData
 
         if (model is IExtendedAttributesProvider icon2)
         {
-            var props = icon2.Properties;
+            var props = icon2.GetProperties();
+
+            // From Raymond Chen:
+            // Make sure you don't try do do something like
+            //    icon2.GetProperties().TryGetValue("awesomeKey", out var awesomeValue);
+            //    icon2.GetProperties().TryGetValue("slackerKey", out var slackerValue);
+            // because each call to GetProperties() is a cross process hop, and if you
+            // marshal-by-value the property set, then you don't want to throw it away and
+            // re-marshal it for every property. MAKE SURE YOU CACHE IT.
             if (props?.TryGetValue("FontFamily", out var family) ?? false)
             {
                 FontFamily = family as string;
