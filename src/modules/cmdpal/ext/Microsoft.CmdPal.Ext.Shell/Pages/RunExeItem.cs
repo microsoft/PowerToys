@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
+using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Shell.Pages;
 
@@ -54,13 +55,13 @@ internal sealed partial class RunExeItem : ListItem
             {
                 Name = Properties.Resources.cmd_run_as_administrator,
                 Icon = Icons.AdminIcon,
-            }),
+            }) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter) },
             new CommandContextItem(
                 new AnonymousCommand(RunAsOther)
             {
                 Name = Properties.Resources.cmd_run_as_user,
                 Icon = Icons.UserIcon,
-            }),
+            }) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.U) },
         ];
     }
 

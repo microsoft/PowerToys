@@ -5,6 +5,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -38,6 +39,9 @@ public sealed partial class ContextMenu : UserControl,
 
     public void Receive(OpenContextMenuMessage message)
     {
+        ViewModel.FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
+        ViewModel.ResetContextMenu();
+
         UpdateUiForStackChange();
     }
 
@@ -80,7 +84,7 @@ public sealed partial class ContextMenu : UserControl,
         }
     }
 
-    private void CommandsDropdown_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void CommandsDropdown_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Handled)
         {
@@ -170,8 +174,6 @@ public sealed partial class ContextMenu : UserControl,
 
             e.Handled = true;
         }
-
-        CommandsDropdown_KeyDown(sender, e);
     }
 
     private void ContextFilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -188,6 +190,8 @@ public sealed partial class ContextMenu : UserControl,
 
             e.Handled = true;
         }
+
+        CommandsDropdown_PreviewKeyDown(sender, e);
     }
 
     private void NavigateUp()

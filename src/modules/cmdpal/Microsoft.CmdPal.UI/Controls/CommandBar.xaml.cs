@@ -5,6 +5,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -113,34 +114,23 @@ public sealed partial class CommandBar : UserControl,
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void PrimaryButton_Tapped(object sender, TappedRoutedEventArgs e)
+    private void PrimaryButton_Clicked(object sender, RoutedEventArgs e)
     {
         ViewModel.InvokePrimaryCommand();
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void SecondaryButton_Tapped(object sender, TappedRoutedEventArgs e)
+    private void SecondaryButton_Clicked(object sender, RoutedEventArgs e)
     {
         ViewModel.InvokeSecondaryCommand();
     }
 
-    private void PageIcon_Tapped(object sender, TappedRoutedEventArgs e)
-    {
-        if (CurrentPageViewModel?.StatusMessages.Count > 0)
-        {
-            StatusMessagesFlyout.ShowAt(
-                placementTarget: IconRoot,
-                showOptions: new FlyoutShowOptions() { ShowMode = FlyoutShowMode.Standard });
-        }
-    }
-
-    private void SettingsIcon_Tapped(object sender, TappedRoutedEventArgs e)
+    private void SettingsIcon_Clicked(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
-        e.Handled = true;
     }
 
-    private void MoreCommandsButton_Tapped(object sender, TappedRoutedEventArgs e)
+    private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
     }
