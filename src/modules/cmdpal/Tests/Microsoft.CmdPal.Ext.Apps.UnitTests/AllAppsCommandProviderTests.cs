@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -68,5 +70,71 @@ public class AllAppsCommandProviderTests
 
         // Assert
         Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public void Constructor_ThrowsOnNullPage()
+    {
+        // Act & Assert
+        Assert.ThrowsException<ArgumentNullException>(() => new AllAppsCommandProvider(null!));
+    }
+
+    [TestMethod]
+    public void ProviderWithMockData_LookupApp_ReturnsCorrectApp()
+    {
+        // Arrange
+        var mockCache = new MockAppCache();
+        var testApp = TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe");
+        mockCache.Win32s.Add(testApp);
+
+        var page = new AllAppsPage(mockCache);
+        var provider = new AllAppsCommandProvider(page);
+        
+        // Wait a bit for initialization to complete
+        Thread.Sleep(100);
+
+        // Act
+        var result = provider.LookupApp("TestApp");
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual("TestApp", result.Title);
+    }
+
+    [TestMethod]
+    public void ProviderWithMockData_LookupApp_ReturnsNullForNonExistentApp()
+    {
+        // Arrange
+        var mockCache = new MockAppCache();
+        var testApp = TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe");
+        mockCache.Win32s.Add(testApp);
+
+        var page = new AllAppsPage(mockCache);
+        var provider = new AllAppsCommandProvider(page);
+        
+        // Wait a bit for initialization to complete
+        Thread.Sleep(100);
+
+        // Act
+        var result = provider.LookupApp("NonExistentApp");
+
+        // Assert
+        Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public void ProviderWithMockData_TopLevelCommands_IncludesListItem()
+    {
+        // Arrange
+        var mockCache = new MockAppCache();
+        var page = new AllAppsPage(mockCache);
+        var provider = new AllAppsCommandProvider(page);
+
+        // Act
+        var commands = provider.TopLevelCommands();
+
+        // Assert
+        Assert.IsNotNull(commands);
+        Assert.IsTrue(commands.Length >= 1); // At least the list item should be present
     }
 }

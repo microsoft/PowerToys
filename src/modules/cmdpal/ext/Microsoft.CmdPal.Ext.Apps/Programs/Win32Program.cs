@@ -936,7 +936,7 @@ public class Win32Program : IProgram
         }
     }
 
-    internal AppItem ToAppItem()
+    public AppItem ToAppItem()
     {
         var app = this;
         var icoPath = string.IsNullOrEmpty(app.IcoPath) ?
