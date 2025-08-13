@@ -4,7 +4,9 @@
 
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -63,7 +65,7 @@ public abstract partial class NavigatablePage : Page
             // First, expand parent if specified
             if (!string.IsNullOrEmpty(_pendingNavigationParams.ParentElementName))
             {
-                var parentElement = FindElementByName(this, _pendingNavigationParams.ParentElementName);
+                var parentElement = FindElementByName(_pendingNavigationParams.ParentElementName);
                 if (parentElement is SettingsExpander expander)
                 {
                     expander.IsExpanded = true;
@@ -74,7 +76,7 @@ public abstract partial class NavigatablePage : Page
             }
 
             // Then find and navigate to the target element
-            var target = FindElementByName(this, _pendingNavigationParams.ElementName);
+            var target = FindElementByName(_pendingNavigationParams.ElementName);
 
             target?.StartBringIntoView(new BringIntoViewOptions
             {
@@ -154,27 +156,9 @@ public abstract partial class NavigatablePage : Page
         ElementCompositionPreview.SetElementChildVisual(target, null);
     }
 
-    protected static FrameworkElement FindElementByName(DependencyObject root, string name)
+    protected FrameworkElement FindElementByName(string name)
     {
-        if (root is FrameworkElement fe)
-        {
-            if (!string.IsNullOrEmpty(fe.Name) && fe.Name == name)
-            {
-                return fe;
-            }
-        }
-
-        int count = VisualTreeHelper.GetChildrenCount(root);
-        for (int i = 0; i < count; i++)
-        {
-            var child = VisualTreeHelper.GetChild(root, i);
-            var result = FindElementByName(child, name);
-            if (result != null)
-            {
-                return result;
-            }
-        }
-
-        return null;
+        var element = this.FindName(name) as FrameworkElement;
+        return element;
     }
 }

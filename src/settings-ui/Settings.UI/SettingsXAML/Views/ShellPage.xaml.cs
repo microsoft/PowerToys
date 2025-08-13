@@ -514,35 +514,5 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var searchParams = new SearchResultsNavigationParams(queryText, matched);
             NavigationService.Navigate<SearchResultsPage>(searchParams);
         }
-
-        private void NavigateToItem(NavigationViewItem item, string elementName = null, string parentElementName = null)
-        {
-            var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
-
-            if (pageType != null && _navViewParentLookup.TryGetValue(pageType, out var parentItem))
-            {
-                parentItem.IsExpanded = true;
-                if (ViewModel.Expanding != null && ViewModel.Expanding != parentItem)
-                {
-                    ViewModel.Expanding.IsExpanded = false;
-                }
-
-                ViewModel.Expanding = parentItem;
-            }
-
-            ViewModel.Selected = item;
-
-            if (pageType != null)
-            {
-                // Create navigation parameters if element name is provided
-                object navigationParameter = null;
-                if (!string.IsNullOrEmpty(elementName))
-                {
-                    navigationParameter = new NavigationParams(elementName, parentElementName);
-                }
-
-                NavigationService.Navigate(pageType, navigationParameter);
-            }
-        }
     }
 }
