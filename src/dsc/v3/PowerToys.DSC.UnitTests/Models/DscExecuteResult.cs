@@ -54,7 +54,7 @@ public class DscExecuteResult
         return lines.SelectMany(line =>
         {
             var map = JsonSerializer.Deserialize<Dictionary<string, string>>(line);
-            return map.Select(kvp => (GetMessageLevel(kvp.Key), kvp.Value)).ToList();
+            return map.Select(v => (GetMessageLevel(v.Key), v.Value)).ToList();
         }).ToList();
     }
 

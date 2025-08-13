@@ -14,7 +14,7 @@ namespace PowerToys.DSC.Commands;
 /// Command to get all supported modules for a specific resource.
 /// </summary>
 /// <remarks>
-/// This class is primarly used for debugging purposes and for build scripts.
+/// This class is primarily used for debugging purposes and for build scripts.
 /// </remarks>
 public sealed class ModulesCommand : BaseCommand
 {
