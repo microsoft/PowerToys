@@ -5,8 +5,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;

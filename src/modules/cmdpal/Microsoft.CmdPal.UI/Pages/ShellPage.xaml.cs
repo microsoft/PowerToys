@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions;

@@ -13,7 +13,9 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Composition;
@@ -175,7 +177,11 @@ public sealed partial class MainWindow : WindowEx,
 
     private void UpdateAcrylic()
     {
-        _acrylicController?.RemoveAllSystemBackdropTargets();
+        if (_acrylicController != null)
+        {
+            _acrylicController.RemoveAllSystemBackdropTargets();
+            _acrylicController.Dispose();
+        }
 
         _acrylicController = GetAcrylicConfig(Content);
 
