@@ -40,7 +40,7 @@ public sealed class ModulesCommand : BaseCommand
             // Print the supported modules for the specified resource
             foreach (var module in Resource!.GetSupportedModules())
             {
-                Console.WriteLine(module);
+                context.Console.WriteLine(module);
             }
         }
     }

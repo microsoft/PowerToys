@@ -34,34 +34,34 @@ public abstract class BaseResource
     /// Calls the get method on the resource.
     /// </summary>
     /// <param name="input">The input string, if any.</param>
-    /// <returns>True if the operation was successful, otherwise false.</returns>
+    /// <returns>True if the operation was successful; otherwise false.</returns>
     public abstract bool GetState(string? input);
 
     /// <summary>
     /// Calls the set method on the resource.
     /// </summary>
     /// <param name="input">The input string, if any.</param>
-    /// <returns>True if the operation was successful, otherwise false.</returns>
+    /// <returns>True if the operation was successful; otherwise false.</returns>
     public abstract bool SetState(string? input);
 
     /// <summary>
     /// Calls the test method on the resource.
     /// </summary>
     /// <param name="input">The input string, if any.</param>
-    /// <returns>True if the operation was successful, otherwise false.</returns>
+    /// <returns>True if the operation was successful; otherwise false.</returns>
     public abstract bool TestState(string? input);
 
     /// <summary>
     /// Calls the export method on the resource.
     /// </summary>
     /// <param name="input"> The input string, if any.</param>
-    /// <returns>True if the operation was successful, otherwise false.</returns>
+    /// <returns>True if the operation was successful; otherwise false.</returns>
     public abstract bool ExportState(string? input);
 
     /// <summary>
     /// Calls the schema method on the resource.
     /// </summary>
-    /// <returns>True if the operation was successful, otherwise false.</returns>
+    /// <returns>True if the operation was successful; otherwise false.</returns>
     public abstract bool Schema();
 
     /// <summary>

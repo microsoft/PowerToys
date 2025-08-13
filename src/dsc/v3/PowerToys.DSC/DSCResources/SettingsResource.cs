@@ -199,13 +199,13 @@ public sealed class SettingsResource : BaseResource
     }
 
     /// <summary>
-    /// Gemerate a DSC resource JSON manifest for the specified module.
+    /// Generate a DSC resource JSON manifest for the specified module.
     /// </summary>
     /// <param name="module">The name of the module for which to generate the manifest.</param>
     /// <returns>A JSON string representing the DSC resource manifest.</returns>
     private string GenerateManifest(string module)
     {
-        // Note: The description is not localized because because the generated
+        // Note: The description is not localized because the generated
         // manifest file will be part of the package
         return new DscManifest($"{module}Settings", "0.1.0")
             .AddDescription($"Allows management of {module} settings state via the DSC v3 command line interface protocol.")

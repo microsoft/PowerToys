@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
   </ItemGroup>
 

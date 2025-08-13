@@ -35,7 +35,7 @@ public interface ISettingsFunctionData
     /// <summary>
     /// Tests if the current settings and the desired state are valid.
     /// </summary>
-    /// <returns>True if the current settings match the desired state, otherwise false.</returns>
+    /// <returns>True if the current settings match the desired state; otherwise false.</returns>
     public bool TestState();
 
     /// <summary>
