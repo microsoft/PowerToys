@@ -93,7 +93,7 @@ public static class TestDataHelper
     /// <summary>
     /// Mock implementation of IPackage for testing purposes.
     /// </summary>
-    private class MockPackage : IPackage
+    private sealed class MockPackage : IPackage
     {
         /// <summary>
         /// Gets or sets the name of the package.

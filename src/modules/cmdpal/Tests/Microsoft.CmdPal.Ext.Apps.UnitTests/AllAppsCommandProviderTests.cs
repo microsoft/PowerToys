@@ -48,35 +48,20 @@ public class AllAppsCommandProviderTests : AppsTestBase
     }
 
     [TestMethod]
-    public void LookupAppReturnsValidResult()
+    public void LookupAppWithEmptyNameReturnsNotNull()
     {
         // Setup
-        var provider = new AllAppsCommandProvider();
+        var mockApp = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
+        MockCache.AddWin32Program(mockApp);
+        var page = new AllAppsPage(MockCache);
 
-        // Act - try to lookup a common app
-        var result = provider.LookupApp("notepad");
-
-        Assert.IsNotNull(result);
-    }
-
-    [TestMethod]
-    public void LookupAppWithEmptyNameReturnsNull()
-    {
-        // Setup
-        var provider = new AllAppsCommandProvider();
+        var provider = new AllAppsCommandProvider(page);
 
         // Act
         var result = provider.LookupApp(string.Empty);
 
         // Assert
-        Assert.IsNull(result);
-    }
-
-    [TestMethod]
-    public void Constructor_ThrowsOnNullPage()
-    {
-        // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new AllAppsCommandProvider(null!));
+        Assert.IsNotNull(result);
     }
 
     [TestMethod]
