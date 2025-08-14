@@ -14,6 +14,16 @@ namespace ShortcutGuide
 {
     public partial class App
     {
+        internal static Dictionary<string, List<ShortcutEntry>> PinnedShortcuts { get; private set; } = null!;
+
+        internal static ShortcutGuideSettings ShortcutGuideSettings { get; private set; } = null!;
+
+        internal static ShortcutGuideProperties ShortcutGuideProperties { get; private set; } = null!;
+
+        internal static MainWindow MainWindow { get; private set; } = null!;
+
+        internal static TaskbarWindow TaskBarWindow { get; private set; } = null!;
+
         public App()
         {
             InitializeComponent();
@@ -48,15 +58,5 @@ namespace ShortcutGuide
             settingsUtils.SaveSettings(JsonSerializer.Serialize(App.ShortcutGuideSettings, new JsonSerializerOptions { WriteIndented = true }), "Shortcut Guide");
 #pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
         }
-
-        internal static Dictionary<string, List<ShortcutEntry>> PinnedShortcuts { get; private set; } = null!;
-
-        internal static ShortcutGuideSettings ShortcutGuideSettings { get; private set; } = null!;
-
-        internal static ShortcutGuideProperties ShortcutGuideProperties { get; private set; } = null!;
-
-        internal static MainWindow MainWindow { get; private set; } = null!;
-
-        internal static TaskbarWindow TaskBarWindow { get; private set; } = null!;
     }
 }

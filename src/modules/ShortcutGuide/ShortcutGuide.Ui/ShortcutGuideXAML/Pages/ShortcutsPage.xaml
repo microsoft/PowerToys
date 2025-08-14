@@ -15,6 +15,11 @@
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
+                <Grid.ContextFlyout>
+                    <MenuFlyout Opening="PinFlyout_Opening">
+                        <MenuFlyoutItem Click="Pin_Click" Text="Pin" />
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
                 <StackPanel VerticalAlignment="Center" Orientation="Vertical">
                     <TextBlock Text="{x:Bind Name}" />
                     <TextBlock
