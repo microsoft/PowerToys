@@ -553,6 +553,7 @@
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)HistoryPluginFolder" Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)PowerToysPluginFolder" Directory="Resource$(var.IdSafeLanguage)PowerToysPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ValueGeneratorPluginFolder" Directory="Resource$(var.IdSafeLanguage)ValueGeneratorPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)WinUI3AppsInstallFolder" Directory="Resource$(var.IdSafeLanguage)WinUI3AppsInstallFolder" On="uninstall"/>
       <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>
