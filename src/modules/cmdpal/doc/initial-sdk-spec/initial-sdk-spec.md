@@ -2046,6 +2046,230 @@ Fortunately, we can put all of that (`GetApiExtensionStubs`,
 developers won't have to do anything. The toolkit will just do the right thing
 for them.
 
+
+## Addenda II: Rich Search Box
+
+What if the search box wasn't just a text box, but was an actually rich search surface?
+
+```c#
+
+
+[uuid("a578ed30-1374-4601-97ba-8bd36a0097cd")]
+interface IToken requires INotifyPropChanged {};
+
+interface IBasicStringToken requires IToken
+{
+    String Text { get; }
+}
+
+// Does ICommandArgument require IToken,
+// so that CmdPal can try to use the `Token` types for figuring out what kind of picker to show the user?
+// Or is a Parameter an IToken? maybe that
+interface ICommandArgument requires INotifyPropChanged 
+{
+    IIconInfo Icon { get; };
+    String DisplayName { get; };
+
+    Object Value { get; }; // No setter. Each individual token type will have its own setter.
+}
+interface IStringInputToken requires ICommandArgument
+{
+    String Text { get; set; } // This is basically just the `.Value`, but with a setter
+}
+interface ICustomHwndPickerToken requires IToken, ICommandArgument
+{
+    void ShowPicker(UInt64 hostHwnd); // extension is responsible for setting your own .Value
+}
+interface IStaticPickerToken requires IToken, ICommandArgument
+{
+    IPickerToken[] GetItems();
+    IPickerToken SelectedItem { get; set; }
+}
+interface IDynamicPickerToken requires IStaticPickerToken
+{
+    String SearchText { get; set; } 
+    // Loading, HasMore, LoadMore?
+}
+interface IPickerToken requires IToken, ICommandArgument
+{
+    String Title { get; } 
+    String Subtitle { get; } 
+    IIconInfo Icon { get; } 
+}
+interface IRichSearch requires INotifyPropChanged
+{
+    IToken[] SearchTokens{ get; }; // set is bad. We can't be creating objects and sending them to the extension. 
+}
+
+
+interface ICommandParameter requires IToken 
+{
+    String Name { get; };
+    Boolean Required{ get; };
+}
+interface IInvokableCommandWithParameters requires ICommand {
+    ICommandParameter[] Parameters { get; };
+    ICommandResult InvokeWithArgs(Object sender, ICommandArgument[] args);
+};
+```
+
+What are things we actually want users to be able to do with this?
+* Type just plain text. 
+* Type a string that has a special meaning, like `@` or `#`, and trigger some suggestions (as provided by the extension)
+  * `#` might bring up a special kind of string input (which is treated visibly differently, like a tag)
+  * `/` might bring up a static list of commands that the user can invoke 
+  * `@` might bring up a dynamic list of users to filter (and those are dynamically generated as the user types, so we don't return 40000 users)
+* There may be a button or other UI element which _also_ allows the user to trigger a picker (e.g. if the extension wants to manually add a token to the search box)
+* If the user types, we add it to the basic string. 
+* As the user types, the extension gets an opportunity to to instead ask for a picker to show up, which will then be shown in the search box.
+* If the user backspaces a token, it removes the whole token (except for the basic string token, which is just a text box)
+* Is the basic strings interleaved between tokens _also a token_?
+* It's like it's a 
+
+<table>
+
+<tr>
+
+<td>
+
+```cs
+public partial class BaseObservable : INotifyPropChanged
+{
+    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
+    protected void OnPropertyChanged(string propertyName) => 
+        try { PropChanged?.Invoke(this, new PropChangedEventArgs(propertyName)); } catch { }
+}
+```
+
+
+```cs
+class M365RichSearch : BaseObservable, IRichSearch
+{
+    public IToken[] SearchTokens {
+        get => _searchTokens;
+        set {
+            if (_searchTokens != value) {
+                UpdateSearchTokens(_searchTokens, value);
+                OnPropertyChanged(nameof(SearchTokens));
+            }
+        }
+    }
+
+    public M365RichSearch() {
+        // Initialize with a default token, e.g. a text input token
+        var baseStringInput = new BasicStringToken();
+        baseStringInput.PropChanged += OnStringTokenChanged;
+        SearchTokens = [baseStringInput];
+    }
+
+    private IToken[] _searchTokens = [];
+
+    private void UpdateSearchTokens(IToken[] oldTokens, IToken[] newTokens) {
+        // probably need to add/remove event handlers on the tokens
+        _searchTokens = newTokens;
+    }
+
+    private void OnStringTokenChanged(object sender, PropChangedEventArgs args) {
+        if (args.PropertyName == nameof(BasicStringToken.Text)) {
+            OnStringTextChanged(sender, ((BasicStringToken)sender).Text);
+        }
+    }
+    private void OnStringTextChanged(object sender, string newText) {
+        if (newText.Length > 0 && newText[0] == '@') {
+            // User typed '@', let's add a M365EntityPickerToken
+            var entityPickerToken = new M365EntityPickerToken();
+            SearchTokens = SearchTokens.Append(entityPickerToken).ToArray();
+            OnPropertyChanged(nameof(SearchTokens));
+        } else if (newText.Length > 0 && newText[0] == '#') {
+            // User typed '#', let's add a tag token or something
+            // (not implemented here)
+        }
+
+    }
+}
+```
+
+</td>
+<td>
+
+```cs
+class BasicStringToken : BaseObservable, IBasicStringToken
+{
+    public string Text {
+        get => _text;
+        set {
+            if (_text != value) {
+                var oldValue = _text;
+                _text = value;
+                OnPropertyChanged(nameof(Text));
+            }
+        }
+    }
+
+    private string _text;
+
+    public BasicStringToken(string initialText = "") {
+        _text = initialText;
+    }
+
+}
+```
+
+```cs
+class M365EntityPickerToken : BaseObservable, IDynamicPickerToken
+{
+    public IIconInfo? Icon => _selected?.Icon;
+    public string? DisplayName => _selected?.DisplayName;
+    public object? Value => _selected?.Value;
+
+    public string SearchText {
+        get => _searchText;
+        set {
+            if (_searchText != value) {
+                var oldValue = _searchText;
+                _searchText = value;
+                UpdateSearchText(oldValue, value);
+                OnPropertyChanged(nameof(SearchText));
+            }
+        }
+    }
+    public IPickerToken? SelectedItem {
+        get => _selected;
+        set {
+            if (_selected != value) {
+                _selected = value;
+                OnPropertyChanged(nameof(SelectedItem));
+                OnPropertyChanged(nameof(Icon));
+                OnPropertyChanged(nameof(DisplayName));
+            }
+        }
+    }
+
+    public M365EntityPickerToken() {
+        UpdateSearchText(null, string.Empty);
+    }
+
+    public IPickerToken[] GetItems() {
+        // return a list of M365 entities based on the search text
+        return _items;
+    }
+    
+    private string _searchText = "";
+    private IPickerToken[] _items = [];
+    private IPickerToken? _selected = null;
+
+    private void UpdateSearchText(string? oldValue, string newValue) {
+        // Call out to M365 APIs to get the entities based on the search text
+        // and update the list of items.
+        _items = M365Api.GetEntities(newValue); // Pretend this is it.
+    }
+}
+```
+
+</td>
+</tr>
+</table>
+
 ## Class diagram
 
 This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconData` and `IPropChanged`, which are used in many places.)
