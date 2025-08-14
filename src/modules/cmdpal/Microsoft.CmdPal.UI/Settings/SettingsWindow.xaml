@@ -71,7 +71,7 @@
                     x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
-                <!-- "Internal Tools" page item is added dynamically from code -->
+                <!--  "Internal Tools" page item is added dynamically from code  -->
             </NavigationView.MenuItems>
 
             <Grid>
