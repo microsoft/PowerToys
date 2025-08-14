@@ -50,27 +50,33 @@ public abstract class SettingsResourceModuleTest<TSettingsConfig> : BaseDscTest
     [TestMethod]
     public void Get_Success()
     {
+        // Arrange
+        var settingsBeforeExecute = GetSettings();
+
         // Act
         var result = ExecuteDscCommand<GetCommand>("--resource", SettingsResource.ResourceName, "--module", Module);
         var state = result.OutputState<SettingsResourceObject<TSettingsConfig>>();
 
         // Assert
         Assert.IsTrue(result.Success);
-        Assert.Contains(CreateGetResponse(), result.Output);
-        AssertStateAndSettingsAreEqual(GetSettings(), state);
+        AssertSettingsAreEqual(settingsBeforeExecute, GetSettings());
+        AssertStateAndSettingsAreEqual(settingsBeforeExecute, state);
     }
 
     [TestMethod]
     public void Export_Success()
     {
+        // Arrange
+        var settingsBeforeExecute = GetSettings();
+
         // Act
         var result = ExecuteDscCommand<ExportCommand>("--resource", SettingsResource.ResourceName, "--module", Module);
         var state = result.OutputState<SettingsResourceObject<TSettingsConfig>>();
 
         // Assert
         Assert.IsTrue(result.Success);
-        Assert.Contains(CreateGetResponse(), result.Output);
-        AssertStateAndSettingsAreEqual(GetSettings(), state);
+        AssertSettingsAreEqual(settingsBeforeExecute, GetSettings());
+        AssertStateAndSettingsAreEqual(settingsBeforeExecute, state);
     }
 
     [TestMethod]
