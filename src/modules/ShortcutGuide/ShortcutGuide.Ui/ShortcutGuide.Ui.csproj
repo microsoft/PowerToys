@@ -35,7 +35,6 @@
   <ItemGroup>
     <None Remove="ShortcutGuideXAML\CustomNavigationViewStyle.xaml" />
     <None Remove="ShortcutGuideXAML\Pages\ShortcutsPage.xaml" />
-    <None Remove="ShortcutGuideXAML\ShortcutView.xaml" />
     <None Remove="ShortcutGuideXAML\TaskbarIndicator.xaml" />
     <None Remove="ShortcutGuideXAML\TaskbarWindow.xaml" />
     <None Include="Assets\ShortcutGuide\*">
@@ -125,11 +124,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="ShortcutGuideXAML\TaskbarIndicator.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="ShortcutGuideXAML\ShortcutView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

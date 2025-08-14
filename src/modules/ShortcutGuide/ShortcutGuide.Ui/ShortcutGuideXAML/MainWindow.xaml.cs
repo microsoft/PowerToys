@@ -179,7 +179,6 @@ namespace ShortcutGuide
             if (args.SelectedItem is NavigationViewItem selectedItem)
             {
                 _selectedAppName = selectedItem.Name;
-                ShortcutPageParameters.CurrentPageName = _selectedAppName;
                 _shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(_selectedAppName);
                 PopulateCategorySelector();
             }
@@ -238,7 +237,7 @@ namespace ShortcutGuide
                     }
                 }
 
-                ContentFrame.Navigate(selectedPage, new ShortcutPageParam() { ShortcutFile = file, PageIndex = param, AppName = _selectedAppName });
+                ContentFrame.Navigate(selectedPage, new ShortcutPageNavParam() { ShortcutFile = file, PageIndex = param, AppName = _selectedAppName });
             }
         }
 

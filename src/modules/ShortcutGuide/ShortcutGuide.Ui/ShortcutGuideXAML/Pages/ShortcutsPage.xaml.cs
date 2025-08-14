@@ -31,7 +31,7 @@ namespace ShortcutGuide.Pages
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is ShortcutPageParam param)
+            if (e.Parameter is ShortcutPageNavParam param)
             {
                 _appName = param.AppName;
                 _shortcutFile = param.ShortcutFile;

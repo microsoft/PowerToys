@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ShortcutGuide.Models
 {
-    internal sealed class ShortcutPageParam
+    internal sealed class ShortcutPageNavParam
     {
         public string AppName { get; set; } = string.Empty;
 
