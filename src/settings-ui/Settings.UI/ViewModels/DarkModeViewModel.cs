@@ -172,7 +172,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public uint Latitude
+        public string Latitude
         {
             get => ModuleSettings.Properties.Latitude;
             set
@@ -185,7 +185,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public uint Longitude
+        public string Longitude
         {
             get => ModuleSettings.Properties.Longitude;
             set

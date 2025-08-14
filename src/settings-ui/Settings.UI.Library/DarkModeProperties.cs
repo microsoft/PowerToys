@@ -21,8 +21,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             UseLocation = false;
             LightTime = 0;
             DarkTime = 1;
-            Latitude = 0;
-            Longitude = 0;
+            Latitude = "0.0";
+            Longitude = "0.0";
         }
 
         private bool _changeSystem;
@@ -105,10 +105,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private uint _latitude;
+        private string _latitude;
 
         [JsonPropertyName("latitude")]
-        public uint Latitude
+        public string Latitude
         {
             get => _latitude;
             set
@@ -121,10 +121,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private uint _longitude;
+        private string _longitude;
 
         [JsonPropertyName("longitude")]
-        public uint Longitude
+        public string Longitude
         {
             get => _longitude;
             set

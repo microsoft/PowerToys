@@ -76,8 +76,8 @@ public:
     // Constructor
     DarkModeInterface()
     {
-        init_settings();
         LoggerHelpers::init_logger(L"DarkMode", L"ModuleInterface", LogSettings::darkModeLoggerName);
+        init_settings();
     };
 
     virtual const wchar_t* get_key() override
@@ -356,9 +356,37 @@ public:
     //}
 };
 
+std::wstring utf8_to_wstring(const std::string& str)
+{
+    if (str.empty())
+        return std::wstring();
+
+    int size_needed = MultiByteToWideChar(
+        CP_UTF8,
+        0,
+        str.c_str(),
+        static_cast<int>(str.size()),
+        nullptr,
+        0);
+
+    std::wstring wstr(size_needed, 0);
+
+    MultiByteToWideChar(
+        CP_UTF8,
+        0,
+        str.c_str(),
+        static_cast<int>(str.size()),
+        &wstr[0],
+        size_needed);
+
+    return wstr;
+}
+
 // Load the settings file.
 void DarkModeInterface::init_settings()
 {
+    Logger::info(L"[DarkMode] init_settings: starting to load settings for module");
+
     try
     {
         PowerToysSettings::PowerToyValues settings =
@@ -379,15 +407,27 @@ void DarkModeInterface::init_settings()
         if (auto v = settings.get_int_value(L"dark_time"))
             g_settings.m_darkTime = *v;
 
+        // Flexible lat/long
         if (auto v = settings.get_string_value(L"latitude"))
             g_settings.m_latitude = *v;
+        else if (auto vi = settings.get_int_value(L"latitude"))
+            g_settings.m_latitude = std::to_wstring(*vi);
+        else
+            g_settings.m_latitude = L"0.0";
 
         if (auto v = settings.get_string_value(L"longitude"))
             g_settings.m_longitude = *v;
+        else if (auto vi = settings.get_int_value(L"longitude"))
+            g_settings.m_longitude = std::to_wstring(*vi);
+        else
+            g_settings.m_longitude = L"0.0";
+
+        Logger::info(L"[DarkMode] init_settings: loaded successfully");
     }
-    catch (std::exception&)
+    catch (const std::exception& e)
     {
-        // Failed to load, keep default settings
+        std::wstring whatStr = utf8_to_wstring(e.what());
+        Logger::error(L"[DarkMode] init_settings: exception while loading settings: {}", whatStr);
     }
 }
 

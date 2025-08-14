@@ -133,10 +133,8 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
 struct ThemeSettings
 {
     bool useLocation = true;
-    int lightHour = 7;
-    int lightMinute = 0;
-    int darkHour = 19;
-    int darkMinute = 0;
+    int lightTime = 7;
+    int darkTime = 0;
     double latitude = 39.9526;
     double longitude = -75.1652;
     bool forceDark = false;
@@ -167,8 +165,8 @@ DWORD WINAPI ServiceWorkerThread(void* lpParam)
             settings.latitude, settings.longitude, st.wYear, st.wMonth, st.wDay);
 
         int nowMin = st.wHour * 60 + st.wMinute;
-        int lightMin = settings.useLocation ? sun.sunriseHour * 60 + sun.sunriseMinute : settings.lightHour * 60 + settings.lightMinute;
-        int darkMin = settings.useLocation ? sun.sunsetHour * 60 + sun.sunsetMinute : settings.darkHour * 60 + settings.darkMinute;
+        int lightMin = settings.useLocation ? sun.sunriseHour * 60 + sun.sunriseMinute : settings.lightTime;
+        int darkMin = settings.useLocation ? sun.sunsetHour * 60 + sun.sunsetMinute : settings.darkTime;
 
         // Print light/dark minutes and HH:MM forms
         wchar_t msg[160];

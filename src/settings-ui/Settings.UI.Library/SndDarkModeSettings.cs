@@ -11,15 +11,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class SndDarkModeSettings
     {
         [JsonPropertyName("DarkMode")]
-        public DarkModeProperties Settings { get; set; }
+        public DarkModeSettings Settings { get; set; }
 
         public SndDarkModeSettings()
         {
         }
 
-        public SndDarkModeSettings(DarkModeProperties properties)
+        public SndDarkModeSettings(DarkModeSettings settings)
         {
-            Settings = properties;
+            Settings = settings;
         }
 
         public string ToJsonString()

@@ -10,7 +10,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI" 
     xmlns:ViewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-  d:DataContext="{d:DesignInstance Type=ViewModel:DarkModeViewModel}"
+    d:DataContext="{d:DesignInstance Type=ViewModel:DarkModeViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 

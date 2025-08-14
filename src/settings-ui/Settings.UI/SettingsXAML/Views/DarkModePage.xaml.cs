@@ -113,10 +113,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (ViewModel.ModuleSettings != null)
                 {
-                    SndDarkModeSettings currentSettings = new(_moduleSettingsRepository.SettingsConfig.Properties);
+                    SndDarkModeSettings currentSettings = new(_moduleSettingsRepository.SettingsConfig);
                     SndModuleSettings<SndDarkModeSettings> csIpcMessage = new(currentSettings);
 
-                    SndDarkModeSettings outSettings = new(ViewModel.ModuleSettings.Properties);
+                    SndDarkModeSettings outSettings = new(ViewModel.ModuleSettings);
                     SndModuleSettings<SndDarkModeSettings> outIpcMessage = new(outSettings);
 
                     string csMessage = csIpcMessage.ToJsonString();
