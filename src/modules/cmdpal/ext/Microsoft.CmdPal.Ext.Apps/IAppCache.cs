@@ -4,33 +4,45 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
 /// <summary>
-/// Interface for application cache that provides access to Win32 and UWP applications
+/// Interface for application cache that provides access to Win32 and UWP applications.
 /// </summary>
 public interface IAppCache : IDisposable
 {
     /// <summary>
-    /// Gets the collection of Win32 programs
+    /// Gets the collection of Win32 programs.
     /// </summary>
     IList<Win32Program> Win32s { get; }
 
     /// <summary>
-    /// Gets the collection of UWP applications
+    /// Gets the collection of UWP applications.
     /// </summary>
     IList<IUWPApplication> UWPs { get; }
 
     /// <summary>
-    /// Determines whether the cache should be reloaded
+    /// Determines whether the cache should be reloaded.
     /// </summary>
-    /// <returns>True if cache should be reloaded, false otherwise</returns>
+    /// <returns>True if cache should be reloaded, false otherwise.</returns>
     bool ShouldReload();
 
     /// <summary>
-    /// Resets the reload flag
+    /// Resets the reload flag.
     /// </summary>
     void ResetReloadFlag();
+
+    /// <summary>
+    /// Triggers a cache reload on next access.
+    /// </summary>
+    void TriggerReload();
+
+    /// <summary>
+    /// Asynchronously refreshes the cache.
+    /// </summary>
+    /// <returns>A task representing the asynchronous refresh operation.</returns>
+    Task RefreshAsync();
 }

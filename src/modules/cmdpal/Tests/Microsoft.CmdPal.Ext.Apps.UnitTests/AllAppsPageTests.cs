@@ -4,13 +4,13 @@
 
 using System;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
 [TestClass]
-public class AllAppsPageTests
+public class AllAppsPageTests : AppsTestBase
 {
     [TestMethod]
     public void AllAppsPage_Constructor_ThrowsOnNullAppCache()
@@ -35,17 +35,11 @@ public class AllAppsPageTests
     }
 
     [TestMethod]
-    public void AllAppsPage_GetItems_ReturnsEmptyWithEmptyCache()
+    public async Task AllAppsPage_GetItems_ReturnsEmptyWithEmptyCache()
     {
-        // Arrange
-        var mockCache = new MockAppCache();
-        var page = new AllAppsPage(mockCache);
-        
-        // Wait a bit for initialization to complete
-        Thread.Sleep(100);
-
-        // Act
-        var items = page.GetItems();
+        // Act - Wait for initialization to complete
+        await WaitForPageInitializationAsync();
+        var items = Page.GetItems();
 
         // Assert
         Assert.IsNotNull(items);
@@ -53,20 +47,20 @@ public class AllAppsPageTests
     }
 
     [TestMethod]
-    public void AllAppsPage_GetItems_ReturnsAppsFromCache()
+    public async Task AllAppsPage_GetItems_ReturnsAppsFromCacheAsync()
     {
         // Arrange
         var mockCache = new MockAppCache();
         var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
         var uwpApp = TestDataHelper.CreateTestUWPApplication("Calculator");
-        
+
         mockCache.Win32s.Add(win32App);
         mockCache.UWPs.Add(uwpApp);
 
         var page = new AllAppsPage(mockCache);
-        
+
         // Wait a bit for initialization to complete
-        Thread.Sleep(100);
+        await Task.Delay(100);
 
         // Act
         var items = page.GetItems();
@@ -74,29 +68,29 @@ public class AllAppsPageTests
         // Assert
         Assert.IsNotNull(items);
         Assert.AreEqual(2, items.Length);
-        
+
         var notepadItem = items.FirstOrDefault(i => i.Title == "Notepad");
         var calculatorItem = items.FirstOrDefault(i => i.Title == "Calculator");
-        
+
         Assert.IsNotNull(notepadItem);
         Assert.IsNotNull(calculatorItem);
     }
 
     [TestMethod]
-    public void AllAppsPage_GetItems_FiltersDisabledApps()
+    public async Task AllAppsPage_GetItems_FiltersDisabledApps()
     {
         // Arrange
         var mockCache = new MockAppCache();
         var enabledApp = TestDataHelper.CreateTestWin32Program("EnabledApp", "C:\\EnabledApp.exe", enabled: true);
         var disabledApp = TestDataHelper.CreateTestWin32Program("DisabledApp", "C:\\DisabledApp.exe", enabled: false);
-        
+
         mockCache.Win32s.Add(enabledApp);
         mockCache.Win32s.Add(disabledApp);
 
         var page = new AllAppsPage(mockCache);
-        
+
         // Wait a bit for initialization to complete
-        Thread.Sleep(100);
+        await Task.Delay(100);
 
         // Act
         var items = page.GetItems();
@@ -108,20 +102,20 @@ public class AllAppsPageTests
     }
 
     [TestMethod]
-    public void AllAppsPage_GetItems_FiltersInvalidWin32Apps()
+    public async Task AllAppsPage_GetItems_FiltersInvalidWin32Apps()
     {
         // Arrange
         var mockCache = new MockAppCache();
         var validApp = TestDataHelper.CreateTestWin32Program("ValidApp", "C:\\ValidApp.exe", enabled: true, valid: true);
         var invalidApp = TestDataHelper.CreateTestWin32Program("InvalidApp", "C:\\InvalidApp.exe", enabled: true, valid: false);
-        
+
         mockCache.Win32s.Add(validApp);
         mockCache.Win32s.Add(invalidApp);
 
         var page = new AllAppsPage(mockCache);
-        
+
         // Wait a bit for initialization to complete
-        Thread.Sleep(100);
+        await Task.Delay(100);
 
         // Act
         var items = page.GetItems();
@@ -133,7 +127,7 @@ public class AllAppsPageTests
     }
 
     [TestMethod]
-    public void AllAppsPage_GetPinnedApps_ReturnsEmptyWhenNoAppsArePinned()
+    public async Task AllAppsPage_GetPinnedApps_ReturnsEmptyWhenNoAppsArePinned()
     {
         // Arrange
         var mockCache = new MockAppCache();
@@ -141,9 +135,9 @@ public class AllAppsPageTests
         mockCache.Win32s.Add(app);
 
         var page = new AllAppsPage(mockCache);
-        
+
         // Wait a bit for initialization to complete
-        Thread.Sleep(100);
+        await Task.Delay(100);
 
         // Act
         var pinnedApps = page.GetPinnedApps();

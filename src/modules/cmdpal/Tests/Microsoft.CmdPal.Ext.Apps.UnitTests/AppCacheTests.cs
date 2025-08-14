@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -30,7 +31,7 @@ public class AppCacheTests
         var mockCache = new MockAppCache();
 
         // Act
-        mockCache.SetShouldReload(true);
+        mockCache.TriggerReload();
 
         // Assert
         Assert.IsTrue(mockCache.ShouldReload());
@@ -41,7 +42,7 @@ public class AppCacheTests
     {
         // Arrange
         var mockCache = new MockAppCache();
-        mockCache.SetShouldReload(true);
+        mockCache.TriggerReload();
 
         // Act
         mockCache.ResetReloadFlag();
@@ -80,11 +81,12 @@ public class AppCacheTests
         var testApp = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
 
         // Act
-        mockCache.Win32s.Add(testApp);
+        mockCache.AddWin32Program(testApp);
 
         // Assert
         Assert.AreEqual(1, mockCache.Win32s.Count);
         Assert.AreEqual("Notepad", mockCache.Win32s.First().Name);
+        Assert.IsTrue(mockCache.ShouldReload()); // Should trigger reload
     }
 
     [TestMethod]
@@ -95,11 +97,12 @@ public class AppCacheTests
         var testApp = TestDataHelper.CreateTestUWPApplication("Calculator");
 
         // Act
-        mockCache.UWPs.Add(testApp);
+        mockCache.AddUWPApplication(testApp);
 
         // Assert
         Assert.AreEqual(1, mockCache.UWPs.Count);
         Assert.AreEqual("Calculator", mockCache.UWPs.First().DisplayName);
+        Assert.IsTrue(mockCache.ShouldReload()); // Should trigger reload
     }
 
     [TestMethod]
@@ -110,5 +113,54 @@ public class AppCacheTests
 
         // Act & Assert - should not throw
         mockCache.Dispose();
+    }
+
+    [TestMethod]
+    public async Task MockAppCache_RefreshAsync_ResetsReloadFlag()
+    {
+        // Arrange
+        var mockCache = new MockAppCache();
+        mockCache.TriggerReload();
+
+        // Act
+        await mockCache.RefreshAsync();
+
+        // Assert
+        Assert.IsFalse(mockCache.ShouldReload());
+    }
+
+    [TestMethod]
+    public void MockAppCache_RemoveWin32Program_TriggersReload()
+    {
+        // Arrange
+        var mockCache = new MockAppCache();
+        var testApp = TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe");
+        mockCache.AddWin32Program(testApp);
+        mockCache.ResetReloadFlag(); // Reset after add
+
+        // Act
+        mockCache.RemoveWin32Program(testApp);
+
+        // Assert
+        Assert.AreEqual(0, mockCache.Win32s.Count);
+        Assert.IsTrue(mockCache.ShouldReload());
+    }
+
+    [TestMethod]
+    public void MockAppCache_ClearAll_TriggersReload()
+    {
+        // Arrange
+        var mockCache = new MockAppCache();
+        mockCache.AddWin32Program(TestDataHelper.CreateTestWin32Program("App1", "C:\\App1.exe"));
+        mockCache.AddUWPApplication(TestDataHelper.CreateTestUWPApplication("App2"));
+        mockCache.ResetReloadFlag(); // Reset after adds
+
+        // Act
+        mockCache.ClearAll();
+
+        // Assert
+        Assert.AreEqual(0, mockCache.Win32s.Count);
+        Assert.AreEqual(0, mockCache.UWPs.Count);
+        Assert.IsTrue(mockCache.ShouldReload());
     }
 }

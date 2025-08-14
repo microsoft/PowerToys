@@ -3,61 +3,58 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
 [TestClass]
-public class IntegrationTests
+public class IntegrationTests : AppsTestBase
 {
     [TestMethod]
-    public void FullIntegration_AppCacheToCommandProvider_WorksCorrectly()
+    public async Task FullIntegration_AppCacheToCommandProvider_WorksCorrectly()
     {
-        // Arrange - Create a mock cache with test data
-        var mockCache = new MockAppCache();
-        
-        // Add various types of applications
+        // Arrange - Add various types of applications using improved Mock methods
         var notepadApp = TestDataHelper.CreateTestWin32Program(
-            "Notepad", 
-            "C:\\Windows\\System32\\notepad.exe", 
-            enabled: true, 
+            "Notepad",
+            "C:\\Windows\\System32\\notepad.exe",
+            enabled: true,
             valid: true);
-            
+
         var calculatorApp = TestDataHelper.CreateTestUWPApplication(
-            "Calculator", 
-            "Microsoft.WindowsCalculator_8wekyb3d8bbwe", 
+            "Calculator",
+            "Microsoft.WindowsCalculator_8wekyb3d8bbwe",
             enabled: true);
-            
+
         var disabledApp = TestDataHelper.CreateTestWin32Program(
-            "DisabledApp", 
-            "C:\\DisabledApp.exe", 
-            enabled: false, 
+            "DisabledApp",
+            "C:\\DisabledApp.exe",
+            enabled: false,
             valid: true);
 
-        mockCache.Win32s.Add(notepadApp);
-        mockCache.Win32s.Add(disabledApp);
-        mockCache.UWPs.Add(calculatorApp);
+        // Use improved Mock methods
+        MockCache.AddWin32Program(notepadApp);
+        MockCache.AddWin32Program(disabledApp);
+        MockCache.AddUWPApplication(calculatorApp);
 
-        // Create the page and provider with dependency injection
-        var page = new AllAppsPage(mockCache);
-        var provider = new AllAppsCommandProvider(page);
-        
+        // Create provider with dependency injection
+        var provider = new AllAppsCommandProvider(Page);
+
         // Wait for initialization
-        Thread.Sleep(100);
+        await WaitForPageInitializationAsync();
 
         // Act & Assert - Test the complete flow
-        
+
         // 1. Check that the provider has top level commands
         var topLevelCommands = provider.TopLevelCommands();
         Assert.IsNotNull(topLevelCommands);
         Assert.IsTrue(topLevelCommands.Length > 0);
 
         // 2. Check that page returns correct items (filtering works)
-        var items = page.GetItems();
+        var items = Page.GetItems();
         Assert.IsNotNull(items);
         Assert.AreEqual(2, items.Length); // Only enabled apps should be returned
-        
+
         var itemTitles = items.Select(i => i.Title).ToArray();
         Assert.IsTrue(itemTitles.Contains("Notepad"));
         Assert.IsTrue(itemTitles.Contains("Calculator"));
@@ -76,15 +73,15 @@ public class IntegrationTests
         Assert.IsNull(notFound);
 
         // 4. Test cache reload functionality
-        mockCache.SetShouldReload(true);
-        Assert.IsTrue(mockCache.ShouldReload());
-        
-        mockCache.ResetReloadFlag();
-        Assert.IsFalse(mockCache.ShouldReload());
+        MockCache.TriggerReload();
+        Assert.IsTrue(MockCache.ShouldReload());
+
+        await MockCache.RefreshAsync();
+        Assert.IsFalse(MockCache.ShouldReload());
     }
 
     [TestMethod]
-    public void CacheReload_TriggersPageRefresh()
+    public async Task CacheReload_TriggersPageRefresh()
     {
         // Arrange
         var mockCache = new MockAppCache();
@@ -92,7 +89,8 @@ public class IntegrationTests
         mockCache.Win32s.Add(initialApp);
 
         var page = new AllAppsPage(mockCache);
-        Thread.Sleep(100); // Wait for initial load
+
+        await Task.Delay(100); // Allow async initialization to complete
 
         // Verify initial state
         var initialItems = page.GetItems();
@@ -101,7 +99,7 @@ public class IntegrationTests
 
         // Act - Simulate a cache reload scenario
         mockCache.SetShouldReload(true);
-        
+
         // Add a new app to the cache
         var newApp = TestDataHelper.CreateTestWin32Program("NewApp", "C:\\NewApp.exe");
         mockCache.Win32s.Add(newApp);
@@ -114,7 +112,7 @@ public class IntegrationTests
         var titles = updatedItems.Select(i => i.Title).ToArray();
         Assert.IsTrue(titles.Contains("InitialApp"));
         Assert.IsTrue(titles.Contains("NewApp"));
-        
+
         // Verify reload flag was reset
         Assert.IsFalse(mockCache.ShouldReload());
     }
@@ -123,7 +121,7 @@ public class IntegrationTests
     public void DefaultConstructors_MaintainBackwardCompatibility()
     {
         // This test ensures that existing code using default constructors still works
-        
+
         // Act - Use default constructors as existing code would
         var defaultPage = new AllAppsPage();
         var defaultProvider = new AllAppsCommandProvider();

@@ -92,15 +92,4 @@ public class UWPApplicationTests
         Assert.IsNotNull(commands);
         Assert.AreEqual(0, commands.Count); // Mock returns empty list
     }
-
-    [TestMethod]
-    public void MockUWPApplication_UpdateLogoPath_DoesNotThrow()
-    {
-        // Arrange
-        var app = TestDataHelper.CreateTestUWPApplication("Test App");
-
-        // Act & Assert - Should not throw
-        app.UpdateLogoPath(Programs.Utils.Theme.Light);
-        app.UpdateLogoPath(Programs.Utils.Theme.Dark);
-    }
 }

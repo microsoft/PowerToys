@@ -4,13 +4,13 @@
 
 using System;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
 [TestClass]
-public class AllAppsCommandProviderTests
+public class AllAppsCommandProviderTests : AppsTestBase
 {
     [TestMethod]
     public void ProviderHasDisplayName()
@@ -80,18 +80,16 @@ public class AllAppsCommandProviderTests
     }
 
     [TestMethod]
-    public void ProviderWithMockData_LookupApp_ReturnsCorrectApp()
+    public async Task ProviderWithMockData_LookupApp_ReturnsCorrectApp()
     {
         // Arrange
-        var mockCache = new MockAppCache();
         var testApp = TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe");
-        mockCache.Win32s.Add(testApp);
+        MockCache.AddWin32Program(testApp);
 
-        var page = new AllAppsPage(mockCache);
-        var provider = new AllAppsCommandProvider(page);
-        
-        // Wait a bit for initialization to complete
-        Thread.Sleep(100);
+        var provider = new AllAppsCommandProvider(Page);
+
+        // Wait for initialization to complete
+        await WaitForPageInitializationAsync();
 
         // Act
         var result = provider.LookupApp("TestApp");
@@ -102,18 +100,16 @@ public class AllAppsCommandProviderTests
     }
 
     [TestMethod]
-    public void ProviderWithMockData_LookupApp_ReturnsNullForNonExistentApp()
+    public async Task ProviderWithMockData_LookupApp_ReturnsNullForNonExistentApp()
     {
         // Arrange
-        var mockCache = new MockAppCache();
         var testApp = TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe");
-        mockCache.Win32s.Add(testApp);
+        MockCache.AddWin32Program(testApp);
 
-        var page = new AllAppsPage(mockCache);
-        var provider = new AllAppsCommandProvider(page);
-        
-        // Wait a bit for initialization to complete
-        Thread.Sleep(100);
+        var provider = new AllAppsCommandProvider(Page);
+
+        // Wait for initialization to complete
+        await WaitForPageInitializationAsync();
 
         // Act
         var result = provider.LookupApp("NonExistentApp");
@@ -126,9 +122,7 @@ public class AllAppsCommandProviderTests
     public void ProviderWithMockData_TopLevelCommands_IncludesListItem()
     {
         // Arrange
-        var mockCache = new MockAppCache();
-        var page = new AllAppsPage(mockCache);
-        var provider = new AllAppsCommandProvider(page);
+        var provider = new AllAppsCommandProvider(Page);
 
         // Act
         var commands = provider.TopLevelCommands();

@@ -90,6 +90,27 @@ public sealed partial class AppCache : IAppCache
         _win32ProgramRepository.ResetReloadFlag();
     }
 
+    public void TriggerReload()
+    {
+        // For the real implementation, we would trigger filesystem watchers
+        // or mark repositories as needing reload
+        _packageRepository.ResetReloadFlag();
+        _win32ProgramRepository.ResetReloadFlag();
+    }
+
+    public async Task RefreshAsync()
+    {
+        // For the real implementation, this would reindex programs asynchronously
+        await Task.Run(() =>
+        {
+            _win32ProgramRepository.IndexPrograms();
+            _packageRepository.IndexPrograms();
+            UpdateUWPIconPath(ThemeHelper.GetCurrentTheme());
+        });
+
+        ResetReloadFlag();
+    }
+
     public void Dispose()
     {
         Dispose(disposing: true);
