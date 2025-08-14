@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:ShortcutGuide.Models"
     xmlns:winuiex="using:WinUIEx"
     IsMaximizable="False"
     IsMinimizable="False"
@@ -22,19 +23,28 @@
             </Grid.RowDefinitions>
             <TitleBar Title="Shortcut Guide">
                 <TitleBar.Content>
-                    <TextBox
+                    <AutoSuggestBox
                         x:Name="SearchBox"
                         x:Uid="SearchBox"
                         Width="300"
                         VerticalAlignment="Center"
+                        QueryIcon="Find"
                         TextChanged="SearchBox_TextChanged">
-                        <TextBox.KeyboardAccelerators>
+                        <AutoSuggestBox.KeyboardAccelerators>
                             <KeyboardAccelerator
                                 Key="F"
                                 Invoked="SearchBox_KeyboardAcceleratorInvoked"
                                 Modifiers="Control" />
-                        </TextBox.KeyboardAccelerators>
-                    </TextBox>
+                        </AutoSuggestBox.KeyboardAccelerators>
+                        <AutoSuggestBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:ShortcutEntry">
+                                <Grid>
+                                    <TextBlock Text="{x:Bind Name}" />
+                                    <!--  TO DO: Add shortcuts / description  -->
+                                </Grid>
+                            </DataTemplate>
+                        </AutoSuggestBox.ItemTemplate>
+                    </AutoSuggestBox>
                 </TitleBar.Content>
             </TitleBar>
 
@@ -47,6 +57,7 @@
                 Style="{StaticResource RailNavigationViewStyle}">
                 <NavigationView.MenuItems />
                 <NavigationView.FooterMenuItems>
+                    <!--  TO DO: SOME WEIRD VISUAL GLITCH WITH THE ICON BEING CLIPPED  -->
                     <NavigationViewItem
                         Content="Settings"
                         Icon="Setting"

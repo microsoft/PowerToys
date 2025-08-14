@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace ShortcutGuide
     public sealed partial class MainWindow : WindowEx
     {
         private readonly string[] _currentApplicationIds;
-        private ShortcutFile? _shortcutList;
+        private ShortcutFile? _shortcutFile;
         private string _selectedAppName = null!;
 
         private bool _setPosition;
@@ -147,9 +148,25 @@ namespace ShortcutGuide
             this.Move((int)monitorRect.X, (int)monitorRect.Y);
         }
 
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            ShortcutPageParameters.SearchFilter.OnFilterChanged(SearchBox.Text);
+            // TO DO: should the results of this be shown on a separate results page? Or as part of the suggested items of the search box?
+            // The current UX is a bit weird as search is about the content that is selected on the page, vs. global search (which a search box in the title bar communicates).
+            // Also, the results indicate that they can be clicked - but they cannot, so this needs more UX thinking on having the right model.
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput && !string.IsNullOrWhiteSpace(SearchBox.Text))
+            {
+                ObservableCollection<ShortcutEntry> searchResults = new ObservableCollection<ShortcutEntry>();
+
+                if (_shortcutFile is ShortcutFile file)
+                {
+                    foreach (var shortcut in file.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Name.Contains(SearchBox.Text, StringComparison.InvariantCultureIgnoreCase))))
+                    {
+                        searchResults.Add(shortcut);
+                    }
+
+                    SearchBox.ItemsSource = searchResults;
+                }
+            }
         }
 
         private void SearchBox_KeyboardAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -163,7 +180,7 @@ namespace ShortcutGuide
             {
                 _selectedAppName = selectedItem.Name;
                 ShortcutPageParameters.CurrentPageName = _selectedAppName;
-                _shortcutList = ManifestInterpreter.GetShortcutsOfApplication(_selectedAppName);
+                _shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(_selectedAppName);
                 PopulateCategorySelector();
             }
         }
@@ -179,7 +196,7 @@ namespace ShortcutGuide
 
             int i = 0;
 
-            if (_shortcutList is ShortcutFile file)
+            if (_shortcutFile is ShortcutFile file)
             {
                 foreach (var category in file.Shortcuts)
                 {
@@ -206,7 +223,7 @@ namespace ShortcutGuide
 
         private void SubNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            if (args.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is int param && _shortcutList is ShortcutFile file)
+            if (args.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is int param && _shortcutFile is ShortcutFile file)
             {
                 Type selectedPage = typeof(ShortcutsPage);
                 App.TaskBarWindow.Hide();
