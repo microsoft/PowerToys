@@ -13,13 +13,16 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
+using Windows.ApplicationModel.VoiceCommands;
 
 namespace ShortcutGuide.Pages
 {
     public sealed partial class ShortcutsPage : Page
     {
         private ObservableCollection<ShortcutEntry>? _shortcuts;
-        private ShortcutPageParam _shortcutPageParam = null!;
+        private string _appName = string.Empty;
+        private ShortcutFile _shortcutFile;
+        private int _pageIndex;
 
         public ShortcutsPage()
         {
@@ -30,12 +33,10 @@ namespace ShortcutGuide.Pages
         {
             if (e.Parameter is ShortcutPageParam param)
             {
-                _shortcutPageParam = param;
-            }
-
-            if (_shortcutPageParam.ShortcutFile is ShortcutFile file && _shortcutPageParam.PageIndex is int index)
-            {
-                _shortcuts = [.. file.Shortcuts[index].Properties ?? Enumerable.Empty<ShortcutEntry>()];
+                _appName = param.AppName;
+                _shortcutFile = param.ShortcutFile;
+                _pageIndex = param.PageIndex;
+                _shortcuts = [.. _shortcutFile.Shortcuts[_pageIndex].Properties ?? Enumerable.Empty<ShortcutEntry>()];
             }
         }
 
@@ -46,19 +47,16 @@ namespace ShortcutGuide.Pages
                 return;
             }
 
-            if (_shortcutPageParam.AppName is string appName)
-            {
-                bool isItemPinned = App.PinnedShortcuts[appName].Any(x => x.Equals(dataObject));
-                pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
-                pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
-            }
+            bool isItemPinned = App.PinnedShortcuts[_appName].Any(x => x.Equals(dataObject));
+            pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
+            pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
         }
 
         private void Pin_Click(object sender, RoutedEventArgs e)
         {
-            if (_shortcutPageParam.AppName is string appName && ((MenuFlyoutItem)sender).DataContext is ShortcutEntry shortcutEntry)
+            if (((MenuFlyoutItem)sender).DataContext is ShortcutEntry shortcutEntry)
             {
-                PinnedShortcutsHelper.UpdatePinnedShortcuts(appName, shortcutEntry);
+                PinnedShortcutsHelper.UpdatePinnedShortcuts(_appName, shortcutEntry);
             }
         }
     }

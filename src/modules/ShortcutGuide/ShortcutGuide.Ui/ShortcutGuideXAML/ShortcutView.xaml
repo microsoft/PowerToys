@@ -11,11 +11,7 @@
     <Page.Resources>
         <DataTemplate x:Key="ShortcutTemplate" x:DataType="local:ShortcutTemplateDataObject">
             <Grid Margin="0,0,48,0" HorizontalAlignment="Left">
-                <Grid.ContextFlyout>
-                    <MenuFlyout Opening="MenuFlyout_Opening">
-                        <MenuFlyoutItem Click="PinShortcut" Text="Pin" />
-                    </MenuFlyout>
-                </Grid.ContextFlyout>
+
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="Auto" />

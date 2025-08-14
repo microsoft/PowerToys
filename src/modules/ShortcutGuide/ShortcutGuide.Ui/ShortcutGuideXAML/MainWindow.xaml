@@ -55,11 +55,11 @@
                         Tapped="Settings_Tapped" />
                 </NavigationView.FooterMenuItems>
                 <NavigationView
-                    x:Name="OtherNavView"
+                    x:Name="SubNav"
                     IsBackButtonVisible="Collapsed"
                     IsSettingsVisible="False"
                     PaneDisplayMode="Top"
-                    SelectionChanged="OtherNavView_SelectionChanged">
+                    SelectionChanged="SubNav_SelectionChanged">
                     <Frame
                         x:Name="ContentFrame"
                         Margin="18,8,0,0"

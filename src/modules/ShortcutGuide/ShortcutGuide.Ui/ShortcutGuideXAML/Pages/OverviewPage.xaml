@@ -51,46 +51,62 @@
         </DataTemplate>
     </Page.Resources>
     <Grid>
-        <StackPanel
-            Margin="0,16,0,0"
-            Orientation="Vertical"
-            Spacing="8">
-            <TextBlock
-                x:Name="RecommendedHeaderTxt"
-                Margin="16,0,0,8"
-                FontWeight="SemiBold"
-                Text="Recommended shortcuts" />
-            <ListView
-                ItemTemplate="{StaticResource ShortcutItemTemplate}"
-                ItemsSource="{x:Bind _recommendedShortcuts, Mode=OneWay}"
-                SelectionMode="None"
-                Visibility="{x:Bind _recommendedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
+        <ScrollViewer>
+            <StackPanel
+                Margin="16,16,16,0"
+                Orientation="Vertical"
+                Spacing="8">
+                <TextBlock
+                    x:Name="RecommendedHeaderTxt"
+                    Margin="0,0,0,8"
+                    FontWeight="SemiBold"
+                    Text="Recommended shortcuts" />
+                <ItemsRepeater
+                    ItemTemplate="{StaticResource ShortcutItemTemplate}"
+                    ItemsSource="{x:Bind _recommendedShortcuts, Mode=OneWay}"
+                    Visibility="{x:Bind _recommendedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
 
-            <TextBlock
-                Margin="16,0,0,8"
-                FontWeight="SemiBold"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="No recommended shortcuts."
-                Visibility="{x:Bind _recommendedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+                <TextBlock
+                    Margin="0,0,0,8"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="No recommended shortcuts."
+                    Visibility="{x:Bind _recommendedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
 
-            <TextBlock
-                x:Name="PinnedHeaderTxt"
-                Margin="16,16,0,8"
-                FontWeight="SemiBold"
-                Text="Pinned shortcuts" />
+                <TextBlock
+                    x:Name="PinnedHeaderTxt"
+                    Margin="0,16,0,8"
+                    FontWeight="SemiBold"
+                    Text="Pinned shortcuts" />
 
-            <ListView
-                ItemTemplate="{StaticResource ShortcutItemTemplate}"
-                ItemsSource="{x:Bind _pinnedShortcuts, Mode=OneWay}"
-                SelectionMode="None"
-                Visibility="{x:Bind _pinnedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
+                <ItemsRepeater
+                    x:Name="PinnedShortcutsListView"
+                    ItemTemplate="{StaticResource ShortcutItemTemplate}"
+                    ItemsSource="{x:Bind _pinnedShortcuts, Mode=OneWay}"
+                    Visibility="{x:Bind _pinnedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
 
-            <TextBlock
-                Margin="16,0,0,8"
-                FontWeight="SemiBold"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="No recommended shortcuts."
-                Visibility="{x:Bind _pinnedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
-        </StackPanel>
+                <TextBlock
+                    Margin="0,0,0,8"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="No pinnned shortcuts."
+                    Visibility="{x:Bind _pinnedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+
+                <StackPanel
+                    x:Name="TaskbarShortcutsPanel"
+                    Orientation="Vertical"
+                    Visibility="Collapsed">
+                    <TextBlock
+                        x:Name="TaskbarHeaderTxt"
+                        Margin="0,16,0,8"
+                        FontWeight="SemiBold"
+                        Text="Taskbar shortcuts" />
+                    <ItemsRepeater
+                        x:Name="TaskbarShortcutsListView"
+                        ItemTemplate="{StaticResource ShortcutItemTemplate}"
+                        ItemsSource="{x:Bind _taskbarShortcuts, Mode=OneWay}" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

@@ -50,22 +50,22 @@
         </DataTemplate>
     </Page.Resources>
     <Grid>
-        <StackPanel
-            Margin="0,16,0,0"
-            Orientation="Vertical"
-            Spacing="8">
-            <ListView
-                ItemTemplate="{StaticResource ShortcutItemTemplate}"
-                ItemsSource="{x:Bind _shortcuts, Mode=OneWay}"
-                SelectionMode="None"
-                Visibility="{x:Bind _shortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
-
-            <TextBlock
-                Margin="16,0,0,8"
-                FontWeight="SemiBold"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="No shortcuts."
-                Visibility="{x:Bind _shortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
-        </StackPanel>
+        <ScrollViewer>
+            <StackPanel
+                Margin="16,16,0,16"
+                Orientation="Vertical"
+                Spacing="8">
+                <ItemsRepeater
+                    ItemTemplate="{StaticResource ShortcutItemTemplate}"
+                    ItemsSource="{x:Bind _shortcuts, Mode=OneWay}"
+                    Visibility="{x:Bind _shortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
+                <TextBlock
+                    Margin="0,0,0,8"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="No shortcuts."
+                    Visibility="{x:Bind _shortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

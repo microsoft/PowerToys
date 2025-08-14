@@ -29,7 +29,7 @@ namespace ShortcutGuide
     {
         private readonly string[] _currentApplicationIds;
         private ShortcutFile? _shortcutList;
-        private string? _selectedAppName;
+        private string _selectedAppName = null!;
 
         private bool _setPosition;
 
@@ -159,7 +159,6 @@ namespace ShortcutGuide
 
         private void WindowSelector_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            App.TaskBarWindow.Hide();
             if (args.SelectedItem is NavigationViewItem selectedItem)
             {
                 _selectedAppName = selectedItem.Name;
@@ -171,8 +170,8 @@ namespace ShortcutGuide
 
         private void PopulateCategorySelector()
         {
-            OtherNavView.MenuItems.Clear();
-            OtherNavView.MenuItems.Add(new NavigationViewItem()
+            SubNav.MenuItems.Clear();
+            SubNav.MenuItems.Add(new NavigationViewItem()
             {
                 Content = ResourceLoaderInstance.ResourceLoader.GetString("Overview"),
                 Tag = -1,
@@ -187,33 +186,39 @@ namespace ShortcutGuide
                     switch (category.SectionName)
                     {
                         case { } name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
-                            // _showTaskbarShortcuts = true;
                             break;
                         case { } name when name.StartsWith('<') && name.EndsWith('>'):
                             break;
                         default:
-                            OtherNavView.MenuItems.Add(new NavigationViewItem() { Content = category.SectionName, Tag = i });
+                            SubNav.MenuItems.Add(new NavigationViewItem() { Content = category.SectionName, Tag = i });
                             break;
                     }
 
                     i++;
                 }
 
-                if (OtherNavView.MenuItems.Count > 0)
+                if (SubNav.MenuItems.Count > 0)
                 {
-                    OtherNavView.SelectedItem = OtherNavView.MenuItems[0];
+                    SubNav.SelectedItem = SubNav.MenuItems[0];
                 }
             }
         }
 
-        private void OtherNavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        private void SubNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             if (args.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is int param && _shortcutList is ShortcutFile file)
             {
                 Type selectedPage = typeof(ShortcutsPage);
+                App.TaskBarWindow.Hide();
                 if (param == -1)
                 {
                     selectedPage = typeof(OverviewPage);
+
+                    // We only show the taskbar button window when the overview page of Windows is selected.
+                    if (_selectedAppName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
+                    {
+                        App.TaskBarWindow.Activate();
+                    }
                 }
 
                 ContentFrame.Navigate(selectedPage, new ShortcutPageParam() { ShortcutFile = file, PageIndex = param, AppName = _selectedAppName });

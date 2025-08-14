@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.UI.Xaml;
@@ -16,7 +17,9 @@ namespace ShortcutGuide.Pages
     {
         private ObservableCollection<ShortcutEntry>? _recommendedShortcuts;
         private ObservableCollection<ShortcutEntry>? _pinnedShortcuts;
-        private ShortcutPageParam _shortcutPageParam = null!;
+        private ObservableCollection<ShortcutEntry>? _taskbarShortcuts;
+        private string _appName = string.Empty;
+        private ShortcutFile _shortcutFile;
 
         public OverviewPage()
         {
@@ -27,17 +30,19 @@ namespace ShortcutGuide.Pages
         {
             if (e.Parameter is ShortcutPageParam param)
             {
-                _shortcutPageParam = param;
-            }
+                _appName = param.AppName;
+                _shortcutFile = param.ShortcutFile;
+                _recommendedShortcuts = [.. _shortcutFile.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Recommended))];
+                _pinnedShortcuts = [.. App.PinnedShortcuts[_appName]];
 
-            if (_shortcutPageParam.ShortcutFile is ShortcutFile file)
-            {
-                _recommendedShortcuts = [.. file.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Recommended))];
-            }
-
-            if (_shortcutPageParam.AppName is string appName)
-            {
-                _pinnedShortcuts = [.. App.PinnedShortcuts[appName]];
+                if (_appName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
+                {
+                    TaskbarShortcutsPanel.Visibility = Visibility.Visible;
+                    _taskbarShortcuts =
+                    [
+                        .. _shortcutFile.Shortcuts.First(x => x.SectionName.StartsWith("<TASKBAR1-9>", StringComparison.InvariantCulture)).Properties,
+                    ];
+                }
             }
         }
 
@@ -48,21 +53,20 @@ namespace ShortcutGuide.Pages
                 return;
             }
 
-            if (_shortcutPageParam.AppName is string appName)
-            {
-                bool isItemPinned = App.PinnedShortcuts[appName].Any(x => x.Equals(dataObject));
-                pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
-                pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
-            }
+            bool isItemPinned = App.PinnedShortcuts[_appName].Any(x => x.Equals(dataObject));
+            pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
+            pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
         }
 
         private void Pin_Click(object sender, RoutedEventArgs e)
         {
-            if (_shortcutPageParam.AppName is string appName && ((MenuFlyoutItem)sender).DataContext is ShortcutEntry shortcutEntry)
+            if (((MenuFlyoutItem)sender).DataContext is ShortcutEntry shortcutEntry)
             {
-                PinnedShortcutsHelper.UpdatePinnedShortcuts(appName, shortcutEntry);
+                PinnedShortcutsHelper.UpdatePinnedShortcuts(_appName, shortcutEntry);
 
-                // TO DO: Data on this page should be refreshed to reflect the change.
+                // Update ListView to reflect changes
+                _pinnedShortcuts = [.. App.PinnedShortcuts[_appName]];
+                PinnedShortcutsListView.ItemsSource = _pinnedShortcuts;
             }
         }
     }

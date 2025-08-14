@@ -259,46 +259,5 @@ namespace ShortcutGuide
 
             FilterBy(_searchFilter);
         }
-
-        private void PinShortcut(object sender, RoutedEventArgs e)
-        {
-            if (ShortcutPageParameters.PinnedShortcuts[ShortcutPageParameters.CurrentPageName].Contains(((ShortcutTemplateDataObject)((MenuFlyoutItem)sender).DataContext).OriginalShortcutObject))
-            {
-                ShortcutPageParameters.PinnedShortcuts[ShortcutPageParameters.CurrentPageName].Remove(((ShortcutTemplateDataObject)((MenuFlyoutItem)sender).DataContext).OriginalShortcutObject);
-            }
-            else
-            {
-                ShortcutPageParameters.PinnedShortcuts[ShortcutPageParameters.CurrentPageName].Add(((ShortcutTemplateDataObject)((MenuFlyoutItem)sender).DataContext).OriginalShortcutObject);
-            }
-
-            if (int.Parse(CategorySelector.SelectedItem.Name, CultureInfo.InvariantCulture) == -1)
-            {
-                OpenOverview();
-            }
-
-            string serialized = JsonSerializer.Serialize(ShortcutPageParameters.PinnedShortcuts);
-
-            SettingsUtils settingsUtils = new();
-            string pinnedPath = settingsUtils.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
-            File.WriteAllText(pinnedPath, serialized);
-        }
-
-        private void MenuFlyout_Opening(object sender, object e)
-        {
-            if (sender is not MenuFlyout menu ||
-                menu.Target is not Grid parentGrid ||
-                parentGrid.DataContext is not ShortcutTemplateDataObject dataObject ||
-                menu.Items[0] is not MenuFlyoutItem pinItem)
-            {
-                return;
-            }
-
-            ShortcutEntry originalObject = dataObject.OriginalShortcutObject;
-
-            bool isItemPinned = ShortcutPageParameters.PinnedShortcuts[ShortcutPageParameters.CurrentPageName].Any(x => x.Equals(originalObject));
-
-            pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
-            pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
-        }
     }
 }
