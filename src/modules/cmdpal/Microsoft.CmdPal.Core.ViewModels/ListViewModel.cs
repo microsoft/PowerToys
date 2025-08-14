@@ -141,6 +141,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // see 9806fe5d8 for the last commit that had this with sections
         _isFetching = true;
 
+        // Collect all the items into new viewmodels
+        Collection<ListItemViewModel> newViewModels = [];
+
         try
         {
             // Check for cancellation before starting expensive operations
@@ -150,9 +153,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             // Check for cancellation after getting items from extension
             cancellationToken.ThrowIfCancellationRequested();
-
-            // Collect all the items into new viewmodels
-            Collection<ListItemViewModel> newViewModels = [];
 
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
@@ -187,11 +187,22 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // Check for cancellation before updating the list
             cancellationToken.ThrowIfCancellationRequested();
 
+            List<ListItemViewModel> removedItems = [];
             lock (_listLock)
             {
                 // Now that we have new ViewModels for everything from the
                 // extension, smartly update our list of VMs
-                ListHelpers.InPlaceUpdateList(Items, newViewModels);
+                ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
+
+                // DO NOT ThrowIfCancellationRequested AFTER THIS! If you do,
+                // you'll clean up list items that we've now transferred into
+                // .Items
+            }
+
+            // If we removed items, we need to clean them up, to remove our event handlers
+            foreach (var removedItem in removedItems)
+            {
+                removedItem.SafeCleanup();
             }
 
             // TODO: Iterate over everything in Items, and prune items from the
@@ -200,6 +211,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
         catch (OperationCanceledException)
         {
             // Cancellation is expected, don't treat as error
+
+            // However, if we were cancelled, we didn't actually add these items to
+            // our Items list. Before we release them to the GC, make sure we clean
+            // them up
+            foreach (var vm in newViewModels)
+            {
+                vm.SafeCleanup();
+            }
+
             return;
         }
         catch (Exception ex)
