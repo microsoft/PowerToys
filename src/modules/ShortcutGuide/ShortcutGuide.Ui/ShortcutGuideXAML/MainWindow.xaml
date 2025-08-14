@@ -8,9 +8,9 @@
     xmlns:winuiex="using:WinUIEx"
     IsMaximizable="False"
     IsMinimizable="False"
-    IsResizable="true"
-    IsShownInSwitchers="False"
+    IsResizable="False"
     mc:Ignorable="d">
+    <!--  IsShownInSwitchers="False"  -->
     <winuiex:WindowEx.SystemBackdrop>
         <DesktopAcrylicBackdrop />
     </winuiex:WindowEx.SystemBackdrop>
@@ -36,39 +36,45 @@
                         </TextBox.KeyboardAccelerators>
                     </TextBox>
                 </TitleBar.Content>
-                <TitleBar.RightHeader>
-                    <Button x:Uid="CloseButton" Click="CloseButton_Clicked">
-                        <FontIcon FontSize="14" Glyph="&#xE711;" />
-                    </Button>
-                </TitleBar.RightHeader>
             </TitleBar>
 
             <NavigationView
                 x:Name="WindowSelector"
                 Grid.Row="1"
                 IsBackButtonVisible="Collapsed"
-                IsSettingsVisible="True"
+                IsSettingsVisible="False"
                 SelectionChanged="WindowSelector_SelectionChanged"
                 Style="{StaticResource RailNavigationViewStyle}">
                 <NavigationView.MenuItems />
-                <Frame
-                    x:Name="ContentFrame"
-                    Grid.Row="1"
-                    Grid.ColumnSpan="5" />
+                <NavigationView.FooterMenuItems>
+                    <NavigationViewItem
+                        Content="Settings"
+                        Icon="Setting"
+                        SelectsOnInvoked="False"
+                        Tag="Settings"
+                        Tapped="Settings_Tapped" />
+                </NavigationView.FooterMenuItems>
+                <NavigationView
+                    x:Name="OtherNavView"
+                    IsBackButtonVisible="Collapsed"
+                    IsSettingsVisible="False"
+                    PaneDisplayMode="Top"
+                    SelectionChanged="OtherNavView_SelectionChanged">
+                    <Frame
+                        x:Name="ContentFrame"
+                        Margin="18,8,0,0"
+                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8,0,0,0" />
+                </NavigationView>
+
                 <NavigationView.Resources>
                     <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                     <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
                 </NavigationView.Resources>
             </NavigationView>
 
-            <!--<Button
-                x:Name="InformationButton"
-                x:Uid="InformationButton"
-                Grid.Column="1"
-                Margin="0,0,6,0"
-                Click="InformationButton_Click">
-                <FontIcon FontSize="14" Glyph="&#xEA1F;" />
-            </Button>-->
             <!--<TeachingTip
                 x:Name="InformationTip"
                 x:Uid="InformationTip"
@@ -88,17 +94,6 @@
                         Click="HyperlinkButton_Click" />
                 </StackPanel>
             </TeachingTip>-->
-
-            <!--<Button
-                x:Uid="SettingsButton"
-                Grid.Column="3"
-                Margin="0,0,6,0"
-                HorizontalContentAlignment="Center"
-                Click="SettingsButton_Clicked">
-                <FontIcon FontSize="14" Glyph="&#xE713;" />
-            </Button>-->
-
-
         </Grid>
     </Page>
 </winuiex:WindowEx>

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
-    x:Class="ShortcutGuide.TaskbarIndicator"
+    x:Class="ShortcutGuide.Controls.TaskbarIndicator"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -10,7 +10,8 @@
     <Grid HorizontalAlignment="Stretch">
         <Border
             x:Name="IndicatorRectangle"
-            MaxWidth="36" MaxHeight="36"
+            Width="36"
+            Height="36"
             Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource ControlElevationBorderBrush}"
             BorderThickness="1"
@@ -18,7 +19,8 @@
             <TextBlock
                 x:Name="IndicatorText"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center" FontSize="18"
+                VerticalAlignment="Center"
+                FontSize="18"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="{x:Bind Label, Mode=OneWay}"
                 TextAlignment="Center" />

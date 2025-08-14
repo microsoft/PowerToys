@@ -128,11 +128,5 @@
                     SelectionMode="None" />
             </Grid>
         </ScrollViewer>
-        <Canvas
-            x:Name="TaskbarIndicators"
-            Grid.Row="2"
-            Height="48"
-            Visibility="Collapsed">
-        </Canvas>
     </Grid>
 </Page>

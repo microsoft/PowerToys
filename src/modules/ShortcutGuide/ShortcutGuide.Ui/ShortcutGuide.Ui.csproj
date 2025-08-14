@@ -34,7 +34,7 @@
 
   <ItemGroup>
     <None Remove="ShortcutGuideXAML\CustomNavigationViewStyle.xaml" />
-    <None Remove="ShortcutGuideXAML\OOBEView.xaml" />
+    <None Remove="ShortcutGuideXAML\Pages\ShortcutsPage.xaml" />
     <None Remove="ShortcutGuideXAML\ShortcutView.xaml" />
     <None Remove="ShortcutGuideXAML\TaskbarIndicator.xaml" />
     <None Remove="ShortcutGuideXAML\TaskbarWindow.xaml" />
@@ -85,6 +85,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
 	<PackageReference Include="CommunityToolkit.WinUI.Animations" />
+	<PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="WinUIEx" />
     <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
     <PackageReference Include="System.Text.Json" />
@@ -108,6 +109,11 @@
     <ProjectReference Include="..\ShortcutGuide.CPPProject\ShortcutGuide.CPPProject.vcxproj" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="ShortcutGuideXAML\Pages\OverviewPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="ShortcutGuideXAML\CustomNavigationViewStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -123,14 +129,18 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="ShortcutGuideXAML\OOBEView.xaml">
+    <Page Update="ShortcutGuideXAML\ShortcutView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="ShortcutGuideXAML\ShortcutView.xaml">
+    <Page Update="ShortcutGuideXAML\Pages\ShortcutsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ShortcutGuideXAML\Controls\" />
+    <Folder Include="ShortcutGuideXAML\Styles\" />
   </ItemGroup>
   <!-- 
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 

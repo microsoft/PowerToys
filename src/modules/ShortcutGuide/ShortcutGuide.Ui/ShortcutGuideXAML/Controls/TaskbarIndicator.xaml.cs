@@ -6,7 +6,7 @@ using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace ShortcutGuide;
+namespace ShortcutGuide.Controls;
 
 public sealed partial class TaskbarIndicator : UserControl
 {

@@ -13,18 +13,45 @@
     IsAlwaysOnTop="True"
     IsMaximizable="False"
     IsMinimizable="False"
+    IsResizable="False"
+    IsShownInSwitchers="False"
+    IsTitleBarVisible="False"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
         <DesktopAcrylicBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid CornerRadius="8" Loaded="Grid_Loaded">
-        <Grid.Resources />
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="120" x:Name="PrefixColumn" />
+            <ColumnDefinition x:Name="PrefixColumn" Width="68" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Canvas x:Name="KeyHolder" Grid.Column="1" />
+        <StackPanel
+            Margin="8"
+            VerticalAlignment="Top"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Border
+                Width="34"
+                Height="34"
+                Padding="8"
+                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+                BorderThickness="0"
+                CornerRadius="{StaticResource ControlCornerRadius}">
+                <Viewbox>
+                    <PathIcon Data="M9 20H0V11H9V20ZM20 20H11V11H20V20ZM9 9H0V0H9V9ZM20 9H11V0H20V9Z" />
+                </Viewbox>
+            </Border>
+            <TextBlock
+                Margin="0,-3,0,0"
+                VerticalAlignment="Center"
+                FontSize="18"
+                FontWeight="SemiBold"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="+" />
+        </StackPanel>
+
     </Grid>
 </winuiex:WindowEx>
