@@ -103,10 +103,12 @@
             "PowerToys.SvgThumbnailProvider.exe",
             "PowerToys.SvgThumbnailProviderCpp.dll",
             "PowerToys.KeyboardManager.dll",
+
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
             "KeyboardManagerEditorUI\\PowerToys.KeyboardManagerEditorUI.exe",
             "KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
             "PowerToys.KeyboardManagerEditorLibraryWrapper.dll",
+            
             "WinUI3Apps\\PowerToys.HostsModuleInterface.dll",
             "WinUI3Apps\\PowerToys.HostsUILib.dll",
             "WinUI3Apps\\PowerToys.Hosts.dll",
