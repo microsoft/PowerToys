@@ -133,7 +133,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="ShortcutGuideXAML\Controls\" />
     <Folder Include="ShortcutGuideXAML\Styles\" />
   </ItemGroup>
   <!-- 

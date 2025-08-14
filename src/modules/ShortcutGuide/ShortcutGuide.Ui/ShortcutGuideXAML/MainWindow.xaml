@@ -10,7 +10,7 @@
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
-    IsShownInSwitchers="False"
+    IsShownInSwitchers="True"
     mc:Ignorable="d">
     <!--  IsShownInSwitchers="False"  -->
     <winuiex:WindowEx.SystemBackdrop>
@@ -74,8 +74,8 @@
                     SelectionChanged="SubNav_SelectionChanged">
                     <Frame
                         x:Name="ContentFrame"
-                        Margin="18,8,0,0"
-                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                        Margin="4,8,0,0"
+                        Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1"
                         CornerRadius="8,0,0,0" />

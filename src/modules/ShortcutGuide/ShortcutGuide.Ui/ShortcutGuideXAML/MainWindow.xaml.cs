@@ -22,6 +22,7 @@ using ShortcutGuide.Models;
 using ShortcutGuide.Pages;
 using Windows.Foundation;
 using Windows.System;
+using WinRT.Interop;
 using WinUIEx;
 
 namespace ShortcutGuide
@@ -136,16 +137,9 @@ namespace ShortcutGuide
 
         private void SetWindowPosition()
         {
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
-            float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
+            var hwnd = WindowNative.GetWindowHandle(this);
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-
-            // Set window to 500 pixels width and full monitor height
-            this.SetWindowSize(500 * dpiScale, monitorRect.Height / dpiScale);
-
-            // Position window at the left edge of the monitor
-            this.Move((int)monitorRect.X, (int)monitorRect.Y);
+            this.MoveAndResize((int)monitorRect.X, (int)monitorRect.Y, 580, monitorRect.Height);
         }
 
         private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
