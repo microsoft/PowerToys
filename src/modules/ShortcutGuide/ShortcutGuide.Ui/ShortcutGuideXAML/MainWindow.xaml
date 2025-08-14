@@ -10,6 +10,7 @@
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
+    IsShownInSwitchers="False"
     mc:Ignorable="d">
     <!--  IsShownInSwitchers="False"  -->
     <winuiex:WindowEx.SystemBackdrop>

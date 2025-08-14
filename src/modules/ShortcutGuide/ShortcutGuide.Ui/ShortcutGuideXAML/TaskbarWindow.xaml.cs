@@ -32,12 +32,12 @@ namespace ShortcutGuide.ShortcutGuideXAML
         {
             // TO DO: The DPI calc are all over the place, so it should work fine on 100% but messes up on other scales.
             TasklistButton[] buttons = TasklistPositions.GetButtons();
-            double prefixWidth = PrefixColumn.Width.Value;
-            double windowHeight = 58 * DPI;
-            double windowMargin = 8;
-            double windowWidth = prefixWidth;
-            double xPosition = (buttons[0].X - WorkArea.Left - prefixWidth) / DPI;
-            double yPosition = WorkArea.Bottom - windowHeight - 12;
+            double windowsLogoColumnWidth = WindowsLogoColumnWidth.Width.Value;
+            double windowHeight = 58;
+            double windowMargin = 8 * DPI;
+            double windowWidth = windowsLogoColumnWidth;
+            double xPosition = buttons[0].X - (windowsLogoColumnWidth * DPI);
+            double yPosition = WorkArea.Bottom - (windowHeight * DPI);
 
             foreach (TasklistButton b in buttons)
             {
@@ -48,14 +48,15 @@ namespace ShortcutGuide.ShortcutGuideXAML
                     Width = b.Width / DPI,
                 };
 
-                windowWidth = windowWidth + (b.Width / DPI);
+                windowWidth += b.Width / DPI;
 
                 KeyHolder.Children.Add(indicator);
 
-                Canvas.SetLeft(indicator, (b.X - xPosition - prefixWidth) / DPI);
+                double indicatorPos = (b.X - xPosition) / DPI;
+                Canvas.SetLeft(indicator, indicatorPos - windowsLogoColumnWidth);
             }
 
-            this.MoveAndResize(xPosition - windowMargin, yPosition / DPI, windowWidth + windowMargin, windowHeight / DPI);
+            this.MoveAndResize(xPosition - windowMargin, yPosition, windowWidth, windowHeight);
         }
     }
 }

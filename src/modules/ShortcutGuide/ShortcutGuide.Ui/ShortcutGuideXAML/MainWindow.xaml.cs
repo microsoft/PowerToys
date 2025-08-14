@@ -141,8 +141,8 @@ namespace ShortcutGuide
             float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
 
-            // Set window to 600 pixels width and full monitor height
-            this.SetWindowSize(1500 * dpiScale, monitorRect.Height / dpiScale);
+            // Set window to 500 pixels width and full monitor height
+            this.SetWindowSize(500 * dpiScale, monitorRect.Height / dpiScale);
 
             // Position window at the left edge of the monitor
             this.Move((int)monitorRect.X, (int)monitorRect.Y);

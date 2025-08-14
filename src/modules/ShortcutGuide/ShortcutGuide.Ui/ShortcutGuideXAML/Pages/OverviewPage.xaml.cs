@@ -33,7 +33,10 @@ namespace ShortcutGuide.Pages
                 _appName = param.AppName;
                 _shortcutFile = param.ShortcutFile;
                 _recommendedShortcuts = [.. _shortcutFile.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Recommended))];
-                _pinnedShortcuts = [.. App.PinnedShortcuts[_appName]];
+                if (App.PinnedShortcuts.TryGetValue(_appName, out var shortcuts))
+                {
+                    _pinnedShortcuts = [.. shortcuts];
+                }
 
                 if (_appName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
                 {

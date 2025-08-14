@@ -24,7 +24,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="PrefixColumn" Width="68" />
+            <ColumnDefinition x:Name="WindowsLogoColumnWidth" Width="68" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Canvas x:Name="KeyHolder" Grid.Column="1" />
