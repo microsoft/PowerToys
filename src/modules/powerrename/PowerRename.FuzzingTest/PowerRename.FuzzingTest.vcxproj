@@ -6,8 +6,8 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{2694e2fb-dcd5-4bff-a418-b6c3c7ce3b8e}</ProjectGuid>
     <RootNamespace>Test</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
-    <ProjectName>PowerRename.FuzzingTest</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <ProjectName>PowerRename.FuzzTests</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -72,7 +72,6 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>$(OutDir)\..\..\WinUI3Apps\PowerRenameLib.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -83,6 +82,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\PowerRenameLib.vcxproj" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      <Project>{51920f1f-c28c-4adf-8660-4238766796c2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\lib\PowerRenameLib.vcxproj" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       <Project>{51920f1f-c28c-4adf-8660-4238766796c2}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

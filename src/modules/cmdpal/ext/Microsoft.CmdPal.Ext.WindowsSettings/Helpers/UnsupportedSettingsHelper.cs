@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 
@@ -40,6 +41,7 @@ internal static class UnsupportedSettingsHelper
 
             // TODO GH #108 Logging is something we have to take care of
             // Log.Warn(warningMessage, typeof(UnsupportedSettingsHelper));
+            Logger.LogWarning(warningMessage);
         }
 
         var currentWindowsBuild = currentBuild != uint.MinValue
@@ -71,12 +73,9 @@ internal static class UnsupportedSettingsHelper
         {
             registryValueData = Win32.Registry.GetValue(registryKey, valueName, uint.MinValue);
         }
-        catch
+        catch (Exception ex)
         {
-            // Log.Exception(
-            //    $"Can't get registry value for '{valueName}'",
-            //    exception,
-            //    typeof(UnsupportedSettingsHelper));
+            Logger.LogError($"Can't get registry value for '{valueName}' - {ex.Message}");
             return uint.MinValue;
         }
 

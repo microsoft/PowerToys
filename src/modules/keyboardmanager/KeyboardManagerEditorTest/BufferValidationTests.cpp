@@ -392,7 +392,7 @@ namespace RemappingUITests
                 });
             }
 
-            // Test if the ValidateShortcutBufferElement method returns no error and no drop down action is required on setting last drop down to an action key on a column with atleast two drop downs
+            // Test if the ValidateShortcutBufferElement method returns no error and no drop down action is required on setting last drop down to an action key on a column with at least two drop downs
             TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoErrorAndNoAction_OnSettingLastDropDownToActionKeyOnAColumnWithAtleastTwoDropDowns)
             {
                 std::vector<ValidateShortcutBufferElementArgs> testCases;

@@ -14,6 +14,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Web.WebView2.Core;
 using Peek.Common.Extensions;
@@ -147,6 +148,28 @@ namespace Peek.FilePreviewer
         {
             var isValidPreview = previewer != null && MatchPreviewState(state, PreviewState.Loaded);
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public Visibility IsWarningMessageVisible(IPreviewer? previewer, PreviewState? state)
+        {
+            var shouldShow = previewer is IVideoPreviewer videoPreviewer && MatchPreviewState(state, PreviewState.Loaded) && !string.IsNullOrEmpty(videoPreviewer.MissingCodecName);
+
+            return shouldShow ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public string GetWarningMessage(string missingCodecName)
+        {
+            return ReadableStringHelper.FormatResourceString("VideoMissingCodec_WarningMessage", missingCodecName);
+        }
+
+        private async void CodecSearchHyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)
+        {
+            string codecName = VideoPreviewer?.MissingCodecName ?? string.Empty;
+
+            string searchQuery = Uri.EscapeDataString(codecName);
+            Uri storeSearchUri = new Uri($"ms-windows-store://search/?query=codec {codecName}");
+
+            await Windows.System.Launcher.LaunchUriAsync(storeSearchUri);
         }
 
         public Visibility IsUnsupportedPreviewVisible(IUnsupportedFilePreviewer? previewer, PreviewState state)

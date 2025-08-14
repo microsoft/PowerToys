@@ -2,11 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Deferred;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -48,6 +50,12 @@ public partial class IconBox : ContentControl
     /// Gets or sets the <see cref="SourceRequested"/> event handler to provide the value of the <see cref="IconSource"/> for the <see cref="Source"/> property from the provided <see cref="SourceKey"/>.
     /// </summary>
     public event TypedEventHandler<IconBox, SourceRequestedEventArgs>? SourceRequested;
+
+    public IconBox()
+    {
+        TabFocusNavigation = KeyboardNavigationMode.Once;
+        IsTabStop = false;
+    }
 
     private static void OnSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {

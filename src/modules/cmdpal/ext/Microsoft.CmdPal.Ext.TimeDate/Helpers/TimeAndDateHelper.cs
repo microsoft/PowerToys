@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
@@ -157,7 +158,7 @@ internal static class TimeAndDateHelper
     /// <param name="input">String with date/time</param>
     /// <param name="timestamp">The new <see cref="DateTime"/> object</param>
     /// <param name="inputParsingErrorMsg">Error message shown to the user</param>
-    /// <returns>True on success, otherwise false</returns>
+    /// <returns>True on success; otherwise, false</returns>
     internal static bool ParseStringAsDateTime(in string input, out DateTime timestamp, out string inputParsingErrorMsg)
     {
         inputParsingErrorMsg = string.Empty;
@@ -166,6 +167,7 @@ internal static class TimeAndDateHelper
         if (DateTime.TryParse(input, out timestamp))
         {
             // Known date/time format
+            Logger.LogDebug($"Successfully parsed standard date/time format: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^u[\+-]?\d+$"))
@@ -179,10 +181,12 @@ internal static class TimeAndDateHelper
             {
                 inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Unix, UnixTimeSecondsMin, UnixTimeSecondsMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                Logger.LogError($"Failed to parse unix timestamp: '{input}'. Value out of range.");
                 return false;
             }
 
             timestamp = DateTimeOffset.FromUnixTimeSeconds(secondsU).LocalDateTime;
+            Logger.LogDebug($"Successfully parsed unix timestamp: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^ums[\+-]?\d+$"))
@@ -196,10 +200,12 @@ internal static class TimeAndDateHelper
             {
                 inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Unix_Milliseconds, UnixTimeMillisecondsMin, UnixTimeMillisecondsMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                Logger.LogError($"Failed to parse unix millisecond timestamp: '{input}'. Value out of range.");
                 return false;
             }
 
             timestamp = DateTimeOffset.FromUnixTimeMilliseconds(millisecondsUms).LocalDateTime;
+            Logger.LogDebug($"Successfully parsed unix millisecond timestamp: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^ft\d+$"))
@@ -212,11 +218,13 @@ internal static class TimeAndDateHelper
             {
                 inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_WindowsFileTime, WindowsFileTimeMin, WindowsFileTimeMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                Logger.LogError($"Failed to parse Windows file time: '{input}'. Value out of range.");
                 return false;
             }
 
             // DateTime.FromFileTime returns as local time.
             timestamp = DateTime.FromFileTime(secondsFt);
+            Logger.LogDebug($"Successfully parsed Windows file time: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^oa[+-]?\d+[,.0-9]*$"))
@@ -230,10 +238,12 @@ internal static class TimeAndDateHelper
             {
                 inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_OADate, OADateMin, OADateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                Logger.LogError($"Failed to parse OLE Automation date: '{input}'. Value out of range.");
                 return false;
             }
 
             timestamp = DateTime.FromOADate(oADate);
+            Logger.LogDebug($"Successfully parsed OLE Automation date: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^exc[+-]?\d+[,.0-9]*$"))
@@ -249,6 +259,7 @@ internal static class TimeAndDateHelper
                 // For the if itself we use 0 as min value that we can show a special message if input is 0.
                 inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Excel1900, Excel1900DateMin, Excel1900DateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                Logger.LogError($"Failed to parse Excel 1900 date value: '{input}'. Value out of range.");
                 return false;
             }
 
@@ -256,11 +267,13 @@ internal static class TimeAndDateHelper
             {
                 inputParsingErrorMsg = Resources.Microsoft_plugin_timedate_InvalidInput_FakeExcel1900;
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                Logger.LogError($"Failed to parse Excel 1900 date value: '{input}'. Invalid date (0 or 60).");
                 return false;
             }
 
             excDate = excDate <= 60 ? excDate + 1 : excDate;
             timestamp = DateTime.FromOADate(excDate);
+            Logger.LogDebug($"Successfully parsed Excel 1900 date value: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^exf[+-]?\d+[,.0-9]*$"))
@@ -275,15 +288,19 @@ internal static class TimeAndDateHelper
             {
                 inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Excel1904, Excel1904DateMin, Excel1904DateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                Logger.LogError($"Failed to parse Excel 1904 date value: '{input}'. Value out of range.");
                 return false;
             }
 
             timestamp = DateTime.FromOADate(exfDate + 1462);
+            Logger.LogDebug($"Successfully parsed Excel 1904 date value: '{input}' as {timestamp}");
             return true;
         }
         else
         {
+            inputParsingErrorMsg = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle;
             timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+            Logger.LogWarning($"Failed to parse input: '{input}'. Format not recognized.");
             return false;
         }
     }
@@ -293,7 +310,7 @@ internal static class TimeAndDateHelper
     /// Test if input is special parsing for Unix time, Unix time in milliseconds, file time, ...
     /// </summary>
     /// <param name="input">String with date/time</param>
-    /// <returns>True if yes, otherwise false</returns>
+    /// <returns>True if yes; otherwise, false</returns>
     internal static bool IsSpecialInputParsing(string input)
     {
         return _regexSpecialInputFormats.IsMatch(input);

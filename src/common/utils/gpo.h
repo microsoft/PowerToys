@@ -37,9 +37,11 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW = L"ConfigureEnabledUtilityFileExplorerMonacoPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_PDF_PREVIEW = L"ConfigureEnabledUtilityFileExplorerPDFPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW = L"ConfigureEnabledUtilityFileExplorerGcodePreview";
+    const std::wstring POLICY_CONFIGURE_ENABLED_BGCODE_PREVIEW = L"ConfigureEnabledUtilityFileExplorerBgcodePreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerSVGThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerPDFThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerGcodeThumbnails";
+    const std::wstring POLICY_CONFIGURE_ENABLED_BGCODE_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerBgcodeThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerSTLThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_HOSTS_FILE_EDITOR = L"ConfigureEnabledUtilityHostsFileEditor";
     const std::wstring POLICY_CONFIGURE_ENABLED_IMAGE_RESIZER = L"ConfigureEnabledUtilityImageResizer";
@@ -207,7 +209,7 @@ namespace powertoys_gpo
 
     inline std::optional<std::wstring> getPolicyListValue(const std::wstring& registry_list_path, const std::wstring& registry_list_value_name)
     {
-        // This function returns the value of an entry of an policy list. The user scope is only checked, if the list is not enabled for the machine to not mix the lists.
+        // This function returns the value of an entry of a policy list. The user scope is only checked, if the list is not enabled for the machine to not mix the lists.
 
         HKEY key{};
 
@@ -328,6 +330,11 @@ namespace powertoys_gpo
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW);
     }
 
+    inline gpo_rule_configured_t getConfiguredBgcodePreviewEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_BGCODE_PREVIEW);
+    }
+
     inline gpo_rule_configured_t getConfiguredSvgThumbnailsEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS);
@@ -341,6 +348,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredGcodeThumbnailsEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredBgcodeThumbnailsEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_BGCODE_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredStlThumbnailsEnabledValue()

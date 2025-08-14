@@ -163,11 +163,21 @@
   <data name="open_location" xml:space="preserve">
     <value>Open location</value>
   </data>
+  <data name="copy_path" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
   <data name="run_as_administrator" xml:space="preserve">
     <value>Run as administrator</value>
   </data>
   <data name="run_as_different_user" xml:space="preserve">
     <value>Run as different user</value>
+  </data>
+  <data name="copy_failed" xml:space="preserve">
+    <value>Copy failed ({0}). Please try again.</value>
+    <comment>{0} is the error message</comment>
+  </data>
+  <data name="copied_to_clipboard" xml:space="preserve">
+    <value>Copied to clipboard!</value>
   </data>
   <data name="enable_start_menu_source" xml:space="preserve">
     <value>Include apps found in the Start Menu</value>
@@ -188,5 +198,11 @@
   <data name="use_thumbnails_setting_description" xml:space="preserve">
     <value>Experimental: When enabled, Command Palette will load thumbnails from the Windows Shell. Using thumbnails may cause the app to crash on launch</value>
     <comment>A description for "use_thumbnails_setting_label"</comment>
+  </data>
+  <data name="pin_app" xml:space="preserve">
+    <value>Pin</value>
+  </data>
+  <data name="unpin_app" xml:space="preserve">
+    <value>Unpin</value>
   </data>
 </root>

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
@@ -21,7 +22,7 @@ internal static class AvailableResultsList
     /// <param name="firstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the plugin setting.</param>
     /// <param name="firstDayOfWeek">Required for UnitTest: Use custom first day of the week instead the plugin setting.</param>
     /// <returns>List of results</returns>
-    internal static List<AvailableResult> GetList(bool isKeywordSearch, SettingsManager settings, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null)
+    internal static List<AvailableResult> GetList(bool isKeywordSearch, ISettingsInterface settings, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null)
     {
         var results = new List<AvailableResult>();
         var calendar = CultureInfo.CurrentCulture.Calendar;
@@ -103,16 +104,17 @@ internal static class AvailableResultsList
                             dtObject = dateTimeNowUtc;
                         }
 
-                        // Get formated date
+                        // Get formatted date
                         var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
                         try
                         {
                             value = dtObject.ToString(value, CultureInfo.CurrentCulture);
                         }
-                        catch
+                        catch (Exception ex)
                         {
                             if (!containsCustomSyntax)
                             {
+                                Logger.LogError($"Unable to format date time with format: {value}. Error: {ex.Message}");
                                 throw;
                             }
                             else
@@ -133,6 +135,7 @@ internal static class AvailableResultsList
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
+                        Logger.LogError($"ArgumentOutOfRangeException with format: {formatSyntax}. Error: {e.Message}");
                         results.Add(new AvailableResult()
                         {
                             Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFormat,
@@ -144,6 +147,7 @@ internal static class AvailableResultsList
                     }
                     catch (Exception e)
                     {
+                        Logger.LogError($"Exception with format: {formatSyntax}. Error: {e.Message}");
                         results.Add(new AvailableResult()
                         {
                             Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + formatSyntax,
@@ -325,8 +329,9 @@ internal static class AvailableResultsList
                     IconType = ResultIconType.DateTime,
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError($"Unable to convert to Windows file time: {ex.Message}");
                 results.Add(new AvailableResult()
                 {
                     Value = Resources.Microsoft_plugin_timedate_ErrorConvertWft,

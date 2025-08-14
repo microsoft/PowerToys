@@ -133,6 +133,15 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Please enter an expression.
+        /// </summary>
+        public static string calculator_expression_empty {
+            get {
+                return ResourceManager.GetString("calculator_expression_empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Expression wrong or incomplete.
         /// </summary>
         public static string calculator_expression_not_complete {
@@ -174,6 +183,24 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         public static string calculator_save_command_name {
             get {
                 return ResourceManager.GetString("calculator_save_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close on Enter.
+        /// </summary>
+        public static string calculator_settings_close_on_enter {
+            get {
+                return ResourceManager.GetString("calculator_settings_close_on_enter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Makes Copy and close the primary command.
+        /// </summary>
+        public static string calculator_settings_close_on_enter_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_close_on_enter_description", resourceCulture);
             }
         }
         

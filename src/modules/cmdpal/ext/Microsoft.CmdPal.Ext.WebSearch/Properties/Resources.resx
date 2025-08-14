@@ -178,4 +178,10 @@
   <data name="settings_page_name" xml:space="preserve">
     <value>Settings</value>
   </data>
+  <data name="web_search_fallback_subtitle" xml:space="preserve">
+    <value>Search for "{0}"</value>
+  </data>
+  <data name="open_url_fallback_title" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
 </root>

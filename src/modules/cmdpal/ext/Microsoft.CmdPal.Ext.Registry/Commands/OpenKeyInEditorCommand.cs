@@ -9,6 +9,7 @@ using System.Linq;
 using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Registry.Classes;
 using Microsoft.CmdPal.Ext.Registry.Helpers;
 using Microsoft.CmdPal.Ext.Registry.Properties;
@@ -26,7 +27,7 @@ internal sealed partial class OpenKeyInEditorCommand : InvokableCommand
     internal OpenKeyInEditorCommand(RegistryEntry entry)
     {
         Name = Resources.OpenKeyInRegistryEditor;
-        Icon = new IconInfo("\xE8A7"); // OpenInNewWindow icon
+        Icon = Icons.OpenInNewWindowIcon;
         _entry = entry;
     }
 
@@ -37,7 +38,7 @@ internal sealed partial class OpenKeyInEditorCommand : InvokableCommand
             RegistryHelper.OpenRegistryKey(entry.Key?.Name ?? entry.KeyPath);
             return true;
         }
-        catch (System.ComponentModel.Win32Exception)
+        catch (System.ComponentModel.Win32Exception ex)
         {
             // TODO GH #118 We need a convenient way to show errors to a user
             // MessageBox.Show(
@@ -45,13 +46,13 @@ internal sealed partial class OpenKeyInEditorCommand : InvokableCommand
             //    Resources.OpenInRegistryEditorAccessExceptionTitle,
             //    MessageBoxButton.OK,
             //    MessageBoxImage.Error);
+            Logger.LogError(ex.Message);
             return false;
         }
 #pragma warning disable CS0168, IDE0059
         catch (Exception exception)
         {
-            // TODO GH #108: Logging
-            // Log.Exception("Error on opening Windows registry editor", exception, typeof(Main));
+            Logger.LogError(exception.Message);
             return false;
         }
 #pragma warning restore CS0168, IDE0059

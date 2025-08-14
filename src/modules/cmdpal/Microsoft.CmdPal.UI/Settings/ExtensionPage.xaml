@@ -12,7 +12,7 @@
     xmlns:local="using:Microsoft.CmdPal.UI.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -65,7 +65,7 @@
 
                                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
                                     <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
+                                        <DataTemplate x:DataType="viewModels:TopLevelViewModel">
                                             <controls:SettingsExpander
                                                 DataContext="{x:Bind}"
                                                 Description="{x:Bind Subtitle, Mode=OneWay}"
@@ -92,12 +92,11 @@
 
                                                     <controls:SettingsCard x:Uid="Settings_ExtensionPage_Alias_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
                                                         <StackPanel Orientation="Vertical">
-                                                            <TextBox Text="{x:Bind AliasText, Mode=TwoWay}" />
+                                                            <TextBox Text="{x:Bind AliasText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                             <ToggleSwitch
+                                                                x:Uid="Settings_ExtensionPage_Alias_ToggleSwitch"
                                                                 IsEnabled="{x:Bind AliasText, Converter={StaticResource StringEmptyToBoolConverter}, Mode=OneWay}"
-                                                                IsOn="{x:Bind IsDirectAlias, Mode=TwoWay}"
-                                                                OffContent="Indirect"
-                                                                OnContent="Direct" />
+                                                                IsOn="{x:Bind IsDirectAlias, Mode=TwoWay}" />
                                                         </StackPanel>
                                                     </controls:SettingsCard>
 
@@ -108,12 +107,63 @@
                                 </ItemsRepeater>
 
                                 <TextBlock
+                                    x:Uid="ExtensionFallbackCommandsHeader"
+                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}" />
+
+                                <ItemsRepeater
+                                    ItemsSource="{x:Bind ViewModel.FallbackCommands, Mode=OneWay}"
+                                    Layout="{StaticResource VerticalStackLayout}"
+                                    Visibility="{x:Bind ViewModel.HasFallbackCommands}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:TopLevelViewModel">
+                                            <controls:SettingsCard DataContext="{x:Bind}" Header="{x:Bind DisplayTitle, Mode=OneWay}">
+                                                <controls:SettingsCard.HeaderIcon>
+                                                    <cpcontrols:ContentIcon>
+                                                        <cpcontrols:ContentIcon.Content>
+                                                            <cpcontrols:IconBox
+                                                                Width="20"
+                                                                Height="20"
+                                                                AutomationProperties.AccessibilityView="Raw"
+                                                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                        </cpcontrols:ContentIcon.Content>
+                                                    </cpcontrols:ContentIcon>
+                                                </controls:SettingsCard.HeaderIcon>
+
+                                                <!--  Content goes here  -->
+                                                <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+
+
+                                            </controls:SettingsCard>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+
+                                <TextBlock
                                     x:Uid="ExtensionSettingsHeader"
                                     Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                                     Visibility="{x:Bind ViewModel.HasSettings}" />
 
                                 <Frame x:Name="SettingsFrame" Visibility="{x:Bind ViewModel.HasSettings}">
-                                    <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+
+                                    <controls:SwitchPresenter
+                                        HorizontalAlignment="Stretch"
+                                        TargetType="x:Boolean"
+                                        Value="{x:Bind ViewModel.LoadingSettings, Mode=OneWay}">
+                                        <controls:Case Value="True">
+                                            <ProgressRing
+                                                Width="36"
+                                                Height="36"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                IsIndeterminate="True" />
+                                        </controls:Case>
+                                        <controls:Case Value="False">
+                                            <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+                                        </controls:Case>
+                                    </controls:SwitchPresenter>
+
                                 </Frame>
 
                                 <TextBlock

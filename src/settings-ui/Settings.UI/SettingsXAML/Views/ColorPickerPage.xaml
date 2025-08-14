@@ -9,19 +9,13 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     x:Name="RootPage"
-    d:DataContext="{d:DesignInstance Type=viewmodels:ColorPickerViewModel}"
+    d:DataContext="{d:DesignInstance Type=viewModels:ColorPickerViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
-    <Page.Resources>
-        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVis" />
-    </Page.Resources>
-
     <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ColorPicker.png">
         <controls:SettingsPageControl.ModuleContent>
-
             <StackPanel
                 x:Name="ColorPickerView"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
@@ -50,12 +44,39 @@
 
                     <tkcontrols:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="EditorFirst" />
-                            <ComboBoxItem x:Uid="ColorPickerFirst" />
-                            <ComboBoxItem x:Uid="ColorPickerOnly" />
+                            <ComboBoxItem x:Uid="ColorPicker_OpenEditor" />
+                            <ComboBoxItem x:Uid="ColorPicker_PickColor" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
+                    <tkcontrols:SettingsExpander
+                        x:Uid="ColorPicker_MouseActions"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
+                        IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="ColorPicker_PrimaryClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PrimaryClickBehavior, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="ColorPicker_PickColorThenEditor" />
+                                    <ComboBoxItem x:Uid="ColorPicker_PickColorAndClose" />
+                                    <ComboBoxItem x:Uid="ColorPicker_Close" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ColorPicker_MiddleClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.MiddleClickBehavior, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="ColorPicker_PickColorThenEditor" />
+                                    <ComboBoxItem x:Uid="ColorPicker_PickColorAndClose" />
+                                    <ComboBoxItem x:Uid="ColorPicker_Close" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ColorPicker_SecondaryClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.SecondaryClickBehavior, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="ColorPicker_PickColorThenEditor" />
+                                    <ComboBoxItem x:Uid="ColorPicker_PickColorAndClose" />
+                                    <ComboBoxItem x:Uid="ColorPicker_Close" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

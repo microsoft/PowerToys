@@ -7,12 +7,13 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
 /// <summary>
 /// The intent of this class is to provide a basic subset of 'list' like operations, without exposing callers to the internal representation
-/// of the data structure.  Currently this is implemented as a list for it's simplicity.
+/// of the data structure.  Currently this is implemented as a list for its simplicity.
 /// </summary>
 /// <typeparam name="T">typeof</typeparam>
 public class ListRepository<T> : IRepository<T>, IEnumerable<T>
@@ -37,8 +38,9 @@ public class ListRepository<T> : IRepository<T>, IEnumerable<T>
             _items = new ConcurrentDictionary<int, T>(list.ToDictionary(i => i.GetHashCode()));
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
+            Logger.LogInfo(ex.Message);
         }
     }
 
@@ -65,11 +67,6 @@ public class ListRepository<T> : IRepository<T>, IEnumerable<T>
             {
             }
         }
-    }
-
-    public ParallelQuery<T> AsParallel()
-    {
-        return _items.Values.AsParallel();
     }
 
     public bool Contains(T item)

@@ -152,10 +152,10 @@
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
-    <value>Default measure style</value>
+    <value>Default mode</value>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle.Description" xml:space="preserve">
-    <value>The utility will start having the selected style activated</value>
+    <value>The measuring mode that is used when activated</value>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle_None.Content" xml:space="preserve">
     <value>None</value>
@@ -234,7 +234,7 @@
     <value>Security key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
-    <value>The key must be auto generated in one machine by clicking on New Key, then typed in other machines</value>
+    <value>To set up, generate the key on one machine, and enter it manually on other machines.</value>
   </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
@@ -274,7 +274,7 @@
     <value>Adding a firewall rule might help solve connection issues.</value>
   </data>
   <data name="MouseWithoutBorders_RunAsAdminText.Title" xml:space="preserve">
-    <value>You need to run as administrator to modify this setting.</value>
+    <value>This setting can only be changed when running as administrator</value>
   </data>
   <data name="MouseWithoutBorders_ServiceUserUninstallWarning.Title" xml:space="preserve">
     <value>If PowerToys is installed as a user, uninstalling/upgrading may require the Mouse Without Borders service to be removed manually later.</value>
@@ -361,7 +361,7 @@
     <value>Hide the mouse cursor at the top edge of the screen when switching to other machine. This option also steals the focus from any full-screen app to ensure the keyboard input is redirected.</value>
   </data>
   <data name="MouseWithoutBorders_DrawMouseCursor.Description" xml:space="preserve">
-    <value>Mouse cursor may not be visible in Windows 10 and later versions of Windows when there is no physical mouse attached.</value>
+    <value>The mouse cursor may not appear on Windows 10 and later if no physical mouse is connected.</value>
   </data>
   <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description" xml:space="preserve">
     <value>Reverse DNS lookup to validate machine IP Address.</value>
@@ -796,7 +796,7 @@
     <value>Information Symbol</value>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Header" xml:space="preserve">
-    <value>Launch layout editor</value>
+    <value>Open layout editor</value>
     <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_LaunchEditorButtonControl.Description" xml:space="preserve">
@@ -804,7 +804,7 @@
     <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
-    <value>Make dragged window transparent</value>
+    <value>Make the dragged window transparent</value>
   </data>
   <data name="FancyZones_MouseDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Use a non-primary mouse button to toggle zone activation</value>
@@ -824,8 +824,11 @@
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Hold Shift key to activate zones while dragging a window</value>
   </data>
+  <data name="FancyZones_ActivationShiftDrag" xml:space="preserve">
+    <value>Hold Shift key</value>
+  </data>
   <data name="FancyZones_ActivationNoShiftDrag" xml:space="preserve">
-    <value>Drag windows to activate zones</value>
+    <value>Drag a window</value>
   </data>
   <data name="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Show zones on all monitors while dragging a window</value>
@@ -1304,7 +1307,7 @@
     <value>Always run as administrator</value>
   </data>
   <data name="GeneralSettings_AlwaysRunAsAdminText.Description" xml:space="preserve">
-    <value>You need to run as administrator to use this setting</value>
+    <value>This setting can only be changed when running as administrator</value>
   </data>
   <data name="GeneralSettings_RunningAsUserText" xml:space="preserve">
     <value>Running as user</value>
@@ -1465,7 +1468,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Preview Pane and File Explorer are app/feature names in Windows. 'Alt + P' is a shortcut</comment>
   </data>
   <data name="FileExplorerPreview_RunAsAdminRequired.Title" xml:space="preserve">
-    <value>You need to run as administrator to modify these settings.</value>
+    <value>This setting can only be changed when running as administrator</value>
   </data>
   <data name="FileExplorerPreview_RebootRequired.Title" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
@@ -1507,23 +1510,44 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorPicker_CopiedColorRepresentation.Header" xml:space="preserve">
     <value>Default color format</value>
   </data>
-  <data name="ColorPickerFirst.Content" xml:space="preserve">
-    <value>Pick a color and open editor</value>
-  </data>
-  <data name="EditorFirst.Content" xml:space="preserve">
-    <value>Open editor</value>
-  </data>
-  <data name="ColorPickerOnly.Content" xml:space="preserve">
-    <value>Only pick a color</value>
-  </data>
   <data name="ColorPicker_ActivationAction.Header" xml:space="preserve">
     <value>Activation behavior</value>
+  </data>
+  <data name="ColorPicker_OpenEditor.Content" xml:space="preserve">
+    <value>Open editor</value>
+  </data>
+  <data name="ColorPicker_PickColor.Content" xml:space="preserve">
+    <value>Pick a color first</value>
+  </data>
+  <data name="ColorPicker_MouseActions.Header" xml:space="preserve">
+    <value>Mouse actions</value>
+  </data>
+  <data name="ColorPicker_MouseActions.Description" xml:space="preserve">
+    <value>Customize the function of each mouse button</value>
+  </data>
+  <data name="ColorPicker_PrimaryClick.Header" xml:space="preserve">
+    <value>Primary click</value>
+  </data>
+  <data name="ColorPicker_MiddleClick.Header" xml:space="preserve">
+    <value>Middle click</value>
+  </data>
+  <data name="ColorPicker_SecondaryClick.Header" xml:space="preserve">
+    <value>Secondary click</value>
+  </data>
+  <data name="ColorPicker_PickColorThenEditor.Content" xml:space="preserve">
+    <value>Pick a color and open editor</value>
+  </data>
+  <data name="ColorPicker_PickColorAndClose.Content" xml:space="preserve">
+    <value>Pick a color and close</value>
+  </data>
+  <data name="ColorPicker_Close.Content" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="ColorFormats.Header" xml:space="preserve">
     <value>Picker behavior</value>
   </data>
   <data name="ColorPicker_CopiedColorRepresentation.Description" xml:space="preserve">
-    <value>This format will be copied to your clipboard</value>
+    <value>Format will be copied to your clipboard</value>
   </data>
   <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
     <value>Learn more about remapping limitations</value>
@@ -1715,7 +1739,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Show color name</value>
   </data>
   <data name="ColorPicker_ShowColorName.Description" xml:space="preserve">
-    <value>This will show the name of the color when picking a color</value>
+    <value>Displays the color name while picking a color</value>
   </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
@@ -1965,7 +1989,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Launch</value>
   </data>
   <data name="Launch_ColorPicker.Content" xml:space="preserve">
-    <value>Launch Color Picker</value>
+    <value>Open Color Picker</value>
   </data>
   <data name="Oobe_LearnMore.Text" xml:space="preserve">
     <value>Learn more about</value>
@@ -1981,7 +2005,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>File Locksmith lists which processes are using the selected files or directories and allows closing those processes.</value>
   </data>
   <data name="Oobe_FileExplorer.Description" xml:space="preserve">
-    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), STL (.stl), G-code (.gcode) and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
+    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), STL (.stl), G-code (.gcode), Binary G-code (.bgcode), and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
   </data>
   <data name="Oobe_ImageResizer.Description" xml:space="preserve">
     <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>
@@ -2035,7 +2059,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Diagnostic data</value>
   </data>
   <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
-    <value>Helps inform bug fixes, performance, and product decisions</value>
+    <value>Helps us make PowerToys faster, more stable, and better over time</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
     <value>Turn on diagnostic data to help us improve PowerToys?</value>
@@ -2112,7 +2136,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Want a custom size? You can add them in the PowerToys Settings!</value>
   </data>
   <data name="Oobe_KBM_HowToCreateMappings.Text" xml:space="preserve">
-    <value>Launch **PowerToys Settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
+    <value>Open **PowerToys Settings**, navigate to the Keyboard Manager menu, and select either **Remap a key** or **Remap a shortcut**.</value>
   </data>
   <data name="Oobe_KBM_TipsAndTricks.Text" xml:space="preserve">
     <value>Want to only have a shortcut work for a single application? Use the Target App field when creating the shortcut remapping.</value>
@@ -2529,10 +2553,10 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="Launch_Run.Content" xml:space="preserve">
-    <value>Launch PowerToys Run</value>
+    <value>Open PowerToys Run</value>
   </data>
   <data name="Launch_ShortcutGuide.Content" xml:space="preserve">
-    <value>Launch Shortcut Guide</value>
+    <value>Open Shortcut Guide</value>
   </data>
   <data name="ColorPicker_ColorFormat_ToggleSwitch.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Show format in editor</value>
@@ -2621,7 +2645,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>First part of the default name of new sizes that can be added in PT's settings ui.</comment>
   </data>
   <data name="Awake_IntervalSettingsCard.Header" xml:space="preserve">
-    <value>Interval before returning to the previous awakeness state</value>
+    <value>Interval before returning to the previous awake state</value>
   </data>
   <data name="Awake_ExpirationSettingsExpander.Header" xml:space="preserve">
     <value>End date and time</value>
@@ -2689,7 +2713,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Spotlight initial zoom</value>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Description" xml:space="preserve">
-    <value>Spotlight zoom factor at animation start</value>
+    <value>Spotlight zoom factor at the start of the animation</value>
   </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Header" xml:space="preserve">
     <value>Animation duration (ms)</value>
@@ -2703,23 +2727,23 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Animations are disabled in your system settings.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
-    <value>Shake minimum distance</value>
+    <value>Minimum shake distance</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Description" xml:space="preserve">
-    <value>The minimum distance for mouse shaking activation, for adjusting sensitivity</value>
+    <value>The minimum distance the mouse must move to be considered a shake. Lower values increase sensitivity.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Header" xml:space="preserve">
-    <value>Shake Interval (ms)</value>
+    <value>Shake detection interval (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Description" xml:space="preserve">
-    <value>The span of time during which we track mouse movement to detect shaking, for adjusting sensitivity</value>
+    <value>Time window used to monitor mouse movement for shake detection. Shorter intervals may detect quicker shakes.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingFactor.Header" xml:space="preserve">
-    <value>Shake factor (percent)</value>
+    <value>Shake sensitivity factor (percent)</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingFactor.Description" xml:space="preserve">
-    <value>Mouse shaking is detected by checking how much the mouse pointer has travelled when compared to the diagonal of the movement area. Reducing this factor increases sensitivity.</value>
+    <value>Determines how far the pointer must move, relative to the screen diagonal, to count as a shake. Lower values make it more sensitive.</value>
   </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
@@ -2819,7 +2843,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Windows default</value>
   </data>
   <data name="ColorModeHeader.Header" xml:space="preserve">
-    <value>App theme</value>
+    <value>Theme</value>
   </data>
   <data name="FancyZones_Zone_Appearance.Description" xml:space="preserve">
     <value>Customize the way zones look</value>
@@ -2827,7 +2851,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
-  <data name="LearnMore.Content" xml:space="preserve">
+  <data name="LearnMore.Text" xml:space="preserve">
     <value>Learn more</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
@@ -2885,13 +2909,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Reparent shortcut</value>
   </data>
   <data name="CropAndLock_ReparentActivation_Shortcut.Description" xml:space="preserve">
-    <value>Shortcut to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
+    <value>Creates a cropped version of an application’s window by embedding the original app into a new window. This is experimental and may cause issues due to the reparenting behavior.</value>
   </data>
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Header" xml:space="preserve">
     <value>Thumbnail shortcut</value>
   </data>
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
-    <value>Shortcut to crop and create a thumbnail of another window. The application isn't controllable through the thumbnail but it'll have less compatibility issues. </value>
+    <value>Creates a cropped, non-interactive thumbnail of another window. Improves app compatibility.</value>
   </data>
   <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
@@ -2958,12 +2982,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_GameMode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
     <comment>Game Mode is a Windows feature</comment>
-  </data>
-  <data name="AlwaysOnTop_SoundTitle.Header" xml:space="preserve">
-    <value>Sound</value>
-  </data>
-  <data name="AlwaysOnTop_Sound.Content" xml:space="preserve">
-    <value>Play a sound when pinning a window</value>
   </data>
   <data name="AlwaysOnTop_Behavior.Header" xml:space="preserve">
     <value>Behavior</value>
@@ -3040,10 +3058,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Behavior</value>
   </data>
   <data name="Peek_AlwaysRunNotElevated.Header" xml:space="preserve">
-    <value>Always run not elevated, even when PowerToys is elevated</value>
+    <value>Always run without elevation (even if PowerToys is elevated)</value>
   </data>
   <data name="Peek_AlwaysRunNotElevated.Description" xml:space="preserve">
-    <value>Tries to run Peek without elevated permissions, to fix access to network shares. You need to disable and re-enable Peek for changes to this value to take effect.</value>
+    <value>Runs Peek without admin permissions to improve access to network shares. To apply this change, you must disable and re-enable Peek.</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_CloseAfterLosingFocus.Header" xml:space="preserve">
@@ -3051,13 +3069,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_ConfirmFileDelete.Header" xml:space="preserve">
-    <value>Ask for confirmation before deleting files</value>
+    <value>Confirm before deleting files</value>
   </data>
   <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
-    <value>When enabled, you will be prompted to confirm before moving files to the Recycle Bin.</value>
+    <value>You'll be asked to confirm before files are moved to the Recycle Bin</value>
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
-    <value>Disable round corners when window is snapped</value>
+    <value>Disable rounded corners when a window is snapped</value>
   </data>
   <data name="PowerLauncher_SearchQueryTuningEnabled.Description" xml:space="preserve">
     <value>Fine tune results ordering</value>
@@ -3090,7 +3108,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Global sort order score modifier</value>
   </data>
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
-    <value>Enable round corners</value>
+    <value>Enable rounded corners</value>
   </data>
   <data name="LearnMore_QuickAccent.Text" xml:space="preserve">
     <value>Learn more about Quick Accent</value>
@@ -3122,7 +3140,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Create and manage Workspaces</value>
   </data>
   <data name="Workspaces_LaunchEditorButtonControl.Header" xml:space="preserve">
-    <value>Launch editor</value>
+    <value>Open editor</value>
   </data>
   <data name="LearnMore_Workspaces.Text" xml:space="preserve">
     <value>Learn more about the Workspaces utility</value>
@@ -3143,17 +3161,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
     <value>Pin a window</value>
   </data>
-  <data name="Awake_ShortDescription" xml:space="preserve">
-    <value>Keep your PC awake</value>
-  </data>
   <data name="ColorPicker_ShortDescription" xml:space="preserve">
     <value>Pick a color</value>
   </data>
   <data name="CropAndLock_Thumbnail" xml:space="preserve">
-    <value>Thumbnail</value>
+    <value>Crop and create a thumbnail</value>
   </data>
   <data name="CropAndLock_Reparent" xml:space="preserve">
-    <value>Reparent</value>
+    <value>Crop an app's window into a cropped window</value>
   </data>
   <data name="FancyZones_OpenEditor" xml:space="preserve">
     <value>Open editor</value>
@@ -3164,20 +3179,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="FindMyMouse_ShortDescription" xml:space="preserve">
     <value>Find the mouse</value>
   </data>
-  <data name="ImageResizer_ShortDescription" xml:space="preserve">
-    <value>Resize images from right-click context menu</value>
-  </data>
   <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
-    <value>Highlight clicks</value>
+    <value>Turn on clicks highlighter</value>
   </data>
   <data name="MouseJump_ShortDescription" xml:space="preserve">
     <value>Quickly move the mouse pointer</value>
   </data>
   <data name="MouseCrosshairs_ShortDescription" xml:space="preserve">
     <value>Draw crosshairs centered on the mouse pointer</value>
-  </data>
-  <data name="MouseWithoutBorders_ShortDescription" xml:space="preserve">
-    <value>Move your cursor across multiple devices</value>
   </data>
   <data name="AdvancedPaste_ShortDescription" xml:space="preserve">
     <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
@@ -3189,13 +3198,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more</value>
   </data>
   <data name="Peek_ShortDescription" xml:space="preserve">
-    <value>Quick and easy previewer</value>
-  </data>
-  <data name="PowerRename_ShortDescription" xml:space="preserve">
-    <value>Rename files and folders from right-click context menu</value>
+    <value>Preview file</value>
   </data>
   <data name="Run_ShortDescription" xml:space="preserve">
-    <value>A quick launcher</value>
+    <value>Open Run</value>
   </data>
   <data name="PowerAccent_ShortDescription" xml:space="preserve">
     <value>An alternative way to type accented characters</value>
@@ -3205,17 +3211,20 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ScreenRuler_ShortDescription" xml:space="preserve">
-    <value>Measure pixels on your screen</value>
+    <value>Start measurement</value>
   </data>
   <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
-    <value>Show a help overlay with Windows shortcuts</value>
+    <value>Open Shortcut Guide</value>
     <comment>{Locked="Windows"}</comment>
   </data>
   <data name="PowerOcr_ShortDescription" xml:space="preserve">
-    <value>A convenient way to copy text from anywhere on screen</value>
+    <value>Start text extraction</value>
   </data>
   <data name="Dashboard_Activation" xml:space="preserve">
     <value>Activation</value>
+  </data>
+  <data name="Activate_Zones" xml:space="preserve">
+    <value>Activate zones</value>
   </data>
   <data name="DashboardKBMShowMappingsButton.Content" xml:space="preserve">
     <value>Show remappings</value>
@@ -3294,7 +3303,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>ms = milliseconds</comment>
   </data>
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
-    <value>Hold the key down for this much time to make the accent menu appear (ms)</value>
+    <value>How long a key must be held before the accent menu appears</value>
     <comment>ms = milliseconds</comment>
   </data>
   <data name="QuickAccent_ExcludedApps.Description" xml:space="preserve">
@@ -3395,7 +3404,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Text Extractor</value>
   </data>
   <data name="Launch_TextExtractor.Content" xml:space="preserve">
-    <value>Launch Text Extractor</value>
+    <value>Open Text Extractor</value>
   </data>
   <data name="Oobe_TextExtractor.Title" xml:space="preserve">
     <value>Text Extractor</value>
@@ -3566,6 +3575,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Turkish" xml:space="preserve">
     <value>Turkish</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Vietnamese" xml:space="preserve">
+    <value>Vietnamese</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Icelandic" xml:space="preserve">
     <value>Icelandic</value>
   </data>
@@ -3617,15 +3629,15 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts" refers to the system hosts file, do not loc</comment>
   </data>
   <data name="Hosts_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Hosts File Editor</value>
+    <value>Open Hosts File Editor</value>
     <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Hosts File Editor</value>
+    <value>Open Hosts File Editor</value>
     <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
-    <value>Position of additional content</value>
+    <value>Placement of additional content</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
@@ -3637,7 +3649,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Behavior</value>
   </data>
   <data name="Launch_Hosts.Content" xml:space="preserve">
-    <value>Launch Hosts File Editor</value>
+    <value>Open Hosts File Editor</value>
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="LearnMore_Hosts.Text" xml:space="preserve">
@@ -3653,10 +3665,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Description" xml:space="preserve">
-    <value>Needs to be launched as administrator in order to make changes to the hosts file</value>
+    <value>Required in order to make changes to the hosts file</value>
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
-    <value>Launch as administrator</value>
+    <value>Open as administrator</value>
   </data>
   <data name="EnvironmentVariables.ModuleDescription" xml:space="preserve">
     <value>A quick utility for managing environment variables.</value>
@@ -3677,13 +3689,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Manage your environment variables</value>
   </data>
   <data name="EnvironmentVariables_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Environment Variables</value>
+    <value>Open Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Environment Variables</value>
+    <value>Open Environment Variables</value>
   </data>
   <data name="Launch_EnvironmentVariables.Content" xml:space="preserve">
-    <value>Launch Environment Variables</value>
+    <value>Open Environment Variables</value>
   </data>
   <data name="LearnMore_EnvironmentVariables.Text" xml:space="preserve">
     <value>Learn more about Environment Variables</value>
@@ -3695,10 +3707,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Description" xml:space="preserve">
-    <value>Needs to be launched as administrator in order to make changes to the system environment variables</value>
+    <value>Required in order to make changes to the system environment variables</value>
   </data>
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
-    <value>Launch as administrator</value>
+    <value>Open as administrator</value>
   </data>
   <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
     <value>Press duration before showing taskbar icon shortcuts (ms)</value>
@@ -3736,7 +3748,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>This setting is managed by your organization.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
-    <value>Additional content includes the file header and lines that can't parse</value>
+    <value>Includes items like the file header and any lines that can’t be parsed</value>
   </data>
   <data name="TextExtractor_Languages.Header" xml:space="preserve">
     <value>Preferred language</value>
@@ -3773,7 +3785,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Experimentation</value>
   </data>
   <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
-    <value>Note: Only Windows Insider builds may be selected for experimentation</value>
+    <value>Only Windows Insider builds may be selected for experimentation</value>
     <comment>{Locked="Windows Insider"}</comment>
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
@@ -3783,28 +3795,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Diagnostics &amp; feedback</value>
   </data>
   <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
-    <value>Learn more about the information we log &amp; how it gets used</value>
+    <value>Learn more about the logged information and how it's used</value>
   </data>
   <data name="GeneralPage_EnableDataDiagnostics.Header" xml:space="preserve">
     <value>Diagnostic data</value>
   </data>
-  <data name="GeneralPage_EnableDataDiagnostics.Description" xml:space="preserve">
-    <value>Helps inform bug fixes, performance, and improvements</value>
-  </data>
-  <data name="GeneralPage_ViewDiagnosticData.Header" xml:space="preserve">
-    <value>View diagnostic data</value>
-  </data>
   <data name="GeneralPage_EnableViewDiagnosticData.Header" xml:space="preserve">
-    <value>Enable viewing</value>
-  </data>
-  <data name="GeneralPage_EnableViewDiagnosticData.Description" xml:space="preserve">
-    <value>Uses up to 1GB (or more) of hard drive space on your PC</value>
-  </data>
-  <data name="GeneralPage_ViewDiagnosticDataViewer.Header" xml:space="preserve">
-    <value>Diagnostic data viewer</value>
-  </data>
-  <data name="GeneralPage_ViewDiagnosticDataViewer.Description" xml:space="preserve">
-    <value>Generate .xml files containing readable diagnostic data. Folder may include .xml and .etl files</value>
+    <value>Save logs to this device</value>
   </data>
   <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -3967,7 +3964,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccessTxt.Text" xml:space="preserve">
     <value>Quick access</value>
   </data>
-  <data name="UpdateAvailable.Title" xml:space="preserve">
+  <data name="UpdateAvailable.Text" xml:space="preserve">
     <value>Update available</value>
   </data>
   <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Header" xml:space="preserve">
@@ -4012,7 +4009,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Registry Preview is a product name, do not loc</comment>
   </data>
   <data name="Launch_RegistryPreview.Content" xml:space="preserve">
-    <value>Launch Registry Preview</value>
+    <value>Open Registry Preview</value>
     <comment>"Registry Preview" is the name of the utility</comment>
   </data>
   <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
@@ -4034,7 +4031,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Activation shortcut</value>
   </data>
   <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
-    <value>Thumbnail Size</value>
+    <value>Thumbnail size</value>
   </data>
   <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
     <value>Constrain thumbnail image size to a maximum of</value>
@@ -4160,20 +4157,16 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Consider loopback addresses as duplicates</value>
   </data>
   <data name="RegistryPreview_Launch_GroupSettings.Header" xml:space="preserve">
-    <value>Launch</value>
+    <value>Open</value>
   </data>
   <data name="RegistryPreview_LaunchButton_Accessible.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Launch Registry Preview</value>
+    <value>Open Registry Preview</value>
   </data>
   <data name="RegistryPreview_LaunchButtonControl.Header" xml:space="preserve">
-    <value>Launch Registry Preview</value>
+    <value>Open Registry Preview</value>
   </data>
   <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">
-    <value>Default app</value>
-  </data>
-  <data name="RegistryPreview_DefaultRegApp.Description" xml:space="preserve">
-    <value>Make Registry Preview default app for opening .reg files</value>
-    <comment>Registry Preview is app name. Do not localize.</comment>
+    <value>Make Registry Preview the default app for .reg files</value>
   </data>
   <data name="AdvancedPaste_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
@@ -4246,16 +4239,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Title of the settings window when running as administrator</comment>
   </data>
   <data name="DashboardTitle.Text" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>Home</value>
   </data>
   <data name="Shell_Dashboard.Content" xml:space="preserve">
-    <value>Dashboard</value>
-  </data>
-  <data name="DisabledModules.Text" xml:space="preserve">
-    <value>Disabled modules</value>
-  </data>
-  <data name="EnabledModules.Text" xml:space="preserve">
-    <value>Enabled modules</value>
+    <value>Home</value>
   </data>
   <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
     <value>Preview</value>
@@ -4298,6 +4285,12 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_ShowWhatsNewAfterUpdates.Content" xml:space="preserve">
     <value>Show the release notes after an update</value>
+  </data>
+  <data name="ShowSystemTrayIcon.Description" xml:space="preserve">
+    <value>To access settings, run the PowerToys executable again</value>
+  </data>
+  <data name="ShowSystemTrayIcon.Header" xml:space="preserve">
+    <value>Show system tray icon</value>
   </data>
   <data name="QuickAccent_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
@@ -4394,10 +4387,6 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>New+</value>
     <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
   </data>
-  <data name="NewPlus_Product_Description.Description" xml:space="preserve">
-    <value>Create files and folders from a personalized set of templates</value>
-    <comment>New+ product description</comment>
-  </data>
   <data name="NewPlus_Learn_More.Text" xml:space="preserve">
     <value>Learn more about New+</value>
     <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
@@ -4434,15 +4423,15 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Display options label</comment>
   </data>
   <data name="NewPlus_Hide_File_Extension_Toggle.Header" xml:space="preserve">
-    <value>Hide template filename extension</value>
+    <value>Hide the file extension in template names</value>
     <comment>Template file name extension settings toggle</comment>
   </data>
   <data name="NewPlus_Hide_Starting_Digits_Toggle.Header" xml:space="preserve">
-    <value>Hide template filename starting digits, spaces, and dots</value>
+    <value>Hide leading digits, spaces, and dots in template filenames</value>
     <comment>Template filename starting digits settings toggle</comment>
   </data>
   <data name="NewPlus_Hide_Starting_Digits_Description.Text" xml:space="preserve">
-    <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
+    <value>Ignores digits, spaces, and dots at the start of filenames—useful for sorting templates without showing those characters</value>
     <comment>Template filename starting digits settings toggle</comment>
   </data>
   <data name="NewPlus_behavior.Header" xml:space="preserve">
@@ -4509,7 +4498,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Workspaces</value>
   </data>
   <data name="Workspaces_ShortDescription" xml:space="preserve">
-    <value>Create and launch Workspaces</value>
+    <value>Open editor</value>
   </data>
   <data name="Shell_ZoomIt.Content" xml:space="preserve">
     <value>ZoomIt</value>
@@ -4829,13 +4818,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Open settings</value>
   </data>
   <data name="LanguageHeader.Header" xml:space="preserve">
-    <value>Application language</value>
+    <value>Language</value>
   </data>
   <data name="LanguageHeader.Description" xml:space="preserve">
-    <value>PowerToys will use OS language by default.</value>
+    <value>PowerToys matches your Windows language by default</value>
   </data>
   <data name="LanguageRestartInfo.Title" xml:space="preserve">
-    <value>Restart PowerToys for language change to take effect.</value>
+    <value>Restart PowerToys to apply language changes</value>
   </data>
   <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
     <value>Restart</value>
@@ -4936,6 +4925,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ShortDescription" xml:space="preserve">
     <value>A better quick launcher</value>
   </data>
+  <data name="CmdPal_ActivationDescription" xml:space="preserve">
+    <value>Open Command Palette</value>
+  </data>
   <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
     <value>Enable Command Palette</value>
     <comment>"Command Palette" is the name of the utility.</comment>
@@ -4996,8 +4988,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="CmdPal_ActivationShortcut.Description" xml:space="preserve">
-    <value>Go to Command Palette settings to customize the activation shortcut.</value>
+  <data name="CmdPal_DeeplinkContent.Content" xml:space="preserve">
+    <value>Open Command Palette settings to customize the activation shortcut</value>
   </data>
   <data name="Help_chromaCIE" xml:space="preserve">
     <value>chroma (CIE LCh)</value>
@@ -5019,5 +5011,120 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Help_hueOklch" xml:space="preserve">
     <value>hue (Oklch)</value>
+  </data>
+  <data name="ExitPT_NavViewItem.Content" xml:space="preserve">
+    <value>Exit PowerToys</value>
+  </data>
+  <data name="General_System.Header" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="GeneralPage_ReportBugPackage.Header" xml:space="preserve">
+    <value>Generate bug report package</value>
+  </data>
+  <data name="GeneralPage_ReportBugPackage.Description" xml:space="preserve">
+    <value>Log files will be zipped to your desktop</value>
+  </data>
+  <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
+    <value>Generate package</value>
+  </data>
+  <data name="AppTitleBarShutDown_Tooltip.Text" xml:space="preserve">
+    <value>Shut down</value>
+  </data>
+  <data name="BugReportUnderConstruction" xml:space="preserve">
+    <value>Bug report package is being created</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_BGCODE.Header" xml:space="preserve">
+    <value>Binary Geometric Code</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_BGCODE.Description" xml:space="preserve">
+    <value>.bgcode</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE.Description" xml:space="preserve">
+    <value>.bgcode</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE.Header" xml:space="preserve">
+    <value>Binary Geometric Code</value>
+  </data>
+  <data name="YoureUpToDate.Text" xml:space="preserve">
+    <value>You're up to date</value>
+  </data>
+  <data name="UpdateAvailableTextBlock.Text" xml:space="preserve">
+    <value>Update Available</value>
+  </data>
+  <data name="GeneralVersion.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="LearnWhatsNew.Text" xml:space="preserve">
+    <value>Learn what's new</value>
+  </data>
+  <data name="ConfigureShortcut" xml:space="preserve">
+    <value>Configure shortcut</value>
+  </data>
+  <data name="ConfigureShortcutText.Text" xml:space="preserve">
+    <value>Configure shortcut</value>
+  </data>
+  <data name="QuickAccessTitle.Title" xml:space="preserve">
+    <value>Quick access</value>
+  </data>
+  <data name="ShortcutsOverview.Title" xml:space="preserve">
+    <value>Shortcuts overview</value>
+  </data>
+  <data name="NoActionsToShow.Text" xml:space="preserve">
+    <value>No actions to show..</value>
+  </data>
+  <data name="NoShortcutsToShow.Text" xml:space="preserve">
+    <value>No shortcuts to show..</value>
+  </data>
+  <data name="HighlightMode.Description" xml:space="preserve">
+    <value>Highlight the cursor or dim the screen to spotlight it</value>
+  </data>
+  <data name="HighlightMode.Header" xml:space="preserve">
+    <value>Highlight mode</value>
+  </data>
+  <data name="HighlightMode_Circle_Highlight_Mode.Content" xml:space="preserve">
+    <value>Circle highlight</value>
+  </data>
+  <data name="HighlightMode_Spotlight_Mode.Content" xml:space="preserve">
+    <value>Spotlight</value>
+  </data>
+  <data name="LearnMore.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
+  <data name="Awake_ShortDescription" xml:space="preserve">
+    <value>Keep your PC awake</value>
+  </data>
+  <data name="ImageResizer_ShortDescription" xml:space="preserve">
+    <value>Resize images from right-click context menu</value>
+  </data>
+  <data name="MouseWithoutBorders_ShortDescription" xml:space="preserve">
+    <value>Move your cursor across multiple devices</value>
+  </data>
+  <data name="PowerRename_ShortDescription" xml:space="preserve">
+    <value>Rename files and folders from right-click context menu</value>
+  </data>
+  <data name="GeneralPage_EnableDataDiagnosticsText.Text" xml:space="preserve">
+    <value>Helps us make PowerToys faster, more stable, and better over time</value>
+  </data>
+  <data name="UpdateAvailable.Title" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="DisabledModules.Text" xml:space="preserve">
+    <value>Disabled modules</value>
+  </data>
+  <data name="EnabledModules.Text" xml:space="preserve">
+    <value>Enabled modules</value>
+  </data>
+  <data name="NewPlus_Product_Description.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+    <comment>New+ product description</comment>
+  </data>
+  <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
+    <value>Play a sound when pinning a window</value>
+  </data>
+  <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
+    <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
+  </data>
+  <data name="KeyBack" xml:space="preserve">
+    <value>Back key</value>
   </data>
 </root>

@@ -133,6 +133,15 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open URL.
+        /// </summary>
+        public static string open_url_fallback_title {
+            get {
+                return ResourceManager.GetString("open_url_fallback_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to the default browser.
         /// </summary>
         public static string plugin_browser {
@@ -237,6 +246,15 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Properties {
         public static string settings_page_name {
             get {
                 return ResourceManager.GetString("settings_page_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search for &quot;{0}&quot;.
+        /// </summary>
+        public static string web_search_fallback_subtitle {
+            get {
+                return ResourceManager.GetString("web_search_fallback_subtitle", resourceCulture);
             }
         }
     }

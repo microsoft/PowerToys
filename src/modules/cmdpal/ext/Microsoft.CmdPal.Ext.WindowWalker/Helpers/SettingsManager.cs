@@ -8,7 +8,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
-public class SettingsManager : JsonSettingsManager
+public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
     private static readonly string _namespace = "windowWalker";
 

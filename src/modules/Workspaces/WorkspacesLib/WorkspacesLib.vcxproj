@@ -45,6 +45,7 @@
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="WbemHelper.h" />
+    <ClInclude Include="WindowUtils.h" />
     <ClInclude Include="WorkspacesData.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
@@ -59,8 +60,10 @@
     </ClCompile>
     <ClCompile Include="PwaHelper.cpp" />
     <ClCompile Include="SteamGameHelper.cpp" />
+    <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
     <ClCompile Include="WbemHelper.cpp" />
+    <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="WorkspacesData.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>

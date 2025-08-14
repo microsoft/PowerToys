@@ -126,16 +126,15 @@ Get-ChildItem -Path $rootPath -Recurse packages.config | ForEach-Object {
 }
 
 # Update Directory.Packages.props file
-$propsFile = [System.IO.Path]::Combine($rootPath,"Directory.Packages.props")
-if (Test-Path $propsFile) {
-    $file = Read-FileWithEncoding -Path $propsFile
+Get-ChildItem -Path $rootPath -Recurse "Directory.Packages.props" | ForEach-Object {
+    $file = Read-FileWithEncoding -Path $_.FullName
     $content = $file.Content
     if ($content -match '<PackageVersion Include="Microsoft.WindowsAppSDK"') {
         $newVersionString = '<PackageVersion Include="Microsoft.WindowsAppSDK" Version="' + $WinAppSDKVersion + '" />'
         $oldVersionString = '<PackageVersion Include="Microsoft.WindowsAppSDK" Version="[-.0-9a-zA-Z]*" />'
         $content = $content -replace $oldVersionString, $newVersionString
-        Write-FileWithEncoding -Path $propsFile -Content $content -Encoding $file.encoding
-        Write-Host "Modified " $propsFile
+        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
+        Write-Host "Modified " $_.FullName
     }
 }
 
@@ -144,8 +143,8 @@ Get-ChildItem -Path $rootPath -Recurse *.vcxproj | ForEach-Object {
     $file = Read-FileWithEncoding -Path $_.FullName
     $content = $file.Content
     if ($content -match '\\Microsoft.WindowsAppSDK.') {
-        $newVersionString = '\Microsoft.WindowsAppSDK.' + $WinAppSDKVersion + '\'
-        $oldVersionString = '\\Microsoft.WindowsAppSDK.[-.0-9a-zA-Z]*\\'
+        $newVersionString = '\Microsoft.WindowsAppSDK.' + $WinAppSDKVersion
+        $oldVersionString = '\\Microsoft.WindowsAppSDK.(?=[-.0-9a-zA-Z]*\d)[-.0-9a-zA-Z]*'    #positive lookahead for at least a digit
         $content = $content -replace $oldVersionString, $newVersionString
         Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
         Write-Host "Modified " $_.FullName

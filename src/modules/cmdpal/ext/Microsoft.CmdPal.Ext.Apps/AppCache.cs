@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -12,7 +13,7 @@ using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public sealed class AppCache : IDisposable
+public sealed partial class AppCache : IDisposable
 {
     private Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
 
@@ -46,7 +47,19 @@ public sealed class AppCache : IDisposable
             UpdateUWPIconPath(ThemeHelper.GetCurrentTheme());
         });
 
-        Task.WaitAll(a, b);
+        try
+        {
+            Task.WaitAll(a, b);
+        }
+        catch (AggregateException ex)
+        {
+            ManagedCommon.Logger.LogError("One or more errors occurred while indexing apps");
+
+            foreach (var inner in ex.InnerExceptions)
+            {
+                ManagedCommon.Logger.LogError(inner.Message, inner);
+            }
+        }
 
         AllAppsSettings.Instance.LastIndexTime = DateTime.Today;
     }
@@ -57,7 +70,14 @@ public sealed class AppCache : IDisposable
         {
             foreach (UWPApplication app in _packageRepository)
             {
-                app.UpdateLogoPath(theme);
+                try
+                {
+                    app.UpdateLogoPath(theme);
+                }
+                catch (Exception ex)
+                {
+                    ManagedCommon.Logger.LogError($"Failed to update icon path for app {app.Name}", ex);
+                }
             }
         }
     }

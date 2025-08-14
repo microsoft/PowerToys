@@ -160,8 +160,11 @@
   <data name="Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo" xml:space="preserve">
     <value>Hide disconnected network info</value>
   </data>
+  <data name="Microsoft_plugin_ext_system_page_title" xml:space="preserve">
+    <value>Windows System Commands</value>
+  </data>
   <data name="Microsoft_plugin_ext_system_page_name" xml:space="preserve">
-    <value>Windows System Command</value>
+    <value>System Commands</value>
   </data>
   <data name="Microsoft_plugin_sys_AdapterName" xml:space="preserve">
     <value>Adapter name</value>
@@ -413,5 +416,17 @@
   </data>
   <data name="Microsoft_plugin_ext_fallback_display_title" xml:space="preserve">
     <value>Open System Command</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RestartShell" xml:space="preserve">
+    <value>Restart Windows Explorer</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RestartShell_description" xml:space="preserve">
+    <value>End and restart the Windows Explorer shell process</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RestartShell_name" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="Microsoft_plugin_sys_RestartShell_confirmation" xml:space="preserve">
+    <value>You are about to restart Windows Explorer, are you sure?</value>
   </data>
 </root>
