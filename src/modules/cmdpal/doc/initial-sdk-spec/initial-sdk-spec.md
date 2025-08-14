@@ -2051,15 +2051,20 @@ for them.
 
 What if the search box wasn't just a text box, but was an actually rich search surface?
 
-```c#
-
+```c# rich search
 
 [uuid("a578ed30-1374-4601-97ba-8bd36a0097cd")]
 interface IToken requires INotifyPropChanged {};
 
+interface ISearchUpdateArgs requires IExtendedAttributesProvider
+{
+    String NewSearchText { get; } // The text that the user has typed into the search box.
+}
+
 interface IBasicStringToken requires IToken
 {
     String Text { get; }
+    void UpdateText(ISearchUpdateArgs newText); // This is the setter for the text, which will be used by the host to update the text in the search box.
 }
 
 // Does ICommandArgument require IToken,
@@ -2072,6 +2077,11 @@ interface ICommandArgument requires INotifyPropChanged
 
     Object Value { get; }; // No setter. Each individual token type will have its own setter.
 }
+interface ILabelToken requires IToken
+{
+    // This is just a static run of text, with no user interaction. It can't accept "focus"
+    String Text { get; }; 
+}
 interface IStringInputToken requires ICommandArgument
 {
     String Text { get; set; } // This is basically just the `.Value`, but with a setter
@@ -2080,7 +2090,7 @@ interface ICustomHwndPickerToken requires IToken, ICommandArgument
 {
     void ShowPicker(UInt64 hostHwnd); // extension is responsible for setting your own .Value
 }
-interface IStaticPickerToken requires IToken, ICommandArgument
+interface IStaticPickerToken requires IToken, ICommandArgument, INotifyItemsChanged
 {
     IPickerToken[] GetItems();
     IPickerToken SelectedItem { get; set; }
@@ -2102,15 +2112,15 @@ interface IRichSearch requires INotifyPropChanged
 }
 
 
-interface ICommandParameter requires IToken 
-{
-    String Name { get; };
-    Boolean Required{ get; };
-}
-interface IInvokableCommandWithParameters requires ICommand {
-    ICommandParameter[] Parameters { get; };
-    ICommandResult InvokeWithArgs(Object sender, ICommandArgument[] args);
-};
+// interface ICommandParameter requires IToken 
+// {
+//     String Name { get; };
+//     Boolean Required{ get; };
+// }
+// interface IInvokableCommandWithParameters requires ICommand {
+//     ICommandParameter[] Parameters { get; };
+//     ICommandResult InvokeWithArgs(Object sender, ICommandArgument[] args);
+// };
 ```
 
 What are things we actually want users to be able to do with this?
@@ -2132,6 +2142,9 @@ What are things we actually want users to be able to do with this?
 
 <td>
 
+Some standard base classes for `INotifyPropChanged` and `INotifyItemsChanged`,
+to make it easier for developers to implement these interfaces.
+
 ```cs
 public partial class BaseObservable : INotifyPropChanged
 {
@@ -2139,8 +2152,17 @@ public partial class BaseObservable : INotifyPropChanged
     protected void OnPropertyChanged(string propertyName) => 
         try { PropChanged?.Invoke(this, new PropChangedEventArgs(propertyName)); } catch { }
 }
+public partial class BaseObservableList : BaseObservable, INotifyItemsChanged
+{
+    public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
+    protected void OnItemsChanged(IItemsChangedEventArgs args) =>
+        try { ItemsChanged?.Invoke(this, args); } catch { }
+}
 ```
 
+`M365RichSearch` is our sample Rich Search implementation. It starts with a single basic string token. When the user types, we immediately begin by sending input to that first `BasicStringToken`. 
+
+As the user types, we look to see if they if they typed a special character (like `@`). If they do, we add a new token to the list. When we return the new token back to the host, the host will "move focus" into the new token.  When the user selects an item from the picker, we add another basic string token after it.
 
 ```cs
 class M365RichSearch : BaseObservable, IRichSearch
@@ -2174,17 +2196,38 @@ class M365RichSearch : BaseObservable, IRichSearch
             OnStringTextChanged(sender, ((BasicStringToken)sender).Text);
         }
     }
-    private void OnStringTextChanged(object sender, string newText) {
-        if (newText.Length > 0 && newText[0] == '@') {
-            // User typed '@', let's add a M365EntityPickerToken
-            var entityPickerToken = new M365EntityPickerToken();
-            SearchTokens = SearchTokens.Append(entityPickerToken).ToArray();
-            OnPropertyChanged(nameof(SearchTokens));
-        } else if (newText.Length > 0 && newText[0] == '#') {
-            // User typed '#', let's add a tag token or something
-            // (not implemented here)
-        }
 
+    private void OnStringTextChanged(object sender, string newText) {
+        if (sender != SearchTokens.Last()) {
+            // User typed in a non-last token, ignore it.
+            return;
+        }
+        var searchToken = ((BasicStringToken)sender);
+        if (newText.Length > 0 && newText.EndsWith('@')) {
+            // User typed '@', let's add a M365EntityPickerToken
+            
+            // Create the new picker token
+            var entityPickerToken = new M365EntityPickerToken();
+            entityPickerToken.PropChanged += OnEntityPickerChanged;
+            SearchTokens = SearchTokens.Append(entityPickerToken).ToArray();
+            
+            // The new token "owns" the '@', so we need to remove it from the basic string
+            searchToken.SilentUpdateText(newText.TrimEnd('@'));
+
+            OnPropertyChanged(nameof(SearchTokens));
+        } 
+        else if (newText.Length > 0 && newText.EndsWith('#')) { /* etc, etc */}
+        else if (newText.Length > 0 && newText.EndsWith('/')) { /* etc, etc */}
+    }
+
+    private void OnEntityPickerChanged(object sender, PropChangedEventArgs args) {
+        if (args.PropertyName == nameof(M365EntityPickerToken.SelectedItem)) {
+            // User selected an entity, we now want to add another BasicStringToken after it
+            var baseStringInput = new BasicStringToken(" ");
+            baseStringInput.PropChanged += OnStringTokenChanged;
+            SearchTokens = SearchTokens.Append(baseStringInput).ToArray();
+            OnPropertyChanged(nameof(SearchTokens));
+        }
     }
 }
 ```
@@ -2192,9 +2235,13 @@ class M365RichSearch : BaseObservable, IRichSearch
 </td>
 <td>
 
+A toolkit class for just the basic string token. The basic string token just
+represents text in the search box, with no special meaning.
+
+A basic page essentially just has one long `BasicStringToken`.
+
 ```cs
-class BasicStringToken : BaseObservable, IBasicStringToken
-{
+class BasicStringToken : BaseObservable, IBasicStringToken {
     public string Text {
         get => _text;
         set {
@@ -2205,19 +2252,32 @@ class BasicStringToken : BaseObservable, IBasicStringToken
             }
         }
     }
-
     private string _text;
 
     public BasicStringToken(string initialText = "") {
         _text = initialText;
     }
-
+    public SilentUpdateText(string newText) {
+        _text = newText;
+    }
 }
 ```
 
+This is a more complex example: a dynamic picker token. When this is added to
+the list of tokens, the host will "move focus" to that token. The host will
+immediately call `GetItems()` on the token, which will return a list of items to
+show the user. 
+
+As the user types, the host will call `SearchText.set` on the token. In our
+sample here, we use that to query the backend (in `UpdateSearchText`), then call `RaisePropertyChanged` on `SearchText` to notify the host that the search text has changed.
+
+, which will return a list of items based on the search text. The user can then select an item, which will set the `SelectedItem` property on the token.
+
+If the user backspaces the last character in the token (s.t. `SearchText` is empty), the host will tell the `IRichSearch` to remove the token from the list of tokens. 
+
+
 ```cs
-class M365EntityPickerToken : BaseObservable, IDynamicPickerToken
-{
+class M365EntityPickerToken : BaseObservable, IDynamicPickerToken {
     public IIconInfo? Icon => _selected?.Icon;
     public string? DisplayName => _selected?.DisplayName;
     public object? Value => _selected?.Value;
@@ -2232,7 +2292,7 @@ class M365EntityPickerToken : BaseObservable, IDynamicPickerToken
                 OnPropertyChanged(nameof(SearchText));
             }
         }
-    }
+    }; 
     public IPickerToken? SelectedItem {
         get => _selected;
         set {
@@ -2254,7 +2314,7 @@ class M365EntityPickerToken : BaseObservable, IDynamicPickerToken
         return _items;
     }
     
-    private string _searchText = "";
+    private string _searchText = "@";
     private IPickerToken[] _items = [];
     private IPickerToken? _selected = null;
 
@@ -2262,13 +2322,75 @@ class M365EntityPickerToken : BaseObservable, IDynamicPickerToken
         // Call out to M365 APIs to get the entities based on the search text
         // and update the list of items.
         _items = M365Api.GetEntities(newValue); // Pretend this is it.
+        RaiseItemsChanged();
     }
 }
 ```
 
+(ommitted from this sample: cancellation tokens to only have one query at a time, loading states, error states, etc.)
+
 </td>
 </tr>
 </table>
+
+### Commands with parameters
+
+_Mike, when you were writing this, you said you beat them all. That you solved all our problems. How does adding tokens to the search box solve all our problems?_
+
+We'll add a new type of page, called a `RichSearchPage`. It's a list page, but with a rich search box at the top.
+
+```c#
+interface IRichSearchPage requires IListPage {
+    IRichSearch Search { get; };
+};
+```
+
+Now, lets say you had a command like "Create a note ${title} in ${folder}". `title` is a string input, and `folder` is a static list of folders. 
+
+The extension author can then define a `RichSearchPage` with a `IRichSearch` that has four tokens in it:
+* A `ILabelToken` for "Create a note"
+* A `IStringInputToken` for the `title`
+* A `ILabelToken` for "in"
+* A `IStaticListToken` for the `folder`, where the items are possible folders
+
+> [!CAUTION] TODO! Mike we probably need to make it so that <kbd>↲</kbd> on a token can either "commit" the whole command. Like, in the above example, if the user is in the `folder` token, and they hit <kbd>↲</kbd>, we're displaying a list of results.
+>
+> oh this is devious
+> 
+> we could have the token be a IStringInputToken. And then put each of the results into the list of results. So the user can either type a new folder name, or select an existing one.
+> 
+> NO don't do that.
+>
+> When we first display the list, the _first item is the default_. So pressing enter on it will set the `SelectedItem` to the first item in the list.
+> Have the page listen for the `SelectedItem` property on the `IStaticListToken`. When that property changes, we can... not invoke a command yet. BUTTS. 
+
+Then, when the user hits <kbd>↲</kbd>, we gather up all the tokens, and we can reference them in the command. As an example, here's the `CreateNoteCommand`, which implements the `IRichSearchPage` interface:
+
+```csharp
+class CreateNoteCommand : IRichSearchPage {
+    public string Name => "Create a note";
+    public string Id => "create_note";
+    public IIconInfo Icon => null;
+
+    public IRichSearch Search { get; } 
+    private StringInputToken _titleToken;
+    private NotesFolderToken _folderToken;
+
+    public CreateNoteCommand() {
+        Search = new RichSearch();
+
+        _titleToken = new StringInputToken("title", "Title of the note");
+        _folderToken = new NotesFolderToken("folder", "Select a folder");
+
+        Search.SearchTokens = [
+            new LabelToken("Create a note"),
+            _titleToken,
+            new LabelToken("in"),
+            _folderToken
+        ];
+    }
+}
+
 
 ## Class diagram
 
