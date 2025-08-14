@@ -41,7 +41,7 @@
                                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                                 BorderThickness="1"
                                 CornerRadius="{StaticResource ControlCornerRadius}">
-                                <TextBlock FontWeight="SemiBold" Text="Alt" />
+                                <TextBlock FontWeight="SemiBold" Text="TO DO" />
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
