@@ -276,9 +276,9 @@ internal sealed partial class ExplodeOnPropChange : ListPage
 
 /// <summary>
 /// This sample simulates a long delay in handling UpdateSearchText. I've found
-/// that if I type "asdfqwer1234", then somewhere around "1234", we'll get into
-/// a state where the character is typed, but then CmdPal snaps back to a
-/// previous query.
+/// that if I type "124356781234", then somewhere around the second "1234",
+/// we'll get into a state where the character is typed, but then CmdPal snaps
+/// back to a previous query.
 ///
 /// We can use this to validate that we're always sticking with the last
 /// SearchText. My guess is that it's a bug in
@@ -348,7 +348,7 @@ internal sealed partial class EvilSlowDynamicPage : DynamicListPage
 /// In this sample, we're returning 10000 items, which genuinely marshal slowly
 /// (even before we start retrieving properties from them).
 ///
-///  While we're in the middle of the the marshalling of that GetItems call, the
+///  While we're in the middle of the marshalling of that GetItems call, the
 ///  background thread we started will kick off another GetItems (via the
 ///  RaiseItemsChanged).
 ///
