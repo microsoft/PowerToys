@@ -81,7 +81,7 @@ internal sealed partial class SampleListPage : ListPage
                         Title = "I'm a second command",
                         RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
                     },
-                    new SeparatorContextItem(),
+                    new Separator(),
                     new CommandContextItem(
                         new ToastCommand("Third command invoked", MessageState.Error) { Name = "Do 3", Icon = new IconInfo("\uF148") }) // dial 3
                     {
