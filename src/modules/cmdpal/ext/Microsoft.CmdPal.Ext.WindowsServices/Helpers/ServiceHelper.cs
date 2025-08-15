@@ -47,7 +47,7 @@ public static class ServiceHelper
         var result = serviceList.Select(s =>
         {
             var serviceResult = ServiceResult.CreateServiceController(s);
-            if (serviceResult == null)
+            if (serviceResult is null)
             {
                 return null;
             }
@@ -98,7 +98,7 @@ public static class ServiceHelper
                 // ToolTipData = new ToolTipData(serviceResult.DisplayName, serviceResult.ServiceName),
                 // IcoPath = icoPath,
             };
-        }).Where(s => s != null);
+        }).Where(s => s is not null);
 
         return result;
     }

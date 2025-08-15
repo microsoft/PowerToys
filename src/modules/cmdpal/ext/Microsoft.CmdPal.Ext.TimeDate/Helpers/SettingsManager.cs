@@ -103,7 +103,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     {
         get
         {
-            if (_firstWeekOfYear.Value == null || string.IsNullOrEmpty(_firstWeekOfYear.Value))
+            if (_firstWeekOfYear.Value is null || string.IsNullOrEmpty(_firstWeekOfYear.Value))
             {
                 return -1;
             }
@@ -123,7 +123,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     {
         get
         {
-            if (_firstDayOfWeek.Value == null || string.IsNullOrEmpty(_firstDayOfWeek.Value))
+            if (_firstDayOfWeek.Value is null || string.IsNullOrEmpty(_firstDayOfWeek.Value))
             {
                 return -1;
             }

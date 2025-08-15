@@ -57,7 +57,7 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
             }
         }
 
-        if (result == null)
+        if (result is null)
         {
             Command = null;
             Title = string.Empty;

@@ -11,9 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Utils;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.Storage.Packaging.Appx;
 using Windows.Win32.System.Com;
 
@@ -99,7 +97,7 @@ public partial class UWP
     private static string[] XmlNamespaces(string path)
     {
         var z = XDocument.Load(path);
-        if (z.Root != null)
+        if (z.Root is not null)
         {
             var namespaces = z.Root.Attributes().
                 Where(a => a.IsNamespaceDeclaration).

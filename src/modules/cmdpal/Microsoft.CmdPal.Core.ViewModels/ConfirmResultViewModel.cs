@@ -25,7 +25,7 @@ public partial class ConfirmResultViewModel(IConfirmationArgs _args, WeakReferen
     public override void InitializeProperties()
     {
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }

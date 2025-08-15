@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -66,7 +65,7 @@ public sealed partial class AppCache : IDisposable
 
     private void UpdateUWPIconPath(Theme theme)
     {
-        if (_packageRepository != null)
+        if (_packageRepository is not null)
         {
             foreach (UWPApplication app in _packageRepository)
             {

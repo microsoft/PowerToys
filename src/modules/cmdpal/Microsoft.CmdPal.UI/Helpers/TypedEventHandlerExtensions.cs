@@ -46,7 +46,7 @@ public static class TypedEventHandlerExtensions
 #pragma warning restore CA1715 // Identifiers should have correct prefix
         where R : DeferredEventArgs
     {
-        if (eventHandler == null)
+        if (eventHandler is null)
         {
             return Task.CompletedTask;
         }

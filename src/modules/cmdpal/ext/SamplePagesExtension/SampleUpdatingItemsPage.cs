@@ -24,7 +24,7 @@ public partial class SampleUpdatingItemsPage : ListPage
 
     public override IListItem[] GetItems()
     {
-        if (timer == null)
+        if (timer is null)
         {
             timer = new Timer(500);
             timer.Elapsed += (object source, ElapsedEventArgs e) =>

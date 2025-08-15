@@ -5,7 +5,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -79,7 +78,7 @@ public partial class InstallPackageCommand : InvokableCommand
     {
         // TODO: LOCK in here, so this can only be invoked once until the
         // install / uninstall is done. Just use like, an atomic
-        if (_installTask != null)
+        if (_installTask is not null)
         {
             return CommandResult.KeepOpen();
         }
@@ -143,7 +142,7 @@ public partial class InstallPackageCommand : InvokableCommand
             {
                 await Task.Delay(2500).ConfigureAwait(false);
 
-                if (_installTask == null)
+                if (_installTask is null)
                 {
                     WinGetExtensionHost.Instance.HideStatus(_installBanner);
                 }

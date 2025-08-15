@@ -18,8 +18,8 @@ public class NumberTranslatorTests
     public void Create_ThrowError_WhenCalledNullOrEmpty(string sourceCultureName, string targetCultureName)
     {
         // Arrange
-        CultureInfo sourceCulture = sourceCultureName != null ? new CultureInfo(sourceCultureName) : null;
-        CultureInfo targetCulture = targetCultureName != null ? new CultureInfo(targetCultureName) : null;
+        CultureInfo sourceCulture = sourceCultureName is not null ? new CultureInfo(sourceCultureName) : null;
+        CultureInfo targetCulture = targetCultureName is not null ? new CultureInfo(targetCultureName) : null;
 
         // Act
         Assert.ThrowsException<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));

@@ -44,12 +44,12 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
     {
         lock (UpdateMoreCommandsLock)
         {
-            if (actionRuntime == null)
+            if (actionRuntime is null)
             {
                 actionRuntime = ActionRuntimeManager.InstanceAsync.GetAwaiter().GetResult();
             }
 
-            if (actionRuntime == null)
+            if (actionRuntime is null)
             {
                 return;
             }
@@ -62,7 +62,7 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
         {
             var extension = System.IO.Path.GetExtension(fullPath).ToLower(CultureInfo.InvariantCulture);
             ActionEntity entity = null;
-            if (extension != null)
+            if (extension is not null)
             {
                 if (extension == ".jpg" || extension == ".jpeg" || extension == ".png")
                 {
@@ -74,7 +74,7 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
                 }
             }
 
-            if (entity == null)
+            if (entity is null)
             {
                 entity = actionRuntime.EntityFactory.CreateFileEntity(fullPath);
             }
@@ -100,7 +100,7 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
     {
         lock (UpdateMoreCommandsLock)
         {
-            if (actionRuntime != null)
+            if (actionRuntime is not null)
             {
                 actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
             }

@@ -2,13 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Bookmarks;
-using Microsoft.UI.Xaml.Documents;
 using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.UI.Helpers;
@@ -63,7 +56,7 @@ internal static class GpoValueChecker
     {
         using (RegistryKey? key = rootKey.OpenSubKey(subKeyPath, false))
         {
-            if (key == null)
+            if (key is null)
             {
                 return null;
             }

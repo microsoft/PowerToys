@@ -10,7 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Win32Program = Microsoft.CmdPal.Ext.Apps.Programs.Win32Program;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
@@ -53,7 +52,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
                 if (!string.IsNullOrEmpty(appPath))
                 {
                     Win32Program? app = Win32Program.GetAppFromPath(appPath);
-                    if (app != null)
+                    if (app is not null)
                     {
                         Add(app);
                         _isDirty = true;
@@ -137,7 +136,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
         }
 
         // To remove the old app which has been renamed and to add the new application.
-        if (oldApp != null)
+        if (oldApp is not null)
         {
             if (string.IsNullOrWhiteSpace(oldApp.Name) || string.IsNullOrWhiteSpace(oldApp.ExecutableName) || string.IsNullOrWhiteSpace(oldApp.FullPath))
             {
@@ -149,7 +148,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
             }
         }
 
-        if (newApp != null)
+        if (newApp is not null)
         {
             Add(newApp);
             _isDirty = true;
@@ -177,7 +176,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
             if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
             {
                 app = GetAppWithSameLnkFilePath(path);
-                if (app == null)
+                if (app is null)
                 {
                     // Cancelled links won't have a resolved path.
                     app = GetAppWithSameNameAndExecutable(Path.GetFileNameWithoutExtension(path), Path.GetFileName(path));
@@ -197,7 +196,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
             Logger.LogError(ex.Message);
         }
 
-        if (app != null)
+        if (app is not null)
         {
             Remove(app);
             _isDirty = true;
@@ -244,7 +243,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
         if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.OrdinalIgnoreCase) && !Path.GetExtension(path).Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
         {
             Programs.Win32Program? app = Programs.Win32Program.GetAppFromPath(path);
-            if (app != null)
+            if (app is not null)
             {
                 Add(app);
                 _isDirty = true;

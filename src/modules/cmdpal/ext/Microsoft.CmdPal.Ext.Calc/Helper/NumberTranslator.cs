@@ -107,7 +107,7 @@ public class NumberTranslator
             // Currently, we only convert base literals (hexadecimal, binary, octal) to decimal.
             var converted = ConvertBaseLiteral(token, cultureTo);
 
-            if (converted != null)
+            if (converted is not null)
             {
                 outputBuilder.Append(converted);
                 continue;

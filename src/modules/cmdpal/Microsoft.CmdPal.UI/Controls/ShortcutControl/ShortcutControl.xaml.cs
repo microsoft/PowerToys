@@ -39,13 +39,13 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
     private static void OnAllowDisableChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e)
     {
         var me = d as ShortcutControl;
-        if (me == null)
+        if (me is null)
         {
             return;
         }
 
         var description = me.c?.FindDescendant<TextBlock>();
-        if (description == null)
+        if (description is null)
         {
             return;
         }
@@ -431,7 +431,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        if (lastValidSettings != null && ComboIsValid(lastValidSettings))
+        if (lastValidSettings is not null && ComboIsValid(lastValidSettings))
         {
             HotkeySettings = lastValidSettings with { };
         }
@@ -458,7 +458,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     private static bool ComboIsValid(HotkeySettings? settings)
     {
-        return settings != null && (settings.IsValid() || settings.IsEmpty());
+        return settings is not null && (settings.IsValid() || settings.IsEmpty());
     }
 
     public void Receive(WindowActivatedEventArgs message) => DoWindowActivated(message);
@@ -466,12 +466,12 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
     private void DoWindowActivated(WindowActivatedEventArgs args)
     {
         args.Handled = true;
-        if (args.WindowActivationState != WindowActivationState.Deactivated && (hook == null || hook.GetDisposedState() == true))
+        if (args.WindowActivationState != WindowActivationState.Deactivated && (hook is null || hook.GetDisposedState() == true))
         {
             // If the PT settings window gets focussed/activated again, we enable the keyboard hook to catch the keyboard input.
             hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
         }
-        else if (args.WindowActivationState == WindowActivationState.Deactivated && hook != null && hook.GetDisposedState() == false)
+        else if (args.WindowActivationState == WindowActivationState.Deactivated && hook is not null && hook.GetDisposedState() == false)
         {
             // If the PT settings window lost focus/activation, we disable the keyboard hook to allow keyboard input on other windows.
             hook.Dispose();
@@ -490,7 +490,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         {
             if (disposing)
             {
-                if (hook != null)
+                if (hook is not null)
                 {
                     hook.Dispose();
                 }

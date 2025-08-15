@@ -98,7 +98,7 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
     public override CommandResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload)?.AsObject();
-        if (formInput == null)
+        if (formInput is null)
         {
             return CommandResult.KeepOpen();
         }

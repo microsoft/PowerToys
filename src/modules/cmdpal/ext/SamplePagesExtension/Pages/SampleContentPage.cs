@@ -309,7 +309,7 @@ internal sealed partial class SampleContentForm : FormContent
     public override CommandResult SubmitForm(string payload)
     {
         var formInput = JsonNode.Parse(payload)?.AsObject();
-        if (formInput == null)
+        if (formInput is null)
         {
             return CommandResult.GoHome();
         }

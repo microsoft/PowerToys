@@ -91,7 +91,7 @@ public partial class IconBox : ContentControl
     {
         if (d is IconBox @this)
         {
-            if (e.NewValue == null)
+            if (e.NewValue is null)
             {
                 @this.Source = null;
             }
@@ -104,7 +104,7 @@ public partial class IconBox : ContentControl
                     var requestedTheme = @this.ActualTheme;
                     var eventArgs = new SourceRequestedEventArgs(e.NewValue, requestedTheme);
 
-                    if (@this.SourceRequested != null)
+                    if (@this.SourceRequested is not null)
                     {
                         await @this.SourceRequested.InvokeAsync(@this, eventArgs);
 
@@ -142,7 +142,7 @@ public partial class IconBox : ContentControl
                             iconData = requestedTheme == ElementTheme.Light ? info.Light : info.Dark;
                         }
 
-                        if (iconData != null &&
+                        if (iconData is not null &&
                             @this.Source is FontIconSource)
                         {
                             if (!string.IsNullOrEmpty(iconData.Icon) && iconData.Icon.Length <= 2)

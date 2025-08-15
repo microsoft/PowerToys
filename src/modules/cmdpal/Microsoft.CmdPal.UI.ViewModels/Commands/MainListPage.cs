@@ -203,7 +203,7 @@ public partial class MainListPage : DynamicListPage,
 
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
-            if (_filteredItems == null)
+            if (_filteredItems is null)
             {
                 _filteredItems = commands;
                 _filteredItemsIncludesApps = _includeApps;

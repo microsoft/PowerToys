@@ -45,7 +45,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     [ObservableProperty]
     public partial AppExtensionHost ExtensionHost { get; private set; }
 
-    public bool HasStatusMessage => MostRecentStatusMessage != null;
+    public bool HasStatusMessage => MostRecentStatusMessage is not null;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
@@ -132,7 +132,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public override void InitializeProperties()
     {
         var page = _pageModel.Unsafe;
-        if (page == null)
+        if (page is null)
         {
             return; // throw?
         }
@@ -177,7 +177,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     protected virtual void FetchProperty(string propertyName)
     {
         var model = this._pageModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -240,7 +240,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         ExtensionHost.StatusMessages.CollectionChanged -= StatusMessages_CollectionChanged;
 
         var model = _pageModel.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.PropChanged -= Model_PropChanged;
         }

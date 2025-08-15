@@ -26,7 +26,7 @@ public partial class IconInfoViewModel : ObservableObject, IIconInfo
 
     public bool HasIcon(bool light) => IconForTheme(light).HasIcon;
 
-    public bool IsSet => _model.Unsafe != null;
+    public bool IsSet => _model.Unsafe is not null;
 
     IIconData? IIconInfo.Dark => Dark;
 
@@ -43,7 +43,7 @@ public partial class IconInfoViewModel : ObservableObject, IIconInfo
     public void InitializeProperties()
     {
         var model = _model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }

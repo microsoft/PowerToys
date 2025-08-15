@@ -120,7 +120,7 @@ public partial class ShellViewModel : ObservableObject,
 
         ////LoadedState = ViewModelLoadedState.Loading;
         if (!viewModel.IsInitialized
-            && viewModel.InitializeCommand != null)
+            && viewModel.InitializeCommand is not null)
         {
             _ = Task.Run(async () =>
             {
@@ -185,7 +185,7 @@ public partial class ShellViewModel : ObservableObject,
     private void PerformCommand(PerformCommandMessage message)
     {
         var command = message.Command.Unsafe;
-        if (command == null)
+        if (command is null)
         {
             return;
         }
@@ -205,7 +205,7 @@ public partial class ShellViewModel : ObservableObject,
 
                 // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
                 var pageViewModel = _pageViewModelFactory.TryCreatePageViewModel(page, _isNested, host);
-                if (pageViewModel == null)
+                if (pageViewModel is null)
                 {
                     Logger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
                     throw new NotSupportedException();
@@ -240,7 +240,7 @@ public partial class ShellViewModel : ObservableObject,
         // TODO GH #525 This needs more better locking.
         lock (_invokeLock)
         {
-            if (_handleInvokeTask != null)
+            if (_handleInvokeTask is not null)
             {
                 // do nothing - a command is already doing a thing
             }
@@ -280,7 +280,7 @@ public partial class ShellViewModel : ObservableObject,
 
     private void UnsafeHandleCommandResult(ICommandResult? result)
     {
-        if (result == null)
+        if (result is null)
         {
             // No result, nothing to do.
             return;

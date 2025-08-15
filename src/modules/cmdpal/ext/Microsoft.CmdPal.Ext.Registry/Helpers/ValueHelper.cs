@@ -26,7 +26,7 @@ internal static class ValueHelper
     {
         var unformattedValue = key.GetValue(valueName);
 
-        if (unformattedValue == null)
+        if (unformattedValue is null)
         {
             throw new InvalidOperationException($"Cannot proceed when {nameof(unformattedValue)} is null.");
         }

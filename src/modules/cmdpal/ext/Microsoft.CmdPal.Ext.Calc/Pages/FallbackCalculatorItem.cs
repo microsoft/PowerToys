@@ -28,7 +28,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
     {
         var result = QueryHelper.Query(query, _settings, true, null);
 
-        if (result == null)
+        if (result is null)
         {
             _copyCommand.Text = string.Empty;
             _copyCommand.Name = string.Empty;

@@ -55,7 +55,7 @@ internal sealed partial class ExtensionInstanceManager : IClassFactory
 
         ppvObject = IntPtr.Zero;
 
-        if (pUnkOuter != null)
+        if (pUnkOuter is not null)
         {
             Marshal.ThrowExceptionForHR(CLASS_E_NOAGGREGATION);
         }

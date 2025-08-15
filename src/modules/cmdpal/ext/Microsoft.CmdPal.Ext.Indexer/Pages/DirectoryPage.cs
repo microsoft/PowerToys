@@ -31,7 +31,7 @@ public sealed partial class DirectoryPage : ListPage
 
     public override IListItem[] GetItems()
     {
-        if (_directoryContents != null)
+        if (_directoryContents is not null)
         {
             return _directoryContents.ToArray();
         }
@@ -86,7 +86,7 @@ public sealed partial class DirectoryPage : ListPage
                 try
                 {
                     var stream = ThumbnailHelper.GetThumbnail(item.FilePath).Result;
-                    if (stream != null)
+                    if (stream is not null)
                     {
                         var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
                         icon = new IconInfo(data, data);
