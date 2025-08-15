@@ -32,7 +32,16 @@ public partial class InstallPackageListItem : ListItem
     {
         _package = package;
 
-        var version = _package.DefaultInstallVersion ?? _package.InstalledVersion;
+        PackageVersionInfo? version = null;
+        try
+        {
+            version = _package.DefaultInstallVersion ?? _package.InstalledVersion;
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Could not get package version", e);
+        }
+
         var versionTagText = "Unknown";
         if (version != null)
         {
@@ -57,20 +66,27 @@ public partial class InstallPackageListItem : ListItem
         }
         catch (COMException ex)
         {
-            Logger.LogWarning($"{ex.ErrorCode}");
+            Logger.LogWarning($"GetCatalogPackageMetadata error {ex.ErrorCode}");
         }
 
         if (metadata != null)
         {
-            if (metadata.Tags.Where(t => t.Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase)).Any())
+            for (var i = 0; i < metadata.Tags.Count; i++)
             {
-                if (_installCommand != null)
+                if (metadata.Tags[i].Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase))
                 {
-                    _installCommand.SkipDependencies = true;
+                    if (_installCommand != null)
+                    {
+                        _installCommand.SkipDependencies = true;
+                    }
+
+                    break;
                 }
             }
 
-            var description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
+            var description = string.IsNullOrEmpty(metadata.Description) ?
+                metadata.ShortDescription :
+                metadata.Description;
             var detailsBody = $"""
 
 {description}
@@ -116,9 +132,11 @@ public partial class InstallPackageListItem : ListItem
             // These can be l o n g
             { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
         };
-        var docs = metadata.Documentations.ToArray();
-        foreach (var item in docs)
+        var docs = metadata.Documentations;
+        var count = docs.Count;
+        for (var i = 0; i < count; i++)
         {
+            var item = docs[i];
             simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
         }
 
@@ -141,7 +159,7 @@ public partial class InstallPackageListItem : ListItem
             }
         }
 
-        if (metadata.Tags.Any())
+        if (metadata.Tags.Count > 0)
         {
             DetailsElement pair = new()
             {
@@ -169,6 +187,7 @@ public partial class InstallPackageListItem : ListItem
         {
             // Handle other exceptions
             ExtensionHost.LogMessage($"[WinGet] UpdatedInstalledStatus throw exception: {ex.Message}");
+            Logger.LogError($"[WinGet] UpdatedInstalledStatus throw exception", ex);
             return;
         }
 
@@ -233,10 +252,10 @@ public partial class InstallPackageListItem : ListItem
             Stopwatch s = new();
             Logger.LogDebug($"Starting RefreshPackageCatalogAsync");
             s.Start();
-            var refs = WinGetStatics.AvailableCatalogs.ToArray();
-
-            foreach (var catalog in refs)
+            var refs = WinGetStatics.AvailableCatalogs;
+            for (var i = 0; i < refs.Count; i++)
             {
+                var catalog = refs[i];
                 var operation = catalog.RefreshPackageCatalogAsync();
                 operation.Wait();
             }
