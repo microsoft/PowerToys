@@ -151,6 +151,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     // Set module display info
                     var moduleType = settings.GetModuleType();
+                    module.ModuleType = moduleType;
                     var displayName = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType));
                     module.DisplayName = displayName;
                     module.IconPath = ModuleHelper.GetModuleTypeFluentIconName(moduleType);

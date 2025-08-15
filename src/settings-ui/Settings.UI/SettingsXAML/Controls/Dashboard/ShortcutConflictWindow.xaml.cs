@@ -8,6 +8,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI;
@@ -67,13 +68,9 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             if (sender is SettingsCard settingsCard &&
                 settingsCard.DataContext is ModuleHotkeyData moduleData)
             {
-                var moduleName = moduleData.ModuleName;
-
-                // Navigate to the module's settings page
-                if (ModuleNavigationHelper.NavigateToModulePage(moduleName))
-                {
-                    this.Close();
-                }
+                var moduleType = moduleData.ModuleType;
+                NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
+                this.Close();
             }
         }
 
