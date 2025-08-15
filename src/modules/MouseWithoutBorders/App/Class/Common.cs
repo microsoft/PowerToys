@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -1559,6 +1560,99 @@ namespace MouseWithoutBorders
                     throw;
                 }
             }
+        }
+
+        private static bool DisableEasyMouseWhenForegroundWindowIsFullscreenSetting()
+        {
+            return Setting.Values.DisableEasyMouseWhenForegroundWindowIsFullscreen;
+        }
+
+        private static bool IsAppIgnoredByEasyMouseFullscreenCheck(IntPtr foregroundWindowHandle)
+        {
+            if (NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, out var processId) == 0)
+            {
+                Logger.LogDebug($"GetWindowThreadProcessId failed with error : {Marshal.GetLastWin32Error()}");
+                return false;
+            }
+
+            var processHandle = NativeMethods.OpenProcess(0x1000, false, processId);
+            if (processHandle == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            uint maxPath = 260;
+            var nameBuffer = new char[maxPath];
+            if (!NativeMethods.QueryFullProcessImageName(
+                    processHandle, NativeMethods.QUERY_FULL_PROCESS_NAME_FLAGS.DEFAULT, nameBuffer, ref maxPath))
+            {
+                Logger.LogDebug($"QueryFullProcessImageName failed with error : {Marshal.GetLastWin32Error()}");
+                NativeMethods.CloseHandle(processHandle);
+                return false;
+            }
+
+            NativeMethods.CloseHandle(processHandle);
+
+            var name = new string(nameBuffer, 0, (int)maxPath);
+
+            var excludedApps = Setting.Values.EasyMouseFullscreenSwitchBlockExcludedApps;
+
+            return excludedApps.Contains(Path.GetFileNameWithoutExtension(name), StringComparer.OrdinalIgnoreCase)
+                || excludedApps.Contains(Path.GetFileName(name), StringComparer.OrdinalIgnoreCase);
+        }
+
+        internal static bool IsEasyMouseBlockedByFullscreenWindow()
+        {
+            var shellHandle = NativeMethods.GetShellWindow();
+            var desktopHandle = NativeMethods.GetDesktopWindow();
+            var foregroundHandle = NativeMethods.GetForegroundWindow();
+
+            // If the foreground window is either the desktop or the Windows shell, we are not in fullscreen mode.
+            if (foregroundHandle.Equals(shellHandle) || foregroundHandle.Equals(desktopHandle))
+            {
+                return false;
+            }
+
+            if (NativeMethods.SHQueryUserNotificationState(out var userNotificationState) != 0)
+            {
+                Logger.LogDebug($"SHQueryUserNotificationState failed with error : {Marshal.GetLastWin32Error()}");
+                return false;
+            }
+
+            switch (userNotificationState)
+            {
+                // An application running in full screen mode, check if the foreground window is
+                // listed as ignored in the settings.
+                case NativeMethods.USER_NOTIFICATION_STATE.BUSY:
+                case NativeMethods.USER_NOTIFICATION_STATE.RUNNING_D3D_FULL_SCREEN:
+                case NativeMethods.USER_NOTIFICATION_STATE.PRESENTATION_MODE:
+                    return !IsAppIgnoredByEasyMouseFullscreenCheck(foregroundHandle);
+
+                // No full screen app running.
+                case NativeMethods.USER_NOTIFICATION_STATE.NOT_PRESENT:
+                case NativeMethods.USER_NOTIFICATION_STATE.ACCEPTS_NOTIFICATIONS:
+                case NativeMethods.USER_NOTIFICATION_STATE.QUIET_TIME:
+                // Cannot determine
+                case NativeMethods.USER_NOTIFICATION_STATE.APP:
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Check if a machine switch triggered by EasyMouse would be allowed to proceed due to other settings.
+        /// </summary>
+        /// <returns>A boolean that tells us if the switch isn't blocked by any other settings</returns>
+        internal static bool IsEasyMouseSwitchAllowed()
+        {
+            // Never prevent a switch if we are not moving out of the host machine.
+            if (!DisableEasyMouseWhenForegroundWindowIsFullscreenSetting() || DesMachineID != MachineID)
+            {
+                return true;
+            }
+
+            // Check if the switch is blocked by a full-screen window running in the foreground
+            return !IsEasyMouseBlockedByFullscreenWindow();
         }
     }
 }
