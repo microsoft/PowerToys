@@ -34,8 +34,14 @@ public sealed partial class ContentPage : Page,
     public ContentPage()
     {
         this.InitializeComponent();
-        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
-        WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
+        this.Unloaded += OnUnloaded;
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        // Unhook from everything to ensure nothing can reach us
+        // between this point and our complete and utter destruction.
+        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -43,6 +49,16 @@ public sealed partial class ContentPage : Page,
         if (e.Parameter is ContentPageViewModel vm)
         {
             ViewModel = vm;
+        }
+
+        if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSelectedListItemMessage>(this))
+        {
+            WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
+        }
+
+        if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSecondaryCommandMessage>(this))
+        {
+            WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
         }
 
         base.OnNavigatedTo(e);
