@@ -45,7 +45,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         disposeSearchEngine = false;
     }
 
-    public override ICommandItem? EmptyContent => GetEmptyContent();
+    public override ICommandItem EmptyContent => GetEmptyContent();
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
@@ -56,7 +56,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
                 _isEmptyQuery = string.IsNullOrWhiteSpace(newSearch);
                 Query(newSearch);
                 LoadMore();
-                initialQuery = string.Empty;
+                OnPropertyChanged(nameof(EmptyContent));
+                initialQuery = null;
             });
         }
     }
@@ -78,9 +79,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         return new CommandItem(new NoOpCommand())
         {
             Icon = Icon,
-            Title = Resources.Indexer_Subtitle,
-            Subtitle = _isEmptyQuery ? "\n\n" + Resources.Indexer_NoResultsMessageTip :
-                Resources.Indexer_NoResultsMessage + "\n\n" + Resources.Indexer_NoResultsMessageTip,
+            Title = _isEmptyQuery ? Resources.Indexer_Subtitle : Resources.Indexer_NoResultsMessage,
+            Subtitle = Resources.Indexer_NoResultsMessageTip,
         };
     }
 
