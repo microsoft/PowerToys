@@ -139,7 +139,7 @@ namespace ShortcutGuide
         {
             var hwnd = WindowNative.GetWindowHandle(this);
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-            this.MoveAndResize((int)monitorRect.X, (int)monitorRect.Y, 580, monitorRect.Height);
+            this.MoveAndResize((int)monitorRect.X, (int)monitorRect.Y, Width, monitorRect.Height);
         }
 
         private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

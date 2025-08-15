@@ -7,12 +7,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:ShortcutGuide.Models"
     xmlns:winuiex="using:WinUIEx"
+    Width="586"
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
-    IsShownInSwitchers="True"
+    IsShownInSwitchers="False"
     mc:Ignorable="d">
-    <!--  IsShownInSwitchers="False"  -->
     <winuiex:WindowEx.SystemBackdrop>
         <DesktopAcrylicBackdrop />
     </winuiex:WindowEx.SystemBackdrop>
