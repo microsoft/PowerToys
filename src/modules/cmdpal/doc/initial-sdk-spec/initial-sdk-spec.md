@@ -2086,10 +2086,7 @@ doesn't rely on any other bits of the Command Palette API.
 > This is a draft `.idl` spec. Details are still subject to change. Overall
 > concepts however will likely remain similar
 
-
-
 ```c# rich search
-
 [uuid("a578ed30-1374-4601-97ba-8bd36a0097cd")]
 interface IToken requires INotifyPropChanged {};
 
@@ -2434,26 +2431,21 @@ user "invoked", and will let us display additional inputs to the user.
 Now, lets say you had a command like "Create a note \${title} in \${folder}".
 `title` is a string input, and `folder` is a static list of folders. 
 
-The extension author can then define a `RichSearchPage` with a `IRichSearch` that has four tokens in it:
+The extension author can then define a `RichSearchPage` with a `IRichSearch`
+that has four tokens in it:
 * A `ILabelToken` for "Create a note"
 * A `IStringInputToken` for the `title`
 * A `ILabelToken` for "in"
 * A `IStaticListToken` for the `folder`, where the items are possible folders
 
-> [!CAUTION] 
-> 
-> TODO! Mike we probably need to make it so that <kbd>↲</kbd> on a token can either "commit" the whole command. Like, in the above example, if the user is in the `folder` token, and they hit <kbd>↲</kbd>, we're displaying a list of results.
->
-> ~~oh this is devious~~
-> 
-> ~~we could have the token be a IStringInputToken. And then put each of the results into the list of results. So the user can either type a new folder name, or select an existing one.~~
-> 
-> NO don't do that.
->
-> When we first display the list, the _first item is the default_. So pressing enter on it will set the `SelectedItem` to the first item in the list.
-> Have the page listen for the `SelectedItem` property on the `IStaticListToken`. When that property changes, we can... not invoke a command yet. BUTTS. 
+Then, when the user hits <kbd>↲</kbd>, we gather up all the tokens, and we can
+reference them in the command. As an example, here's the `CreateNoteCommand`,
+which implements the `IRichSearchPage` interface:
 
-Then, when the user hits <kbd>↲</kbd>, we gather up all the tokens, and we can reference them in the command. As an example, here's the `CreateNoteCommand`, which implements the `IRichSearchPage` interface:
+The list page can always change it's results based on the user's input. In our
+case, we'll listen for the value of the last token to be set. When it is, we can
+then display the final list item with our fully formed command for the user to
+invoke. 
 
 ```csharp
 class CreateNoteCommand : IRichSearchPage {
@@ -2503,6 +2495,17 @@ We shouldn't put a `set`ter on IRichSearch::SearchTokens. That would allow the
 host to instantiate ITokens and give them to the extension. The extension
 shouldn't have to lifetime manage the host's objects. 
 
+It would be really great if we could have the setting of the value of the last
+token "commit" the whole command, and let the user invoke the command
+immediately when picking a value. Not sure if that's reasonable though. 
+
+`IRichSearchPage` probably needs a way to go back, that's not driven by user input. Or not driven by backspacing tokens. For example, in our previous `CreateNoteCommand` example, if the user backspaces from:
+* The filled `folder` param: the extension will get a `RemoveToken` call for the
+  `folder` token, which we'll use to clear it's value, and trigger focus to move
+  back into it.
+* The empty `folder` param: we'll move focus back to the `title` token.
+* the filled `title` param: we'll backspace a character.
+* the empty `title` param: **TODO! WHAT DO WE DO HERE?**
 
 ## Class diagram
 
