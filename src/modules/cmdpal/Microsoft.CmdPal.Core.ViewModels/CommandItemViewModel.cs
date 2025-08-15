@@ -159,7 +159,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Initialized |= InitializedState.Initialized;
     }
 
-    public void SlowInitializeProperties()
+    public virtual void SlowInitializeProperties()
     {
         if (IsSelectedInitialized)
         {
@@ -172,13 +172,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var model = _commandItemModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
         var more = model.MoreCommands;
-        if (more != null)
+        if (more is not null)
         {
             MoreCommands = more
                 .Select(item =>
