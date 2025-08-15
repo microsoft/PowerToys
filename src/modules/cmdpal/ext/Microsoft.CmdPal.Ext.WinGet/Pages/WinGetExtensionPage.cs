@@ -16,6 +16,7 @@ using Microsoft.CmdPal.Ext.WinGet.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Management.Deployment;
+using WinRT;
 
 namespace Microsoft.CmdPal.Ext.WinGet;
 
@@ -235,8 +236,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
             // BODGY, re: microsoft/winget-cli#5151
             // FindPackagesAsync isn't actually async.
-            Task<FindPackagesResult> internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
-            FindPackagesResult searchResults = await internalSearchTask;
+            Task<AgileReference<FindPackagesResult>> internalSearchTask = Task.Run(() => catalog.FindPackages(opts).AsAgile(), ct);
+            FindPackagesResult searchResults = (await internalSearchTask).Get();
 
             // TODO more error handling like this:
             if (searchResults.Status != FindPackagesResultStatus.Ok)
