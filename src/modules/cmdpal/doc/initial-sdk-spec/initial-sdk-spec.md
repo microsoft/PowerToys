@@ -2389,7 +2389,7 @@ class M365EntityPickerToken : BaseObservable, IDynamicPickerToken {
 }
 ```
 
-(ommitted from this sample: cancellation tokens to only have one query at a time, loading states, error states, etc.)
+(omitted from this sample: cancellation tokens to only have one query at a time, loading states, error states, etc.)
 
 </td>
 </tr>
