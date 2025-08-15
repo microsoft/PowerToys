@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="ShortcutGuide.Pages.OverviewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:ShortcutGuide.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:ShortcutGuide"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:ShortcutGuide.Models"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <DataTemplate x:Key="ShortcutItemTemplate" x:DataType="models:ShortcutEntry">
+            <Grid
+                Padding="16,8,16,8"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.ContextFlyout>
+                    <MenuFlyout Opening="PinFlyout_Opening">
+                        <MenuFlyoutItem Click="Pin_Click" Text="Pin" />
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Orientation="Vertical">
+                    <TextBlock Text="{x:Bind Name}" TextWrapping="Wrap" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind Description}"
+                        TextWrapping="Wrap"
+                        Visibility="{x:Bind Description, Converter={StaticResource StringVisibilityConverter}}" />
+                </StackPanel>
+                <ItemsControl
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    ItemsSource="{x:Bind Shortcut}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:ShortcutDescription">
+                            <Grid>
+                                <ItemsControl Grid.Column="1" ItemsSource="{Binding Converter={StaticResource ShortcutDescriptionToKeysConverter}}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <controls:KeyVisual
+                                                Padding="4"
+                                                Background="{ThemeResource ControlFillColorInputActiveBrush}"
+                                                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
+                                                Content="{Binding}"
+                                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                                FontSize="12"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource DefaultKeyVisualStyle}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+    <Grid>
+        <ScrollViewer>
+            <StackPanel
+                Margin="0,16,0,0"
+                Orientation="Vertical"
+                Spacing="8">
+                <TextBlock
+                    x:Name="RecommendedHeaderTxt"
+                    Margin="16,0,16,8"
+                    FontWeight="SemiBold"
+                    Text="Recommended shortcuts" />
+                <ItemsRepeater
+                    ItemTemplate="{StaticResource ShortcutItemTemplate}"
+                    ItemsSource="{x:Bind _recommendedShortcuts, Mode=OneWay}"
+                    Visibility="{x:Bind _recommendedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
+
+                <TextBlock
+                    Margin="16,0,16,0"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="No recommended shortcuts."
+                    Visibility="{x:Bind _recommendedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+
+                <TextBlock
+                    x:Name="PinnedHeaderTxt"
+                    Margin="16,24,16,0"
+                    FontWeight="SemiBold"
+                    Text="Pinned shortcuts" />
+
+                <ItemsRepeater
+                    x:Name="PinnedShortcutsListView"
+                    ItemTemplate="{StaticResource ShortcutItemTemplate}"
+                    ItemsSource="{x:Bind _pinnedShortcuts, Mode=OneWay}"
+                    Visibility="{x:Bind _pinnedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}" />
+
+                <TextBlock
+                    Margin="16,0,16,8"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="No pinnned shortcuts."
+                    Visibility="{x:Bind _pinnedShortcuts.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
+
+                <StackPanel
+                    x:Name="TaskbarShortcutsPanel"
+                    Orientation="Vertical"
+                    Visibility="Collapsed">
+                    <TextBlock
+                        x:Name="TaskbarHeaderTxt"
+                        Margin="16,24,16,8"
+                        FontWeight="SemiBold"
+                        Text="Taskbar shortcuts" />
+                    <ItemsRepeater
+                        x:Name="TaskbarShortcutsListView"
+                        ItemTemplate="{StaticResource ShortcutItemTemplate}"
+                        ItemsSource="{x:Bind _taskbarShortcuts, Mode=OneWay}" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
