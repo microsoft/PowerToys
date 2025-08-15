@@ -25,17 +25,11 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <!--  TO DO: Replace this with WinUI TitleBar once that ships.  -->
-        <Button
-            x:Name="PaneToggleBtn"
-            Width="48"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Click="PaneToggleBtn_Click"
-            Style="{StaticResource PaneToggleButtonStyle}" />
         <StackPanel
             x:Name="AppTitleBar"
             Grid.Row="0"
             Height="48"
+            Margin="16,0,0,0"
             Orientation="Horizontal">
             <Image
                 Width="16"
