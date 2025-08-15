@@ -66,6 +66,7 @@ const std::vector<std::pair<CLSID, CLSID>> NativeToManagedClsid({
     { CLSID_SHIMActivateMdPreviewHandler, CLSID_MdPreviewHandler },
     { CLSID_SHIMActivatePdfPreviewHandler, CLSID_PdfPreviewHandler },
     { CLSID_SHIMActivateGcodePreviewHandler, CLSID_GcodePreviewHandler },
+    { CLSID_SHIMActivateBgcodePreviewHandler, CLSID_BgcodePreviewHandler },
     { CLSID_SHIMActivateQoiPreviewHandler, CLSID_QoiPreviewHandler },
     { CLSID_SHIMActivateSvgPreviewHandler, CLSID_SvgPreviewHandler },
     { CLSID_SHIMActivateSvgThumbnailProvider, CLSID_SvgThumbnailProvider }
