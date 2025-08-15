@@ -115,6 +115,7 @@ bigbar
 bigobj
 binlog
 binres
+binskim
 BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
@@ -255,6 +256,7 @@ Corpor
 cotaskmem
 COULDNOT
 countof
+covrun
 cpcontrols
 cph
 cplusplus
@@ -969,6 +971,7 @@ msc
 mscorlib
 msctls
 msdata
+msdia
 MSDL
 MSGFLT
 MSHCTX
