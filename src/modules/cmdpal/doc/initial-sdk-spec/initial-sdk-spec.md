@@ -2049,7 +2049,44 @@ for them.
 
 ## Addenda II: Rich Search Box
 
-What if the search box wasn't just a text box, but was an actually rich search surface?
+_What if the search box wasn't just a text box, but was an actually rich search
+surface?_
+
+This is an idea born by a collection of requests. Essentially, we want to create
+a richer input box that can also accept entities inline with text.
+
+What are things we actually want users to be able to do with this?
+* Type just plain text. 
+* Type a string that has a special meaning, like `@` or `#`, and trigger some
+  suggestions (as provided by the extension)
+  * `#` might bring up a special kind of string input (which is treated visibly
+    differently, like a tag)
+  * `/` might bring up a static list of commands that the user can invoke 
+  * `@` might bring up a dynamic list of users to filter (and those are
+    dynamically generated as the user types, so we don't return 40000 users)
+* There may be a button or other UI element **that the extension controls**
+  which _also_ allows the user to trigger a picker (e.g. if the extension wants
+  to manually add a token to the search box)
+* If the user backspaces a token, it removes the whole token (except for the
+  last basic string token, which is just a text box)
+
+Essentially, we want a text box that lets an extension create a richer set of
+inputs than just "a string of text". Very much of this _could_ be achieved with
+an Adaptive Card, but RichSearch enables this experience to be inline with what
+the user is typing. This enables a more natural "conversational" or even
+"command-line-like" experience.
+
+What follows is a basic outline for a Rich Search API. This API doesn't
+prescribe a UI presentation or framework (similar to the rest of the Command
+Palette API). And other than `INotifyPropChanged` and `INotifyItemsChanged`, it
+doesn't rely on any other bits of the Command Palette API.
+
+> [!INFO] 
+> 
+> This is a draft `.idl` spec. Details are still subject to change. Overall
+> concepts however will likely remain similar
+
+
 
 ```c# rich search
 
@@ -2060,81 +2097,91 @@ interface ISearchUpdateArgs requires IExtendedAttributesProvider
 {
     String NewSearchText { get; } // The text that the user has typed into the search box.
 }
-
+// Basic types of tokens: 
+// * IBasicStringToken: This is your standard text box input token. The text is 
+//   not stylized at all. Essentially, it just represents a run of text in the 
+//   text box, between other tokens.
+// * ILabelToken: This is just a static run of text, with no user interaction. 
+//   This isn't an input field - it's just static text between other tokens.
 interface IBasicStringToken requires IToken
 {
     String Text { get; }
     void UpdateText(ISearchUpdateArgs newText); // This is the setter for the text, which will be used by the host to update the text in the search box.
-}
-
-// Does ICommandArgument require IToken,
-// so that CmdPal can try to use the `Token` types for figuring out what kind of picker to show the user?
-// Or is a Parameter an IToken? maybe that
-interface ICommandArgument requires INotifyPropChanged 
-{
-    IIconInfo Icon { get; };
-    String DisplayName { get; };
-
-    Object Value { get; }; // No setter. Each individual token type will have its own setter.
 }
 interface ILabelToken requires IToken
 {
     // This is just a static run of text, with no user interaction. It can't accept "focus"
     String Text { get; }; 
 }
+
+// The following are all tokens of richer input. They can each have their own 
+// behaviors for picking a value. The common interface for these tokens is 
+// ICommandArgument. ICommandArgument provides a common set of properties for 
+// expressing the appearance of the token (icon and display name) and a stored
+// value (whatever that value might be).
+interface ICommandArgument requires IToken 
+{
+    IIconInfo Icon { get; };
+    String DisplayName { get; };
+
+    Object Value { get; }; // No setter. Each individual token type will have its own setter.
+}
+// * IStringInputToken: A separate text input field. Hosts should give this a
+//   different UX treatment, as if to indicate it is separate input from the 
+//   rest of the search text. 
 interface IStringInputToken requires ICommandArgument
 {
     String Text { get; set; } // This is basically just the `.Value`, but with a setter
 }
-interface ICustomHwndPickerToken requires IToken, ICommandArgument
+// * ICustomHwndPickerToken: A token that allows the extension to display its 
+//   own picker UI. The extension can use the hostHwnd to show the picker 
+//   relative to the host window. The extension is responsible for storing its own .Value.
+interface ICustomHwndPickerToken requires ICommandArgument
 {
     void ShowPicker(UInt64 hostHwnd); // extension is responsible for setting your own .Value
 }
-interface IStaticPickerToken requires IToken, ICommandArgument, INotifyItemsChanged
-{
-    IPickerToken[] GetItems();
-    IPickerToken SelectedItem { get; set; }
-}
-interface IDynamicPickerToken requires IStaticPickerToken
-{
-    String SearchText { get; set; } 
-    // Loading, HasMore, LoadMore?
-}
-interface IPickerToken requires IToken, ICommandArgument
+// * IPickerToken: A single value in a picker (below)
+interface IPickerToken requires ICommandArgument
 {
     String Title { get; } 
     String Subtitle { get; } 
-    IIconInfo Icon { get; } 
 }
+// * IStaticPickerToken: A token that displays a static list of options for the 
+//   user to choose from. If you squint, this is just like a IListPage.
+interface IStaticPickerToken requires ICommandArgument, INotifyItemsChanged
+{
+    IPickerToken[] GetItems();
+    IPickerToken SelectedItem { get; set; } 
+    // .Value should effectively be SelectedItem?.Value
+    
+    // TODO: Loading, HasMore, LoadMore?
+}
+// * IDynamicPickerToken: A token that displays a list of options which can be
+//   dynamically updated as the user types into the token. Especially good for 
+//   lists where the entire set of possible values cannot be reasonably 
+//   enumerated
+interface IDynamicPickerToken requires IStaticPickerToken
+{
+    String SearchText { get; set; } 
+}
+
 interface IRichSearch requires INotifyPropChanged
 {
-    IToken[] SearchTokens{ get; }; // set is bad. We can't be creating objects and sending them to the extension. 
+    IToken[] SearchTokens{ get; };  
+    void RemoveToken(IToken token);
 }
-
-
-// interface ICommandParameter requires IToken 
-// {
-//     String Name { get; };
-//     Boolean Required{ get; };
-// }
-// interface IInvokableCommandWithParameters requires ICommand {
-//     ICommandParameter[] Parameters { get; };
-//     ICommandResult InvokeWithArgs(Object sender, ICommandArgument[] args);
-// };
 ```
 
-What are things we actually want users to be able to do with this?
-* Type just plain text. 
-* Type a string that has a special meaning, like `@` or `#`, and trigger some suggestions (as provided by the extension)
-  * `#` might bring up a special kind of string input (which is treated visibly differently, like a tag)
-  * `/` might bring up a static list of commands that the user can invoke 
-  * `@` might bring up a dynamic list of users to filter (and those are dynamically generated as the user types, so we don't return 40000 users)
-* There may be a button or other UI element which _also_ allows the user to trigger a picker (e.g. if the extension wants to manually add a token to the search box)
-* If the user types, we add it to the basic string. 
-* As the user types, the extension gets an opportunity to to instead ask for a picker to show up, which will then be shown in the search box.
-* If the user backspaces a token, it removes the whole token (except for the basic string token, which is just a text box)
-* Is the basic strings interleaved between tokens _also a token_?
-* It's like it's a 
+### Examples
+
+Below we have a simple sample for how someone might implement a rich search
+experience using the interfaces defined above.
+
+In this example, we'll create a simple implementation of `IRichSearch` that
+allows the user to type `@` to trigger a picker. That picker is then displayed
+to the user, allowing them to select an entity. As the user types in that
+picker, the extension will be told, and we'll be able to update the contents of
+the picker to match.
 
 <table>
 
@@ -2160,9 +2207,15 @@ public partial class BaseObservableList : BaseObservable, INotifyItemsChanged
 }
 ```
 
-`M365RichSearch` is our sample Rich Search implementation. It starts with a single basic string token. When the user types, we immediately begin by sending input to that first `BasicStringToken`. 
+`M365RichSearch` is our sample Rich Search implementation. It starts with a
+single basic string token. When the user types, we immediately begin by sending
+input to that first `BasicStringToken`. 
 
-As the user types, we look to see if they if they typed a special character (like `@`). If they do, we add a new token to the list. When we return the new token back to the host, the host will "move focus" into the new token.  When the user selects an item from the picker, we add another basic string token after it.
+As the user types, we look to see if they if they typed a special character
+(like `@`). If they do, we add a new token to the list. When we return the new
+token back to the host, the host will "move focus" into the new token.  When the
+user selects an item from the picker, we add another basic string token after
+it.
 
 ```cs
 class M365RichSearch : BaseObservable, IRichSearch
@@ -2235,10 +2288,10 @@ class M365RichSearch : BaseObservable, IRichSearch
 </td>
 <td>
 
-A toolkit class for just the basic string token. The basic string token just
-represents text in the search box, with no special meaning.
-
-A basic page essentially just has one long `BasicStringToken`.
+Below, `BasicStringToken` is a toolkit class for just the basic string token.
+The basic string token just represents text in the search box, with no special
+meaning. You can imagine that a basic page essentially just has one long
+`BasicStringToken` for it's search text. 
 
 ```cs
 class BasicStringToken : BaseObservable, IBasicStringToken {
@@ -2257,7 +2310,15 @@ class BasicStringToken : BaseObservable, IBasicStringToken {
     public BasicStringToken(string initialText = "") {
         _text = initialText;
     }
-    public SilentUpdateText(string newText) {
+
+    public void UpdateText(ISearchUpdateArgs newText) {
+        Text = newText.Text;
+        // newText may have other properties too, like a correlation vector, 
+        // but that's not demoed here.
+    }
+
+    // helper for setting the text without raising a property changed event
+    public void SilentUpdateText(string newText) {
         _text = newText;
     }
 }
@@ -2269,12 +2330,16 @@ immediately call `GetItems()` on the token, which will return a list of items to
 show the user. 
 
 As the user types, the host will call `SearchText.set` on the token. In our
-sample here, we use that to query the backend (in `UpdateSearchText`), then call `RaisePropertyChanged` on `SearchText` to notify the host that the search text has changed.
+sample here, we use that to query the backend (in `UpdateSearchText`), then call
+`RaisePropertyChanged` on `SearchText` to notify the host that the search text
+has changed.
 
-, which will return a list of items based on the search text. The user can then select an item, which will set the `SelectedItem` property on the token.
+When the user selects an item, the host will set the `SelectedItem` property on
+the token.
 
-If the user backspaces the last character in the token (s.t. `SearchText` is empty), the host will tell the `IRichSearch` to remove the token from the list of tokens. 
-
+If the user backspaces the last character in the token (s.t. `SearchText` is
+empty), the host will tell the `IRichSearch` to remove the token from the list
+of tokens. 
 
 ```cs
 class M365EntityPickerToken : BaseObservable, IDynamicPickerToken {
@@ -2335,9 +2400,24 @@ class M365EntityPickerToken : BaseObservable, IDynamicPickerToken {
 
 ### Commands with parameters
 
-_Mike, when you were writing this, you said you beat them all. That you solved all our problems. How does adding tokens to the search box solve all our problems?_
+We've also long experimented with the idea of commands having parameters that
+can be filled in by the user. These would be commands that take a couple
+lightweight inputs, so that the use can input them more natively than an
+adaptive card. 
 
-We'll add a new type of page, called a `RichSearchPage`. It's a list page, but with a rich search box at the top.
+Previous drafts included a new type of `ICommand` ala
+`IInvokableWithParameters`. However, these ran into edge cases:
+* Where are the parameters displayed? In the search box? On the item?
+* What happens if a context menu command needs parameters? 
+* Does the _page_ have parameters?
+
+none of which were trivially solvable by having the parameters on the command.
+
+Instead, we can leverage the concept of a "rich search" experience to provide
+that lightweight parameter input method.
+
+We'll add a new type of page, called a `RichSearchPage`. It's a list page, but
+with a rich search box at the top.
 
 ```c#
 interface IRichSearchPage requires IListPage {
@@ -2345,7 +2425,14 @@ interface IRichSearchPage requires IListPage {
 };
 ```
 
-Now, lets say you had a command like "Create a note ${title} in ${folder}". `title` is a string input, and `folder` is a static list of folders. 
+This lets the user activate the command that needs parameters, and go straight
+into the rich input page. That page will act like it's _just_ the command the
+user "invoked", and will let us display additional inputs to the user. 
+
+#### Parameters Example
+
+Now, lets say you had a command like "Create a note \${title} in \${folder}".
+`title` is a string input, and `folder` is a static list of folders. 
 
 The extension author can then define a `RichSearchPage` with a `IRichSearch` that has four tokens in it:
 * A `ILabelToken` for "Create a note"
@@ -2353,11 +2440,13 @@ The extension author can then define a `RichSearchPage` with a `IRichSearch` tha
 * A `ILabelToken` for "in"
 * A `IStaticListToken` for the `folder`, where the items are possible folders
 
-> [!CAUTION] TODO! Mike we probably need to make it so that <kbd>↲</kbd> on a token can either "commit" the whole command. Like, in the above example, if the user is in the `folder` token, and they hit <kbd>↲</kbd>, we're displaying a list of results.
->
-> oh this is devious
+> [!CAUTION] 
 > 
-> we could have the token be a IStringInputToken. And then put each of the results into the list of results. So the user can either type a new folder name, or select an existing one.
+> TODO! Mike we probably need to make it so that <kbd>↲</kbd> on a token can either "commit" the whole command. Like, in the above example, if the user is in the `folder` token, and they hit <kbd>↲</kbd>, we're displaying a list of results.
+>
+> ~~oh this is devious~~
+> 
+> ~~we could have the token be a IStringInputToken. And then put each of the results into the list of results. So the user can either type a new folder name, or select an existing one.~~
 > 
 > NO don't do that.
 >
@@ -2376,6 +2465,8 @@ class CreateNoteCommand : IRichSearchPage {
     private StringInputToken _titleToken;
     private NotesFolderToken _folderToken;
 
+    private IListItem? _createNoteItem;
+
     public CreateNoteCommand() {
         Search = new RichSearch();
 
@@ -2388,8 +2479,29 @@ class CreateNoteCommand : IRichSearchPage {
             new LabelToken("in"),
             _folderToken
         ];
+
+        _folderToken.OnSelectedItemChanged += (sender, e) => {
+            // Update the command with the selected folder
+            UpdateCommand();
+        };
+    }
+
+    private void UpdateCommand() {
+        _createNoteItem = new ListItem() {
+            Title = _titleToken.Value,
+            Subtitle = _folderToken.SelectedItem?.Title,
+            Command = new CreateNoteCommand(title: _titleToken.Value, folder: _folderToken.SelectedItem.Value)
+        };
     }
 }
+```
+
+
+### Miscellaneous notes
+
+We shouldn't put a `set`ter on IRichSearch::SearchTokens. That would allow the
+host to instantiate ITokens and give them to the extension. The extension
+shouldn't have to lifetime manage the host's objects. 
 
 
 ## Class diagram
