@@ -82,7 +82,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
-        Filters = new(new(model.Filters), PageContext);
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
@@ -131,28 +130,22 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void UpdateCurrentFilter(string currentFilterId)
     {
-        // Filtering only applies to dynamic pages, which will
-        // handle their own filtering. They will tell us if something
-        // needs to change by raising ItemsChanged.
-        if (_isDynamic)
+        // We're getting called on the UI thread.
+        // Hop off to a BG thread to update the extension.
+        _ = Task.Run(() =>
         {
-            // We're getting called on the UI thread.
-            // Hop off to a BG thread to update the extension.
-            _ = Task.Run((Action)(() =>
+            try
             {
-                try
+                if (_model.Unsafe is IListPage listPage)
                 {
-                    if (_model.Unsafe is IDynamicListPage dynamic)
-                    {
-                        dynamic.Filters?.CurrentFilterId = currentFilterId;
-                    }
+                    listPage.Filters?.CurrentFilterId = currentFilterId;
                 }
-                catch (Exception ex)
-                {
-                    ShowException(ex, _model?.Unsafe?.Name);
-                }
-            }));
-        }
+            }
+            catch (Exception ex)
+            {
+                ShowException(ex, _model?.Unsafe?.Name);
+            }
+        });
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged

@@ -29,38 +29,35 @@ public partial class FiltersViewModel : ExtensionObjectViewModel
 
     public override void InitializeProperties()
     {
-        if (_filtersModel is not null)
+        try
         {
-            try
+            if (_filtersModel.Unsafe is not null)
             {
-                if (_filtersModel.Unsafe is not null)
+                var filters = _filtersModel.Unsafe.GetFilters();
+                Filters = filters.Select<IFilterItem, IFilterItemViewModel>(filter =>
                 {
-                    var filters = _filtersModel.Unsafe.GetFilters();
-                    Filters = filters.Select<IFilterItem, IFilterItemViewModel>(filter =>
+                    var filterItem = filter as IFilter;
+                    if (filterItem != null)
                     {
-                        var filterItem = filter as IFilter;
-                        if (filterItem != null)
-                        {
-                            var filterVM = new FilterItemViewModel(filterItem!, PageContext);
-                            filterVM.InitializeProperties();
+                        var filterVM = new FilterItemViewModel(filterItem!, PageContext);
+                        filterVM.InitializeProperties();
 
-                            return filterVM;
-                        }
-                        else
-                        {
-                            return new SeparatorViewModel();
-                        }
-                    }).ToArray();
+                        return filterVM;
+                    }
+                    else
+                    {
+                        return new SeparatorViewModel();
+                    }
+                }).ToArray();
 
-                    CurrentFilterId = _filtersModel.Unsafe.CurrentFilterId;
+                CurrentFilterId = _filtersModel.Unsafe.CurrentFilterId;
 
-                    return;
-                }
+                return;
             }
-            catch (Exception ex)
-            {
-                ShowException(ex, _filtersModel.Unsafe?.GetType().Name);
-            }
+        }
+        catch (Exception ex)
+        {
+            ShowException(ex, _filtersModel.Unsafe?.GetType().Name);
         }
 
         Filters = [];
