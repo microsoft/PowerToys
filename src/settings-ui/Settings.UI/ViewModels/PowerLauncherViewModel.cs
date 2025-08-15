@@ -125,19 +125,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
         {
-            var hotkeyAccessors = new List<HotkeyAccessor>
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                new HotkeyAccessor(
-                    () => OpenPowerLauncher,
-                    value => OpenPowerLauncher = value,
-                    "PowerLauncher_OpenPowerLauncher"),
-            };
-
-            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
-            {
-                [ModuleName] = hotkeyAccessors.ToArray(),
+                [ModuleName] = [OpenPowerLauncher],
             };
 
             return hotkeysDict;

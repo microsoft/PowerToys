@@ -8,6 +8,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Windows;
 using System.Windows.Threading;
 using ManagedCommon;
@@ -16,6 +20,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.Windows.ApplicationModel.Resources;
 
@@ -23,8 +28,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public class ShortcutConflictViewModel : PageViewModelBase, IDisposable
     {
-        private readonly ViewModelFactory _viewModelFactory;
-        private readonly Dictionary<string, PageViewModelBase> _moduleViewModels = new();
+        private readonly SettingsFactory _settingsFactory;
+        private readonly Func<string, int> _ipcMSGCallBackFunc;
         private readonly Dispatcher _dispatcher;
 
         private AllHotkeyConflictsData _conflictsData = new();
@@ -37,13 +42,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Func<string, int> ipcMSGCallBackFunc)
         {
             _dispatcher = Dispatcher.CurrentDispatcher;
+            _ipcMSGCallBackFunc = ipcMSGCallBackFunc ?? throw new ArgumentNullException(nameof(ipcMSGCallBackFunc));
             resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
-            // Create ViewModelFactory with all necessary dependencies
-            _viewModelFactory = new ViewModelFactory(
-                settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils)),
-                settingsRepository ?? throw new ArgumentNullException(nameof(settingsRepository)),
-                ipcMSGCallBackFunc);
+            // Create SettingsFactory
+            _settingsFactory = new SettingsFactory(settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils)));
         }
 
         public AllHotkeyConflictsData ConflictsData
@@ -66,39 +69,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override string ModuleName => "ShortcutConflictsWindow";
 
-        public string GetAdvancedPasteCustomActionName(int actionId)
+        private IHotkeyConfig GetModuleSettings(string moduleKey)
         {
             try
             {
-                var advancedPasteViewModel = GetOrCreateViewModel(ModuleNames.AdvancedPaste) as AdvancedPasteViewModel;
-                return advancedPasteViewModel?.CustomActions?.FirstOrDefault(ca => ca.Id == actionId)?.Name;
+                // MouseWithoutBorders and Peek settings may be changed by the logic in the utility as machines connect.
+                // We need to get a fresh version every time instead of using a repository.
+                if (string.Equals(moduleKey, MouseWithoutBordersSettings.ModuleName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(moduleKey, PeekSettings.ModuleName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return _settingsFactory.GetFreshSettings(moduleKey);
+                }
+
+                // For other modules, get the settings from SettingsRepository
+                return _settingsFactory.GetSettings(moduleKey);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error loading settings for {moduleKey}: {ex.Message}");
                 return null;
             }
-        }
-
-        private PageViewModelBase GetOrCreateViewModel(string moduleKey)
-        {
-            if (!_moduleViewModels.TryGetValue(moduleKey, out var viewModel))
-            {
-                try
-                {
-                    viewModel = _viewModelFactory.CreateViewModel(moduleKey);
-                    if (viewModel != null)
-                    {
-                        _moduleViewModels[moduleKey] = viewModel;
-                        System.Diagnostics.Debug.WriteLine($"Created ViewModel for module: {moduleKey}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error creating ViewModel for {moduleKey}: {ex.Message}");
-                }
-            }
-
-            return viewModel;
         }
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
@@ -144,26 +134,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void SetupModuleData(ModuleHotkeyData module, bool isSystemConflict)
         {
-            var viewModel = GetOrCreateViewModel(GetModuleKey(module.ModuleName));
-            var hotkeyAccessor = HotkeyAccessorHelper.GetHotkeyAccessor(viewModel, module.ModuleName, module.HotkeyID);
-            var headerKey = HotkeyAccessorHelper.GetHotkeyLocalizationHeaderKey(hotkeyAccessor);
-            module.PropertyChanged += OnModuleHotkeyDataPropertyChanged;
-
-            module.HotkeySettings = HotkeyAccessorHelper.GetHotkeySettings(hotkeyAccessor);
-            module.Header = GetHotkeyLocalizationHeader(module.ModuleName, module.HotkeyID, headerKey);
-            module.IsSystemConflict = isSystemConflict;
-
-            var moduleType = ModuleNames.ToModuleType(module.ModuleName);
-            if (moduleType.HasValue)
+            try
             {
-                var displayName = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType.Value));
-                module.DisplayName = displayName;
-                module.IconPath = ModuleHelper.GetModuleTypeFluentIconName(moduleType.Value);
+                var settings = GetModuleSettings(module.ModuleName);
+                var allHotkeyAccessors = settings.GetAllHotkeyAccessors();
+                var hotkeyAccessor = allHotkeyAccessors[module.HotkeyID];
+
+                if (hotkeyAccessor != null)
+                {
+                    // Get current hotkey settings (fresh from file) using the accessor's getter
+                    module.HotkeySettings = hotkeyAccessor.Value;
+
+                    // Set header using localization key
+                    module.Header = GetHotkeyLocalizationHeader(module.ModuleName, module.HotkeyID, hotkeyAccessor.LocalizationHeaderKey);
+                    module.IsSystemConflict = isSystemConflict;
+
+                    // Set module display info
+                    var moduleType = settings.GetModuleType();
+                    var displayName = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType));
+                    module.DisplayName = displayName;
+                    module.IconPath = ModuleHelper.GetModuleTypeFluentIconName(moduleType);
+
+                    if (module.HotkeySettings != null)
+                    {
+                        SetConflictProperties(module.HotkeySettings, isSystemConflict);
+                    }
+
+                    module.PropertyChanged += OnModuleHotkeyDataPropertyChanged;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Could not find hotkey accessor for {module.ModuleName}.{module.HotkeyID}");
+                }
             }
-
-            if (module.HotkeySettings != null)
+            catch (Exception ex)
             {
-                SetConflictProperties(module.HotkeySettings, isSystemConflict);
+                System.Diagnostics.Debug.WriteLine($"Error setting up module data for {module.ModuleName}: {ex.Message}");
             }
         }
 
@@ -177,18 +183,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (sender is ModuleHotkeyData moduleData && e.PropertyName == nameof(ModuleHotkeyData.HotkeySettings))
             {
-                UpdateModuleViewModelHotkeySettings(moduleData.ModuleName, moduleData.HotkeyID, moduleData.HotkeySettings);
+                UpdateModuleHotkeySettings(moduleData.ModuleName, moduleData.HotkeyID, moduleData.HotkeySettings);
             }
         }
 
-        private void UpdateModuleViewModelHotkeySettings(string moduleName, int hotkeyID, HotkeySettings newHotkeySettings)
+        private void UpdateModuleHotkeySettings(string moduleName, int hotkeyID, HotkeySettings newHotkeySettings)
         {
             try
             {
-                var viewModel = GetOrCreateViewModel(GetModuleKey(moduleName));
-                if (viewModel != null && HotkeyAccessorHelper.UpdateHotkeySettings(viewModel, moduleName, hotkeyID, newHotkeySettings))
+                var settings = GetModuleSettings(moduleName);
+                var accessors = settings.GetAllHotkeyAccessors();
+
+                var hotkeyAccessor = accessors[hotkeyID];
+
+                // Use the accessor's setter to update the hotkey settings
+                hotkeyAccessor.Value = newHotkeySettings;
+
+                if (settings is ISettingsConfig settingsConfig)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Updated {moduleName} hotkey {hotkeyID}");
+                    // No need to save settings here, the runner will call module interface to save it
+                    // SaveSettingsToFile(settings);
+
+                    // Send IPC notification using the same format as other ViewModels
+                    SendConfigMSG(settingsConfig, moduleName);
                 }
             }
             catch (Exception ex)
@@ -197,10 +214,112 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private void SaveModuleSettingsAndNotify(string moduleName)
+        {
+            try
+            {
+                var settings = GetModuleSettings(moduleName);
+
+                if (settings is ISettingsConfig settingsConfig)
+                {
+                    // No need to save settings here, the runner will call module interface to save it
+                    // SaveSettingsToFile(settings);
+
+                    // Send IPC notification using the same format as other ViewModels
+                    SendConfigMSG(settingsConfig, moduleName);
+
+                    System.Diagnostics.Debug.WriteLine($"Saved settings and sent IPC notification for module: {moduleName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving settings and notifying for {moduleName}: {ex.Message}");
+            }
+        }
+
+        private void SaveSettingsToFile(IHotkeyConfig settings)
+        {
+            try
+            {
+                // Get the repository for this settings type using reflection
+                var settingsType = settings.GetType();
+                var repositoryMethod = typeof(SettingsFactory).GetMethod("GetRepository");
+                if (repositoryMethod != null)
+                {
+                    var genericMethod = repositoryMethod.MakeGenericMethod(settingsType);
+                    var repository = genericMethod.Invoke(_settingsFactory, null);
+
+                    if (repository != null)
+                    {
+                        var saveMethod = repository.GetType().GetMethod("SaveSettingsToFile");
+                        saveMethod?.Invoke(repository, null);
+                        System.Diagnostics.Debug.WriteLine($"Saved settings to file for type: {settingsType.Name}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving settings to file: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Sends IPC notification using the same format as other ViewModels
+        /// </summary>
+        private void SendConfigMSG(ISettingsConfig settingsConfig, string moduleName)
+        {
+            try
+            {
+                var jsonTypeInfo = GetJsonTypeInfo(settingsConfig.GetType());
+                var serializedSettings = jsonTypeInfo != null
+                    ? JsonSerializer.Serialize(settingsConfig, jsonTypeInfo)
+                    : JsonSerializer.Serialize(settingsConfig);
+
+                var ipcMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                    moduleName,
+                    serializedSettings);
+
+                var result = _ipcMSGCallBackFunc(ipcMessage);
+                System.Diagnostics.Debug.WriteLine($"Sent IPC notification for {moduleName}, result: {result}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error sending IPC notification for {moduleName}: {ex.Message}");
+            }
+        }
+
+        private JsonTypeInfo GetJsonTypeInfo(Type settingsType)
+        {
+            try
+            {
+                var contextType = typeof(SourceGenerationContextContext);
+                var defaultProperty = contextType.GetProperty("Default", BindingFlags.Public | BindingFlags.Static);
+                var defaultContext = defaultProperty?.GetValue(null) as JsonSerializerContext;
+
+                if (defaultContext != null)
+                {
+                    var typeInfoProperty = contextType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                        .FirstOrDefault(p => p.PropertyType.IsGenericType &&
+                                           p.PropertyType.GetGenericTypeDefinition() == typeof(JsonTypeInfo<>) &&
+                                           p.PropertyType.GetGenericArguments()[0] == settingsType);
+
+                    return typeInfoProperty?.GetValue(defaultContext) as JsonTypeInfo;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting JsonTypeInfo for {settingsType.Name}: {ex.Message}");
+            }
+
+            return null;
+        }
+
         private string GetHotkeyLocalizationHeader(string moduleName, int hotkeyID, string headerKey)
         {
             // Handle AdvancedPaste custom actions
-            if (string.Equals(moduleName, ModuleNames.AdvancedPaste, StringComparison.OrdinalIgnoreCase)
+            if (string.Equals(moduleName, AdvancedPasteSettings.ModuleName, StringComparison.OrdinalIgnoreCase)
                 && hotkeyID > 9)
             {
                 return headerKey;
@@ -212,25 +331,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting hotkey settings for {moduleName}.{hotkeyID}: {ex.Message}");
-                return null;
+                System.Diagnostics.Debug.WriteLine($"Error getting hotkey header for {moduleName}.{hotkeyID}: {ex.Message}");
+                return headerKey; // Return the key itself as fallback
             }
-        }
-
-        private static string GetModuleKey(string moduleName)
-        {
-            return moduleName?.ToLowerInvariant() switch
-            {
-                ModuleNames.MouseHighlighter or ModuleNames.MouseJump or
-                ModuleNames.MousePointerCrosshairs or ModuleNames.FindMyMouse => ModuleNames.MouseUtils,
-                _ => moduleName?.ToLowerInvariant(),
-            };
         }
 
         public override void Dispose()
         {
             UnsubscribeFromEvents();
-            DisposeViewModels();
             base.Dispose();
         }
 
@@ -243,16 +351,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     module.PropertyChanged -= OnModuleHotkeyDataPropertyChanged;
                 }
             }
-        }
-
-        private void DisposeViewModels()
-        {
-            foreach (var viewModel in _moduleViewModels.Values)
-            {
-                viewModel?.Dispose();
-            }
-
-            _moduleViewModels.Clear();
         }
     }
 }

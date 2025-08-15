@@ -100,62 +100,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             UpdateCustomActionsCanMoveUpDown();
         }
 
-        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
         {
-            var hotkeyAccessors = new List<HotkeyAccessor>
+            var hotkeySettings = new List<HotkeySettings>
             {
-                new HotkeyAccessor(
-                    () => PasteAsPlainTextShortcut,
-                    value => PasteAsPlainTextShortcut = value,
-                    "PasteAsPlainText_Shortcut"),
-                new HotkeyAccessor(
-                    () => AdvancedPasteUIShortcut,
-                    value => AdvancedPasteUIShortcut = value,
-                    "AdvancedPasteUI_Shortcut"),
-                new HotkeyAccessor(
-                    () => PasteAsMarkdownShortcut,
-                    value => PasteAsMarkdownShortcut = value,
-                    "PasteAsMarkdown_Shortcut"),
-                new HotkeyAccessor(
-                    () => PasteAsJsonShortcut,
-                    value => PasteAsJsonShortcut = value,
-                    "PasteAsJson_Shortcut"),
+                PasteAsPlainTextShortcut,
+                AdvancedPasteUIShortcut,
+                PasteAsMarkdownShortcut,
+                PasteAsJsonShortcut,
             };
 
-            string[] additionalActionHeaderKeys =
-            [
-                "ImageToText",
-                "PasteAsTxtFile",
-                "PasteAsPngFile",
-                "PasteAsHtmlFile",
-                "TranscodeToMp3",
-                "TranscodeToMp4",
-            ];
-            int index = 0;
             foreach (var action in _additionalActions.GetAllActions())
             {
                 if (action is AdvancedPasteAdditionalAction additionalAction)
                 {
-                    hotkeyAccessors.Add(new HotkeyAccessor(
-                        () => additionalAction.Shortcut,
-                        value => additionalAction.Shortcut = value,
-                        additionalActionHeaderKeys[index]));
-                    index++;
+                    hotkeySettings.Add(additionalAction.Shortcut);
                 }
             }
 
             // Custom actions do not have localization header, just use the action name.
             foreach (var customAction in _customActions)
             {
-                hotkeyAccessors.Add(new HotkeyAccessor(
-                    () => customAction.Shortcut,
-                    value => customAction.Shortcut = value,
-                    customAction.Name));
+                hotkeySettings.Add(customAction.Shortcut);
             }
 
-            return new Dictionary<string, HotkeyAccessor[]>
+            return new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = hotkeyAccessors.ToArray(),
+                [ModuleName] = hotkeySettings.ToArray(),
             };
         }
 

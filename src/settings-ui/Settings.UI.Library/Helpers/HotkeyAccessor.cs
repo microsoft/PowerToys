@@ -7,9 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.PowerToys.Settings.UI.Library;
 
-namespace Microsoft.PowerToys.Settings.UI.Helpers
+namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
 {
     public class HotkeyAccessor
     {

@@ -546,31 +546,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _policyDefinedIpMappingRulesIsGPOConfigured = !string.IsNullOrWhiteSpace(_policyDefinedIpMappingRulesGPOData);
         }
 
-        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
         {
-            var hotkeyAccessors = new List<HotkeyAccessor>
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                new HotkeyAccessor(
-                    () => ToggleEasyMouseShortcut,
-                    value => ToggleEasyMouseShortcut = value,
-                    "MouseWithoutBorders_ToggleEasyMouseShortcut"),
-                new HotkeyAccessor(
-                    () => LockMachinesShortcut,
-                    value => LockMachinesShortcut = value,
-                    "MouseWithoutBorders_LockMachinesShortcut"),
-                new HotkeyAccessor(
-                    () => HotKeySwitch2AllPC,
-                    value => HotKeySwitch2AllPC = value,
-                    "MouseWithoutBorders_Switch2AllPcShortcut"),
-                new HotkeyAccessor(
-                    () => ReconnectShortcut,
-                    value => ReconnectShortcut = value,
-                    "MouseWithoutBorders_ReconnectShortcut"),
-            };
-
-            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
-            {
-                [ModuleName] = hotkeyAccessors.ToArray(),
+                [ModuleName] = [
+                    ToggleEasyMouseShortcut,
+                    LockMachinesShortcut,
+                    HotKeySwitch2AllPC,
+                    ReconnectShortcut],
             };
 
             return hotkeysDict;

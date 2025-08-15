@@ -69,23 +69,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
         {
-            var hotkeyAccessors = new List<HotkeyAccessor>
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                new HotkeyAccessor(
-                    () => ReparentActivationShortcut,
-                    value => ReparentActivationShortcut = value,
-                    "CropAndLock_ReparentActivation_Shortcut"),
-                new HotkeyAccessor(
-                    () => ThumbnailActivationShortcut,
-                    value => ThumbnailActivationShortcut = value,
-                    "CropAndLock_ThumbnailActivation_Shortcut"),
-            };
-
-            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
-            {
-                [ModuleName] = hotkeyAccessors.ToArray(),
+                [ModuleName] = [ReparentActivationShortcut, ThumbnailActivationShortcut],
             };
 
             return hotkeysDict;

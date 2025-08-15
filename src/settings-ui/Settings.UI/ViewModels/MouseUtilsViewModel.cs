@@ -153,30 +153,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public override Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
         {
-            var hotkeysDict = new Dictionary<string, HotkeyAccessor[]>
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [FindMyMouseSettings.ModuleName] = [
-                    new HotkeyAccessor(
-                        () => FindMyMouseActivationShortcut,
-                        value => FindMyMouseActivationShortcut = value,
-                        "MouseUtils_FindMyMouse_ActivationShortcut"),],
-                [MouseHighlighterSettings.ModuleName] = [
-                    new HotkeyAccessor(
-                        () => MouseHighlighterActivationShortcut,
-                        value => MouseHighlighterActivationShortcut = value,
-                        "MouseUtils_MouseHighlighter_ActivationShortcut"),],
-                [MousePointerCrosshairsSettings.ModuleName] = [
-                    new HotkeyAccessor(
-                        () => MousePointerCrosshairsActivationShortcut,
-                        value => MousePointerCrosshairsActivationShortcut = value,
-                        "MouseUtils_MousePointerCrosshairs_ActivationShortcut"),],
-                [MouseJumpSettings.ModuleName] = [
-                    new HotkeyAccessor(
-                        () => MouseJumpActivationShortcut,
-                        value => MouseJumpActivationShortcut = value,
-                        "MouseUtils_MouseJump_ActivationShortcut"),],
+                [FindMyMouseSettings.ModuleName] = [FindMyMouseActivationShortcut],
+                [MouseHighlighterSettings.ModuleName] = [MouseHighlighterActivationShortcut],
+                [MousePointerCrosshairsSettings.ModuleName] = [MousePointerCrosshairsActivationShortcut],
+                [MouseJumpSettings.ModuleName] = [MouseJumpActivationShortcut],
             };
 
             return hotkeysDict;

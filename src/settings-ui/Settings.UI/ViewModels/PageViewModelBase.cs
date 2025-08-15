@@ -51,22 +51,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         protected virtual void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
             UpdateHotkeyConflictStatus(e.Conflicts);
-            var allHotkeyAccessors = GetAllHotkeyAccessors();
+            var allHotkeySettings = GetAllHotkeySettings();
 
             void UpdateConflictProperties()
             {
-                if (allHotkeyAccessors != null)
+                if (allHotkeySettings != null)
                 {
-                    foreach (KeyValuePair<string, HotkeyAccessor[]> kvp in allHotkeyAccessors)
+                    foreach (KeyValuePair<string, HotkeySettings[]> kvp in allHotkeySettings)
                     {
                         var module = kvp.Key;
-                        var hotkeyAccessorList = kvp.Value;
+                        var hotkeySettingsList = kvp.Value;
 
-                        for (int i = 0; i < hotkeyAccessorList.Length; i++)
+                        for (int i = 0; i < hotkeySettingsList.Length; i++)
                         {
                             var key = $"{module.ToLowerInvariant()}_{i}";
-                            hotkeyAccessorList[i].Value.HasConflict = GetHotkeyConflictStatus(key);
-                            hotkeyAccessorList[i].Value.ConflictDescription = GetHotkeyConflictTooltip(key);
+                            hotkeySettingsList[i].HasConflict = GetHotkeyConflictStatus(key);
+                            hotkeySettingsList[i].ConflictDescription = GetHotkeyConflictTooltip(key);
                         }
                     }
                 }
@@ -86,7 +86,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             });
         }
 
-        public virtual Dictionary<string, HotkeyAccessor[]> GetAllHotkeyAccessors()
+        public virtual Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
         {
             return null;
         }
@@ -148,7 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Since MouseUtils in Settings consolidates four modules: Find My Mouse, Mouse Highlighter, Mouse Pointer Crosshairs, and Mouse Jump
             // We need to handle this case separately here.
-            if (string.Equals(ModuleName, ModuleNames.MouseUtils, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(ModuleName, "MouseUtils", StringComparison.OrdinalIgnoreCase))
             {
                 var mouseUtilsModules = new HashSet<string>
                 {
