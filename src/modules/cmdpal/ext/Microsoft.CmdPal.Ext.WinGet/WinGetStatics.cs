@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -40,6 +41,7 @@ internal static class WinGetStatics
 
     static WinGetStatics()
     {
+        PreserveTypes();
         WinGetFactory = new WindowsPackageManagerStandardFactory();
 
         // Create Package Manager and get available catalogs
@@ -110,5 +112,24 @@ internal static class WinGetStatics
         }
 
         return compositeCatalog;
+    }
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.Management.Deployment.FindPackagesResult))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.Management.Deployment.MatchResult))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.Management.Deployment.CatalogPackage))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IReadOnlyList<Microsoft.Management.Deployment.MatchResult>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IEnumerable<Microsoft.Management.Deployment.MatchResult>))]
+    public static void PreserveTypes()
+    {
+        // This method exists only to hold the DynamicDependency attributes above.
+        // It must be called to ensure the types are not trimmed during AOT compilation.
+
+        // Note: We cannot add [DynamicallyAccessedMembers] directly to framework types
+        // since we don't own their source code. DynamicDependency is the correct approach
+        // for preserving external types that are used dynamically (e.g., in XAML).
+
+        // For application types that require runtime type checking (e.g., in template selectors),
+        // prefer adding [DynamicallyAccessedMembers] attributes directly on the type definitions.
+        // Only use DynamicDependency here for types we cannot modify directly.
     }
 }

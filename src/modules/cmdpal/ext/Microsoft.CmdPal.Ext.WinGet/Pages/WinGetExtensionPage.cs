@@ -48,7 +48,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     public override IListItem[] GetItems()
     {
-        IListItem[] items = [];
+        // IListItem[] items = [];
         lock (_resultsLock)
         {
             // emptySearchForTag ===
@@ -61,12 +61,33 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             {
                 IsLoading = true;
                 DoUpdateSearchText(string.Empty);
-                return items;
+                return [];
             }
 
             if (_results != null && _results.Any())
             {
-                ListItem[] results = _results.Select(PackageToListItem).ToArray();
+                var count = _results.Count();
+
+                Logger.LogDebug($"Building {count} items");
+                var results = new ListItem[count];
+                var next = 0;
+                for (var i = 0; i < count; i++)
+                {
+                    try
+                    {
+                        var li = PackageToListItem(_results.ElementAt(i));
+                        results[next] = li;
+                        next++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("error converting result to listitem", ex);
+                    }
+                }
+
+                Logger.LogDebug($"Produced {next}/{count} items");
+
+                // var results = _results.Select(PackageToListItem).ToArray();
                 IsLoading = false;
                 return results;
             }
@@ -82,7 +103,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         IsLoading = false;
 
-        return items;
+        return [];
     }
 
     private static ListItem PackageToListItem(CatalogPackage p) => new InstallPackageListItem(p);
@@ -108,7 +129,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         _cancellationTokenSource = new CancellationTokenSource();
 
-        CancellationToken cancellationToken = _cancellationTokenSource.Token;
+        var cancellationToken = _cancellationTokenSource.Token;
 
         IsLoading = true;
 
@@ -139,7 +160,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     {
         try
         {
-            IEnumerable<CatalogPackage> results = await searchTask;
+            var results = await searchTask;
 
             // Ensure this is still the latest task
             if (_currentSearchTask == searchTask)
@@ -156,7 +177,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         catch (Exception ex)
         {
             // Handle other exceptions
-            Logger.LogError(ex.Message);
+            Logger.LogError("Unexpected error while processing results", ex);
         }
     }
 
@@ -190,12 +211,12 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         HashSet<CatalogPackage> results = new(new PackageIdCompare());
 
         // Default selector: this is the way to do a `winget search <query>`
-        PackageMatchFilter selector = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
+        var selector = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
         selector.Field = Microsoft.Management.Deployment.PackageMatchField.CatalogDefault;
         selector.Value = query;
         selector.Option = PackageFieldMatchOption.ContainsCaseInsensitive;
 
-        FindPackagesOptions opts = WinGetStatics.WinGetFactory.CreateFindPackagesOptions();
+        var opts = WinGetStatics.WinGetFactory.CreateFindPackagesOptions();
         opts.Selectors.Add(selector);
 
         // testing
@@ -204,7 +225,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         // Selectors is "OR", Filters is "AND"
         if (HasTag)
         {
-            PackageMatchFilter tagFilter = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
+            var tagFilter = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
             tagFilter.Field = Microsoft.Management.Deployment.PackageMatchField.Tag;
             tagFilter.Value = _tag;
             tagFilter.Option = PackageFieldMatchOption.ContainsCaseInsensitive;
@@ -215,11 +236,11 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         // Clean up here, then...
         ct.ThrowIfCancellationRequested();
 
-        Lazy<Task<PackageCatalog>> catalogTask = HasTag ? WinGetStatics.CompositeWingetCatalog : WinGetStatics.CompositeAllCatalog;
+        var catalogTask = HasTag ? WinGetStatics.CompositeWingetCatalog : WinGetStatics.CompositeAllCatalog;
 
         // Both these catalogs should have been instantiated by the
         // WinGetStatics static ctor when we were created.
-        PackageCatalog catalog = await catalogTask.Value;
+        var catalog = await catalogTask.Value;
 
         if (catalog == null)
         {
@@ -235,8 +256,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
             // BODGY, re: microsoft/winget-cli#5151
             // FindPackagesAsync isn't actually async.
-            Task<FindPackagesResult> internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
-            FindPackagesResult searchResults = await internalSearchTask;
+            var internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
+            var searchResults = await internalSearchTask;
 
             // TODO more error handling like this:
             if (searchResults.Status != FindPackagesResultStatus.Ok)
@@ -247,12 +268,53 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             }
 
             Logger.LogDebug($"    got results for ({query})", memberName: nameof(DoSearchAsync));
-            foreach (Management.Deployment.MatchResult? match in searchResults.Matches.ToArray())
+
+            // try
+            // {
+            //    var m = searchResults.Matches.ToArray();
+            //    var c = m.Length;
+            //    Logger.LogDebug($"ToArray found {c}");
+            // }
+            // catch (Exception e1)
+            // {
+            //    Logger.LogError("ToArray failed", e1);
+            // }
+
+            // try
+            // {
+            //    var m = searchResults.Matches.ToList();
+            //    var c = m.Count;
+            //    Logger.LogDebug($"ToList found {c}");
+            // }
+            // catch (Exception e2)
+            // {
+            //    Logger.LogError("ToList failed", e2);
+            // }
+
+            // try
+            // {
+            //    if (searchResults.Matches.Count > 0)
+            //    {
+            //        var m = searchResults.Matches[0];
+            //        Logger.LogDebug($"manually iterate found {m.ToString()}");
+            //    }
+            // }
+            // catch (Exception e2)
+            // {
+            //    Logger.LogError("manually iterate failed", e2);
+            // }
+
+            // var matches = searchResults.Matches.ToArray();
+            // foreach (var match in matches)
+            var count = searchResults.Matches.Count;
+            for (var i = 0; i < count; i++)
             {
+                var match = searchResults.Matches[i];
+
                 ct.ThrowIfCancellationRequested();
 
                 // Print the packages
-                CatalogPackage package = match.CatalogPackage;
+                var package = match.CatalogPackage;
 
                 results.Add(package);
             }
