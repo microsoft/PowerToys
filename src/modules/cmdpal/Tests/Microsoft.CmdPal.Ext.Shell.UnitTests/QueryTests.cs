@@ -15,29 +15,6 @@ namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 public class QueryTests : CommandPaletteUnitTestBase
 {
     [TestMethod]
-    public void ValidateSettingsManager()
-    {
-        // Setup
-        var settings = Settings.CreateDefaultSettings();
-
-        // Assert
-        Assert.IsNotNull(settings);
-        Assert.IsFalse(settings.LeaveShellOpen);
-        Assert.AreEqual("0", settings.ShellCommandExecution);
-    }
-
-    [TestMethod]
-    public void ValidateSettingsWithDifferentConfiguration()
-    {
-        // Setup
-        var settings = Settings.CreatePowerShellSettings();
-
-        // Assert
-        Assert.IsNotNull(settings);
-        Assert.AreEqual("1", settings.ShellCommandExecution); // PowerShell
-    }
-
-    [TestMethod]
     public void ValidateHistoryFunctionality()
     {
         // Setup

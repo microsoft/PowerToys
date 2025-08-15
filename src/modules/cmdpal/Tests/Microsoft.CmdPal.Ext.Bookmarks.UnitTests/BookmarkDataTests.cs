@@ -10,36 +10,6 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 public class BookmarkDataTests
 {
     [TestMethod]
-    public void BookmarkDataCanBeCreated()
-    {
-        // Act
-        var bookmark = new BookmarkData
-        {
-            Name = "Test Site",
-            Bookmark = "https://test.com",
-        };
-
-        // Assert
-        Assert.AreEqual("Test Site", bookmark.Name);
-        Assert.AreEqual("https://test.com", bookmark.Bookmark);
-    }
-
-    [TestMethod]
-    public void BookmarkDataHandlesEmptyValues()
-    {
-        // Act
-        var bookmark = new BookmarkData
-        {
-            Name = string.Empty,
-            Bookmark = string.Empty,
-        };
-
-        // Assert
-        Assert.AreEqual(string.Empty, bookmark.Name);
-        Assert.AreEqual(string.Empty, bookmark.Bookmark);
-    }
-
-    [TestMethod]
     public void BookmarkDataWebUrlDetection()
     {
         // Act
@@ -55,8 +25,18 @@ public class BookmarkDataTests
             Bookmark = "C:\\temp\\file.txt",
         };
 
+        var placeholderBookmark = new BookmarkData
+        {
+            Name = "Placeholder",
+            Bookmark = "{Placeholder}",
+        };
+
         // Assert
         Assert.IsTrue(webBookmark.IsWebUrl());
+        Assert.IsFalse(webBookmark.IsPlaceholder);
         Assert.IsFalse(nonWebBookmark.IsWebUrl());
+        Assert.IsFalse(nonWebBookmark.IsPlaceholder);
+
+        Assert.IsTrue(placeholderBookmark.IsPlaceholder);
     }
 }

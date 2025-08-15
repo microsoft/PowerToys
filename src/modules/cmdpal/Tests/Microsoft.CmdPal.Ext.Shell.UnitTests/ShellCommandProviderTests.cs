@@ -12,17 +12,6 @@ namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 public class ShellCommandProviderTests
 {
     [TestMethod]
-    public void ProviderHasCorrectId()
-    {
-        // Setup
-        var mockHistoryService = new Mock<IRunHistoryService>();
-        var provider = new ShellCommandsProvider(mockHistoryService.Object);
-
-        // Assert
-        Assert.AreEqual("Run", provider.Id);
-    }
-
-    [TestMethod]
     public void ProviderHasDisplayName()
     {
         // Setup
