@@ -47,4 +47,10 @@ DWM_CLOAKED_APP
 
 CoWaitForMultipleObjects
 INFINITE
-CWMO_FLAGS 
+CWMO_FLAGS
+
+GetCurrentThreadId
+SetWindowsHookEx
+UnhookWindowsHookEx
+CallNextHookEx
+GetModuleHandle

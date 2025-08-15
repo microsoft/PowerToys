@@ -27,6 +27,7 @@ using Microsoft.Windows.AppLifecycle;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Graphics;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.Win32;
@@ -44,7 +45,8 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<DismissMessage>,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
-    IRecipient<QuitMessage>
+    IRecipient<QuitMessage>,
+    IDisposable
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
@@ -54,6 +56,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
     private readonly KeyboardListener _keyboardListener;
+    private readonly LocalKeyboardListener _localKeyboardListener;
     private bool _ignoreHotKeyWhenFullScreen = true;
 
     private DesktopAcrylicController? _acrylicController;
@@ -116,6 +119,18 @@ public sealed partial class MainWindow : WindowEx,
         {
             Summon(string.Empty);
         });
+
+        _localKeyboardListener = new LocalKeyboardListener();
+        _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
+        _localKeyboardListener.Start();
+    }
+
+    private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
+    {
+        if (e.Key == VirtualKey.GoBack)
+        {
+            WeakReferenceMessenger.Default.Send(new GoBackMessage());
+        }
     }
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
@@ -376,6 +391,7 @@ public sealed partial class MainWindow : WindowEx,
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
+        _localKeyboardListener.Dispose();
         DisposeAcrylic();
 
         _keyboardListener.Stop();
@@ -681,5 +697,11 @@ public sealed partial class MainWindow : WindowEx,
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
+    }
+
+    public void Dispose()
+    {
+        _localKeyboardListener.Dispose();
+        DisposeAcrylic();
     }
 }
