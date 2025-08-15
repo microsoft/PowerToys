@@ -145,6 +145,10 @@
                             helpers:NavHelper.NavigateTo="views:AwakePage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}" />
                         <NavigationViewItem
+                            x:Uid="Shell_ClipPing"
+                            helpers:NavHelper.NavigateTo="views:ClipPingPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ClipPing.png}" />
+                        <NavigationViewItem
                             x:Uid="Shell_CmdPal"
                             helpers:NavHelper.NavigateTo="views:CmdPalPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}" />
