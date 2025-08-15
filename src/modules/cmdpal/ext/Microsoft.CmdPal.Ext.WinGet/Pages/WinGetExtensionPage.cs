@@ -48,7 +48,6 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     public override IListItem[] GetItems()
     {
-        // IListItem[] items = [];
         lock (_resultsLock)
         {
             // emptySearchForTag ===
@@ -67,8 +66,6 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             if (_results != null && _results.Any())
             {
                 var count = _results.Count();
-
-                Logger.LogDebug($"Building {count} items");
                 var results = new ListItem[count];
                 var next = 0;
                 for (var i = 0; i < count; i++)
@@ -85,9 +82,6 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                     }
                 }
 
-                Logger.LogDebug($"Produced {next}/{count} items");
-
-                // var results = _results.Select(PackageToListItem).ToArray();
                 IsLoading = false;
                 return results;
             }
@@ -269,43 +263,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
             Logger.LogDebug($"    got results for ({query})", memberName: nameof(DoSearchAsync));
 
-            // try
-            // {
-            //    var m = searchResults.Matches.ToArray();
-            //    var c = m.Length;
-            //    Logger.LogDebug($"ToArray found {c}");
-            // }
-            // catch (Exception e1)
-            // {
-            //    Logger.LogError("ToArray failed", e1);
-            // }
-
-            // try
-            // {
-            //    var m = searchResults.Matches.ToList();
-            //    var c = m.Count;
-            //    Logger.LogDebug($"ToList found {c}");
-            // }
-            // catch (Exception e2)
-            // {
-            //    Logger.LogError("ToList failed", e2);
-            // }
-
-            // try
-            // {
-            //    if (searchResults.Matches.Count > 0)
-            //    {
-            //        var m = searchResults.Matches[0];
-            //        Logger.LogDebug($"manually iterate found {m.ToString()}");
-            //    }
-            // }
-            // catch (Exception e2)
-            // {
-            //    Logger.LogError("manually iterate failed", e2);
-            // }
-
-            // var matches = searchResults.Matches.ToArray();
-            // foreach (var match in matches)
+            // FYI Using .ToArray or any other kind of enumberable loop
+            // on arrays returned by the winget API are NOT trim safe
             var count = searchResults.Matches.Count;
             for (var i = 0; i < count; i++)
             {
@@ -313,9 +272,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
                 ct.ThrowIfCancellationRequested();
 
-                // Print the packages
                 var package = match.CatalogPackage;
-
                 results.Add(package);
             }
 
