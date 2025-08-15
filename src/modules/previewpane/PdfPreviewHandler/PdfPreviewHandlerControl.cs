@@ -228,6 +228,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                     DestinationWidth = (uint)this.ClientSize.Width,
                 }).GetAwaiter().GetResult();
 
+                stream.Seek(0); // Reset the stream position to the beginning before reading.
+
                 imageOfPage = Image.FromStream(stream.AsStream());
             }
 

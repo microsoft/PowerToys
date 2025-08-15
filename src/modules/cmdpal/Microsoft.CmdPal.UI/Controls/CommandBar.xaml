@@ -6,12 +6,13 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -27,79 +28,55 @@
                 TrueValue="Collapsed" />
 
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
-            <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
 
             <StackLayout
                 x:Name="VerticalStackLayout"
                 Orientation="Vertical"
                 Spacing="4" />
 
-            <cmdpalUI:ContextItemTemplateSelector
-                x:Key="ContextItemTemplateSelector"
-                Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
-                Default="{StaticResource DefaultContextMenuViewModelTemplate}" />
+            <Style
+                x:Name="ContextMenuFlyoutStyle"
+                BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
+                TargetType="FlyoutPresenter">
+                <Style.Setters>
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Padding" Value="0" />
+                </Style.Setters>
+            </Style>
 
-            <!--  Template for context items in the context item menu  -->
-            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="32" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <cpcontrols:IconBox
-                        Width="16"
-                        Height="16"
-                        Margin="4,0,0,0"
-                        HorizontalAlignment="Left"
-                        SourceKey="{x:Bind Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-                    <TextBlock
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Text="{x:Bind Title, Mode=OneWay}" />
-                    <TextBlock
-                        Grid.Column="2"
-                        Margin="16,0,0,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
-                </Grid>
-            </DataTemplate>
+            <Flyout
+                x:Name="ContextMenuFlyout"
+                FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
+                Opened="ContextMenuFlyout_Opened">
+                <cpcontrols:ContextMenu x:Name="ContextControl" />
+            </Flyout>
 
-            <!--  Template for context items flagged as critical  -->
-            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="32" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <cpcontrols:IconBox
-                        Width="16"
-                        Height="16"
-                        Margin="4,0,0,0"
-                        HorizontalAlignment="Left"
-                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                        SourceKey="{x:Bind Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-                    <TextBlock
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
-                        Text="{x:Bind Title, Mode=OneWay}" />
-                    <TextBlock
-                        Grid.Column="2"
-                        Margin="16,0,0,0"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
-                </Grid>
-            </DataTemplate>
+            <Style x:Key="HotkeyStyle" TargetType="Border">
+                <Style.Setters>
+                    <Setter Property="Padding" Value="4" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="Background" Value="{ThemeResource ControlFillColorSecondaryBrush}" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="MinWidth" Value="20" />
+                </Style.Setters>
+            </Style>
 
+            <Style x:Key="HotkeyTextBlockStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="CharacterSpacing" Value="4" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="HotkeyFontIconStyle" TargetType="FontIcon">
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -115,44 +92,44 @@
 
         <Grid
             x:Name="IconRoot"
-            Margin="8,0,0,0"
-            Tapped="PageIcon_Tapped"
+            Margin="3,0,-5,0"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}">
-            <InfoBadge Visibility="{x:Bind CurrentPageViewModel.HasStatusMessage, Mode=OneWay}" Value="{x:Bind CurrentPageViewModel.StatusMessages.Count, Mode=OneWay}" />
-            <Grid.ContextFlyout>
-                <Flyout x:Name="StatusMessagesFlyout" Placement="TopEdgeAlignedLeft">
-                    <ItemsRepeater
-                        x:Name="MessagesDropdown"
-                        Margin="-8"
-                        ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
-                        Layout="{StaticResource VerticalStackLayout}">
-                        <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="viewmodels:StatusMessageViewModel">
-                                <StackPanel
-                                    Grid.Row="0"
-                                    Margin="0"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Bottom"
-                                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-                                    CornerRadius="0">
-                                    <InfoBar
-                                        CornerRadius="{ThemeResource ControlCornerRadius}"
-                                        IsClosable="False"
-                                        IsOpen="True"
-                                        Message="{x:Bind Message, Mode=OneWay}"
-                                        Severity="{x:Bind State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
-                </Flyout>
-            </Grid.ContextFlyout>
+            <Button
+                x:Name="StatusMessagesButton"
+                x:Uid="StatusMessagesButton"
+                Padding="4"
+                Style="{StaticResource SubtleButtonStyle}"
+                Visibility="{x:Bind CurrentPageViewModel.HasStatusMessage, Mode=OneWay}">
+                <InfoBadge Value="{x:Bind CurrentPageViewModel.StatusMessages.Count, Mode=OneWay}" />
+                <Button.Flyout>
+                    <Flyout x:Name="StatusMessagesFlyout" Placement="TopEdgeAlignedLeft">
+                        <ItemsRepeater
+                            x:Name="MessagesDropdown"
+                            Margin="-8"
+                            ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
+                            Layout="{StaticResource VerticalStackLayout}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="coreViewModels:StatusMessageViewModel">
+                                    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
+                                        <InfoBar
+                                            CornerRadius="{ThemeResource ControlCornerRadius}"
+                                            IsClosable="False"
+                                            IsOpen="True"
+                                            Message="{x:Bind Message, Mode=OneWay}"
+                                            Severity="{x:Bind State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
         </Grid>
         <Button
             x:Name="SettingsIconButton"
             x:Uid="SettingsButton"
+            Click="SettingsIcon_Clicked"
             Style="{StaticResource SubtleButtonStyle}"
-            Tapped="SettingsIcon_Tapped"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <FontIcon
@@ -185,26 +162,16 @@
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 AutomationProperties.Name="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
                 Background="Transparent"
+                Click="PrimaryButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
-                Tapped="PrimaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
-                    <Border
-                        Padding="4"
-                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4">
-                        <FontIcon
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            FontSize="10"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Glyph="&#xE751;" />
+                    <Border Style="{StaticResource HotkeyStyle}">
+                        <FontIcon Glyph="&#xE751;" Style="{StaticResource HotkeyFontIconStyle}" />
                     </Border>
                 </StackPanel>
             </Button>
@@ -213,41 +180,20 @@
                 Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 AutomationProperties.Name="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
+                Click="SecondaryButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
-                Tapped="SecondaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
-                    <StackPanel Orientation="Horizontal" Spacing="2">
-                        <Border
-                            Padding="4,2,4,2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <TextBlock
-                                CharacterSpacing="4"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Ctrl" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
+                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
                         </Border>
-                        <Border
-                            Padding="4"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <FontIcon
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Glyph="&#xE751;" />
+                        <Border Style="{StaticResource HotkeyStyle}">
+                            <FontIcon Glyph="&#xE751;" Style="{StaticResource HotkeyFontIconStyle}" />
                         </Border>
                     </StackPanel>
                 </StackPanel>
@@ -255,51 +201,25 @@
             <Button
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
-                Padding="4"
-                Content="{ui:FontIcon Glyph=&#xE712;,
-                                      FontSize=16}"
+                Padding="6,4,4,4"
+                Click="MoreCommandsButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="Ctrl+K"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
-                <Button.Flyout>
-                    <Flyout
-                        Closing="Flyout_Closing"
-                        Opened="Flyout_Opened"
-                        Placement="TopEdgeAlignedRight">
-                        <StackPanel>
-
-                            <ListView
-                                x:Name="CommandsDropdown"
-                                MinWidth="248"
-                                Margin="-16,-12,-16,-12"
-                                IsItemClickEnabled="True"
-                                ItemClick="CommandsDropdown_ItemClick"
-                                ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
-                                ItemsSource="{x:Bind ViewModel.ContextMenu.FilteredItems, Mode=OneWay}"
-                                KeyDown="CommandsDropdown_KeyDown"
-                                SelectionMode="Single">
-                                <ListView.ItemContainerStyle>
-                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                                        <Setter Property="MinHeight" Value="0" />
-                                        <Setter Property="Padding" Value="12,7,12,7" />
-                                    </Style>
-                                </ListView.ItemContainerStyle>
-                                <ListView.ItemContainerTransitions>
-                                    <TransitionCollection />
-                                </ListView.ItemContainerTransitions>
-                            </ListView>
-
-                            <TextBox
-                                x:Name="ContextFilterBox"
-                                x:Uid="ContextFilterBox"
-                                Margin="-12,12,-12,-12"
-                                KeyDown="ContextFilterBox_KeyDown"
-                                PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
-                                TextChanged="ContextFilterBox_TextChanged" />
-
-                        </StackPanel>
-                    </Flyout>
-                </Button.Flyout>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="More" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
+                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
+                        </Border>
+                        <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
+                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="K" />
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
             </Button>
         </StackPanel>
     </Grid>

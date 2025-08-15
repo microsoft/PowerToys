@@ -190,4 +190,7 @@
   <data name="shell_command_display_title" xml:space="preserve">
     <value>Run commands</value>
   </data>
+  <data name="copy_path_command_name" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
 </root>

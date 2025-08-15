@@ -2,17 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
@@ -25,7 +22,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
     private readonly string _bookmark = string.Empty;
 
     // TODO pass in an array of placeholders
-    public BookmarkPlaceholderForm(string name, string url, string type)
+    public BookmarkPlaceholderForm(string name, string url)
     {
         _bookmark = url;
         var r = new Regex(Regex.Escape("{") + "(.*?)" + Regex.Escape("}"));
@@ -88,23 +85,8 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
             target = target.Replace(placeholderString, placeholderData);
         }
 
-        try
-        {
-            var uri = UrlCommand.GetUri(target);
-            if (uri != null)
-            {
-                _ = Launcher.LaunchUriAsync(uri);
-            }
-            else
-            {
-                // throw new UriFormatException("The provided URL is not valid.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex.Message);
-        }
+        var success = UrlCommand.LaunchCommand(target);
 
-        return CommandResult.GoHome();
+        return success ? CommandResult.Dismiss() : CommandResult.KeepOpen();
     }
 }

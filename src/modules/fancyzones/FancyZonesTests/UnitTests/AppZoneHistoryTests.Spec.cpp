@@ -233,7 +233,7 @@ namespace FancyZonesUnitTests
             Assert::IsFalse(AppZoneHistory::instance().SetAppLastZones(window, workAreaId, layoutId, { expectedZoneIndex }));
         }
 
-        TEST_METHOD (AppLastdeviceIdTest)
+        TEST_METHOD (AppLastDeviceIdTest)
         {
             const auto layoutId = FancyZonesUtils::GuidFromString(L"{2FEC41DA-3A0B-4E31-9CE1-9473C65D99F2}").value();
             const FancyZonesDataTypes::WorkAreaId workAreaId1{

@@ -76,19 +76,6 @@ namespace WorkspacesLibUnitTests
             Assert::IsTrue(result == nonExistentWindowAumid);
         }
 
-        TEST_METHOD (PwaHelper_GetAUMIDFromWindow_InvalidWindow_ReturnsEmpty)
-        {
-            // Arrange
-            Utils::PwaHelper helper;
-            HWND invalidWindow = nullptr;
-
-            // Act
-            std::wstring result = helper.GetAUMIDFromWindow(invalidWindow);
-
-            // Assert
-            Assert::IsTrue(result.empty());
-        }
-
         TEST_METHOD (PwaHelper_GetEdgeAppId_ValidConstruction_DoesNotCrash)
         {
             // Arrange

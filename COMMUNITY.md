@@ -181,12 +181,11 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 ## PowerToys core team
 
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
-- [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
 - [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
-- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
-- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
-- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev lead
+- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev Lead
+- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev Lead
+- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead
 - [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
 - [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
 - [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
@@ -213,6 +212,7 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@ethanfangg](https://github.com/ethanfangg) - Ethan Fang - Product Manager
 - [@plante-msft](https://github.com/plante-msft) - Connor Plante - Product Manager
 - [@joadoumie](https://github.com/joadoumie) - Jordi Adoumie - Product Manager
+- [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@enricogior](https://github.com/enricogior) - Enrico Giordani - Dev Lead
 - [@bzoz](https://github.com/bzoz) - Bartosz Sosnowski - Dev
 - [@ivan100sic](https://github.com/ivan100sic) - Ivan Stošić - Dev
@@ -225,4 +225,4 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@donlaci](https://github.com/donlaci) - Laszlo Nemeth - Dev
 - [@SeraphimaZykova](https://github.com/SeraphimaZykova) - Seraphima Zykova - Dev
 - [@stefansjfw](https://github.com/stefansjfw) - Stefan Markovic - Dev
-- [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev lead
+- [@jaimecbernardo](https://github.com/jaimecbernardo) - Jaime Bernardo - Dev Lead

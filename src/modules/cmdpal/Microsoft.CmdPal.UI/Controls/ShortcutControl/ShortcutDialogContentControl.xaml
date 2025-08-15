@@ -4,8 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
     <Grid MinWidth="498" MinHeight="220">
@@ -15,7 +15,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" />
+        <TextBlock Grid.Row="0" IsTabStop="True" />
 
         <ItemsControl
             x:Name="KeysControl"
@@ -66,7 +66,7 @@
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                     Severity="Warning" />
             </Grid>
-            <tk7controls:MarkdownTextBlock
+            <labToolkit:MarkdownTextBlock
                 x:Uid="InvalidShortcutWarningLabel"
                 Background="Transparent"
                 FontSize="12"
