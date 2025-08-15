@@ -12,39 +12,34 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 public class QueryTests : CommandPaletteUnitTestBase
 {
     [TestMethod]
-    public void ValidatePageCreation()
+    public void QueryReturnsExpectedResults()
     {
-        // Setup
-        var page = new AllAppsPage();
+        // Arrange
+        var mockCache = new MockAppCache();
+        var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
+        var uwpApp = TestDataHelper.CreateTestUWPApplication("Calculator");
+        mockCache.AddWin32Program(win32App);
+        mockCache.AddUWPApplication(uwpApp);
+
+        for (var i = 0; i < 10; i++)
+        {
+            mockCache.AddWin32Program(TestDataHelper.CreateTestWin32Program($"App{i}"));
+            mockCache.AddUWPApplication(TestDataHelper.CreateTestUWPApplication($"UWP App {i}"));
+        }
+
+        var page = new AllAppsPage(mockCache);
+        var provider = new AllAppsCommandProvider(page);
+
+        // Act
+        var allItems = page.GetItems();
 
         // Assert
-        Assert.IsNotNull(page);
-        Assert.IsNotNull(page.Name);
-        Assert.IsNotNull(page.Icon);
-    }
+        var notepadResult = Query("notepad", allItems).FirstOrDefault();
+        Assert.IsNotNull(notepadResult);
+        Assert.AreEqual("Notepad", notepadResult.Title);
 
-    [TestMethod]
-    public void ValidateGetItems()
-    {
-        // Setup
-        var page = new AllAppsPage();
-
-        // Act - wait a bit for async loading
-        System.Threading.Thread.Sleep(2000);
-        var resultList = page.GetItems();
-
-        // Assert - Just verify the page doesn't crash and returns some structure
-        Assert.IsNotNull(resultList);
-    }
-
-    [TestMethod]
-    public void ValidatePageProperties()
-    {
-        // Setup
-        var page = new AllAppsPage();
-
-        // Assert
-        Assert.IsTrue(page.ShowDetails);
-        Assert.IsNotNull(page.PlaceholderText);
+        var calculatorResult = Query("cal", allItems).FirstOrDefault();
+        Assert.IsNotNull(calculatorResult);
+        Assert.AreEqual("Calculator", calculatorResult.Title);
     }
 }
