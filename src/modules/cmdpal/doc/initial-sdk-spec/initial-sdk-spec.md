@@ -2395,6 +2395,87 @@ class M365EntityPickerToken : BaseObservable, IDynamicPickerToken {
 </tr>
 </table>
 
+
+```mermaid
+sequenceDiagram
+    autonumber
+    box host
+    participant U as User
+    participant H as Host (DevPal)
+    end
+    box extension
+    participant RS as M365RichSearch (IRichSearch)
+    participant BST as BasicStringToken
+    end
+
+    activate BST
+
+    loop Typing normal characters
+        U->>H: Key press (char)
+        H-->>H: UI updates basic text
+        H->>BST: UpdateText(ISearchUpdateArgs)
+        BST-->>RS: PropChanged(Text)
+        activate RS
+        RS->>RS: OnStringTextChanged()<br/>(not ending with trigger)
+        deactivate RS
+    end
+
+    U->>H: Key press '@'
+    H->>BST: UpdateText(ISearchUpdateArgs "hello@")
+    BST-->>RS: PropChanged(Text)
+    activate RS
+    RS->>RS: OnStringTokenChanged()
+    RS->>RS: OnStringTextChanged() (endsWith '@')
+    RS->>BST: SilentUpdateText("hello")
+    
+    create participant PT as M365EntityPickerToken 
+    RS->>PT: Create M365EntityPickerToken
+    note right of PT: (this is in the extension<br>mermaid just won't let me group it) 
+    RS->>PT: (subscribe PropChanged)
+    RS->>RS: Append picker token to SearchTokens
+    RS-->>H: PropChanged(SearchTokens)
+    deactivate RS
+    H->>H: Replace token list in UI
+    H->>PT: Focus + GetItems()
+    deactivate BST
+    activate PT
+    PT-->>H: Initial items (likely empty or placeholder)
+
+    note over PT,U: Dynamic picker now active
+
+    loop User types in dynamic picker
+        U->>H: Key press (char)
+        H->>PT: set SearchText(new value)
+        PT->>PT: UpdateSearchText()
+        create participant API as M365Api
+        PT->>API: GetEntities(query)
+        %% destroy API
+        API-->>PT: Entities[]
+        PT->>H: ItemsChanged (new items)
+        H-->>U: Refresh picker list
+    end
+
+    U->>H: User presses enter/clicks <br> to select entity
+    H->>PT: set SelectedItem(entity)
+    PT-->>RS: PropChanged(SelectedItem, Icon, DisplayName)
+    RS->>RS: OnEntityPickerChanged()
+    RS->>RS: Create new BasicStringToken(" ")
+    RS->>BST: (subscribe PropChanged)
+    RS->>RS: Append new BasicStringToken
+    RS-->>H: PropChanged(SearchTokens)
+    deactivate PT
+    H->>H: Update UI & focus new BasicStringToken
+    H-->>U: Ready for further typing
+
+    %% alt User backspaces empty dynamic picker
+    %%     H->>RS: RemoveToken(PT)
+    %%     RS->>RS: UpdateSearchTokens()
+    %%     RS-->>H: PropChanged(SearchTokens)
+    %%     H->>BST: Focus previous BasicStringToken
+    %% end
+```
+
+
 ### Commands with parameters
 
 We've also long experimented with the idea of commands having parameters that
