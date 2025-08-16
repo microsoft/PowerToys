@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
 using Windows.System;
 using Windows.Win32;
 
@@ -169,6 +171,55 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "Get the name of the Foreground window",
             },
+
+            new ListItem(new CommandWithProperties())
+            {
+                Title = "I have properties",
+            },
+            new ListItem(new OtherCommandWithProperties())
+            {
+                Title = "I also have properties",
+            },
         ];
+    }
+
+    internal sealed partial class CommandWithProperties : InvokableCommand, IExtendedAttributesProvider
+    {
+        private FontIconData _icon = new("\u0026", "Wingdings");
+
+        public override IconInfo Icon => new IconInfo(_icon, _icon);
+
+        public override string Name => "Whatever";
+
+        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
+        {
+            { "Foo", "bar" },
+            { "Secret", 42 },
+            { "hmm?", null },
+        };
+    }
+
+    internal sealed partial class OtherCommandWithProperties : IExtendedAttributesProvider, IInvokableCommand
+    {
+        public string Name => "Whatever 2";
+
+        public IIconInfo Icon => new IconInfo("\uF146");
+
+        public string Id => string.Empty;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged;
+
+        public ICommandResult Invoke(object sender)
+        {
+            PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Name)));
+            return CommandResult.ShowToast("whoop");
+        }
+
+        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
+        {
+            { "yo", "dog" },
+            { "Secret", 12345 },
+            { "hmm?", null },
+        };
     }
 }

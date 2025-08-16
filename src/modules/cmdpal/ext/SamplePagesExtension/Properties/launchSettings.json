@@ -3,7 +3,7 @@
     "SamplePagesExtension (Package)": {
       "commandName": "MsixPackage",
       "doNotLaunchApp": true,
-      "nativeDebugging": true
+      "nativeDebugging": false
     },
     "SamplePagesExtension (Unpackaged)": {
       "commandName": "Project"

@@ -153,6 +153,11 @@ public sealed class CommandProviderWrapper
             // On a BG thread here
             fallbacks = model.FallbackCommands();
 
+            if (model is ICommandProvider2 two)
+            {
+                UnsafePreCacheApiAdditions(two);
+            }
+
             Id = model.Id;
             DisplayName = model.DisplayName;
             Icon = new(model.Icon);
@@ -200,6 +205,19 @@ public sealed class CommandProviderWrapper
             FallbackItems = fallbacks
                 .Select(c => makeAndAdd(c, true))
                 .ToArray();
+        }
+    }
+
+    private void UnsafePreCacheApiAdditions(ICommandProvider2 provider)
+    {
+        var apiExtensions = provider.GetApiExtensionStubs();
+        Logger.LogDebug($"Provider supports {apiExtensions.Length} extensions");
+        foreach (var a in apiExtensions)
+        {
+            if (a is IExtendedAttributesProvider command2)
+            {
+                Logger.LogDebug($"{ProviderId}: Found an IExtendedAttributesProvider");
+            }
         }
     }
 

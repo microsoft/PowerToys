@@ -364,5 +364,17 @@ namespace Microsoft.CommandPalette.Extensions
         void InitializeWithHost(IExtensionHost host);
     };
     
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IExtendedAttributesProvider
+    {
+        Windows.Foundation.Collections.IMap<String, Object> GetProperties();
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider2 requires ICommandProvider
+    {
+        Object[] GetApiExtensionStubs();
+    };
+    
 
 }

@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2025-03-10
+last updated: 2025-08-08
 issue id: n/a
 ---
 
@@ -1410,8 +1410,8 @@ interface IDetailsLink requires IDetailsData {
     Windows.Foundation.Uri Link { get; };
     String Text { get; };
 }
-interface IDetailsCommand requires IDetailsData {
-    ICommand Command { get; };
+interface IDetailsCommands requires IDetailsData {
+    ICommand[] Commands { get; };
 }
 [uuid("58070392-02bb-4e89-9beb-47ceb8c3d741")]
 interface IDetailsSeparator requires IDetailsData {}
@@ -1936,6 +1936,115 @@ When displaying a page:
 * The title will be `IPage.Title ?? ICommand.Name`
 * The icon will be `ICommand.Icon`
 
+## Addenda I: API additions (ICommandProvider2)
+
+In experiments with extending our API, we've found some quirks with the way
+that we use WinRT's metadata-based marshalling (MBM). Typically, you'd add
+another contract version, add the new runtimeclass under the new contract
+version, and then have the client app just check if that contract is available.
+
+However, we're not using `runtimeclass`es that are exposed from the extensions.
+Everything is being transferred over MBM, based on the
+`Microsoft.CommandPalette.Extensions.winmd`. And out-of-proc MBM has some
+limitations. You can essentially only have a linear chain of requires for
+extension interfaces.
+
+> E.g. if it implements `IWidget2` and `IWidget2 requires IWidget`, and the object's `GetRuntimeClassName` gives `IWidget2`, we know to look at `IWidget2` directly and `IWidget` due to requires. 
+>
+> The unfortunate thing for the developer experience when authoring an extension with cppwinrt/CsWinRT implementations of interfaces, is they implement each interface separately. So the `IInspectable::GetRuntimeClassName` method inherited by `Interface1` gives `"Interface1"` and the method inherited by `Interface2` gives `"Interface2"`. 
+>
+> Only one of these interfaces can be what the object responds to with a QI for `IInspectable`, and that's the implementation that MBM calls.
+
+That means we can't just add another interface easily. But what we can do:
+
+> It might be possible to prefill the cache with the interfaces in question by
+> marshaling objects that implement each of the interfaces in a way that
+> registration-free MBM can work with. 
+> 
+> E.g. to keep it simple, marshal an
+> instance of a separate implementation class per interface that "implements"
+> each interface
+
+So that's exactly what we're going to do, because it works. As an example,
+we're going to add the following interface to our API:
+
+```csharp
+interface IExtendedAttributesProvider
+{
+    Windows.Foundation.Collections.IMap<String, Object> GetProperties();
+};
+
+interface ICommandProvider2 requires ICommandProvider
+{
+    Object[] GetApiExtensionStubs();
+};
+```
+
+`IExtendedAttributesProvider` is just a simple interface, indicating that there's some
+property bag of additional values that the host could read. We're starting with
+this, because it's a helpful tool for us to add arbitrary properties to object
+in an experimental fashion. We can continue to add more things we read from
+this property set, without breaking the ABI.
+
+As an example, `ICommand` proves uniquely challenging to extend, because it has
+both the `IInvokableCommand` and `IPage` family trees of interfaces which
+extend from it. Typically, it would be impossible for a class to be defined as
+
+```cs
+class MyCommandWithProperties : IInvokableCommand, IExtendedAttributesProvider { ... }
+```
+
+because Command Palette would only ever see the _first_ interface
+(`IInvokableCommand`) via MBM, and would never be able to check if an extension
+object was an `IExtendedAttributesProvider`. But a class defined like
+
+```cs
+class CommandWithOnlyProperties : IExtendedAttributesProvider { ... }
+```
+
+will populate the WinRT type cache in Command Palette with the type information
+for `ICommandWithProperties`. In fact, if Command Palette has the
+`IExtendedAttributesProvider` type info in it's cache, and then later receives a new
+`MyCommandWithProperties` object, it'll actually be able to know that
+`MyCommandWithProperties` is an `IExtendedAttributesProvider`. WinRT is just weird
+like that some times.
+
+`ICommandProvider2` is where the magic happens. This is a _linear_ addition to
+`ICommandProvider`, which merely adds a method to return a set of objects.
+Extensions can implement that method, by returning out stub implementations of
+all the future additions to the API that we may add. In so doing, CmdPal will
+be able to ask each extension for these stubs, pre-load the type cache for each
+extension, and then never have to worry in the future.
+
+As an example:
+
+```cs
+public partial class SamplePagesCommandsProvider : CommandProvider, ICommandProvider2 {
+    public SamplePagesCommandsProvider() {
+        DisplayName = "Sample Pages Commands";
+        Icon = new IconInfo("\uE82D");
+    }
+    public override ICommandItem[] TopLevelCommands() {
+        return [
+            new CommandItem(new SamplesListPage()) { Title = "Sample Pages", Subtitle = "View example commands" },
+        ];
+    }
+
+    // Here is where we enable support for future additions to the API
+    public object[] GetApiExtensionStubs() {
+        return [new SupportCommandsWithProperties()];
+    }
+    private sealed partial class SupportCommandsWithProperties : IExtendedAttributesProvider {
+        public IDictionary<string, object>? GetProperties() => null;
+    }
+}
+
+```
+
+Fortunately, we can put all of that (`GetApiExtensionStubs`,
+`SupportCommandsWithProperties`) directly in `Toolkit.CommandProvider`, so
+developers won't have to do anything. The toolkit will just do the right thing
+for them.
 
 ## Class diagram
 
@@ -2209,6 +2318,8 @@ Almost all of the SDK defined here is in terms of interfaces. Unfortunately,
 this prevents us from being able to use `[contract]` attributes to add to the
 interfaces. We'll instead need to rely on the tried-and-true method of adding a
 `IFoo2` when we want to add methods to `IFoo`.
+
+[Addenda I](#addenda-i-api-additions-icommandprovider2) talks a little more on some of the challenges with adding more APIs.
 
 [^1]: In this example, as in other places, I've referenced a
     `Microsoft.DevPal.Extensions.InvokableCommand` class, as the base for that action.
