@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -18,8 +19,9 @@ public partial class IndexerCommandsProvider : CommandProvider
     {
         Id = "Files";
         DisplayName = Resources.IndexerCommandsProvider_DisplayName;
-        Icon = Icons.FileExplorer;
-        if (ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
+        Icon = Icons.FileExplorerIcon;
+
+        if (IndexerListItem.IsActionsFeatureEnabled && ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {
             _ = ActionRuntimeManager.InstanceAsync;
         }
@@ -40,4 +42,9 @@ public partial class IndexerCommandsProvider : CommandProvider
         [
             _fallbackFileItem
         ];
+
+    public void SuppressFallbackWhen(Func<string, bool> callback)
+    {
+        _fallbackFileItem.SuppressFallbackWhen(callback);
+    }
 }

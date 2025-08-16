@@ -5,8 +5,10 @@
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -143,6 +145,18 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedItem != null)
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
+
+            // Automation notification for screen readers
+            var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemsList);
+            if (listViewPeer != null && li != null)
+            {
+                var notificationText = li.Title;
+                listViewPeer.RaiseNotificationEvent(
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.Other,
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.MostRecent,
+                    notificationText,
+                    "CommandPaletteSelectedItemChanged");
+            }
         }
     }
 
@@ -244,7 +258,7 @@ public sealed partial class ListPage : Page,
             }
             else if (e.NewValue == null)
             {
-                Logger.LogDebug("cleared viewmodel");
+                Logger.LogDebug("cleared view model");
             }
         }
     }
@@ -261,6 +275,13 @@ public sealed partial class ListPage : Page,
         // the selection from null -> something. Better to just update the
         // selection once, at the end of all the updating.
         if (ItemsList.SelectedItem == null)
+        {
+            ItemsList.SelectedIndex = 0;
+        }
+
+        // Always reset the selected item when the top-level list page changes
+        // its items
+        if (!sender.IsNested)
         {
             ItemsList.SelectedIndex = 0;
         }
@@ -293,5 +314,53 @@ public sealed partial class ListPage : Page,
         }
 
         return null;
+    }
+
+    private void ItemsList_OnContextRequested(UIElement sender, ContextRequestedEventArgs e)
+    {
+        var (item, element) = e.OriginalSource switch
+        {
+            // caused by keyboard shortcut (e.g. Context menu key or Shift+F10)
+            ListViewItem listViewItem => (ItemsList.ItemFromContainer(listViewItem) as ListItemViewModel, listViewItem),
+
+            // caused by right-click on the ListViewItem
+            FrameworkElement { DataContext: ListItemViewModel itemViewModel } frameworkElement => (itemViewModel, frameworkElement),
+
+            _ => (null, null),
+        };
+
+        if (item == null || element == null)
+        {
+            return;
+        }
+
+        if (ItemsList.SelectedItem != item)
+        {
+            ItemsList.SelectedItem = item;
+        }
+
+        ViewModel?.UpdateSelectedItemCommand.Execute(item);
+
+        if (!e.TryGetPosition(element, out var pos))
+        {
+            pos = new(0, element.ActualHeight);
+        }
+
+        _ = DispatcherQueue.TryEnqueue(
+            () =>
+            {
+                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                    new OpenContextMenuMessage(
+                        element,
+                        Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        pos,
+                        ContextMenuFilterLocation.Top));
+            });
+        e.Handled = true;
+    }
+
+    private void ItemsList_OnContextCanceled(UIElement sender, RoutedEventArgs e)
+    {
+        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
     }
 }

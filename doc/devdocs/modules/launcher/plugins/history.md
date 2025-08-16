@@ -6,7 +6,7 @@ The History Plugin allows users to search or display results they have used (sel
 The plugin uses data that was already being captured which is, what results were clicked, and how many times. We do add a little more data to this set now.
 When this plugin is queried, it creates results based on this previously selected results data.
 
-In order to make sure selected results in the history are still valid, we re-query the plugin the relevant plug using the PluginManager. If there are no results,
+In order to make sure selected results in the history are still valid, we re-query the relevant plugin using the PluginManager. If there are no results,
 this history item is not included. This usually means that the result is no longer valid. For instance, if a file was deleted, but it's still in the selected history
 we don't want to show it as a selectable result.
 

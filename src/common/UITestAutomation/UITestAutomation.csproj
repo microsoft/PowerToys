@@ -20,6 +20,7 @@
     <PackageReference Include="System.Net.Http" />
     <PackageReference Include="System.Private.Uri" />
     <PackageReference Include="System.Text.RegularExpressions" />
+    <PackageReference Include="CoenM.ImageSharp.ImageHash" />
   </ItemGroup>
 
 </Project>

@@ -10,7 +10,6 @@ using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
-using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -27,7 +26,7 @@ internal sealed partial class OpenSettingsCommand : InvokableCommand
     internal OpenSettingsCommand(WindowsSetting entry)
     {
         Name = Resources.OpenSettings;
-        Icon = new IconInfo("\xE8C8");
+        Icon = Icons.CopyIcon;
         _entry = entry;
     }
 

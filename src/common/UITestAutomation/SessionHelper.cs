@@ -5,10 +5,14 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using static Microsoft.PowerToys.UITest.WindowHelper;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -32,27 +36,23 @@ namespace Microsoft.PowerToys.UITest
         private Process? runner;
 
         private PowerToysModule scope;
+        private string[]? commandLineArgs;
+
+        /// <summary>
+        /// Gets a value indicating whether to use installer paths for testing.
+        /// </summary>
+        private bool UseInstallerForTest { get; }
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
-        public SessionHelper(PowerToysModule scope)
+        public SessionHelper(PowerToysModule scope, string[]? commandLineArgs = null)
         {
             this.scope = scope;
+            this.commandLineArgs = commandLineArgs;
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
-            this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            UseInstallerForTest = EnvironmentConfig.UseInstallerForTest;
+            this.locationPath = UseInstallerForTest ? string.Empty : Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             CheckWinAppDriverAndRoot();
-
-            var runnerProcessInfo = new ProcessStartInfo
-            {
-                FileName = locationPath + this.runnerPath,
-                Verb = "runas",
-            };
-
-            if (scope == PowerToysModule.PowerToysSettings)
-            {
-                this.ExitExe(runnerProcessInfo.FileName);
-                this.runner = Process.Start(runnerProcessInfo);
-            }
         }
 
         /// <summary>
@@ -76,7 +76,8 @@ namespace Microsoft.PowerToys.UITest
         public SessionHelper Init()
         {
             this.ExitExe(this.locationPath + this.sessionPath);
-            this.StartExe(this.locationPath + this.sessionPath);
+
+            this.StartExe(this.locationPath + this.sessionPath, this.commandLineArgs);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
 
@@ -89,31 +90,15 @@ namespace Microsoft.PowerToys.UITest
         public void Cleanup()
         {
             ExitScopeExe();
-            try
-            {
-                if (this.scope == PowerToysModule.PowerToysSettings)
-                {
-                    runner?.Kill();
-                    runner?.WaitForExit(); // Optional: Wait for the process to exit
-                }
-            }
-            catch (Exception ex)
-            {
-                // Handle exceptions if needed
-                Debug.WriteLine($"Exception during Cleanup: {ex.Message}");
-            }
         }
 
         /// <summary>
-        /// Exit a exe.
+        /// Exit a exe by Name.
         /// </summary>
-        /// <param name="appPath">The path to the application executable.</param>
-        public void ExitExe(string appPath)
+        /// <param name="processName">The path to the application executable.</param>
+        public void ExitExeByName(string processName)
         {
-            // Exit Exe
-            string exeName = Path.GetFileNameWithoutExtension(appPath);
-
-            Process[] processes = Process.GetProcessesByName(exeName);
+            Process[] processes = Process.GetProcessesByName(processName);
             foreach (Process process in processes)
             {
                 try
@@ -129,20 +114,140 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Starts a new exe and takes control of it.
+        /// Exit a exe.
         /// </summary>
         /// <param name="appPath">The path to the application executable.</param>
-        public void StartExe(string appPath)
+        public void ExitExe(string appPath)
         {
-            var opts = new AppiumOptions();
-            opts.AddAdditionalCapability("app", appPath);
-            this.Driver = NewWindowsDriver(opts);
+            // Exit Exe
+            string exeName = Path.GetFileNameWithoutExtension(appPath);
+
+            ExitExeByName(exeName);
         }
 
         /// <summary>
         /// Starts a new exe and takes control of it.
         /// </summary>
-        /// <param name="info">The path to the application executable.</param>
+        /// <param name="appPath">The path to the application executable.</param>
+        /// <param name="args">Optional command line arguments to pass to the application.</param>
+        public void StartExe(string appPath, string[]? args = null)
+        {
+            var opts = new AppiumOptions();
+
+            if (scope == PowerToysModule.PowerToysSettings)
+            {
+                TryLaunchPowerToysSettings(opts);
+            }
+            else if (scope == PowerToysModule.CommandPalette && UseInstallerForTest)
+            {
+                TryLaunchCommandPalette(opts);
+            }
+            else
+            {
+                opts.AddAdditionalCapability("app", appPath);
+
+                if (args != null && args.Length > 0)
+                {
+                    // Build command line arguments string
+                    string argsString = string.Join(" ", args.Select(arg =>
+                    {
+                        // Quote arguments that contain spaces
+                        if (arg.Contains(' '))
+                        {
+                            return $"\"{arg}\"";
+                        }
+
+                        return arg;
+                    }));
+
+                    opts.AddAdditionalCapability("appArguments", argsString);
+                }
+            }
+
+            Driver = NewWindowsDriver(opts);
+        }
+
+        private void TryLaunchPowerToysSettings(AppiumOptions opts)
+        {
+            try
+            {
+                var runnerProcessInfo = new ProcessStartInfo
+                {
+                    FileName = locationPath + runnerPath,
+                    Verb = "runas",
+                    Arguments = "--open-settings",
+                };
+
+                ExitExe(runnerProcessInfo.FileName);
+                runner = Process.Start(runnerProcessInfo);
+
+                WaitForWindowAndSetCapability(opts, "PowerToys Settings", 5000, 5);
+
+                // Exit CmdPal UI before launching new process if use installer for test
+                ExitExeByName("Microsoft.CmdPal.UI");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to launch PowerToys Settings: {ex.Message}", ex);
+            }
+        }
+
+        private void TryLaunchCommandPalette(AppiumOptions opts)
+        {
+            try
+            {
+                // Exit any existing CmdPal UI process
+                ExitExeByName("Microsoft.CmdPal.UI");
+
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c start shell:appsFolder\\Microsoft.CommandPalette_8wekyb3d8bbwe!App",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                };
+
+                var process = Process.Start(processStartInfo);
+                process?.WaitForExit();
+
+                WaitForWindowAndSetCapability(opts, "Command Palette", 5000, 10);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to launch Command Palette: {ex.Message}", ex);
+            }
+        }
+
+        private void WaitForWindowAndSetCapability(AppiumOptions opts, string windowName, int delayMs, int maxRetries)
+        {
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                var window = ApiHelper.FindDesktopWindowHandler(
+                    [windowName, AdministratorPrefix + windowName]);
+
+                if (window.Count > 0)
+                {
+                    var hexHwnd = window[0].HWnd.ToString("x");
+                    opts.AddAdditionalCapability("appTopLevelWindow", hexHwnd);
+                    return;
+                }
+
+                if (attempt < maxRetries)
+                {
+                    Thread.Sleep(delayMs);
+                }
+                else
+                {
+                    throw new TimeoutException($"Failed to find {windowName} window after multiple attempts.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Starts a new exe and takes control of it.
+        /// </summary>
+        /// <param name="info">The AppiumOptions for the application.</param>
         private WindowsDriver<WindowsElement> NewWindowsDriver(AppiumOptions info)
         {
             // Create driver with retry
@@ -176,6 +281,19 @@ namespace Microsoft.PowerToys.UITest
         public void ExitScopeExe()
         {
             ExitExe(sessionPath);
+            try
+            {
+                if (this.scope == PowerToysModule.PowerToysSettings)
+                {
+                    runner?.Kill();
+                    runner?.WaitForExit(); // Optional: Wait for the process to exit
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions if needed
+                Debug.WriteLine($"Exception during Cleanup: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -184,7 +302,7 @@ namespace Microsoft.PowerToys.UITest
         public void RestartScopeExe()
         {
             ExitScopeExe();
-            StartExe(locationPath + sessionPath);
+            StartExe(locationPath + sessionPath, this.commandLineArgs);
         }
 
         public WindowsDriver<WindowsElement> GetRoot()

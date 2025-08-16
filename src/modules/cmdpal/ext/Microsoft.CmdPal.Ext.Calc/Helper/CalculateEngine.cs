@@ -34,7 +34,7 @@ public static class CalculateEngine
     /// Interpret
     /// </summary>
     /// <param name="cultureInfo">Use CultureInfo.CurrentCulture if something is user facing</param>
-    public static CalculateResult Interpret(SettingsManager settings, string input, CultureInfo cultureInfo, out string error)
+    public static CalculateResult Interpret(ISettingsInterface settings, string input, CultureInfo cultureInfo, out string error)
     {
         error = default;
 
@@ -82,7 +82,7 @@ public static class CalculateEngine
             return default;
         }
 
-        var decimalResult = Convert.ToDecimal(result, cultureInfo);
+        var decimalResult = Convert.ToDecimal(result, new CultureInfo("en-US"));
 
         var roundedResult = FormatMax15Digits(decimalResult, cultureInfo);
 
@@ -108,7 +108,7 @@ public static class CalculateEngine
     ///   100000.9999999999 → "100001"
     ///   1234567890123.45  → "1234567890123.45"
     /// </summary>
-    private static decimal FormatMax15Digits(decimal value, CultureInfo cultureInfo)
+    public static decimal FormatMax15Digits(decimal value, CultureInfo cultureInfo)
     {
         var absValue = Math.Abs(value);
         var integerDigits = absValue >= 1 ? (int)Math.Floor(Math.Log10((double)absValue)) + 1 : 1;

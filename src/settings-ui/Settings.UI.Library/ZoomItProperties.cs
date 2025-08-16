@@ -78,7 +78,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public BoolProperty ShowTrayIcon { get; set; }
 
-        public BoolProperty AnimnateZoom { get; set; }
+        [JsonPropertyName("AnimnateZoom")]
+        public BoolProperty AnimateZoom { get; set; }
 
         public IntProperty ZoominSliderLevel { get; set; }
 

@@ -9,3 +9,7 @@ GetWindowRect
 GetMonitorInfo
 SetWindowPos
 MonitorFromWindow
+
+SHOW_WINDOW_CMD
+ShellExecuteEx
+SEE_MASK_INVOKEIDLIST 

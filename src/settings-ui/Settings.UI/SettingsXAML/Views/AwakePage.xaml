@@ -8,8 +8,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    d:DataContext="{d:DesignInstance Type=viewmodels:AwakeViewModel}"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewModels:AwakeViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
