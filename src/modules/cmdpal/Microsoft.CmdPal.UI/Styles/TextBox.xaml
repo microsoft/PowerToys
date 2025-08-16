@@ -14,6 +14,11 @@
         EmptyValue="Visible"
         NotEmptyValue="Collapsed" />
 
+    <converters:StringVisibilityConverter
+        x:Key="StringVisibilityConverter"
+        EmptyValue="Collapsed"
+        NotEmptyValue="Visible" />
+
     <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
         <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
         <Setter Property="Background" Value="Transparent" />
@@ -166,18 +171,21 @@
                             Visibility="{Binding Description, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ReverseStringVisibilityConverter}, Mode=OneWay}" />
                         <Button
                             x:Name="DeleteButton"
+                            x:Uid="DeleteButton"
                             Grid.Column="2"
                             Margin="0,0,8,0"
                             Padding="4"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            AutomationProperties.AccessibilityView="Raw"
+                            AutomationProperties.AccessibilityView="Content"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            Command="{Binding ClearSearchCommand, ElementName=RootSearchBar}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             FontSize="{TemplateBinding FontSize}"
-                            IsTabStop="False"
+                            IsTabStop="True"
+                            KeyDown="DeleteButton_KeyDown"
                             Style="{StaticResource DeleteButtonStyle}"
-                            Visibility="Collapsed" />
+                            Visibility="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource StringVisibilityConverter}, Mode=OneWay}" />
                         <TextBlock
                             x:Name="DescriptionPresenter"
                             Grid.Column="1"
