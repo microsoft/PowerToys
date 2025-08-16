@@ -26,7 +26,11 @@
     Visibility="{Binding MainWindowVisibility, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     WindowStartupLocation="Manual"
     WindowStyle="None"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    AllowsTransparency="True"
+    Background="Transparent"   
+    WindowStyle="None"
+    Opacity="0.85">
     <Border x:Name="MainBorder" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
         <Grid x:Name="RootGrid" MouseDown="OnMouseDown">
             <Grid.RowDefinitions>
