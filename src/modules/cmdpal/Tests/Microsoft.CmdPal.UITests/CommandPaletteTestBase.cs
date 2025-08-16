@@ -12,10 +12,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UITests;
 
+[TestClass]
 public class CommandPaletteTestBase : UITestBase
 {
     public CommandPaletteTestBase()
-        : base(PowerToysModule.CommandPalette)
+        : base(PowerToysModule.CommandPalette, hideAllWindowBeforeStart: true)
     {
     }
 
@@ -39,11 +40,44 @@ public class CommandPaletteTestBase : UITestBase
         Assert.AreEqual(this.Find<TextBox>("Search values or type a custom time stamp...").SetText(text, true).Text, text);
     }
 
+    protected void SetAppsExtensionSearchBox(string text)
+    {
+        Assert.AreEqual(this.Find<TextBox>("Search installed apps...").SetText(text, true).Text, text);
+    }
+
+    protected void SetWindowsTerminalExtensionSearchBox(string text)
+    {
+        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true).Text, text);
+    }
+
+    protected void SetWindowsSettingsExtensionSearchBox(string text)
+    {
+        Assert.AreEqual(this.Find<TextBox>("Type here to search...").SetText(text, true).Text, text);
+    }
+
     protected void OpenContextMenu()
     {
         var contextMenuButton = this.Find<Button>("More");
         Assert.IsNotNull(contextMenuButton, "Context menu button not found.");
         contextMenuButton.Click();
+    }
+
+    protected Window FindFileExplorerWindow()
+    {
+        var fileExplorerWindow = this.Find<Window>(By.ClassName("CabinetWClass"), global: true, timeoutMS: 5000);
+        return fileExplorerWindow;
+    }
+
+    protected Window FindWindowsTerminalWindow()
+    {
+        var terminalWindow = this.Find<Window>(By.ClassName("CASCADIA_HOSTING_WINDOW_CLASS"), global: true, timeoutMS: 5000);
+        return terminalWindow;
+    }
+
+    protected Window FindWindowsSettingsWindow()
+    {
+        var settingsWindow = this.Find<Window>("Settings", global: true, timeoutMS: 5000);
+        return settingsWindow;
     }
 
     protected void FindDefaultAppDialogAndClickButton()

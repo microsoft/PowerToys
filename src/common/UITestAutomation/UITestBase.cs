@@ -33,10 +33,11 @@ namespace Microsoft.PowerToys.UITest
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
         private readonly string[]? commandLineArgs;
+        private readonly bool hideAllWindowBeforeStart;
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
 
-        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null)
+        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified, string[]? commandLineArgs = null, bool hideAllWindowBeforeStart = false)
         {
             this.IsInPipeline = EnvironmentConfig.IsInPipeline;
             Console.WriteLine($"Running tests on platform: {EnvironmentConfig.Platform}");
@@ -52,6 +53,7 @@ namespace Microsoft.PowerToys.UITest
             this.scope = scope;
             this.size = size;
             this.commandLineArgs = commandLineArgs;
+            this.hideAllWindowBeforeStart = hideAllWindowBeforeStart;
         }
 
         /// <summary>
@@ -72,6 +74,12 @@ namespace Microsoft.PowerToys.UITest
 
                 // Escape Popups before starting
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
+            }
+
+            if (hideAllWindowBeforeStart)
+            {
+                KeyboardHelper.SendKeys([Key.Win, Key.M]);
+                Task.Delay(2000).Wait(); // Wait for a second to ensure all windows are minimized
             }
 
             this.sessionHelper = new SessionHelper(scope, commandLineArgs).Init();
@@ -578,13 +586,31 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Moves the mouse cursor to the specified screen coordinates.
-        /// </summary>
-        /// <param name="x">The new x-coordinate of the cursor.</param>
-        /// <param name="y">The new y-coordinate of the cursor.</param
+        /// Moves the mouse cursor to the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The new x-coordinate of the cursor.</param>
+        /// <param name="y">The new y-coordinate of the cursor.</param>
         public void MoveMouseTo(int x, int y)
         {
-            this.Session.MoveMouseTo(x, y);
+            this.Session.MoveMouseTo(x, y);
+        }
+
+        /// <summary>
+        /// Moves the mouse cursor to the center of the screen.
+        /// </summary>
+        public void MoveMouseToCenter()
+        {
+            var (centerX, centerY) = this.GetScreenCenter();
+            this.MoveMouseTo(centerX, centerY);
+        }
+
+        /// <summary>
+        /// Moves the mouse cursor to the center of the screen and performs a left click.
+        /// </summary>
+        public void FocusOnCenter()
+        {
+            this.MoveMouseToCenter();
+            this.Session.PerformMouseAction(MouseActionType.LeftClick);
         }
 
         protected void AddScreenShotsToTestResultsDirectory()
