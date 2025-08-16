@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
@@ -14,6 +15,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -23,8 +25,10 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class DashboardViewModel : Observable
+    public partial class DashboardViewModel : PageViewModelBase
     {
+        protected override string ModuleName => "Dashboard";
+
         private const string JsonFileType = ".json";
         private Dispatcher dispatcher;
 
@@ -35,6 +39,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<DashboardListItem> ShortcutModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
+
+        private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
+
+        public AllHotkeyConflictsData AllHotkeyConflictsData
+        {
+            get => _allHotkeyConflictsData;
+            set
+            {
+                if (Set(ref _allHotkeyConflictsData, value))
+                {
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public string PowerToysVersion
         {
@@ -66,6 +84,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GetShortcutModules();
         }
 
+        protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            dispatcher.BeginInvoke(() =>
+            {
+                AllHotkeyConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
+            });
+        }
+
+        private void RequestConflictData()
+        {
+            // Request current conflicts data
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+        }
+
         private void AddDashboardListItem(ModuleType moduleType)
         {
             GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
@@ -93,6 +125,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 var settings = NewPlusViewModel.LoadSettings(settingsUtils);
                 NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
             }
+
+            // Request updated conflicts after module state change
+            RequestConflictData();
         }
 
         public void ModuleEnabledChangedOnSettingsPage()
@@ -102,6 +137,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 GetShortcutModules();
 
                 OnPropertyChanged(nameof(ShortcutModules));
+
+                // Request updated conflicts after module state change
+                RequestConflictData();
             }
             catch (Exception ex)
             {

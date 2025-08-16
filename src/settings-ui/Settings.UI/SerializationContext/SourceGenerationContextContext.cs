@@ -13,23 +13,29 @@ using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 
-[JsonSerializable(typeof(WINDOWPLACEMENT))]
+[JsonSerializable(typeof(ActionMessage))]
 [JsonSerializable(typeof(AdvancedPasteSettings))]
-[JsonSerializable(typeof(Dictionary<string, List<string>>))]
 [JsonSerializable(typeof(AlwaysOnTopSettings))]
 [JsonSerializable(typeof(ColorPickerSettings))]
 [JsonSerializable(typeof(CropAndLockSettings))]
+[JsonSerializable(typeof(Dictionary<string, List<string>>))]
 [JsonSerializable(typeof(FileLocksmithSettings))]
+[JsonSerializable(typeof(FindMyMouseSettings))]
+[JsonSerializable(typeof(IList<PowerToysReleaseInfo>))]
 [JsonSerializable(typeof(MeasureToolSettings))]
+[JsonSerializable(typeof(MouseHighlighterSettings))]
+[JsonSerializable(typeof(MouseJumpSettings))]
+[JsonSerializable(typeof(MousePointerCrosshairsSettings))]
 [JsonSerializable(typeof(MouseWithoutBordersSettings))]
 [JsonSerializable(typeof(NewPlusSettings))]
 [JsonSerializable(typeof(PeekSettings))]
 [JsonSerializable(typeof(PowerLauncherSettings))]
 [JsonSerializable(typeof(PowerOcrSettings))]
+[JsonSerializable(typeof(PowerOcrSettings))]
 [JsonSerializable(typeof(RegistryPreviewSettings))]
+[JsonSerializable(typeof(ShortcutGuideSettings))]
+[JsonSerializable(typeof(WINDOWPLACEMENT))]
 [JsonSerializable(typeof(WorkspacesSettings))]
-[JsonSerializable(typeof(IList<PowerToysReleaseInfo>))]
-[JsonSerializable(typeof(ActionMessage))]
 public sealed partial class SourceGenerationContextContext : JsonSerializerContext
 {
 }

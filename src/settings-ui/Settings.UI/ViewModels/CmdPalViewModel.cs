@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -21,8 +23,10 @@ using Windows.Management.Deployment;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class CmdPalViewModel : Observable
+    public class CmdPalViewModel : PageViewModelBase
     {
+        protected override string ModuleName => "CmdPal";
+
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _isEnabled;
         private HotkeySettings _hotkey;
@@ -86,6 +90,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.CmdPal;
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [Hotkey],
+            };
+
+            return hotkeysDict;
         }
 
         public bool IsEnabled

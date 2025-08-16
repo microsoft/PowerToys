@@ -26,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage,
                 DispatcherQueue);
             DataContext = ViewModel;
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
             InitializeComponent();
         }
 

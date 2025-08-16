@@ -45,6 +45,9 @@
     <ClCompile Include="bug_report.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="hotkey_conflict_detector.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -91,6 +94,9 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="bug_report.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="hotkey_conflict_detector.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>

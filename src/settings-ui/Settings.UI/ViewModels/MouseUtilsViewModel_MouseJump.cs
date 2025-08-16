@@ -25,7 +25,7 @@ using MouseJump.Common.Models.Styles;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class MouseUtilsViewModel : Observable
+    public partial class MouseUtilsViewModel : PageViewModelBase
     {
         private GpoRuleConfigured _jumpEnabledGpoRuleConfiguration;
         private bool _jumpEnabledStateIsGPOConfigured;
@@ -37,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ArgumentNullException.ThrowIfNull(mouseJumpSettingsRepository);
             this.MouseJumpSettingsConfig = mouseJumpSettingsRepository.SettingsConfig;
+
             this.MouseJumpSettingsConfig.Properties.ThumbnailSize.PropertyChanged += this.MouseJumpThumbnailSizePropertyChanged;
         }
 

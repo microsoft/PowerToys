@@ -40,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PowerLauncherSettings settings = SettingsRepository<PowerLauncherSettings>.GetInstance(settingsUtils)?.SettingsConfig;
             ViewModel = new PowerLauncherViewModel(settings, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SendDefaultIPCMessageTimed, App.IsDarkTheme);
             DataContext = ViewModel;
+
             _ = Helper.GetFileWatcher(PowerLauncherSettings.ModuleName, "settings.json", () =>
             {
                 if (Environment.TickCount < _lastIPCMessageSentTick + 500)
@@ -79,6 +80,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ApplicationName"), "application_name"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_StringInApplication"), "string_in_application"));
             searchTypePreferencesOptions.Add(Tuple.Create(loader.GetString("PowerLauncher_SearchTypePreference_ExecutableName"), "executable_name"));
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OpenColorsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

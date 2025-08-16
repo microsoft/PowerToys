@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -17,9 +18,11 @@ using CommunityToolkit.WinUI.UI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml.Controls;
@@ -27,11 +30,53 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    public sealed partial class OobeWhatsNew : Page
+    public sealed partial class OobeWhatsNew : Page, INotifyPropertyChanged
     {
         public OobePowerToysModule ViewModel { get; set; }
 
+        private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
+
         public bool ShowDataDiagnosticsInfoBar => GetShowDataDiagnosticsInfoBar();
+
+        public AllHotkeyConflictsData AllHotkeyConflictsData
+        {
+            get => _allHotkeyConflictsData;
+            set
+            {
+                if (_allHotkeyConflictsData != value)
+                {
+                    _allHotkeyConflictsData = value;
+                    OnPropertyChanged(nameof(AllHotkeyConflictsData));
+                    OnPropertyChanged(nameof(HasConflicts));
+                }
+            }
+        }
+
+        public bool HasConflicts
+        {
+            get
+            {
+                if (AllHotkeyConflictsData == null)
+                {
+                    return false;
+                }
+
+                int count = 0;
+                if (AllHotkeyConflictsData.InAppConflicts != null)
+                {
+                    count += AllHotkeyConflictsData.InAppConflicts.Count;
+                }
+
+                if (AllHotkeyConflictsData.SystemConflicts != null)
+                {
+                    count += AllHotkeyConflictsData.SystemConflicts.Count;
+                }
+
+                return count > 0;
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OobeWhatsNew"/> class.
@@ -40,7 +85,27 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
-            DataContext = ViewModel;
+            DataContext = this;
+
+            // Subscribe to hotkey conflict updates
+            if (GlobalHotkeyConflictManager.Instance != null)
+            {
+                GlobalHotkeyConflictManager.Instance.ConflictsUpdated += OnConflictsUpdated;
+                GlobalHotkeyConflictManager.Instance.RequestAllConflicts();
+            }
+        }
+
+        private void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
+        {
+            this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+            {
+                AllHotkeyConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
+            });
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private bool GetShowDataDiagnosticsInfoBar()
@@ -184,6 +249,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             ViewModel.LogClosingModuleEvent();
+
+            // Unsubscribe from conflict updates when leaving the page
+            if (GlobalHotkeyConflictManager.Instance != null)
+            {
+                GlobalHotkeyConflictManager.Instance.ConflictsUpdated -= OnConflictsUpdated;
+            }
         }
 
         private void ReleaseNotesMarkdown_LinkClicked(object sender, LinkClickedEventArgs e)

@@ -3,24 +3,28 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
-
+using System.Text.Json;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class ShortcutGuideViewModel : Observable
+    public partial class ShortcutGuideViewModel : PageViewModelBase
     {
+        protected override string ModuleName => ShortcutGuideSettings.ModuleName;
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private ShortcutGuideSettings Settings { get; set; }
-
-        private const string ModuleName = ShortcutGuideSettings.ModuleName;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -77,6 +81,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.ShortcutGuide;
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [OpenShortcutGuide],
+            };
+
+            return hotkeysDict;
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;

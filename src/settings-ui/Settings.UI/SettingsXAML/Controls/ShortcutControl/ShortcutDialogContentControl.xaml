@@ -63,6 +63,13 @@
                     IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                     Severity="Warning" />
+                <InfoBar
+                    Title="Hotkey Conflict"
+                    IsClosable="False"
+                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
+                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
+                    Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
+                    Severity="Warning" />
             </Grid>
             <tk7controls:MarkdownTextBlock
                 x:Uid="InvalidShortcutWarningLabel"

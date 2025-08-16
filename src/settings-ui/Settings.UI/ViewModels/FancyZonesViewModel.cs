@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -13,13 +15,13 @@ using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class FancyZonesViewModel : Observable
+    public partial class FancyZonesViewModel : PageViewModelBase
     {
-        private SettingsUtils SettingsUtils { get; set; }
+        protected override string ModuleName => FancyZonesSettings.ModuleName;
+
+        private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
-
-        private const string ModuleName = FancyZonesSettings.ModuleName;
 
         public ButtonClickCommand LaunchEditorEventHandler { get; set; }
 
@@ -44,7 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Positional = 2,
         }
 
-        public FancyZonesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public FancyZonesViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FancyZonesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -88,8 +90,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
             _systemTheme = Settings.Properties.FancyzonesSystemTheme.Value;
             _showZoneNumber = Settings.Properties.FancyzonesShowZoneNumber.Value;
-            EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
             _windowSwitching = Settings.Properties.FancyzonesWindowSwitching.Value;
+
+            EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
             NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
             PrevTabHotkey = Settings.Properties.FancyzonesPrevTabHotkey.Value;
 
@@ -132,6 +135,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.FancyZones;
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [EditorHotkey, NextTabHotkey, PrevTabHotkey],
+            };
+
+            return hotkeysDict;
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
