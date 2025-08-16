@@ -410,8 +410,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     void IPageContext.ShowException(Exception ex, string? extensionHint)
     {
-        var errorMessage = $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
-        CommandPaletteHost.Instance.Log(errorMessage);
+        var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint ?? "TopLevelCommandManager");
+        CommandPaletteHost.Instance.Log(message);
     }
 
     internal bool IsProviderActive(string id)
