@@ -151,7 +151,7 @@
                         Severity="Informational"
                         Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <InfoBar.ActionButton>
-                            <HyperlinkButton x:Uid="OpenAnimationsSettings" Click="OpenAnimationsSettings_Click" />
+                            <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>
                     </InfoBar>
                     <tkcontrols:SettingsExpander
@@ -370,19 +370,13 @@
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.GlidingCursorActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard
-                                Description="How fast the crosshairs are moving"
-                                Header="Travel speed"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_GlidingCursor_InitialSpeed">
                                 <Slider
                                     Maximum="60"
                                     Minimum="5"
                                     Value="{x:Bind ViewModel.GlidingCursorTravelSpeed, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard
-                                Description="Speed when the crosshairs are slowing down"
-                                Header="Delay speed"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_GlidingCursor_DelaySpeed">
                                 <Slider
                                     Maximum="60"
                                     Minimum="5"
