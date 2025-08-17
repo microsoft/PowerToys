@@ -14,10 +14,6 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:IndexBitFieldToVisibilityConverter x:Key="IndexBitFieldToVisibilityConverter" />
-        <tkconverters:BoolToVisibilityConverter
-            x:Key="BoolToInvertedVisibilityConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
     </Page.Resources>
     <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -153,7 +149,7 @@
                         IsClosable="False"
                         IsOpen="True"
                         Severity="Informational"
-                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <InfoBar.ActionButton>
                             <HyperlinkButton x:Uid="OpenAnimationsSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>
@@ -214,14 +210,23 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="HighlightMode">
+                                <ComboBox
+                                    x:Uid="MouseUtils_MouseHighlighter_SpotlightModeType"
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    SelectedIndex="{x:Bind ViewModel.IsSpotlightModeEnabled, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="HighlightMode_Spotlight_Mode" />
+                                    <ComboBoxItem x:Uid="HighlightMode_Circle_Highlight_Mode" />
+                                </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
                                 <NumberBox

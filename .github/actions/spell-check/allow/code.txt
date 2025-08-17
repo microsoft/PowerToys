@@ -29,11 +29,14 @@ RUS
 AYUV
 bak
 Bcl
+bgcode
+Deflatealgorithm
 exa
 exabyte
 Gbits
 Gbps
 gcode
+Heatshrink
 Mbits
 MBs
 mkv
@@ -271,6 +274,20 @@ mengyuanchen
 
 # DllName
 testhost
+Testably
 
 #Tools
 OIP
+xef
+xes
+PACKAGEVERSIONNUMBER
+APPXMANIFESTVERSION
+
+# MRU lists
+CACHEWRITE
+MRUCMPPROC
+MRUINFO
+REGSTR
+
+# Misc Win32 APIs and PInvokes
+INVOKEIDLIST

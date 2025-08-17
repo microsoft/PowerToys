@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using ManagedCommon;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 // using Wox.Infrastructure.Image;
@@ -43,6 +44,7 @@ public class TerminalPackage
         {
             // Not using wox anymore, TODO: find the right new way to handle this
             // image.UriSource = new Uri(ImageLoader.ErrorIconPath);
+            Logger.LogError($"Logo file not found: {LogoPath}");
         }
 
         return image;

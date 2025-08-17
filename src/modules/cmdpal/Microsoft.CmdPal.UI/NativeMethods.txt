@@ -1,12 +1,13 @@
 GetPhysicallyInstalledSystemMemory
 GlobalMemoryStatusEx
 GetSystemInfo
-CoCreateInstance
 GetForegroundWindow
 SetForegroundWindow
 GetWindowRect
 GetCursorPos
 SetWindowPos
+HWND_TOPMOST
+HWND_BOTTOM
 IsIconic
 RegisterHotKey
 UnregisterHotKey
@@ -21,10 +22,6 @@ SetActiveWindow
 MonitorFromWindow
 GetMonitorInfo
 GetDpiForMonitor
-SHCreateStreamOnFileEx
-CoAllowSetForegroundWindow
-SHCreateStreamOnFileEx
-SHLoadIndirectString
 WM_HOTKEY
 WM_NCLBUTTONDBLCLK
 
@@ -33,13 +30,21 @@ LoadIcon
 WM_USER
 WM_WINDOWPOSCHANGING
 RegisterWindowMessageW
-GetModuleHandleW
 ExtractIconEx
+TRACK_POPUP_MENU_FLAGS
+WM_COMMAND
 WM_RBUTTONUP
 WM_LBUTTONUP
 WM_LBUTTONDBLCLK
+CreatePopupMenu
+TrackPopupMenuEx
+InsertMenu
 
 MessageBox
 DwmGetWindowAttribute
 DwmSetWindowAttribute
 DWM_CLOAKED_APP
+
+CoWaitForMultipleObjects
+INFINITE
+CWMO_FLAGS 

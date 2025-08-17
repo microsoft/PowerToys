@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
   <Import Project="..\..\..\CmdPalVersion.props" />
   <Import Project="CmdPal.pre.props" />
   <Import Project="CmdPal.Branding.props" />
@@ -23,7 +24,14 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+    <PublishAot>true</PublishAot>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 
@@ -37,6 +45,16 @@
     <!-- This disables the auto-generated main, so we can be single-instanced -->
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
+
+  <!-- BODGY: XES Versioning and WinAppSDK get into a fight about the app manifest, which breaks WinAppSDK. -->
+  <Target Name="RearrangeXefVersioningAndWinAppSDKResourceGeneration" DependsOnTargets="GetNewAppManifestValues;CreateWinRTRegistration" BeforeTargets="XesWriteVersionInfoResourceFile">
+    <PropertyGroup>
+      <!-- XES uses this property to store the "final" location of the app manifest, before it erases it.
+           We have to update it to the value WinAppSDK set it to. -->
+      <OriginalApplicationManifest>$(ApplicationManifest.Replace("$(MSBuildProjectDirectory)\",""))</OriginalApplicationManifest>
+    </PropertyGroup>
+    <Message Importance="High" Text="Updated final manifest path to $(OriginalApplicationManifest)" />
+  </Target>
 
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
@@ -61,7 +79,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
@@ -79,10 +97,6 @@
     <PackageReference Include="System.Private.Uri" />
     <PackageReference Include="System.Text.Json" />
 
-    <!-- LOAD BEARING: GeneratePathProperty=true on BOTH the AC dependencies. Don't forget the AdaptiveCardsWorkaround below -->
-    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
-    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
-    <PackageReference Include="AdaptiveCards.Templating" />
     <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
@@ -97,6 +111,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.ClipboardHistory\Microsoft.CmdPal.Ext.ClipboardHistory.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WebSearch\Microsoft.CmdPal.Ext.WebSearch.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
@@ -108,7 +123,6 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Bookmark\Microsoft.CmdPal.Ext.Bookmarks.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Calc\Microsoft.CmdPal.Ext.Calc.csproj" />
-    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.ClipboardHistory\Microsoft.CmdPal.Ext.ClipboardHistory.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Registry\Microsoft.CmdPal.Ext.Registry.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Shell\Microsoft.CmdPal.Ext.Shell.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.TimeDate\Microsoft.CmdPal.Ext.TimeDate.csproj" />
@@ -164,17 +178,6 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
-
-  <!-- <AdaptiveCardsWorkaround> -->
-  <!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
-       Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
-  <PropertyGroup>
-    <AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
-  </PropertyGroup>
-  <ItemGroup>
-    <Content Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" Link="AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" Link="AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
   <ItemGroup>
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

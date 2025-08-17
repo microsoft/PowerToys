@@ -3,6 +3,9 @@
   <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
+
+    <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
+
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions.Toolkit</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -13,6 +16,12 @@
     <ProjectPriFileName>Microsoft.CommandPalette.Extensions.Toolkit.pri</ProjectPriFileName>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+    <SignAssembly>true</SignAssembly>
+    <DelaySign>true</DelaySign>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)..\..\..\..\..\.pipelines\272MSSharedLibSN2048.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -46,11 +55,26 @@
     <Content Include="$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" Link="Microsoft.CommandPalette.Extensions.winmd" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <PropertyGroup>
     <PublishTrimmed>True</PublishTrimmed>
     <PublishAot>True</PublishAot>
 
     <!-- Suppress DynamicallyAccessedMemberTypes.PublicParameterlessConstructor in fallback code path of Windows SDK projection -->
-    <WarningsNotAsErrors>IL2081</WarningsNotAsErrors>
+    <WarningsNotAsErrors>IL2081;$(WarningsNotAsErrors)</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>

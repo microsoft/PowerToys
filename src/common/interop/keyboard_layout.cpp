@@ -117,7 +117,7 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
         }
     }
 
-    // Override special key names like Shift, Ctrl etc because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
+    // Override special key names like Shift, Ctrl, etc. because they don't have unicode mappings and key names like Enter, Space as they appear as "\r", " "
     // To do: localization
     keyboardLayoutMap[VK_CANCEL] = L"Break";
     keyboardLayoutMap[VK_BACK] = L"Backspace";

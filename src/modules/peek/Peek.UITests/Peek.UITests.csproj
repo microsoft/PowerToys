@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <PropertyGroup>
+    <RootNamespace>PowerToys.Peek.UITests</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<OutputType>Library</OutputType>
+    <RunVSTest>false</RunVSTest>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\Peek.UITests\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_2_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_4_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_5_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_6_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_7_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_8_arm64.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_2_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_4_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_5_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_6_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_7_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_8_x64Win11.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_2_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_4_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_5_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_6_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_7_x64Win10.png" />
+	<EmbeddedResource Include="Baseline\PeekFilePreviewTests_TestSingleFilePreview_8_x64Win10.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestAssets\**\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

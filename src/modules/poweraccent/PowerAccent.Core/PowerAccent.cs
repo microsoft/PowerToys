@@ -62,11 +62,11 @@ public partial class PowerAccent : IDisposable
 
     private void SetEvents()
     {
-        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey, TriggerKey trigger ) =>
+        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                ShowToolbar(letterKey, trigger);
+                ShowToolbar(letterKey);
             });
         }));
 
@@ -92,15 +92,23 @@ public partial class PowerAccent : IDisposable
         }));
     }
 
-    private void ShowToolbar(LetterKey letterKey, TriggerKey trigger)
+    private void ShowToolbar(LetterKey letterKey)
     {
         _visible = true;
 
         _characters = GetCharacters(letterKey);
         _characterDescriptions = GetCharacterDescriptions(_characters);
         _showUnicodeDescription = _settingService.ShowUnicodeDescription;
-        OnChangeDisplay?.Invoke(true, _characters);
-        ProcessNextChar(trigger, false);
+
+        Task.Delay(_settingService.InputTime).ContinueWith(
+        t =>
+        {
+            if (_visible)
+            {
+                OnChangeDisplay?.Invoke(true, _characters);
+            }
+        },
+        TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     private string[] GetCharacters(LetterKey letterKey)

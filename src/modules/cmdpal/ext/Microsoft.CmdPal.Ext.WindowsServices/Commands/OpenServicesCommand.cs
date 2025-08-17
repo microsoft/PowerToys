@@ -25,7 +25,7 @@ internal sealed partial class OpenServicesCommand : InvokableCommand
     {
         _serviceResult = serviceResult;
         Name = Resources.wox_plugin_service_open_services;
-        Icon = new IconInfo("\xE8A7"); // OpenInNewWindow icon
+        Icon = Icons.OpenIcon;
     }
 
     public override CommandResult Invoke()

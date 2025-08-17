@@ -28,7 +28,7 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
     public DirectoryExplorePage(string path)
     {
         _path = path;
-        Icon = Icons.FileExplorer;
+        Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Command_Browse;
         Title = path;
     }

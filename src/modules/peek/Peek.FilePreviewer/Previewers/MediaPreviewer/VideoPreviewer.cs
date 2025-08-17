@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
@@ -16,6 +17,8 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
 using Windows.Media.Core;
+using Windows.Media.MediaProperties;
+using Windows.Media.Transcoding;
 using Windows.Storage;
 
 namespace Peek.FilePreviewer.Previewers
@@ -30,6 +33,9 @@ namespace Peek.FilePreviewer.Previewers
 
         [ObservableProperty]
         private Size videoSize;
+
+        [ObservableProperty]
+        private string? missingCodecName;
 
         public VideoPreviewer(IFileSystemItem file)
         {
@@ -56,6 +62,7 @@ namespace Peek.FilePreviewer.Previewers
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
             State = PreviewState.Loading;
+            MissingCodecName = null;
             VideoTask = LoadVideoAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             await VideoTask;
@@ -90,6 +97,35 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
+        private async Task<string> GetMissingCodecAsync(StorageFile? file)
+        {
+            try
+            {
+                var profile = await MediaEncodingProfile.CreateFromFileAsync(file);
+
+                if (profile.Video != null)
+                {
+                    var codecQuery = new CodecQuery();
+                    var decoders = await codecQuery.FindAllAsync(
+                        CodecKind.Video,
+                        CodecCategory.Decoder,
+                        profile.Video.Subtype);
+
+                    return decoders.Count > 0 ? string.Empty : profile.Video.Subtype;
+                }
+                else
+                {
+                    Logger.LogWarning($"No video profile found for file {file?.Path}. Cannot determine codec support.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error checking codec support for file {file?.Path}: {ex.Message}");
+            }
+
+            return string.Empty;
+        }
+
         private Task<bool> LoadVideoAsync(CancellationToken cancellationToken)
         {
             return TaskExtension.RunSafe(async () =>
@@ -98,9 +134,16 @@ namespace Peek.FilePreviewer.Previewers
 
                 var storageFile = await Item.GetStorageItemAsync() as StorageFile;
 
+                var missingCodecName = await GetMissingCodecAsync(storageFile);
+
                 await Dispatcher.RunOnUiThread(() =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
+                    if (!string.IsNullOrEmpty(missingCodecName))
+                    {
+                        MissingCodecName = missingCodecName;
+                    }
 
                     Preview = MediaSource.CreateFromStorageFile(storageFile);
                 });

@@ -11,6 +11,9 @@ parameters:
     default:
       - x64
       - arm64
+  - name: official
+    type: boolean
+    default: false
   - name: codeSign
     type: boolean
     default: false
@@ -50,13 +53,13 @@ parameters:
   - name: runTests
     type: boolean
     default: true
+  - name: buildTests
+    type: boolean
+    default: true
   - name: useVSPreview
     type: boolean
     default: false
   - name: versionNumber
-    type: string
-    default: '0.0.1'
-  - name: cmdPalVersionNumber
     type: string
     default: '0.0.1'
   - name: useLatestWinAppSDK
@@ -78,6 +81,12 @@ parameters:
       - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
       - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
       - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
+  - name: timeoutInMinutes
+    type: number
+    default: 240
+  - name: cancelTimeoutInMinutes
+    type: number
+    default: 1
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -99,7 +108,7 @@ jobs:
             ${{ else }}:
               OutputBuildPlatform: ${{ platform }}
   variables:
-    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\MakeAppx.exe'
+    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x86\MakeAppx.exe'
     # Azure DevOps abhors a vacuum
     # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
     # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
@@ -110,7 +119,7 @@ jobs:
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if eq(parameters.runTests, true) }}:
+    ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
       MSBuildMainBuildTargets: Build
@@ -120,8 +129,8 @@ jobs:
     ${{ else }}:
       RestoreAdditionalProjectSourcesArg: ''
   displayName: Build
-  timeoutInMinutes: 240
-  cancelTimeoutInMinutes: 1
+  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+  cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
   templateContext: # Required when this template is hosted in 1ES PT
     outputs:
     - output: pipelineArtifact
@@ -214,6 +223,11 @@ jobs:
     ${{ if eq(parameters.useVSPreview, true) }}:
       env:
         VCWhereExtraVersionTarget: '-prerelease'
+
+  - ${{ if eq(parameters.official, true) }}:
+    - template: .\steps-setup-versioning.yml
+      parameters:
+        directory: $(build.sourcesdirectory)\src\modules\cmdpal
 
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
@@ -327,6 +341,7 @@ jobs:
           /p:VCRTForwarders-IncludeDebugCRT=false
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml
+          /p:TargetFramework=net9.0-windows10.0.26100.0
           /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
           $(RestoreAdditionalProjectSourcesArg)
         platform: $(BuildPlatform)
@@ -389,18 +404,16 @@ jobs:
         testAssemblyVer2: |
           **\KeyboardManagerEngineTest.dll
           **\KeyboardManagerEditorTest.dll
-          **\UnitTests-CommonLib.dll
-          **\PowerRenameUnitTests.dll
-          **\UnitTests-FancyZones.dll
+          **\*UnitTest*.dll
           !**\obj\**
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - pwsh: |-
-        $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix" | Select -First 1)
-        $PackageFilename = $Package.FullName
-        Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
-      displayName: Locate the MSIX
+  - pwsh: |-
+      $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix" | Select -First 1)
+      $PackageFilename = $Package.FullName
+      Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
+    displayName: Locate the CmdPal MSIX
 
+  - ${{ if eq(parameters.codeSign, true) }}:
     - pwsh: |-
         & "$(MakeAppxPath)" unpack /p "$(CmdPalPackagePath)" /d "$(JobOutputDirectory)/CmdPalPackageContents"
       displayName: Unpack the MSIX for signing
@@ -420,6 +433,8 @@ jobs:
         $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(CmdPalPackagePath)")
         & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/CmdPalPackageContents"
         Copy-Item -Force $PackageFilename "$(CmdPalPackagePath)"
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/CmdPalPackageContents" -ErrorAction:Ignore
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
       displayName: Re-pack the new CmdPal package after signing
 
     - template: steps-esrp-signing.yml
@@ -442,6 +457,10 @@ jobs:
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
+  - pwsh: |-
+      Copy-Item -Verbose -Force "$(CmdPalPackagePath)" "$(JobOutputDirectory)"
+    displayName: Stage the final CmdPal package
+
   - template: steps-build-installer.yml
     parameters:
       codeSign: ${{ parameters.codeSign }}
@@ -459,7 +478,7 @@ jobs:
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
-  # - All .pdbs from any static libs .libs (which were only used during linking)
+  # - All .pdb files from any static libs .libs (which were only used during linking)
   - pwsh: |-
       $binDir = '$(Build.SourcesDirectory)'
       $ImportLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.exp' | ForEach-Object { $_.FullName -Replace "exp$","lib" }
@@ -519,7 +538,7 @@ jobs:
     displayName: Stage GPO files
 
   # Running the tests may result in future jobs consuming artifacts out of this build
-  - ${{ if eq(parameters.runTests, true) }}:
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
     - task: CopyFiles@2
       displayName: Stage entire build output
       inputs:

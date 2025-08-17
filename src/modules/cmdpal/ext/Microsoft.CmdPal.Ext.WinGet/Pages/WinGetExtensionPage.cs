@@ -34,17 +34,13 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     private IEnumerable<CatalogPackage>? _results;
 
-    public static IconInfo WinGetIcon { get; } = IconHelpers.FromRelativePath("Assets\\WinGet.svg");
-
-    public static IconInfo ExtensionsIcon { get; } = IconHelpers.FromRelativePath("Assets\\Extension.svg");
-
     public static string ExtensionsTag => "windows-commandpalette-extension";
 
     private readonly StatusMessage _errorMessage = new() { State = MessageState.Error };
 
     public WinGetExtensionPage(string tag = "")
     {
-        Icon = tag == ExtensionsTag ? ExtensionsIcon : WinGetIcon;
+        Icon = tag == ExtensionsTag ? Icons.ExtensionsIcon : Icons.WinGetIcon;
         Name = Properties.Resources.winget_page_name;
         _tag = tag;
         ShowDetails = true;
@@ -57,7 +53,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         {
             // emptySearchForTag ===
             // we don't have results yet, we haven't typed anything, and we're searching for a tag
-            bool emptySearchForTag = _results == null &&
+            var emptySearchForTag = _results == null &&
                 string.IsNullOrEmpty(SearchText) &&
                 HasTag;
 
@@ -78,7 +74,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         EmptyContent = new CommandItem(new NoOpCommand())
         {
-            Icon = WinGetIcon,
+            Icon = Icons.WinGetIcon,
             Title = (string.IsNullOrEmpty(SearchText) && !HasTag) ?
                             Properties.Resources.winget_placeholder_text :
                             Properties.Resources.winget_no_packages_found,
@@ -116,8 +112,22 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         IsLoading = true;
 
-        // Save the latest search task
-        _currentSearchTask = DoSearchAsync(newSearch, cancellationToken);
+        try
+        {
+            // Save the latest search task
+            _currentSearchTask = DoSearchAsync(newSearch, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // DO NOTHING HERE
+            return;
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            ExtensionHost.LogMessage($"[WinGet] DoUpdateSearchText throw exception: {ex.Message}");
+            return;
+        }
 
         // Await the task to ensure only the latest one gets processed
         _ = ProcessSearchResultsAsync(_currentSearchTask, newSearch);
@@ -175,7 +185,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             return [];
         }
 
-        string searchDebugText = $"{query}{(HasTag ? "+" : string.Empty)}{_tag}";
+        var searchDebugText = $"{query}{(HasTag ? "+" : string.Empty)}{_tag}";
         Logger.LogDebug($"Starting search for '{searchDebugText}'");
         HashSet<CatalogPackage> results = new(new PackageIdCompare());
 

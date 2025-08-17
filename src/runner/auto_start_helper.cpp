@@ -5,22 +5,24 @@
 
 #include <comdef.h>
 #include <taskschd.h>
+#include <common/logger/logger.h>
 
 // Helper macros from wix.
-// TODO: use "s" and "..." parameters to report errors from these functions.
 #define ExitOnFailure(x, s, ...) \
     if (FAILED(x))               \
     {                            \
+        Logger::error(s, ##__VA_ARGS__); \
         goto LExit;              \
     }
 #define ExitWithLastError(x, s, ...)       \
     {                                      \
-        DWORD Dutil_er = ::GetLastError(); \
-        x = HRESULT_FROM_WIN32(Dutil_er);  \
+        DWORD util_err = ::GetLastError(); \
+        x = HRESULT_FROM_WIN32(util_err);  \
         if (!FAILED(x))                    \
         {                                  \
             x = E_FAIL;                    \
         }                                  \
+        Logger::error(s, ##__VA_ARGS__);   \
         goto LExit;                        \
     }
 #define ExitFunction() \
@@ -52,11 +54,11 @@ bool create_auto_start_task_for_this_user(bool runElevated)
     // Get the Domain/Username for the trigger.
     if (!GetEnvironmentVariable(L"USERNAME", username, USERNAME_LEN))
     {
-        ExitWithLastError(hr, "Getting username failed: %x", hr);
+        ExitWithLastError(hr, "Getting username failed: {:x}", hr);
     }
     if (!GetEnvironmentVariable(L"USERDOMAIN", username_domain, USERNAME_DOMAIN_LEN))
     {
-        ExitWithLastError(hr, "Getting the user's domain failed: %x", hr);
+        ExitWithLastError(hr, "Getting the user's domain failed: {:x}", hr);
     }
     wcscat_s(username_domain, L"\\");
     wcscat_s(username_domain, username);
@@ -76,11 +78,11 @@ bool create_auto_start_task_for_this_user(bool runElevated)
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
                           reinterpret_cast<void**>(&pService));
-    ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
+    ExitOnFailure(hr, "Failed to create an instance of ITaskService: {:x}", hr);
 
     // Connect to the task service.
     hr = pService->Connect(_variant_t(), _variant_t(), _variant_t(), _variant_t());
-    ExitOnFailure(hr, "ITaskService::Connect failed: %x", hr);
+    ExitOnFailure(hr, "ITaskService::Connect failed: {:x}", hr);
 
     // ------------------------------------------------------
     // Get the PowerToys task folder. Creates it if it doesn't exist.
@@ -90,12 +92,12 @@ bool create_auto_start_task_for_this_user(bool runElevated)
         // Folder doesn't exist. Get the Root folder and create the PowerToys subfolder.
         ITaskFolder* pRootFolder = NULL;
         hr = pService->GetFolder(_bstr_t(L"\\"), &pRootFolder);
-        ExitOnFailure(hr, "Cannot get Root Folder pointer: %x", hr);
+        ExitOnFailure(hr, "Cannot get Root Folder pointer: {:x}", hr);
         hr = pRootFolder->CreateFolder(_bstr_t(L"\\PowerToys"), _variant_t(L""), &pTaskFolder);
         if (FAILED(hr))
         {
             pRootFolder->Release();
-            ExitOnFailure(hr, "Cannot create PowerToys task folder: %x", hr);
+            ExitOnFailure(hr, "Cannot create PowerToys task folder: {:x}", hr);
         }
     }
 
@@ -118,47 +120,47 @@ bool create_auto_start_task_for_this_user(bool runElevated)
 
     // Create the task builder object to create the task.
     hr = pService->NewTask(0, &pTask);
-    ExitOnFailure(hr, "Failed to create a task definition: %x", hr);
+    ExitOnFailure(hr, "Failed to create a task definition: {:x}", hr);
 
     // ------------------------------------------------------
     // Get the registration info for setting the identification.
     hr = pTask->get_RegistrationInfo(&pRegInfo);
-    ExitOnFailure(hr, "Cannot get identification pointer: %x", hr);
+    ExitOnFailure(hr, "Cannot get identification pointer: {:x}", hr);
     hr = pRegInfo->put_Author(_bstr_t(username_domain));
-    ExitOnFailure(hr, "Cannot put identification info: %x", hr);
+    ExitOnFailure(hr, "Cannot put identification info: {:x}", hr);
 
     // ------------------------------------------------------
     // Create the settings for the task
     hr = pTask->get_Settings(&pSettings);
-    ExitOnFailure(hr, "Cannot get settings pointer: %x", hr);
+    ExitOnFailure(hr, "Cannot get settings pointer: {:x}", hr);
 
     hr = pSettings->put_StartWhenAvailable(VARIANT_FALSE);
-    ExitOnFailure(hr, "Cannot put_StartWhenAvailable setting info: %x", hr);
+    ExitOnFailure(hr, "Cannot put_StartWhenAvailable setting info: {:x}", hr);
     hr = pSettings->put_StopIfGoingOnBatteries(VARIANT_FALSE);
-    ExitOnFailure(hr, "Cannot put_StopIfGoingOnBatteries setting info: %x", hr);
+    ExitOnFailure(hr, "Cannot put_StopIfGoingOnBatteries setting info: {:x}", hr);
     hr = pSettings->put_ExecutionTimeLimit(_bstr_t(L"PT0S")); //Unlimited
-    ExitOnFailure(hr, "Cannot put_ExecutionTimeLimit setting info: %x", hr);
+    ExitOnFailure(hr, "Cannot put_ExecutionTimeLimit setting info: {:x}", hr);
     hr = pSettings->put_DisallowStartIfOnBatteries(VARIANT_FALSE);
-    ExitOnFailure(hr, "Cannot put_DisallowStartIfOnBatteries setting info: %x", hr);
+    ExitOnFailure(hr, "Cannot put_DisallowStartIfOnBatteries setting info: {:x}", hr);
     hr = pSettings->put_Priority(4);
-    ExitOnFailure(hr, "Cannot put_Priority setting info : %x", hr);
+    ExitOnFailure(hr, "Cannot put_Priority setting info : {:x}", hr);
 
     // ------------------------------------------------------
     // Get the trigger collection to insert the logon trigger.
     hr = pTask->get_Triggers(&pTriggerCollection);
-    ExitOnFailure(hr, "Cannot get trigger collection: %x", hr);
+    ExitOnFailure(hr, "Cannot get trigger collection: {:x}", hr);
 
     // Add the logon trigger to the task.
     {
         ITrigger* pTrigger = NULL;
         ILogonTrigger* pLogonTrigger = NULL;
         hr = pTriggerCollection->Create(TASK_TRIGGER_LOGON, &pTrigger);
-        ExitOnFailure(hr, "Cannot create the trigger: %x", hr);
+        ExitOnFailure(hr, "Cannot create the trigger: {:x}", hr);
 
         hr = pTrigger->QueryInterface(
             IID_ILogonTrigger, reinterpret_cast<void**>(&pLogonTrigger));
         pTrigger->Release();
-        ExitOnFailure(hr, "QueryInterface call failed for ILogonTrigger: %x", hr);
+        ExitOnFailure(hr, "QueryInterface call failed for ILogonTrigger: {:x}", hr);
 
         hr = pLogonTrigger->put_Id(_bstr_t(L"Trigger1"));
 
@@ -170,7 +172,7 @@ bool create_auto_start_task_for_this_user(bool runElevated)
         // The specified user must be a user on this computer.
         hr = pLogonTrigger->put_UserId(_bstr_t(username_domain));
         pLogonTrigger->Release();
-        ExitOnFailure(hr, "Cannot add user ID to logon trigger: %x", hr);
+        ExitOnFailure(hr, "Cannot add user ID to logon trigger: {:x}", hr);
     }
 
     // ------------------------------------------------------
@@ -182,23 +184,23 @@ bool create_auto_start_task_for_this_user(bool runElevated)
 
         // Get the task action collection pointer.
         hr = pTask->get_Actions(&pActionCollection);
-        ExitOnFailure(hr, "Cannot get Task collection pointer: %x", hr);
+        ExitOnFailure(hr, "Cannot get Task collection pointer: {:x}", hr);
 
         // Create the action, specifying that it is an executable action.
         hr = pActionCollection->Create(TASK_ACTION_EXEC, &pAction);
         pActionCollection->Release();
-        ExitOnFailure(hr, "Cannot create the action: %x", hr);
+        ExitOnFailure(hr, "Cannot create the action: {:x}", hr);
 
         // QI for the executable task pointer.
         hr = pAction->QueryInterface(
             IID_IExecAction, reinterpret_cast<void**>(&pExecAction));
         pAction->Release();
-        ExitOnFailure(hr, "QueryInterface call failed for IExecAction: %x", hr);
+        ExitOnFailure(hr, "QueryInterface call failed for IExecAction: {:x}", hr);
 
         // Set the path of the executable to PowerToys (passed as CustomActionData).
         hr = pExecAction->put_Path(_bstr_t(wszExecutablePath));
         pExecAction->Release();
-        ExitOnFailure(hr, "Cannot set path of executable: %x", hr);
+        ExitOnFailure(hr, "Cannot set path of executable: {:x}", hr);
     }
 
     // ------------------------------------------------------
@@ -206,7 +208,7 @@ bool create_auto_start_task_for_this_user(bool runElevated)
     {
         IPrincipal* pPrincipal = NULL;
         hr = pTask->get_Principal(&pPrincipal);
-        ExitOnFailure(hr, "Cannot get principal pointer: %x", hr);
+        ExitOnFailure(hr, "Cannot get principal pointer: {:x}", hr);
 
         // Set up principal information:
         hr = pPrincipal->put_Id(_bstr_t(L"Principal1"));
@@ -224,7 +226,7 @@ bool create_auto_start_task_for_this_user(bool runElevated)
             hr = pPrincipal->put_RunLevel(_TASK_RUNLEVEL::TASK_RUNLEVEL_LUA);
         }
         pPrincipal->Release();
-        ExitOnFailure(hr, "Cannot put principal run level: %x", hr);
+        ExitOnFailure(hr, "Cannot put principal run level: {:x}", hr);
     }
     // ------------------------------------------------------
     //  Save the task in the PowerToys folder.
@@ -239,7 +241,7 @@ bool create_auto_start_task_for_this_user(bool runElevated)
             TASK_LOGON_INTERACTIVE_TOKEN,
             SDDL_FULL_ACCESS_FOR_EVERYONE,
             &pRegisteredTask);
-        ExitOnFailure(hr, "Error saving the Task : %x", hr);
+        ExitOnFailure(hr, "Error saving the Task : {:x}", hr);
     }
 
 LExit:
@@ -275,7 +277,7 @@ bool delete_auto_start_task_for_this_user()
     // Get the Username for the task.
     if (!GetEnvironmentVariable(L"USERNAME", username, USERNAME_LEN))
     {
-        ExitWithLastError(hr, "Getting username failed: %x", hr);
+        ExitWithLastError(hr, "Getting username failed: {:x}", hr);
     }
 
     // Task Name.
@@ -289,11 +291,11 @@ bool delete_auto_start_task_for_this_user()
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
                           reinterpret_cast<void**>(&pService));
-    ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
+    ExitOnFailure(hr, "Failed to create an instance of ITaskService: {:x}", hr);
 
     // Connect to the task service.
     hr = pService->Connect(_variant_t(), _variant_t(), _variant_t(), _variant_t());
-    ExitOnFailure(hr, "ITaskService::Connect failed: %x", hr);
+    ExitOnFailure(hr, "ITaskService::Connect failed: {:x}", hr);
 
     // ------------------------------------------------------
     // Get the PowerToys task folder.
@@ -340,7 +342,7 @@ bool is_auto_start_task_active_for_this_user()
     // Get the Username for the task.
     if (!GetEnvironmentVariable(L"USERNAME", username, USERNAME_LEN))
     {
-        ExitWithLastError(hr, "Getting username failed: %x", hr);
+        ExitWithLastError(hr, "Getting username failed: {:x}", hr);
     }
 
     // Task Name.
@@ -354,16 +356,16 @@ bool is_auto_start_task_active_for_this_user()
                           CLSCTX_INPROC_SERVER,
                           IID_ITaskService,
                           reinterpret_cast<void**>(&pService));
-    ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
+    ExitOnFailure(hr, "Failed to create an instance of ITaskService: {:x}", hr);
 
     // Connect to the task service.
     hr = pService->Connect(_variant_t(), _variant_t(), _variant_t(), _variant_t());
-    ExitOnFailure(hr, "ITaskService::Connect failed: %x", hr);
+    ExitOnFailure(hr, "ITaskService::Connect failed: {:x}", hr);
 
     // ------------------------------------------------------
     // Get the PowerToys task folder.
     hr = pService->GetFolder(_bstr_t(L"\\PowerToys"), &pTaskFolder);
-    ExitOnFailure(hr, "ITaskFolder doesn't exist: %x", hr);
+    ExitOnFailure(hr, "ITaskFolder doesn't exist: {:x}", hr);
 
     // ------------------------------------------------------
     // If the task exists, disable.

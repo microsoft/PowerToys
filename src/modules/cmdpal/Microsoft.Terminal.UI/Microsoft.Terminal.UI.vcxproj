@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup>
     <PathToRoot>..\..\..\..\</PathToRoot>
-    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.7.250401001</WasdkNuget>
+    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.7.250513003</WasdkNuget>
   </PropertyGroup>
   <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props')" />
   <PropertyGroup Label="Globals">
@@ -19,13 +19,10 @@
     <AppContainerApplication>false</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.22621.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.26100.0</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <ItemGroup>
-    <ResourceCompile Include="version.rc" />
-  </ItemGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM64">
       <Configuration>Debug</Configuration>
@@ -156,7 +153,9 @@
     <ClInclude Include="IconPathConverter.h">
       <DependentUpon>IconPathConverter.idl</DependentUpon>
     </ClInclude>
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="RunHistory.h">
+      <DependentUpon>RunHistory.idl</DependentUpon>
+    </ClInclude>
     <ClInclude Include="ResourceString.h">
       <DependentUpon>ResourceString.idl</DependentUpon>
     </ClInclude>
@@ -172,6 +171,9 @@
     <ClCompile Include="IconPathConverter.cpp">
       <DependentUpon>IconPathConverter.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="RunHistory.cpp">
+      <DependentUpon>RunHistory.idl</DependentUpon>
+    </ClCompile>
     <ClCompile Include="ResourceString.cpp">
       <DependentUpon>ResourceString.idl</DependentUpon>
     </ClCompile>
@@ -180,6 +182,7 @@
   <ItemGroup>
     <Midl Include="Converters.idl" />
     <Midl Include="IconPathConverter.idl" />
+    <Midl Include="RunHistory.idl" />
     <Midl Include="IDirectKeyListener.idl" />
     <Midl Include="ResourceString.idl" />
   </ItemGroup>
@@ -205,9 +208,4 @@
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\common\version\version.vcxproj">
-      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
-    </ProjectReference>
-  </ItemGroup>
 </Project>

@@ -4,8 +4,8 @@
 
 using System;
 using System.Linq;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
-using Microsoft.CmdPal.Ext.Apps.Storage;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Windows.ApplicationModel;
 
@@ -92,9 +92,10 @@ internal sealed partial class PackageRepository : ListRepository<UWPApplication>
 
         // InitializeAppInfo will throw if there is no AppxManifest.xml for the package.
         // Note there are sometimes multiple packages per product and this doesn't necessarily mean that we haven't found the app.
-        // eg. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
-        catch (System.IO.FileNotFoundException)
+        // e.g. "Could not find file 'C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminalPreview_2020.616.45.0_neutral_~_8wekyb3d8bbwe\\AppxManifest.xml'."
+        catch (System.IO.FileNotFoundException ex)
         {
+            Logger.LogError(ex.Message);
         }
     }
 
@@ -114,11 +115,7 @@ internal sealed partial class PackageRepository : ListRepository<UWPApplication>
 
     public void IndexPrograms()
     {
-        var windows10 = new Version(10, 0);
-        var support = Environment.OSVersion.Version.Major >= windows10.Major;
-
-        var applications = support ? Programs.UWP.All() : Array.Empty<UWPApplication>();
-
+        var applications = UWP.All();
         SetList(applications);
     }
 }

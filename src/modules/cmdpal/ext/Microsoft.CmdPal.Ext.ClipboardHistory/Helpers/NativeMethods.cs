@@ -8,7 +8,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 
-internal static class NativeMethods
+public static partial class NativeMethods
 {
     [StructLayout(LayoutKind.Sequential)]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "Matching Native Structure")]
@@ -98,4 +98,10 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     internal static extern bool GetCursorPos(out PointInter lpPoint);
+
+    [LibraryImport("ole32.dll")]
+    internal static partial int CoInitialize(IntPtr pvReserved);
+
+    [LibraryImport("ole32.dll")]
+    internal static partial void CoUninitialize();
 }

@@ -2,14 +2,14 @@
 # Reference: https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/readme.md#compiling-powertoys
 properties:
   resources:
-    - resource: Microsoft.Windows.Developer/DeveloperMode
+    - resource: Microsoft.Windows.Settings/WindowsSettings
       directives:
         description: Enable Developer Mode
         allowPrerelease: true
         # Requires elevation for the set operation
         securityContext: elevated
       settings:
-        Ensure: Present
+        DeveloperMode: true
     - resource: Microsoft.WinGet.DSC/WinGetPackage
       id: vsPackage
       directives:

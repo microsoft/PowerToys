@@ -2,7 +2,7 @@
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/SettingsGroup/SettingsGroup.xaml" />
-        <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/IsEnabledTextBlock/IsEnabledTextBlock.xaml" />
-        <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/FlyoutMenuButton/FlyoutMenuButton.xaml" />
+        <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/IsEnabledTextBlock.xaml" />
+        <ResourceDictionary Source="ms-appx:///SettingsXAML/Controls/FlyoutMenuButton.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

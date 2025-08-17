@@ -70,20 +70,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Where should the new extension be created? This path will be created if it doesn&apos;t exist.
+        ///   Looks up a localized string similar to Select the folder where the new extension will be created. The path will be created if it doesn&apos;t exist..
         /// </summary>
         public static string builtin_create_extension_directory_description {
             get {
                 return ResourceManager.GetString("builtin_create_extension_directory_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Output path.
-        /// </summary>
-        public static string builtin_create_extension_directory_header {
-            get {
-                return ResourceManager.GetString("builtin_create_extension_directory_header", resourceCulture);
             }
         }
         
@@ -106,20 +97,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The name of your extension as users will see it..
+        ///   Looks up a localized string similar to The name of the extension as it will appear to users..
         /// </summary>
         public static string builtin_create_extension_display_name_description {
             get {
                 return ResourceManager.GetString("builtin_create_extension_display_name_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Display name.
-        /// </summary>
-        public static string builtin_create_extension_display_name_header {
-            get {
-                return ResourceManager.GetString("builtin_create_extension_display_name_header", resourceCulture);
             }
         }
         
@@ -151,20 +133,11 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This is the name of your new extension project. It should be a valid C# class name. Best practice is to also include the word &apos;Extension&apos; in the name..
+        ///   Looks up a localized string similar to Enter a valid C# class name for the new extension project. It&apos;s recommended to include the word &quot;Extension&quot; in the name..
         /// </summary>
         public static string builtin_create_extension_name_description {
             get {
                 return ResourceManager.GetString("builtin_create_extension_name_description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Extension name.
-        /// </summary>
-        public static string builtin_create_extension_name_header {
-            get {
-                return ResourceManager.GetString("builtin_create_extension_name_header", resourceCulture);
             }
         }
         
@@ -178,7 +151,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extension name is required, without spaces.
+        ///   Looks up a localized string similar to Extension name is required and must be a valid C# identifier (start with a letter or underscore, followed by letters, numbers, or underscores).
         /// </summary>
         public static string builtin_create_extension_name_required {
             get {
@@ -205,16 +178,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use this page to create a new extension project..
-        /// </summary>
-        public static string builtin_create_extension_page_text {
-            get {
-                return ResourceManager.GetString("builtin_create_extension_page_text", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Create your new extension.
+        ///   Looks up a localized string similar to Create a new extension.
         /// </summary>
         public static string builtin_create_extension_page_title {
             get {
@@ -354,6 +318,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string builtin_log_title {
             get {
                 return ResourceManager.GetString("builtin_log_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search for apps, files and commands....
+        /// </summary>
+        public static string builtin_main_list_page_searchbar_placeholder {
+            get {
+                return ResourceManager.GetString("builtin_main_list_page_searchbar_placeholder", resourceCulture);
             }
         }
         

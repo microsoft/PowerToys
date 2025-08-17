@@ -10,9 +10,9 @@ namespace Microsoft.CmdPal.Ext.System.Pages;
 
 public sealed partial class SystemCommandPage : ListPage
 {
-    private readonly SettingsManager _settingsManager;
+    private readonly ISettingsInterface _settingsManager;
 
-    public SystemCommandPage(SettingsManager settingsManager)
+    public SystemCommandPage(ISettingsInterface settingsManager)
     {
         Title = Resources.Microsoft_plugin_ext_system_page_title;
         Name = Resources.Microsoft_plugin_command_name_open;

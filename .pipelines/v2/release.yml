@@ -20,16 +20,6 @@ parameters:
     type: string
     default: '0.0.1'
 
-  - name: cmdPalVersionNumber
-    displayName: "Command Palette Version Number"
-    type: string
-    default: '0.0.1'
-
-  - name: cmdPalSdkVersionNumber
-    displayName: "Command Palette SDK Version Number"
-    type: string
-    default: '0.0.1'
-
   - name: buildConfigurations
     displayName: "Build Configurations"
     type: object
@@ -48,7 +38,15 @@ parameters:
     displayName: "Build Using Visual Studio Preview"
     default: false
 
+  - name: enableAOT
+    type: boolean
+    displayName: "Enable AOT (Ahead-of-Time) Compilation for CmdPal"
+    default: true
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+variables:
+  - template: templates/variables-nuget-package-version.yml
 
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
@@ -88,8 +86,8 @@ extends:
               buildPlatforms: ${{ parameters.buildPlatforms }}
               buildConfigurations: ${{ parameters.buildConfigurations }}
               versionNumber: ${{ parameters.versionNumber }}
-              cmdPalVersionNumber: ${{ parameters.cmdPalVersionNumber }}
               publishArtifacts: false # 1ES PT handles publication for us.
+              official: true
               codeSign: true
               runTests: false
               signingIdentity:
@@ -102,20 +100,22 @@ extends:
                 useManagedIdentity: $(SigningUseManagedIdentity)
                 clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
-              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=${{ parameters.enableAOT }}
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
-                    .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment '' -cmdPalVersionNumber '${{ parameters.cmdPalVersionNumber }}'
+                    .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
                   displayName: Prepare versioning
 
                 # Prepare the localizations and telemetry config before the release build
                 - template: .pipelines/v2/templates/steps-fetch-and-prepare-localizations.yml@self
 
-                - script: |
-                    call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
-                    move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
-                    move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
+                - pwsh: |-
+                    $ErrorActionPreference = 'Stop'
+                    $PSNativeCommandUseErrorActionPreference = $true
+                    & nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config
+                    Move-Item -Force -Verbose "Microsoft.PowerToys.Telemetry.*\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h"
+                    Move-Item -Force -Verbose "Microsoft.PowerToys.Telemetry.*\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs"
                   displayName: Emplace telemetry files
 
       - stage: Build_SDK
@@ -128,8 +128,8 @@ extends:
                 name: SHINE-INT-L
                 image: SHINE-VS17-Latest
                 os: windows
+              official: true
               codeSign: true
-              sdkVersionNumber: ${{ parameters.cmdPalSdkVersionNumber }}
               signingIdentity:
                 serviceName: $(SigningServiceName)
                 appId: $(SigningAppId)

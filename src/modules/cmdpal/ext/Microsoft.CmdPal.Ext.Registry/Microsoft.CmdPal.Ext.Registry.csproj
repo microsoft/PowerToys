@@ -10,10 +10,12 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>Microsoft.CmdPal.Ext.Registry.pri</ProjectPriFileName>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
   <ItemGroup>

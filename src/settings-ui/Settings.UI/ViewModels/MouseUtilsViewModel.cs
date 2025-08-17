@@ -72,6 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             string alwaysColor = MouseHighlighterSettingsConfig.Properties.AlwaysColor.Value;
             _highlighterAlwaysColor = !string.IsNullOrEmpty(alwaysColor) ? alwaysColor : "#00FF0000";
+            _isSpotlightModeEnabled = MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value;
 
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
@@ -560,6 +561,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsSpotlightModeEnabled
+        {
+            get => _isSpotlightModeEnabled;
+            set
+            {
+                if (_isSpotlightModeEnabled != value)
+                {
+                    _isSpotlightModeEnabled = value;
+                    MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
         public int MouseHighlighterRadius
         {
             get
@@ -959,6 +974,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _highlighterLeftButtonClickColor;
         private string _highlighterRightButtonClickColor;
         private string _highlighterAlwaysColor;
+        private bool _isSpotlightModeEnabled;
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;
