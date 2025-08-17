@@ -155,7 +155,7 @@
                         Severity="Informational"
                         Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <InfoBar.ActionButton>
-                            <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
+                            <HyperlinkButton x:Uid="OpenAnimationsSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>
                     </InfoBar>
                     <tkcontrols:SettingsExpander
@@ -364,25 +364,26 @@
                         Header="Gliding cursor"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE7;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
-                        <ToggleSwitch />
+                        <!-- Single content element: Shortcut picker -->
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.GlidingCursorActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Description="How fast the crosshairs are moving"
                                 Header="Travel speed"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}">
                                 <Slider
-                                    Maximum="10"
-                                    Minimum="0"
-                                    Value="5" />
+                                    Maximum="50"
+                                    Minimum="5"
+                                    Value="{x:Bind ViewModel.GlidingCursorTravelSpeed, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Description="Speed when the crosshairs are slowing down"
                                 Header="Delay speed"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
                                 <Slider
-                                    Maximum="10"
-                                    Minimum="0"
-                                    Value="5" />
+                                    Maximum="50"
+                                    Minimum="5"
+                                    Value="{x:Bind ViewModel.GlidingCursorDelaySpeed, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

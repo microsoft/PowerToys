@@ -872,6 +872,49 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int GlidingCursorTravelSpeed
+        {
+            get => MousePointerCrosshairsSettingsConfig.Properties.GlidingTravelSpeed.Value;
+            set
+            {
+                if (MousePointerCrosshairsSettingsConfig.Properties.GlidingTravelSpeed.Value != value)
+                {
+                    MousePointerCrosshairsSettingsConfig.Properties.GlidingTravelSpeed.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
+        public int GlidingCursorDelaySpeed
+        {
+            get => MousePointerCrosshairsSettingsConfig.Properties.GlidingDelaySpeed.Value;
+            set
+            {
+                if (MousePointerCrosshairsSettingsConfig.Properties.GlidingDelaySpeed.Value != value)
+                {
+                    MousePointerCrosshairsSettingsConfig.Properties.GlidingDelaySpeed.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings GlidingCursorActivationShortcut
+        {
+            get
+            {
+                return MousePointerCrosshairsSettingsConfig.Properties.GlidingCursorActivationShortcut;
+            }
+
+            set
+            {
+                if (MousePointerCrosshairsSettingsConfig.Properties.GlidingCursorActivationShortcut != value)
+                {
+                    MousePointerCrosshairsSettingsConfig.Properties.GlidingCursorActivationShortcut = value ?? MousePointerCrosshairsSettingsConfig.Properties.DefaultGlidingCursorActivationShortcut;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMousePointerCrosshairsPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);

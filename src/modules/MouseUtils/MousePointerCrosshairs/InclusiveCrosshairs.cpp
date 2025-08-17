@@ -27,6 +27,73 @@ struct InclusiveCrosshairs
     void SwitchActivationMode();
     void ApplySettings(InclusiveCrosshairsSettings& settings, bool applyToRuntimeObjects);
 
+public:
+    // Allow external callers to request a position update (thread-safe enqueue)
+    static void RequestUpdatePosition()
+    {
+        if (instance != nullptr)
+        {
+            auto dispatcherQueue = instance->m_dispatcherQueueController.DispatcherQueue();
+            dispatcherQueue.TryEnqueue([]() {
+                if (instance != nullptr)
+                {
+                    instance->UpdateCrosshairsPosition();
+                }
+            });
+        }
+    }
+
+    static void EnsureOn()
+    {
+        if (instance != nullptr)
+        {
+            auto dispatcherQueue = instance->m_dispatcherQueueController.DispatcherQueue();
+            dispatcherQueue.TryEnqueue([]() {
+                if (instance != nullptr && !instance->m_drawing)
+                {
+                    instance->StartDrawing();
+                }
+            });
+        }
+    }
+
+    static void EnsureOff()
+    {
+        if (instance != nullptr)
+        {
+            auto dispatcherQueue = instance->m_dispatcherQueueController.DispatcherQueue();
+            dispatcherQueue.TryEnqueue([]() {
+                if (instance != nullptr && instance->m_drawing)
+                {
+                    instance->StopDrawing();
+                }
+            });
+        }
+    }
+
+    static void SetExternalControl(bool enabled)
+    {
+        if (instance != nullptr)
+        {
+            auto dispatcherQueue = instance->m_dispatcherQueueController.DispatcherQueue();
+            dispatcherQueue.TryEnqueue([enabled]() {
+                if (instance != nullptr)
+                {
+                    instance->m_externalControl = enabled;
+                    if (enabled && instance->m_mouseHook)
+                    {
+                        UnhookWindowsHookEx(instance->m_mouseHook);
+                        instance->m_mouseHook = NULL;
+                    }
+                    else if (!enabled && instance->m_drawing && !instance->m_mouseHook)
+                    {
+                        instance->m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, instance->m_hinstance, 0);
+                    }
+                }
+            });
+        }
+    }
+
 private:
     enum class MouseButton
     {
@@ -69,6 +136,7 @@ private:
     bool m_drawing = false;
     bool m_destroyed = false;
     bool m_hiddenCursor = false;
+    bool m_externalControl = false;
     void SetAutoHideTimer() noexcept;
 
     // Configurable Settings
@@ -264,9 +332,12 @@ LRESULT CALLBACK InclusiveCrosshairs::MouseHookProc(int nCode, WPARAM wParam, LP
     if (nCode >= 0)
     {
         MSLLHOOKSTRUCT* hookData = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-        if (wParam == WM_MOUSEMOVE)
+        if (instance && !instance->m_externalControl)
         {
-            instance->UpdateCrosshairsPosition();
+            if (wParam == WM_MOUSEMOVE)
+            {
+                instance->UpdateCrosshairsPosition();
+            }
         }
     }
     return CallNextHookEx(0, nCode, wParam, lParam);
@@ -525,6 +596,26 @@ void InclusiveCrosshairsDisable()
 bool InclusiveCrosshairsIsEnabled()
 {
     return (InclusiveCrosshairs::instance != nullptr);
+}
+
+void InclusiveCrosshairsRequestUpdatePosition()
+{
+    InclusiveCrosshairs::RequestUpdatePosition();
+}
+
+void InclusiveCrosshairsEnsureOn()
+{
+    InclusiveCrosshairs::EnsureOn();
+}
+
+void InclusiveCrosshairsEnsureOff()
+{
+    InclusiveCrosshairs::EnsureOff();
+}
+
+void InclusiveCrosshairsSetExternalControl(bool enabled)
+{
+    InclusiveCrosshairs::SetExternalControl(enabled);
 }
 
 int InclusiveCrosshairsMain(HINSTANCE hInstance, InclusiveCrosshairsSettings& settings)
