@@ -652,9 +652,9 @@ private:
             }
             catch (...)
             {
-                Logger::warn("Failed to initialize gliding delay speed from settings. Using default 25.");
-                m_slowHSpeed = 25;
-                m_slowVSpeed = 25;
+                Logger::warn("Failed to initialize gliding delay speed from settings. Using default 5.");
+                m_slowHSpeed = 5;
+                m_slowVSpeed = 5;
             }
         }
         else
@@ -681,7 +681,7 @@ private:
             m_glidingHotkey.alt = true;
             m_glidingHotkey.ctrl = false;
             m_glidingHotkey.shift = false;
-            m_glidingHotkey.key = 'G';
+            m_glidingHotkey.key = '.';
         }
         m_inclusiveCrosshairsSettings = inclusiveCrosshairsSettings;
     }
