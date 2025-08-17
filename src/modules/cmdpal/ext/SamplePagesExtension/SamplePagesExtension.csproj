@@ -62,10 +62,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Disable trimming/AOT/single-file to avoid ILLink and runtime pack conflicts for this sample project -->
-    <PublishTrimmed>false</PublishTrimmed>
-    <PublishSingleFile>false</PublishSingleFile>
-    <PublishAot>false</PublishAot>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
 </Project>
