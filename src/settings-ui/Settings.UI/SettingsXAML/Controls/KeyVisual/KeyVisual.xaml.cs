@@ -100,11 +100,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 switch (key)
                 {
                     case "Copilot":
-                        _keyPresenter.Style = (Style)Application.Current.Resources["OfficeKeyCharPresenterStyle"];
+                        _keyPresenter.Style = (Style)Application.Current.Resources["CopilotKeyCharPresenterStyle"];
                         break;
 
                     case "Office":
-                        _keyPresenter.Style = (Style)Application.Current.Resources["CopilotKeyCharPresenterStyle"];
+                        _keyPresenter.Style = (Style)Application.Current.Resources["OfficeKeyCharPresenterStyle"];
                         break;
 
                     default:
