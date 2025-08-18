@@ -6,8 +6,10 @@ using System.Collections.Immutable;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,9 +31,13 @@ public partial class MainListPage : DynamicListPage,
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
 
+    private InterlockedBoolean _refreshRunning;
+    private InterlockedBoolean _refreshRequested;
+
     public MainListPage(IServiceProvider serviceProvider)
     {
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
+        PlaceholderText = Properties.Resources.builtin_main_list_page_searchbar_placeholder;
         _serviceProvider = serviceProvider;
 
         _tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
@@ -55,6 +61,7 @@ public partial class MainListPage : DynamicListPage,
         var settings = _serviceProvider.GetService<SettingsModel>()!;
         settings.SettingsChanged += SettingsChangedHandler;
         HotReloadSettings(settings);
+        _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
         IsLoading = true;
     }
@@ -82,18 +89,47 @@ public partial class MainListPage : DynamicListPage,
 
     private void ReapplySearchInBackground()
     {
-        _ = Task.Run(() =>
+        _refreshRequested.Set();
+        if (!_refreshRunning.Set())
         {
-            try
+            return;
+        }
+
+        _ = Task.Run(RunRefreshLoop);
+    }
+
+    private void RunRefreshLoop()
+    {
+        try
+        {
+            do
             {
+                _refreshRequested.Clear();
+                lock (_tlcManager.TopLevelCommands)
+                {
+                    if (_filteredItemsIncludesApps == _includeApps)
+                    {
+                        break;
+                    }
+                }
+
                 var currentSearchText = SearchText;
                 UpdateSearchText(currentSearchText, currentSearchText);
             }
-            catch (Exception e)
+            while (_refreshRequested.Value);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Failed to reload search", e);
+        }
+        finally
+        {
+            _refreshRunning.Clear();
+            if (_refreshRequested.Value && _refreshRunning.Set())
             {
-                Logger.LogError("Failed to reload search", e);
+                _ = Task.Run(RunRefreshLoop);
             }
-        });
+        }
     }
 
     public override IListItem[] GetItems()
@@ -125,6 +161,15 @@ public partial class MainListPage : DynamicListPage,
             var aliases = _serviceProvider.GetService<AliasManager>()!;
             if (aliases.CheckAlias(newSearch))
             {
+                if (_filteredItemsIncludesApps != _includeApps)
+                {
+                    lock (_tlcManager.TopLevelCommands)
+                    {
+                        _filteredItemsIncludesApps = _includeApps;
+                        _filteredItems = null;
+                    }
+                }
+
                 return;
             }
         }
@@ -137,6 +182,7 @@ public partial class MainListPage : DynamicListPage,
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
             if (string.IsNullOrEmpty(newSearch))
             {
+                _filteredItemsIncludesApps = _includeApps;
                 _filteredItems = null;
                 RaiseItemsChanged(commands.Count);
                 return;
@@ -164,6 +210,11 @@ public partial class MainListPage : DynamicListPage,
                 if (_includeApps)
                 {
                     IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
+                    var appIds = apps.Select(app => app.Command.Id).ToArray();
+
+                    // Remove any top level pinned apps and use the apps from AllAppsCommandProvider.Page.GetItems()
+                    // since they contain details.
+                    _filteredItems = _filteredItems.Where(item => item.Command is not AppCommand);
                     _filteredItems = _filteredItems.Concat(apps);
                 }
             }
@@ -263,7 +314,7 @@ public partial class MainListPage : DynamicListPage,
         {
              nameMatch,
              descriptionMatch,
-             isFallback ? 1 : 0, // Always give fallbacks a chance...
+             isFallback ? 1 : 0, // Always give fallbacks a chance
         };
         var max = scores.Max();
 
@@ -273,8 +324,7 @@ public partial class MainListPage : DynamicListPage,
         // above "git" from "whatever"
         max = max + extensionTitleMatch;
 
-        // ... but downweight them
-        var matchSomething = (max / (isFallback ? 3 : 1))
+        var matchSomething = max
             + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
 
         // If we matched title, subtitle, or alias (something real), then

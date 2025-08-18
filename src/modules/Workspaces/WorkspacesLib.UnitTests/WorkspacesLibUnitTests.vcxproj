@@ -5,7 +5,7 @@
     <ProjectGuid>{A85D4D9F-9A39-4B5D-8B5A-9F2D5C9A8B4C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WorkspacesLibUnitTests</RootNamespace>
-    <ProjectName>WorkspacesLibUnitTests</ProjectName>
+    <ProjectName>Workspaces.Lib.UnitTests</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">

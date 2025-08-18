@@ -12,16 +12,16 @@ namespace Microsoft.CmdPal.Ext.System;
 
 internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
 {
-    public FallbackSystemCommandItem(SettingsManager settings)
+    public FallbackSystemCommandItem(ISettingsInterface settings)
         : base(new NoOpCommand(), Resources.Microsoft_plugin_ext_fallback_display_title)
     {
         Title = string.Empty;
         Subtitle = string.Empty;
 
-        var isBootedInUefiMode = Win32Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
-        var hideEmptyRB = settings.HideEmptyRecycleBin;
-        var confirmSystemCommands = settings.ShowDialogToConfirmCommand;
-        var showSuccessOnEmptyRB = settings.ShowSuccessMessageAfterEmptyingRecycleBin;
+        var isBootedInUefiMode = settings.GetSystemFirmwareType() == FirmwareType.Uefi;
+        var hideEmptyRB = settings.HideEmptyRecycleBin();
+        var confirmSystemCommands = settings.ShowDialogToConfirmCommand();
+        var showSuccessOnEmptyRB = settings.ShowSuccessMessageAfterEmptyingRecycleBin();
 
         systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
     }
