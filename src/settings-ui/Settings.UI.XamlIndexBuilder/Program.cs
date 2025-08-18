@@ -238,6 +238,44 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 
             if (string.IsNullOrEmpty(headerIconAttribute))
             {
+                // Try nested property element: <SettingsCard.HeaderIcon> ... </SettingsCard.HeaderIcon>
+                var headerIconProperty = element.Elements()
+                    .FirstOrDefault(e => e.Name.LocalName.EndsWith(".HeaderIcon", StringComparison.OrdinalIgnoreCase));
+
+                if (headerIconProperty != null)
+                {
+                    // Prefer explicit icon elements within the HeaderIcon property
+                    var pathIcon = headerIconProperty.Descendants().FirstOrDefault(d => d.Name.LocalName == "PathIcon");
+                    if (pathIcon != null)
+                    {
+                        var dataAttr = pathIcon.Attribute("Data")?.Value;
+                        if (!string.IsNullOrWhiteSpace(dataAttr))
+                        {
+                            return dataAttr.Trim();
+                        }
+                    }
+
+                    var fontIcon = headerIconProperty.Descendants().FirstOrDefault(d => d.Name.LocalName == "FontIcon");
+                    if (fontIcon != null)
+                    {
+                        var glyphAttr = fontIcon.Attribute("Glyph")?.Value;
+                        if (!string.IsNullOrWhiteSpace(glyphAttr))
+                        {
+                            return glyphAttr.Trim();
+                        }
+                    }
+
+                    var bitmapIcon = headerIconProperty.Descendants().FirstOrDefault(d => d.Name.LocalName == "BitmapIcon");
+                    if (bitmapIcon != null)
+                    {
+                        var sourceAttr = bitmapIcon.Attribute("Source")?.Value;
+                        if (!string.IsNullOrWhiteSpace(sourceAttr))
+                        {
+                            return sourceAttr.Trim();
+                        }
+                    }
+                }
+
                 return null;
             }
 

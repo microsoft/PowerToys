@@ -56,10 +56,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Assets\search.index.json" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
@@ -128,6 +124,14 @@
 		<!-- We might want to add that to the project and fix the issues as well -->
 		<NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Embed the prebuilt search index so SearchIndexService can load it via GetManifestResourceStream -->
+		<EmbeddedResource Include="Assets\search.index.json">
+			<!-- Ensure the logical name matches the PrebuiltIndexResourceName constant -->
+			<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Update="Assets\Settings\icon.ico">

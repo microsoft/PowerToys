@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
@@ -61,6 +61,22 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                     UriSource = new Uri($"ms-appx://{imagePath}"),
                     ShowAsMonochrome = false,
                 };
+            }
+
+            // Try to interpret as raw SVG path data (PathIcon.Data)
+            // Many of our XAML PathIcon usages (e.g., AdvancedPastePage) provide a Data string like "M128 766q0-42 ...".
+            // If parsing succeeds, render it as a PathIcon.
+            try
+            {
+                var geometryObj = XamlBindingHelper.ConvertValue(typeof(Geometry), iconValue);
+                if (geometryObj is Geometry geometry)
+                {
+                    return new PathIcon { Data = geometry };
+                }
+            }
+            catch
+            {
+                // Ignore parse errors and fall back below.
             }
 
             // If all else fails, return default icon
