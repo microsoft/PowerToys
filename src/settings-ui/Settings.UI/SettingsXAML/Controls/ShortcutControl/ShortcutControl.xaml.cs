@@ -716,7 +716,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void SetKeys()
         {
-            var keys = HotkeySettings?.GetKeysList();
+            var keys = HotkeySettings.GetKeysList();
 
             if (keys != null && keys.Count > 0)
             {

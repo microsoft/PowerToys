@@ -114,7 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 }
                 else if (count == 1)
                 {
-                    // Try to get localized string, fallback to hardcoded if not found
+                    // Try to get localized string
                     try
                     {
                         return resourceLoader.GetString("ShortcutConflictControl_SingleConflictFound");
@@ -126,7 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 }
                 else
                 {
-                    // Try to get localized string, fallback to hardcoded if not found
+                    // Try to get localized string
                     try
                     {
                         var template = resourceLoader.GetString("ShortcutConflictControl_MultipleConflictsFound");
