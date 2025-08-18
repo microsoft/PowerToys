@@ -2,144 +2,51 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Text.Json.Serialization;
-using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class DarkModeProperties : INotifyPropertyChanged
+    // Needs to stay in sync with src\modules\darkmode\DarkMode\Settings.h
+    public class DarkModeProperties
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public const bool DefaultChangeSystem = false;
+        public const bool DefaultChangeApps = false;
+        public const bool DefaultUseLocation = false;
+        public const int DefaultLightTime = 795;
+        public const int DefaultDarkTime = 800;
+        public const string DefaultLatitude = "0.0";
+        public const string DefaultLongitude = "0.0";
 
         public DarkModeProperties()
         {
-            ChangeSystem = false;
-            ChangeApps = false;
-            UseLocation = false;
-            LightTime = 0;
-            DarkTime = 1;
-            Latitude = "0.0";
-            Longitude = "0.0";
+            ChangeSystem = new BoolProperty(DefaultChangeSystem);
+            ChangeApps = new BoolProperty(DefaultChangeApps);
+            UseLocation = new BoolProperty(DefaultUseLocation);
+            LightTime = new IntProperty(DefaultLightTime);
+            DarkTime = new IntProperty(DefaultDarkTime);
+            Latitude = new StringProperty(DefaultLatitude);
+            Longitude = new StringProperty(DefaultLongitude);
         }
-
-        private bool _changeSystem;
 
         [JsonPropertyName("changeSystem")]
-        public bool ChangeSystem
-        {
-            get => _changeSystem;
-            set
-            {
-                if (_changeSystem != value)
-                {
-                    _changeSystem = value;
-                    OnPropertyChanged(nameof(ChangeSystem));
-                }
-            }
-        }
-
-        private bool _changeApps;
+        public BoolProperty ChangeSystem { get; set; } = new BoolProperty { Value = false };
 
         [JsonPropertyName("changeApps")]
-        public bool ChangeApps
-        {
-            get => _changeApps;
-            set
-            {
-                if (_changeApps != value)
-                {
-                    _changeApps = value;
-                    OnPropertyChanged(nameof(ChangeApps));
-                }
-            }
-        }
-
-        private bool _useLocation;
+        public BoolProperty ChangeApps { get; set; } = new BoolProperty { Value = false };
 
         [JsonPropertyName("useLocation")]
-        public bool UseLocation
-        {
-            get => _useLocation;
-            set
-            {
-                if (_useLocation != value)
-                {
-                    _useLocation = value;
-                    OnPropertyChanged(nameof(UseLocation));
-                }
-            }
-        }
-
-        private uint _lightTime;
+        public BoolProperty UseLocation { get; set; } = new BoolProperty { Value = false };
 
         [JsonPropertyName("lightTime")]
-        public uint LightTime
-        {
-            get => _lightTime;
-            set
-            {
-                if (_lightTime != value)
-                {
-                    _lightTime = value;
-                    OnPropertyChanged(nameof(LightTime));
-                }
-            }
-        }
-
-        private uint _darkTime;
+        public IntProperty LightTime { get; set; } = new IntProperty { Value = 795 };
 
         [JsonPropertyName("darkTime")]
-        public uint DarkTime
-        {
-            get => _darkTime;
-            set
-            {
-                if (_darkTime != value)
-                {
-                    _darkTime = value;
-                    OnPropertyChanged(nameof(DarkTime));
-                }
-            }
-        }
-
-        private string _latitude;
+        public IntProperty DarkTime { get; set; } = new IntProperty { Value = 800 };
 
         [JsonPropertyName("latitude")]
-        public string Latitude
-        {
-            get => _latitude;
-            set
-            {
-                if (_latitude != value)
-                {
-                    _latitude = value;
-                    OnPropertyChanged(nameof(Latitude));
-                }
-            }
-        }
-
-        private string _longitude;
+        public StringProperty Latitude { get; set; } = new StringProperty { Value = "0.0" };
 
         [JsonPropertyName("longitude")]
-        public string Longitude
-        {
-            get => _longitude;
-            set
-            {
-                if (_longitude != value)
-                {
-                    _longitude = value;
-                    OnPropertyChanged(nameof(Longitude));
-                }
-            }
-        }
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        public StringProperty Longitude { get; set; } = new StringProperty { Value = "0.0" };
     }
 }

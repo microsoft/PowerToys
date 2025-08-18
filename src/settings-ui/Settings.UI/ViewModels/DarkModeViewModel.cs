@@ -4,8 +4,6 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Windows;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -29,14 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_moduleSettings != value)
                 {
                     _moduleSettings = value;
-
-                    _moduleSettings.Properties.PropertyChanged += (_, e) =>
-                    {
-                        if (e.PropertyName == nameof(ModuleSettings.Properties.UseLocation))
-                        {
-                            OnPropertyChanged(nameof(IsUseLocationEnabled));
-                        }
-                    };
 
                     OnPropertyChanged(nameof(ModuleSettings));
                     RefreshModuleSettings();
@@ -104,16 +94,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsUseLocationEnabled => ModuleSettings.Properties.UseLocation && IsEnabled;
+        public bool IsUseLocationEnabled => ModuleSettings.Properties.UseLocation.Value && IsEnabled;
 
         public bool UseLocation
         {
-            get => ModuleSettings.Properties.UseLocation;
+            get => ModuleSettings.Properties.UseLocation.Value;
             set
             {
-                if (ModuleSettings.Properties.UseLocation != value)
+                if (ModuleSettings.Properties.UseLocation.Value != value)
                 {
-                    ModuleSettings.Properties.UseLocation = value;
+                    ModuleSettings.Properties.UseLocation.Value = value;
                     OnPropertyChanged(nameof(UseLocation));
                     OnPropertyChanged(nameof(IsUseLocationEnabled));
                 }
@@ -122,12 +112,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ChangeSystem
         {
-            get => ModuleSettings.Properties.ChangeSystem;
+            get => ModuleSettings.Properties.ChangeSystem.Value;
             set
             {
-                if (ModuleSettings.Properties.ChangeSystem != value)
+                if (ModuleSettings.Properties.ChangeSystem.Value != value)
                 {
-                    ModuleSettings.Properties.ChangeSystem = value;
+                    ModuleSettings.Properties.ChangeSystem.Value = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -135,38 +125,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ChangeApps
         {
-            get => ModuleSettings.Properties.ChangeApps;
+            get => ModuleSettings.Properties.ChangeApps.Value;
             set
             {
-                if (ModuleSettings.Properties.ChangeApps != value)
+                if (ModuleSettings.Properties.ChangeApps.Value != value)
                 {
-                    ModuleSettings.Properties.ChangeApps = value;
+                    ModuleSettings.Properties.ChangeApps.Value = value;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        public uint LightTime
+        public int LightTime
         {
-            get => ModuleSettings.Properties.LightTime;
+            get => ModuleSettings.Properties.LightTime.Value;
             set
             {
-                if (ModuleSettings.Properties.LightTime != value)
+                if (ModuleSettings.Properties.LightTime.Value != value)
                 {
-                    ModuleSettings.Properties.LightTime = value;
+                    ModuleSettings.Properties.LightTime.Value = value;
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        public uint DarkTime
+        public int DarkTime
         {
-            get => ModuleSettings.Properties.DarkTime;
+            get => ModuleSettings.Properties.DarkTime.Value;
             set
             {
-                if (ModuleSettings.Properties.DarkTime != value)
+                if (ModuleSettings.Properties.DarkTime.Value != value)
                 {
-                    ModuleSettings.Properties.DarkTime = value;
+                    ModuleSettings.Properties.DarkTime.Value = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -174,12 +164,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Latitude
         {
-            get => ModuleSettings.Properties.Latitude;
+            get => ModuleSettings.Properties.Latitude.Value;
             set
             {
-                if (ModuleSettings.Properties.Latitude != value)
+                if (ModuleSettings.Properties.Latitude.Value != value)
                 {
-                    ModuleSettings.Properties.Latitude = value;
+                    ModuleSettings.Properties.Latitude.Value = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -187,12 +177,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Longitude
         {
-            get => ModuleSettings.Properties.Longitude;
+            get => ModuleSettings.Properties.Longitude.Value;
             set
             {
-                if (ModuleSettings.Properties.Longitude != value)
+                if (ModuleSettings.Properties.Longitude.Value != value)
                 {
-                    ModuleSettings.Properties.Longitude = value;
+                    ModuleSettings.Properties.Longitude.Value = value;
                     NotifyPropertyChanged();
                 }
             }

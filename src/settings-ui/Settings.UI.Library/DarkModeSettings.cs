@@ -32,13 +32,13 @@ namespace Settings.UI.Library
                 Version = Version,
                 Properties = new DarkModeProperties()
                 {
-                    ChangeSystem = Properties.ChangeSystem,
-                    ChangeApps = Properties.ChangeApps,
-                    UseLocation = Properties.UseLocation,
-                    LightTime = Properties.LightTime,
-                    DarkTime = Properties.DarkTime,
-                    Latitude = Properties.Latitude,
-                    Longitude = Properties.Longitude,
+                    ChangeSystem = new BoolProperty(Properties.ChangeSystem.Value),
+                    ChangeApps = new BoolProperty(Properties.ChangeApps.Value),
+                    UseLocation = new BoolProperty(Properties.UseLocation.Value),
+                    LightTime = new IntProperty((int)Properties.LightTime.Value),
+                    DarkTime = new IntProperty((int)Properties.DarkTime.Value),
+                    Latitude = new StringProperty(Properties.Latitude.Value),
+                    Longitude = new StringProperty(Properties.Longitude.Value),
                 },
             };
         }

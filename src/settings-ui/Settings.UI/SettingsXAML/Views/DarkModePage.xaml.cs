@@ -78,12 +78,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (TimeModeRadio.IsChecked == true)
             {
                 // Set UseLocation to false (use specific times)
-                ViewModel.ModuleSettings.Properties.UseLocation = false;
+                ViewModel.ModuleSettings.Properties.UseLocation.Value = false;
             }
             else if (GeoModeRadio.IsChecked == true)
             {
                 // Set UseLocation to true (use geolocation)
-                ViewModel.ModuleSettings.Properties.UseLocation = true;
+                ViewModel.ModuleSettings.Properties.UseLocation.Value = true;
             }
 
             // Refresh the view so dependent fields update (if applicable)

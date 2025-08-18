@@ -2,6 +2,7 @@
 #include <tchar.h>
 #include "ThemeScheduler.h"
 #include "ThemeHelper.h"
+#include "DarkModeSettings.h"
 #include <stdio.h>
 
 // Global service variables
@@ -130,65 +131,70 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
     }
 }
 
-struct ThemeSettings
-{
-    bool useLocation = true;
-    int lightTime = 7;
-    int darkTime = 0;
-    double latitude = 39.9526;
-    double longitude = -75.1652;
-    bool forceDark = false;
-    bool forceLight = false;
-};
-
-ThemeSettings settings;
-
-DWORD WINAPI ServiceWorkerThread(void* lpParam)
+DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 {
     DWORD parentPid = static_cast<DWORD>(reinterpret_cast<ULONG_PTR>(lpParam));
     HANDLE hParent = nullptr;
     if (parentPid)
-        hParent = OpenProcess(SYNCHRONIZE, FALSE, parentPid); // may be null if not passed
+        hParent = OpenProcess(SYNCHRONIZE, FALSE, parentPid);
 
     OutputDebugString(L"[DarkModeService] Worker thread starting...\n");
+
+    // Initialize settings system
+    DarkModeSettings::instance().InitFileWatcher();
 
     for (;;)
     {
         HANDLE waits[2] = { g_ServiceStopEvent, hParent };
         DWORD count = hParent ? 2 : 1;
 
-        // Do the work for this minute
         SYSTEMTIME st;
         GetLocalTime(&st);
+        int nowMinutes = st.wHour * 60 + st.wMinute;
 
-        SunTimes sun = CalculateSunriseSunset(
-            settings.latitude, settings.longitude, st.wYear, st.wMonth, st.wDay);
+        DarkModeSettings::instance().LoadSettings();
+        const auto& settings = DarkModeSettings::instance().settings();
 
-        int nowMin = st.wHour * 60 + st.wMinute;
-        int lightMin = settings.useLocation ? sun.sunriseHour * 60 + sun.sunriseMinute : settings.lightTime;
-        int darkMin = settings.useLocation ? sun.sunsetHour * 60 + sun.sunsetMinute : settings.darkTime;
+        int lightMinutes = 0;
+        int darkMinutes = 0;
 
-        // Print light/dark minutes and HH:MM forms
+        if (settings.useLocation)
+        {
+            SunTimes sun = CalculateSunriseSunset(
+                std::stod(settings.latitude),
+                std::stod(settings.longitude),
+                st.wYear,
+                st.wMonth,
+                st.wDay);
+
+            lightMinutes = sun.sunriseHour * 60 + sun.sunriseMinute;
+            darkMinutes = sun.sunsetHour * 60 + sun.sunsetMinute;
+        }
+        else
+        {
+            // already stored in minutes since midnight
+            lightMinutes = settings.lightTime;
+            darkMinutes = settings.darkTime;
+        }
+
+        // Debug print
         wchar_t msg[160];
         swprintf_s(
             msg,
-            L"[DarkModeService] lightMin=%d (%02d:%02d) | darkMin=%d (%02d:%02d)\n",
-            lightMin,
-            lightMin / 60,
-            lightMin % 60,
-            darkMin,
-            darkMin / 60,
-            darkMin % 60);
+            L"[DarkModeService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d\n",
+            st.wHour,
+            st.wMinute,
+            lightMinutes / 60,
+            lightMinutes % 60,
+            darkMinutes / 60,
+            darkMinutes % 60);
         OutputDebugString(msg);
 
-        // If you allocated a console in --debug mode, also print to it
-        #ifdef _DEBUG
-                wprintf(L"%ls", msg);
-        #endif
+#ifdef _DEBUG
+        wprintf(L"%ls", msg);
+#endif
 
-        // Apply theme with a 1-minute window to avoid jitter misses
-        auto within = [](int a, int b) { return std::abs(a - b) <= 0; }; // set to 0 or 1 if you want tolerance
-
+        // Respect overrides first
         if (settings.forceLight)
         {
             SetSystemTheme(true);
@@ -201,35 +207,34 @@ DWORD WINAPI ServiceWorkerThread(void* lpParam)
         }
         else
         {
-            if (within(nowMin, lightMin))
+            if (nowMinutes == lightMinutes)
             {
                 SetSystemTheme(true);
                 SetAppsTheme(true);
             }
-            if (within(nowMin, darkMin))
+            else if (nowMinutes == darkMinutes)
             {
                 SetSystemTheme(false);
                 SetAppsTheme(false);
             }
         }
 
-        // Sleep until the top of next minute, but wake early if stop or parent dies
+        // Sleep until next minute, wake if stop/parent dies
         GetLocalTime(&st);
         int msToNextMinute = (60 - st.wSecond) * 1000 - st.wMilliseconds;
         if (msToNextMinute < 50)
             msToNextMinute = 50;
 
         DWORD wait = WaitForMultipleObjects(count, waits, FALSE, msToNextMinute);
-        if (wait == WAIT_OBJECT_0)
-            break; // stop event
-        if (hParent && wait == WAIT_OBJECT_0 + 1)
-            break; // parent exited
-        // else timeout, loop again
+        if (wait == WAIT_OBJECT_0) // stop event
+            break;
+        if (hParent && wait == WAIT_OBJECT_0 + 1) // parent exited
+            break;
     }
 
     if (hParent)
         CloseHandle(hParent);
-    OutputDebugString(L"[DarkModeService] Worker thread stopping...\n");
+
     return 0;
 }
 
