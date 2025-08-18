@@ -16,7 +16,7 @@ internal static class DataSourceManager
 
     public static IDBInitialize GetDataSource()
     {
-        if (_dataSource == null)
+        if (_dataSource is null)
         {
             InitializeDataSource();
         }
