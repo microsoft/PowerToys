@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CrosshairsFixedLength = new IntProperty(1);
             AutoActivate = new BoolProperty(false);
             GlidingTravelSpeed = new IntProperty(25);
-            GlidingDelaySpeed = new IntProperty(25);
+            GlidingDelaySpeed = new IntProperty(5);
         }
     }
 }
