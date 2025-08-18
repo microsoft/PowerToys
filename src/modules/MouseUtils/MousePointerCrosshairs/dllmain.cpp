@@ -492,12 +492,12 @@ private:
             }
             catch (...)
             {
-                Logger::warn("Failed to initialize Gliding Cursor activation shortcut. Using default Win+Alt+G.");
+                Logger::warn("Failed to initialize Gliding Cursor activation shortcut. Using default Win+Alt+.");
                 m_glidingHotkey.win = true;
                 m_glidingHotkey.alt = true;
                 m_glidingHotkey.ctrl = false;
                 m_glidingHotkey.shift = false;
-                m_glidingHotkey.key = 'G';
+                m_glidingHotkey.key = '.';
             }
             try
             {
