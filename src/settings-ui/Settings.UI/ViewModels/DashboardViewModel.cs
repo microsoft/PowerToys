@@ -69,16 +69,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void AddDashboardListItem(ModuleType moduleType)
         {
             GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
-            AllModules.Add(new DashboardListItem()
+            var newItem = new DashboardListItem()
             {
                 Tag = moduleType,
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
                 IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                EnabledChangedCallback = EnabledChangedOnUI,
                 DashboardModuleItems = GetModuleItems(moduleType),
-            });
+            };
+
+            AllModules.Add(newItem);
+            newItem.EnabledChangedCallback = EnabledChangedOnUI;
         }
 
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
@@ -120,16 +122,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (filteredItems.Count != 0)
                 {
-                    ShortcutModules.Add(new DashboardListItem
+                    var newItem = new DashboardListItem
                     {
-                        EnabledChangedCallback = x.EnabledChangedCallback,
                         Icon = x.Icon,
                         IsLocked = x.IsLocked,
                         Label = x.Label,
                         Tag = x.Tag,
                         IsEnabled = x.IsEnabled,
                         DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
-                    });
+                    };
+
+                    ShortcutModules.Add(newItem);
+                    newItem.EnabledChangedCallback = x.EnabledChangedCallback;
                 }
             }
 
@@ -141,16 +145,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (filteredItems.Count != 0)
                 {
-                    ActionModules.Add(new DashboardListItem
+                    var newItem = new DashboardListItem
                     {
-                        EnabledChangedCallback = x.EnabledChangedCallback,
                         Icon = x.Icon,
                         IsLocked = x.IsLocked,
                         Label = x.Label,
                         Tag = x.Tag,
                         IsEnabled = x.IsEnabled,
                         DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
-                    });
+                    };
+
+                    ActionModules.Add(newItem);
+                    newItem.EnabledChangedCallback = x.EnabledChangedCallback;
                 }
             }
         }

@@ -48,7 +48,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
         get => _command;
         set
         {
-            if (_commandListener != null)
+            if (_commandListener is not null)
             {
                 _commandListener.Detach();
                 _commandListener = null;
@@ -56,7 +56,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
             _command = value;
 
-            if (value != null)
+            if (value is not null)
             {
                 _commandListener = new(this, OnCommandPropertyChanged, listener => value.PropChanged -= listener.OnEvent);
                 value.PropChanged += _commandListener.OnEvent;
@@ -123,7 +123,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
             c.Name = name;
         }
 
-        if (result != null)
+        if (result is not null)
         {
             c.Result = result;
         }

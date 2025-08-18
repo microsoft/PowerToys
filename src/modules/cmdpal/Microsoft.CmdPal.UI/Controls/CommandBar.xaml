@@ -59,7 +59,23 @@
                     <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
                     <Setter Property="BorderThickness" Value="1" />
                     <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="MinWidth" Value="20" />
                 </Style.Setters>
+            </Style>
+
+            <Style x:Key="HotkeyTextBlockStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="CharacterSpacing" Value="4" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="HotkeyFontIconStyle" TargetType="FontIcon">
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -155,12 +171,7 @@
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
                     <Border Style="{StaticResource HotkeyStyle}">
-                        <FontIcon
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            FontSize="10"
-                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                            Glyph="&#xE751;" />
+                        <FontIcon Glyph="&#xE751;" Style="{StaticResource HotkeyFontIconStyle}" />
                     </Border>
                 </StackPanel>
             </Button>
@@ -179,19 +190,10 @@
                         Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
                     <StackPanel Orientation="Horizontal" Spacing="4">
                         <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
-                            <TextBlock
-                                CharacterSpacing="4"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                Text="Ctrl" />
+                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
                         </Border>
                         <Border Style="{StaticResource HotkeyStyle}">
-                            <FontIcon
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                Glyph="&#xE751;" />
+                            <FontIcon Glyph="&#xE751;" Style="{StaticResource HotkeyFontIconStyle}" />
                         </Border>
                     </StackPanel>
                 </StackPanel>
@@ -199,7 +201,7 @@
             <Button
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
-                Padding="4"
+                Padding="6,4,4,4"
                 Click="MoreCommandsButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="Ctrl+K"
@@ -209,32 +211,12 @@
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="More" />
-                    <StackPanel Orientation="Horizontal" Spacing="2">
-                        <Border
-                            Padding="4,2,4,2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <TextBlock
-                                CharacterSpacing="4"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="Ctrl" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
+                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="Ctrl" />
                         </Border>
-                        <Border
-                            Padding="4,2,4,2"
-                            VerticalAlignment="Center"
-                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="10"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="K" />
+                        <Border Padding="4,2,4,2" Style="{StaticResource HotkeyStyle}">
+                            <TextBlock Style="{StaticResource HotkeyTextBlockStyle}" Text="K" />
                         </Border>
                     </StackPanel>
                 </StackPanel>

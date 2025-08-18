@@ -11,7 +11,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-public class SettingsManager : JsonSettingsManager
+public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
     // Line break character used in WinUI3 TextBox and TextBlock.
     private const char TEXTBOXNEWLINE = '\r';
@@ -103,7 +103,7 @@ public class SettingsManager : JsonSettingsManager
     {
         get
         {
-            if (_firstWeekOfYear.Value == null || string.IsNullOrEmpty(_firstWeekOfYear.Value))
+            if (_firstWeekOfYear.Value is null || string.IsNullOrEmpty(_firstWeekOfYear.Value))
             {
                 return -1;
             }
@@ -123,7 +123,7 @@ public class SettingsManager : JsonSettingsManager
     {
         get
         {
-            if (_firstDayOfWeek.Value == null || string.IsNullOrEmpty(_firstDayOfWeek.Value))
+            if (_firstDayOfWeek.Value is null || string.IsNullOrEmpty(_firstDayOfWeek.Value))
             {
                 return -1;
             }
