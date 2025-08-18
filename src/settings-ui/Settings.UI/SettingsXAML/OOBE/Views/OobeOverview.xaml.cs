@@ -14,7 +14,9 @@ using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
@@ -61,7 +63,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     OnPropertyChanged(nameof(AllHotkeyConflictsData));
                     OnPropertyChanged(nameof(ConflictCount));
                     OnPropertyChanged(nameof(ConflictText));
+                    OnPropertyChanged(nameof(ConflictDescription));
                     OnPropertyChanged(nameof(HasConflicts));
+                    OnPropertyChanged(nameof(IconGlyph));
+                    OnPropertyChanged(nameof(IconForeground));
                 }
             }
         }
@@ -97,7 +102,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 var count = ConflictCount;
                 if (count == 0)
                 {
-                    return string.Empty; // This shouldn't be displayed when count is 0
+                    // Return no-conflict message
+                    try
+                    {
+                        return resourceLoader.GetString("ShortcutConflictControl_NoConflictsFound");
+                    }
+                    catch
+                    {
+                        return "No conflicts found";
+                    }
                 }
                 else if (count == 1)
                 {
@@ -127,7 +140,58 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
+        public string ConflictDescription
+        {
+            get
+            {
+                var count = ConflictCount;
+                if (count == 0)
+                {
+                    // Return no-conflict description
+                    try
+                    {
+                        return resourceLoader.GetString("ShortcutConflictWindow_NoConflictsDescription");
+                    }
+                    catch
+                    {
+                        return "All shortcuts function correctly";
+                    }
+                }
+                else
+                {
+                    // Return conflict description
+                    try
+                    {
+                        return resourceLoader.GetString("Oobe_Overview_Hotkey_Conflict_Card_Description");
+                    }
+                    catch
+                    {
+                        return "Shortcuts configured by PowerToys are conflicting";
+                    }
+                }
+            }
+        }
+
         public bool HasConflicts => ConflictCount > 0;
+
+        public string IconGlyph => HasConflicts ? "\uE814" : "\uE73E";
+
+        public SolidColorBrush IconForeground
+        {
+            get
+            {
+                if (HasConflicts)
+                {
+                    // Red color for conflicts
+                    return new SolidColorBrush(Colors.Red);
+                }
+                else
+                {
+                    // Green color for no conflicts
+                    return new SolidColorBrush(Colors.Green);
+                }
+            }
+        }
 
         public bool ShowDataDiagnosticsSetting => GetIsDataDiagnosticsInfoBarEnabled();
 

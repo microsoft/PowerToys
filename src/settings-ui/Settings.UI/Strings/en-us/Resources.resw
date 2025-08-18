@@ -2050,13 +2050,19 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected.</value>
   </data>
   <data name="Oobe_Overview_Hotkey_Conflict_Title.Text" xml:space="preserve">
-    <value>Hotkey conflict detected</value>
-  </data>
-  <data name="Oobe_Overview_Hotkey_Conflict_Desc.Text" xml:space="preserve">
-    <value>Some PowerToys shortcuts are in conflict. Click the button below for more details.</value>
+    <value>Hotkey conflict detection</value>
   </data>
   <data name="Oobe_Overview_Hotkey_Conflict_Card.Text" xml:space="preserve">
     <value>Shortcuts configured by PowerToys are conflicting.</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Card_Description.Header" xml:space="preserve">
+    <value>Shortcuts configured by PowerToys are conflicting</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Header" xml:space="preserve">
+    <value>No conflicts found</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Description" xml:space="preserve">
+    <value>All shortcuts function correctly</value>
   </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link.Content" xml:space="preserve">
     <value>View more diagnostic data settings</value>

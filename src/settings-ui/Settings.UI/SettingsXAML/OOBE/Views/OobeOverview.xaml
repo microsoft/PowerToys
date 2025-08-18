@@ -37,26 +37,22 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind EnableDataDiagnostics, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
+                    <!--  Show title and description only when there are conflicts  -->
                     <TextBlock
                         x:Uid="Oobe_Overview_Hotkey_Conflict_Title"
                         Margin="0,20,0,0"
-                        Style="{StaticResource SubtitleTextBlockStyle}"
-                        Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    <TextBlock 
-                        x:Uid="Oobe_Overview_Hotkey_Conflict_Desc" 
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                    
-                    <tkcontrols:SettingsCard
-                        Description="Shortcuts configured by PowerToys are conflicting"
-                        Header="{x:Bind ConflictText, Mode=OneWay}"
-                        Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        Style="{StaticResource SubtitleTextBlockStyle}" />
+
+                    <!--  Always show shortcut status card  -->
+                    <tkcontrols:SettingsCard Description="{x:Bind ConflictDescription, Mode=OneWay}" Header="{x:Bind ConflictText, Mode=OneWay}">
                         <tkcontrols:SettingsCard.HeaderIcon>
-                            <FontIcon 
-                                Glyph="&#xE814;" 
-                                Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                            <FontIcon Foreground="{x:Bind IconForeground, Mode=OneWay}" Glyph="{x:Bind IconGlyph, Mode=OneWay}" />
                         </tkcontrols:SettingsCard.HeaderIcon>
-                        <Button x:Uid="ResolveConflicts_Button" Click="ShortcutConflictBtn_Click" />
+                        <!--  Only show button when there are conflicts  -->
+                        <Button
+                            x:Uid="ResolveConflicts_Button"
+                            Click="ShortcutConflictBtn_Click"
+                            Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </tkcontrols:SettingsCard>
 
                     <HyperlinkButton
