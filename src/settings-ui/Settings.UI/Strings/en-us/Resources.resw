@@ -2050,7 +2050,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected.</value>
   </data>
   <data name="Oobe_Overview_Hotkey_Conflict_Title.Text" xml:space="preserve">
-    <value>Hotkey conflict detection</value>
+    <value>Shortcut conflict detection</value>
   </data>
   <data name="Oobe_Overview_Hotkey_Conflict_Card.Text" xml:space="preserve">
     <value>Shortcuts configured by PowerToys are conflicting.</value>
@@ -2069,12 +2069,6 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
     <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
-  </data>
-  <data name="Oobe_Overview_EnableDataDiagnostics.Header" xml:space="preserve">
-    <value>Diagnostic data</value>
-  </data>
-  <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
-    <value>Helps us make PowerToys faster, more stable, and better over time</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
     <value>Turn on diagnostic data to help us improve PowerToys?</value>
@@ -5158,7 +5152,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Conflicting shortcuts may cause unexpected behavior. Edit them here or go to the module settings to update them.</value>
   </data>
   <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
-    <value>is conflicting with other shortcuts</value>
+    <value>Conflicts found for</value>
   </data>
   <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
     <value>System</value>
@@ -5182,7 +5176,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
 	<value>Resolve conflicts</value>
   </data>
   <data name="ShortcutConflictControl_Title.Text" xml:space="preserve">
-    <value>shortcut conflicts</value>
+    <value>Shortcut conflicts</value>
   </data>
   <data name="ShortcutConflictControl_NoConflictsFound" xml:space="preserve">
     <value>No conflicts found</value>

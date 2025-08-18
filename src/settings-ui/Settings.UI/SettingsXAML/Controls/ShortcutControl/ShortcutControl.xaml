@@ -11,10 +11,6 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <converters:ConflictStyleConverter x:Key="ConflictStyleConverter" />
-    </UserControl.Resources>
-
     <Grid HorizontalAlignment="Right">
         <Button
             x:Name="EditButton"
@@ -44,8 +40,8 @@
                                 Content="{Binding}"
                                 CornerRadius="{StaticResource ControlCornerRadius}"
                                 FontWeight="SemiBold"
-                                IsTabStop="False"
-                                Style="{Binding ElementName=LayoutRoot, Path=HasConflict, Converter={StaticResource ConflictStyleConverter}}" />
+                                IsInvalid="{Binding ElementName=LayoutRoot, Path=HasConflict}"
+                                IsTabStop="False" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
