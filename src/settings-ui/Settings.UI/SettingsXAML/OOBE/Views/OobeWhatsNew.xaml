@@ -29,7 +29,6 @@
                 Grid.RowSpan="2"
                 Margin="0,-24,0,0"
                 VerticalAlignment="Top"
-                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
                 BorderThickness="0"
                 Canvas.ZIndex="1">
 
@@ -101,9 +100,10 @@
 
                         <!--  ShortcutConflictControl positioned at the right side  -->
                         <controls:ShortcutConflictControl
+                            Grid.RowSpan="2"
                             Margin="0,0,16,0"
                             HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
+                            VerticalAlignment="Center"
                             AllHotkeyConflictsData="{x:Bind AllHotkeyConflictsData, Mode=OneWay}"
                             Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </Grid>

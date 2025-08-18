@@ -183,12 +183,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 if (HasConflicts)
                 {
                     // Red color for conflicts
-                    return new SolidColorBrush(Colors.Red);
+                    return (SolidColorBrush)App.Current.Resources["SystemFillColorCriticalBrush"];
                 }
                 else
                 {
                     // Green color for no conflicts
-                    return new SolidColorBrush(Colors.Green);
+                    return (SolidColorBrush)App.Current.Resources["SystemFillColorSuccessBrush"];
                 }
             }
         }
