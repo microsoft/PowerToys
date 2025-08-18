@@ -19,7 +19,7 @@ public sealed partial class FileSystemWatcherWrapper : FileSystemWatcher, IFileS
         get => this.Filters;
         set
         {
-            if (value != null)
+            if (value is not null)
             {
                 foreach (var filter in value)
                 {
