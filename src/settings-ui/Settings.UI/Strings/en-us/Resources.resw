@@ -4434,6 +4434,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Ignores digits, spaces, and dots at the start of filenames—useful for sorting templates without showing those characters</value>
     <comment>Template filename starting digits settings toggle</comment>
   </data>
+  <data name="NewPlus_Hide_BuiltIn_New_Toggle.Header" xml:space="preserve">
+    <value>Hide the built-in New context menu</value>
+    <comment>Localize New in accordance with Windows New</comment>
+  </data>
   <data name="NewPlus_behavior.Header" xml:space="preserve">
     <value>Behavior</value>
     <comment>New+ behavior related settings label</comment>
@@ -5126,5 +5130,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
+  </data>
+  <data name="Elevation_Required.Title" xml:space="preserve">
+    <value>To change this setting you'll need to run PowerToys as administrator. You can restart PowerToys as administrator on the General page.</value>
   </data>
 </root>
