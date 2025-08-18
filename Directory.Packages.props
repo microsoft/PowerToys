@@ -104,7 +104,7 @@
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
-    <PackageVersion Include="WinUIEx" Version="2.2.0" />
+    <PackageVersion Include="WinUIEx" Version="2.5.1" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
     <PackageVersion Include="WyHash" Version="1.0.5" />
   </ItemGroup>
