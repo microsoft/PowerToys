@@ -103,7 +103,8 @@
                                     x:Uid="ShortcutConflictWindow_ModulesUsingShortcut"
                                     Margin="0,0,0,8"
                                     FontWeight="SemiBold"
-                                    Keys="{x:Bind Hotkey.GetKeysList()}" />
+                                    Keys="{x:Bind Hotkey.GetKeysList()}"
+                                    LabelPlacement="Before" />
 
                                 <!--  PowerToys Module Cards  -->
                                 <ItemsControl Grid.Row="1" ItemsSource="{x:Bind Modules}">
