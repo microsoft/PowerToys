@@ -1260,9 +1260,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Clipboard.SetContent(data);
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            base.Dispose();
+            base.Dispose(disposing);
         }
 
         internal void UninstallService()

@@ -26,12 +26,13 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ShortcutConflictViewModel : PageViewModelBase, IDisposable
+    public class ShortcutConflictViewModel : PageViewModelBase
     {
         private readonly SettingsFactory _settingsFactory;
         private readonly Func<string, int> _ipcMSGCallBackFunc;
         private readonly Dispatcher _dispatcher;
 
+        private bool _disposed;
         private AllHotkeyConflictsData _conflictsData = new();
         private ObservableCollection<HotkeyConflictGroupData> _conflictItems = new();
         private ResourceLoader resourceLoader;
@@ -161,6 +162,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         SetConflictProperties(module.HotkeySettings, isSystemConflict);
                     }
 
+                    module.PropertyChanged -= OnModuleHotkeyDataPropertyChanged;
                     module.PropertyChanged += OnModuleHotkeyDataPropertyChanged;
                 }
                 else
@@ -337,20 +339,45 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            UnsubscribeFromEvents();
-            base.Dispose();
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    UnsubscribeFromEvents();
+                }
+
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
 
         private void UnsubscribeFromEvents()
         {
-            foreach (var conflictGroup in ConflictItems)
+            try
             {
-                foreach (var module in conflictGroup.Modules)
+                if (ConflictItems != null)
                 {
-                    module.PropertyChanged -= OnModuleHotkeyDataPropertyChanged;
+                    foreach (var conflictGroup in ConflictItems)
+                    {
+                        if (conflictGroup?.Modules != null)
+                        {
+                            foreach (var module in conflictGroup.Modules)
+                            {
+                                if (module != null)
+                                {
+                                    module.PropertyChanged -= OnModuleHotkeyDataPropertyChanged;
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error unsubscribing from events: {ex.Message}");
             }
         }
     }

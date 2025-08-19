@@ -21,11 +21,11 @@ using Windows.Media.Ocr;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class PowerOcrViewModel : PageViewModelBase, IDisposable
+    public partial class PowerOcrViewModel : PageViewModelBase
     {
         protected override string ModuleName => PowerOcrSettings.ModuleName;
 
-        private bool disposedValue;
+        private bool _disposed;
 
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it; otherwise, we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
@@ -259,23 +259,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    _delayedTimer.Dispose();
+                    _delayedTimer?.Dispose();
+                    _delayedTimer = null;
                 }
 
-                disposedValue = true;
+                _disposed = true;
             }
-        }
 
-        public override void Dispose()
-        {
-            Dispose(disposing: true);
-            base.Dispose();
+            base.Dispose(disposing);
         }
 
         public string SnippingToolInfoBarMargin

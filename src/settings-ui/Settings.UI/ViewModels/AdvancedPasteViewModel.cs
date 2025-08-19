@@ -24,11 +24,10 @@ using Windows.Security.Credentials;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class AdvancedPasteViewModel : PageViewModelBase, IDisposable
+    public partial class AdvancedPasteViewModel : PageViewModelBase
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
-
-        private bool disposedValue;
+        private bool _disposed;
 
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it; otherwise, we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
@@ -427,23 +426,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(ShowClipboardHistoryIsGpoConfiguredInfoBar));
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    _delayedTimer.Dispose();
+                    _delayedTimer?.Dispose();
+
+                    foreach (var action in _additionalActions.GetAllActions())
+                    {
+                        action.PropertyChanged -= OnAdditionalActionPropertyChanged;
+                    }
+
+                    foreach (var customAction in _customActions)
+                    {
+                        customAction.PropertyChanged -= OnCustomActionPropertyChanged;
+                    }
+
+                    _customActions.CollectionChanged -= OnCustomActionsCollectionChanged;
                 }
 
-                disposedValue = true;
+                _disposed = true;
             }
-        }
 
-        public override void Dispose()
-        {
-            Dispose(disposing: true);
-            base.Dispose();
+            base.Dispose(disposing);
         }
 
         internal void DisableAI()

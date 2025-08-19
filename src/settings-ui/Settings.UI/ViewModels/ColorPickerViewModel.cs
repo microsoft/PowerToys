@@ -20,11 +20,11 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class ColorPickerViewModel : PageViewModelBase, IDisposable
+    public partial class ColorPickerViewModel : PageViewModelBase
     {
         protected override string ModuleName => ColorPickerSettings.ModuleName;
 
-        private bool disposedValue;
+        private bool _disposed;
 
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it; otherwise, we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
@@ -421,23 +421,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    _delayedTimer.Dispose();
+                    _delayedTimer?.Dispose();
+                    foreach (var colorFormat in ColorFormats)
+                    {
+                        colorFormat.PropertyChanged -= ColorFormat_PropertyChanged;
+                    }
+
+                    ColorFormats.CollectionChanged -= ColorFormats_CollectionChanged;
                 }
 
-                disposedValue = true;
+                _disposed = true;
             }
-        }
 
-        public override void Dispose()
-        {
-            Dispose(disposing: true);
-            base.Dispose();
+            base.Dispose(disposing);
         }
 
         internal ColorFormatModel GetNewColorFormatModel()

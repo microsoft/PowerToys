@@ -21,11 +21,13 @@ using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PeekViewModel : PageViewModelBase, IDisposable
+    public class PeekViewModel : PageViewModelBase
     {
         protected override string ModuleName => PeekSettings.ModuleName;
 
         private bool _isEnabled;
+
+        private bool _disposed;
 
         private bool _settingsUpdating;
 
@@ -316,10 +318,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _watcher?.Dispose();
-            base.Dispose();
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _watcher?.Dispose();
+                    _watcher = null;
+                }
+
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

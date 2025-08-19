@@ -17,10 +17,11 @@ using Microsoft.PowerToys.Settings.UI.Services;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public abstract class PageViewModelBase : Observable
+    public abstract class PageViewModelBase : Observable, IDisposable
     {
         private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
         private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
+        private bool _disposed = false;
 
         protected abstract string ModuleName { get; }
 
@@ -229,9 +230,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public virtual void Dispose()
         {
-            if (GlobalHotkeyConflictManager.Instance != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
             {
-                GlobalHotkeyConflictManager.Instance.ConflictsUpdated -= OnConflictsUpdated;
+                if (disposing)
+                {
+                    if (GlobalHotkeyConflictManager.Instance != null)
+                    {
+                        GlobalHotkeyConflictManager.Instance.ConflictsUpdated -= OnConflictsUpdated;
+                    }
+                }
+
+                _disposed = true;
             }
         }
     }
