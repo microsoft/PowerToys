@@ -355,5 +355,4 @@ src/common/Telemetry/*.etl
 /MSBuildCacheLogs/
 
 # PowerToys Settings generated search index (legacy location) and obj outputs
-src/settings-ui/Settings.UI/Assets/search.index.json
-src/settings-ui/Settings.UI/obj/
+/src/settings-ui/Settings.UI/Assets/Settings/search.index.json

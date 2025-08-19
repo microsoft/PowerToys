@@ -112,7 +112,9 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                 foreach (var element in settingsPageElements)
                 {
                     var elementUid = GetElementUid(element, x);
-                    var moduleImageSource = element.Attribute("ModuleImageSource")?.Value;
+
+                    // Prefer the first SettingsCard.HeaderIcon as the module icon
+                    var moduleImageSource = ModuleIconResolver.ResolveIconFromFirstSettingsCard(xamlFile);
 
                     if (!string.IsNullOrEmpty(elementUid))
                     {
