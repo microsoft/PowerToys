@@ -222,4 +222,37 @@ internal sealed partial class SampleListPage : ListPage
             { "hmm?", null },
         };
     }
+
+    /// <summary>
+    /// Represents an icon that is a font glyph.
+    /// This is used for icons that are defined by a specific font face,
+    /// such as Wingdings.
+    ///
+    /// Note that Command Palette will default to using the Segoe Fluent Icons,
+    /// Segoe MDL2 Assets font for glyphs in the Segoe UI Symbol range, or Segoe
+    /// UI for any other glyphs. This class is only needed if you want a non-Segoe
+    /// font icon.
+    /// 
+    /// WHY ISN'T THIS IN THE TOOLKIT: I have NO idea why, but if you put this 
+    /// in the toolkit, and not in your extension code, we 100% fail to cast 
+    /// the `Dictionary` to an IDictionary. The error was in 
+    /// `IExtendedAttributesProvider:Do_Abi_GetProperties_0`
+    /// </summary>
+    internal sealed partial class FontIconData : IconData, IExtendedAttributesProvider
+    {
+        private string FontFamily { get; set; }
+
+        private readonly Dictionary<string, object> _properties;
+        
+        public IDictionary<string, object>? GetProperties() => _properties;
+
+        public FontIconData(string glyph, string fontFamily)
+            : base(glyph)
+        {
+            FontFamily = fontFamily;
+            _properties = new Dictionary<string, object>()
+            {
+                { "FontFamily", FontFamily },
+            };
+    }
 }
