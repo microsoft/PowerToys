@@ -29,7 +29,8 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="Oobe_Overview_EnableDataDiagnostics"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}" Margin="0,8,0,0"
+                        Margin="0,8,0,0"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
                         IsEnabled="{x:Bind ShowDataDiagnosticsSetting, Mode=OneWay}">
                         <tkcontrols:SettingsCard.Description>
                             <StackPanel Orientation="Vertical">
