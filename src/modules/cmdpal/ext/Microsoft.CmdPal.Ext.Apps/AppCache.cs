@@ -13,7 +13,7 @@ using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public sealed partial class AppCache : IDisposable
+public sealed partial class AppCache : IAppCache, IDisposable
 {
     private Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
 
@@ -25,7 +25,7 @@ public sealed partial class AppCache : IDisposable
 
     public IList<Win32Program> Win32s => _win32ProgramRepository.Items;
 
-    public IList<UWPApplication> UWPs => _packageRepository.Items;
+    public IList<IUWPApplication> UWPs => _packageRepository.Items;
 
     public static readonly Lazy<AppCache> Instance = new(() => new());
 

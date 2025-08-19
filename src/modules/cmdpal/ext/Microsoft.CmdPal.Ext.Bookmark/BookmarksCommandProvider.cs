@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CmdPal.Ext.Indexer;
@@ -20,10 +21,20 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private readonly AddBookmarkPage _addNewCommand = new(null);
 
+    private readonly IBookmarkDataSource _dataSource;
+    private readonly BookmarkJsonParser _parser;
     private Bookmarks? _bookmarks;
 
     public BookmarksCommandProvider()
+        : this(new FileBookmarkDataSource(StateJsonPath()))
     {
+    }
+
+    internal BookmarksCommandProvider(IBookmarkDataSource dataSource)
+    {
+        _dataSource = dataSource;
+        _parser = new BookmarkJsonParser();
+
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
         Icon = Icons.PinIcon;
@@ -49,10 +60,14 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private void SaveAndUpdateCommands()
     {
-        if (_bookmarks != null)
+        try
         {
-            var jsonPath = BookmarksCommandProvider.StateJsonPath();
-            Bookmarks.WriteToFile(jsonPath, _bookmarks);
+            var jsonData = _parser.SerializeBookmarks(_bookmarks);
+            _dataSource.SaveBookmarkDataAsync(jsonData).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to save bookmarks: {ex.Message}");
         }
 
         LoadCommands();
@@ -82,11 +97,11 @@ public partial class BookmarksCommandProvider : CommandProvider
     {
         try
         {
-            var jsonFile = StateJsonPath();
-            if (File.Exists(jsonFile))
+            _bookmarks = Task.Run(async () =>
             {
-                _bookmarks = Bookmarks.ReadFromFile(jsonFile);
-            }
+                var jsonData = await _dataSource.GetBookmarkDataAsync();
+                return _parser.ParseBookmarks(jsonData);
+            }).Result;
         }
         catch (Exception ex)
         {
