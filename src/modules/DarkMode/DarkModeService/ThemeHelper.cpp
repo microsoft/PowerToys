@@ -31,7 +31,6 @@ void SetSystemTheme(bool mode)
                      KEY_SET_VALUE,
                      &hKey) == ERROR_SUCCESS)
     {
-        // set to !dark to flip
         DWORD value = mode;
         RegSetValueEx(hKey, L"SystemUsesLightTheme", 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
         RegCloseKey(hKey);

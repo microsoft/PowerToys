@@ -7,6 +7,8 @@ enum class SettingId
     Longitude,
     LightTime,
     DarkTime,
+    ChangeSystem,
+    ChangeApps,
     ForceLight,
     ForceDark
 };

@@ -161,6 +161,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public TimeSpan LightTimeTimeSpan
+        {
+            get => TimeSpan.FromMinutes(LightTime);
+            set
+            {
+                int minutes = (int)value.TotalMinutes;
+                if (LightTime != minutes)
+                {
+                    LightTime = minutes;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(LightTimeTimeSpan));
+                }
+            }
+        }
+
+        public TimeSpan DarkTimeTimeSpan
+        {
+            get => TimeSpan.FromMinutes(DarkTime);
+            set
+            {
+                int minutes = (int)value.TotalMinutes;
+                if (DarkTime != minutes)
+                {
+                    DarkTime = minutes;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(DarkTimeTimeSpan));
+                }
+            }
+        }
+
         public string Latitude
         {
             get => ModuleSettings.Properties.Latitude.Value;

@@ -79,10 +79,14 @@
 
             <StackPanel>
               <TextBlock Text="Light Time" />
-              <!-- Replace with appropriate time picker binding if needed -->
-              <TextBox Text="{x:Bind ViewModel.LightTime, Mode=TwoWay}" />
+              <TimePicker
+                Time="{x:Bind ViewModel.LightTimeTimeSpan, Mode=TwoWay}" 
+                ClockIdentifier="24HourClock"/>
+
               <TextBlock Text="Dark Time" />
-              <TextBox Text="{x:Bind ViewModel.DarkTime, Mode=TwoWay}" />
+              <TimePicker
+                Time="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=TwoWay}" 
+                ClockIdentifier="24HourClock"/>
             </StackPanel>
           </tkcontrols:SettingsCard>
 

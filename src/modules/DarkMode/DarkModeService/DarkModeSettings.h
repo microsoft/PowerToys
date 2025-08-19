@@ -21,6 +21,8 @@ struct DarkModeConfig
     // Stored as minutes since midnight
     int lightTime = 8 * 60; // 08:00 default
     int darkTime = 20 * 60; // 20:00 default
+    bool changeSystem = false;
+    bool changeApps = false;
 
     // Overrides
     bool forceLight = false;

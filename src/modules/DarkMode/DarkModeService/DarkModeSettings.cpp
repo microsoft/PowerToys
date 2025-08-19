@@ -118,6 +118,28 @@ void DarkModeSettings::LoadSettings()
             }
         }
 
+        // ChangeSystem
+        if (const auto jsonVal = values.get_bool_value(L"changeSystem"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.changeSystem != val)
+            {
+                m_settings.changeSystem = val;
+                NotifyObservers(SettingId::ChangeSystem);
+            }
+        }
+
+        // ChangeApps
+        if (const auto jsonVal = values.get_bool_value(L"changeApps"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.changeApps != val)
+            {
+                m_settings.changeApps = val;
+                NotifyObservers(SettingId::ChangeApps);
+            }
+        }
+
         // ForceLight
         if (const auto jsonVal = values.get_bool_value(L"forceLight"))
         {
