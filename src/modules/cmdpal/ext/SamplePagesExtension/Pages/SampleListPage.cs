@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -180,14 +181,19 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "I also have properties",
             },
+
+            // new ListItem(new NoOpCommand() { Icon = new(new OneFontIconData("\u0027", "Wingdings")), Name = "one" }) { Title = "OneFontIconData", Tags = [new Tag("DynamicallyAccessedMembers"), new Tag("internal sealed"), new Tag("in samples")] },
+            // new ListItem(new NoOpCommand() { Icon = new(new TwoFontIconData("\u0028", "Wingdings")), Name = "two" }) { Title = "TwoFontIconData", Tags = [new Tag("                          "), new Tag("internal sealed"), new Tag("in samples")] },
+            // new ListItem(new NoOpCommand() { Icon = new(new ThreeFontIconData("\u0029", "Wingdings")), Name = "three" }) { Title = "ThreeFontIconData", Tags = [new Tag("DynamicallyAccessedMembers"), new Tag("PUBLIC sealed"), new Tag("in samples")] },
         ];
     }
 
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     internal sealed partial class CommandWithProperties : InvokableCommand, IExtendedAttributesProvider
     {
         private FontIconData _icon = new("\u0026", "Wingdings");
 
-        public override IconInfo Icon => new IconInfo(_icon, _icon);
+        public override IconInfo Icon => new(_icon, _icon);
 
         public override string Name => "Whatever";
 
@@ -197,6 +203,18 @@ internal sealed partial class SampleListPage : ListPage
             { "Secret", 42 },
             { "hmm?", null },
         };
+
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Microsoft.CommandPalette.Extensions.Toolkit.FontIconData))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IDictionary<string, object>))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Dictionary<string, object>))]
+        public static void PreserveTypes()
+        {
+        }
+
+        public CommandWithProperties()
+        {
+            PreserveTypes();
+        }
     }
 
     internal sealed partial class OtherCommandWithProperties : IExtendedAttributesProvider, IInvokableCommand
@@ -222,4 +240,63 @@ internal sealed partial class SampleListPage : ListPage
             { "hmm?", null },
         };
     }
+
+    // [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    // internal sealed partial class OneFontIconData : IconData, IExtendedAttributesProvider
+    // {
+    //    private string FontFamily { get; set; }
+
+    // private readonly IDictionary<string, object> _properties;
+
+    // public IDictionary<string, object> GetProperties() => _properties;
+
+    // public OneFontIconData(string glyph, string fontFamily)
+    //           : base(glyph)
+    //    {
+    //        FontFamily = fontFamily;
+    //        _properties = new Dictionary<string, object>()
+    //    {
+    //        { "FontFamily", FontFamily },
+    //    };
+    //    }
+    // }
+
+    // internal sealed partial class TwoFontIconData : IconData, IExtendedAttributesProvider
+    // {
+    //    private string FontFamily { get; set; }
+
+    // private readonly IDictionary<string, object> _properties;
+
+    // public IDictionary<string, object> GetProperties() => _properties;
+
+    // public TwoFontIconData(string glyph, string fontFamily)
+    //        : base(glyph)
+    //    {
+    //        FontFamily = fontFamily;
+    //        _properties = new Dictionary<string, object>()
+    //    {
+    //        { "FontFamily", FontFamily },
+    //    };
+    //    }
+    // }
+
+    // [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    // public sealed partial class ThreeFontIconData : IconData, IExtendedAttributesProvider
+    // {
+    //    private string FontFamily { get; set; }
+
+    // private readonly IDictionary<string, object> _properties;
+
+    // public IDictionary<string, object> GetProperties() => _properties;
+
+    // public ThreeFontIconData(string glyph, string fontFamily)
+    //        : base(glyph)
+    //    {
+    //        FontFamily = fontFamily;
+    //        _properties = new Dictionary<string, object>()
+    //    {
+    //        { "FontFamily", FontFamily },
+    //    };
+    //    }
+    // }
 }
