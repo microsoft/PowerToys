@@ -19,7 +19,7 @@ public partial class FontIconData : IconData, IExtendedAttributesProvider
     private string FontFamily { get; set; }
 
     private readonly Dictionary<string, object> _properties;
-    
+
     public IDictionary<string, object>? GetProperties() => _properties;
 
     public FontIconData(string glyph, string fontFamily)
@@ -30,4 +30,8 @@ public partial class FontIconData : IconData, IExtendedAttributesProvider
         {
             { "FontFamily", FontFamily },
         };
+    }
+
+    // public IDictionary<string, object>? GetProperties() => _properties;
+    public IDictionary<string, object>? GetProperties => _properties;
 }
