@@ -1,5 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <!-- <Import Project="..\..\..\..\Common.Dotnet.PrepareGeneratedFolder.targets" /> 
+  <PropertyGroup>
+    <WindowsSdkPackageVersion>10.0.26100.68-preview</WindowsSdkPackageVersion>
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn></NoWarn>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>CA1824;CA1416;CA1720;CA1859;CA2263;CA2022;MVVMTK0045;MVVMTK0049</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <ErrorReport>prompt</ErrorReport>
+    <DefineConstants>RELEASE;TRACE</DefineConstants>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+  </PropertyGroup> -->
+
+
+<!-- #######################################################  -->
+
   <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -11,7 +45,6 @@
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPalExtensions\$(RootNamespace)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,6 +71,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Shmuelie.WinRTServer" />
   </ItemGroup>
   <!--
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
@@ -64,6 +98,7 @@
   <PropertyGroup>
     <PublishTrimmed>true</PublishTrimmed>
     <PublishSingleFile>true</PublishSingleFile>
+    <WarningsNotAsErrors>IL2104;$(WarningsNotAsErrors)</WarningsNotAsErrors>
     <PublishAot>true</PublishAot>
   </PropertyGroup>
 

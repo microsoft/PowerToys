@@ -315,7 +315,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         Logger.LogDebug($"Starting {extension.PackageFullName}");
         try
         {
-            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(30));
             return new CommandProviderWrapper(extension, _taskScheduler);
         }
         catch (Exception ex)
@@ -329,7 +329,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         try
         {
-            return await LoadTopLevelCommandsFromProvider(wrapper!).WaitAsync(TimeSpan.FromSeconds(10));
+            return await LoadTopLevelCommandsFromProvider(wrapper!).WaitAsync(TimeSpan.FromSeconds(30));
         }
         catch (TimeoutException)
         {

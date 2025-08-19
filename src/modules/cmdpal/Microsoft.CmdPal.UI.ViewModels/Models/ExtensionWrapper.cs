@@ -126,6 +126,10 @@ public class ExtensionWrapper : IExtensionWrapper
                                 // We'll just return out nothing.
                                 return;
                             }
+                            else if (hr.Value != 0)
+                            {
+                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr.Value} ({hr.Value:X8})");
+                            }
 
                             // Marshal.ThrowExceptionForHR(hr);
                             _extensionObject = MarshalInterface<IExtension>.FromAbi((nint)extensionPtr);

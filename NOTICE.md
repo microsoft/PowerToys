@@ -1553,6 +1553,7 @@ SOFTWARE.
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.37.2
 - SkiaSharp.Views.WinUI 2.88.9
+- Shmuelie.WinRTServer 2.1.1
 - StreamJsonRpc 2.21.69
 - StyleCop.Analyzers 1.2.0-beta.556
 - System.CodeDom 9.0.8

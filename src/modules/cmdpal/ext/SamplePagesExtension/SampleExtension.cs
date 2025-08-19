@@ -4,23 +4,26 @@
 
 using System;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Microsoft.CommandPalette.Extensions;
+using Windows.Foundation;
 
 namespace SamplePagesExtension;
 
-[ComVisible(true)]
+// [ComVisible(true)]
+// [ComDefaultInterface(typeof(IExtension))]
 [Guid("6112D28D-6341-45C8-92C3-83ED55853A9F")]
-[ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension, IDisposable
+
+// [global::WinRT.WinRTExposedType]
+public sealed partial class SampleExtension : IExtension, IDisposable// , IDynamicInterfaceCastable
 {
-    private readonly ManualResetEvent _extensionDisposedEvent;
+    private bool disposed;
+
+    public event TypedEventHandler<IExtension, object> Disposed;
 
     private readonly SamplePagesCommandsProvider _provider = new();
 
-    public SampleExtension(ManualResetEvent extensionDisposedEvent)
+    public SampleExtension()
     {
-        this._extensionDisposedEvent = extensionDisposedEvent;
     }
 
     public object GetProvider(ProviderType providerType)
@@ -36,6 +39,19 @@ public sealed partial class SampleExtension : IExtension, IDisposable
 
     public void Dispose()
     {
-        this._extensionDisposedEvent.Set();
+        if (!disposed)
+        {
+            Disposed?.Invoke(this, null);
+            _provider.Dispose();
+            disposed = true;
+        }
     }
+
+    // public bool IsInterfaceImplemented(RuntimeTypeHandle interfaceType, bool throwIfNotImplemented)
+    // {
+    //    Debug.WriteLine($"{interfaceType}");
+    //    return true;
+    // }
+
+    // public RuntimeTypeHandle GetInterfaceImplementation(RuntimeTypeHandle interfaceType) => throw new NotImplementedException();
 }
