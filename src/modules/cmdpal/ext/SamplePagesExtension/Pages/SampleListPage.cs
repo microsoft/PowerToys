@@ -191,7 +191,7 @@ internal sealed partial class SampleListPage : ListPage
 
         public override string Name => "Whatever";
 
-        public IDictionary<string, object> GetProperties => new Dictionary<string, object>()
+        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
         {
             { "Foo", "bar" },
             { "Secret", 42 },
@@ -215,7 +215,7 @@ internal sealed partial class SampleListPage : ListPage
             return CommandResult.ShowToast("whoop");
         }
 
-        public IDictionary<string, object> GetProperties => new Dictionary<string, object>()
+        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
         {
             { "yo", "dog" },
             { "Secret", 12345 },

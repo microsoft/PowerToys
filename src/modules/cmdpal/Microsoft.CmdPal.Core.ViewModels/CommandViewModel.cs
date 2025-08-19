@@ -151,7 +151,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     private void UpdatePropertiesFromExtension(IExtendedAttributesProvider? model)
     {
-        var propertiesFromExtension = model?.GetProperties;
+        var propertiesFromExtension = model?.GetProperties();
         if (propertiesFromExtension == null)
         {
             _properties = null;

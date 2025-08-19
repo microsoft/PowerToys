@@ -48,7 +48,7 @@ public partial class IconDataViewModel : ObservableObject, IIconData
 
         if (model is IExtendedAttributesProvider icon2)
         {
-            var props = icon2.GetProperties;
+            var props = icon2.GetProperties();
 
             // From Raymond Chen:
             // Make sure you don't try do do something like
