@@ -78,7 +78,7 @@ internal sealed partial class RunExeItem : ListItem
         try
         {
             var stream = await ThumbnailHelper.GetThumbnail(FullExePath);
-            if (stream != null)
+            if (stream is not null)
             {
                 var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
                 icon = new IconInfo(data, data);

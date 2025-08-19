@@ -11,9 +11,9 @@ namespace Microsoft.CmdPal.Ext.Calc.Pages;
 public sealed partial class FallbackCalculatorItem : FallbackCommandItem
 {
     private readonly CopyTextCommand _copyCommand = new(string.Empty);
-    private readonly SettingsManager _settings;
+    private readonly ISettingsInterface _settings;
 
-    public FallbackCalculatorItem(SettingsManager settings)
+    public FallbackCalculatorItem(ISettingsInterface settings)
         : base(new NoOpCommand(), Resources.calculator_title)
     {
         Command = _copyCommand;
@@ -28,7 +28,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
     {
         var result = QueryHelper.Query(query, _settings, true, null);
 
-        if (result == null)
+        if (result is null)
         {
             _copyCommand.Text = string.Empty;
             _copyCommand.Name = string.Empty;
