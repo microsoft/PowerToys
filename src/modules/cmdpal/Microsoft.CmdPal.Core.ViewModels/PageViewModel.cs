@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -223,9 +224,10 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         extensionHint ??= ExtensionHost.GetExtensionDisplayName() ?? Title;
         Task.Factory.StartNew(
             () =>
-        {
-            ErrorMessage += $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
-        },
+            {
+                var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint);
+                ErrorMessage += message;
+            },
             CancellationToken.None,
             TaskCreationOptions.None,
             Scheduler);
