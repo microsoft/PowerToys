@@ -49,6 +49,10 @@
                 TrueValue="Collapsed" />
             <tkconverters:StringFormatConverter x:Key="StringFormatConverter" />
             <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <tkconverters:EmptyObjectToObjectConverter
+                x:Key="EmptyObjectToObjectConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
             <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
 
             <x:Double x:Key="SettingsCardSpacing">2</x:Double>

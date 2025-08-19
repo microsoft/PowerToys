@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 
-namespace Microsoft.PowerToys.Settings.UI.Helpers
+namespace Microsoft.PowerToys.Settings.UI.Converters
 {
     public partial class IconConverter : IValueConverter
     {
