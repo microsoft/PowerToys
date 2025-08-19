@@ -64,7 +64,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid
+    <Grid 
+        Background="{ThemeResource DesktopAcrylicTransparentBrush}" 
         MinHeight="40"
         Padding="4"
         ColumnSpacing="8">

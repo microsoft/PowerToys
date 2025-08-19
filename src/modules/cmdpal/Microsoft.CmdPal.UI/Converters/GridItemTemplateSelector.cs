@@ -10,30 +10,29 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
 {
-    public GridTileSize? TileSize { get; set; }
+    public IGridProperties? GridProperties { get; set; }
 
     public DataTemplate? Small { get; set; }
 
     public DataTemplate? Medium { get; set; }
 
-    public DataTemplate? Large { get; set; }
+    public DataTemplate? Gallery { get; set; }
 
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject dependencyObject)
     {
         DataTemplate? dataTemplate = Medium;
 
-        switch (TileSize)
+        if (GridProperties is ISmallGridLayout)
         {
-            case GridTileSize.Small:
-                dataTemplate = Small;
-                break;
-            case GridTileSize.Large:
-                dataTemplate = Large;
-                break;
-            case GridTileSize.Medium:
-            default:
-                dataTemplate = Medium;
-                break;
+            dataTemplate = Small;
+        }
+        else if (GridProperties is IMediumGridLayout)
+        {
+            dataTemplate = Medium;
+        }
+        else if (GridProperties is IGalleryGridLayout)
+        {
+            dataTemplate = Gallery;
         }
 
         return dataTemplate;

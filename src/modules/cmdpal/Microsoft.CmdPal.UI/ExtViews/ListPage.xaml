@@ -28,6 +28,7 @@
             Source="{x:Bind ViewModel.Items, Mode=OneWay}" />-->
 
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <cmdpalUI:GalleryGridLayoutToHeightConverter x:Key="GalleryGridLayoutToHeightConverter"/>
         <converters:StringVisibilityConverter
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
@@ -47,10 +48,10 @@
         <cmdpalUI:GridItemTemplateSelector
             x:Key="GridItemTemplateSelector"
             x:DataType="coreViewModels:ListItemViewModel"
-            TileSize="{x:Bind ViewModel.GridProperties.Size}"
+            GridProperties="{x:Bind ViewModel.GridProperties}"
             Small="{StaticResource SmallGridItemViewModelTemplate}"
             Medium="{StaticResource MediumGridItemViewModelTemplate}"
-            Large="{StaticResource LargeGridItemViewModelTemplate}" />
+            Gallery="{StaticResource GalleryGridItemViewModelTemplate}" />
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="coreViewModels:ListItemViewModel">
@@ -134,8 +135,8 @@
 
                 <cpcontrols:IconBox
                      x:Name="GridIconBorder"
-                     Width="32"
-                     Height="32"
+                     Width="28"
+                     Height="28"
                      Margin="0"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
@@ -168,6 +169,8 @@
                     Margin="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
+                    CharacterSpacing="12"
+                    FontSize="14"
                     Foreground="{ThemeResource TextFillColorPrimary}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
@@ -179,7 +182,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     CharacterSpacing="12"
-                    FontSize="11"
+                    FontSize="12"
                     Text="{x:Bind Title}"
                     Visibility="{Binding ElementName=PageRoot, Path=DataContext.GridProperties.ShowTitle, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                     TextAlignment="Center"
@@ -189,77 +192,75 @@
         </DataTemplate>
 
         <DataTemplate 
-            x:Key="LargeGridItemViewModelTemplate" 
+            x:Key="GalleryGridItemViewModelTemplate" 
             x:DataType="coreViewModels:ListItemViewModel">
             <StackPanel
-                Width="240"
-                Height="240"
-                Padding="8,16"
+                Width="160"
+                Padding="0"
+                Margin="4"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 AutomationProperties.Name="{x:Bind Title}"
                 BorderThickness="0"
-                CornerRadius="8"
+                CornerRadius="4"
                 Orientation="Vertical"
                 ToolTipService.ToolTip="{x:Bind Title}">
 
-                <cpcontrols:IconBox
-                    x:Name="GridIconBorder"
-                    Width="48"
-                    Height="48"
-                    Margin="0,8,0,0"
-                    HorizontalAlignment="Center"
+                <Grid 
+                    CornerRadius="4"
+                    Margin="0"
                     VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorPrimary}"
-                    SourceKey="{x:Bind Icon, Mode=OneWay}"
-                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-
-                <TextBlock
-                    x:Name="TitleTextBlock"
-                    MaxHeight="40"
-                    Margin="0,8,0,4"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    CharacterSpacing="11"
-                    FontSize="11"
-                    Text="{x:Bind Title}"
-                    TextAlignment="Center"
-                    TextTrimming="WordEllipsis"
-                    TextWrapping="Wrap" />
+                    Height="160"
+                    Width="160">
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Viewbox 
+                        Grid.Row="1"
+                        Stretch="UniformToFill" 
+                        HorizontalAlignment="Center"
+                        StretchDirection="Both">
+                        <cpcontrols:IconBox
+                            CornerRadius="4"
+                            Foreground="{ThemeResource TextFillColorPrimary}"
+                            SourceKey="{x:Bind Icon, Mode=OneWay}"
+                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    </Viewbox>
+                </Grid>
 
-                <TextBlock
-                    x:Name="SubTitleTextBlock"
-                    MaxHeight="40"
-                    Margin="0,8,0,4"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    CharacterSpacing="10"
-                    FontSize="10"
-                    Text="{x:Bind Subtitle}"
-                    TextAlignment="Center"
-                    TextTrimming="WordEllipsis"
-                    TextWrapping="Wrap" />
-
-                <VisualStateManager.VisualStateGroups>
-                    <VisualStateGroup x:Name="Subtitle">
-                        <VisualState x:Name="ShowSubtitle">
-                            <VisualState.StateTriggers>
-                                <ui:IsEqualStateTrigger Value="{Binding ElementName=PageRoot, Path=DataContext.GridProperties.ShowSubtitle}" To="True" />
-                            </VisualState.StateTriggers>
-                            <VisualState.Setters>
-                                <Setter Target="SubTitleTextBlock.Visibility" Value="Visible" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="HideSubtitle">
-                            <VisualState.StateTriggers>
-                                <ui:IsEqualStateTrigger Value="{Binding ElementName=PageRoot, Path=DataContext.GridProperties.ShowSubtitle}" To="False" />
-                            </VisualState.StateTriggers>
-                            <VisualState.Setters>
-                                <Setter Target="SubTitleTextBlock.Visibility" Value="Collapsed" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateManager.VisualStateGroups>
+                <StackPanel
+                    Padding="4"
+                    Orientation="Vertical">
+                    <TextBlock
+                        x:Name="TitleTextBlock"
+                        MaxHeight="40"
+                        MaxWidth="152"
+                        Margin="0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        CharacterSpacing="12"
+                        FontSize="14"
+                        Foreground="{ThemeResource TextFillColorPrimary}"
+                        Text="{x:Bind Title}"
+                        TextAlignment="Center"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap" />
+                    <TextBlock
+                        x:Name="SubTitleTextBlock"
+                        MaxHeight="40"
+                        Margin="0, 4, 0, 0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        CharacterSpacing="11"
+                        MaxWidth="152"
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorTertiary}"
+                        Text="{x:Bind Subtitle}"
+                        TextAlignment="Center"
+                        TextTrimming="WordEllipsis"
+                        TextWrapping="NoWrap" />
+                </StackPanel>
             </StackPanel>
         </DataTemplate>
     </Page.Resources>
