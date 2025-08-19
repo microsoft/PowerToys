@@ -37,7 +37,7 @@ public class ClipboardItem
     }
 
     [MemberNotNullWhen(true, nameof(ImageData))]
-    private bool IsImage => ImageData != null;
+    private bool IsImage => ImageData is not null;
 
     [MemberNotNullWhen(true, nameof(Content))]
     private bool IsText => !string.IsNullOrEmpty(Content);

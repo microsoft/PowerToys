@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Text;
-using ManagedCommon;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
@@ -37,7 +35,7 @@ public class ShellLinkHelper : IShellLinkHelper
         IPersistFile* persistFile = null;
         Guid iid = typeof(IPersistFile).GUID;
         ((IUnknown*)link)->QueryInterface(&iid, (void**)&persistFile);
-        if (persistFile != null)
+        if (persistFile is not null)
         {
             using var persistFileHandle = new SafeComHandle((IntPtr)persistFile);
             try

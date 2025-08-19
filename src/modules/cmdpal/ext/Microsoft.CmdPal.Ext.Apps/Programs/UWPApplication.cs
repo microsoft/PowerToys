@@ -308,7 +308,7 @@ public class UWPApplication : IProgram
     private bool SetScaleIcons(string path, string colorscheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
-        if (extension != null)
+        if (extension is not null)
         {
             var end = path.Length - extension.Length;
             var prefix = path.Substring(0, end);
@@ -363,7 +363,7 @@ public class UWPApplication : IProgram
     private bool SetTargetSizeIcon(string path, string colorscheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
-        if (extension != null)
+        if (extension is not null)
         {
             var end = path.Length - extension.Length;
             var prefix = path.Substring(0, end);
@@ -576,7 +576,7 @@ public class UWPApplication : IProgram
 
             var group = new DrawingGroup();
             var converted = ColorConverter.ConvertFromString(currentBackgroundColor);
-            if (converted != null)
+            if (converted is not null)
             {
                 var color = (Color)converted;
                 var brush = new SolidColorBrush(color);

@@ -53,7 +53,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         }
 
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
@@ -76,13 +76,13 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         }
 
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
         var ico = model.Icon;
-        if (ico != null)
+        if (ico is not null)
         {
             Icon = new(ico);
             Icon.InitializeProperties();
@@ -112,7 +112,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
     protected void FetchProperty(string propertyName)
     {
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -143,7 +143,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         Icon = new(null); // necessary?
 
         var model = Model.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.PropChanged -= Model_PropChanged;
         }
