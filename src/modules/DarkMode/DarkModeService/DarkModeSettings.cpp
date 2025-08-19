@@ -1,0 +1,148 @@
+#include "DarkModeSettings.h"
+#include <common/utils/json.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include "SettingsObserver.h"
+
+#include <filesystem>
+#include <fstream>
+#include <WinHookEventIDs.h>
+
+using namespace std;
+
+DarkModeSettings& DarkModeSettings::instance()
+{
+    static DarkModeSettings inst;
+    return inst;
+}
+
+DarkModeSettings::DarkModeSettings()
+{
+    LoadSettings();
+}
+
+std::wstring DarkModeSettings::GetSettingsFileName()
+{
+    // Mirrors AlwaysOnTop: <module name>.json
+    return PTSettingsHelper::get_module_save_file_location(L"DarkMode");
+}
+
+void DarkModeSettings::InitFileWatcher()
+{
+    const std::wstring& settingsFileName = GetSettingsFileName();
+    m_settingsFileWatcher = std::make_unique<FileWatcher>(settingsFileName, [&]() {
+        PostMessageW(HWND_BROADCAST, WM_PRIV_SETTINGS_CHANGED, NULL, NULL);
+    });
+}
+
+void DarkModeSettings::AddObserver(SettingsObserver& observer)
+{
+    m_observers.insert(&observer);
+}
+
+void DarkModeSettings::RemoveObserver(SettingsObserver& observer)
+{
+    m_observers.erase(&observer);
+}
+
+void DarkModeSettings::NotifyObservers(SettingId id) const
+{
+    for (auto observer : m_observers)
+    {
+        if (observer->WantsToBeNotified(id))
+        {
+            observer->SettingsUpdate(id);
+        }
+    }
+}
+
+void DarkModeSettings::LoadSettings()
+{
+    try
+    {
+        // Load values from DarkMode.json
+        PowerToysSettings::PowerToyValues values =
+            PowerToysSettings::PowerToyValues::load_from_settings_file(L"DarkMode");
+
+        // UseLocation
+        if (const auto jsonVal = values.get_bool_value(L"useLocation"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.useLocation != val)
+            {
+                m_settings.useLocation = val;
+                NotifyObservers(SettingId::UseLocation);
+            }
+        }
+
+        // Latitude
+        if (const auto jsonVal = values.get_string_value(L"latitude"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.latitude != val)
+            {
+                m_settings.latitude = val;
+                NotifyObservers(SettingId::Latitude);
+            }
+        }
+
+        // Longitude
+        if (const auto jsonVal = values.get_string_value(L"longitude"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.longitude != val)
+            {
+                m_settings.longitude = val;
+                NotifyObservers(SettingId::Longitude);
+            }
+        }
+
+        // LightTime
+        if (const auto jsonVal = values.get_int_value(L"lightTime"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.lightTime != val)
+            {
+                m_settings.lightTime = val;
+                NotifyObservers(SettingId::LightTime);
+            }
+        }
+
+        // DarkTime
+        if (const auto jsonVal = values.get_int_value(L"darkTime"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.darkTime != val)
+            {
+                m_settings.darkTime = val;
+                NotifyObservers(SettingId::DarkTime);
+            }
+        }
+
+        // ForceLight
+        if (const auto jsonVal = values.get_bool_value(L"forceLight"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.forceLight != val)
+            {
+                m_settings.forceLight = val;
+                NotifyObservers(SettingId::ForceLight);
+            }
+        }
+
+        // ForceDark
+        if (const auto jsonVal = values.get_bool_value(L"forceDark"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.forceDark != val)
+            {
+                m_settings.forceDark = val;
+                NotifyObservers(SettingId::ForceDark);
+            }
+        }
+    }
+    catch (...)
+    {
+        //Logger::error(L"[DarkModeSettings] Failed to read settings file");
+        // Keeps defaults if load fails
+    }
+}

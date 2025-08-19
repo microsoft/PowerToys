@@ -2,8 +2,9 @@
 #include <tchar.h>
 #include "ThemeScheduler.h"
 #include "ThemeHelper.h"
-#include "DarkModeSettings.h"
 #include <stdio.h>
+#include <string>
+#include <DarkModeSettings.h>
 
 // Global service variables
 SERVICE_STATUS g_ServiceStatus = {};
