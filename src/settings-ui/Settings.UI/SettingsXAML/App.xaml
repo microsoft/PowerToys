@@ -54,7 +54,7 @@
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
             <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
-
+            <tkconverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
             <x:Double x:Key="SettingsCardSpacing">2</x:Double>
 
             <!--  Overrides  -->

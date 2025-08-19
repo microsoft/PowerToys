@@ -486,23 +486,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
         }
 
-        private sealed class SuggestionItem
-        {
-            public string Header { get; init; }
-
-            public string Icon { get; init; }
-
-            public string PageTypeName { get; init; }
-
-            public string ElementName { get; init; }
-
-            public string ParentElementName { get; init; }
-
-            public string Subtitle { get; init; }
-
-            public bool IsShowAll { get; init; }
-        }
-
         private List<SettingEntry> _lastSearchResults = new();
         private string _lastQueryText = string.Empty;
 
