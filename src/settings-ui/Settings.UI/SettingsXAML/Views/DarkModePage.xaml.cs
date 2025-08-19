@@ -47,13 +47,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _settingsUtils = new SettingsUtils();
             _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
-            ViewModel = new DarkModeViewModel();
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-
             _generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
             _moduleSettingsRepository = SettingsRepository<DarkModeSettings>.GetInstance(_settingsUtils);
 
-            // We load the view model settings first.
+            // Get settings from JSON (or defaults if JSON missing)
+            var darkSettings = _moduleSettingsRepository.SettingsConfig;
+
+            // Pass them into the ViewModel
+            ViewModel = new DarkModeViewModel(darkSettings);
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
             LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
 
             DataContext = ViewModel;

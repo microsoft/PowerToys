@@ -13,10 +13,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class DarkModeViewModel : Observable
     {
-        public DarkModeViewModel()
+        public DarkModeViewModel(DarkModeSettings initialSettings = null)
         {
-            // Ensure ModuleSettings is never null
-            _moduleSettings = new DarkModeSettings();
+            _moduleSettings = initialSettings ?? new DarkModeSettings();
         }
 
         public DarkModeSettings ModuleSettings

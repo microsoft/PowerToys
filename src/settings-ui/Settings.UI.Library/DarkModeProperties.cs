@@ -29,24 +29,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         [JsonPropertyName("changeSystem")]
-        public BoolProperty ChangeSystem { get; set; } = new BoolProperty { Value = false };
+        public BoolProperty ChangeSystem { get; set; }
 
         [JsonPropertyName("changeApps")]
-        public BoolProperty ChangeApps { get; set; } = new BoolProperty { Value = false };
+        public BoolProperty ChangeApps { get; set; }
 
         [JsonPropertyName("useLocation")]
-        public BoolProperty UseLocation { get; set; } = new BoolProperty { Value = false };
+        public BoolProperty UseLocation { get; set; }
 
         [JsonPropertyName("lightTime")]
-        public IntProperty LightTime { get; set; } = new IntProperty { Value = 795 };
+        public IntProperty LightTime { get; set; }
 
         [JsonPropertyName("darkTime")]
-        public IntProperty DarkTime { get; set; } = new IntProperty { Value = 800 };
+        public IntProperty DarkTime { get; set; }
 
         [JsonPropertyName("latitude")]
-        public StringProperty Latitude { get; set; } = new StringProperty { Value = "0.0" };
+        public StringProperty Latitude { get; set; }
 
         [JsonPropertyName("longitude")]
-        public StringProperty Longitude { get; set; } = new StringProperty { Value = "0.0" };
+        public StringProperty Longitude { get; set; }
     }
 }
