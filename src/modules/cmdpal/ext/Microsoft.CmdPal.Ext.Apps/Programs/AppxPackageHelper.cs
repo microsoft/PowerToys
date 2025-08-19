@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Utils;
-using Microsoft.UI.Xaml.Controls;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Storage.Packaging.Appx;
