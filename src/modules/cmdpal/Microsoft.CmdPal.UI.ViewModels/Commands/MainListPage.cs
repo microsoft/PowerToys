@@ -83,7 +83,7 @@ public partial class MainListPage : DynamicListPage,
         }
         else
         {
-            RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
+            RaiseItemsChanged();
         }
     }
 
@@ -203,22 +203,21 @@ public partial class MainListPage : DynamicListPage,
 
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
-            // if (_filteredItems is null)
-            // {
-            _filteredItems = commands;
-            _filteredItemsIncludesApps = _includeApps;
-            if (_includeApps)
+            if (_filteredItems is null)
             {
-                IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
-                var appIds = apps.Select(app => app.Command.Id).ToArray();
+                _filteredItems = commands;
+                _filteredItemsIncludesApps = _includeApps;
+                if (_includeApps)
+                {
+                    IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
+                    var appIds = apps.Select(app => app.Command.Id).ToArray();
 
-                // Remove any top level pinned apps and use the apps from AllAppsCommandProvider.Page.GetItems()
-                // since they contain details.
-                _filteredItems = _filteredItems.Where(item => item.Command is not AppCommand);
-                _filteredItems = _filteredItems.Concat(apps);
+                    // Remove any top level pinned apps and use the apps from AllAppsCommandProvider.Page.GetItems()
+                    // since they contain details.
+                    _filteredItems = _filteredItems.Where(item => item.Command is not AppCommand);
+                    _filteredItems = _filteredItems.Concat(apps);
+                }
             }
-
-            // }
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
@@ -228,12 +227,11 @@ public partial class MainListPage : DynamicListPage,
             var appResultLimit = AllAppsCommandProvider.TopLevelResultLimit;
             if (appResultLimit >= 0)
             {
-                var appIndexes = _filteredItems
+                var indexesToRemove = _filteredItems
                                     .Select((item, index) => (item, index))
                                     .Where((item) => item.item.Command is AppCommand)
-                                    .Select(item => item.index);
-
-                var indexesToRemove = appIndexes.Where((indexInFilteredItems, index) => index >= appResultLimit);
+                                    .Select(item => item.index)
+                                    .Where((indexInFilteredItems, index) => index >= appResultLimit);
                 _filteredItems = _filteredItems.Where((item, index) => !indexesToRemove.Contains(index));
             }
 
