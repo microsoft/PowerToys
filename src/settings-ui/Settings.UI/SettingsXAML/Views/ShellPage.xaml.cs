@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Search;
 using Common.Search.FuzzSearch;
@@ -28,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// Root page.
     /// </summary>
-    public sealed partial class ShellPage : UserControl
+    public sealed partial class ShellPage : UserControl, IDisposable
     {
         /// <summary>
         /// Declaration for the ipc callback function.
@@ -134,6 +135,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private List<string> _searchSuggestions = new();
         private ISearchService<NavigationViewItem> _searchService;
         private List<SettingEntry> _currentSearchResults = new();
+
+        private CancellationTokenSource _searchDebounceCts;
+        private const int SearchDebounceMs = 500;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -501,7 +506,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private List<SettingEntry> _lastSearchResults = new();
         private string _lastQueryText = string.Empty;
 
-        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             // Only respond to user input, not programmatic text changes
             if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
@@ -510,12 +515,34 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             var query = sender.Text?.Trim() ?? string.Empty;
+
+            // Debounce: cancel previous pending search
+            _searchDebounceCts?.Cancel();
+            _searchDebounceCts?.Dispose();
+            _searchDebounceCts = new CancellationTokenSource();
+            var token = _searchDebounceCts.Token;
+
             if (string.IsNullOrWhiteSpace(query))
             {
                 sender.ItemsSource = null;
                 sender.IsSuggestionListOpen = false;
                 _lastSearchResults.Clear();
                 _lastQueryText = string.Empty;
+                return;
+            }
+
+            try
+            {
+                await Task.Delay(SearchDebounceMs, token);
+            }
+            catch (TaskCanceledException)
+            {
+                // A newer keystroke arrived; abandon this run
+                return;
+            }
+
+            if (token.IsCancellationRequested)
+            {
                 return;
             }
 
@@ -655,6 +682,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var searchParams = new SearchResultsNavigationParams(queryText, matched);
             NavigationService.Navigate<SearchResultsPage>(searchParams);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _searchDebounceCts?.Cancel();
+            _searchDebounceCts?.Dispose();
+            _searchDebounceCts = null;
+            _disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 }
