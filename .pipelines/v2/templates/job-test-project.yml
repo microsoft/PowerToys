@@ -11,12 +11,14 @@ parameters:
   - name: useLatestWebView2
     type: boolean
     default: false
-  - name: useLatestOfficialBuild
-    type: boolean
-    default: true
-  - name: useCurrentBranchBuild
-    type: boolean
-    default: false
+  - name: buildSource
+    type: string
+    default: "latestMainOfficialBuild"
+    displayName: "Build Source"
+  - name: specificBuildId
+    type: string
+    default: "xxxx"
+    displayName: "Build ID (for specific builds)"
   - name: uiTestModules
     type: object
     default: []
@@ -113,16 +115,17 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+  - ${{ if ne(parameters.buildSource, 'buildNow') }}:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: 'specific'
         project: 'Dart'
         definition: '76541'
-        buildVersionToDownload: 'latestFromBranch'
-        ${{ if eq(parameters.useCurrentBranchBuild, true) }}:
-          branchName: '$(Build.SourceBranch)'
+        ${{ if eq(parameters.buildSource, 'specificBuildId') }}:
+          buildVersionToDownload: 'specific'
+          buildId: '${{ parameters.specificBuildId }}'
         ${{ else }}:
+          buildVersionToDownload: 'latestFromBranch'
           branchName: 'refs/heads/main'
         artifactName: 'build-$(BuildPlatform)-Release'
         targetPath: '$(Build.ArtifactStagingDirectory)'
@@ -133,7 +136,7 @@ jobs:
           patterns: |
             **/PowerToysSetup*.exe
 
-  - ${{ if eq(parameters.useLatestOfficialBuild, true) }}:
+  - ${{ if ne(parameters.buildSource, 'buildNow') }}:
     - ${{ if eq(parameters.installMode, 'peruser') }}:
       - pwsh: |-
           & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "PerUser"
@@ -169,7 +172,7 @@ jobs:
           !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
       env:
         platform: '$(TestPlatform)'
-        useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
+        useInstallerForTest: ${{ ne(parameters.buildSource, 'buildNow') }}
 
   - ${{ if ne(length(parameters.uiTestModules), 0) }}:
     - ${{ each module in parameters.uiTestModules }}:
@@ -191,4 +194,4 @@ jobs:
             !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
         env:
           platform: '$(TestPlatform)'
-          useInstallerForTest: ${{ parameters.useLatestOfficialBuild }}
+          useInstallerForTest: ${{ ne(parameters.buildSource, 'buildNow') }}

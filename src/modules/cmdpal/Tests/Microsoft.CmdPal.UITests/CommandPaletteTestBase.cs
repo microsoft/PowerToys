@@ -45,4 +45,27 @@ public class CommandPaletteTestBase : UITestBase
         Assert.IsNotNull(contextMenuButton, "Context menu button not found.");
         contextMenuButton.Click();
     }
+
+    protected void FindDefaultAppDialogAndClickButton()
+    {
+        try
+        {
+            // win11
+            var chooseDialog = FindByClassName("NamedContainerAutomationPeer", global: true);
+
+            chooseDialog.Find<Button>("Just once").Click();
+        }
+        catch
+        {
+            try
+            {
+                // win10
+                var chooseDialog = FindByClassName("Shell_Flyout", global: true);
+                chooseDialog.Find<Button>("OK").Click();
+            }
+            catch
+            {
+            }
+        }
+    }
 }

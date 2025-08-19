@@ -24,7 +24,7 @@ public partial class ExtensionHostInstance
     /// <param name="message">The log message to send</param>
     public void LogMessage(ILogMessage message)
     {
-        if (Host != null)
+        if (Host is not null)
         {
             _ = Task.Run(async () =>
             {
@@ -47,7 +47,7 @@ public partial class ExtensionHostInstance
 
     public void ShowStatus(IStatusMessage message, StatusContext context)
     {
-        if (Host != null)
+        if (Host is not null)
         {
             _ = Task.Run(async () =>
             {
@@ -64,7 +64,7 @@ public partial class ExtensionHostInstance
 
     public void HideStatus(IStatusMessage message)
     {
-        if (Host != null)
+        if (Host is not null)
         {
             _ = Task.Run(async () =>
             {

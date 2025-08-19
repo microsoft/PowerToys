@@ -56,6 +56,9 @@
                     <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_LoopbackDuplicates" HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LoopbackDuplicates, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="Hosts_NoLeadingSpaces" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.NoLeadingSpaces, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="Hosts_Encoding">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoding, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Hosts_Encoding_Utf8" />

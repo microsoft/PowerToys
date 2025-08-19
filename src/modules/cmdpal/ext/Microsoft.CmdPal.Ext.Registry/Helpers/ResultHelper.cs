@@ -88,7 +88,7 @@ internal static class ResultHelper
                 foreach (var valueName in valueNames)
                 {
                     var value = key.GetValue(valueName);
-                    if (value != null)
+                    if (value is not null)
                     {
                         valueList.Add(KeyValuePair.Create(valueName, value));
                     }

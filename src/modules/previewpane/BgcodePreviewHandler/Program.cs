@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Bgcode
                     _previewHandlerControl.DoPreview(filePath);
 
                     NativeEventWaiter.WaitForEventLoop(
-                        Constants.GcodePreviewResizeEvent(),
+                        Constants.BgcodePreviewResizeEvent(),
                         () =>
                         {
                             Rectangle s = default;
