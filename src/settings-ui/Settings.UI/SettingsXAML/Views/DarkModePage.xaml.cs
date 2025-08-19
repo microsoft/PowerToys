@@ -73,7 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             InitializeComponent();
         }
 
-        private void ModeRadio_Checked(object sender, RoutedEventArgs e)
+        /* private void ModeRadio_Checked(object sender, RoutedEventArgs e)
         {
             if (TimeModeRadio.IsChecked == true)
             {
@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Refresh the view so dependent fields update (if applicable)
             ViewModel.NotifyPropertyChanged(nameof(ViewModel.IsUseLocationEnabled));
-        }
+        } */
 
         private void GetLocation_Click(object sender, RoutedEventArgs e)
         {

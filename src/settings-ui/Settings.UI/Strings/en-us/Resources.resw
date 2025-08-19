@@ -5097,4 +5097,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="LearnMore_DarkMode.Text" xml:space="preserve">
     <value>Learn more about DarkMode</value>
   </data>
+  <data name="DarkMode_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
 </root>
