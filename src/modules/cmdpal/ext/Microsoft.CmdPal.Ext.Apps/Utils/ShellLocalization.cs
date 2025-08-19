@@ -45,7 +45,7 @@ public class ShellLocalization
 
             var filename = ComFreeHelper.GetStringAndFree(hr, filenamePtr);
 
-            if (filename == null)
+            if (filename is null)
             {
                 return string.Empty;
             }

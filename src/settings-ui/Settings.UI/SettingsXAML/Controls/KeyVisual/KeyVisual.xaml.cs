@@ -95,9 +95,23 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            if (Content is string)
+            if (Content is string key)
             {
-                _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
+                switch (key)
+                {
+                    case "Copilot":
+                        _keyPresenter.Style = (Style)Application.Current.Resources["CopilotKeyCharPresenterStyle"];
+                        break;
+
+                    case "Office":
+                        _keyPresenter.Style = (Style)Application.Current.Resources["OfficeKeyCharPresenterStyle"];
+                        break;
+
+                    default:
+                        _keyPresenter.Style = (Style)Application.Current.Resources["DefaultKeyCharPresenterStyle"];
+                        break;
+                }
+
                 return;
             }
 

@@ -347,11 +347,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void InvokeItem(ListItemViewModel? item)
     {
-        if (item != null)
+        if (item is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
         }
-        else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe != null)
+        else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
                 EmptyContent.PrimaryCommand.Command.Model,
@@ -363,14 +363,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void InvokeSecondaryCommand(ListItemViewModel? item)
     {
-        if (item != null)
+        if (item is not null)
         {
-            if (item.SecondaryCommand != null)
+            if (item.SecondaryCommand is not null)
             {
                 WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
             }
         }
-        else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe != null)
+        else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
                 EmptyContent.SecondaryCommand.Command.Model,
@@ -381,12 +381,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
-        if (_lastSelectedItem != null)
+        if (_lastSelectedItem is not null)
         {
             _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
         }
 
-        if (item != null)
+        if (item is not null)
         {
             SetSelectedItem(item);
         }
@@ -432,7 +432,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var item = _lastSelectedItem;
-        if (item == null)
+        if (item is null)
         {
             return;
         }
@@ -487,7 +487,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.InitializeProperties();
 
         var model = _model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -514,7 +514,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public void LoadMoreIfNeeded()
     {
         var model = this._model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
@@ -558,7 +558,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.FetchProperty(propertyName);
 
         var model = this._model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -589,7 +589,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void UpdateEmptyContent()
     {
         UpdateProperty(nameof(ShowEmptyContent));
-        if (!ShowEmptyContent || EmptyContent.Model.Unsafe == null)
+        if (!ShowEmptyContent || EmptyContent.Model.Unsafe is null)
         {
             return;
         }
@@ -642,7 +642,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
 
         var model = _model.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
         }
