@@ -115,7 +115,8 @@
 		<IndexerPublishDir>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\XamlIndexBuilder\</IndexerPublishDir>
 		<IndexerExeFile>$(IndexerPublishDir)XamlIndexBuilder.exe</IndexerExeFile>
 		<XamlViewsDir>$(MSBuildProjectDirectory)\SettingsXAML\Views</XamlViewsDir>
-		<GeneratedJsonFile>$(ProjectDir)Assets\search.index.json</GeneratedJsonFile>
+		<!-- Generate the index under obj so it stays out of source control -->
+		<GeneratedJsonFile>$(IndexerPublishDir)search.index.json</GeneratedJsonFile>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -126,9 +127,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Embed the prebuilt search index so SearchIndexService can load it via GetManifestResourceStream -->
-		<EmbeddedResource Include="Assets\search.index.json">
-			<!-- Ensure the logical name matches the PrebuiltIndexResourceName constant -->
+		<!-- Embed the generated search index; logical name must match PrebuiltIndexResourceName -->
+		<EmbeddedResource Include="$(GeneratedJsonFile)">
 			<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>
 		</EmbeddedResource>
 	</ItemGroup>
@@ -185,7 +185,6 @@
 
 		<MakeDir Directories="$(IndexerPublishDir)" />
 		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
-		<MakeDir Directories="$(ProjectDir)Assets" />
 		
 		<Exec Command="$(IndexerExeFile) &quot;$(XamlViewsDir)&quot; &quot;$(GeneratedJsonFile)&quot;" />
 	</Target>

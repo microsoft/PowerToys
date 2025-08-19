@@ -10,6 +10,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
     HighContrastAdjustment="None"
     Loaded="ShellPage_Loaded"
@@ -121,11 +122,72 @@
                     GotFocus="SearchBox_GotFocus"
                     PlaceholderText="Search for settings"
                     QueryIcon="Find"
+                    UpdateTextOnSelect="False"
+                    TextMemberPath="Header"
                     QuerySubmitted="SearchBox_QuerySubmitted"
+                    SuggestionChosen="SearchBox_SuggestionChosen"
                     TextChanged="SearchBox_TextChanged">
+                    <AutoSuggestBox.Resources>
+                        <helpers:IconConverter x:Key="IconConverter" />
+                        <tkconverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
+                    </AutoSuggestBox.Resources>
                     <AutoSuggestBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Padding="12,6" Text="{Binding}" />
+                            <Grid>
+                                <!-- Normal suggestion item (icon + header) -->
+                                <Grid Padding="8,6" Visibility="{Binding IsShowAll, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Viewbox
+                                        Grid.Column="0"
+                                        Width="16"
+                                        Height="16"
+                                        Stretch="Uniform"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                        <ContentPresenter
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Content="{Binding Icon, Converter={StaticResource IconConverter}, ConverterParameter=&#xE713;}" />
+                                    </Viewbox>
+                                    <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Header}" />
+                                        <TextBlock Text="{Binding Subtitle}"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                   FontSize="12"
+                                                   Visibility="{Binding Subtitle, Converter={StaticResource StringVisibilityConverter}}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- "Show all results" item: top divider + centered text -->
+                                <Border
+                                    Visibility="{Binding IsShowAll, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    BorderThickness="0,1,0,0"
+                                    BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                                    Padding="8,6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Viewbox
+                                            Grid.Column="0"
+                                            Width="16"
+                                            Height="16"
+                                            Stretch="Uniform"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                            <ContentPresenter
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Content="{Binding Icon, Converter={StaticResource IconConverter}, ConverterParameter=&#xE713;}" />
+                                        </Viewbox>
+                                        <TextBlock Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" Text="{Binding Header}" />
+                                    </Grid>
+                                </Border>
+                            </Grid>
                         </DataTemplate>
                     </AutoSuggestBox.ItemTemplate>
                     <AutoSuggestBox.KeyboardAccelerators>

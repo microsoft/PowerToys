@@ -481,9 +481,140 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
         }
 
+        private sealed class SuggestionItem
+        {
+            public string Header { get; init; }
+
+            public string Icon { get; init; }
+
+            public string PageTypeName { get; init; }
+
+            public string ElementName { get; init; }
+
+            public string ParentElementName { get; init; }
+
+            public string Subtitle { get; init; }
+
+            public bool IsShowAll { get; init; }
+        }
+
+        private List<SettingEntry> _lastSearchResults = new();
+        private string _lastQueryText = string.Empty;
+
         private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            return;
+            // Only respond to user input, not programmatic text changes
+            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                return;
+            }
+
+            var query = sender.Text?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                sender.ItemsSource = null;
+                sender.IsSuggestionListOpen = false;
+                _lastSearchResults.Clear();
+                _lastQueryText = string.Empty;
+                return;
+            }
+
+            // Query the index
+            var results = SearchIndexService.Search(query);
+            _lastSearchResults = results;
+            _lastQueryText = query;
+
+            // Project top 5 suggestions
+            var top = results.Take(5)
+                .Select(e =>
+                {
+                    string subtitle = string.Empty;
+                    if (e.Type != EntryType.SettingsPage)
+                    {
+                        subtitle = SearchIndexService.GetLocalizedPageName(e.PageTypeName);
+                        if (string.IsNullOrEmpty(subtitle))
+                        {
+                            // Fallback: look up the module title from the in-memory index
+                            subtitle = SearchIndexService.Index
+                                .Where(x => x.Type == EntryType.SettingsPage && x.PageTypeName == e.PageTypeName)
+                                .Select(x => x.Header)
+                                .FirstOrDefault() ?? string.Empty;
+                        }
+                    }
+
+                    return new SuggestionItem
+                    {
+                        Header = e.Header,
+                        Icon = e.Icon,
+                        PageTypeName = e.PageTypeName,
+                        ElementName = e.ElementName,
+                        ParentElementName = e.ParentElementName,
+                        Subtitle = subtitle,
+                        IsShowAll = false,
+                    };
+                })
+                .ToList();
+
+            // Add a tail item to show all results if there are more than 5
+            if (results.Count > 5)
+            {
+                top.Add(new SuggestionItem
+                {
+                    Header = "Show all results",
+                    Icon = "\uE721", // Find
+                    Subtitle = string.Empty,
+                    IsShowAll = true,
+                });
+            }
+
+            sender.ItemsSource = top;
+            sender.IsSuggestionListOpen = top.Count > 0;
+        }
+
+        private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            // Do not navigate on arrow navigation. Let QuerySubmitted handle commits (Enter/click).
+            // AutoSuggestBox will pass the chosen item via args.ChosenSuggestion to QuerySubmitted.
+            // No action required here.
+        }
+
+        private void NavigateFromSuggestion(SuggestionItem item)
+        {
+            var queryText = _lastQueryText;
+
+            if (item.IsShowAll)
+            {
+                // Navigate to full results page
+                var searchParams = new SearchResultsNavigationParams(queryText, _lastSearchResults);
+                NavigationService.Navigate<SearchResultsPage>(searchParams);
+                return;
+            }
+
+            // Navigate to the selected item
+            var pageType = GetPageTypeFromName(item.PageTypeName);
+            if (pageType != null)
+            {
+                if (string.IsNullOrEmpty(item.ElementName))
+                {
+                    NavigationService.Navigate(pageType);
+                }
+                else
+                {
+                    var navigationParams = new NavigationParams(item.ElementName, item.ParentElementName);
+                    NavigationService.Navigate(pageType, navigationParams);
+                }
+            }
+        }
+
+        private static Type GetPageTypeFromName(string pageTypeName)
+        {
+            if (string.IsNullOrEmpty(pageTypeName))
+            {
+                return null;
+            }
+
+            var assembly = typeof(GeneralPage).Assembly;
+            return assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{pageTypeName}");
         }
 
         private void CtrlF_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
@@ -503,14 +634,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            var queryText = args.QueryText?.Trim();
+            // If a suggestion is selected, navigate directly
+            if (args.ChosenSuggestion is SuggestionItem chosen)
+            {
+                NavigateFromSuggestion(chosen);
+                return;
+            }
+
+            var queryText = (args.QueryText ?? _lastQueryText)?.Trim();
             if (string.IsNullOrWhiteSpace(queryText))
             {
                 NavigationService.Navigate<DashboardPage>();
                 return;
             }
 
-            var matched = SearchIndexService.Search(queryText);
+            // Prefer cached results (from live search); if empty, perform a fresh search
+            var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
+                ? _lastSearchResults
+                : SearchIndexService.Search(queryText);
 
             var searchParams = new SearchResultsNavigationParams(queryText, matched);
             NavigationService.Navigate<SearchResultsPage>(searchParams);
