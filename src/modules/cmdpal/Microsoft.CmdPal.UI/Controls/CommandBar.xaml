@@ -81,10 +81,10 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid 
-        Background="{ThemeResource DesktopAcrylicTransparentBrush}" 
+    <Grid
         MinHeight="40"
         Padding="4"
+        Background="{ThemeResource DesktopAcrylicTransparentBrush}"
         ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
