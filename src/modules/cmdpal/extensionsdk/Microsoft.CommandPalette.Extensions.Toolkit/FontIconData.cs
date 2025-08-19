@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 /// <summary>
@@ -16,15 +14,12 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// UI for any other glyphs. This class is only needed if you want a non-Segoe
 /// font icon.
 /// </summary>
-///
-[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 public partial class FontIconData : IconData, IExtendedAttributesProvider
 {
     private string FontFamily { get; set; }
 
-    private readonly IDictionary<string, object> _properties;
-
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Dictionary<string, object>))]
+    private readonly Dictionary<string, object> _properties;
+    
     public IDictionary<string, object>? GetProperties() => _properties;
 
     public FontIconData(string glyph, string fontFamily)
@@ -35,5 +30,4 @@ public partial class FontIconData : IconData, IExtendedAttributesProvider
         {
             { "FontFamily", FontFamily },
         };
-    }
 }
