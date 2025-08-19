@@ -30,7 +30,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
     public IconInfoViewModel Icon { get; private set; }
 
     // UNDER NO CIRCUMSTANCES MAY SOMEONE WRITE TO THIS DICTIONARY.
-    // This is oour copy of the data from the extension.
+    // This is our copy of the data from the extension.
     // Adding values to it does not add to the extension.
     // Modifying it will not modify the extension
     // (except it might, if the dictionary was passed by ref)

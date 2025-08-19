@@ -16,15 +16,17 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// </summary>
 public partial class FontIconData : IconData, IExtendedAttributesProvider
 {
-    public string FontFamily { get; set; }
+    private string FontFamily { get; set; }
+
+    private readonly Dictionary<string, object> _properties;
+    
+    public IDictionary<string, object>? GetProperties() => _properties;
 
     public FontIconData(string glyph, string fontFamily)
         : base(glyph)
     {
         FontFamily = fontFamily;
-    }
-
-    public IDictionary<string, object>? GetProperties() => new Dictionary<string, object>()
+        _properties = new Dictionary<string, object>()
         {
             { "FontFamily", FontFamily },
         };
