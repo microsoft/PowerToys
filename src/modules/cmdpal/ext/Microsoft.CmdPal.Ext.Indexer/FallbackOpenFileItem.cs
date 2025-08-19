@@ -46,7 +46,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
             return;
         }
 
-        if (_suppressCallback != null && _suppressCallback(query))
+        if (_suppressCallback is not null && _suppressCallback(query))
         {
             Command = new NoOpCommand();
             Title = string.Empty;
@@ -71,7 +71,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
             try
             {
                 var stream = ThumbnailHelper.GetThumbnail(item.FullPath).Result;
-                if (stream != null)
+                if (stream is not null)
                 {
                     var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
                     Icon = new IconInfo(data, data);
@@ -92,7 +92,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 _searchEngine.Query(query, _queryCookie);
                 var results = _searchEngine.FetchItems(0, 20, _queryCookie, out var _);
 
-                if (results.Count == 0 || ((results[0] as IndexerListItem) == null))
+                if (results.Count == 0 || ((results[0] as IndexerListItem) is null))
                 {
                     // Exit 2: We searched for the file, and found nothing. Oh well.
                     // Hide ourselves.

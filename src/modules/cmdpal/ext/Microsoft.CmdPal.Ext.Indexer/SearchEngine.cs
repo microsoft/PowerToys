@@ -42,7 +42,7 @@ public sealed partial class SearchEngine : IDisposable
     {
         hasMore = false;
         var results = new List<IListItem>();
-        if (_searchQuery != null)
+        if (_searchQuery is not null)
         {
             var cookie = _searchQuery.Cookie;
             if (cookie == queryCookie)
@@ -59,7 +59,7 @@ public sealed partial class SearchEngine : IDisposable
                     try
                     {
                         var stream = ThumbnailHelper.GetThumbnail(result.LaunchUri).Result;
-                        if (stream != null)
+                        if (stream is not null)
                         {
                             var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
                             icon = new IconInfo(data, data);

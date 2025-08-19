@@ -112,7 +112,7 @@
                 <Rectangle
                     Height="1"
                     Margin="-16,-12,-12,-12"
-                    Fill="{ThemeResource MenuFlyoutSeparatorThemeBrush}" />
+                    Fill="{ThemeResource MenuFlyoutSeparatorBackground}" />
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>

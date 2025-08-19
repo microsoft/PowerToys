@@ -28,7 +28,7 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
                 var source = IconPathConverter.IconSourceMUX(icon.Icon, false);
                 return source;
             }
-            else if (icon.Data != null)
+            else if (icon.Data is not null)
             {
                 try
                 {
@@ -49,7 +49,7 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
 
     private async Task<IconSource?> StreamToIconSource(IRandomAccessStreamReference iconStreamRef)
     {
-        if (iconStreamRef == null)
+        if (iconStreamRef is null)
         {
             return null;
         }

@@ -126,11 +126,12 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     }
 
     auto args = std::wstring{ GetCommandLine() };
-    
+    size_t pipePos{ args.rfind(L"\\\\.\\pipe\\") };
+
     // Try to parse command line arguments first
     std::vector<std::wstring> cmdLineFiles = ParseCommandLineArgs(args);
     
-    if (!cmdLineFiles.empty())
+    if (pipePos == std::wstring::npos && !cmdLineFiles.empty())
     {
         // Use command line arguments for UI testing
         for (const auto& filePath : cmdLineFiles)
@@ -142,12 +143,10 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     else
     {
         // Use original pipe/stdin logic for normal operation
-        size_t pos{ args.rfind(L"\\\\.\\pipe\\") };
-
         std::wstring pipe_name;
-        if (pos != std::wstring::npos)
+        if (pipePos != std::wstring::npos)
         {
-            pipe_name = args.substr(pos);
+            pipe_name = args.substr(pipePos);
         }
 
         HANDLE hStdin;

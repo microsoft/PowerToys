@@ -14,14 +14,8 @@
     d:DataContext="{d:DesignInstance Type=viewModels:ColorPickerViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
-    <Page.Resources>
-        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVis" />
-    </Page.Resources>
-
     <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ColorPicker.png">
         <controls:SettingsPageControl.ModuleContent>
-
             <StackPanel
                 x:Name="ColorPickerView"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
