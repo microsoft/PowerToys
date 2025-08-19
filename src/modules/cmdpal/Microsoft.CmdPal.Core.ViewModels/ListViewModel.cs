@@ -63,6 +63,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private Task? _initializeItemsTask;
     private CancellationTokenSource? _cancellationTokenSource;
+    private CancellationTokenSource? _fetchItemsCancellationTokenSource;
 
     private ListItemViewModel? _lastSelectedItem;
 
@@ -129,13 +130,26 @@ public partial class ListViewModel : PageViewModel, IDisposable
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems()
     {
+        // Cancel any previous FetchItems operation
+        _fetchItemsCancellationTokenSource?.Cancel();
+        _fetchItemsCancellationTokenSource?.Dispose();
+        _fetchItemsCancellationTokenSource = new CancellationTokenSource();
+
+        var cancellationToken = _fetchItemsCancellationTokenSource.Token;
+
         // TEMPORARY: just plop all the items into a single group
         // see 9806fe5d8 for the last commit that had this with sections
         _isFetching = true;
 
         try
         {
+            // Check for cancellation before starting expensive operations
+            cancellationToken.ThrowIfCancellationRequested();
+
             var newItems = _model.Unsafe!.GetItems();
+
+            // Check for cancellation after getting items from extension
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Collect all the items into new viewmodels
             Collection<ListItemViewModel> newViewModels = [];
@@ -145,6 +159,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // building new viewmodels for the ones we haven't already built.
             foreach (var item in newItems)
             {
+                // Check for cancellation during item processing
+                cancellationToken.ThrowIfCancellationRequested();
+
                 ListItemViewModel viewModel = new(item, new(this));
 
                 // If an item fails to load, silently ignore it.
@@ -154,14 +171,21 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
             }
 
+            // Check for cancellation before initializing first twenty items
+            cancellationToken.ThrowIfCancellationRequested();
+
             var firstTwenty = newViewModels.Take(20);
             foreach (var item in firstTwenty)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 item?.SafeInitializeProperties();
             }
 
             // Cancel any ongoing search
             _cancellationTokenSource?.Cancel();
+
+            // Check for cancellation before updating the list
+            cancellationToken.ThrowIfCancellationRequested();
 
             lock (_listLock)
             {
@@ -172,6 +196,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             // TODO: Iterate over everything in Items, and prune items from the
             // cache if we don't need them anymore
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected, don't treat as error
+            return;
         }
         catch (Exception ex)
         {
@@ -298,11 +327,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void InvokeItem(ListItemViewModel? item)
     {
-        if (item != null)
+        if (item is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
         }
-        else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe != null)
+        else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
                 EmptyContent.PrimaryCommand.Command.Model,
@@ -314,14 +343,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void InvokeSecondaryCommand(ListItemViewModel? item)
     {
-        if (item != null)
+        if (item is not null)
         {
-            if (item.SecondaryCommand != null)
+            if (item.SecondaryCommand is not null)
             {
                 WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
             }
         }
-        else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe != null)
+        else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
                 EmptyContent.SecondaryCommand.Command.Model,
@@ -332,12 +361,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
-        if (_lastSelectedItem != null)
+        if (_lastSelectedItem is not null)
         {
             _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
         }
 
-        if (item != null)
+        if (item is not null)
         {
             SetSelectedItem(item);
         }
@@ -383,7 +412,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var item = _lastSelectedItem;
-        if (item == null)
+        if (item is null)
         {
             return;
         }
@@ -438,7 +467,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.InitializeProperties();
 
         var model = _model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -465,7 +494,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public void LoadMoreIfNeeded()
     {
         var model = this._model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
@@ -509,7 +538,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.FetchProperty(propertyName);
 
         var model = this._model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -540,7 +569,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void UpdateEmptyContent()
     {
         UpdateProperty(nameof(ShowEmptyContent));
-        if (!ShowEmptyContent || EmptyContent.Model.Unsafe == null)
+        if (!ShowEmptyContent || EmptyContent.Model.Unsafe is null)
         {
             return;
         }
@@ -560,6 +589,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
+
+        _fetchItemsCancellationTokenSource?.Cancel();
+        _fetchItemsCancellationTokenSource?.Dispose();
+        _fetchItemsCancellationTokenSource = null;
     }
 
     protected override void UnsafeCleanup()
@@ -570,6 +603,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(null), PageContext); // necessary?
 
         _cancellationTokenSource?.Cancel();
+        _fetchItemsCancellationTokenSource?.Cancel();
 
         lock (_listLock)
         {
@@ -588,7 +622,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
 
         var model = _model.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
         }

@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
@@ -80,12 +79,12 @@ public sealed partial class KeyVisual : Control
 
     private void Update()
     {
-        if (_keyVisual == null)
+        if (_keyVisual is null)
         {
             return;
         }
 
-        if (_keyVisual.Content != null)
+        if (_keyVisual.Content is not null)
         {
             if (_keyVisual.Content.GetType() == typeof(string))
             {

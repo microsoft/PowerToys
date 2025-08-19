@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -202,7 +203,7 @@ public partial class MainListPage : DynamicListPage,
 
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
-            if (_filteredItems == null)
+            if (_filteredItems is null)
             {
                 _filteredItems = commands;
                 _filteredItemsIncludesApps = _includeApps;

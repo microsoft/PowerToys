@@ -43,7 +43,7 @@ public partial class InstallPackageListItem : ListItem
         }
 
         var versionTagText = "Unknown";
-        if (version != null)
+        if (version is not null)
         {
             versionTagText = version.Version == "Unknown" && version.PackageCatalog.Info.Id == "StoreEdgeFD" ? "msstore" : version.Version;
         }
@@ -69,13 +69,13 @@ public partial class InstallPackageListItem : ListItem
             Logger.LogWarning($"GetCatalogPackageMetadata error {ex.ErrorCode}");
         }
 
-        if (metadata != null)
+        if (metadata is not null)
         {
             for (var i = 0; i < metadata.Tags.Count; i++)
             {
                 if (metadata.Tags[i].Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (_installCommand != null)
+                    if (_installCommand is not null)
                     {
                         _installCommand.SkipDependencies = true;
                     }
@@ -191,7 +191,7 @@ public partial class InstallPackageListItem : ListItem
             return;
         }
 
-        var isInstalled = _package.InstalledVersion != null;
+        var isInstalled = _package.InstalledVersion is not null;
 
         var installedState = isInstalled ?
             (_package.IsUpdateAvailable ?
@@ -212,11 +212,11 @@ public partial class InstallPackageListItem : ListItem
                 Icon = Icons.DeleteIcon,
             };
 
-            if (WinGetStatics.AppSearchCallback != null)
+            if (WinGetStatics.AppSearchCallback is not null)
             {
                 var callback = WinGetStatics.AppSearchCallback;
-                var installedApp = callback(_package.DefaultInstallVersion == null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
-                if (installedApp != null)
+                var installedApp = callback(_package.DefaultInstallVersion is null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
+                if (installedApp is not null)
                 {
                     this.Command = installedApp.Command;
                     contextMenu = [.. installedApp.MoreCommands];

@@ -20,7 +20,7 @@ public partial class CommandContextItemViewModel(ICommandContextItem contextItem
 
     public KeyChord? RequestedShortcut { get; private set; }
 
-    public bool HasRequestedShortcut => RequestedShortcut != null && (RequestedShortcut.Value != nullKeyChord);
+    public bool HasRequestedShortcut => RequestedShortcut is not null && (RequestedShortcut.Value != nullKeyChord);
 
     public override void InitializeProperties()
     {
@@ -32,7 +32,7 @@ public partial class CommandContextItemViewModel(ICommandContextItem contextItem
         base.InitializeProperties();
 
         var contextItem = Model.Unsafe;
-        if (contextItem == null)
+        if (contextItem is null)
         {
             return; // throw?
         }

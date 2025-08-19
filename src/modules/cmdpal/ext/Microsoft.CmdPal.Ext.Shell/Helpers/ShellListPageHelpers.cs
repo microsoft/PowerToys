@@ -126,7 +126,7 @@ public class ShellListPageHelpers
             return null;
         }
 
-        if (li != null)
+        if (li is not null)
         {
             li.TextToSuggest = searchText;
         }
