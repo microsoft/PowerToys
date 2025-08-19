@@ -10,11 +10,12 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Composition;
@@ -383,7 +384,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void DisposeAcrylic()
     {
-        if (_acrylicController != null)
+        if (_acrylicController is not null)
         {
             _acrylicController.Dispose();
             _acrylicController = null!;
@@ -458,7 +459,7 @@ public sealed partial class MainWindow : WindowEx,
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
 
-        if (_configurationSource != null)
+        if (_configurationSource is not null)
         {
             _configurationSource.IsInputActive = args.WindowActivationState != WindowActivationState.Deactivated;
         }
@@ -466,7 +467,7 @@ public sealed partial class MainWindow : WindowEx,
 
     public void HandleLaunch(AppActivationArguments? activatedEventArgs)
     {
-        if (activatedEventArgs == null)
+        if (activatedEventArgs is null)
         {
             Summon(string.Empty);
             return;
@@ -534,7 +535,7 @@ public sealed partial class MainWindow : WindowEx,
         UnregisterHotkeys();
 
         var globalHotkey = settings.Hotkey;
-        if (globalHotkey != null)
+        if (globalHotkey is not null)
         {
             if (settings.UseLowLevelGlobalHotkey)
             {
@@ -564,7 +565,7 @@ public sealed partial class MainWindow : WindowEx,
         {
             var key = commandHotkey.Hotkey;
 
-            if (key != null)
+            if (key is not null)
             {
                 if (settings.UseLowLevelGlobalHotkey)
                 {

@@ -46,7 +46,7 @@ internal sealed partial class ExecuteItem : InvokableCommand
 
     private void Execute(Func<ProcessStartInfo, Process?> startProcess, ProcessStartInfo info)
     {
-        if (startProcess == null)
+        if (startProcess is null)
         {
             return;
         }

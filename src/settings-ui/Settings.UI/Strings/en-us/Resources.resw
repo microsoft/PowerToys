@@ -5188,4 +5188,10 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>{0} conflicts found</value>
     <comment>{0} is replaced with the number of conflicts</comment>
   </data>
+  <data name="Hosts_NoLeadingSpaces.Header" xml:space="preserve">
+    <value>No leading spaces</value>
+  </data>
+  <data name="Hosts_NoLeadingSpaces.Description" xml:space="preserve">
+    <value>Do not prepend spaces to active lines when saving the hosts file</value>
+  </data>
 </root>

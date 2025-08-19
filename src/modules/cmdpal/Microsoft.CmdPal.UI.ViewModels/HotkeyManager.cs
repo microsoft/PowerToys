@@ -29,7 +29,7 @@ public partial class HotkeyManager : ObservableObject
             }
         }
 
-        _commandHotkeys.RemoveAll(item => item.Hotkey == null);
+        _commandHotkeys.RemoveAll(item => item.Hotkey is null);
 
         foreach (var item in _commandHotkeys)
         {

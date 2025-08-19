@@ -62,9 +62,10 @@
             "minimum": 0,
             "maximum": 4294967295
           },
-          "ShowAsFirstResult": {
-            "description": "Use a higher score as normal for this setting to show it as one of the first results.",
-            "type": "boolean"
+          "AppHomepageScore": {
+            "description": "Order score for the result if it is a settings app (homepage). Use a score > 0.",
+            "type": "integer",
+            "minimum": 1
           }
         }
       }

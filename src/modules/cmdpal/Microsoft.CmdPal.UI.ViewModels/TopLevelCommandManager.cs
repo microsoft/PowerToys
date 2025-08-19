@@ -12,7 +12,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
@@ -151,7 +151,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         WeakReference<IPageContext> weakSelf = new(this);
         await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
-        List<TopLevelViewModel> newItems = [..sender.TopLevelItems];
+        List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
         foreach (var i in sender.FallbackItems)
         {
             if (i.IsEnabled)
@@ -170,20 +170,29 @@ public partial class TopLevelCommandManager : ObservableObject,
             // TODO: just added a lock around all of this anyway, but keeping the clone
             // while looking on some other ways to improve this; can be removed later.
             List<TopLevelViewModel> clone = [.. TopLevelCommands];
-            var startIndex = -1;
 
+            var startIndex = FindIndexForFirstProviderItem(clone, sender.ProviderId);
+            clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
+            clone.InsertRange(startIndex, newItems);
+
+            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+        }
+
+        return;
+
+        static int FindIndexForFirstProviderItem(List<TopLevelViewModel> topLevelItems, string providerId)
+        {
             // Tricky: all Commands from a single provider get added to the
             // top-level list all together, in a row. So if we find just the first
             // one, we can slice it out and insert the new ones there.
-            for (var i = 0; i < clone.Count; i++)
+            for (var i = 0; i < topLevelItems.Count; i++)
             {
-                var wrapper = clone[i];
+                var wrapper = topLevelItems[i];
                 try
                 {
-                    if (sender.ProviderId == wrapper.CommandProviderId)
+                    if (providerId == wrapper.CommandProviderId)
                     {
-                        startIndex = i;
-                        break;
+                        return i;
                     }
                 }
                 catch
@@ -191,9 +200,8 @@ public partial class TopLevelCommandManager : ObservableObject,
                 }
             }
 
-            clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
-            clone.InsertRange(startIndex, newItems);
-            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+            // If we didn't find any, then we just append the new commands to the end of the list.
+            return topLevelItems.Count;
         }
     }
 
@@ -241,7 +249,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             _extensionCommandProviders.Clear();
         }
 
-        if (extensions != null)
+        if (extensions is not null)
         {
             await StartExtensionsAndGetCommands(extensions);
         }
@@ -275,7 +283,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
 
         // Wait for all extensions to start
-        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).Select(w => w!).ToList();
+        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper is not null).Select(w => w!).ToList();
 
         lock (_commandProvidersLock)
         {
@@ -285,7 +293,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         // Load the commands from the providers in parallel
         var loadTasks = wrappers.Select(LoadCommandsWithTimeoutAsync);
 
-        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results != null).Select(r => r!).ToList();
+        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results is not null).Select(r => r!).ToList();
 
         lock (TopLevelCommands)
         {
@@ -402,8 +410,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     void IPageContext.ShowException(Exception ex, string? extensionHint)
     {
-        var errorMessage = $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
-        CommandPaletteHost.Instance.Log(errorMessage);
+        var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint ?? "TopLevelCommandManager");
+        CommandPaletteHost.Instance.Log(message);
     }
 
     internal bool IsProviderActive(string id)
