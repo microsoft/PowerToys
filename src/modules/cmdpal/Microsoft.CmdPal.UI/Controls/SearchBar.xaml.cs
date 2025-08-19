@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
@@ -50,13 +51,13 @@ public sealed partial class SearchBar : UserControl,
         //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
         var @this = (SearchBar)d;
 
-        if (@this != null
+        if (@this is not null
             && e.OldValue is PageViewModel old)
         {
             old.PropertyChanged -= @this.Page_PropertyChanged;
         }
 
-        if (@this != null
+        if (@this is not null
             && e.NewValue is PageViewModel page)
         {
             // TODO: In some cases we probably want commands to clear a filter
@@ -84,7 +85,7 @@ public sealed partial class SearchBar : UserControl,
         {
             this.FilterBox.Text = string.Empty;
 
-            if (CurrentPageViewModel != null)
+            if (CurrentPageViewModel is not null)
             {
                 CurrentPageViewModel.Filter = string.Empty;
             }
@@ -142,7 +143,7 @@ public sealed partial class SearchBar : UserControl,
                 FilterBox.Text = string.Empty;
 
                 // hack TODO GH #245
-                if (CurrentPageViewModel != null)
+                if (CurrentPageViewModel is not null)
                 {
                     CurrentPageViewModel.Filter = FilterBox.Text;
                 }
@@ -153,20 +154,10 @@ public sealed partial class SearchBar : UserControl,
         else if (e.Key == VirtualKey.Back)
         {
             // hack TODO GH #245
-            if (CurrentPageViewModel != null)
+            if (CurrentPageViewModel is not null)
             {
                 CurrentPageViewModel.Filter = FilterBox.Text;
             }
-        }
-
-        if (!e.Handled)
-        {
-            // The CommandBar is responsible for handling all the item keybindings,
-            // since the bound context item may need to then show another
-            // context menu
-            TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
-            WeakReferenceMessenger.Default.Send(msg);
-            e.Handled = msg.Handled;
         }
     }
 
@@ -255,6 +246,22 @@ public sealed partial class SearchBar : UserControl,
             _inSuggestion = false;
             _lastText = null;
         }
+
+        if (!e.Handled)
+        {
+            var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+            var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+            var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+            var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+                InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+
+            // The CommandBar is responsible for handling all the item keybindings,
+            // since the bound context item may need to then show another
+            // context menu
+            TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+            WeakReferenceMessenger.Default.Send(msg);
+            e.Handled = msg.Handled;
+        }
     }
 
     private void FilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)
@@ -311,7 +318,7 @@ public sealed partial class SearchBar : UserControl,
         }
 
         // Actually plumb Filtering to the view model
-        if (CurrentPageViewModel != null)
+        if (CurrentPageViewModel is not null)
         {
             CurrentPageViewModel.Filter = FilterBox.Text;
         }

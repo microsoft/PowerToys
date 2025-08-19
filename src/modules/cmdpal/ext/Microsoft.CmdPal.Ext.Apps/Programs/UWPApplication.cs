@@ -10,7 +10,6 @@ using System.Xml;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
-using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -96,7 +95,7 @@ public class UWPApplication : IProgram
 
         commands.Add(
             new CommandContextItem(
-                new CopyPathCommand(Location))
+                new Commands.CopyPathCommand(Location))
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
             });
@@ -309,7 +308,7 @@ public class UWPApplication : IProgram
     private bool SetScaleIcons(string path, string colorscheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
-        if (extension != null)
+        if (extension is not null)
         {
             var end = path.Length - extension.Length;
             var prefix = path.Substring(0, end);
@@ -364,7 +363,7 @@ public class UWPApplication : IProgram
     private bool SetTargetSizeIcon(string path, string colorscheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
-        if (extension != null)
+        if (extension is not null)
         {
             var end = path.Length - extension.Length;
             var prefix = path.Substring(0, end);
@@ -577,7 +576,7 @@ public class UWPApplication : IProgram
 
             var group = new DrawingGroup();
             var converted = ColorConverter.ConvertFromString(currentBackgroundColor);
-            if (converted != null)
+            if (converted is not null)
             {
                 var color = (Color)converted;
                 var brush = new SolidColorBrush(color);

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.CheckUpdateControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Orientation="Horizontal">
+        <Button
+            Click="SWVersionButtonClicked"
+            Style="{StaticResource SubtleButtonStyle}"
+            Visibility="{x:Bind UpdateAvailable, Mode=OneWay}">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border
+                    Width="20"
+                    Height="20"
+                    CornerRadius="10">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
+                            <GradientStop Offset="0.0" Color="#239DE0" />
+                            <GradientStop Offset="1.0" Color="#037CD6" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <FontIcon
+                        AutomationProperties.AccessibilityView="Raw"
+                        FontSize="11"
+                        Foreground="White"
+                        Glyph="&#xE895;" />
+                </Border>
+                <StackPanel Grid.Column="1" Orientation="Vertical">
+                    <TextBlock x:Uid="UpdateAvailableTextBlock" FontWeight="SemiBold" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
+                        <Run x:Uid="GeneralVersion" />
+                        <Run Text="{x:Bind UpdateSettingsConfig.NewVersion, Mode=OneWay}" />
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Button>
+        <Grid
+            Padding="0,0,4,0"
+            VerticalAlignment="Center"
+            ColumnSpacing="16"
+            Visibility="{x:Bind UpdateAvailable, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border
+                Width="20"
+                Height="20"
+                CornerRadius="10">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
+                        <GradientStop Offset="0.0" Color="#6FB538" />
+                        <GradientStop Offset="1.0" Color="#397A24" />
+                    </LinearGradientBrush>
+                </Border.Background>
+                <FontIcon
+                    AutomationProperties.AccessibilityView="Raw"
+                    FontSize="11"
+                    Foreground="White"
+                    Glyph="&#xE73E;" />
+            </Border>
+            <StackPanel Grid.Column="1" Orientation="Vertical">
+                <TextBlock x:Uid="YoureUpToDate" FontWeight="SemiBold" />
+                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
+                    <Run x:Uid="General_VersionLastChecked" />
+                    <Run Text="{x:Bind UpdateSettingsConfig.LastCheckedDateLocalized, Mode=OneWay}" />
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>

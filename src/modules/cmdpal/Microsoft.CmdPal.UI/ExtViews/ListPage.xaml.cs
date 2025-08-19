@@ -7,13 +7,16 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -23,6 +26,8 @@ public sealed partial class ListPage : Page,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
+    private InputSource _lastInputSource;
+
     private ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
@@ -46,6 +51,8 @@ public sealed partial class ListPage : Page,
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
         this.ItemView.Loaded += Items_Loaded;
+        this.ItemView.PreviewKeyDown += Items_PreviewKeyDown;
+        this.ItemView.PointerPressed += Items_PointerPressed;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -56,7 +63,7 @@ public sealed partial class ListPage : Page,
         }
 
         if (e.NavigationMode == NavigationMode.Back
-            || (e.NavigationMode == NavigationMode.New && ItemsList.Items.Count > 0))
+            || (e.NavigationMode == NavigationMode.New && ItemView.Items.Count > 0))
         {
             // Upon navigating _back_ to this page, immediately select the
             // first item in the list
@@ -81,7 +88,7 @@ public sealed partial class ListPage : Page,
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
-        if (ViewModel != null)
+        if (ViewModel is not null)
         {
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
             ViewModel.ItemsUpdated -= Page_ItemsUpdated;
@@ -104,6 +111,12 @@ public sealed partial class ListPage : Page,
     {
         if (e.ClickedItem is ListItemViewModel item)
         {
+            if (_lastInputSource == InputSource.Keyboard)
+            {
+                ViewModel?.InvokeItemCommand.Execute(item);
+                return;
+            }
+
             var settings = App.Current.Services.GetService<SettingsModel>()!;
             if (settings.SingleClickActivates)
             {
@@ -148,13 +161,13 @@ public sealed partial class ListPage : Page,
         // here, then in Page_ItemsUpdated trying to select that cached item if
         // it's in the list (otherwise, clear the cache), but that seems
         // aggressively BODGY for something that mostly just works today.
-        if (ItemView.SelectedItem != null)
+        if (ItemView.SelectedItem is not null)
         {
             ItemView.ScrollIntoView(ItemView.SelectedItem);
 
             // Automation notification for screen readers
-            var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemsList);
-            if (listViewPeer != null && li != null)
+            var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemView);
+            if (listViewPeer is not null && li is not null)
             {
                 var notificationText = li.Title;
                 listViewPeer.RaiseNotificationEvent(
@@ -198,7 +211,7 @@ public sealed partial class ListPage : Page,
         // Find the ScrollViewer in the ItemView (ItemsList or ItemsGrid)
         var listViewScrollViewer = FindScrollViewer(this.ItemView);
 
-        if (listViewScrollViewer != null)
+        if (listViewScrollViewer is not null)
         {
             listViewScrollViewer.ViewChanged += ListViewScrollViewer_ViewChanged;
         }
@@ -207,7 +220,7 @@ public sealed partial class ListPage : Page,
     private void ListViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
     {
         var scrollView = sender as ScrollViewer;
-        if (scrollView == null)
+        if (scrollView is null)
         {
             return;
         }
@@ -289,7 +302,7 @@ public sealed partial class ListPage : Page,
                 page.PropertyChanged += @this.ViewModel_PropertyChanged;
                 page.ItemsUpdated += @this.Page_ItemsUpdated;
             }
-            else if (e.NewValue == null)
+            else if (e.NewValue is null)
             {
                 Logger.LogDebug("cleared view model");
             }
@@ -304,10 +317,10 @@ public sealed partial class ListPage : Page,
         //
         // It's important to do this here, because once there's no selection
         // (which can happen as the list updates) we won't get an
-        // ItemsList_SelectionChanged again to give us another chance to change
+        // ItemView_SelectionChanged again to give us another chance to change
         // the selection from null -> something. Better to just update the
         // selection once, at the end of all the updating.
-        if (ItemView.SelectedItem == null)
+        if (ItemView.SelectedItem is null)
         {
             ItemView.SelectedIndex = 0;
         }
@@ -340,12 +353,77 @@ public sealed partial class ListPage : Page,
         {
             var child = VisualTreeHelper.GetChild(parent, i);
             var result = FindScrollViewer(child);
-            if (result != null)
+            if (result is not null)
             {
                 return result;
             }
         }
 
         return null;
+    }
+
+    private void Items_OnContextRequested(UIElement sender, ContextRequestedEventArgs e)
+    {
+        var (item, element) = e.OriginalSource switch
+        {
+            // caused by keyboard shortcut (e.g. Context menu key or Shift+F10)
+            SelectorItem selectorItem => (ItemView.ItemFromContainer(selectorItem) as ListItemViewModel, selectorItem),
+
+            // caused by right-click on the ListViewItem
+            FrameworkElement { DataContext: ListItemViewModel itemViewModel } frameworkElement => (itemViewModel, frameworkElement),
+
+            _ => (null, null),
+        };
+
+        if (item is null || element is null)
+        {
+            return;
+        }
+
+        if (ItemView.SelectedItem != item)
+        {
+            ItemView.SelectedItem = item;
+        }
+
+        ViewModel?.UpdateSelectedItemCommand.Execute(item);
+
+        if (!e.TryGetPosition(element, out var pos))
+        {
+            pos = new(0, element.ActualHeight);
+        }
+
+        _ = DispatcherQueue.TryEnqueue(
+            () =>
+            {
+                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                    new OpenContextMenuMessage(
+                        element,
+                        Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        pos,
+                        ContextMenuFilterLocation.Top));
+            });
+        e.Handled = true;
+    }
+
+    private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
+    {
+        _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
+    }
+
+    private void Items_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;
+
+    private void Items_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key is VirtualKey.Enter or VirtualKey.Space)
+        {
+            _lastInputSource = InputSource.Keyboard;
+        }
+    }
+
+    private enum InputSource
+    {
+        None,
+        Keyboard,
+        Pointer,
     }
 }

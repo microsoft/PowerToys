@@ -4,11 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
@@ -16,10 +14,10 @@ namespace Microsoft.CmdPal.Ext.TimeDate;
 internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 {
     private readonly HashSet<string> _validOptions;
-    private SettingsManager _settingsManager;
+    private ISettingsInterface _settingsManager;
     private DateTime? _timestamp;
 
-    public FallbackTimeDateItem(SettingsManager settings, DateTime? timestamp = null)
+    public FallbackTimeDateItem(ISettingsInterface settings, DateTime? timestamp = null)
          : base(new NoOpCommand(), Resources.Microsoft_plugin_timedate_fallback_display_title)
     {
         Title = string.Empty;
@@ -66,7 +64,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
             }
         }
 
-        if (result != null)
+        if (result is not null)
         {
             Title = result.Title;
             Subtitle = result.Subtitle;
@@ -90,7 +88,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 
         foreach (var option in _validOptions)
         {
-            if (option == null)
+            if (option is null)
             {
                 continue;
             }

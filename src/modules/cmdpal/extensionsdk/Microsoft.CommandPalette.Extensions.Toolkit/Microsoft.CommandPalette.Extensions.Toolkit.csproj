@@ -3,6 +3,9 @@
   <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
+
+    <WindowsSdkPackageVersion>10.0.26100.57</WindowsSdkPackageVersion>
+
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions.Toolkit</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>

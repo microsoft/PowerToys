@@ -279,6 +279,8 @@
                         <ListView
                             x:Name="ItemsList"
                             Padding="0,2,0,0"
+                            ContextCanceled="Items_OnContextCanceled"
+                            ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
@@ -296,6 +298,8 @@
                         <GridView
                             x:Name="ItemsGrid"
                             Padding="8"
+                            ContextCanceled="Items_OnContextCanceled"
+                            ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"

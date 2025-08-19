@@ -35,7 +35,7 @@ public class ProviderSettings
     public void Connect(CommandProviderWrapper wrapper)
     {
         ProviderId = wrapper.ProviderId;
-        IsBuiltin = wrapper.Extension == null;
+        IsBuiltin = wrapper.Extension is null;
 
         ProviderDisplayName = wrapper.DisplayName;
 

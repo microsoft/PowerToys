@@ -26,7 +26,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     private readonly IRunHistoryService _historyService;
 
-    private RunExeItem? _exeItem;
+    private ListItem? _exeItem;
     private List<ListItem> _pathItems = [];
     private ListItem? _uriItem;
 
@@ -152,7 +152,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             return;
         }
 
-        ParseExecutableAndArgs(expanded, out var exe, out var args);
+        ShellHelpers.ParseExecutableAndArgs(expanded, out var exe, out var args);
 
         // Check for cancellation before file system operations
         cancellationToken.ThrowIfCancellationRequested();
@@ -245,14 +245,14 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var histItemsNotInSearch =
             _historyItems
                 .Where(kv => !kv.Key.Equals(newSearch, StringComparison.OrdinalIgnoreCase));
-        if (_exeItem != null)
+        if (_exeItem is not null)
         {
             // If we have an exe item, we want to remove it from the history items
             histItemsNotInSearch = histItemsNotInSearch
                 .Where(kv => !kv.Value.Title.Equals(_exeItem.Title, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (_uriItem != null)
+        if (_uriItem is not null)
         {
             // If we have an uri item, we want to remove it from the history items
             histItemsNotInSearch = histItemsNotInSearch
@@ -307,8 +307,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
-        List<ListItem> uriItems = _uriItem != null ? [_uriItem] : [];
-        List<ListItem> exeItems = _exeItem != null ? [_exeItem] : [];
+        List<ListItem> uriItems = _uriItem is not null ? [_uriItem] : [];
+        List<ListItem> exeItems = _exeItem is not null ? [_exeItem] : [];
 
         return
             exeItems
@@ -319,20 +319,19 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             .ToArray();
     }
 
-    internal static RunExeItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
+    internal static ListItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
     {
         // PathToListItem will return a RunExeItem if it can find a executable.
         // It will ALSO add the file search commands to the RunExeItem.
-        return PathToListItem(fullExePath, exe, args, addToHistory) as RunExeItem ??
-               new RunExeItem(exe, args, fullExePath, addToHistory);
+        return PathToListItem(fullExePath, exe, args, addToHistory);
     }
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
     {
         // If we already have an exe item, and the exe is the same, we can just update it
-        if (_exeItem != null && _exeItem.FullExePath.Equals(fullExePath, StringComparison.OrdinalIgnoreCase))
+        if (_exeItem is RunExeItem exeItem && exeItem.FullExePath.Equals(fullExePath, StringComparison.OrdinalIgnoreCase))
         {
-            _exeItem.UpdateArgs(args);
+            exeItem.UpdateArgs(args);
         }
         else
         {
@@ -345,7 +344,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // Is this path an executable?
         // check all the extensions in PATHEXT
         var extensions = Environment.GetEnvironmentVariable("PATHEXT")?.Split(';') ?? Array.Empty<string>();
-        return extensions.Any(ext => string.Equals(Path.GetExtension(path), ext, StringComparison.OrdinalIgnoreCase));
+        var extension = Path.GetExtension(path);
+        return string.IsNullOrEmpty(extension) || extensions.Any(ext => string.Equals(extension, ext, StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task CreatePathItemsAsync(string searchPath, string originalPath, CancellationToken cancellationToken)
@@ -367,7 +367,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         // Easiest case: text is literally already a full directory
-        else if (Directory.Exists(trimmed))
+        else if (Directory.Exists(trimmed) && trimmed.EndsWith('\\'))
         {
             directoryPath = trimmed;
             searchPattern = $"*";
@@ -439,46 +439,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
     }
 
-    internal static void ParseExecutableAndArgs(string input, out string executable, out string arguments)
-    {
-        input = input.Trim();
-        executable = string.Empty;
-        arguments = string.Empty;
-
-        if (string.IsNullOrEmpty(input))
-        {
-            return;
-        }
-
-        if (input.StartsWith("\"", System.StringComparison.InvariantCultureIgnoreCase))
-        {
-            // Find the closing quote
-            var closingQuoteIndex = input.IndexOf('\"', 1);
-            if (closingQuoteIndex > 0)
-            {
-                executable = input.Substring(1, closingQuoteIndex - 1);
-                if (closingQuoteIndex + 1 < input.Length)
-                {
-                    arguments = input.Substring(closingQuoteIndex + 1).TrimStart();
-                }
-            }
-        }
-        else
-        {
-            // Executable ends at first space
-            var firstSpaceIndex = input.IndexOf(' ');
-            if (firstSpaceIndex > 0)
-            {
-                executable = input.Substring(0, firstSpaceIndex);
-                arguments = input[(firstSpaceIndex + 1)..].TrimStart();
-            }
-            else
-            {
-                executable = input;
-            }
-        }
-    }
-
     internal void CreateUriItems(string searchText)
     {
         if (!System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
@@ -499,7 +459,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var hist = _historyService.GetRunHistory();
         var histItems = hist
             .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h, AddToHistory)))
-            .Where(tuple => tuple.Item2 != null)
+            .Where(tuple => tuple.Item2 is not null)
             .Select(tuple => (tuple.h, tuple.Item2!))
             .ToList();
         _historyItems.Clear();
