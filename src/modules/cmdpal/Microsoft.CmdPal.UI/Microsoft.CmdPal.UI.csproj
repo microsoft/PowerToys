@@ -25,10 +25,10 @@
   </PropertyGroup>
   
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-  <!-- <PropertyGroup>
+  <PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <CIBuild>true</CIBuild>
-  </PropertyGroup> -->
+  </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>

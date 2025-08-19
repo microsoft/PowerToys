@@ -32,7 +32,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     private CancellationTokenSource? _cancellationTokenSource;
     private Task<IEnumerable<CatalogPackage>>? _currentSearchTask;
 
-    private IEnumerable<CatalogPackage>? _results;
+    private List<CatalogPackage>? _results;
 
     public static string ExtensionsTag => "windows-commandpalette-extension";
 
@@ -63,16 +63,16 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                 return [];
             }
 
-            if (_results != null && _results.Any())
+            if (_results != null && _results.Count != 0)
             {
-                var count = _results.Count();
+                var count = _results.Count;
                 var results = new ListItem[count];
                 var next = 0;
                 for (var i = 0; i < count; i++)
                 {
                     try
                     {
-                        var li = PackageToListItem(_results.ElementAt(i));
+                        var li = PackageToListItem(_results[i]);
                         results[next] = li;
                         next++;
                     }
@@ -180,10 +180,10 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         Logger.LogDebug($"Completed search for '{query}'");
         lock (_resultsLock)
         {
-            this._results = results;
+            this._results = results.ToList();
         }
 
-        RaiseItemsChanged(this._results.Count());
+        RaiseItemsChanged();
     }
 
     private async Task<IEnumerable<CatalogPackage>> DoSearchAsync(string query, CancellationToken ct)
@@ -263,7 +263,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
             Logger.LogDebug($"    got results for ({query})", memberName: nameof(DoSearchAsync));
 
-            // FYI Using .ToArray or any other kind of enumberable loop
+            // FYI Using .ToArray or any other kind of enumerable loop
             // on arrays returned by the winget API are NOT trim safe
             var count = searchResults.Matches.Count;
             for (var i = 0; i < count; i++)
