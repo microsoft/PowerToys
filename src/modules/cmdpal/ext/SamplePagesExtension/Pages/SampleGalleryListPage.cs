@@ -29,7 +29,7 @@ internal sealed partial class SampleGalleryListPage : ListPage
             {
                 Title = "Another Title",
                 Subtitle = "I don't do anything",
-                Icon = IconHelpers.FromRelativePath("Assets/Images/objectbg.png"),
+                Icon = IconHelpers.FromRelativePath("Assets/Images/Swirls.png"),
             },
             new ListItem(new NoOpCommand())
             {
@@ -53,7 +53,7 @@ internal sealed partial class SampleGalleryListPage : ListPage
             {
                 Title = "More Titles",
                 Subtitle = "I don't do anything",
-                Icon = IconHelpers.FromRelativePath("Assets/Images/objectbg.png"),
+                Icon = IconHelpers.FromRelativePath("Assets/Images/Swirls.png"),
             },
             new ListItem(new NoOpCommand())
             {
