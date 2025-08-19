@@ -142,7 +142,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are going to end the following process:.
+        ///   Looks up a localized string similar to The following process will be ended:.
         /// </summary>
         public static string windowwalker_KillMessage {
             get {
@@ -183,6 +183,15 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         public static string windowwalker_name {
             get {
                 return ResourceManager.GetString("windowwalker_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No open windows found.
+        /// </summary>
+        public static string windowwalker_NoResultsMessage {
+            get {
+                return ResourceManager.GetString("windowwalker_NoResultsMessage", resourceCulture);
             }
         }
         

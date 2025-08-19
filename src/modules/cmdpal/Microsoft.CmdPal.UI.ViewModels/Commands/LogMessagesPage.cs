@@ -23,7 +23,7 @@ public partial class LogMessagesPage : ListPage
 
     private void LogMessages_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
+        if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems is not null)
         {
             foreach (var item in e.NewItems)
             {

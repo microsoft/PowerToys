@@ -38,15 +38,12 @@
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
-
                     <tkcontrols:SettingsCard x:Uid="RegistryPreview_DefaultRegApp" HeaderIcon="{ui:FontIcon Glyph=&#xE7AC;}">
                         <ToggleSwitch x:Uid="RegistryPreview_DefaultRegApp_ToggleSwitch" IsOn="{x:Bind ViewModel.IsRegistryPreviewDefaultRegApp, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
-
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
-
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="LearnMore_RegistryPreview" Link="https://aka.ms/PowerToysOverview_RegistryPreview" />
         </controls:SettingsPageControl.PrimaryLinks>

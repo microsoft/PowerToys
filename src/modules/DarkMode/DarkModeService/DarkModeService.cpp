@@ -198,25 +198,29 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         // Respect overrides first
         if (settings.forceLight)
         {
-            SetSystemTheme(settings.changeSystem);
-            SetAppsTheme(settings.changeApps);
+            SetSystemTheme(true);
+            SetAppsTheme(true);
         }
         else if (settings.forceDark)
         {
-            SetSystemTheme(settings.changeSystem);
-            SetAppsTheme(settings.changeApps);
+            SetSystemTheme(false);
+            SetAppsTheme(false);
         }
         else
         {
             if (nowMinutes == lightMinutes)
             {
-                SetSystemTheme(settings.changeSystem);
-                SetAppsTheme(settings.changeApps);
+                if (settings.changeSystem)
+                    SetSystemTheme(true);
+                if (settings.changeApps)
+                    SetAppsTheme(true);
             }
             else if (nowMinutes == darkMinutes)
             {
-                SetSystemTheme(settings.changeSystem);
-                SetAppsTheme(settings.changeApps);
+                if (settings.changeSystem)
+                    SetSystemTheme(false);
+                if (settings.changeApps)
+                    SetAppsTheme(false);
             }
         }
 

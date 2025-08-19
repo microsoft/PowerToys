@@ -4,9 +4,10 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -104,6 +105,8 @@ public sealed partial class SettingsWindow : WindowEx,
     private void Window_Closed(object sender, WindowEventArgs args)
     {
         WeakReferenceMessenger.Default.Send<SettingsWindowClosedMessage>();
+
+        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)

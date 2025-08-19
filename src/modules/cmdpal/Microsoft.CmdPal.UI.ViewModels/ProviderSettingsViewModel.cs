@@ -7,7 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,7 +33,7 @@ public partial class ProviderSettingsViewModel(
         Resources.builtin_disabled_extension;
 
     [MemberNotNullWhen(true, nameof(Extension))]
-    public bool IsFromExtension => _provider.Extension != null;
+    public bool IsFromExtension => _provider.Extension is not null;
 
     public IExtensionWrapper? Extension => _provider.Extension;
 
@@ -76,7 +76,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (_provider.Settings == null)
+            if (_provider.Settings is null)
             {
                 return false;
             }
@@ -100,7 +100,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (_provider.Settings == null)
+            if (_provider.Settings is null)
             {
                 return null;
             }
@@ -126,7 +126,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (field == null)
+            if (field is null)
             {
                 field = BuildTopLevelViewModels();
             }
@@ -149,7 +149,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (field == null)
+            if (field is null)
             {
                 field = BuildFallbackViewModels();
             }
@@ -173,7 +173,7 @@ public partial class ProviderSettingsViewModel(
 
     private void InitializeSettingsPage()
     {
-        if (_provider.Settings == null)
+        if (_provider.Settings is null)
         {
             return;
         }
