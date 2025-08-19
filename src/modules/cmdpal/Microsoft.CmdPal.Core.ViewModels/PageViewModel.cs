@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -45,7 +46,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     [ObservableProperty]
     public partial AppExtensionHost ExtensionHost { get; private set; }
 
-    public bool HasStatusMessage => MostRecentStatusMessage != null;
+    public bool HasStatusMessage => MostRecentStatusMessage is not null;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
@@ -132,7 +133,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public override void InitializeProperties()
     {
         var page = _pageModel.Unsafe;
-        if (page == null)
+        if (page is null)
         {
             return; // throw?
         }
@@ -177,7 +178,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     protected virtual void FetchProperty(string propertyName)
     {
         var model = this._pageModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -223,9 +224,10 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         extensionHint ??= ExtensionHost.GetExtensionDisplayName() ?? Title;
         Task.Factory.StartNew(
             () =>
-        {
-            ErrorMessage += $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
-        },
+            {
+                var message = DiagnosticsHelper.BuildExceptionMessage(ex, extensionHint);
+                ErrorMessage += message;
+            },
             CancellationToken.None,
             TaskCreationOptions.None,
             Scheduler);
@@ -240,7 +242,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         ExtensionHost.StatusMessages.CollectionChanged -= StatusMessages_CollectionChanged;
 
         var model = _pageModel.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.PropChanged -= Model_PropChanged;
         }

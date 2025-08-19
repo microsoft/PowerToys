@@ -26,6 +26,8 @@ namespace Hosts.Settings
 
         private bool _loopbackDuplicates;
 
+        public bool NoLeadingSpaces { get; private set; }
+
         public bool LoopbackDuplicates
         {
             get => _loopbackDuplicates;
@@ -88,6 +90,7 @@ namespace Hosts.Settings
                             AdditionalLinesPosition = (HostsAdditionalLinesPosition)settings.Properties.AdditionalLinesPosition;
                             Encoding = (HostsEncoding)settings.Properties.Encoding;
                             LoopbackDuplicates = settings.Properties.LoopbackDuplicates;
+                            NoLeadingSpaces = settings.Properties.NoLeadingSpaces;
                         }
 
                         retry = false;

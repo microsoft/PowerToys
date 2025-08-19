@@ -30,7 +30,7 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
     public override ICommandResult SubmitForm(string inputs, string data)
     {
         var dataInput = JsonNode.Parse(data)?.AsObject();
-        if (dataInput == null)
+        if (dataInput is null)
         {
             return CommandResult.KeepOpen();
         }

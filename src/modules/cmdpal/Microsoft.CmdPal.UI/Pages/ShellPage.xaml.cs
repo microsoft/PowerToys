@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CommandPalette.Extensions;
@@ -17,7 +18,6 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -171,7 +171,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // This gets called from the UI thread
     private async Task HandleConfirmArgsOnUiThread(IConfirmationArgs? args)
     {
-        if (args == null)
+        if (args is null)
         {
             return;
         }
@@ -236,12 +236,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void OpenSettings()
     {
-        if (_settingsWindow == null)
+        if (_settingsWindow is null)
         {
             _settingsWindow = new SettingsWindow();
         }
 
         _settingsWindow.Activate();
+        _settingsWindow.BringToFront();
     }
 
     public void Receive(ShowDetailsMessage message)
@@ -323,7 +324,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 // command from our list of toplevel commands.
                 var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
                 var topLevelCommand = tlcManager.LookupCommand(commandId);
-                if (topLevelCommand != null)
+                if (topLevelCommand is not null)
                 {
                     var command = topLevelCommand.CommandViewModel.Model.Unsafe;
                     var isPage = command is not IInvokableCommand;
