@@ -21,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
         private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
-        private bool _disposed = false;
+        private bool _disposed;
 
         protected abstract string ModuleName { get; }
 
