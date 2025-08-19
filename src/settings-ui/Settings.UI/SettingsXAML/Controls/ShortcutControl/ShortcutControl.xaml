@@ -41,6 +41,7 @@
                                 CornerRadius="{StaticResource ControlCornerRadius}"
                                 FontWeight="SemiBold"
                                 IsInvalid="{Binding ElementName=LayoutRoot, Path=HasConflict}"
+                                Style="{StaticResource AccentKeyVisualStyle}"
                                 IsTabStop="False" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
