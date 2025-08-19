@@ -1262,6 +1262,40 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override void Dispose(bool disposing)
         {
+            if (disposing)
+            {
+                // Cancel the cancellation token source
+                _cancellationTokenSource?.Cancel();
+                _cancellationTokenSource?.Dispose();
+
+                // Wait for the machine polling task to complete
+                try
+                {
+                    _machinePollingThreadTask?.Wait(TimeSpan.FromSeconds(1));
+                }
+                catch (AggregateException)
+                {
+                    // Task was cancelled, which is expected
+                }
+
+                // Dispose the named pipe stream
+                try
+                {
+                    syncHelperStream?.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Error disposing sync helper stream: {ex}");
+                }
+                finally
+                {
+                    syncHelperStream = null;
+                }
+
+                // Dispose the semaphore
+                _ipcSemaphore?.Dispose();
+            }
+
             base.Dispose(disposing);
         }
 
