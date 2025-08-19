@@ -298,5 +298,34 @@ namespace Hosts.Tests
             var hidden = fileSystem.FileInfo.New(service.HostsFilePath).Attributes.HasFlag(FileAttributes.Hidden);
             Assert.IsTrue(hidden);
         }
+
+        [TestMethod]
+        public async Task NoLeadingSpaces_Disabled_RemovesIndent()
+        {
+            var content =
+        @"10.1.1.1 host host.local # comment
+10.1.1.2 host2 host2.local # another comment
+";
+
+            var expected =
+        @"10.1.1.1  host host.local     # comment
+10.1.1.2  host2 host2.local   # another comment
+# 10.1.1.30 host30 host30.local # new entry
+";
+
+            var fs = new CustomMockFileSystem();
+            var settings = new Mock<IUserSettings>();
+            settings.Setup(s => s.NoLeadingSpaces).Returns(true);
+            var svc = new HostsService(fs, settings.Object, _elevationHelper.Object);
+            fs.AddFile(svc.HostsFilePath, new MockFileData(content));
+
+            var data = await svc.ReadAsync();
+            var entries = data.Entries.ToList();
+            entries.Add(new Entry(0, "10.1.1.30", "host30 host30.local", "new entry", false));
+            await svc.WriteAsync(data.AdditionalLines, entries);
+
+            var result = fs.GetFile(svc.HostsFilePath);
+            Assert.AreEqual(expected, result.TextContents);
+        }
     }
 }
