@@ -389,7 +389,7 @@ jobs:
           /p:VCRTForwarders-IncludeDebugCRT=false
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml
-          /p:TargetFramework=net9.0-windows10.0.26100.0
+          /p:TargetFramework=net10.0-windows10.0.26100.0
           /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
           $(RestoreAdditionalProjectSourcesArg)
         platform: $(BuildPlatform)
