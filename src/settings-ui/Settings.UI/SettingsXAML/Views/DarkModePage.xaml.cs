@@ -21,6 +21,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -75,23 +76,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             InitializeComponent();
         }
-
-        /* private void ModeRadio_Checked(object sender, RoutedEventArgs e)
-        {
-            if (TimeModeRadio.IsChecked == true)
-            {
-                // Set UseLocation to false (use specific times)
-                ViewModel.ModuleSettings.Properties.UseLocation.Value = false;
-            }
-            else if (GeoModeRadio.IsChecked == true)
-            {
-                // Set UseLocation to true (use geolocation)
-                ViewModel.ModuleSettings.Properties.UseLocation.Value = true;
-            }
-
-            // Refresh the view so dependent fields update (if applicable)
-            ViewModel.NotifyPropertyChanged(nameof(ViewModel.IsUseLocationEnabled));
-        } */
 
         private void GetLocation_Click(object sender, RoutedEventArgs e)
         {
@@ -187,7 +171,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void UpdateEnabledState(bool recommendedState)
         {
-            ViewModel.IsEnabled = recommendedState;
+            var enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredDarkModeEnabledValue();
+
+            if (enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                ViewModel.IsEnabledGpoConfigured = true;
+                ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                ViewModel.IsEnabled = recommendedState;
+            }
         }
     }
 }
