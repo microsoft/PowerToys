@@ -8,7 +8,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public interface IBookmarkDataSource
 {
-    string GetBookmarkDataAsync();
+    string GetBookmarkData();
 
-    void SaveBookmarkDataAsync(string jsonData);
+    void SaveBookmarkData(string jsonData);
 }

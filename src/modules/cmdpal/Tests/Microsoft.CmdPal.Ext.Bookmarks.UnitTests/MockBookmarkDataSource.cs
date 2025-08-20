@@ -15,12 +15,12 @@ internal sealed class MockBookmarkDataSource : IBookmarkDataSource
         _jsonData = initialJsonData;
     }
 
-    public string GetBookmarkDataAsync()
+    public string GetBookmarkData()
     {
         return _jsonData;
     }
 
-    public void SaveBookmarkDataAsync(string jsonData)
+    public void SaveBookmarkData(string jsonData)
     {
         _jsonData = jsonData;
     }

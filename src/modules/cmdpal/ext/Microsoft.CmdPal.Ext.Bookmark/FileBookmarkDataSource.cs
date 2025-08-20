@@ -18,7 +18,7 @@ public class FileBookmarkDataSource : IBookmarkDataSource
         _filePath = filePath;
     }
 
-    public string GetBookmarkDataAsync()
+    public string GetBookmarkData()
     {
         if (!File.Exists(_filePath))
         {
@@ -36,7 +36,7 @@ public class FileBookmarkDataSource : IBookmarkDataSource
         }
     }
 
-    public void SaveBookmarkDataAsync(string jsonData)
+    public void SaveBookmarkData(string jsonData)
     {
         try
         {

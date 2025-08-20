@@ -63,7 +63,7 @@ public partial class BookmarksCommandProvider : CommandProvider
         try
         {
             var jsonData = _parser.SerializeBookmarks(_bookmarks);
-            Task.Run(() => _dataSource.SaveBookmarkDataAsync(jsonData)).GetAwaiter().GetResult();
+            Task.Run(() => _dataSource.SaveBookmarkData(jsonData));
         }
         catch (Exception ex)
         {
@@ -97,7 +97,7 @@ public partial class BookmarksCommandProvider : CommandProvider
     {
         try
         {
-            var jsonData = Task.Run(() => _dataSource.GetBookmarkDataAsync()).GetAwaiter().GetResult();
+            var jsonData = _dataSource.GetBookmarkData();
             _bookmarks = _parser.ParseBookmarks(jsonData);
         }
         catch (Exception ex)
