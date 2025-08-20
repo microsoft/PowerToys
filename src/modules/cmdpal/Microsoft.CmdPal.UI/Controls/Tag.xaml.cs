@@ -84,7 +84,7 @@ public partial class Tag : Control
             return;
         }
 
-        if (tag.ForegroundColor != null &&
+        if (tag.ForegroundColor is not null &&
             OptionalColorBrushCacheProvider.Convert(tag.ForegroundColor.Value) is SolidColorBrush brush)
         {
             tag.Foreground = brush;
@@ -114,7 +114,7 @@ public partial class Tag : Control
             return;
         }
 
-        if (tag.BackgroundColor != null &&
+        if (tag.BackgroundColor is not null &&
             OptionalColorBrushCacheProvider.Convert(tag.BackgroundColor.Value) is SolidColorBrush brush)
         {
             tag.Background = brush;

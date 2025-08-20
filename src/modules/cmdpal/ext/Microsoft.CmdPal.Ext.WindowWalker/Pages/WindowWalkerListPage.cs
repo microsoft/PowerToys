@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -23,6 +24,13 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         Name = Resources.windowwalker_name;
         Id = "com.microsoft.cmdpal.windowwalker";
         PlaceholderText = Resources.windowwalker_PlaceholderText;
+
+        EmptyContent = new CommandItem(new NoOpCommand())
+        {
+            Icon = Icon,
+            Title = Resources.window_walker_top_level_command_title,
+            Subtitle = Resources.windowwalker_NoResultsMessage,
+        };
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch) =>
