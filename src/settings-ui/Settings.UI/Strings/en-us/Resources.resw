@@ -5146,6 +5146,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="CloseDialog.SecondaryButtonText" xml:space="preserve">
     <value>No</value>
+  </data>
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
   </data>
