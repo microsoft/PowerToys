@@ -16,8 +16,6 @@ struct ScreenshotCropAndLockWindow : robmikh::common::desktop::DesktopWindow<Scr
 private:
     static void RegisterWindowClass();
 
-    void Hide();
-
 private:
     std::unique_ptr<void, decltype(&DeleteObject)> m_bitmap{ nullptr, &DeleteObject };
     RECT m_destRect = {};

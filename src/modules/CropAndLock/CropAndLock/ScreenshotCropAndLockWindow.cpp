@@ -126,7 +126,8 @@ void ScreenshotCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     int fullHeight = windowRect.bottom - windowRect.top;
 
     HDC fullDC = CreateCompatibleDC(nullptr);
-    HBITMAP fullBitmap = CreateCompatibleBitmap(GetDC(nullptr), fullWidth, fullHeight);
+    HDC screenDC = GetDC(nullptr);
+    HBITMAP fullBitmap = CreateCompatibleBitmap(screenDC, fullWidth, fullHeight);
     HGDIOBJ oldFullBitmap = SelectObject(fullDC, fullBitmap);
 
     // Capture full window
@@ -138,8 +139,9 @@ void ScreenshotCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     int cropHeight = m_sourceRect.bottom - m_sourceRect.top;
 
     HDC cropDC = CreateCompatibleDC(nullptr);
-    HBITMAP cropBitmap = CreateCompatibleBitmap(GetDC(nullptr), cropWidth, cropHeight);
+    HBITMAP cropBitmap = CreateCompatibleBitmap(screenDC, cropWidth, cropHeight);
     HGDIOBJ oldCropBitmap = SelectObject(cropDC, cropBitmap);
+    ReleaseDC(nullptr, screenDC);
 
     BitBlt(
         cropDC,
@@ -173,9 +175,4 @@ void ScreenshotCropAndLockWindow::CropAndLock(HWND windowToCrop, RECT cropRect)
     m_destRect = { 0, 0, cropWidth, cropHeight };
     m_captured = true;
     InvalidateRect(m_window, nullptr, FALSE);
-}
-
-void ScreenshotCropAndLockWindow::Hide()
-{
-    ShowWindow(m_window, SW_HIDE);
 }
