@@ -83,7 +83,7 @@ public partial class MainListPage : DynamicListPage,
         }
         else
         {
-            RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
+            RaiseItemsChanged();
         }
     }
 
@@ -221,7 +221,21 @@ public partial class MainListPage : DynamicListPage,
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
-            RaiseItemsChanged(_filteredItems.Count());
+
+            // Reduce the number of results based on the AllApps settings for
+            // top level results.
+            var appResultLimit = AllAppsCommandProvider.TopLevelResultLimit;
+            if (appResultLimit >= 0)
+            {
+                var indexesToRemove = _filteredItems
+                                    .Select((item, index) => (item, index))
+                                    .Where((item) => item.item.Command is AppCommand)
+                                    .Select(item => item.index)
+                                    .Where((indexInFilteredItems, index) => index >= appResultLimit);
+                _filteredItems = _filteredItems.Where((item, index) => !indexesToRemove.Contains(index));
+            }
+
+            RaiseItemsChanged();
         }
     }
 
