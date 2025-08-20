@@ -19,7 +19,7 @@ public static class Program
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
 
-        if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+        if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredClipPingEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
         {
             Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
             return;

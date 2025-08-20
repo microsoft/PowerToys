@@ -133,7 +133,7 @@ namespace CommonSharedConstants
 
     // Path to the events used by ClipPing
     const wchar_t CLIPPING_EXIT_EVENT[] = L"Local\\PowerToysClipPing-ExitEvent-ce6339f2-4818-4238-a4d9-f1dafc53335e";
-    const wchar_t CLIPPING_SHOW_OVERLAY_EVENT[] = L"Local\\PowerToysClipPing-ExitEvent-5c27a65e-4e4f-41e0-804a-6cddada1cffc";
+    const wchar_t CLIPPING_SHOW_OVERLAY_EVENT[] = L"Local\\PowerToysClipPing-ShowOverlayEvent-5c27a65e-4e4f-41e0-804a-6cddada1cffc";
 
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";

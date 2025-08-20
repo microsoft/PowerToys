@@ -41,7 +41,7 @@
     <Message Text="Executing CopyPRIFileToOutputDir task" Importance="High" />
 
     <ItemGroup>
-      <PRIFile Include="$(OutDir)**\PowerToys.EnvironmentVariablesUILib.pri" />
+      <PRIFile Include="$(OutDir)**\PowerToys.ClipPing.pri" />
     </ItemGroup>
 
     <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
