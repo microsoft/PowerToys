@@ -19,6 +19,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new AlwaysOnTopViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<AlwaysOnTopSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()
