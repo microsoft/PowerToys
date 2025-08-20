@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -20,9 +21,13 @@ using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PeekViewModel : Observable, IDisposable
+    public class PeekViewModel : PageViewModelBase
     {
+        protected override string ModuleName => PeekSettings.ModuleName;
+
         private bool _isEnabled;
+
+        private bool _disposed;
 
         private bool _settingsUpdating;
 
@@ -59,6 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Load the application-specific settings, including preview items.
             _peekSettings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
             _peekPreviewSettings = _settingsUtils.GetSettingsOrDefault<PeekPreviewSettings>(PeekSettings.ModuleName, PeekPreviewSettings.FileName);
+
             SetupSettingsFileWatcher();
 
             InitializeEnabledValue();
@@ -116,6 +122,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.Peek;
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [ActivationShortcut],
+            };
+
+            return hotkeysDict;
         }
 
         public bool IsEnabled
@@ -302,11 +318,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _watcher?.Dispose();
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _watcher?.Dispose();
+                    _watcher = null;
+                }
 
-            GC.SuppressFinalize(this);
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }
