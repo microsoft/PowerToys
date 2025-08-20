@@ -112,9 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string GetShortcutGuideToolTip()
         {
             var shortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(new SettingsUtils()).SettingsConfig;
-            return shortcutGuideSettings.Properties.UseLegacyPressWinKeyBehavior.Value
-                ? "Win"
-                : shortcutGuideSettings.Properties.OpenShortcutGuide.ToString();
+            return shortcutGuideSettings.Properties.OpenShortcutGuide.ToString();
         }
 
         internal void StartBugReport()
