@@ -5,6 +5,7 @@
 #include "MouseHighlighter.h"
 #include "trace.h"
 #include <cmath>
+#include <algorithm>
 
 #ifdef COMPOSITION
 namespace winrt
@@ -49,6 +50,9 @@ private:
     void BringToFront();
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
+    // Helpers for spotlight overlay
+    float GetDpiScale() const;
+    void UpdateSpotlightMask(float cx, float cy, float radius, bool show);
 
     static constexpr auto m_className = L"MouseHighlighter";
     static constexpr auto m_windowTitle = L"PowerToys Mouse Highlighter";
@@ -67,7 +71,14 @@ private:
     winrt::CompositionSpriteShape m_leftPointer{ nullptr };
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
     winrt::CompositionSpriteShape m_alwaysPointer{ nullptr };
-    winrt::CompositionSpriteShape m_spotlightPointer{ nullptr };
+    // Spotlight overlay (mask with soft feathered edge)
+    winrt::SpriteVisual m_overlay{ nullptr };
+    winrt::CompositionMaskBrush m_spotlightMask{ nullptr };
+    winrt::CompositionRadialGradientBrush m_spotlightMaskGradient{ nullptr };
+    winrt::CompositionColorBrush m_spotlightSource{ nullptr };
+    winrt::CompositionColorGradientStop m_maskStopCenter{ nullptr };
+    winrt::CompositionColorGradientStop m_maskStopInner{ nullptr };
+    winrt::CompositionColorGradientStop m_maskStopOuter{ nullptr };
 
     bool m_leftPointerEnabled = true;
     bool m_rightPointerEnabled = true;
@@ -123,6 +134,35 @@ bool Highlighter::CreateHighlighter()
         m_shape.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_root.Children().InsertAtTop(m_shape);
 
+        // Create spotlight overlay (soft feather, DPI-aware)
+        m_overlay = m_compositor.CreateSpriteVisual();
+        m_overlay.RelativeSizeAdjustment({ 1.0f, 1.0f });
+        m_spotlightSource = m_compositor.CreateColorBrush(m_alwaysColor);
+        m_spotlightMaskGradient = m_compositor.CreateRadialGradientBrush();
+        m_spotlightMaskGradient.MappingMode(winrt::CompositionMappingMode::Absolute);
+        // Center region fully transparent
+        m_maskStopCenter = m_compositor.CreateColorGradientStop();
+        m_maskStopCenter.Offset(0.0f);
+        m_maskStopCenter.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        // Inner edge of feather (still transparent)
+        m_maskStopInner = m_compositor.CreateColorGradientStop();
+        m_maskStopInner.Offset(0.995f); // will be updated per-radius
+        m_maskStopInner.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        // Outer edge (opaque mask -> overlay visible)
+        m_maskStopOuter = m_compositor.CreateColorGradientStop();
+        m_maskStopOuter.Offset(1.0f);
+        m_maskStopOuter.Color(winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 255, 255));
+        m_spotlightMaskGradient.ColorStops().Append(m_maskStopCenter);
+        m_spotlightMaskGradient.ColorStops().Append(m_maskStopInner);
+        m_spotlightMaskGradient.ColorStops().Append(m_maskStopOuter);
+
+        m_spotlightMask = m_compositor.CreateMaskBrush();
+        m_spotlightMask.Source(m_spotlightSource);
+        m_spotlightMask.Mask(m_spotlightMaskGradient);
+        m_overlay.Brush(m_spotlightMask);
+        m_overlay.IsVisible(false);
+        m_root.Children().InsertAtTop(m_overlay);
+
         return true;
     }
     catch (...)
@@ -165,12 +205,8 @@ void Highlighter::AddDrawingPoint(MouseButton button)
         // always
         if (m_spotlightMode)
         {
-            float borderThickness = static_cast<float>(std::hypot(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN)));
-            circleGeometry.Radius({ static_cast<float>(borderThickness / 2.0 + m_radius), static_cast<float>(borderThickness / 2.0 + m_radius) });
-            circleShape.FillBrush(nullptr);
-            circleShape.StrokeBrush(m_compositor.CreateColorBrush(m_alwaysColor));
-            circleShape.StrokeThickness(borderThickness);
-            m_spotlightPointer = circleShape;
+            UpdateSpotlightMask(static_cast<float>(pt.x), static_cast<float>(pt.y), m_radius, true);
+            return;
         }
         else
         {
@@ -209,20 +245,14 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
     }
     else
     {
-        // always
+        // always / spotlight idle
         if (m_spotlightMode)
         {
-            if (m_spotlightPointer)
-            {
-                m_spotlightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
-            }
+            UpdateSpotlightMask(static_cast<float>(pt.x), static_cast<float>(pt.y), m_radius, true);
         }
-        else
+        else if (m_alwaysPointer)
         {
-            if (m_alwaysPointer)
-            {
-                m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
-            }
+            m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
         }
     }
 }
@@ -266,9 +296,9 @@ void Highlighter::ClearDrawingPoint()
 {
     if (m_spotlightMode)
     {
-        if (m_spotlightPointer)
+        if (m_overlay)
         {
-            m_spotlightPointer.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+            m_overlay.IsVisible(false);
         }
     }
     else
@@ -421,7 +451,10 @@ void Highlighter::StopDrawing()
     m_leftPointer = nullptr;
     m_rightPointer = nullptr;
     m_alwaysPointer = nullptr;
-    m_spotlightPointer = nullptr;
+    if (m_overlay)
+    {
+        m_overlay.IsVisible(false);
+    }
     ShowWindow(m_hwnd, SW_HIDE);
     UnhookWindowsHookEx(m_mouseHook);
     ClearDrawing();
@@ -450,6 +483,16 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings)
     {
         m_leftPointerEnabled = false;
         m_rightPointerEnabled = false;
+    }
+
+    // Keep spotlight overlay color updated
+    if (m_spotlightSource)
+    {
+        m_spotlightSource.Color(m_alwaysColor);
+    }
+    if (!m_spotlightMode && m_overlay)
+    {
+        m_overlay.IsVisible(false);
     }
 
     if (instance->m_visible)
@@ -560,6 +603,43 @@ void Highlighter::Terminate()
     if (!enqueueSucceeded)
     {
         Logger::error("Couldn't enqueue message to destroy the window.");
+    }
+}
+
+float Highlighter::GetDpiScale() const
+{
+    return static_cast<float>(GetDpiForWindow(m_hwnd)) / 96.0f;
+}
+
+// Update spotlight radial mask center/radius with DPI-aware feather
+void Highlighter::UpdateSpotlightMask(float cx, float cy, float radius, bool show)
+{
+    if (!m_spotlightMaskGradient)
+    {
+        return;
+    }
+
+    m_spotlightMaskGradient.EllipseCenter({ cx, cy });
+    m_spotlightMaskGradient.EllipseRadius({ radius, radius });
+
+    const float dpiScale = GetDpiScale();
+    // Target a very fine edge: ~1 physical pixel, convert to DIPs: 1 / dpiScale
+    const float featherDip = 1.0f / (dpiScale > 0.0f ? dpiScale : 1.0f);
+    const float safeRadius = (std::max)(radius, 1.0f);
+    const float featherRel = (std::min)(0.25f, featherDip / safeRadius);
+
+    if (m_maskStopInner)
+    {
+        m_maskStopInner.Offset((std::max)(0.0f, 1.0f - featherRel));
+    }
+
+    if (m_spotlightSource)
+    {
+        m_spotlightSource.Color(m_alwaysColor);
+    }
+    if (m_overlay)
+    {
+        m_overlay.IsVisible(show);
     }
 }
 

@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Storage;
 /// A repository for storing packaged applications such as UWP apps or appx packaged desktop apps.
 /// This repository will also monitor for changes to the PackageCatalog and update the repository accordingly
 /// </summary>
-internal sealed partial class PackageRepository : ListRepository<UWPApplication>, IProgramRepository
+internal sealed partial class PackageRepository : ListRepository<IUWPApplication>, IProgramRepository
 {
     private readonly IPackageCatalog _packageCatalog;
 
@@ -115,11 +115,7 @@ internal sealed partial class PackageRepository : ListRepository<UWPApplication>
 
     public void IndexPrograms()
     {
-        var windows10 = new Version(10, 0);
-        var support = Environment.OSVersion.Version.Major >= windows10.Major;
-
-        var applications = support ? Programs.UWP.All() : Array.Empty<UWPApplication>();
-
+        var applications = UWP.All();
         SetList(applications);
     }
 }

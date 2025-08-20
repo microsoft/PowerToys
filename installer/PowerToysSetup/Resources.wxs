@@ -11,7 +11,7 @@
   <Fragment>
     <!-- Resource directories should be added only if the installer is built on the build farm -->
     <?ifdef env.IsPipeline?>
-      <?foreach ParentDirectory in INSTALLFOLDER;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;ValueGeneratorPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder;PowerToysPluginFolder?>
+      <?foreach ParentDirectory in INSTALLFOLDER;WinUI3AppsInstallFolder;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;ValueGeneratorPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder;PowerToysPluginFolder?>
         <DirectoryRef Id="$(var.ParentDirectory)">
           <!-- Resource file directories -->
           <?foreach Language in $(var.LocLanguageList)?>
@@ -181,7 +181,7 @@
       </Component>
       <Component
           Id="ImageResizer_$(var.IdSafeLanguage)_Component"
-          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Directory="Resource$(var.IdSafeLanguage)WinUI3AppsInstallFolder"
           Guid="$(var.CompGUIDPrefix)02">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="ImageResizer_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
@@ -553,6 +553,7 @@
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)HistoryPluginFolder" Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)PowerToysPluginFolder" Directory="Resource$(var.IdSafeLanguage)PowerToysPluginFolder" On="uninstall"/>
           <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ValueGeneratorPluginFolder" Directory="Resource$(var.IdSafeLanguage)ValueGeneratorPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)WinUI3AppsInstallFolder" Directory="Resource$(var.IdSafeLanguage)WinUI3AppsInstallFolder" On="uninstall"/>
       <?undef IdSafeLanguage?>
         <?endforeach?>
       </Component>

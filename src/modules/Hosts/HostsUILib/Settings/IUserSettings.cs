@@ -19,5 +19,7 @@ namespace HostsUILib.Settings
         event EventHandler LoopbackDuplicatesChanged;
 
         public delegate void OpenSettingsFunction();
+
+        public bool NoLeadingSpaces { get; }
     }
 }

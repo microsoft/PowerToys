@@ -79,6 +79,15 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open.
+        /// </summary>
+        public static string bookmarks_command_name_open {
+            get {
+                return ResourceManager.GetString("bookmarks_command_name_open", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string bookmarks_delete_name {

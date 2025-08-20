@@ -1,0 +1,80 @@
+# Template for full build path: Build PowerToys + Build UI Tests + Run Tests
+parameters:
+  - name: platform
+    type: string
+  - name: enableMsBuildCaching
+    type: boolean
+    default: false
+  - name: useVSPreview
+    type: boolean
+    default: false
+  - name: useLatestWebView2
+    type: boolean
+    default: false
+  - name: uiTestModules
+    type: object
+    default: []
+
+stages:
+  # Stage 1: Build full PowerToys project
+  - stage: Build_${{ parameters.platform }}
+    displayName: Build PowerToys ${{ parameters.platform }}
+    dependsOn: []
+    jobs:
+      - template: job-build-project.yml
+        parameters:
+          pool:
+            ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+              name: SHINE-INT-L
+            ${{ else }}:
+              name: SHINE-OSS-L
+            ${{ if eq(parameters.useVSPreview, true) }}:
+              demands: ImageOverride -equals SHINE-VS17-Preview
+          buildPlatforms:
+            - ${{ parameters.platform }}
+          buildConfigurations: [Release]
+          enablePackageCaching: true
+          enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+          runTests: false
+          buildTests: true
+          useVSPreview: ${{ parameters.useVSPreview }}
+          timeoutInMinutes: 90
+
+  # Stage 2: Run UI Tests
+  - ${{ if eq(parameters.platform, 'x64') }}:
+    - stage: Test_x64Win10_FullBuild
+      displayName: Test x64Win10 (Full Build)
+      dependsOn: Build_${{ parameters.platform }}
+      jobs:
+        - template: job-test-project.yml
+          parameters:
+            platform: x64Win10
+            configuration: Release
+            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            buildSource: 'buildNow'
+            uiTestModules: ${{ parameters.uiTestModules }}
+
+    - stage: Test_x64Win11_FullBuild
+      displayName: Test x64Win11 (Full Build)
+      dependsOn: Build_${{ parameters.platform }}
+      jobs:
+        - template: job-test-project.yml
+          parameters:
+            platform: x64Win11
+            configuration: Release
+            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            buildSource: 'buildNow'
+            uiTestModules: ${{ parameters.uiTestModules }}
+
+  - ${{ if ne(parameters.platform, 'x64') }}:
+    - stage: Test_${{ parameters.platform }}_FullBuild
+      displayName: Test ${{ parameters.platform }} (Full Build)
+      dependsOn: Build_${{ parameters.platform }}
+      jobs:
+        - template: job-test-project.yml
+          parameters:
+            platform: ${{ parameters.platform }}
+            configuration: Release
+            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            buildSource: 'buildNow'
+            uiTestModules: ${{ parameters.uiTestModules }}
