@@ -28,6 +28,7 @@ public partial class MainListPage : DynamicListPage,
 
     private readonly TopLevelCommandManager _tlcManager;
     private IEnumerable<IListItem>? _filteredItems;
+    private IEnumerable<IListItem> _finalItems = [];
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
 
@@ -148,7 +149,7 @@ public partial class MainListPage : DynamicListPage,
         {
             lock (_tlcManager.TopLevelCommands)
             {
-                return _filteredItems?.ToArray() ?? [];
+                return _finalItems.ToArray();
             }
         }
     }
@@ -224,18 +225,48 @@ public partial class MainListPage : DynamicListPage,
 
             // Reduce the number of results based on the AllApps settings for
             // top level results.
-            var appResultLimit = AllAppsCommandProvider.TopLevelResultLimit;
-            if (appResultLimit >= 0)
-            {
-                var indexesToRemove = _filteredItems
-                                    .Select((item, index) => (item, index))
-                                    .Where((item) => item.item.Command is AppCommand)
-                                    .Select(item => item.index)
-                                    .Where((indexInFilteredItems, index) => index >= appResultLimit);
-                _filteredItems = _filteredItems.Where((item, index) => !indexesToRemove.Contains(index));
-            }
+            _finalItems = LimitApps(_filteredItems, AllAppsCommandProvider.TopLevelResultLimit);
 
             RaiseItemsChanged();
+        }
+    }
+
+    private static IEnumerable<IListItem> LimitApps(IEnumerable<IListItem> items, int limit)
+    {
+        return limit < 0 ? items : AppFilteringIterator(items, limit);
+    }
+
+    private static IEnumerable<IListItem> AppFilteringIterator(IEnumerable<IListItem> items, int limit)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(limit, 0);
+
+        // Fast path: skip all AppCommand, yield others
+        if (limit == 0)
+        {
+            foreach (var item in items)
+            {
+                if (item.Command is not AppCommand)
+                {
+                    yield return item;
+                }
+            }
+
+            yield break;
+        }
+
+        // General case: yield non-AppCommands and limited number of AppCommands
+        var count = 0;
+        foreach (var item in items)
+        {
+            if (item.Command is not AppCommand)
+            {
+                yield return item;
+            }
+            else if (count < limit)
+            {
+                count++;
+                yield return item;
+            }
         }
     }
 
