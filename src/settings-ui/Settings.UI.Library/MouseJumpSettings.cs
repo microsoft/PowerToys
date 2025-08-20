@@ -3,16 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using MouseJump.Common.Helpers;
 using MouseJump.Common.Models.Settings;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class MouseJumpSettings : BasePTModuleSettings, ISettingsConfig
+    public class MouseJumpSettings : BasePTModuleSettings, ISettingsConfig, IHotkeyConfig
     {
         public const string ModuleName = "MouseJump";
 
@@ -44,6 +46,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string GetModuleName()
         {
             return Name;
+        }
+
+        public ModuleType GetModuleType() => ModuleType.MouseJump;
+
+        public HotkeyAccessor[] GetAllHotkeyAccessors()
+        {
+            var hotkeyAccessors = new List<HotkeyAccessor>
+            {
+                new HotkeyAccessor(
+                    () => Properties.ActivationShortcut,
+                    value => Properties.ActivationShortcut = value ?? Properties.DefaultActivationShortcut,
+                    "MouseUtils_MouseJump_ActivationShortcut"),
+            };
+
+            return hotkeyAccessors.ToArray();
         }
 
         // This can be utilized in the future if the settings.json file is to be modified/deleted.

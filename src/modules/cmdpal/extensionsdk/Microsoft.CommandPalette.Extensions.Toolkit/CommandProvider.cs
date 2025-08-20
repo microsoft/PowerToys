@@ -31,7 +31,7 @@ public abstract partial class CommandProvider : ICommandProvider
     public virtual void InitializeWithHost(IExtensionHost host) => ExtensionHost.Initialize(host);
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-    public void Dispose()
+    public virtual void Dispose()
     {
     }
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize

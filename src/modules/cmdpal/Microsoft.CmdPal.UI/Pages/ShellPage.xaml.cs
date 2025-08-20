@@ -171,7 +171,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // This gets called from the UI thread
     private async Task HandleConfirmArgsOnUiThread(IConfirmationArgs? args)
     {
-        if (args == null)
+        if (args is null)
         {
             return;
         }
@@ -236,7 +236,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void OpenSettings()
     {
-        if (_settingsWindow == null)
+        if (_settingsWindow is null)
         {
             _settingsWindow = new SettingsWindow();
         }
@@ -324,7 +324,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 // command from our list of toplevel commands.
                 var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
                 var topLevelCommand = tlcManager.LookupCommand(commandId);
-                if (topLevelCommand != null)
+                if (topLevelCommand is not null)
                 {
                     var command = topLevelCommand.CommandViewModel.Model.Unsafe;
                     var isPage = command is not IInvokableCommand;

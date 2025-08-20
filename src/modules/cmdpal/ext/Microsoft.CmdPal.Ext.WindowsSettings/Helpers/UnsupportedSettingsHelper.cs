@@ -49,8 +49,8 @@ internal static class UnsupportedSettingsHelper
             : currentBuildNumber;
 
         var filteredSettingsList = windowsSettings.Settings.Where(found
-            => (found.DeprecatedInBuild == null || currentWindowsBuild < found.DeprecatedInBuild)
-            && (found.IntroducedInBuild == null || currentWindowsBuild >= found.IntroducedInBuild));
+            => (found.DeprecatedInBuild is null || currentWindowsBuild < found.DeprecatedInBuild)
+            && (found.IntroducedInBuild is null || currentWindowsBuild >= found.IntroducedInBuild));
 
         filteredSettingsList = filteredSettingsList.OrderBy(found => found.Name);
 
