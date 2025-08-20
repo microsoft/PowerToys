@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include <DarkModeSettings.h>
+#include <common/utils/gpo.h>
 
 // Global service variables
 SERVICE_STATUS g_ServiceStatus = {};
@@ -245,6 +246,18 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
+    winrt::init_apartment();
+
+    if (powertoys_gpo::getConfiguredDarkModeEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        wchar_t msg[160];
+        swprintf_s(
+            msg,
+            L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.\n");
+        OutputDebugString(msg);
+        return 0;
+    }
+
     int argc = 0;
     LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
     int rc = _tmain(argc, argv); // reuse your existing logic

@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <common/version/version.h>
 #include <common/SettingsAPI/settings_helpers.h>
+#include <common/logger/logger_settings.h>
 
 namespace LoggerHelpers
 {

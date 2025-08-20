@@ -97,6 +97,12 @@ public:
         return MODULE_NAME;
     }
 
+    // Return the configured status for the gpo policy for the module
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
+    {
+        return powertoys_gpo::getConfiguredDarkModeEnabledValue();
+    }
+
     // Return array of the names of all events that this powertoy listens for, with
     // nullptr as the last element of the array. Nullptr can also be retured for empty
     // list.
