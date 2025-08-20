@@ -26,11 +26,13 @@
     <file src="Microsoft.CommandPalette.Extensions.targets" target="build\"/>
     <!-- AnyCPU Managed dlls from SDK.Lib project -->
     <file src="..\Microsoft.CommandPalette.Extensions.Toolkit\x64\release\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.dll" target="lib\net8.0-windows10.0.19041.0\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions.Toolkit\x64\release\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.pdb" target="lib\net8.0-windows10.0.19041.0\"/>
     <file src="..\Microsoft.CommandPalette.Extensions.Toolkit\x64\release\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.deps.json" target="lib\net8.0-windows10.0.19041.0\"/>
 
     <!-- Native dlls and winmd from SDK cpp project -->
     <!-- TODO: we may not need this, since there are no implementations in the Microsoft.CommandPalette.Extensions namespace -->
     <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll" target="runtimes\win-x64\native\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.pdb" target="runtimes\win-x64\native\"/>
     <file src="..\Microsoft.CommandPalette.Extensions\arm64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll" target="runtimes\win-arm64\native\"/>
 
     <!-- Not putting the following into the lib folder because we don't want plugin project to directly reference the winmd -->

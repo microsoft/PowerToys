@@ -45,16 +45,4 @@
     </Compile>
   </ItemGroup>
 
-
-  <!-- Just mark it as AOT compatible. Do not publish with AOT now. We need fully test before we really publish it as AOT enabled-->
-  <!--<PropertyGroup>
-    <SelfContained>true</SelfContained>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <PublishTrimmed>true</PublishTrimmed>
-    <PublishSingleFile>true</PublishSingleFile>
-    --><!-- <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling> --><!--
-    <PublishAot>true</PublishAot>
-	<EnableMsixTooling>true</EnableMsixTooling>
-  </PropertyGroup>-->
-
 </Project>

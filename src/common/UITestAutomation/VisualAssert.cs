@@ -27,10 +27,8 @@ namespace Microsoft.PowerToys.UITest
         [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
         public static void AreEqual(TestContext? testContext, Element element, string scenarioSubname = "")
         {
-            var pipelinePlatform = Environment.GetEnvironmentVariable("platform");
-
             // Perform visual validation only in the pipeline
-            if (string.IsNullOrEmpty(pipelinePlatform))
+            if (!EnvironmentConfig.IsInPipeline)
             {
                 Console.WriteLine("Skip visual validation in the local run.");
                 return;
@@ -55,11 +53,11 @@ namespace Microsoft.PowerToys.UITest
 
             if (string.IsNullOrWhiteSpace(scenarioSubname))
             {
-                scenarioSubname = string.Join("_", callerClassName, callerName, pipelinePlatform);
+                scenarioSubname = string.Join("_", callerClassName, callerName, EnvironmentConfig.Platform);
             }
             else
             {
-                scenarioSubname = string.Join("_", callerClassName, callerName, scenarioSubname.Trim(), pipelinePlatform);
+                scenarioSubname = string.Join("_", callerClassName, callerName, scenarioSubname.Trim(), EnvironmentConfig.Platform);
             }
 
             var baselineImageResourceName = callerMethod!.DeclaringType!.Assembly.GetManifestResourceNames().Where(name => name.Contains(scenarioSubname)).FirstOrDefault();

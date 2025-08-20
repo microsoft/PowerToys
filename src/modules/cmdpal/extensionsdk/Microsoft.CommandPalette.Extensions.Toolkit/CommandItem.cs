@@ -7,6 +7,8 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 public partial class CommandItem : BaseObservable, ICommandItem
 {
     private ICommand? _command;
+    private WeakEventListener<CommandItem, object, IPropChangedEventArgs>? _commandListener;
+    private string _title = string.Empty;
 
     public virtual IIconInfo? Icon
     {
@@ -20,16 +22,14 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
     public virtual string Title
     {
-        get => !string.IsNullOrEmpty(field) ? field : _command?.Name ?? string.Empty;
+        get => !string.IsNullOrEmpty(_title) ? _title : _command?.Name ?? string.Empty;
 
         set
         {
-            field = value;
+            _title = value;
             OnPropertyChanged(nameof(Title));
         }
     }
-
-= string.Empty;
 
     public virtual string Subtitle
     {
@@ -48,8 +48,33 @@ public partial class CommandItem : BaseObservable, ICommandItem
         get => _command;
         set
         {
+            if (_commandListener is not null)
+            {
+                _commandListener.Detach();
+                _commandListener = null;
+            }
+
             _command = value;
+
+            if (value is not null)
+            {
+                _commandListener = new(this, OnCommandPropertyChanged, listener => value.PropChanged -= listener.OnEvent);
+                value.PropChanged += _commandListener.OnEvent;
+            }
+
             OnPropertyChanged(nameof(Command));
+            if (string.IsNullOrWhiteSpace(_title))
+            {
+                OnPropertyChanged(nameof(Title));
+            }
+        }
+    }
+
+    private static void OnCommandPropertyChanged(CommandItem instance, object source, IPropChangedEventArgs args)
+    {
+        if (args.PropertyName == nameof(ICommand.Name))
+        {
+            instance.OnPropertyChanged(nameof(Title));
         }
     }
 
@@ -98,7 +123,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
             c.Name = name;
         }
 
-        if (result != null)
+        if (result is not null)
         {
             c.Result = result;
         }

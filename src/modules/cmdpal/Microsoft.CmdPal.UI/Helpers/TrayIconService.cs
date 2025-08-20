@@ -5,8 +5,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -49,7 +50,7 @@ internal sealed partial class TrayIconService
     {
         if (showSystemTrayIcon ?? _settingsModel.ShowSystemTrayIcon)
         {
-            if (_window == null)
+            if (_window is null)
             {
                 _window = new Window();
                 _hwnd = new HWND(WindowNative.GetWindowHandle(_window));
@@ -63,7 +64,7 @@ internal sealed partial class TrayIconService
                 _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
             }
 
-            if (_trayIconData == null)
+            if (_trayIconData is null)
             {
                 // We need to stash this handle, so it doesn't clean itself up. If
                 // explorer restarts, we'll come back through here, and we don't
@@ -87,7 +88,7 @@ internal sealed partial class TrayIconService
             // Add the notification icon
             PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d);
 
-            if (_popupMenu == null)
+            if (_popupMenu is null)
             {
                 _popupMenu = PInvoke.CreatePopupMenu_SafeHandle();
                 PInvoke.InsertMenu(_popupMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, PInvoke.WM_USER + 1, RS_.GetString("TrayMenu_Settings"));
@@ -102,7 +103,7 @@ internal sealed partial class TrayIconService
 
     public void Destroy()
     {
-        if (_trayIconData != null)
+        if (_trayIconData is not null)
         {
             var d = (NOTIFYICONDATAW)_trayIconData;
             if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
@@ -111,19 +112,19 @@ internal sealed partial class TrayIconService
             }
         }
 
-        if (_popupMenu != null)
+        if (_popupMenu is not null)
         {
             _popupMenu.Close();
             _popupMenu = null;
         }
 
-        if (_largeIcon != null)
+        if (_largeIcon is not null)
         {
             _largeIcon.Close();
             _largeIcon = null;
         }
 
-        if (_window != null)
+        if (_window is not null)
         {
             _window.Close();
             _window = null;
@@ -166,7 +167,7 @@ internal sealed partial class TrayIconService
             // WM_WINDOWPOSCHANGING which is always received on explorer startup sequence.
             case PInvoke.WM_WINDOWPOSCHANGING:
                 {
-                    if (_trayIconData == null)
+                    if (_trayIconData is null)
                     {
                         SetupTrayIcon();
                     }
@@ -188,7 +189,7 @@ internal sealed partial class TrayIconService
                     {
                         case PInvoke.WM_RBUTTONUP:
                             {
-                                if (_popupMenu != null)
+                                if (_popupMenu is not null)
                                 {
                                     PInvoke.GetCursorPos(out var cursorPos);
                                     PInvoke.SetForegroundWindow(_hwnd);
