@@ -16,13 +16,20 @@ if ($platform -eq "x64") {
     $HeatPath = Join-Path $nugetHeatPath "tools\net472\x86"
 }
 
+# Validate heat.exe exists at the resolved path; fail fast if not found.
+$heatExe = Join-Path $HeatPath "heat.exe"
+if (-not (Test-Path $heatExe)) {
+    Write-Error "heat.exe not found at '$heatExe'. Ensure the WixToolset.Heat package (5.0.2) is restored under '$nugetHeatPath'."
+    exit 1
+}
+
 $SourceDir = Join-Path $scriptDir "..\..\src\Monaco\monacoSRC"  # Now relative to script location
 $OutputFile = Join-Path $scriptDir "MonacoSRC.wxs"
 $ComponentGroup = "MonacoSRCHeatGenerated"
 $DirectoryRef = "MonacoPreviewHandlerMonacoSRCFolder"
 $Variable = "var.MonacoSRCHarvestPath"
 
-& "$HeatPath\heat.exe" dir "$SourceDir" -out "$OutputFile" -cg "$ComponentGroup" -dr "$DirectoryRef" -var "$Variable" -gg -srd -nologo
+& $heatExe dir "$SourceDir" -out "$OutputFile" -cg "$ComponentGroup" -dr "$DirectoryRef" -var "$Variable" -gg -srd -nologo
 
 $fileWxs = Get-Content $monacoWxsFile;
 

@@ -18,11 +18,6 @@ public: // IBootstrapperApplication
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION SYSTEM ACTIVE *** Running detect begin BA function. fCached=%d, registrationType=%d, cPackages=%u, fCancel=%d", fCached, registrationType, cPackages, *pfCancel);
 
-        //-------------------------------------------------------------------------------------------------
-        // YOUR CODE GOES HERE
-        // BalExitOnFailure(hr, "Change this message to represent real error handling.");
-        //-------------------------------------------------------------------------------------------------
-
     LExit:
         return hr;
     }
@@ -77,7 +72,16 @@ public: // IBAFunctions
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** FILE IN USE [%u]: %ls", i, rgwzFiles[i]);
         }
 
-        // Always return IDIGNORE to silently ignore files in use
+    /*
+     * Summary: Why we return IDIGNORE here
+     *
+     * - Goal: Keep behavior consistent with our previous WiX 3 installer to avoid "files in use / close apps" prompts and preserve silent installs (e.g., winget).
+     * - WiX 5 change: We can no longer suppress that dialog the same way. Combined with winget adding /silent, this BAFunction returns IDIGNORE to continue without prompts.
+     * - Main trigger: Win10-style context menu uses registry + DLL; Explorer/dllhost.exe (COM Surrogate) often holds locks. Killing them is disruptive; this is a pragmatic trade-off.
+     * - Trade-off: Some file replacements may defer until reboot (PendingFileRename), but installation remains non-interruptive.
+     * - Full fix: Rewrite a custom Bootstrapper Application if we need complete control over prompts and behavior.
+     * - Note: Even with this handler, a full-UI install (e.g., double-clicking the installer) can still show a FilesInUse dialog; this primarily targets silent installs.
+     */
         *pResult = IDIGNORE;
         
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** BA FUNCTION RETURNING IDIGNORE - SILENTLY CONTINUING ***");

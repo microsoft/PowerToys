@@ -56,7 +56,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\CmdPal.wxs"" ""$(ProjectDir)..\PowerToysSetup\CmdPal.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\CmdPal.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\CmdPal.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs.bk""""

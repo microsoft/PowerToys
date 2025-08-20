@@ -23,10 +23,10 @@
     detect the installation path from the registry.
 
 .EXAMPLE
-    .\Verify-PowerToysInstallation.ps1 -InstallScope PerMachine
+    .\verify-installation-script.ps1 -InstallScope PerMachine
     
 .EXAMPLE
-    .\Verify-PowerToysInstallation.ps1 -InstallScope PerUser
+    .\verify-installation-script.ps1 -InstallScope PerUser
 
 .NOTES
     Author: PowerToys Team

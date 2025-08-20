@@ -6,8 +6,8 @@
             "MatchedPath": [
                 "PowerToysSetupCustomActions.dll",
                 "PowerToysSetupCustomActionsVNext.dll",
+                "SilentFilesInUseBAFunction.dll",
                 "PowerToys*Setup-*.exe",
-                "PowerToys*Setup-*.msi",
                 "PowerToys*Setup-*.msi",
                 "PowerToys*SetupVNext-*.exe",
                 "PowerToys*SetupVNext-*.msi"
