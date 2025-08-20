@@ -25,6 +25,8 @@ ADMINS
 adml
 admx
 advancedpaste
+advancedpasteui
+advancedpasteuishortcut
 advfirewall
 AFeature
 affordances
@@ -40,6 +42,7 @@ ALLINPUT
 Allman
 Allmodule
 ALLOWUNDO
+allpc
 ALLVIEW
 ALPHATYPE
 AModifier
@@ -115,6 +118,7 @@ bigbar
 bigobj
 binlog
 binres
+binskim
 BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
@@ -255,6 +259,7 @@ Corpor
 cotaskmem
 COULDNOT
 countof
+covrun
 cpcontrols
 cph
 cplusplus
@@ -627,6 +632,7 @@ HKCU
 hkey
 HKLM
 HKM
+hkmng
 HKPD
 HKU
 HMD
@@ -635,6 +641,7 @@ hmodule
 hmonitor
 homies
 homljgmgpmcbpjbnjpfijnhipfkiclkd
+HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
@@ -643,7 +650,11 @@ Hostx
 hotfixes
 hotkeycontrol
 HOTKEYF
+hotkeylockmachine
+hotkeyreconnect
 hotkeys
+hotkeyswitch
+hotkeytoggleeasymouse
 hotlight
 hotspot
 HPAINTBUFFER
@@ -701,9 +712,12 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
+imagetotext
+imagetotextshortcut
 imagingdevices
 ime
 imgflip
+inapp
 inbox
 INCONTACT
 Indo
@@ -786,6 +800,7 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+kvp
 Kybd
 lastcodeanalysissucceeded
 LASTEXITCODE
@@ -824,6 +839,7 @@ localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
+LOCKMACHINE
 LOCKTYPE
 LOGFONT
 LOGFONTW
@@ -909,6 +925,7 @@ MDL
 mdtext
 mdtxt
 mdwn
+measuretool
 meme
 memicmp
 MENUITEMINFO
@@ -958,6 +975,7 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
+mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -969,6 +987,7 @@ msc
 mscorlib
 msctls
 msdata
+msdia
 MSDL
 MSGFLT
 MSHCTX
@@ -1159,6 +1178,18 @@ PARENTRELATIVEFORADDRESSBAR
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
+pasteashtmlfile
+pasteashtmlfileshortcut
+pasteasjson
+pasteasjsonshortcut
+pasteasmarkdown
+pasteasmarkdownshortcut
+pasteasplaintext
+pasteasplaintextshortcut
+pasteaspngfile
+pasteaspngfileshortcut
+pasteastxtfile
+pasteastxtfileshortcut
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
@@ -1226,6 +1257,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1366,6 +1398,7 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 reparented
+reparenthotkey
 reparenting
 reportfileaccesses
 requery
@@ -1685,6 +1718,7 @@ THH
 THICKFRAME
 THISCOMPONENT
 throughs
+thumbnailhotkey
 TILEDWINDOW
 TILLSON
 timedate
@@ -1699,6 +1733,7 @@ tlb
 tlbimp
 tlc
 TNP
+TOGGLEEASYMOUSE
 Toolhelp
 toolkitconverters
 toolwindow
@@ -1712,6 +1747,7 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
+transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging

@@ -155,6 +155,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
             // shellFrame.Navigate(typeof(GeneralPage));
             IPCResponseHandleList.Add(ReceiveMessage);
+            Services.IPCResponseService.Instance.RegisterForIPC();
             SetTitleBar();
 
             if (_navViewParentLookup.Count > 0)

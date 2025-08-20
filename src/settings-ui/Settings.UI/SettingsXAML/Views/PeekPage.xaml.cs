@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 DispatcherQueue);
             DataContext = ViewModel;
             InitializeComponent();
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()

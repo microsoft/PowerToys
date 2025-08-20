@@ -135,14 +135,14 @@
                 Grid.Column="1"
                 Orientation="Horizontal"
                 Spacing="16">
-                    <!--<controls:ShortcutConflictControl/>-->
-                    <controls:CheckUpdateControl />
-                </StackPanel>
-            </Grid>
-            <ScrollViewer x:Name="MainScrollViewer" Grid.Row="2">
-                <Grid>
-                    <!--  This grid is required to ensure that the content is horizontally aligned  -->
-                    <Grid
+                <controls:ShortcutConflictControl AllHotkeyConflictsData="{x:Bind ViewModel.AllHotkeyConflictsData, Mode=OneWay}" />
+                <controls:CheckUpdateControl />
+            </StackPanel>
+        </Grid>
+        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="2">
+            <Grid>
+                <!--  This grid is required to ensure that the content is horizontally aligned  -->
+                <Grid
                     MaxWidth="{StaticResource PageMaxWidth}"
                     Padding="0,0,20,48"
                     ColumnSpacing="16"
