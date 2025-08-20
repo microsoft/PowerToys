@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
