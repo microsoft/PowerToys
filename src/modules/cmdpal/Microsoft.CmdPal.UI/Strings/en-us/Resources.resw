@@ -419,7 +419,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
     <value>Last Position</value>
     <comment>Reopen the window where it was last closed</comment>
-  <data name="TrayMenu_Settings" xml:space="preserve">
+  </data> 
+  <data name="TrayMenu_Settings" xml:space="preserve">  
     <value>Settings</value>
   </data>
   <data name="TrayMenu_Exit" xml:space="preserve">
