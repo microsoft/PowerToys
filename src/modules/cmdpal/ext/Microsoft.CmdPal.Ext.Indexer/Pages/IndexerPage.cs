@@ -21,10 +21,12 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     private string initialQuery = string.Empty;
 
+    private bool _isEmptyQuery = true;
+
     public IndexerPage()
     {
         Id = "com.microsoft.indexer.fileSearch";
-        Icon = Icons.FileExplorer;
+        Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Title;
         PlaceholderText = Resources.Indexer_PlaceholderText;
         _searchEngine = new();
@@ -33,7 +35,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     public IndexerPage(string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
     {
-        Icon = Icons.FileExplorer;
+        Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Title;
         _searchEngine = searchEngine;
         _queryCookie = queryCookie;
@@ -43,15 +45,19 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         disposeSearchEngine = false;
     }
 
+    public override ICommandItem EmptyContent => GetEmptyContent();
+
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         if (oldSearch != newSearch && newSearch != initialQuery)
         {
             _ = Task.Run(() =>
             {
+                _isEmptyQuery = string.IsNullOrWhiteSpace(newSearch);
                 Query(newSearch);
                 LoadMore();
-                initialQuery = string.Empty;
+                OnPropertyChanged(nameof(EmptyContent));
+                initialQuery = null;
             });
         }
     }
@@ -66,6 +72,16 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         HasMoreItems = hasMore;
         IsLoading = false;
         RaiseItemsChanged(_indexerListItems.Count);
+    }
+
+    private CommandItem GetEmptyContent()
+    {
+        return new CommandItem(new NoOpCommand())
+        {
+            Icon = Icon,
+            Title = _isEmptyQuery ? Resources.Indexer_Subtitle : Resources.Indexer_NoResultsMessage,
+            Subtitle = Resources.Indexer_NoResultsMessageTip,
+        };
     }
 
     private void Query(string query)

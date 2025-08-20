@@ -4,11 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
@@ -16,14 +14,17 @@ namespace Microsoft.CmdPal.Ext.TimeDate;
 internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 {
     private readonly HashSet<string> _validOptions;
-    private SettingsManager _settingsManager;
+    private ISettingsInterface _settingsManager;
+    private DateTime? _timestamp;
 
-    public FallbackTimeDateItem(SettingsManager settings)
+    public FallbackTimeDateItem(ISettingsInterface settings, DateTime? timestamp = null)
          : base(new NoOpCommand(), Resources.Microsoft_plugin_timedate_fallback_display_title)
     {
         Title = string.Empty;
         Subtitle = string.Empty;
         _settingsManager = settings;
+        _timestamp = timestamp;
+
         _validOptions = new(StringComparer.OrdinalIgnoreCase)
         {
             Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagDate", CultureInfo.CurrentCulture),
@@ -49,7 +50,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
             return;
         }
 
-        var availableResults = AvailableResultsList.GetList(false, _settingsManager);
+        var availableResults = AvailableResultsList.GetList(false, _settingsManager, timestamp: _timestamp);
         ListItem result = null;
         var maxScore = 0;
 
@@ -63,11 +64,12 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
             }
         }
 
-        if (result != null)
+        if (result is not null)
         {
             Title = result.Title;
             Subtitle = result.Subtitle;
             Icon = result.Icon;
+            Command = result.Command;
         }
         else
         {
@@ -86,7 +88,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 
         foreach (var option in _validOptions)
         {
-            if (option == null)
+            if (option is null)
             {
                 continue;
             }

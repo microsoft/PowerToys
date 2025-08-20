@@ -24,14 +24,14 @@ public sealed partial class DirectoryPage : ListPage
     public DirectoryPage(string path)
     {
         _path = path;
-        Icon = Icons.FileExplorer;
+        Icon = Icons.FileExplorerIcon;
         Name = Resources.Indexer_Command_Browse;
         Title = path;
     }
 
     public override IListItem[] GetItems()
     {
-        if (_directoryContents != null)
+        if (_directoryContents is not null)
         {
             return _directoryContents.ToArray();
         }
@@ -52,7 +52,7 @@ public sealed partial class DirectoryPage : ListPage
             EmptyContent = new CommandItem(
                 title: Resources.Indexer_File_Is_File_Not_Folder, subtitle: $"{_path}")
             {
-                Icon = Icons.Document,
+                Icon = Icons.DocumentIcon,
             };
             return [];
         }
@@ -66,7 +66,7 @@ public sealed partial class DirectoryPage : ListPage
             EmptyContent = new CommandItem(
                 title: Resources.Indexer_Folder_Is_Empty, subtitle: $"{_path}")
             {
-                Icon = Icons.FolderOpen,
+                Icon = Icons.FolderOpenIcon,
                 Command = listItemForUs.Command,
                 MoreCommands = listItemForUs.MoreCommands,
             };
@@ -86,7 +86,7 @@ public sealed partial class DirectoryPage : ListPage
                 try
                 {
                     var stream = ThumbnailHelper.GetThumbnail(item.FilePath).Result;
-                    if (stream != null)
+                    if (stream is not null)
                     {
                         var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
                         icon = new IconInfo(data, data);

@@ -38,6 +38,11 @@ parameters:
     displayName: "Build Using Visual Studio Preview"
     default: false
 
+  - name: enableAOT
+    type: boolean
+    displayName: "Enable AOT (Ahead-of-Time) Compilation for CmdPal"
+    default: true
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 variables:
@@ -59,6 +64,10 @@ extends:
       tsa:
         enabled: true
         configFile: '$(Build.SourcesDirectory)\.pipelines\tsa.json'
+      binskim:
+        enabled: true
+        # Exclude every dll/exe in tests/*, as well as all msdia*, covrun* and vcruntime*
+        analyzeTargetGlob: +:file|$(Build.ArtifactStagingDirectory)/**/*.dll;+:file|$(Build.ArtifactStagingDirectory)/**/*.exe;-:file:regex|tests.*\.(dll|exe)$;-:file:regex|(covrun.*)\.dll$;-:file:regex|(msdia.*)\.dll$;-:file:regex|(vcruntime.*)\.dll$
 
     stages:
       - stage: Build
@@ -95,7 +104,7 @@ extends:
                 useManagedIdentity: $(SigningUseManagedIdentity)
                 clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
-              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=${{ parameters.enableAOT }}
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-

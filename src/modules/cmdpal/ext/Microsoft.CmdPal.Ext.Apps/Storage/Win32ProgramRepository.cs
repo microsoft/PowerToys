@@ -10,7 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Win32Program = Microsoft.CmdPal.Ext.Apps.Programs.Win32Program;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
@@ -53,7 +52,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
                 if (!string.IsNullOrEmpty(appPath))
                 {
                     Win32Program? app = Win32Program.GetAppFromPath(appPath);
-                    if (app != null)
+                    if (app is not null)
                     {
                         Add(app);
                         _isDirty = true;
@@ -107,7 +106,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
 
         // fix for https://github.com/microsoft/PowerToys/issues/34391
         // the msi installer creates a shortcut, which is detected by the PT Run and ends up in calling this OnAppRenamed method
-        // the thread needs to be halted for a short time to avoid locking the new shortcut file as we read it, otherwise the lock causes
+        // the thread needs to be halted for a short time to avoid locking the new shortcut file as we read it; otherwise, the lock causes
         // in the issue scenario that a warning is popping up during the msi install process.
         await Task.Delay(1000).ConfigureAwait(false);
 
@@ -137,7 +136,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
         }
 
         // To remove the old app which has been renamed and to add the new application.
-        if (oldApp != null)
+        if (oldApp is not null)
         {
             if (string.IsNullOrWhiteSpace(oldApp.Name) || string.IsNullOrWhiteSpace(oldApp.ExecutableName) || string.IsNullOrWhiteSpace(oldApp.FullPath))
             {
@@ -149,7 +148,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
             }
         }
 
-        if (newApp != null)
+        if (newApp is not null)
         {
             Add(newApp);
             _isDirty = true;
@@ -177,7 +176,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
             if (extension.Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
             {
                 app = GetAppWithSameLnkFilePath(path);
-                if (app == null)
+                if (app is null)
                 {
                     // Cancelled links won't have a resolved path.
                     app = GetAppWithSameNameAndExecutable(Path.GetFileNameWithoutExtension(path), Path.GetFileName(path));
@@ -197,7 +196,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
             Logger.LogError(ex.Message);
         }
 
-        if (app != null)
+        if (app is not null)
         {
             Remove(app);
             _isDirty = true;
@@ -205,12 +204,12 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
     }
 
     // When a URL application is deleted, we can no longer get the HashCode directly from the path because the FullPath a Url app is the URL obtained from reading the file
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since application names could be dependent on currentculture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1309:Use ordinal string comparison", Justification = "Using CurrentCultureIgnoreCase since application names could be dependent on current culture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190")]
     private Win32Program? GetAppWithSameNameAndExecutable(string name, string executableName)
     {
         foreach (Win32Program app in Items)
         {
-            // Using CurrentCultureIgnoreCase since application names could be dependent on currentculture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190
+            // Using CurrentCultureIgnoreCase since application names could be dependent on current culture See: https://github.com/microsoft/PowerToys/pull/5847/files#r468245190
             if (name.Equals(app.Name, StringComparison.CurrentCultureIgnoreCase) && executableName.Equals(app.ExecutableName, StringComparison.CurrentCultureIgnoreCase))
             {
                 return app;
@@ -244,7 +243,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
         if (!Path.GetExtension(path).Equals(UrlExtension, StringComparison.OrdinalIgnoreCase) && !Path.GetExtension(path).Equals(LnkExtension, StringComparison.OrdinalIgnoreCase))
         {
             Programs.Win32Program? app = Programs.Win32Program.GetAppFromPath(path);
-            if (app != null)
+            if (app is not null)
             {
                 Add(app);
                 _isDirty = true;
@@ -267,8 +266,7 @@ internal sealed partial class Win32ProgramRepository : ListRepository<Programs.W
 
     public void IndexPrograms()
     {
-        var applications = Programs.Win32Program.All(_settings);
-
+        var applications = Win32Program.All(_settings);
         SetList(applications);
     }
 }

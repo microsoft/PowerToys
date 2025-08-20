@@ -7,14 +7,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class ColorPickerSettings : BasePTModuleSettings, ISettingsConfig
+    public class ColorPickerSettings : BasePTModuleSettings, ISettingsConfig, IHotkeyConfig
     {
         public const string ModuleName = "ColorPicker";
 
@@ -62,6 +62,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
 
             return false;
+        }
+
+        public ModuleType GetModuleType() => ModuleType.ColorPicker;
+
+        public HotkeyAccessor[] GetAllHotkeyAccessors()
+        {
+            var hotkeyAccessors = new List<HotkeyAccessor>
+            {
+                new HotkeyAccessor(
+                    () => Properties.ActivationShortcut,
+                    value => Properties.ActivationShortcut = value ?? Properties.DefaultActivationShortcut,
+                    "Activation_Shortcut"),
+            };
+
+            return hotkeyAccessors.ToArray();
         }
 
         public static object UpgradeSettings(object oldSettingsObject)

@@ -5,10 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using System.Text;
-
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
@@ -49,20 +50,12 @@ public class VirtualDesktopHelper
     /// </summary>
     private readonly List<Guid> _availableDesktops = [];
 
-#pragma warning disable SA1306 // Field names should begin with lower-case letter
-    private readonly uint CLSCTXINPROCALL = 0x17;
-#pragma warning restore SA1306 // Field names should begin with lower-case letter
-
     /// <summary>
     /// Id of the current visible Desktop.
     /// </summary>
     private Guid _currentDesktop;
 
     private static readonly CompositeFormat VirtualDesktopHelperDesktop = System.Text.CompositeFormat.Parse(Properties.Resources.VirtualDesktopHelper_Desktop);
-
-    private Guid iVirtualDesktopManagerCLSID = new("aa509086-5ca9-4c25-8f95-589d3c07b48a");
-
-    private Guid iVirtualDesktopManagerIID = new("a5cd92ff-29be-454c-8d04-d82879fb3f1b");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualDesktopHelper"/> class.
@@ -71,29 +64,15 @@ public class VirtualDesktopHelper
     public VirtualDesktopHelper(bool desktopListUpdate = false)
     {
         var cw = new StrategyBasedComWrappers();
-        var virtualDesktopManagerPtr = IntPtr.Zero;
 
         try
         {
-            var hr = NativeMethods.CoCreateInstance(ref this.iVirtualDesktopManagerCLSID, nint.Zero, CLSCTXINPROCALL, ref iVirtualDesktopManagerIID, out virtualDesktopManagerPtr);
-            if (hr != 0)
-            {
-                throw new ArgumentException($"Failed to create IVirtualDesktopManager instance. HR: 0x{hr:X}");
-            }
-
-            _virtualDesktopManager = (IVirtualDesktopManager)cw.GetOrCreateObjectForComInstance(virtualDesktopManagerPtr, CreateObjectFlags.None);
+            _virtualDesktopManager = ComHelper.CreateComInstance<IVirtualDesktopManager>(ref Unsafe.AsRef(in CLSID.VirtualDesktopManager), CLSCTX.InProcServer);
         }
         catch (COMException ex)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = $"Initialization of <VirtualDesktopHelper> failed: An exception was thrown when creating the instance of COM interface <IVirtualDesktopManager>. {ex} " });
             return;
-        }
-        finally
-        {
-            if (virtualDesktopManagerPtr != IntPtr.Zero)
-            {
-                Marshal.Release(virtualDesktopManagerPtr);
-            }
         }
 
         _isWindowsEleven = OSVersionHelper.IsWindows11();
@@ -104,7 +83,7 @@ public class VirtualDesktopHelper
     /// <summary>
     /// Gets a value indicating whether the Virtual Desktop Manager is initialized successfully
     /// </summary>
-    public bool VirtualDesktopManagerInitialized => _virtualDesktopManager != null;
+    public bool VirtualDesktopManagerInitialized => _virtualDesktopManager is not null;
 
     /// <summary>
     /// Method to update the list of Virtual Desktops from Registry
@@ -119,12 +98,12 @@ public class VirtualDesktopHelper
 
         // List of all desktops
         using RegistryKey? virtualDesktopKey = Registry.CurrentUser.OpenSubKey(registryExplorerVirtualDesktops, false);
-        if (virtualDesktopKey != null)
+        if (virtualDesktopKey is not null)
         {
             var allDeskValue = (byte[]?)virtualDesktopKey.GetValue("VirtualDesktopIDs", null) ?? Array.Empty<byte>();
-            if (allDeskValue != null)
+            if (allDeskValue is not null)
             {
-                // We clear only, if we can read from registry. Otherwise we keep the existing values.
+                // We clear only, if we can read from registry. Otherwise, we keep the existing values.
                 _availableDesktops.Clear();
 
                 // Each guid has a length of 16 elements
@@ -145,17 +124,17 @@ public class VirtualDesktopHelper
         // Guid for current desktop
         var virtualDesktopsKeyName = _isWindowsEleven ? registryExplorerVirtualDesktops : registrySessionVirtualDesktops;
         using RegistryKey? virtualDesktopsKey = Registry.CurrentUser.OpenSubKey(virtualDesktopsKeyName, false);
-        if (virtualDesktopsKey != null)
+        if (virtualDesktopsKey is not null)
         {
             var currentVirtualDesktopValue = virtualDesktopsKey.GetValue("CurrentVirtualDesktop", null);
-            if (currentVirtualDesktopValue != null)
+            if (currentVirtualDesktopValue is not null)
             {
                 _currentDesktop = new Guid((byte[])currentVirtualDesktopValue);
             }
             else
             {
                 // The registry value is missing when the user hasn't switched the desktop at least one time before reading the registry. In this case we can set it to desktop one.
-                // We can only set it to desktop one, if we have at least one desktop in the desktops list. Otherwise we keep the existing value.
+                // We can only set it to desktop one, if we have at least one desktop in the desktops list. Otherwise, we keep the existing value.
                 ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.UpdateDesktopList() failed to read the id for the current desktop form registry." });
                 _currentDesktop = _availableDesktops.Count >= 1 ? _availableDesktops[0] : _currentDesktop;
             }
@@ -257,7 +236,7 @@ public class VirtualDesktopHelper
     /// Returns the number (position) of a desktop.
     /// </summary>
     /// <param name="desktop">The guid of the desktop.</param>
-    /// <returns>Number of the desktop, if found. Otherwise a value of zero.</returns>
+    /// <returns>Number of the desktop, if found. Otherwise, a value of zero.</returns>
     public int GetDesktopNumber(Guid desktop)
     {
         if (_desktopListAutoUpdate)
@@ -289,7 +268,7 @@ public class VirtualDesktopHelper
         using RegistryKey? deskSubKey = Registry.CurrentUser.OpenSubKey(registryPath, false);
         var desktopName = deskSubKey?.GetValue("Name");
 
-        return (desktopName != null) ? (string)desktopName : defaultName;
+        return (desktopName is not null) ? (string)desktopName : defaultName;
     }
 
     /// <summary>
@@ -334,7 +313,7 @@ public class VirtualDesktopHelper
     /// <returns>HResult of the called method as integer.</returns>
     public int GetWindowDesktopId(IntPtr hWindow, out Guid desktopId)
     {
-        if (_virtualDesktopManager == null)
+        if (_virtualDesktopManager is null)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.GetWindowDesktopId() failed: The instance of <IVirtualDesktopHelper> isn't available." });
             desktopId = Guid.Empty;
@@ -351,7 +330,7 @@ public class VirtualDesktopHelper
     /// <returns>An instance of <see cref="VDesktop"/> for the desktop where the window is assigned to, or an empty instance of <see cref="VDesktop"/> on failure.</returns>
     public VDesktop GetWindowDesktop(IntPtr hWindow)
     {
-        if (_virtualDesktopManager == null)
+        if (_virtualDesktopManager is null)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.GetWindowDesktop() failed: The instance of <IVirtualDesktopHelper> isn't available." });
             return CreateVDesktopInstance(Guid.Empty);
@@ -369,7 +348,7 @@ public class VirtualDesktopHelper
     /// <returns>Type of <see cref="VirtualDesktopAssignmentType"/>.</returns>
     public VirtualDesktopAssignmentType GetWindowDesktopAssignmentType(IntPtr hWindow, Guid? desktop = null)
     {
-        if (_virtualDesktopManager == null)
+        if (_virtualDesktopManager is null)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.GetWindowDesktopAssignmentType() failed: The instance of <IVirtualDesktopHelper> isn't available." });
             return VirtualDesktopAssignmentType.Unknown;
@@ -436,7 +415,7 @@ public class VirtualDesktopHelper
     /// <returns><see langword="True"/> on success and <see langword="false"/> on failure.</returns>
     public bool MoveWindowToDesktop(IntPtr hWindow, ref Guid desktopId)
     {
-        if (_virtualDesktopManager == null)
+        if (_virtualDesktopManager is null)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.MoveWindowToDesktop() failed: The instance of <IVirtualDesktopHelper> isn't available." });
             return false;

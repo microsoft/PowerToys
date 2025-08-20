@@ -26,17 +26,17 @@ internal sealed partial class ExecuteItem : InvokableCommand
         if (type == RunAsType.Administrator)
         {
             Name = Properties.Resources.cmd_run_as_administrator;
-            Icon = new IconInfo("\xE7EF"); // Admin Icon
+            Icon = Icons.AdminIcon;
         }
         else if (type == RunAsType.OtherUser)
         {
             Name = Properties.Resources.cmd_run_as_user;
-            Icon = new IconInfo("\xE7EE"); // User Icon
+            Icon = Icons.UserIcon;
         }
         else
         {
             Name = Properties.Resources.generic_run_command;
-            Icon = new IconInfo("\uE751"); // Return Key Icon
+            Icon = Icons.RunV2Icon;
         }
 
         Cmd = cmd;
@@ -44,39 +44,9 @@ internal sealed partial class ExecuteItem : InvokableCommand
         _runas = type;
     }
 
-    private static bool ExistInPath(string filename)
-    {
-        if (File.Exists(filename))
-        {
-            return true;
-        }
-        else
-        {
-            var values = Environment.GetEnvironmentVariable("PATH");
-            if (values != null)
-            {
-                foreach (var path in values.Split(';'))
-                {
-                    var path1 = Path.Combine(path, filename);
-                    var path2 = Path.Combine(path, filename + ".exe");
-                    if (File.Exists(path1) || File.Exists(path2))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-
     private void Execute(Func<ProcessStartInfo, Process?> startProcess, ProcessStartInfo info)
     {
-        if (startProcess == null)
+        if (startProcess is null)
         {
             return;
         }
@@ -184,7 +154,7 @@ internal sealed partial class ExecuteItem : InvokableCommand
                     if (parts.Length == 2)
                     {
                         var filename = parts[0];
-                        if (ExistInPath(filename))
+                        if (ShellListPageHelpers.FileExistInPath(filename))
                         {
                             var arguments = parts[1];
                             if (_settings.LeaveShellOpen)

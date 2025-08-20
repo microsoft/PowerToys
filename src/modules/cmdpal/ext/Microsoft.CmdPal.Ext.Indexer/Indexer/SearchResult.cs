@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
-using Microsoft.CmdPal.Ext.Indexer.Native;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -27,7 +26,7 @@ internal sealed class SearchResult
         ItemUrl = url;
         IsFolder = isFolder;
 
-        if (LaunchUri == null || LaunchUri.Length == 0)
+        if (LaunchUri is null || LaunchUri.Length == 0)
         {
             // Launch the file with the default app, so use the file path
             LaunchUri = filePath;

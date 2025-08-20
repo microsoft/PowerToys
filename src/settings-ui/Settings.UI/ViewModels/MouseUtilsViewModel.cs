@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -14,8 +15,10 @@ using Microsoft.PowerToys.Settings.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class MouseUtilsViewModel : Observable
+    public partial class MouseUtilsViewModel : PageViewModelBase
     {
+        protected override string ModuleName => "MouseUtils";
+
         private ISettingsUtils SettingsUtils { get; set; }
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -72,6 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             string alwaysColor = MouseHighlighterSettingsConfig.Properties.AlwaysColor.Value;
             _highlighterAlwaysColor = !string.IsNullOrEmpty(alwaysColor) ? alwaysColor : "#00FF0000";
+            _isSpotlightModeEnabled = MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value;
 
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
@@ -100,7 +104,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
 
             int isEnabled = 0;
-            NativeMethods.SystemParametersInfo(NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
+
+            Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
             _isAnimationEnabledBySystem = isEnabled != 0;
 
             // set the callback functions value to handle outgoing IPC message.
@@ -146,6 +151,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isMousePointerCrosshairsEnabled = GeneralSettingsConfig.Enabled.MousePointerCrosshairs;
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [FindMyMouseSettings.ModuleName] = [FindMyMouseActivationShortcut],
+                [MouseHighlighterSettings.ModuleName] = [MouseHighlighterActivationShortcut],
+                [MousePointerCrosshairsSettings.ModuleName] = [MousePointerCrosshairsActivationShortcut],
+                [MouseJumpSettings.ModuleName] = [MouseJumpActivationShortcut],
+            };
+
+            return hotkeysDict;
         }
 
         public bool IsFindMyMouseEnabled
@@ -560,6 +578,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsSpotlightModeEnabled
+        {
+            get => _isSpotlightModeEnabled;
+            set
+            {
+                if (_isSpotlightModeEnabled != value)
+                {
+                    _isSpotlightModeEnabled = value;
+                    MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
         public int MouseHighlighterRadius
         {
             get
@@ -916,6 +948,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _highlighterLeftButtonClickColor;
         private string _highlighterRightButtonClickColor;
         private string _highlighterAlwaysColor;
+        private bool _isSpotlightModeEnabled;
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;

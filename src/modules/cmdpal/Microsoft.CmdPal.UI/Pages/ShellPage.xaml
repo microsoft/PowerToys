@@ -6,6 +6,7 @@
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
@@ -41,7 +42,7 @@
                 FalseValue="Visible"
                 TrueValue="Collapsed" />
 
-            <DataTemplate x:Key="TagTemplate" x:DataType="viewModels:TagViewModel">
+            <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
                 <cpcontrols:Tag
                     HorizontalAlignment="Left"
                     AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
@@ -53,7 +54,7 @@
                     ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
             </DataTemplate>
 
-            <DataTemplate x:Key="CommandTemplate" x:DataType="viewModels:CommandViewModel">
+            <DataTemplate x:Key="CommandTemplate" x:DataType="coreViewModels:CommandViewModel">
                 <StackPanel Orientation="Vertical">
                     <Button
                         Name="Command"
@@ -74,7 +75,7 @@
                 </StackPanel>
             </DataTemplate>
 
-            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
+            <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="coreViewModels:DetailsLinkViewModel">
                 <StackPanel Orientation="Vertical">
                     <TextBlock
                         IsTextSelectionEnabled="True"
@@ -95,7 +96,7 @@
                         Visibility="{x:Bind IsLink, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
+            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="coreViewModels:DetailsCommandsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock
                         IsTextSelectionEnabled="True"
@@ -107,7 +108,7 @@
                         Visibility="{x:Bind HasCommands, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
+            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="coreViewModels:DetailsSeparatorViewModel">
                 <StackPanel Margin="0,8,8,0" Orientation="Vertical">
                     <Border
                         Margin="8,0,0,0"
@@ -122,7 +123,7 @@
                     </Border>
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="viewModels:DetailsTagsViewModel">
+            <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="coreViewModels:DetailsTagsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock
                         IsTextSelectionEnabled="True"
@@ -224,11 +225,11 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        Click="BackButton_Clicked"
                         Content="{ui:FontIcon Glyph=&#xE76B;,
                                               FontSize=14}"
                         FontSize="16"
                         Style="{StaticResource SubtleButtonStyle}"
-                        Tapped="BackButton_Tapped"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
@@ -387,19 +388,19 @@
                             To="24,0,0"
                             Duration="0:0:0.187" />
                     </animations:Implicit.HideAnimations>
-                    <Grid Margin="12">
+                    <Grid Margin="16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
                         <cpcontrols:IconBox
                             x:Name="HeroImageBorder"
                             Width="64"
-                            Margin="16,8,16,16"
-                            HorizontalAlignment="Center"
+                            Margin="0,0,16,16"
+                            HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
@@ -407,17 +408,15 @@
 
                         <TextBlock
                             Grid.Row="1"
-                            HorizontalAlignment="Center"
                             FontSize="18"
                             FontWeight="SemiBold"
                             Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
-                            TextAlignment="Center"
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
                         <labToolkit:MarkdownTextBlock
                             Grid.Row="2"
-                            Margin="0,12,0,24"
+                            Margin="0,4,0,24"
                             Background="Transparent"
                             Config="{StaticResource DefaultMarkdownConfig}"
                             Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />

@@ -13,6 +13,7 @@
 #include "UpdateUtils.h"
 #include "centralized_kb_hook.h"
 #include "Generated files/resource.h"
+#include "hotkey_conflict_detector.h"
 
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.cpp>
@@ -153,6 +154,8 @@ void send_json_config_to_module(const std::wstring& module_key, const std::wstri
     if (moduleIt != modules().end())
     {
         moduleIt->second->set_config(settings.c_str());
+
+        moduleIt->second.remove_hotkey_records();
         moduleIt->second.update_hotkeys();
         moduleIt->second.UpdateHotkeyEx();
     }
@@ -227,6 +230,14 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         {
             launch_bug_report();
         }
+        else if (name == L"bug_report_status")
+        {
+            json::JsonObject result;
+            result.SetNamedValue(L"bug_report_running", winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(is_bug_report_running()));
+            std::unique_lock lock{ ipc_mutex };
+            if (current_settings_ipc)
+                current_settings_ipc->send(result.Stringify().c_str());
+        }
         else if (name == L"killrunner")
         {
             const auto pt_main_window = FindWindowW(pt_tray_icon_window_class, nullptr);
@@ -240,6 +251,77 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             constexpr const wchar_t* language_filename = L"\\language.json";
             const std::wstring save_file_location = PTSettingsHelper::get_root_save_folder_location() + language_filename;
             json::to_file(save_file_location, j);
+        }
+        else if (name == L"check_hotkey_conflict")
+        {
+            try
+            {
+                PowertoyModuleIface::Hotkey hotkey;
+                hotkey.win = value.GetObjectW().GetNamedBoolean(L"win", false);
+                hotkey.ctrl = value.GetObjectW().GetNamedBoolean(L"ctrl", false);
+                hotkey.shift = value.GetObjectW().GetNamedBoolean(L"shift", false);
+                hotkey.alt = value.GetObjectW().GetNamedBoolean(L"alt", false);
+                hotkey.key = static_cast<unsigned char>(value.GetObjectW().GetNamedNumber(L"key", 0));
+
+                std::wstring requestId = value.GetObjectW().GetNamedString(L"request_id", L"").c_str();
+
+                auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+                bool hasConflict = hkmng.HasConflict(hotkey);
+
+                json::JsonObject response;
+                response.SetNamedValue(L"response_type", json::JsonValue::CreateStringValue(L"hotkey_conflict_result"));
+                response.SetNamedValue(L"request_id", json::JsonValue::CreateStringValue(requestId));
+                response.SetNamedValue(L"has_conflict", json::JsonValue::CreateBooleanValue(hasConflict));
+
+                if (hasConflict)
+                {
+                    auto conflicts = hkmng.GetAllConflicts(hotkey);
+                    if (!conflicts.empty())
+                    {
+                        // Include all conflicts in the response
+                        json::JsonArray allConflicts;
+                        for (const auto& conflict : conflicts)
+                        {
+                            json::JsonObject conflictObj;
+                            conflictObj.SetNamedValue(L"module", json::JsonValue::CreateStringValue(conflict.moduleName));
+                            conflictObj.SetNamedValue(L"hotkeyID", json::JsonValue::CreateNumberValue(conflict.hotkeyID));
+                            allConflicts.Append(conflictObj);
+                        }
+                        response.SetNamedValue(L"all_conflicts", allConflicts);
+                    }
+                }
+
+                std::unique_lock lock{ ipc_mutex };
+                if (current_settings_ipc)
+                {
+                    current_settings_ipc->send(response.Stringify().c_str());
+                }
+            }
+            catch (...)
+            {
+                Logger::error(L"Failed to process hotkey conflict check request");
+            }
+        }
+        else if (name == L"get_all_hotkey_conflicts")
+        {
+            try
+            {
+                auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+                auto conflictsJson = hkmng.GetHotkeyConflictsAsJson();
+
+                // Add response type identifier
+                conflictsJson.SetNamedValue(L"response_type", json::JsonValue::CreateStringValue(L"all_hotkey_conflicts"));
+
+                std::unique_lock lock{ ipc_mutex };
+                if (current_settings_ipc)
+                {
+                    current_settings_ipc->send(conflictsJson.Stringify().c_str());
+                }
+            }
+            catch (...)
+            {
+                Logger::error(L"Failed to process get all hotkey conflicts request");
+            }
         }
     }
     return;
@@ -488,7 +570,18 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
         std::unique_lock lock{ ipc_mutex };
         current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
         current_settings_ipc->start(hToken);
+
+        // Register callback for bug report status changes
+        BugReportManager::instance().register_callback([](bool isRunning) {
+            json::JsonObject result;
+            result.SetNamedValue(L"bug_report_running", winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(isRunning));
+
+            std::unique_lock lock{ ipc_mutex };
+            if (current_settings_ipc)
+                current_settings_ipc->send(result.Stringify().c_str());
+        });
     }
+
     g_settings_process_id = process_info.dwProcessId;
 
     if (process_info.hProcess)
@@ -652,14 +745,22 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
 {
     switch (value)
     {
+    case ESettingsWindowNames::Dashboard:
+        return "Dashboard";
     case ESettingsWindowNames::Overview:
         return "Overview";
+    case ESettingsWindowNames::AlwaysOnTop:
+        return "AlwaysOnTop";
     case ESettingsWindowNames::Awake:
         return "Awake";
     case ESettingsWindowNames::ColorPicker:
         return "ColorPicker";
+    case ESettingsWindowNames::CmdNotFound:
+        return "CmdNotFound";
     case ESettingsWindowNames::FancyZones:
         return "FancyZones";
+    case ESettingsWindowNames::FileLocksmith:
+        return "FileLocksmith";
     case ESettingsWindowNames::Run:
         return "Run";
     case ESettingsWindowNames::ImageResizer:
@@ -668,6 +769,16 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "KBM";
     case ESettingsWindowNames::MouseUtils:
         return "MouseUtils";
+    case ESettingsWindowNames::MouseWithoutBorders:
+        return "MouseWithoutBorders";
+    case ESettingsWindowNames::Peek:
+        return "Peek";
+    case ESettingsWindowNames::PowerAccent:
+        return "PowerAccent";
+    case ESettingsWindowNames::PowerLauncher:
+        return "PowerLauncher";
+    case ESettingsWindowNames::PowerPreview:
+        return "PowerPreview";
     case ESettingsWindowNames::PowerRename:
         return "PowerRename";
     case ESettingsWindowNames::FileExplorer:
@@ -688,8 +799,6 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "CropAndLock";
     case ESettingsWindowNames::EnvironmentVariables:
         return "EnvironmentVariables";
-    case ESettingsWindowNames::Dashboard:
-        return "Dashboard";
     case ESettingsWindowNames::AdvancedPaste:
         return "AdvancedPaste";
     case ESettingsWindowNames::NewPlus:
@@ -709,9 +818,17 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
 
 ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
 {
-    if (value == "Overview")
+    if (value == "Dashboard")
+    {
+        return ESettingsWindowNames::Dashboard;
+    }
+    else if (value == "Overview")
     {
         return ESettingsWindowNames::Overview;
+    }
+    else if (value == "AlwaysOnTop")
+    {
+        return ESettingsWindowNames::AlwaysOnTop;
     }
     else if (value == "Awake")
     {
@@ -721,9 +838,17 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     {
         return ESettingsWindowNames::ColorPicker;
     }
+    else if (value == "CmdNotFound")
+    {
+        return ESettingsWindowNames::CmdNotFound;
+    }
     else if (value == "FancyZones")
     {
         return ESettingsWindowNames::FancyZones;
+    }
+    else if (value == "FileLocksmith")
+    {
+        return ESettingsWindowNames::FileLocksmith;
     }
     else if (value == "Run")
     {
@@ -740,6 +865,26 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "MouseUtils")
     {
         return ESettingsWindowNames::MouseUtils;
+    }
+    else if (value == "MouseWithoutBorders")
+    {
+        return ESettingsWindowNames::MouseWithoutBorders;
+    }
+    else if (value == "Peek")
+    {
+        return ESettingsWindowNames::Peek;
+    }
+    else if (value == "PowerAccent")
+    {
+        return ESettingsWindowNames::PowerAccent;
+    }
+    else if (value == "PowerLauncher")
+    {
+        return ESettingsWindowNames::PowerLauncher;
+    }
+    else if (value == "PowerPreview")
+    {
+        return ESettingsWindowNames::PowerPreview;
     }
     else if (value == "PowerRename")
     {
@@ -780,10 +925,6 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "EnvironmentVariables")
     {
         return ESettingsWindowNames::EnvironmentVariables;
-    }
-    else if (value == "Dashboard")
-    {
-        return ESettingsWindowNames::Dashboard;
     }
     else if (value == "AdvancedPaste")
     {

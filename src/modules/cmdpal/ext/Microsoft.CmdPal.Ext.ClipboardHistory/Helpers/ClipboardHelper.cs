@@ -59,10 +59,10 @@ internal static class ClipboardHelper
             output.SetText(text);
             try
             {
-                // Clipboard.SetContentWithOptions(output, null);
                 ClipboardThreadQueue.EnqueueTask(() =>
                 {
                     Clipboard.SetContent(output);
+
                     Flush();
                     ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
                 });
@@ -87,7 +87,7 @@ internal static class ClipboardHelper
             {
                 try
                 {
-                    Task.Run(Clipboard.Flush).Wait();
+                    Clipboard.Flush();
                     return;
                 }
                 catch (Exception ex)
@@ -139,7 +139,7 @@ internal static class ClipboardHelper
         switch (clipboardFormat)
         {
             case ClipboardFormat.Text:
-                if (clipboardItem.Content == null)
+                if (clipboardItem.Content is null)
                 {
                     ExtensionHost.LogMessage(new LogMessage() { Message = "No valid clipboard content" });
                     return;
@@ -152,7 +152,7 @@ internal static class ClipboardHelper
                 break;
 
             case ClipboardFormat.Image:
-                if (clipboardItem.ImageData == null)
+                if (clipboardItem.ImageData is null)
                 {
                     ExtensionHost.LogMessage(new LogMessage() { Message = "No valid clipboard content" });
                     return;
@@ -240,7 +240,7 @@ internal static class ClipboardHelper
     internal static async Task<SoftwareBitmap?> GetClipboardImageContentAsync(DataPackageView clipboardData)
     {
         using var stream = await GetClipboardImageStreamAsync(clipboardData);
-        if (stream != null)
+        if (stream is not null)
         {
             var decoder = await BitmapDecoder.CreateAsync(stream);
             return await decoder.GetSoftwareBitmapAsync();
@@ -255,7 +255,7 @@ internal static class ClipboardHelper
         {
             var storageItems = await clipboardData.GetStorageItemsAsync();
             var file = storageItems.Count == 1 ? storageItems[0] as StorageFile : null;
-            if (file != null)
+            if (file is not null)
             {
                 return await file.OpenReadAsync();
             }

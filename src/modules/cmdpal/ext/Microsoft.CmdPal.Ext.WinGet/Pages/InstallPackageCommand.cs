@@ -5,7 +5,6 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -23,14 +22,6 @@ public partial class InstallPackageCommand : InvokableCommand
     private Task? _installTask;
 
     public PackageInstallCommandState InstallCommandState { get; private set; }
-
-    public static IconInfo CompletedIcon { get; } = new("\uE930"); // Completed
-
-    public static IconInfo UpdateIcon { get; } = new("\uE74A"); // Up
-
-    public static IconInfo DownloadIcon { get; } = new("\uE896"); // Download
-
-    public static IconInfo DeleteIcon { get; } = new("\uE74D"); // Delete
 
     public event EventHandler<InstallPackageCommand>? InstallStateChanged;
 
@@ -69,9 +60,9 @@ public partial class InstallPackageCommand : InvokableCommand
     {
         Icon = InstallCommandState switch
         {
-            PackageInstallCommandState.Install => DownloadIcon,
-            PackageInstallCommandState.Update => UpdateIcon,
-            PackageInstallCommandState.Uninstall => CompletedIcon,
+            PackageInstallCommandState.Install => Icons.DownloadIcon,
+            PackageInstallCommandState.Update => Icons.UpdateIcon,
+            PackageInstallCommandState.Uninstall => Icons.CompletedIcon,
             _ => throw new NotImplementedException(),
         };
         Name = InstallCommandState switch
@@ -87,7 +78,7 @@ public partial class InstallPackageCommand : InvokableCommand
     {
         // TODO: LOCK in here, so this can only be invoked once until the
         // install / uninstall is done. Just use like, an atomic
-        if (_installTask != null)
+        if (_installTask is not null)
         {
             return CommandResult.KeepOpen();
         }
@@ -151,7 +142,7 @@ public partial class InstallPackageCommand : InvokableCommand
             {
                 await Task.Delay(2500).ConfigureAwait(false);
 
-                if (_installTask == null)
+                if (_installTask is null)
                 {
                     WinGetExtensionHost.Instance.HideStatus(_installBanner);
                 }

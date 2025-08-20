@@ -47,7 +47,7 @@ public static class ServiceHelper
         var result = serviceList.Select(s =>
         {
             var serviceResult = ServiceResult.CreateServiceController(s);
-            if (serviceResult == null)
+            if (serviceResult is null)
             {
                 return null;
             }
@@ -73,16 +73,16 @@ public static class ServiceHelper
                 ];
             }
 
-            IconInfo icon = new("\U0001f7e2"); // unicode LARGE GREEN CIRCLE
+            IconInfo icon = Icons.GreenCircleIcon;
             switch (s.Status)
             {
                 case ServiceControllerStatus.Stopped:
-                    icon = new("\U0001F534"); // unicode LARGE RED CIRCLE
+                    icon = Icons.RedCircleIcon;
                     break;
                 case ServiceControllerStatus.Running:
                     break;
                 case ServiceControllerStatus.Paused:
-                    icon = new("\u23F8"); // unicode DOUBLE VERTICAL BAR, aka, "Pause"
+                    icon = Icons.PauseIcon;
                     break;
             }
 
@@ -98,7 +98,7 @@ public static class ServiceHelper
                 // ToolTipData = new ToolTipData(serviceResult.DisplayName, serviceResult.ServiceName),
                 // IcoPath = icoPath,
             };
-        }).Where(s => s != null);
+        }).Where(s => s is not null);
 
         return result;
     }

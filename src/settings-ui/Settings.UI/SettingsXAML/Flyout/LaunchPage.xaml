@@ -21,7 +21,6 @@
             <Setter Property="Height" Value="32" />
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         </Style>
-
         <tkconverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
     </Page.Resources>
     <Grid>
@@ -110,7 +109,7 @@
         </Grid>
         <Grid Grid.Row="2">
             <InfoBar
-                x:Uid="UpdateAvailable"
+                x:Uid="UpdateAvailableInfoBar"
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
                 Severity="Success" />

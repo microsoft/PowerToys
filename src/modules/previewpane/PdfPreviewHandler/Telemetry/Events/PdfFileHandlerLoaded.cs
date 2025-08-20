@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
-
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf.Telemetry.Events
     /// A telemetry event that is triggered when a pdf file is viewed in the preview pane.
     /// </summary>
     [EventData]
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
     public class PdfFileHandlerLoaded : EventBase, IEvent
     {
         /// <inheritdoc/>

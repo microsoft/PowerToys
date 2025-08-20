@@ -2,11 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.Deferred;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -49,6 +51,12 @@ public partial class IconBox : ContentControl
     /// </summary>
     public event TypedEventHandler<IconBox, SourceRequestedEventArgs>? SourceRequested;
 
+    public IconBox()
+    {
+        TabFocusNavigation = KeyboardNavigationMode.Once;
+        IsTabStop = false;
+    }
+
     private static void OnSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is IconBox @this)
@@ -83,7 +91,7 @@ public partial class IconBox : ContentControl
     {
         if (d is IconBox @this)
         {
-            if (e.NewValue == null)
+            if (e.NewValue is null)
             {
                 @this.Source = null;
             }
@@ -96,7 +104,7 @@ public partial class IconBox : ContentControl
                     var requestedTheme = @this.ActualTheme;
                     var eventArgs = new SourceRequestedEventArgs(e.NewValue, requestedTheme);
 
-                    if (@this.SourceRequested != null)
+                    if (@this.SourceRequested is not null)
                     {
                         await @this.SourceRequested.InvokeAsync(@this, eventArgs);
 
@@ -134,7 +142,7 @@ public partial class IconBox : ContentControl
                             iconData = requestedTheme == ElementTheme.Light ? info.Light : info.Dark;
                         }
 
-                        if (iconData != null &&
+                        if (iconData is not null &&
                             @this.Source is FontIconSource)
                         {
                             if (!string.IsNullOrEmpty(iconData.Icon) && iconData.Icon.Length <= 2)

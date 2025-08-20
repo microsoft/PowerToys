@@ -95,7 +95,7 @@ public partial class SettingsModel : ObservableObject
 
             var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, JsonSerializationContext.Default.SettingsModel);
 
-            Debug.WriteLine(loaded != null ? "Loaded settings file" : "Failed to parse");
+            Debug.WriteLine(loaded is not null ? "Loaded settings file" : "Failed to parse");
 
             return loaded ?? new();
         }
@@ -130,7 +130,7 @@ public partial class SettingsModel : ObservableObject
                 {
                     foreach (var item in newSettings)
                     {
-                        savedSettings[item.Key] = item.Value != null ? item.Value.DeepClone() : null;
+                        savedSettings[item.Key] = item.Value?.DeepClone();
                     }
 
                     var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.Options);
@@ -188,6 +188,8 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(HistoryItem))]
 [JsonSerializable(typeof(SettingsModel))]
 [JsonSerializable(typeof(AppStateModel))]
+[JsonSerializable(typeof(RecentCommandsManager))]
+[JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
 [JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]

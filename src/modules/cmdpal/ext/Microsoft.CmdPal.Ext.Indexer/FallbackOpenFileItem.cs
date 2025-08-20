@@ -15,17 +15,22 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System.IDisposable
 {
+    private static readonly NoOpCommand _baseCommandWithId = new() { Id = "com.microsoft.indexer.fallback" };
+
     private readonly CompositeFormat fallbackItemSearchPageTitleCompositeFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
 
     private readonly SearchEngine _searchEngine = new();
 
     private uint _queryCookie = 10;
 
+    private Func<string, bool> _suppressCallback;
+
     public FallbackOpenFileItem()
-        : base(new NoOpCommand(), Resources.Indexer_Find_Path_fallback_display_title)
+        : base(_baseCommandWithId, Resources.Indexer_Find_Path_fallback_display_title)
     {
         Title = string.Empty;
         Subtitle = string.Empty;
+        Icon = Icons.FileExplorerIcon;
     }
 
     public override void UpdateQuery(string query)
@@ -41,10 +46,21 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
             return;
         }
 
+        if (_suppressCallback is not null && _suppressCallback(query))
+        {
+            Command = new NoOpCommand();
+            Title = string.Empty;
+            Subtitle = string.Empty;
+            Icon = null;
+            MoreCommands = null;
+
+            return;
+        }
+
         if (Path.Exists(query))
         {
             // Exit 1: The query is a direct path to a file. Great! Return it.
-            var item = new IndexerItem() { FullPath = query, FileName = Path.GetFileName(query) };
+            var item = new IndexerItem(fullPath: query);
             var listItemForUs = new IndexerListItem(item, IncludeBrowseCommand.AsDefault);
             Command = listItemForUs.Command;
             MoreCommands = listItemForUs.MoreCommands;
@@ -55,7 +71,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
             try
             {
                 var stream = ThumbnailHelper.GetThumbnail(item.FullPath).Result;
-                if (stream != null)
+                if (stream is not null)
                 {
                     var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
                     Icon = new IconInfo(data, data);
@@ -76,7 +92,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 _searchEngine.Query(query, _queryCookie);
                 var results = _searchEngine.FetchItems(0, 20, _queryCookie, out var _);
 
-                if (results.Count == 0 || ((results[0] as IndexerListItem) == null))
+                if (results.Count == 0 || ((results[0] as IndexerListItem) is null))
                 {
                     // Exit 2: We searched for the file, and found nothing. Oh well.
                     // Hide ourselves.
@@ -103,7 +119,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 // us to the file search page, prepopulated with this search.
                 var indexerPage = new IndexerPage(query, _searchEngine, _queryCookie, results);
                 Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
-                Icon = Icons.FileExplorer;
+                Icon = Icons.FileExplorerIcon;
                 Subtitle = Resources.Indexer_Subtitle;
                 Command = indexerPage;
 
@@ -124,5 +140,10 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     {
         _searchEngine.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    public void SuppressFallbackWhen(Func<string, bool> callback)
+    {
+        _suppressCallback = callback;
     }
 }

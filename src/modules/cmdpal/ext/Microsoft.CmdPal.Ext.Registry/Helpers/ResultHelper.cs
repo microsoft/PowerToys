@@ -88,7 +88,7 @@ internal static class ResultHelper
                 foreach (var valueName in valueNames)
                 {
                     var value = key.GetValue(valueName);
-                    if (value != null)
+                    if (value is not null)
                     {
                         valueList.Add(KeyValuePair.Create(valueName, value));
                     }
@@ -101,7 +101,7 @@ internal static class ResultHelper
 
                 resultList.Add(new ListItem(new OpenKeyInEditorCommand(registryEntry))
                 {
-                    Icon = RegistryListPage.RegistryIcon,
+                    Icon = Icons.RegistryIcon,
                     Subtitle = GetTruncatedText(valueException.Message, MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
                     Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                     MoreCommands = ContextMenuHelper.GetContextMenu(registryEntry).ToArray(),
@@ -130,7 +130,7 @@ internal static class ResultHelper
 
                 resultList.Add(new ListItem(new OpenKeyInEditorCommand(registryEntry))
                 {
-                    Icon = RegistryListPage.RegistryIcon,
+                    Icon = Icons.RegistryIcon,
                     Subtitle = GetTruncatedText(GetSubTileForRegistryValue(key, valueEntry), MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
                     Title = GetTruncatedText(valueName, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
                     MoreCommands = ContextMenuHelper.GetContextMenu(registryEntry).ToArray(),
@@ -145,7 +145,7 @@ internal static class ResultHelper
 
             resultList.Add(new ListItem(new OpenKeyInEditorCommand(registryEntry))
             {
-                Icon = RegistryListPage.RegistryIcon,
+                Icon = Icons.RegistryIcon,
                 Subtitle = GetTruncatedText(exception.Message, MaxTextLength.MaximumSubTitleLengthWithThreeSymbols, TruncateSide.OnlyFromRight),
                 Title = GetTruncatedText(key.Name, MaxTextLength.MaximumTitleLengthWithThreeSymbols),
             });
