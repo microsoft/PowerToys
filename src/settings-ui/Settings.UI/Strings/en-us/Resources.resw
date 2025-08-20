@@ -485,7 +485,7 @@
   </data>
   <data name="Shell_Awake.Content" xml:space="preserve">
     <value>Awake</value>
-    <comment>Awake is a product name, do not localize</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
