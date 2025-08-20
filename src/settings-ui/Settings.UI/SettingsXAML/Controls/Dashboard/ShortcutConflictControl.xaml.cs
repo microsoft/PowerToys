@@ -20,8 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     {
         private static readonly ResourceLoader ResourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
-        // Track previous conflict count for telemetry
-        private int _previousConflictCount;
+        private static bool _telemetryEventSent;
 
         public static readonly DependencyProperty AllHotkeyConflictsDataProperty =
             DependencyProperty.Register(
@@ -91,45 +90,22 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void UpdateProperties()
         {
-            var currentConflictCount = ConflictCount;
-
-            // Check if conflicts have been reduced and send telemetry
-            if (_previousConflictCount > 0 && currentConflictCount < _previousConflictCount)
-            {
-                var conflictsResolved = _previousConflictCount - currentConflictCount > 0;
-
-                // Send telemetry for conflicts reduction
-                PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictsResolvedInConflictWindowEvent()
-                {
-                    PreviousConflictCount = _previousConflictCount,
-                    CurrentConflictCount = currentConflictCount,
-                    ConflictsResolved = conflictsResolved,
-                    Source = "ConflictWindow",
-                });
-
-                System.Diagnostics.Debug.WriteLine($"Conflicts reduced: {_previousConflictCount} -> {currentConflictCount} (resolved: {conflictsResolved})");
-            }
-
-            // Update the previous count for next comparison
-            _previousConflictCount = currentConflictCount;
-
             OnPropertyChanged(nameof(ConflictCount));
             OnPropertyChanged(nameof(ConflictText));
             OnPropertyChanged(nameof(HasConflicts));
 
             // Update visibility based on conflict count
             Visibility = HasConflicts ? Visibility.Visible : Visibility.Collapsed;
-        }
 
-        private void OnShortcutConflictControlLoaded(object sender, RoutedEventArgs e)
-        {
-            if (HasConflicts)
+            if (!_telemetryEventSent && HasConflicts)
             {
                 // Log telemetry event when conflicts are detected
                 PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictDetectedEvent()
                 {
                     ConflictCount = ConflictCount,
                 });
+
+                _telemetryEventSent = true;
             }
         }
 
@@ -142,9 +118,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             InitializeComponent();
             DataContext = this;
-
-            // Initialize previous conflict count
-            _previousConflictCount = ConflictCount;
 
             // Initially hide the control if no conflicts
             Visibility = HasConflicts ? Visibility.Visible : Visibility.Collapsed;

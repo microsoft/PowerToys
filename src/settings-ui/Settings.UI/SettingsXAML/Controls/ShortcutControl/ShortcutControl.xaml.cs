@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Newtonsoft.Json.Linq;
 using Windows.System;
@@ -94,12 +95,39 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // General conflict resolution telemetry (for all sources)
             if (oldValue && !newValue)
             {
+                // Determine the actual source based on the control's context
+                var actualSource = DetermineControlSource(control);
+
                 // Conflict was resolved - send general telemetry
                 PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictResolvedEvent()
                 {
-                    Source = control.Source.ToString(),
+                    Source = actualSource.ToString(),
                 });
             }
+        }
+
+        private static ShortcutControlSource DetermineControlSource(ShortcutControl control)
+        {
+            // Walk up the visual tree to find the parent window/container
+            DependencyObject parent = control;
+            while (parent != null)
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+
+                // Check if we're in a ShortcutConflictWindow
+                if (parent != null && parent.GetType().Name == "ShortcutConflictWindow")
+                {
+                    return ShortcutControlSource.ConflictWindow;
+                }
+
+                if (parent != null && (parent.GetType().Name == "MainWindow" || parent.GetType().Name == "ShellPage"))
+                {
+                    return ShortcutControlSource.SettingsPage;
+                }
+            }
+
+            // Fallback to the explicitly set value or default
+            return ShortcutControlSource.ConflictWindow;
         }
 
         private static void OnTooltipChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -536,23 +564,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                         }
 
                         c.HasConflict = true;
-
-                        // Log telemetry
-                        PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictTestedEvent()
-                        {
-                            ConflictFound = true,
-                        });
                     }
                     else
                     {
                         c.ConflictMessage = string.Empty;
                         c.HasConflict = false;
-
-                        // Log telemetry
-                        PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictTestedEvent()
-                        {
-                            ConflictFound = false,
-                        });
                     }
                 });
             }
@@ -639,13 +655,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             c.HasConflict = hotkeySettings.HasConflict;
             c.ConflictMessage = hotkeySettings.ConflictDescription;
-
-            // Log telemetry when shortcut control is clicked, especially if there's a conflict
-            PowerToysTelemetry.Log.WriteEvent(new ShortcutControlClickedEvent()
-            {
-                HasConflict = HasConflict,
-                Source = Source.ToString(),
-            });
 
             // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
             // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
