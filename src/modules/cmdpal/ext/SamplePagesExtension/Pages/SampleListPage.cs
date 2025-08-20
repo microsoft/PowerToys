@@ -187,11 +187,11 @@ internal sealed partial class SampleListPage : ListPage
     {
         private FontIconData _icon = new("\u0026", "Wingdings");
 
-        public override IconInfo Icon => new IconInfo(_icon, _icon);
+        public override IconInfo Icon => new(_icon, _icon);
 
         public override string Name => "Whatever";
 
-        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
         {
             { "Foo", "bar" },
             { "Secret", 42 },
@@ -215,7 +215,7 @@ internal sealed partial class SampleListPage : ListPage
             return CommandResult.ShowToast("whoop");
         }
 
-        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
         {
             { "yo", "dog" },
             { "Secret", 12345 },
