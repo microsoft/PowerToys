@@ -35,7 +35,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     private bool _loadedInitialHistory;
 
-    public ShellListPage(SettingsManager settingsManager, IRunHistoryService runHistoryService, bool addBuiltins = false)
+    public ShellListPage(ISettingsInterface settingsManager, IRunHistoryService runHistoryService, bool addBuiltins = false)
     {
         Icon = Icons.RunV2Icon;
         Id = "com.microsoft.cmdpal.shell";
