@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -187,11 +188,14 @@ internal sealed partial class SampleListPage : ListPage
     {
         private FontIconData _icon = new("\u0026", "Wingdings");
 
-        public override IconInfo Icon => new IconInfo(_icon, _icon);
+        public override IconInfo Icon => new(_icon, _icon);
 
         public override string Name => "Whatever";
 
-        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
+        // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
+        // backing store for Properties. A regular `Dictionary<string, object>`
+        // will not work across the ABI
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
         {
             { "Foo", "bar" },
             { "Secret", 42 },
@@ -215,7 +219,10 @@ internal sealed partial class SampleListPage : ListPage
             return CommandResult.ShowToast("whoop");
         }
 
-        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
+        // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
+        // backing store for Properties. A regular `Dictionary<string, object>`
+        // will not work across the ABI
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
         {
             { "yo", "dog" },
             { "Secret", 12345 },
@@ -232,27 +239,32 @@ internal sealed partial class SampleListPage : ListPage
     /// Segoe MDL2 Assets font for glyphs in the Segoe UI Symbol range, or Segoe
     /// UI for any other glyphs. This class is only needed if you want a non-Segoe
     /// font icon.
-    /// 
-    /// WHY ISN'T THIS IN THE TOOLKIT: I have NO idea why, but if you put this 
-    /// in the toolkit, and not in your extension code, we 100% fail to cast 
-    /// the `Dictionary` to an IDictionary. The error was in 
+    ///
+    /// WHY ISN'T THIS IN THE TOOLKIT: I have NO idea why, but if you put this
+    /// in the toolkit, and not in your extension code, we 100% fail to cast
+    /// the `Dictionary` to an IDictionary. The error was in
     /// `IExtendedAttributesProvider:Do_Abi_GetProperties_0`
     /// </summary>
     internal sealed partial class FontIconData : IconData, IExtendedAttributesProvider
     {
         private string FontFamily { get; set; }
 
-        private readonly Dictionary<string, object> _properties;
-        
-        public IDictionary<string, object>? GetProperties() => _properties;
+        // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
+        // backing store for Properties. A regular `Dictionary<string, object>`
+        // will not work across the ABI
+        private readonly Windows.Foundation.Collections.ValueSet _properties;
+
+        public IDictionary<string, object> GetProperties() => _properties;
 
         public FontIconData(string glyph, string fontFamily)
             : base(glyph)
         {
             FontFamily = fontFamily;
-            _properties = new Dictionary<string, object>()
+
+            _properties = new Windows.Foundation.Collections.ValueSet()
             {
                 { "FontFamily", FontFamily },
             };
+        }
     }
 }
