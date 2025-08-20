@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
