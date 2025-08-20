@@ -117,6 +117,13 @@ public class UWPApplication : IUWPApplication
             RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
         });
 
+        commands.Add(
+            new CommandContextItem(
+                new UninstallUwpApplicationCommand(this))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
+            });
+
         return commands;
     }
 
