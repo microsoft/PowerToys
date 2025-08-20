@@ -20,7 +20,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
-using Newtonsoft.Json.Linq;
 using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
