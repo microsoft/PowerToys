@@ -49,7 +49,7 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private void SaveAndUpdateCommands()
     {
-        if (_bookmarks != null)
+        if (_bookmarks is not null)
         {
             var jsonPath = BookmarksCommandProvider.StateJsonPath();
             Bookmarks.WriteToFile(jsonPath, _bookmarks);
@@ -64,12 +64,12 @@ public partial class BookmarksCommandProvider : CommandProvider
         List<CommandItem> collected = [];
         collected.Add(new CommandItem(_addNewCommand));
 
-        if (_bookmarks == null)
+        if (_bookmarks is null)
         {
             LoadBookmarksFromFile();
         }
 
-        if (_bookmarks != null)
+        if (_bookmarks is not null)
         {
             collected.AddRange(_bookmarks.Data.Select(BookmarkToCommandItem));
         }
@@ -93,7 +93,7 @@ public partial class BookmarksCommandProvider : CommandProvider
             Logger.LogError(ex.Message);
         }
 
-        if (_bookmarks == null)
+        if (_bookmarks is null)
         {
             _bookmarks = new();
         }
@@ -134,7 +134,7 @@ public partial class BookmarksCommandProvider : CommandProvider
             name: Resources.bookmarks_delete_name,
             action: () =>
             {
-                if (_bookmarks != null)
+                if (_bookmarks is not null)
                 {
                     ExtensionHost.LogMessage($"Deleting bookmark ({bookmark.Name},{bookmark.Bookmark})");
 

@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed class CommandProviderWrapper
 {
-    public bool IsExtension => Extension != null;
+    public bool IsExtension => Extension is not null;
 
     private readonly bool isValid;
 
@@ -188,14 +188,14 @@ public sealed class CommandProviderWrapper
 
             return topLevelViewModel;
         };
-        if (commands != null)
+        if (commands is not null)
         {
             TopLevelItems = commands
                 .Select(c => makeAndAdd(c, false))
                 .ToArray();
         }
 
-        if (fallbacks != null)
+        if (fallbacks is not null)
         {
             FallbackItems = fallbacks
                 .Select(c => makeAndAdd(c, true))

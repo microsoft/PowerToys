@@ -18,7 +18,7 @@ public partial class DetailsLinkViewModel(
 
     public Uri? Link { get; private set; }
 
-    public bool IsLink => Link != null;
+    public bool IsLink => Link is not null;
 
     public bool IsText => !IsLink;
 
@@ -26,14 +26,14 @@ public partial class DetailsLinkViewModel(
     {
         base.InitializeProperties();
         var model = _dataModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
         Text = model.Text ?? string.Empty;
         Link = model.Link;
-        if (string.IsNullOrEmpty(Text) && Link != null)
+        if (string.IsNullOrEmpty(Text) && Link is not null)
         {
             Text = Link.ToString();
         }

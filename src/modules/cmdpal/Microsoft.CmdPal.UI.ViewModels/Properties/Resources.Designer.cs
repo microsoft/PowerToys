@@ -322,6 +322,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search for apps, files and commands....
+        /// </summary>
+        public static string builtin_main_list_page_searchbar_placeholder {
+            get {
+                return ResourceManager.GetString("builtin_main_list_page_searchbar_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Creates a project for a new Command Palette extension.
         /// </summary>
         public static string builtin_new_extension_subtitle {

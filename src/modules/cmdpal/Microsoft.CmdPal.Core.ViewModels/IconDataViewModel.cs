@@ -16,7 +16,7 @@ public partial class IconDataViewModel : ObservableObject, IIconData
     // If the extension previously gave us a Data, then died, the data will
     // throw if we actually try to read it, but the pointer itself won't be
     // null, so this is relatively safe.
-    public bool HasIcon => !string.IsNullOrEmpty(Icon) || Data.Unsafe != null;
+    public bool HasIcon => !string.IsNullOrEmpty(Icon) || Data.Unsafe is not null;
 
     // Locally cached properties from IIconData.
     public string Icon { get; private set; } = string.Empty;
@@ -36,7 +36,7 @@ public partial class IconDataViewModel : ObservableObject, IIconData
     public void InitializeProperties()
     {
         var model = _model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }

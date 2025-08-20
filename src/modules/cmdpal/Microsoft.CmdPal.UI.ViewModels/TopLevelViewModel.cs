@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -239,7 +240,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private void FetchAliasFromAliasManager()
     {
         var am = _serviceProvider.GetService<AliasManager>();
-        if (am != null)
+        if (am is not null)
         {
             var commandAlias = am.AliasFromId(Id);
             if (commandAlias is not null)
@@ -253,7 +254,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private void UpdateHotkey()
     {
         var hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
-        if (hotkey != null)
+        if (hotkey is not null)
         {
             _hotkey = hotkey.Hotkey;
         }
@@ -263,12 +264,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     {
         List<Tag> tags = [];
 
-        if (Hotkey != null)
+        if (Hotkey is not null)
         {
             tags.Add(new Tag() { Text = Hotkey.ToString() });
         }
 
-        if (Alias != null)
+        if (Alias is not null)
         {
             tags.Add(new Tag() { Text = Alias.SearchPrefix });
         }
