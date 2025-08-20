@@ -7,6 +7,7 @@
 #include <atomic>
 #include <thread>
 #include <chrono>
+#include <memory>
 
 extern void InclusiveCrosshairsRequestUpdatePosition();
 extern void InclusiveCrosshairsEnsureOn();
@@ -75,32 +76,42 @@ private:
     Hotkey m_activationHotkey{};    // Crosshairs toggle
     Hotkey m_glidingHotkey{};       // Gliding cursor state machine
 
-    // Gliding cursor state machine & timers
-    std::atomic<int> m_glideState{ 0 }; // 0..4 like the AHK script
-    std::atomic<bool> m_stopX{ false };
-    std::atomic<bool> m_stopY{ false };
+    // Shared state for worker threads (decoupled from this lifetime)
+    struct State
+    {
+        std::atomic<bool> stopX{ false };
+        std::atomic<bool> stopY{ false };
+
+        // positions and speeds
+        int currentXPos{ 0 };
+        int currentYPos{ 0 };
+        int currentXSpeed{ 0 }; // pixels per base window
+        int currentYSpeed{ 0 }; // pixels per base window
+        int xPosSnapshot{ 0 };  // xPos captured at end of horizontal scan
+
+        // Fractional accumulators to spread movement across 10ms ticks
+        double xFraction{ 0.0 };
+        double yFraction{ 0.0 };
+
+        // Speeds represent pixels per 200ms (min 5, max 60 enforced by UI/settings)
+        int fastHSpeed{ 30 }; // pixels per base window
+        int slowHSpeed{ 5 };  // pixels per base window
+        int fastVSpeed{ 30 }; // pixels per base window
+        int slowVSpeed{ 5 };  // pixels per base window
+    };
+
+    std::shared_ptr<State> m_state;
+
+    // Worker threads
     std::thread m_xThread;
     std::thread m_yThread;
+
+    // Gliding cursor state machine
+    std::atomic<int> m_glideState{ 0 }; // 0..4 like the AHK script
 
     // Timer configuration: 10ms tick, speeds are defined per 200ms base window
     static constexpr int kTimerTickMs = 10;
     static constexpr int kBaseSpeedTickMs = 200; // mapping period for configured pixel counts
-
-    // Speeds represent pixels per 200ms (min 5, max 60 enforced by UI/settings)
-    int m_fastHSpeed{ 30 }; // pixels per base window
-    int m_slowHSpeed{ 5 };  // pixels per base window
-    int m_fastVSpeed{ 30 }; // pixels per base window
-    int m_slowVSpeed{ 5 };  // pixels per base window
-
-    int m_currentXPos{ 0 };
-    int m_currentYPos{ 0 };
-    int m_currentXSpeed{ 0 }; // pixels per base window
-    int m_currentYSpeed{ 0 }; // pixels per base window
-    int m_xPosSnapshot{ 0 }; // xPos captured at end of horizontal scan
-
-    // Fractional accumulators to spread movement across 10ms ticks
-    double m_xFraction{ 0.0 };
-    double m_yFraction{ 0.0 };
 
     // Mouse Pointer Crosshairs specific settings
     InclusiveCrosshairsSettings m_inclusiveCrosshairsSettings;
@@ -110,6 +121,7 @@ public:
     MousePointerCrosshairs()
     {
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mousePointerCrosshairsLoggerName);
+        m_state = std::make_shared<State>();
         init_settings();
     };
 
@@ -118,6 +130,8 @@ public:
     {
         StopXTimer();
         StopYTimer();
+        // Release shared state so worker threads (if any) exit when weak_ptr lock fails
+        m_state.reset();
         delete this;
     }
 
@@ -256,69 +270,81 @@ private:
         SendInput(2, inputs, sizeof(INPUT));
     }
 
-    void PositionCursorX()
+    // Stateless helpers operating on shared State
+    static void PositionCursorX(const std::shared_ptr<State>& s)
     {
         int screenW = GetSystemMetrics(SM_CXVIRTUALSCREEN);
         int screenH = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-        m_currentYPos = screenH / 2;
+        s->currentYPos = screenH / 2;
 
         // Distribute movement over 10ms ticks to match pixels-per-base-window speeds
-        const double perTick = (static_cast<double>(m_currentXSpeed) * kTimerTickMs) / static_cast<double>(kBaseSpeedTickMs);
-        m_xFraction += perTick;
-        int step = static_cast<int>(m_xFraction);
+        const double perTick = (static_cast<double>(s->currentXSpeed) * kTimerTickMs) / static_cast<double>(kBaseSpeedTickMs);
+        s->xFraction += perTick;
+        int step = static_cast<int>(s->xFraction);
         if (step > 0)
         {
-            m_xFraction -= step;
-            m_currentXPos += step;
+            s->xFraction -= step;
+            s->currentXPos += step;
         }
 
-        m_xPosSnapshot = m_currentXPos;
-        if (m_currentXPos >= screenW)
+        s->xPosSnapshot = s->currentXPos;
+        if (s->currentXPos >= screenW)
         {
-            m_currentXPos = 0;
-            m_currentXSpeed = m_fastHSpeed;
-            m_xPosSnapshot = 0;
-            m_xFraction = 0.0; // reset fractional remainder on wrap
+            s->currentXPos = 0;
+            s->currentXSpeed = s->fastHSpeed;
+            s->xPosSnapshot = 0;
+            s->xFraction = 0.0; // reset fractional remainder on wrap
         }
-        SetCursorPos(m_currentXPos, m_currentYPos);
+        SetCursorPos(s->currentXPos, s->currentYPos);
         // Ensure overlay crosshairs follow immediately
         InclusiveCrosshairsRequestUpdatePosition();
     }
 
-    void PositionCursorY()
+    static void PositionCursorY(const std::shared_ptr<State>& s)
     {
         int screenH = GetSystemMetrics(SM_CYVIRTUALSCREEN);
         // Keep X at snapshot
-        m_currentXPos = m_xPosSnapshot;
+        // Use s->xPosSnapshot captured during X pass
 
         // Distribute movement over 10ms ticks to match pixels-per-base-window speeds
-        const double perTick = (static_cast<double>(m_currentYSpeed) * kTimerTickMs) / static_cast<double>(kBaseSpeedTickMs);
-        m_yFraction += perTick;
-        int step = static_cast<int>(m_yFraction);
+        const double perTick = (static_cast<double>(s->currentYSpeed) * kTimerTickMs) / static_cast<double>(kBaseSpeedTickMs);
+        s->yFraction += perTick;
+        int step = static_cast<int>(s->yFraction);
         if (step > 0)
         {
-            m_yFraction -= step;
-            m_currentYPos += step;
+            s->yFraction -= step;
+            s->currentYPos += step;
         }
 
-        if (m_currentYPos >= screenH)
+        if (s->currentYPos >= screenH)
         {
-            m_currentYPos = 0;
-            m_currentYSpeed = m_fastVSpeed;
-            m_yFraction = 0.0; // reset fractional remainder on wrap
+            s->currentYPos = 0;
+            s->currentYSpeed = s->fastVSpeed;
+            s->yFraction = 0.0; // reset fractional remainder on wrap
         }
-        SetCursorPos(m_currentXPos, m_currentYPos);
+        SetCursorPos(s->xPosSnapshot, s->currentYPos);
         // Ensure overlay crosshairs follow immediately
         InclusiveCrosshairsRequestUpdatePosition();
     }
 
     void StartXTimer()
     {
-        m_stopX = false;
-        m_xThread = std::thread([this]() {
-            while (!m_stopX)
+        auto s = m_state;
+        if (!s)
+        {
+            return;
+        }
+        s->stopX = false;
+        std::weak_ptr<State> wp = s;
+        m_xThread = std::thread([wp]() {
+            while (true)
             {
-                PositionCursorX();
+                auto sp = wp.lock();
+                if (!sp || sp->stopX.load())
+                {
+                    break;
+                }
+                PositionCursorX(sp);
                 std::this_thread::sleep_for(std::chrono::milliseconds(kTimerTickMs));
             }
         });
@@ -326,7 +352,11 @@ private:
 
     void StopXTimer()
     {
-        m_stopX = true;
+        auto s = m_state;
+        if (s)
+        {
+            s->stopX = true;
+        }
         if (m_xThread.joinable())
         {
             m_xThread.join();
@@ -335,11 +365,22 @@ private:
 
     void StartYTimer()
     {
-        m_stopY = false;
-        m_yThread = std::thread([this]() {
-            while (!m_stopY)
+        auto s = m_state;
+        if (!s)
+        {
+            return;
+        }
+        s->stopY = false;
+        std::weak_ptr<State> wp = s;
+        m_yThread = std::thread([wp]() {
+            while (true)
             {
-                PositionCursorY();
+                auto sp = wp.lock();
+                if (!sp || sp->stopY.load())
+                {
+                    break;
+                }
+                PositionCursorY(sp);
                 std::this_thread::sleep_for(std::chrono::milliseconds(kTimerTickMs));
             }
         });
@@ -347,7 +388,11 @@ private:
 
     void StopYTimer()
     {
-        m_stopY = true;
+        auto s = m_state;
+        if (s)
+        {
+            s->stopY = true;
+        }
         if (m_yThread.joinable())
         {
             m_yThread.join();
@@ -356,6 +401,11 @@ private:
 
     void HandleGlidingHotkey()
     {
+        auto s = m_state;
+        if (!s)
+        {
+            return;
+        }
         // Simulate the AHK state machine
         int state = m_glideState.load();
         switch (state)
@@ -367,10 +417,10 @@ private:
             // Disable internal mouse hook so we control position updates explicitly
             InclusiveCrosshairsSetExternalControl(true);
 
-            m_currentXPos = 0;
-            m_currentXSpeed = m_fastHSpeed;
-            m_xFraction = 0.0;
-            m_yFraction = 0.0;
+            s->currentXPos = 0;
+            s->currentXSpeed = s->fastHSpeed;
+            s->xFraction = 0.0;
+            s->yFraction = 0.0;
             int y = GetSystemMetrics(SM_CYVIRTUALSCREEN) / 2;
             SetCursorPos(0, y);
             InclusiveCrosshairsRequestUpdatePosition();
@@ -381,7 +431,7 @@ private:
         case 1:
         {
             // Slow horizontal
-            m_currentXSpeed = m_slowHSpeed;
+            s->currentXSpeed = s->slowHSpeed;
             m_glideState = 2;
             break;
         }
@@ -389,10 +439,10 @@ private:
         {
             // Stop horizontal, start vertical (fast)
             StopXTimer();
-            m_currentYSpeed = m_fastVSpeed;
-            m_currentYPos = 0;
-            m_yFraction = 0.0;
-            SetCursorPos(m_xPosSnapshot, m_currentYPos);
+            s->currentYSpeed = s->fastVSpeed;
+            s->currentYPos = 0;
+            s->yFraction = 0.0;
+            SetCursorPos(s->xPosSnapshot, s->currentYPos);
             InclusiveCrosshairsRequestUpdatePosition();
             m_glideState = 3;
             StartYTimer();
@@ -401,7 +451,7 @@ private:
         case 3:
         {
             // Slow vertical
-            m_currentYSpeed = m_slowVSpeed;
+            s->currentYSpeed = s->slowVSpeed;
             m_glideState = 4;
             break;
         }
@@ -414,8 +464,8 @@ private:
             LeftClick();
             InclusiveCrosshairsEnsureOff();
             InclusiveCrosshairsSetExternalControl(false);
-            m_xFraction = 0.0;
-            m_yFraction = 0.0;
+            s->xFraction = 0.0;
+            s->yFraction = 0.0;
             break;
         }
         }
@@ -492,12 +542,14 @@ private:
             }
             catch (...)
             {
+                // note that this is also defined in src\settings-ui\Settings.UI.Library\MousePointerCrosshairsProperties.cs, DefaultGlidingCursorActivationShortcut
+                // both need to be kept in sync!
                 Logger::warn("Failed to initialize Gliding Cursor activation shortcut. Using default Win+Alt+.");
                 m_glidingHotkey.win = true;
                 m_glidingHotkey.alt = true;
                 m_glidingHotkey.ctrl = false;
                 m_glidingHotkey.shift = false;
-                m_glidingHotkey.key = '.';
+                m_glidingHotkey.key = VK_OEM_PERIOD;
             }
             try
             {
@@ -665,23 +717,26 @@ private:
                 int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
                 if (value >= 5 && value <= 60)
                 {
-                    m_fastHSpeed = value;
-                    m_fastVSpeed = value;
+                    m_state->fastHSpeed = value;
+                    m_state->fastVSpeed = value;
                 }
                 else if (value < 5)
                 {
-                    m_fastHSpeed = 5; m_fastVSpeed = 5;
+                    m_state->fastHSpeed = 5; m_state->fastVSpeed = 5;
                 }
                 else
                 {
-                    m_fastHSpeed = 60; m_fastVSpeed = 60;
+                    m_state->fastHSpeed = 60; m_state->fastVSpeed = 60;
                 }
             }
             catch (...)
             {
                 Logger::warn("Failed to initialize gliding travel speed from settings. Using default 25.");
-                m_fastHSpeed = 25;
-                m_fastVSpeed = 25;
+                if (m_state)
+                {
+                    m_state->fastHSpeed = 25;
+                    m_state->fastVSpeed = 25;
+                }
             }
             try
             {
@@ -690,23 +745,26 @@ private:
                 int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
                 if (value >= 5 && value <= 60)
                 {
-                    m_slowHSpeed = value;
-                    m_slowVSpeed = value;
+                    m_state->slowHSpeed = value;
+                    m_state->slowVSpeed = value;
                 }
                 else if (value < 5)
                 {
-                    m_slowHSpeed = 5; m_slowVSpeed = 5;
+                    m_state->slowHSpeed = 5; m_state->slowVSpeed = 5;
                 }
                 else
                 {
-                    m_slowHSpeed = 60; m_slowVSpeed = 60;
+                    m_state->slowHSpeed = 60; m_state->slowVSpeed = 60;
                 }
             }
             catch (...)
             {
                 Logger::warn("Failed to initialize gliding delay speed from settings. Using default 5.");
-                m_slowHSpeed = 5;
-                m_slowVSpeed = 5;
+                if (m_state)
+                {
+                    m_state->slowHSpeed = 5;
+                    m_state->slowVSpeed = 5;
+                }
             }
         }
         else
@@ -733,7 +791,7 @@ private:
             m_glidingHotkey.alt = true;
             m_glidingHotkey.ctrl = false;
             m_glidingHotkey.shift = false;
-            m_glidingHotkey.key = '.';
+            m_glidingHotkey.key = VK_OEM_PERIOD;
         }
         m_inclusiveCrosshairsSettings = inclusiveCrosshairsSettings;
     }

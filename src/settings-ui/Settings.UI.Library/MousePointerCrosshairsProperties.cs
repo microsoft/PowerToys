@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, true, false, 0x50); // Win + Alt + P
 
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultGlidingCursorActivationShortcut => new HotkeySettings(true, false, true, false, 0x2E); // Win + Alt + .
+        public HotkeySettings DefaultGlidingCursorActivationShortcut => new HotkeySettings(true, false, true, false, 0xBE); // Win + Alt + .
 
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
