@@ -181,7 +181,7 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
-      version: '9.0'
+      version: '10.0'
 
   - ${{ if eq(parameters.runTests, true) }}:
     - task: VisualStudioTestPlatformInstaller@1
