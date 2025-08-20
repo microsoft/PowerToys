@@ -26,11 +26,11 @@ public sealed partial class AllAppsPage : ListPage
 
     public AllAppsPage()
     {
-        this.Name = Resources.all_apps;
-        this.Icon = Icons.AllAppsIcon;
-        this.ShowDetails = true;
-        this.IsLoading = true;
-        this.PlaceholderText = Resources.search_installed_apps_placeholder;
+        Name = Resources.all_apps;
+        Icon = Icons.AllAppsIcon;
+        ShowDetails = true;
+        IsLoading = true;
+        PlaceholderText = Resources.search_installed_apps_placeholder;
 
         // Subscribe to pin state changes to refresh the command provider
         PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
