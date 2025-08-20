@@ -18,7 +18,7 @@ public class FileBookmarkDataSource : IBookmarkDataSource
         _filePath = filePath;
     }
 
-    public async Task<string> GetBookmarkDataAsync()
+    public string GetBookmarkDataAsync()
     {
         if (!File.Exists(_filePath))
         {
@@ -27,7 +27,7 @@ public class FileBookmarkDataSource : IBookmarkDataSource
 
         try
         {
-            return await File.ReadAllTextAsync(_filePath);
+            return File.ReadAllText(_filePath);
         }
         catch (Exception ex)
         {
@@ -36,11 +36,11 @@ public class FileBookmarkDataSource : IBookmarkDataSource
         }
     }
 
-    public async Task SaveBookmarkDataAsync(string jsonData)
+    public void SaveBookmarkDataAsync(string jsonData)
     {
         try
         {
-            await File.WriteAllTextAsync(_filePath, jsonData);
+            File.WriteAllText(_filePath, jsonData);
         }
         catch (Exception ex)
         {
