@@ -44,7 +44,7 @@ public sealed partial class ContentFormControl : UserControl
         // 5% BODGY: if we set this multiple times over the lifetime of the app,
         // then the second call will explode, because "CardOverrideStyles is already the child of another element".
         // SO only set this once.
-        if (_renderer.OverrideStyles == null)
+        if (_renderer.OverrideStyles is null)
         {
             _renderer.OverrideStyles = CardOverrideStyles;
         }
@@ -55,19 +55,19 @@ public sealed partial class ContentFormControl : UserControl
 
     private void AttachViewModel(ContentFormViewModel? vm)
     {
-        if (_viewModel != null)
+        if (_viewModel is not null)
         {
             _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         }
 
         _viewModel = vm;
 
-        if (_viewModel != null)
+        if (_viewModel is not null)
         {
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             var c = _viewModel.Card;
-            if (c != null)
+            if (c is not null)
             {
                 DisplayCard(c);
             }
@@ -76,7 +76,7 @@ public sealed partial class ContentFormControl : UserControl
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (ViewModel == null)
+        if (ViewModel is null)
         {
             return;
         }
@@ -84,7 +84,7 @@ public sealed partial class ContentFormControl : UserControl
         if (e.PropertyName == nameof(ViewModel.Card))
         {
             var c = ViewModel.Card;
-            if (c != null)
+            if (c is not null)
             {
                 DisplayCard(c);
             }
@@ -95,7 +95,7 @@ public sealed partial class ContentFormControl : UserControl
     {
         _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
         ContentGrid.Children.Clear();
-        if (_renderedCard.FrameworkElement != null)
+        if (_renderedCard.FrameworkElement is not null)
         {
             ContentGrid.Children.Add(_renderedCard.FrameworkElement);
 
@@ -148,7 +148,7 @@ public sealed partial class ContentFormControl : UserControl
 
             // Recursively check children
             var result = FindFirstFocusableElement(child);
-            if (result != null)
+            if (result is not null)
             {
                 return result;
             }

@@ -16,6 +16,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <ItemsControl
+            x:Name="ShortcutsControl"
             VerticalAlignment="Center"
             AutomationProperties.AccessibilityView="Raw"
             IsTabStop="False"
@@ -32,14 +33,27 @@
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
                         FontSize="12"
-                        IsTabStop="False" />
+                        IsTabStop="False"
+                        Style="{StaticResource DefaultKeyVisualStyle}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
         <tk7controls:MarkdownTextBlock
+            x:Name="LabelControl"
             Grid.Column="1"
             VerticalAlignment="Center"
             Background="Transparent"
             Text="{x:Bind Text}" />
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LabelPlacementStates">
+                <VisualState x:Name="LabelAfter" />
+                <VisualState x:Name="LabelBefore">
+                    <VisualState.Setters>
+                        <Setter Target="LabelControl.(Grid.Column)" Value="0" />
+                        <Setter Target="ShortcutsControl.(Grid.Column)" Value="1" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </UserControl>
