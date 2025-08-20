@@ -3,6 +3,7 @@
 #include "auto_start_helper.h"
 #include "tray_icon.h"
 #include "Generated files/resource.h"
+#include "hotkey_conflict_detector.h"
 
 #include <common/SettingsAPI/settings_helpers.h>
 #include "powertoy_module.h"
@@ -204,11 +205,15 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
             {
                 Logger::info(L"apply_general_settings: Enabling powertoy {}", name);
                 powertoy->enable();
+                auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+                hkmng.EnableHotkeyByModule(name);
             }
             else
             {
                 Logger::info(L"apply_general_settings: Disabling powertoy {}", name);
                 powertoy->disable();
+                auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+                hkmng.DisableHotkeyByModule(name);
             }
             // Sync the hotkey state with the module state, so it can be removed for disabled modules.
             powertoy.UpdateHotkeyEx();
@@ -315,6 +320,8 @@ void start_enabled_powertoys()
         {
             Logger::info(L"start_enabled_powertoys: Enabling powertoy {}", name);
             powertoy->enable();
+            auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+            hkmng.EnableHotkeyByModule(name);
             powertoy.UpdateHotkeyEx();
         }
     }

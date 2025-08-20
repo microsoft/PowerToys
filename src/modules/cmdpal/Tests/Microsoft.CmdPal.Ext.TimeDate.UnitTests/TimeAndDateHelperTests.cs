@@ -45,7 +45,7 @@ public class TimeAndDateHelperTests
         var result = TimeAndDateHelper.GetCalendarWeekRule(setting);
 
         // Assert
-        if (valueExpected == null)
+        if (valueExpected is null)
         {
             // falls back to system setting.
             Assert.AreEqual(DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, result);
@@ -72,7 +72,7 @@ public class TimeAndDateHelperTests
         var result = TimeAndDateHelper.GetFirstDayOfWeek(setting);
 
         // Assert
-        if (valueExpected == null)
+        if (valueExpected is null)
         {
             // falls back to system setting.
             Assert.AreEqual(DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek, result);

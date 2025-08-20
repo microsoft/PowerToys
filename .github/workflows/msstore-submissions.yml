@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: BODGY - Set up Gnome Keyring for future Cert Auth
         run: |-
-          sudo apt-get install -y gnome-keyring
+          sudo apt-get update && sudo apt-get install -y gnome-keyring
           export $(dbus-launch --sh-syntax)
           export $(echo 'anypass_just_to_unlock' | gnome-keyring-daemon --unlock)
           export $(echo 'anypass_just_to_unlock' | gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh)

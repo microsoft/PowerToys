@@ -87,6 +87,13 @@
 
 ### Building PowerToys Locally
 
+#### One stop script for building installer
+1. Open developer powershell for vs 2022
+2. Run tools\build\build-installer.ps1
+> For the first-time setup, please run the installer as an administrator. This ensures that the Wix tool can move wix.target to the desired location and trust the certificate used to sign the MSIX packages.
+
+The following manual steps will not install the MSIX apps (such as Command Palette) on your local installer.
+
 #### Prerequisites for building the MSI installer
 
 1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
