@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -58,6 +59,8 @@ namespace Microsoft.PowerToys.Settings.UI.Services
     {
         private static readonly object _lockObject = new();
         private static readonly Dictionary<string, string> _pageNameCache = [];
+        private static readonly Dictionary<string, (string HeaderNorm, string DescNorm)> _normalizedTextCache = new();
+        private static readonly Dictionary<string, Type> _pageTypeCache = new();
         private static ImmutableArray<SettingEntry> _index = [];
         private static bool _isIndexBuilt;
         private static bool _isIndexBuilding;
@@ -96,6 +99,10 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 }
 
                 _isIndexBuilding = true;
+
+                // Clear caches on rebuild
+                _normalizedTextCache.Clear();
+                _pageTypeCache.Clear();
             }
 
             try
@@ -234,6 +241,11 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         public static List<SettingEntry> Search(string query)
         {
+            return Search(query, CancellationToken.None);
+        }
+
+        public static List<SettingEntry> Search(string query, CancellationToken token)
+        {
             if (string.IsNullOrWhiteSpace(query))
             {
                 return [];
@@ -247,33 +259,46 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             }
 
             var normalizedQuery = NormalizeString(query);
-            var results = new List<(SettingEntry Hit, double Score)>();
-
-            foreach (var entry in currentIndex)
+            var bag = new ConcurrentBag<(SettingEntry Hit, double Score)>();
+            var po = new ParallelOptions
             {
-                var captionScoreResult = StringMatcher.FuzzyMatch(normalizedQuery, NormalizeString(entry.Header));
-                double score = captionScoreResult.Score;
+                CancellationToken = token,
+                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 1),
+            };
 
-                if (!string.IsNullOrEmpty(entry.Description))
+            try
+            {
+                Parallel.ForEach(currentIndex, po, entry =>
                 {
-                    var descriptionScoreResult = StringMatcher.FuzzyMatch(normalizedQuery, NormalizeString(entry.Description));
-                    if (descriptionScoreResult.Success)
-                    {
-                        score = Math.Max(score, descriptionScoreResult.Score * 0.8);
-                    }
-                }
+                    var (headerNorm, descNorm) = GetNormalizedTexts(entry);
+                    var captionScoreResult = StringMatcher.FuzzyMatch(normalizedQuery, headerNorm);
+                    double score = captionScoreResult.Score;
 
-                if (score > 0)
-                {
-                    var pageType = GetPageTypeFromName(entry.PageTypeName);
-                    if (pageType != null)
+                    if (!string.IsNullOrEmpty(descNorm))
                     {
-                        results.Add((entry, score));
+                        var descriptionScoreResult = StringMatcher.FuzzyMatch(normalizedQuery, descNorm);
+                        if (descriptionScoreResult.Success)
+                        {
+                            score = Math.Max(score, descriptionScoreResult.Score * 0.8);
+                        }
                     }
-                }
+
+                    if (score > 0)
+                    {
+                        var pageType = GetPageTypeFromName(entry.PageTypeName);
+                        if (pageType != null)
+                        {
+                            bag.Add((entry, score));
+                        }
+                    }
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return [];
             }
 
-            return results
+            return bag
                 .OrderByDescending(r => r.Score)
                 .Select(r => r.Hit)
                 .ToList();
@@ -281,8 +306,49 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         private static Type GetPageTypeFromName(string pageTypeName)
         {
-            var assembly = typeof(GeneralPage).Assembly;
-            return assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{pageTypeName}");
+            if (string.IsNullOrEmpty(pageTypeName))
+            {
+                return null;
+            }
+
+            lock (_lockObject)
+            {
+                if (_pageTypeCache.TryGetValue(pageTypeName, out var cached))
+                {
+                    return cached;
+                }
+
+                var assembly = typeof(GeneralPage).Assembly;
+                var type = assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{pageTypeName}");
+                _pageTypeCache[pageTypeName] = type;
+                return type;
+            }
+        }
+
+        private static (string HeaderNorm, string DescNorm) GetNormalizedTexts(SettingEntry entry)
+        {
+            if (entry.ElementUid == null && entry.Header == null)
+            {
+                return (NormalizeString(entry.Header), NormalizeString(entry.Description));
+            }
+
+            var key = entry.ElementUid ?? $"{entry.PageTypeName}|{entry.ElementName}";
+            lock (_lockObject)
+            {
+                if (_normalizedTextCache.TryGetValue(key, out var cached))
+                {
+                    return cached;
+                }
+            }
+
+            var headerNorm = NormalizeString(entry.Header);
+            var descNorm = NormalizeString(entry.Description);
+            lock (_lockObject)
+            {
+                _normalizedTextCache[key] = (headerNorm, descNorm);
+            }
+
+            return (headerNorm, descNorm);
         }
 
         private static string NormalizeString(string input)
