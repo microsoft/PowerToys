@@ -52,7 +52,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 ## Rules
 
 - **Follow the pattern of what you already see in the code.**
-- [Coding style](development/style.md).
+- [Coding style](style.md).
 - Try to package new functionality/components into libraries that have nicely defined interfaces.
 - Package new functionality into classes or refactor existing functionality into a class as you extend the code.
 - When adding new classes/methods/changing existing code, add new unit tests or update the existing tests.

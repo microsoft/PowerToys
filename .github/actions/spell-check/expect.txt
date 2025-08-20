@@ -641,6 +641,7 @@ hmodule
 hmonitor
 homies
 homljgmgpmcbpjbnjpfijnhipfkiclkd
+HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
