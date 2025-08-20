@@ -260,7 +260,7 @@ namespace runtime_shell_ext
                 RegCloseKey(hKey);
             }
         }
-        Logger::info(L"Runtime unregistration completed for CLSID {}", spec.clsid);
+        Logger::info(L"Successfully unregistered CLSID {}", spec.clsid);
         return true;
     }
 }
