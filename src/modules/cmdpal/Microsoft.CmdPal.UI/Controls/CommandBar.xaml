@@ -43,11 +43,6 @@
                     <Setter Property="Padding" Value="0" />
                     <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
                     <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
-                    <Setter Property="Transitions">
-                        <Setter.Value>
-                            <TransitionCollection />
-                        </Setter.Value>
-                    </Setter>
                 </Style.Setters>
             </Style>
 
