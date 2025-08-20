@@ -8,7 +8,6 @@ using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Pages;
 
@@ -16,7 +15,6 @@ internal sealed partial class ProfilesListPage : ListPage
 {
     private readonly TerminalQuery _terminalQuery = new();
     private readonly SettingsManager _terminalSettings;
-    private readonly Dictionary<string, BitmapImage> _logoCache = [];
 
     private bool showHiddenProfiles;
     private bool openNewTab;
@@ -24,7 +22,7 @@ internal sealed partial class ProfilesListPage : ListPage
 
     public ProfilesListPage(SettingsManager terminalSettings)
     {
-        Icon = WindowsTerminalCommandsProvider.TerminalIcon;
+        Icon = Icons.TerminalIcon;
         Name = Resources.profiles_list_page_name;
         _terminalSettings = terminalSettings;
     }
@@ -54,14 +52,6 @@ internal sealed partial class ProfilesListPage : ListPage
                 MoreCommands = [
                     new CommandContextItem(new LaunchProfileAsAdminCommand(profile.Terminal.AppUserModelId, profile.Name, openNewTab, openQuake)),
                 ],
-
-                // Icon = () => GetLogo(profile.Terminal),
-                // Action = _ =>
-                // {
-                //    Launch(profile.Terminal.AppUserModelId, profile.Name);
-                //    return true;
-                // },
-                // ContextData = profile,
 #pragma warning restore SA1108
             });
         }
@@ -70,17 +60,4 @@ internal sealed partial class ProfilesListPage : ListPage
     }
 
     public override IListItem[] GetItems() => Query().ToArray();
-
-    private BitmapImage GetLogo(TerminalPackage terminal)
-    {
-        var aumid = terminal.AppUserModelId;
-
-        if (!_logoCache.TryGetValue(aumid, out var value))
-        {
-            value = terminal.GetLogo();
-            _logoCache.Add(aumid, value);
-        }
-
-        return value;
-    }
 }

@@ -18,10 +18,10 @@ internal sealed partial class SwitchToWindowCommand : InvokableCommand
     {
         Name = Resources.switch_to_command_title;
         _window = window;
-        if (_window != null)
+        if (_window is not null)
         {
             var p = Process.GetProcessById((int)_window.Process.ProcessID);
-            if (p != null)
+            if (p is not null)
             {
                 try
                 {

@@ -107,7 +107,7 @@ public class NumberTranslator
             // Currently, we only convert base literals (hexadecimal, binary, octal) to decimal.
             var converted = ConvertBaseLiteral(token, cultureTo);
 
-            if (converted != null)
+            if (converted is not null)
             {
                 outputBuilder.Append(converted);
                 continue;
@@ -148,13 +148,16 @@ public class NumberTranslator
 
     private static Regex GetSplitRegex(CultureInfo culture)
     {
-        var splitPattern = $"((?:\\d|{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}";
-        if (!string.IsNullOrEmpty(culture.NumberFormat.NumberGroupSeparator))
+        var groupSeparator = culture.NumberFormat.NumberGroupSeparator;
+
+        // if the group separator is a no-break space, we also add a normal space to the regex
+        if (groupSeparator == "\u00a0")
         {
-            splitPattern += $"|{Regex.Escape(culture.NumberFormat.NumberGroupSeparator)}";
+            groupSeparator = "\u0020\u00a0";
         }
 
-        splitPattern += ")+)";
+        var splitPattern = $"([0-9{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}" +
+            $"{Regex.Escape(groupSeparator)}]+)";
         return new Regex(splitPattern);
     }
 }

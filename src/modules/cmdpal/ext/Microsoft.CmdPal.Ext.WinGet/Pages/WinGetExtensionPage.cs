@@ -34,17 +34,13 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     private IEnumerable<CatalogPackage>? _results;
 
-    public static IconInfo WinGetIcon { get; } = IconHelpers.FromRelativePath("Assets\\WinGet.svg");
-
-    public static IconInfo ExtensionsIcon { get; } = IconHelpers.FromRelativePath("Assets\\Extension.svg");
-
     public static string ExtensionsTag => "windows-commandpalette-extension";
 
     private readonly StatusMessage _errorMessage = new() { State = MessageState.Error };
 
     public WinGetExtensionPage(string tag = "")
     {
-        Icon = tag == ExtensionsTag ? ExtensionsIcon : WinGetIcon;
+        Icon = tag == ExtensionsTag ? Icons.ExtensionsIcon : Icons.WinGetIcon;
         Name = Properties.Resources.winget_page_name;
         _tag = tag;
         ShowDetails = true;
@@ -57,7 +53,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         {
             // emptySearchForTag ===
             // we don't have results yet, we haven't typed anything, and we're searching for a tag
-            var emptySearchForTag = _results == null &&
+            var emptySearchForTag = _results is null &&
                 string.IsNullOrEmpty(SearchText) &&
                 HasTag;
 
@@ -68,7 +64,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                 return items;
             }
 
-            if (_results != null && _results.Any())
+            if (_results is not null && _results.Any())
             {
                 ListItem[] results = _results.Select(PackageToListItem).ToArray();
                 IsLoading = false;
@@ -78,7 +74,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         EmptyContent = new CommandItem(new NoOpCommand())
         {
-            Icon = WinGetIcon,
+            Icon = Icons.WinGetIcon,
             Title = (string.IsNullOrEmpty(SearchText) && !HasTag) ?
                             Properties.Resources.winget_placeholder_text :
                             Properties.Resources.winget_no_packages_found,
@@ -104,7 +100,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     private void DoUpdateSearchText(string newSearch)
     {
         // Cancel any ongoing search
-        if (_cancellationTokenSource != null)
+        if (_cancellationTokenSource is not null)
         {
             Logger.LogDebug("Cancelling old search", memberName: nameof(DoUpdateSearchText));
             _cancellationTokenSource.Cancel();
@@ -189,7 +185,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             return [];
         }
 
-        string searchDebugText = $"{query}{(HasTag ? "+" : string.Empty)}{_tag}";
+        var searchDebugText = $"{query}{(HasTag ? "+" : string.Empty)}{_tag}";
         Logger.LogDebug($"Starting search for '{searchDebugText}'");
         HashSet<CatalogPackage> results = new(new PackageIdCompare());
 
@@ -225,7 +221,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         // WinGetStatics static ctor when we were created.
         PackageCatalog catalog = await catalogTask.Value;
 
-        if (catalog == null)
+        if (catalog is null)
         {
             // This error should have already been displayed by WinGetStatics
             return [];

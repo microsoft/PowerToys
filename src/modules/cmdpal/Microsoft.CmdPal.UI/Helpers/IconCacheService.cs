@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.Terminal.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
@@ -28,15 +28,15 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
                 var source = IconPathConverter.IconSourceMUX(icon.Icon, false);
                 return source;
             }
-            else if (icon.Data != null)
+            else if (icon.Data is not null)
             {
                 try
                 {
                     return await StreamToIconSource(icon.Data.Unsafe!);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    Debug.WriteLine("Failed to load icon from stream");
+                    Debug.WriteLine("Failed to load icon from stream: " + ex);
                 }
             }
         }
@@ -49,7 +49,7 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
 
     private async Task<IconSource?> StreamToIconSource(IRandomAccessStreamReference iconStreamRef)
     {
-        if (iconStreamRef == null)
+        if (iconStreamRef is null)
         {
             return null;
         }
@@ -63,17 +63,37 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
     {
         // Return the bitmap image via TaskCompletionSource. Using WCT's EnqueueAsync does not suffice here, since if
         // we're already on the thread of the DispatcherQueue then it just directly calls the function, with no async involved.
-        var completionSource = new TaskCompletionSource<BitmapImage>();
-        dispatcherQueue.TryEnqueue(async () =>
+        return await TryEnqueueAsync(dispatcherQueue, async () =>
         {
             using var bitmapStream = await iconStreamRef.OpenReadAsync();
             var itemImage = new BitmapImage();
             await itemImage.SetSourceAsync(bitmapStream);
-            completionSource.TrySetResult(itemImage);
+            return itemImage;
+        });
+    }
+
+    private static Task<T> TryEnqueueAsync<T>(DispatcherQueue dispatcher, Func<Task<T>> function)
+    {
+        var completionSource = new TaskCompletionSource<T>();
+
+        var enqueued = dispatcher.TryEnqueue(DispatcherQueuePriority.Normal, async void () =>
+        {
+            try
+            {
+                var result = await function();
+                completionSource.SetResult(result);
+            }
+            catch (Exception ex)
+            {
+                completionSource.SetException(ex);
+            }
         });
 
-        var bitmapImage = await completionSource.Task;
+        if (!enqueued)
+        {
+            completionSource.SetException(new InvalidOperationException("Failed to enqueue the operation on the UI dispatcher"));
+        }
 
-        return bitmapImage;
+        return completionSource.Task;
     }
 }

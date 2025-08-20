@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -24,7 +24,7 @@ public sealed partial class LoadingPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         if (e.Parameter is ShellViewModel shellVM
-            && shellVM.LoadCommand != null)
+            && shellVM.LoadCommand is not null)
         {
             // This will load the built-in commands, then navigate to the main page.
             // Once the mainpage loads, we'll start loading extensions.

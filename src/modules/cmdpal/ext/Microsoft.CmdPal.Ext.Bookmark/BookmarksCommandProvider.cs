@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using ManagedCommon;
@@ -21,17 +20,23 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private readonly AddBookmarkPage _addNewCommand = new(null);
 
+    private readonly IBookmarkDataSource _dataSource;
+    private readonly BookmarkJsonParser _parser;
     private Bookmarks? _bookmarks;
 
-    public static IconInfo DeleteIcon { get; private set; } = new("\uE74D"); // Delete
-
-    public static IconInfo EditIcon { get; private set; } = new("\uE70F"); // Edit
-
     public BookmarksCommandProvider()
+        : this(new FileBookmarkDataSource(StateJsonPath()))
     {
+    }
+
+    internal BookmarksCommandProvider(IBookmarkDataSource dataSource)
+    {
+        _dataSource = dataSource;
+        _parser = new BookmarkJsonParser();
+
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
-        Icon = new IconInfo("\uE718"); // Pin
+        Icon = Icons.PinIcon;
 
         _addNewCommand.AddedCommand += AddNewCommand_AddedCommand;
     }
@@ -39,10 +44,7 @@ public partial class BookmarksCommandProvider : CommandProvider
     private void AddNewCommand_AddedCommand(object sender, BookmarkData args)
     {
         ExtensionHost.LogMessage($"Adding bookmark ({args.Name},{args.Bookmark})");
-        if (_bookmarks != null)
-        {
-            _bookmarks.Data.Add(args);
-        }
+        _bookmarks?.Data.Add(args);
 
         SaveAndUpdateCommands();
     }
@@ -57,10 +59,14 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private void SaveAndUpdateCommands()
     {
-        if (_bookmarks != null)
+        try
         {
-            var jsonPath = BookmarksCommandProvider.StateJsonPath();
-            Bookmarks.WriteToFile(jsonPath, _bookmarks);
+            var jsonData = _parser.SerializeBookmarks(_bookmarks);
+            _dataSource.SaveBookmarkData(jsonData);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to save bookmarks: {ex.Message}");
         }
 
         LoadCommands();
@@ -72,12 +78,12 @@ public partial class BookmarksCommandProvider : CommandProvider
         List<CommandItem> collected = [];
         collected.Add(new CommandItem(_addNewCommand));
 
-        if (_bookmarks == null)
+        if (_bookmarks is null)
         {
             LoadBookmarksFromFile();
         }
 
-        if (_bookmarks != null)
+        if (_bookmarks is not null)
         {
             collected.AddRange(_bookmarks.Data.Select(BookmarkToCommandItem));
         }
@@ -90,18 +96,15 @@ public partial class BookmarksCommandProvider : CommandProvider
     {
         try
         {
-            var jsonFile = StateJsonPath();
-            if (File.Exists(jsonFile))
-            {
-                _bookmarks = Bookmarks.ReadFromFile(jsonFile);
-            }
+            var jsonData = _dataSource.GetBookmarkData();
+            _bookmarks = _parser.ParseBookmarks(jsonData);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex.Message);
         }
 
-        if (_bookmarks == null)
+        if (_bookmarks is null)
         {
             _bookmarks = new();
         }
@@ -120,7 +123,7 @@ public partial class BookmarksCommandProvider : CommandProvider
         // Add commands for folder types
         if (command is UrlCommand urlCommand)
         {
-            if (urlCommand.Type == "folder")
+            if (!bookmark.IsWebUrl())
             {
                 contextMenu.Add(
                     new CommandContextItem(new DirectoryPage(urlCommand.Url)));
@@ -128,11 +131,12 @@ public partial class BookmarksCommandProvider : CommandProvider
                 contextMenu.Add(
                     new CommandContextItem(new OpenInTerminalCommand(urlCommand.Url)));
             }
-
-            listItem.Subtitle = urlCommand.Url;
         }
 
-        var edit = new AddBookmarkPage(bookmark) { Icon = EditIcon };
+        listItem.Title = bookmark.Name;
+        listItem.Subtitle = bookmark.Bookmark;
+
+        var edit = new AddBookmarkPage(bookmark) { Icon = Icons.EditIcon };
         edit.AddedCommand += Edit_AddedCommand;
         contextMenu.Add(new CommandContextItem(edit));
 
@@ -141,7 +145,7 @@ public partial class BookmarksCommandProvider : CommandProvider
             name: Resources.bookmarks_delete_name,
             action: () =>
             {
-                if (_bookmarks != null)
+                if (_bookmarks is not null)
                 {
                     ExtensionHost.LogMessage($"Deleting bookmark ({bookmark.Name},{bookmark.Bookmark})");
 
@@ -153,7 +157,7 @@ public partial class BookmarksCommandProvider : CommandProvider
             result: CommandResult.KeepOpen())
         {
             IsCritical = true,
-            Icon = DeleteIcon,
+            Icon = Icons.DeleteIcon,
         };
         contextMenu.Add(delete);
 

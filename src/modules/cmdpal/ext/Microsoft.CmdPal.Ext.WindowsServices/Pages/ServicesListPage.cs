@@ -14,7 +14,7 @@ internal sealed partial class ServicesListPage : DynamicListPage
 {
     public ServicesListPage()
     {
-        Icon = WindowsServicesCommandsProvider.ServicesIcon;
+        Icon = Icons.ServicesIcon;
         Name = "Windows Services";
     }
 

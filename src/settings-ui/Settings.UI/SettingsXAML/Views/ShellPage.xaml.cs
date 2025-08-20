@@ -31,32 +31,32 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void IPCMessageCallback(string msg);
 
         /// <summary>
-        /// Declaration for the opening main window callback function.
+        /// Declaration for opening main window callback function.
         /// </summary>
         public delegate void MainOpeningCallback(Type type);
 
         /// <summary>
-        /// Declaration for the updating the general settings callback function.
+        /// Declaration for updating the general settings callback function.
         /// </summary>
         public delegate bool UpdatingGeneralSettingsCallback(ModuleType moduleType, bool isEnabled);
 
         /// <summary>
-        /// Declaration for the opening oobe window callback function.
+        /// Declaration for opening oobe window callback function.
         /// </summary>
         public delegate void OobeOpeningCallback();
 
         /// <summary>
-        /// Declaration for the opening whats new window callback function.
+        /// Declaration for opening whats new window callback function.
         /// </summary>
         public delegate void WhatIsNewOpeningCallback();
 
         /// <summary>
-        /// Declaration for the opening flyout window callback function.
+        /// Declaration for opening flyout window callback function.
         /// </summary>
         public delegate void FlyoutOpeningCallback(POINT? point);
 
         /// <summary>
-        /// Declaration for the disabling hide of flyout window callback function.
+        /// Declaration for disabling hide of flyout window callback function.
         /// </summary>
         public delegate void DisablingFlyoutHidingCallback();
 
@@ -141,6 +141,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
             // shellFrame.Navigate(typeof(GeneralPage));
             IPCResponseHandleList.Add(ReceiveMessage);
+            Services.IPCResponseService.Instance.RegisterForIPC();
             SetTitleBar();
 
             if (_navViewParentLookup.Count > 0)

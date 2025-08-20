@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,10 +26,14 @@ public partial class ProviderSettingsViewModel(
 
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? "Built-in";
 
-    public string ExtensionSubtext => IsEnabled ? $"{ExtensionName}, {TopLevelCommands.Count} commands" : Resources.builtin_disabled_extension;
+    public string ExtensionSubtext => IsEnabled ?
+        HasFallbackCommands ?
+            $"{ExtensionName}, {TopLevelCommands.Count} commands, {FallbackCommands.Count} fallback commands" :
+            $"{ExtensionName}, {TopLevelCommands.Count} commands" :
+        Resources.builtin_disabled_extension;
 
     [MemberNotNullWhen(true, nameof(Extension))]
-    public bool IsFromExtension => _provider.Extension != null;
+    public bool IsFromExtension => _provider.Extension is not null;
 
     public IExtensionWrapper? Extension => _provider.Extension;
 
@@ -71,7 +76,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (_provider.Settings == null)
+            if (_provider.Settings is null)
             {
                 return false;
             }
@@ -95,7 +100,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (_provider.Settings == null)
+            if (_provider.Settings is null)
             {
                 return null;
             }
@@ -121,7 +126,7 @@ public partial class ProviderSettingsViewModel(
     {
         get
         {
-            if (field == null)
+            if (field is null)
             {
                 field = BuildTopLevelViewModels();
             }
@@ -139,11 +144,36 @@ public partial class ProviderSettingsViewModel(
         return [.. providersCommands];
     }
 
+    [field: AllowNull]
+    public List<TopLevelViewModel> FallbackCommands
+    {
+        get
+        {
+            if (field is null)
+            {
+                field = BuildFallbackViewModels();
+            }
+
+            return field;
+        }
+    }
+
+    public bool HasFallbackCommands => _provider.FallbackItems?.Length > 0;
+
+    private List<TopLevelViewModel> BuildFallbackViewModels()
+    {
+        var thisProvider = _provider;
+        var providersCommands = thisProvider.FallbackItems;
+
+        // Remember! This comes in on the UI thread!
+        return [.. providersCommands];
+    }
+
     private void Save() => SettingsModel.SaveSettings(_settings);
 
     private void InitializeSettingsPage()
     {
-        if (_provider.Settings == null)
+        if (_provider.Settings is null)
         {
             return;
         }

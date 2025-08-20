@@ -2,7 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -19,7 +20,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
     public override void InitializeProperties()
     {
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
@@ -46,7 +47,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
     protected void FetchProperty(string propertyName)
     {
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -65,7 +66,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
     {
         base.UnsafeCleanup();
         var model = Model.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.PropChanged -= Model_PropChanged;
         }

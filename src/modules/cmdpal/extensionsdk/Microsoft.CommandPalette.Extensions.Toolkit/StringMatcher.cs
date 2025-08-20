@@ -93,7 +93,7 @@ public partial class StringMatcher
 
         query = query.Trim();
 
-        // if (_alphabet != null)
+        // if (_alphabet is not null)
         // {
         //    query = _alphabet.Translate(query);
         //    stringToCompare = _alphabet.Translate(stringToCompare);
@@ -269,7 +269,7 @@ public partial class StringMatcher
         // while the score is lower if they are more spread out
 
         // The length of the match is assigned a larger weight factor.
-        // I.e. the length is more important than where in the string a match is found.
+        // I.e. the length is more important than the location where a match is found.
         const int matchLenWeightFactor = 2;
 
         var score = 100 * (query.Length + 1) * matchLenWeightFactor / ((1 + firstIndex) + (matchLenWeightFactor * (matchLen + 1)));

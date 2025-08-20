@@ -81,6 +81,12 @@ parameters:
       - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
       - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
       - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
+  - name: timeoutInMinutes
+    type: number
+    default: 240
+  - name: cancelTimeoutInMinutes
+    type: number
+    default: 1
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -123,8 +129,8 @@ jobs:
     ${{ else }}:
       RestoreAdditionalProjectSourcesArg: ''
   displayName: Build
-  timeoutInMinutes: 240
-  cancelTimeoutInMinutes: 1
+  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+  cancelTimeoutInMinutes: ${{ parameters.cancelTimeoutInMinutes }}
   templateContext: # Required when this template is hosted in 1ES PT
     outputs:
     - output: pipelineArtifact
@@ -472,7 +478,7 @@ jobs:
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
-  # - All .pdbs from any static libs .libs (which were only used during linking)
+  # - All .pdb files from any static libs .libs (which were only used during linking)
   - pwsh: |-
       $binDir = '$(Build.SourcesDirectory)'
       $ImportLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.exp' | ForEach-Object { $_.FullName -Replace "exp$","lib" }

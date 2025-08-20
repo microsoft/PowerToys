@@ -24,8 +24,8 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
     {
         clipboardHistory = [];
         _defaultIconPath = string.Empty;
-        Icon = new("\uF0E3"); // ClipboardList icon
-        Name = "Clipboard History";
+        Icon = Icons.ClipboardListIcon;
+        Name = Properties.Resources.clipboard_history_page_name;
         Id = "com.microsoft.cmdpal.clipboardHistory";
         ShowDetails = true;
 
@@ -54,7 +54,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         try
         {
             var allowClipboardHistory = Registry.GetValue(registryKey, "AllowClipboardHistory", null);
-            return allowClipboardHistory != null ? (int)allowClipboardHistory == 0 : false;
+            return allowClipboardHistory is not null ? (int)allowClipboardHistory == 0 : false;
         }
         catch (Exception)
         {
@@ -100,7 +100,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
                 {
                     var imageReceived = await item.Item.Content.GetBitmapAsync();
 
-                    if (imageReceived != null)
+                    if (imageReceived is not null)
                     {
                         item.ImageData = imageReceived;
                     }
@@ -113,7 +113,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         {
             // TODO GH #108 We need to figure out some logging
             // Logger.LogError("Loading clipboard history failed", ex);
-            ExtensionHost.ShowStatus(new StatusMessage() { Message = "Loading clipboard history failed", State = MessageState.Error }, StatusContext.Page);
+            ExtensionHost.ShowStatus(new StatusMessage() { Message = Properties.Resources.clipboard_failed_to_load, State = MessageState.Error }, StatusContext.Page);
             ExtensionHost.LogMessage(ex.ToString());
         }
     }
@@ -141,7 +141,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
         for (var i = 0; i < clipboardHistory.Count; i++)
         {
             var item = clipboardHistory[i];
-            if (item != null)
+            if (item is not null)
             {
                 listItems.Add(item.ToListItem());
             }
