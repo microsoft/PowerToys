@@ -158,9 +158,9 @@ public sealed partial class ListPage : Page,
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
 
-            //// Automation notification for screen readers
+            // Automation notification for screen readers
             var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemsList);
-            if (listViewPeer is not null && li != null)
+            if (listViewPeer is not null && li is not null)
             {
                 var notificationText = li.Title;
 

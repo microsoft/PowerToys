@@ -63,7 +63,7 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             UIHelper.AnnounceActionForAccessibility(
             ue: (UIElement)sender,
-            (sender as NavigationView)?.IsPaneOpen == true ? "Navigation pane opened" : "Navigation pane closed",
+            (sender as NavigationView)?.IsPaneOpen == true ? RS_.GetString("NavigationPaneOpened") : RS_.GetString("NavigationPaneClosed"),
             "NavigationViewPaneIsOpenChangeNotificationId");
         }
     }
