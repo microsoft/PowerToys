@@ -11,7 +11,6 @@
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
-HANDLE g_ConfigChangedEvent = nullptr;
 
 // Forward declarations of service functions (we’ll define them later)
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
@@ -105,8 +104,6 @@ VOID WINAPI ServiceMain(DWORD, LPTSTR*)
     sa.bInheritHandle = FALSE;
     sa.lpSecurityDescriptor = nullptr;
 
-    g_ConfigChangedEvent = CreateEventW(&sa, TRUE, FALSE, L"Global\\PT_DarkMode_ConfigChanged");
-
     g_ServiceStatus.dwCurrentState = SERVICE_RUNNING;
     SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 
@@ -154,8 +151,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     for (;;)
     {
-        HANDLE waits[3] = { g_ServiceStopEvent, hParent, g_ConfigChangedEvent };
-        DWORD count = hParent ? 3 : 2;
+        HANDLE waits[3] = { g_ServiceStopEvent, hParent };
+        DWORD count = hParent ? 2 : 1;
 
         SYSTEMTIME st;
         GetLocalTime(&st);
@@ -228,19 +225,10 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             break;
         if (hParent && wait == WAIT_OBJECT_0 + 1) // parent exited
             break;
-        if (wait == WAIT_OBJECT_0 + (hParent ? 2 : 1)) // config changed
-        {
-            // Clear and loop immediately
-            ResetEvent(g_ConfigChangedEvent);
-            // Loop continues, which re-runs LoadSettings() and applies immediately
-            continue;
-        }
     }
 
     if (hParent)
         CloseHandle(hParent);
-    if (g_ConfigChangedEvent)
-        CloseHandle(g_ConfigChangedEvent);
 
     return 0;
 }
