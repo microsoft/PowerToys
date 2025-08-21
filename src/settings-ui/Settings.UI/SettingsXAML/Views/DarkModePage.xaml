@@ -14,7 +14,6 @@
     d:DataContext="{d:DesignInstance Type=ViewModel:DarkModeViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-
   <Page.Resources>
     <tkconverters:BoolToObjectConverter
             x:Key="DarkModeLocationToSelectedIndexConverter"
@@ -117,7 +116,20 @@
               </tkcontrols:SettingsCard>
             </tkcontrols:SettingsExpander.Items>
           </tkcontrols:SettingsExpander>
-
+          <!-- Force mode buttons -->
+          <tkcontrols:SettingsCard
+        Header="Force mode now"
+        HeaderIcon="{ui:FontIcon Glyph=&#xE706;}"
+        Description="Apply light or dark mode immediately">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <Button
+        Content="Force Light"
+        Command="{x:Bind ViewModel.ForceLightCommand}" />
+              <Button
+        Content="Force Dark"
+        Command="{x:Bind ViewModel.ForceDarkCommand}" />
+            </StackPanel>
+          </tkcontrols:SettingsCard>
         </controls:SettingsGroup>
       </StackPanel>
     </controls:SettingsPageControl.ModuleContent>

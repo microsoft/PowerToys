@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var darkSettings = _moduleSettingsRepository.SettingsConfig;
 
             // Pass them into the ViewModel
-            ViewModel = new DarkModeViewModel(darkSettings);
+            ViewModel = new DarkModeViewModel(darkSettings, ShellPage.SendDefaultIPCMessage);
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);

@@ -7,6 +7,7 @@
 #include <locale>
 #include <codecvt>
 #include <common/utils/logger_helper.h>
+#include "ThemeHelper.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -53,7 +54,6 @@ struct ModuleSettings
     int m_darkTime = 1200;
     std::wstring m_latitude = L"0.0";
     std::wstring m_longitude = L"0.0";
-
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
@@ -132,23 +132,23 @@ public:
 
         // Boolean toggles
         settings.add_bool_toggle(
-            L"change_system",
+            L"changeSystem",
             L"Change System Theme",
             g_settings.m_changeSystem);
 
         settings.add_bool_toggle(
-            L"change_apps",
+            L"changeApps",
             L"Change Apps Theme",
             g_settings.m_changeApps);
 
         settings.add_bool_toggle(
-            L"use_location",
+            L"useLocation",
             L"Use your location to switch themes based on sunrise and sunset.",
             g_settings.m_useLocation);
 
         // Integer spinners (for time in minutes since midnight)
         settings.add_int_spinner(
-            L"light_time",
+            L"lightTime",
             L"Time to switch to light theme (minutes after midnight).",
             g_settings.m_lightTime,
             0,
@@ -156,7 +156,7 @@ public:
             1);
 
         settings.add_int_spinner(
-            L"dark_time",
+            L"darkTime",
             L"Time to switch to dark theme (minutes after midnight).",
             g_settings.m_darkTime,
             0,
@@ -174,28 +174,47 @@ public:
             L"Your longitude in decimal degrees (e.g. -75.16).",
             g_settings.m_longitude);
 
+        // One-shot actions (buttons)
+        settings.add_custom_action(
+            L"forceLight",
+            L"Switch immediately to light theme",
+            L"Force Light",
+            L"{}");
+
+        settings.add_custom_action(
+            L"forceDark",
+            L"Switch immediately to dark theme",
+            L"Force Dark",
+            L"{}");
+
         // Serialize to buffer for the PowerToys runner
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
     // Signal from the Settings editor to call a custom action.
     // This can be used to spawn more complex editors.
-    virtual void call_custom_action(const wchar_t* action) override
+    void call_custom_action(const wchar_t* action) override
     {
-        static UINT custom_action_num_calls = 0;
         try
         {
-            // Parse the action values, including name.
-            PowerToysSettings::CustomActionObject action_object =
-                PowerToysSettings::CustomActionObject::from_json_string(action);
+            auto action_object = PowerToysSettings::CustomActionObject::from_json_string(action);
 
-            //if (action_object.get_name() == L"custom_action_id") {
-            //  // Execute your custom action
-            //}
+            if (action_object.get_name() == L"forceLight")
+            {
+                Logger::info(L"[DarkMode] Custom action triggered: Force Light");
+                SetSystemTheme(true);
+                SetAppsTheme(true);
+            }
+            else if (action_object.get_name() == L"forceDark")
+            {
+                Logger::info(L"[DarkMode] Custom action triggered: Force Dark");
+                SetSystemTheme(false);
+                SetAppsTheme(false);
+            }
         }
-        catch (std::exception&)
+        catch (...)
         {
-            // Improper JSON.
+            Logger::error(L"[DarkMode] Invalid custom action JSON");
         }
     }
 
@@ -206,27 +225,27 @@ public:
         {
             auto values = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
-            if (auto v = values.get_bool_value(L"change_system"))
+            if (auto v = values.get_bool_value(L"changeSystem"))
             {
                 g_settings.m_changeSystem = *v;
             }
 
-            if (auto v = values.get_bool_value(L"change_apps"))
+            if (auto v = values.get_bool_value(L"changeApps"))
             {
                 g_settings.m_changeApps = *v;
             }
 
-            if (auto v = values.get_bool_value(L"use_location"))
+            if (auto v = values.get_bool_value(L"useLocation"))
             {
                 g_settings.m_useLocation = *v;
             }
 
-            if (auto v = values.get_int_value(L"light_time"))
+            if (auto v = values.get_int_value(L"lightTime"))
             {
                 g_settings.m_lightTime = *v;
             }
 
-            if (auto v = values.get_int_value(L"dark_time"))
+            if (auto v = values.get_int_value(L"darkTime"))
             {
                 g_settings.m_darkTime = *v;
             }
@@ -300,6 +319,7 @@ public:
 
         Logger::info(L"DarkMode process launched successfully (PID: {}).", pi.dwProcessId);
         m_process = pi.hProcess;
+        CloseHandle(pi.hThread);
     }
 
     // Disable the powertoy
@@ -398,42 +418,35 @@ void DarkModeInterface::init_settings()
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
 
-        if (auto v = settings.get_bool_value(L"change_system"))
+        if (auto v = settings.get_bool_value(L"changeSystem"))
             g_settings.m_changeSystem = *v;
-
-        if (auto v = settings.get_bool_value(L"change_apps"))
+        if (auto v = settings.get_bool_value(L"changeApps"))
             g_settings.m_changeApps = *v;
-
-        if (auto v = settings.get_bool_value(L"use_location"))
+        if (auto v = settings.get_bool_value(L"useLocation"))
             g_settings.m_useLocation = *v;
-
-        if (auto v = settings.get_int_value(L"light_time"))
+        if (auto v = settings.get_int_value(L"lightTime"))
             g_settings.m_lightTime = *v;
-
-        if (auto v = settings.get_int_value(L"dark_time"))
+        if (auto v = settings.get_int_value(L"darkTime"))
             g_settings.m_darkTime = *v;
-
-        // Flexible lat/long
         if (auto v = settings.get_string_value(L"latitude"))
             g_settings.m_latitude = *v;
-        else if (auto vi = settings.get_int_value(L"latitude"))
-            g_settings.m_latitude = std::to_wstring(*vi);
-        else
-            g_settings.m_latitude = L"0.0";
-
         if (auto v = settings.get_string_value(L"longitude"))
             g_settings.m_longitude = *v;
-        else if (auto vi = settings.get_int_value(L"longitude"))
-            g_settings.m_longitude = std::to_wstring(*vi);
-        else
-            g_settings.m_longitude = L"0.0";
 
         Logger::info(L"[DarkMode] init_settings: loaded successfully");
+    }
+    catch (const winrt::hresult_error& e)
+    {
+        Logger::error(L"[DarkMode] init_settings: hresult_error 0x{:08X} - {}", e.code(), e.message().c_str());
     }
     catch (const std::exception& e)
     {
         std::wstring whatStr = utf8_to_wstring(e.what());
-        Logger::error(L"[DarkMode] init_settings: exception while loading settings: {}", whatStr);
+        Logger::error(L"[DarkMode] init_settings: std::exception - {}", whatStr);
+    }
+    catch (...)
+    {
+        Logger::error(L"[DarkMode] init_settings: unknown exception while loading settings");
     }
 }
 

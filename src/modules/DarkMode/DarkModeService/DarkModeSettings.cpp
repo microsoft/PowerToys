@@ -139,28 +139,6 @@ void DarkModeSettings::LoadSettings()
                 NotifyObservers(SettingId::ChangeApps);
             }
         }
-
-        // ForceLight
-        if (const auto jsonVal = values.get_bool_value(L"forceLight"))
-        {
-            auto val = *jsonVal;
-            if (m_settings.forceLight != val)
-            {
-                m_settings.forceLight = val;
-                NotifyObservers(SettingId::ForceLight);
-            }
-        }
-
-        // ForceDark
-        if (const auto jsonVal = values.get_bool_value(L"forceDark"))
-        {
-            auto val = *jsonVal;
-            if (m_settings.forceDark != val)
-            {
-                m_settings.forceDark = val;
-                NotifyObservers(SettingId::ForceDark);
-            }
-        }
     }
     catch (...)
     {

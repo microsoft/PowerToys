@@ -4,7 +4,9 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Settings.UI.Library;
@@ -13,9 +15,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class DarkModeViewModel : Observable
     {
-        public DarkModeViewModel(DarkModeSettings initialSettings = null)
+        private Func<string, int> SendConfigMSG { get; }
+
+        public DarkModeViewModel(DarkModeSettings initialSettings = null, Func<string, int> ipcMSGCallBackFunc = null)
         {
             _moduleSettings = initialSettings ?? new DarkModeSettings();
+            SendConfigMSG = ipcMSGCallBackFunc;
+
+            ForceLightCommand = new RelayCommand(ForceLightNow);
+            ForceDarkCommand = new RelayCommand(ForceDarkNow);
+        }
+
+        private void ForceLightNow()
+        {
+            Logger.LogInfo("Sending custom action: forceLight");
+            SendCustomAction("forceLight");
+        }
+
+        private void ForceDarkNow()
+        {
+            Logger.LogInfo("Sending custom action: forceDark");
+            SendCustomAction("forceDark");
+        }
+
+        private void SendCustomAction(string actionName)
+        {
+            SendConfigMSG("{\"action\":{\"DarkMode\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
         public DarkModeSettings ModuleSettings
@@ -245,5 +270,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledGPOConfiguration;
         private DarkModeSettings _moduleSettings;
         private bool _isEnabled;
+
+        public ICommand ForceLightCommand { get; }
+
+        public ICommand ForceDarkCommand { get; }
     }
 }

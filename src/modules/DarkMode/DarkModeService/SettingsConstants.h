@@ -8,7 +8,5 @@ enum class SettingId
     LightTime,
     DarkTime,
     ChangeSystem,
-    ChangeApps,
-    ForceLight,
-    ForceDark
+    ChangeApps
 };

@@ -23,10 +23,6 @@ struct DarkModeConfig
     int darkTime = 20 * 60; // 20:00 default
     bool changeSystem = false;
     bool changeApps = false;
-
-    // Overrides
-    bool forceLight = false;
-    bool forceDark = false;
 };
 
 class DarkModeSettings
