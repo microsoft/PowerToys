@@ -63,6 +63,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
     {
+        // Topmost is conditionally set here to address hybrid graphics issues on laptops with Optimus technology.
         this.Topmost = isActive;
 
         CharacterNameVisibility = _powerAccent.ShowUnicodeDescription ? Visibility.Visible : Visibility.Collapsed;
