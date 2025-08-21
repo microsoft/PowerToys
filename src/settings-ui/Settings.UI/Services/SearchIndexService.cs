@@ -19,42 +19,10 @@ using Common.Search.FuzzSearch;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.Windows.ApplicationModel.Resources;
+using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.Services
 {
-    public enum EntryType
-    {
-        SettingsPage,
-        SettingsCard,
-        SettingsExpander,
-    }
-
-#pragma warning disable SA1649 // File name should match first type name
-    public readonly struct SettingEntry
-#pragma warning restore SA1649 // File name should match first type name
-    {
-        public readonly EntryType Type;
-        public readonly string Header;
-        public readonly string PageTypeName;
-        public readonly string ElementName;
-        public readonly string ElementUid;
-        public readonly string ParentElementName;
-        public readonly string Description;
-        public readonly string Icon;
-
-        public SettingEntry(EntryType type, string header, string pageTypeName, string elementName, string elementUid, string parentElementName = null, string description = null, string icon = null)
-        {
-            Type = type;
-            Header = header;
-            PageTypeName = pageTypeName;
-            ElementName = elementName;
-            ElementUid = elementUid;
-            ParentElementName = parentElementName;
-            Description = description;
-            Icon = icon;
-        }
-    }
-
     public static class SearchIndexService
     {
         private static readonly object _lockObject = new();
@@ -132,7 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            List<SearchableElementMetadata> metadataList = null;
+            SettingEntry[] metadataList;
 
             Debug.WriteLine($"[SearchIndexService] Attempting to load prebuilt index from: {PrebuiltIndexResourceName}");
 
@@ -153,7 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     return;
                 }
 
-                metadataList = JsonSerializer.Deserialize<List<SearchableElementMetadata>>(json, _serializerOptions);
+                metadataList = JsonSerializer.Deserialize<SettingEntry[]>(json, _serializerOptions);
             }
             catch (Exception ex)
             {
@@ -161,44 +129,34 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 return;
             }
 
-            if (metadataList == null || metadataList.Count == 0)
+            if (metadataList == null || metadataList.Length == 0)
             {
                 Debug.WriteLine("[SearchIndexService] Prebuilt index is empty or deserialization failed.");
                 return;
             }
 
-            foreach (var metadata in metadataList)
+            foreach (ref var metadata in metadataList.AsSpan())
             {
-                string header, description;
-
                 if (metadata.Type == EntryType.SettingsPage)
                 {
-                    (header, description) = GetLocalizedModuleTitleAndDescription(resourceLoader, metadata.ElementUid);
+                    (metadata.Header, metadata.Description) = GetLocalizedModuleTitleAndDescription(resourceLoader, metadata.ElementUid);
                 }
                 else
                 {
-                    (header, description) = GetLocalizedSettingHeaderAndDescription(resourceLoader, metadata.ElementUid);
+                    (metadata.Header, metadata.Description) = GetLocalizedSettingHeaderAndDescription(resourceLoader, metadata.ElementUid);
                 }
 
-                if (string.IsNullOrEmpty(header))
+                if (string.IsNullOrEmpty(metadata.Header))
                 {
                     continue;
                 }
 
-                builder.Add(new SettingEntry(
-                    metadata.Type,
-                    header, // header
-                    metadata.PageName, // pageTypeName
-                    metadata.ElementName,
-                    metadata.ElementUid,
-                    metadata.ParentElementName,
-                    description,
-                    metadata.Icon));
+                builder.Add(metadata);
 
                 // Cache the page name mapping for SettingsPage entries
-                if (metadata.Type == EntryType.SettingsPage && !string.IsNullOrEmpty(header))
+                if (metadata.Type == EntryType.SettingsPage && !string.IsNullOrEmpty(metadata.Header))
                 {
-                    _pageNameCache[metadata.PageName] = header;
+                    _pageNameCache[metadata.PageTypeName] = metadata.Header;
                 }
             }
 
@@ -376,22 +334,5 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
             return _pageNameCache.TryGetValue(pageTypeName, out string cachedName) ? cachedName : string.Empty;
         }
-    }
-
-#pragma warning disable SA1402 // File may only contain a single type
-    public class SearchableElementMetadata
-#pragma warning restore SA1402 // File may only contain a single type
-    {
-        public string PageName { get; set; }
-
-        public EntryType Type { get; set; }
-
-        public string ParentElementName { get; set; }
-
-        public string ElementName { get; set; }
-
-        public string ElementUid { get; set; }
-
-        public string Icon { get; set; }
     }
 }

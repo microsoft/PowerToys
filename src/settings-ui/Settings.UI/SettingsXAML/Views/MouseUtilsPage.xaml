@@ -169,7 +169,7 @@
                         Severity="Informational"
                         Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <InfoBar.ActionButton>
-                            <HyperlinkButton x:Uid="OpenAnimationsSettings" Click="OpenAnimationsSettings_Click" />
+                            <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>
                     </InfoBar>
                     <tkcontrols:SettingsExpander
