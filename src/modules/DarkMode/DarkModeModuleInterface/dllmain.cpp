@@ -33,23 +33,38 @@ const static wchar_t* MODULE_NAME = L"DarkMode";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"This is a module that allows you to control light/dark theming via set times, sun rise, or directly invoking the change.";
 
+enum class ScheduleMode
+{
+    FixedHours,
+    SunsetToSunrise
+    // add more later
+};
+
+inline std::wstring ToString(ScheduleMode mode)
+{
+    switch (mode)
+    {
+    case ScheduleMode::SunsetToSunrise:
+        return L"SunsetToSunrise";
+    case ScheduleMode::FixedHours:
+    default:
+        return L"FixedHours";
+    }
+}
+
+inline ScheduleMode FromString(const std::wstring& str)
+{
+    if (str == L"SunsetToSunrise")
+        return ScheduleMode::SunsetToSunrise;
+    return ScheduleMode::FixedHours;
+}
+
 // These are the properties shown in the Settings page.
 struct ModuleSettings
 {
-    // Add the PowerToy module properties with default values.
-    // Currently available types:
-    // - int
-    // - bool
-    // - string
-
-    //bool bool_prop = true;
-    //int int_prop = 10;
-    //std::wstring string_prop = L"The quick brown fox jumps over the lazy dog";
-    //std::wstring color_prop = L"#1212FF";
-
     bool m_changeSystem = true;
     bool m_changeApps = true;
-    bool m_useLocation = false;
+    ScheduleMode m_scheduleMode = ScheduleMode::FixedHours;
     int m_lightTime = 480;
     int m_darkTime = 1200;
     std::wstring m_latitude = L"0.0";
@@ -137,10 +152,12 @@ public:
             L"Change Apps Theme",
             g_settings.m_changeApps);
 
-        settings.add_bool_toggle(
-            L"useLocation",
-            L"Use your location to switch themes based on sunrise and sunset.",
-            g_settings.m_useLocation);
+        settings.add_choice_group(
+            L"scheduleMode",
+            L"Theme schedule mode",
+            ToString(g_settings.m_scheduleMode),
+            { { L"FixedHours", L"Set hours manually" },
+              { L"SunsetToSunrise", L"Use sunrise/sunset times" } });
 
         // Integer spinners (for time in minutes since midnight)
         settings.add_int_spinner(
@@ -231,9 +248,9 @@ public:
                 g_settings.m_changeApps = *v;
             }
 
-            if (auto v = values.get_bool_value(L"useLocation"))
+            if (auto v = values.get_string_value(L"scheduleMode"))
             {
-                g_settings.m_useLocation = *v;
+                g_settings.m_scheduleMode = FromString(*v);
             }
 
             if (auto v = values.get_int_value(L"lightTime"))
@@ -418,8 +435,8 @@ void DarkModeInterface::init_settings()
             g_settings.m_changeSystem = *v;
         if (auto v = settings.get_bool_value(L"changeApps"))
             g_settings.m_changeApps = *v;
-        if (auto v = settings.get_bool_value(L"useLocation"))
-            g_settings.m_useLocation = *v;
+        if (auto v = settings.get_string_value(L"scheduleMode"))
+            g_settings.m_scheduleMode = FromString(*v);
         if (auto v = settings.get_int_value(L"lightTime"))
             g_settings.m_lightTime = *v;
         if (auto v = settings.get_int_value(L"darkTime"))

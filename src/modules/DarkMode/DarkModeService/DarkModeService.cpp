@@ -192,7 +192,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
         // TODO: Optimize: sunrise/sunset can be calculated once per day (at midnight)
         // instead of every loop, since they only change daily.
-        if (settings.useLocation)
+        if (settings.scheduleMode == ScheduleMode::SunsetToSunrise)
         {
             SunTimes sun = CalculateSunriseSunset(
                 std::stod(settings.latitude),
@@ -228,7 +228,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
         int lightMinutes = 0, darkMinutes = 0;
 
-        if (settings.useLocation)
+        if (settings.scheduleMode == ScheduleMode::SunsetToSunrise)
         {
             SunTimes sun = CalculateSunriseSunset(
                 std::stod(settings.latitude),

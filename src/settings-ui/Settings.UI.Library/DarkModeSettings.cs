@@ -34,7 +34,7 @@ namespace Settings.UI.Library
                 {
                     ChangeSystem = new BoolProperty(Properties.ChangeSystem.Value),
                     ChangeApps = new BoolProperty(Properties.ChangeApps.Value),
-                    UseLocation = new BoolProperty(Properties.UseLocation.Value),
+                    ScheduleMode = new StringProperty(Properties.ScheduleMode.Value),
                     LightTime = new IntProperty((int)Properties.LightTime.Value),
                     DarkTime = new IntProperty((int)Properties.DarkTime.Value),
                     Latitude = new StringProperty(Properties.Latitude.Value),

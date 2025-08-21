@@ -63,14 +63,15 @@ void DarkModeSettings::LoadSettings()
         PowerToysSettings::PowerToyValues values =
             PowerToysSettings::PowerToyValues::load_from_settings_file(L"DarkMode");
 
-        // UseLocation
-        if (const auto jsonVal = values.get_bool_value(L"useLocation"))
+
+        if (const auto jsonVal = values.get_string_value(L"scheduleMode"))
         {
             auto val = *jsonVal;
-            if (m_settings.useLocation != val)
+            auto newMode = FromString(val);
+            if (m_settings.scheduleMode != newMode)
             {
-                m_settings.useLocation = val;
-                NotifyObservers(SettingId::UseLocation);
+                m_settings.scheduleMode = newMode;
+                NotifyObservers(SettingId::ScheduleMode);
             }
         }
 

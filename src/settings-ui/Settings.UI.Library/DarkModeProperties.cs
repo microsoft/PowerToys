@@ -6,26 +6,26 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    // Needs to stay in sync with src\modules\darkmode\DarkMode\Settings.h
+    // Needs to stay in sync with src\modules\darkmode\DarkMode\DarkModeSettings.h
     public class DarkModeProperties
     {
         public const bool DefaultChangeSystem = false;
         public const bool DefaultChangeApps = false;
-        public const bool DefaultUseLocation = false;
-        public const int DefaultLightTime = 795;
-        public const int DefaultDarkTime = 800;
+        public const int DefaultLightTime = 480;   // 08:00
+        public const int DefaultDarkTime = 1200;   // 20:00
         public const string DefaultLatitude = "0.0";
         public const string DefaultLongitude = "0.0";
+        public const string DefaultScheduleMode = "FixedHours";
 
         public DarkModeProperties()
         {
             ChangeSystem = new BoolProperty(DefaultChangeSystem);
             ChangeApps = new BoolProperty(DefaultChangeApps);
-            UseLocation = new BoolProperty(DefaultUseLocation);
             LightTime = new IntProperty(DefaultLightTime);
             DarkTime = new IntProperty(DefaultDarkTime);
             Latitude = new StringProperty(DefaultLatitude);
             Longitude = new StringProperty(DefaultLongitude);
+            ScheduleMode = new StringProperty(DefaultScheduleMode);
         }
 
         [JsonPropertyName("changeSystem")]
@@ -33,9 +33,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("changeApps")]
         public BoolProperty ChangeApps { get; set; }
-
-        [JsonPropertyName("useLocation")]
-        public BoolProperty UseLocation { get; set; }
 
         [JsonPropertyName("lightTime")]
         public IntProperty LightTime { get; set; }
@@ -48,5 +45,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("longitude")]
         public StringProperty Longitude { get; set; }
+
+        [JsonPropertyName("scheduleMode")]
+        public StringProperty ScheduleMode { get; set; }
     }
 }

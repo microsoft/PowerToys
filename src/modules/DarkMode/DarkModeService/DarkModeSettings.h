@@ -12,15 +12,45 @@
 
 class SettingsObserver;
 
+enum class ScheduleMode
+{
+    FixedHours,
+    SunsetToSunrise
+    // Add more in the future
+};
+
+inline std::wstring ToString(ScheduleMode mode)
+{
+    switch (mode)
+    {
+    case ScheduleMode::FixedHours:
+        return L"FixedHours";
+    case ScheduleMode::SunsetToSunrise:
+        return L"SunsetToSunrise";
+    default:
+        return L"FixedHours";
+    }
+}
+
+inline ScheduleMode FromString(const std::wstring& str)
+{
+    if (str == L"SunsetToSunrise")
+        return ScheduleMode::SunsetToSunrise;
+    else
+        return ScheduleMode::FixedHours;
+}
+
 struct DarkModeConfig
 {
-    bool useLocation = false;
+    ScheduleMode scheduleMode = ScheduleMode::FixedHours;
+
     std::wstring latitude = L"0.0";
     std::wstring longitude = L"0.0";
 
     // Stored as minutes since midnight
     int lightTime = 8 * 60; // 08:00 default
     int darkTime = 20 * 60; // 20:00 default
+
     bool changeSystem = false;
     bool changeApps = false;
 };

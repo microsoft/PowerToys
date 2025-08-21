@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using ManagedCommon;
@@ -24,6 +25,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             ForceLightCommand = new RelayCommand(ForceLightNow);
             ForceDarkCommand = new RelayCommand(ForceDarkNow);
+
+            // populate the list of modes for dropdown binding
+            AvailableScheduleModes = new ObservableCollection<string>
+            {
+                "FixedHours",
+                "SunsetToSunrise",
+            };
         }
 
         private void ForceLightNow()
@@ -118,21 +126,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsUseLocationEnabled => ModuleSettings.Properties.UseLocation.Value && IsEnabled;
-
-        public bool UseLocation
+        public string ScheduleMode
         {
-            get => ModuleSettings.Properties.UseLocation.Value;
+            get => ModuleSettings.Properties.ScheduleMode.Value;
             set
             {
-                if (ModuleSettings.Properties.UseLocation.Value != value)
+                if (ModuleSettings.Properties.ScheduleMode.Value != value)
                 {
-                    ModuleSettings.Properties.UseLocation.Value = value;
-                    OnPropertyChanged(nameof(UseLocation));
-                    OnPropertyChanged(nameof(IsUseLocationEnabled));
+                    ModuleSettings.Properties.ScheduleMode.Value = value;
+                    OnPropertyChanged(nameof(ScheduleMode));
                 }
             }
         }
+
+        // available values for the dropdown
+        public ObservableCollection<string> AvailableScheduleModes { get; }
 
         public bool ChangeSystem
         {
@@ -251,7 +259,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void RefreshEnabledState()
         {
             OnPropertyChanged(nameof(IsEnabled));
-            OnPropertyChanged(nameof(IsUseLocationEnabled));
         }
 
         public void RefreshModuleSettings()
@@ -262,8 +269,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(DarkTime));
             OnPropertyChanged(nameof(Latitude));
             OnPropertyChanged(nameof(Longitude));
-            OnPropertyChanged(nameof(UseLocation));
-            OnPropertyChanged(nameof(IsUseLocationEnabled));
+            OnPropertyChanged(nameof(ScheduleMode));
         }
 
         private bool _enabledStateIsGPOConfigured;

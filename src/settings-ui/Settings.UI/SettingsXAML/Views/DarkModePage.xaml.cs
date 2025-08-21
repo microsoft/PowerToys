@@ -3,28 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using PowerToys.GPOWrapper;
 using Settings.UI.Library;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.Devices.Geolocation;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -74,12 +66,85 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _fileSystemWatcher.Changed += Settings_Changed;
             _fileSystemWatcher.EnableRaisingEvents = true;
 
-            InitializeComponent();
+            this.InitializeComponent();
+            this.Loaded += DarkModePage_Loaded;
         }
 
-        private void GetLocation_Click(object sender, RoutedEventArgs e)
+        private void DarkModePage_Loaded(object sender, RoutedEventArgs e)
         {
-            return;
+            try
+            {
+                if (double.TryParse(ViewModel.Latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out var latitude) &&
+                    double.TryParse(ViewModel.Longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out var longitude))
+                {
+                    if (latitude != 0 && longitude != 0)
+                    {
+                        var today = DateTime.Now;
+                        var result = SunCalc.CalculateSunriseSunset(latitude, longitude, today.Year, today.Month, today.Day);
+
+                        SunTimes.Text = $"Sunrise: {result.SunriseHour:D2}:{result.SunriseMinute:D2} " +
+                                        $"Sunset: {result.SunsetHour:D2}:{result.SunsetMinute:D2}";
+                        return;
+                    }
+                }
+
+                // fallback text
+                SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
+            }
+            catch
+            {
+                SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
+            }
+        }
+
+        private async void GetLocation_Click(object sender, RoutedEventArgs e)
+        {
+            SyncButton.IsEnabled = false;
+            SyncLoader.IsActive = true;
+            SyncLoader.Visibility = Visibility.Visible;
+            SunTimes.Text = "Loading...";
+
+            try
+            {
+                // Request access
+                var accessStatus = await Geolocator.RequestAccessAsync();
+                if (accessStatus != GeolocationAccessStatus.Allowed)
+                {
+                    // User denied location or it's not available
+                    return;
+                }
+
+                var geolocator = new Geolocator { DesiredAccuracy = PositionAccuracy.Default };
+
+                // Get the position
+                Geoposition pos = await geolocator.GetGeopositionAsync();
+
+                double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
+                double longitude = Math.Round(pos.Coordinate.Point.Position.Longitude);
+
+                ViewModel.Latitude = latitude.ToString("F6", CultureInfo.InvariantCulture);
+                ViewModel.Longitude = longitude.ToString("F6", CultureInfo.InvariantCulture);
+
+                SunTimes result = SunCalc.CalculateSunriseSunset(
+                    latitude,
+                    longitude,
+                    DateTime.Now.Year,
+                    DateTime.Now.Month,
+                    DateTime.Now.Day);
+
+                SunTimes.Text = "Sunrise: " + result.SunriseHour + ":" + result.SunriseMinute + " " +
+                                "Sunset: " + result.SunsetHour + ":" + result.SunsetMinute;
+
+                SyncButton.IsEnabled = true;
+                SyncLoader.IsActive = false;
+                SyncLoader.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                SyncButton.IsEnabled = true;
+                SyncLoader.IsActive = false;
+                System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

@@ -19,6 +19,7 @@
             x:Key="DarkModeLocationToSelectedIndexConverter"
             FalseValue="0"
             TrueValue="1" />
+    <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter"/>
   </Page.Resources>
 
   <controls:SettingsPageControl
@@ -47,51 +48,66 @@
                         Header="Schedule dark mode"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE823;}"
                         IsExpanded="True">
-            <ComboBox SelectedIndex="{x:Bind ViewModel.IsUseLocationEnabled, Mode=OneWay, Converter={StaticResource DarkModeLocationToSelectedIndexConverter}}">
-              <ComboBoxItem Content="Set hours" />
-              <ComboBoxItem Content="Sunset to sunrise" />
+            <ComboBox
+    SelectedValue="{x:Bind ViewModel.ScheduleMode, Mode=TwoWay}"
+    SelectedValuePath="Tag">
+              <ComboBoxItem Content="Set hours" Tag="FixedHours" />
+              <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunrise" />
             </ComboBox>
+
             <tkcontrols:SettingsExpander.Items>
-              <tkcontrols:SettingsCard Header="Turn on">
+              <!-- Only show time pickers if FixedHours -->
+              <tkcontrols:SettingsCard Header="Turn on"
+      Visibility="{x:Bind ViewModel.ScheduleMode,
+                           Mode=OneWay,
+                           Converter={StaticResource EnumToVisibilityConverter},
+                           ConverterParameter=FixedHours}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                  <controls:IsEnabledTextBlock
-                                        VerticalAlignment="Center"
-                                        FontFamily="Segoe Fluent Icons"
-                                        FontSize="18"
-                                        Text="&#xED3A;"
-                                        ToolTipService.ToolTip="Sunset"
-                                        Visibility="{x:Bind ViewModel.IsUseLocationEnabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                   <TextBlock Text="Light Time" />
-                  <TimePicker Time="{x:Bind ViewModel.LightTimeTimeSpan, Mode=TwoWay}" ClockIdentifier="24HourClock"/>
+                  <TimePicker Time="{x:Bind ViewModel.LightTimeTimeSpan, Mode=TwoWay}"
+                  ClockIdentifier="24HourClock" />
                 </StackPanel>
               </tkcontrols:SettingsCard>
-              <tkcontrols:SettingsCard Header="Turn off">
+
+              <tkcontrols:SettingsCard Header="Turn off"
+      Visibility="{x:Bind ViewModel.ScheduleMode,
+                           Mode=OneWay,
+                           Converter={StaticResource EnumToVisibilityConverter},
+                           ConverterParameter=FixedHours}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                  <controls:IsEnabledTextBlock
-                                        VerticalAlignment="Center"
-                                        FontFamily="Segoe Fluent Icons"
-                                        FontSize="18"
-                                        Text="&#xED39;"
-                                        ToolTipService.ToolTip="Sunrise"
-                                        Visibility="{x:Bind ViewModel.IsUseLocationEnabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                   <TextBlock Text="Dark Time" />
-                  <TimePicker Time="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=TwoWay}" ClockIdentifier="24HourClock"/>
+                  <TimePicker Time="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=TwoWay}"
+                  ClockIdentifier="24HourClock" />
                 </StackPanel>
               </tkcontrols:SettingsCard>
               <tkcontrols:SettingsCard
                                 Description="Use your location to calculate sunset and sunrise times"
                                 Header="Location"
-                                Visibility="{x:Bind ViewModel.IsUseLocationEnabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                Visibility="{x:Bind ViewModel.ScheduleMode,
+                     Mode=OneWay,
+                     Converter={StaticResource EnumToVisibilityConverter},
+                     ConverterParameter=SunsetToSunrise}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <controls:IsEnabledTextBlock
+                                        x:Name="SunTimes"
                                         VerticalAlignment="Center"
                                         FontSize="12"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="47.6456216°, -122.1321888°" />
-                  <Button
-                                        HorizontalAlignment="Right"
-                                        Click="GetLocation_Click"
-                                        Content="Sync" />
+                                        Text="Please Sync to update Sunrise/Sunset times" />
+                  <Button x:Name="SyncButton"
+        HorizontalAlignment="Right"
+        Click="GetLocation_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <!-- Spinner (hidden by default) -->
+                      <ProgressRing x:Name="SyncLoader"
+                      Width="16" Height="16"
+                      IsActive="False"
+                      Visibility="Collapsed"/>
+
+                      <!-- Button text -->
+                      <TextBlock Text="Sync"/>
+                    </StackPanel>
+                  </Button>
                 </StackPanel>
               </tkcontrols:SettingsCard>
             </tkcontrols:SettingsExpander.Items>

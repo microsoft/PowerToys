@@ -2,7 +2,7 @@
 
 enum class SettingId
 {
-    UseLocation = 0,
+    ScheduleMode = 0,
     Latitude,
     Longitude,
     LightTime,
