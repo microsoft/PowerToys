@@ -133,7 +133,7 @@
                 Grid.Column="1"
                 Orientation="Horizontal"
                 Spacing="16">
-                <!--<controls:ShortcutConflictControl/>-->
+                <controls:ShortcutConflictControl AllHotkeyConflictsData="{x:Bind ViewModel.AllHotkeyConflictsData, Mode=OneWay}" />
                 <controls:CheckUpdateControl />
             </StackPanel>
         </Grid>

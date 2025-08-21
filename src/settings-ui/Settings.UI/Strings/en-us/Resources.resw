@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -2049,17 +2049,26 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
     <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected.</value>
   </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Title.Text" xml:space="preserve">
+    <value>Shortcut conflict detection</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Card.Text" xml:space="preserve">
+    <value>Shortcuts configured by PowerToys are conflicting.</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Card_Description.Header" xml:space="preserve">
+    <value>Shortcuts configured by PowerToys are conflicting</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Header" xml:space="preserve">
+    <value>No conflicts found</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Description" xml:space="preserve">
+    <value>All shortcuts function correctly</value>
+  </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link.Content" xml:space="preserve">
     <value>View more diagnostic data settings</value>
   </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
     <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
-  </data>
-  <data name="Oobe_Overview_EnableDataDiagnostics.Header" xml:space="preserve">
-    <value>Diagnostic data</value>
-  </data>
-  <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
-    <value>Helps us make PowerToys faster, more stable, and better over time</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
     <value>Turn on diagnostic data to help us improve PowerToys?</value>
@@ -2836,7 +2845,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
   </data>
-  <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor.Header" xml:space="preserve">
+    <value>Gliding cursor</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor.Description" xml:space="preserve">
+    <value>An accessibility feature that lets you control the mouse with a single button using guided horizontal and vertical lines</value>
+  </data>
+	<data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
+    <value>Initial line speed</value>
+  </data>
+	<data name="MouseUtils_GlidingCursor_InitialSpeed.Description" xml:space="preserve">
+    <value>Speed of the horizontal or vertical line when it begins moving</value>
+  </data>
+	<data name="MouseUtils_GlidingCursor_DelaySpeed.Header" xml:space="preserve">
+    <value>Reduced line speed</value>
+  </data>
+	<data name="MouseUtils_GlidingCursor_DelaySpeed.Description" xml:space="preserve">
+    <value>Speed after slowing down the line with a second shortcut press</value>
+  </data>
+
+	<data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
   </data>
   <data name="FancyZones_Radio_Default_Theme.Content" xml:space="preserve">
@@ -5027,9 +5055,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
     <value>Generate package</value>
   </data>
-  <data name="AppTitleBarShutDown_Tooltip.Text" xml:space="preserve">
-    <value>Shut down</value>
-  </data>
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
   </data>
@@ -5124,8 +5149,77 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
+  <data name="Close_NavViewItem.Content" xml:space="preserve">
+    <value>Close PowerToys</value>
+    <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="CloseDialog.Content" xml:space="preserve">
+    <value>Closing PowerToys will stop all active utilities.</value>
+    <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="CloseDialog.Title" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
+  <data name="CloseDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="CloseDialog.SecondaryButtonText" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
+  </data>
+  <data name="InAppHotkeyConflictTooltipText" xml:space="preserve">
+    <value>This shortcut is already in use by another utility.</value>
+  </data>
+  <data name="SysHotkeyConflictTooltipText" xml:space="preserve">
+    <value>This shortcut is already in use by a default system shortcut.</value>
+  </data>
+  <data name="ShortcutConflictWindow_Title" xml:space="preserve">
+    <value>PowerToys shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictWindow_TitleTxt.Text" xml:space="preserve">
+    <value>PowerToys shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictWindow_Description.Text" xml:space="preserve">
+    <value>Conflicting shortcuts may cause unexpected behavior. Edit them here or go to the module settings to update them.</value>
+  </data>
+  <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
+    <value>Conflicts found for</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemCard.Description" xml:space="preserve">
+    <value>Windows system shortcut</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemShortcutMessage.Text" xml:space="preserve">
+    <value>This shortcut can't be changed.</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemShortcutTooltip.Content" xml:space="preserve">
+    <value>This shortcut is used by Windows and can't be changed.</value>
+  </data>
+  <data name="ShortcutConflictWindow_NoConflictsTitle.Text" xml:space="preserve">
+    <value>No conflicts detected</value>
+  </data>
+  <data name="ShortcutConflictWindow_NoConflictsDescription.Text" xml:space="preserve">
+    <value>All shortcuts function correctly</value>
+  </data>
+  <data name="ResolveConflicts_Button.Content" xml:space="preserve">
+	<value>Resolve conflicts</value>
+  </data>
+  <data name="ShortcutConflictControl_Title.Text" xml:space="preserve">
+    <value>Shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictControl_NoConflictsFound" xml:space="preserve">
+    <value>No conflicts found</value>
+  </data>
+  <data name="ShortcutConflictControl_SingleConflictFound" xml:space="preserve">
+    <value>1 conflict found</value>
+  </data>
+  <data name="ShortcutConflictControl_MultipleConflictsFound" xml:space="preserve">
+    <value>{0} conflicts found</value>
+    <comment>{0} is replaced with the number of conflicts</comment>
   </data>
   <data name="Hosts_NoLeadingSpaces.Header" xml:space="preserve">
     <value>No leading spaces</value>

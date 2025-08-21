@@ -2,8 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
 
-public partial class SeparatorContextItem : ISeparatorContextItem
+namespace Microsoft.CmdPal.UI.Helpers;
+
+public class LocalKeyboardListenerKeyPressedEventArgs(VirtualKey key) : EventArgs
 {
+    public VirtualKey Key { get; } = key;
 }

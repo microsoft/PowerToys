@@ -20,12 +20,12 @@ internal sealed partial class WebSearchListPage : DynamicListPage
 {
     private readonly string _iconPath = string.Empty;
     private readonly List<ListItem>? _historyItems;
-    private readonly SettingsManager _settingsManager;
+    private readonly ISettingsInterface _settingsManager;
     private static readonly CompositeFormat PluginInBrowserName = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_in_browser_name);
     private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
     private List<ListItem> _allItems;
 
-    public WebSearchListPage(SettingsManager settingsManager)
+    public WebSearchListPage(ISettingsInterface settingsManager)
     {
         Name = Resources.command_item_title;
         Title = Resources.command_item_title;
