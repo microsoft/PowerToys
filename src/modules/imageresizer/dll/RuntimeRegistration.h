@@ -21,7 +21,7 @@ namespace ImageResizerRuntimeRegistration
             spec.systemFileAssocExtensions = { L".bmp", L".dib", L".gif", L".jfif", L".jpe", L".jpeg", L".jpg", L".jxr", L".png", L".rle", L".tif", L".tiff", L".wdp" };
             spec.representativeSystemExt = L".png"; // probe for repair
             spec.extraAssociationPaths = { L"Software\\Classes\\Directory\\ShellEx\\DragDropHandlers\\ImageResizer" };
-            spec.friendlyName = L"";
+            spec.friendlyName = L"ImageResizer Shell Extension";
             return spec;
         }
     }
