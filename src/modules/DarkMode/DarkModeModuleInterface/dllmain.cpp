@@ -68,10 +68,6 @@ private:
     // Load initial settings from the persisted values.
     void init_settings();
 
-    // TODO: write Enable() function that does work to enable the powertoy
-
-    // TODO: write Disable() function that kills process and logs.
-
 public:
     // Constructor
     DarkModeInterface()
