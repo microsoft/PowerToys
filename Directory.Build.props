@@ -107,6 +107,11 @@
       $(USERPROFILE)\AppData\LocalLow\Microsoft\PowerToys\**;
     </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
 
+    <!-- dotnet.exe seems to access files after builds. Temporarily putting this entry in to test if we get further. This looks to be related to a .NET Roslyn Analyzer in .NET 10-->
+    <MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns>
+      $(MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns);
+      \**\dotnet\dotnet.exe;
+    </MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns>
     <!-- 
       This repo uses a common output directory with many projects writing duplicate outputs. Allow everything, but note this costs some performance in the form of requiring
       the cache to use copies instead of hardlinks when pulling from cache.
