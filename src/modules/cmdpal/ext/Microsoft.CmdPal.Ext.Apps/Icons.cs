@@ -22,5 +22,5 @@ internal sealed class Icons
 
     public static IconInfo PinIcon { get; } = new("\uE840"); // Pin icon
 
-    public static IconInfo UninstallApplicationIcon { get; } = new("\uE7B8"); // Uninstall icon
+    public static IconInfo UninstallApplicationIcon { get; } = new("\uE74D"); // Uninstall icon
 }

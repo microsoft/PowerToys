@@ -286,6 +286,24 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This will remove the selected app from your system. Do you want to proceed?.
+        /// </summary>
+        internal static string uninstall_application_confirm_description {
+            get {
+                return ResourceManager.GetString("uninstall_application_confirm_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall Application?.
+        /// </summary>
+        internal static string uninstall_application_confirm_title {
+            get {
+                return ResourceManager.GetString("uninstall_application_confirm_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error while uninstalling &apos;{0}&apos;.
         /// </summary>
         internal static string uninstall_application_failed {

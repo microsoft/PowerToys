@@ -119,9 +119,10 @@ public class UWPApplication : IUWPApplication
 
         commands.Add(
             new CommandContextItem(
-                new UninstallApplicationCommand(this))
+                new UninstallApplicationConfirmation(this))
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
+                IsCritical = true,
             });
 
         return commands;
