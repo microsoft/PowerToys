@@ -18,6 +18,11 @@ namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
 internal sealed partial class UninstallApplicationCommand : InvokableCommand
 {
+    // This is a ms-settings URI that opens the Apps & Features page in Windows Settings.
+    // It's correct and follows the Microsoft documentation:
+    // https://learn.microsoft.com/en-us/windows/apps/develop/launch/launch-settings-app#apps
+    private const string AppsFeaturesUri = "ms-settings:appsfeatures";
+
     private readonly UWPApplication? _uwpTarget;
     private readonly Win32Program? _win32Target;
 
@@ -65,7 +70,7 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
                 });
             }
 
-            // TODO: Update the Search results after uninstalling the app
+            // TODO: Update the Search results after uninstalling the app - unsure how to do this yet.
             return CommandResult.ShowToast(new ToastArgs()
             {
                 Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_successful), app.DisplayName),
@@ -112,7 +117,7 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
         {
             Process.Start(new ProcessStartInfo
             {
-                FileName = "ms-settings:appsfeatures",
+                FileName = AppsFeaturesUri,
                 UseShellExecute = true,
             });
             return CommandResult.Dismiss();
