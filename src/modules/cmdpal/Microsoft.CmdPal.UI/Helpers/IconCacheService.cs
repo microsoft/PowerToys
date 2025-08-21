@@ -25,7 +25,7 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
         {
             if (!string.IsNullOrEmpty(icon.Icon))
             {
-                var source = IconPathConverter.IconSourceMUX(icon.Icon, false);
+                var source = IconPathConverter.IconSourceMUX(icon.Icon, false, icon.FontFamily);
                 return source;
             }
             else if (icon.Data is not null)
