@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.SearchResultsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -20,7 +20,7 @@
 
     <controls:SettingsPageControl x:Name="PageControl" x:Uid="SearchResults_Title">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical" Margin="0,-40,0,0">
+            <StackPanel Margin="0,-40,0,0" Orientation="Vertical">
                 <controls:SettingsGroup x:Uid="SearchResults_ModulesTitle" Margin="0,-10,0,0">
                     <ItemsControl x:Name="ModulesItemsControl" ItemsSource="{x:Bind ViewModel.ModuleResults, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
