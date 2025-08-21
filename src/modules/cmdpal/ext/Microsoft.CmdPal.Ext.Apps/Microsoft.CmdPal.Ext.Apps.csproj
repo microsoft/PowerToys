@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="..\Common.ExtDependencies.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Apps</RootNamespace>
     <Nullable>enable</Nullable>
@@ -22,12 +23,9 @@
 
     <PackageReference Include="WyHash" />
 
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.Web.WebView2" />
-
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-	  <ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
-    <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+    <ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
+    <!-- CmdPal Toolkit reference now included via Common.ExtDependencies.props -->
   </ItemGroup>
 
   <ItemGroup>
