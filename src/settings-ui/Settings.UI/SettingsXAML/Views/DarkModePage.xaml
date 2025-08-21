@@ -50,7 +50,8 @@
                         IsExpanded="True">
             <ComboBox
     SelectedValue="{x:Bind ViewModel.ScheduleMode, Mode=TwoWay}"
-    SelectedValuePath="Tag">
+    SelectedValuePath="Tag"
+              SelectionChanged="ScheduleMode_SelectionChanged">
               <ComboBoxItem Content="Set hours" Tag="FixedHours" />
               <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunrise" />
             </ComboBox>

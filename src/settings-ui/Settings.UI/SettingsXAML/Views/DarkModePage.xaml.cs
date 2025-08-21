@@ -74,18 +74,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             try
             {
-                if (double.TryParse(ViewModel.Latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out var latitude) &&
-                    double.TryParse(ViewModel.Longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out var longitude))
+                if (ViewModel.ScheduleMode == "SunsetToSunrise")
                 {
-                    if (latitude != 0 && longitude != 0)
-                    {
-                        var today = DateTime.Now;
-                        var result = SunCalc.CalculateSunriseSunset(latitude, longitude, today.Year, today.Month, today.Day);
-
-                        SunTimes.Text = $"Sunrise: {result.SunriseHour:D2}:{result.SunriseMinute:D2} " +
-                                        $"Sunset: {result.SunsetHour:D2}:{result.SunsetMinute:D2}";
-                        return;
-                    }
+                    SunTimes.Text = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2} " +
+                                    $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
+                    return;
                 }
 
                 // fallback text
@@ -122,9 +115,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
                 double longitude = Math.Round(pos.Coordinate.Point.Position.Longitude);
 
-                ViewModel.Latitude = latitude.ToString("F6", CultureInfo.InvariantCulture);
-                ViewModel.Longitude = longitude.ToString("F6", CultureInfo.InvariantCulture);
-
                 SunTimes result = SunCalc.CalculateSunriseSunset(
                     latitude,
                     longitude,
@@ -135,6 +125,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SunTimes.Text = "Sunrise: " + result.SunriseHour + ":" + result.SunriseMinute + " " +
                                 "Sunset: " + result.SunsetHour + ":" + result.SunsetMinute;
 
+                ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
+                ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
                 SyncLoader.Visibility = Visibility.Collapsed;
@@ -144,6 +137,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
                 System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
+            }
+        }
+
+        private void ScheduleMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var combo = (ComboBox)sender;
+            var selectedTag = (combo.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+
+            if (selectedTag == "FixedHours")
+            {
+                ViewModel.LightTime = 360;
+                ViewModel.DarkTime = 1080;
+            }
+            else if (selectedTag == "SunsetToSunrise")
+            {
+                SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
             }
         }
 
