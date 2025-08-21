@@ -262,6 +262,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643
 		src\common\utils\EventLocker.h = src\common\utils\EventLocker.h
 		src\common\utils\EventWaiter.h = src\common\utils\EventWaiter.h
 		src\common\utils\excluded_apps.h = src\common\utils\excluded_apps.h
+		src\common\utils\shell_ext_registration.h = src\common\utils\shell_ext_registration.h
 		src\common\utils\exec.h = src\common\utils\exec.h
 		src\common\utils\game_mode.h = src\common\utils\game_mode.h
 		src\common\utils\gpo.h = src\common\utils\gpo.h
