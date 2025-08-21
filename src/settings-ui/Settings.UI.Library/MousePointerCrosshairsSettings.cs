@@ -39,6 +39,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.ActivationShortcut,
                     value => Properties.ActivationShortcut = value ?? Properties.DefaultActivationShortcut,
                     "MouseUtils_MousePointerCrosshairs_ActivationShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.GlidingCursorActivationShortcut,
+                    value => Properties.GlidingCursorActivationShortcut = value ?? Properties.DefaultGlidingCursorActivationShortcut,
+                    "MouseUtils_GlidingCursor"),
             };
 
             return hotkeyAccessors.ToArray();
