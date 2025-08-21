@@ -119,36 +119,6 @@ steps:
 
   #### END MSI
   #### BOOTSTRAP BUILDING AND SIGNING
-
-  # Build the BA Functions DLL used by the Bootstrapper so we can sign it before bundling
-  - task: VSBuild@1
-    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build SilentFilesInUseBAFunction
-    inputs:
-      solution: "**/installer/PowerToysSetup.sln"
-      vsVersion: 17.0
-      msbuildArgs: >-
-        /t:SilentFilesInUseBAFunction
-        /p:CIBuild=true
-        -restore -graph
-        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-bafunction.binlog
-        ${{ parameters.additionalBuildOptions }}
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      clean: false
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign SilentFilesInUseBAFunction.dll
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'installer/$(BuildPlatform)/$(BuildConfiguration)'
-          signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-
   - task: VSBuild@1
     displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build VNext Bootstrapper
     inputs:
