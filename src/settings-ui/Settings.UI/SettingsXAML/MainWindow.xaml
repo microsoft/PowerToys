@@ -2,9 +2,12 @@
     x:Class="Microsoft.PowerToys.Settings.UI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:winuiex="using:WinUIEx"
     MinWidth="480"
     MinHeight="480"
@@ -13,5 +16,91 @@
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
-    <local:ShellPage x:Name="shellPage" />
+    <Grid>
+        <Grid.Resources>
+            <converters:SearchSuggestionTemplateSelector
+                x:Key="SearchSuggestionTemplateSelector"
+                DefaultSuggestionTemplate="{StaticResource DefaultSearchResultTemplate}"
+                NoResultsSuggestionTemplate="{StaticResource NoResultSearchResultTemplate}" />
+            <DataTemplate x:Key="DefaultSearchResultTemplate" x:DataType="models:SuggestionItem">
+                <Grid Padding="16,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Viewbox
+                        Width="16"
+                        Height="16"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Stretch="Uniform">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Viewbox>
+                    <TextBlock
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        TextTrimming="CharacterEllipsis">
+                        <Run Text="{x:Bind Header}" />
+                        <LineBreak />
+                        <Run
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind Subtitle}" />
+                    </TextBlock>
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="NoResultSearchResultTemplate" x:DataType="models:SuggestionItem">
+                <Grid>
+                    <Rectangle
+                        Height="1"
+                        Margin="0,-4,0,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <TextBlock
+                        Margin="8"
+                        HorizontalAlignment="Center"
+                        Text="{x:Bind Header}"
+                        TextAlignment="Center" />
+                </Grid>
+            </DataTemplate>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <tkcontrols:TitleBar x:Name="AppTitleBar" PaneButtonClick="PaneToggleBtn_Click">
+            <tkcontrols:TitleBar.Icon>
+                <BitmapIcon ShowAsMonochrome="False" UriSource="/Assets/Settings/icon.ico" />
+            </tkcontrols:TitleBar.Icon>
+            <tkcontrols:TitleBar.Content>
+                <AutoSuggestBox
+                    x:Name="SearchBox"
+                    x:Uid="Shell_SearchBox"
+                    Width="400"
+                    MinWidth="0"
+                    HorizontalAlignment="Stretch"
+                    BorderThickness="1"
+                    GotFocus="SearchBox_GotFocus"
+                    ItemTemplateSelector="{StaticResource SearchSuggestionTemplateSelector}"
+                    QueryIcon="Find"
+                    QuerySubmitted="SearchBox_QuerySubmitted"
+                    SuggestionChosen="SearchBox_SuggestionChosen"
+                    TextChanged="SearchBox_TextChanged"
+                    TextMemberPath="Header"
+                    UpdateTextOnSelect="False">
+                    <AutoSuggestBox.KeyboardAccelerators>
+                        <KeyboardAccelerator
+                            Key="F"
+                            Invoked="CtrlF_Invoked"
+                            Modifiers="Control" />
+                    </AutoSuggestBox.KeyboardAccelerators>
+                </AutoSuggestBox>
+            </tkcontrols:TitleBar.Content>
+        </tkcontrols:TitleBar>
+        <local:ShellPage
+            x:Name="shellPage"
+            Grid.Row="1"
+            Loaded="ShellPage_Loaded" />
+    </Grid>
 </winuiex:WindowEx>
