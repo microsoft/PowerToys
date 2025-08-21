@@ -67,7 +67,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public void SaveHistory(HistoryItem historyItem)
     {
-        if (historyItem == null)
+        if (historyItem is null)
         {
             return;
         }

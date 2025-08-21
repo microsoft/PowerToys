@@ -18,7 +18,7 @@ public sealed partial class AnonymousCommand : InvokableCommand
 
     public override ICommandResult Invoke()
     {
-        if (_action != null)
+        if (_action is not null)
         {
             _action();
         }

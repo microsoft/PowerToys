@@ -100,7 +100,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
             _activeExtension = extension;
 
             var extensionWinRtObject = _activeExtension?.GetExtensionObject();
-            if (extensionWinRtObject != null)
+            if (extensionWinRtObject is not null)
             {
                 try
                 {

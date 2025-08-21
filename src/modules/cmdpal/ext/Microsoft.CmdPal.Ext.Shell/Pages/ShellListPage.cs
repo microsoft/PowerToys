@@ -245,14 +245,14 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var histItemsNotInSearch =
             _historyItems
                 .Where(kv => !kv.Key.Equals(newSearch, StringComparison.OrdinalIgnoreCase));
-        if (_exeItem != null)
+        if (_exeItem is not null)
         {
             // If we have an exe item, we want to remove it from the history items
             histItemsNotInSearch = histItemsNotInSearch
                 .Where(kv => !kv.Value.Title.Equals(_exeItem.Title, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (_uriItem != null)
+        if (_uriItem is not null)
         {
             // If we have an uri item, we want to remove it from the history items
             histItemsNotInSearch = histItemsNotInSearch
@@ -307,8 +307,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
-        List<ListItem> uriItems = _uriItem != null ? [_uriItem] : [];
-        List<ListItem> exeItems = _exeItem != null ? [_exeItem] : [];
+        List<ListItem> uriItems = _uriItem is not null ? [_uriItem] : [];
+        List<ListItem> exeItems = _exeItem is not null ? [_exeItem] : [];
 
         return
             exeItems
@@ -459,7 +459,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var hist = _historyService.GetRunHistory();
         var histItems = hist
             .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h, AddToHistory)))
-            .Where(tuple => tuple.Item2 != null)
+            .Where(tuple => tuple.Item2 is not null)
             .Select(tuple => (tuple.h, tuple.Item2!))
             .ToList();
         _historyItems.Clear();
