@@ -25,8 +25,8 @@
                     IsTabStop="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
                     Severity="Informational" />
                 <tkcontrols:SettingsCard
-                    x:Uid="TextExtractor_EnableToggleControl_HeaderText"
                     Name="TextExtractorEnableToggleControlHeaderText"
+                    x:Uid="TextExtractor_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -53,10 +53,13 @@
                 </InfoBar>
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" Name="ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard
+                        Name="ActivationShortcut"
+                        x:Uid="Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="TextExtractor_Languages" Name="TextExtractorLanguages">
+                    <tkcontrols:SettingsCard Name="TextExtractorLanguages" x:Uid="TextExtractor_Languages">
                         <ComboBox
                             x:Name="TextExtractor_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"

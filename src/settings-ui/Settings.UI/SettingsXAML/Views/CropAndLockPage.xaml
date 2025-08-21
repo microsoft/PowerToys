@@ -18,8 +18,8 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
-                    x:Uid="CropAndLock_EnableToggleControl_HeaderText"
                     Name="CropAndLockEnableToggleControlHeaderText"
+                    x:Uid="CropAndLock_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -36,13 +36,19 @@
                 </InfoBar>
                 <controls:SettingsGroup x:Uid="CropAndLock_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <tkcontrols:SettingsCard x:Uid="CropAndLock_ThumbnailActivation_Shortcut" Name="CropAndLockThumbnailActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard
+                        Name="CropAndLockThumbnailActivationShortcut"
+                        x:Uid="CropAndLock_ThumbnailActivation_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ThumbnailActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="CropAndLock_ReparentActivation_Shortcut" Name="CropAndLockReparentActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard
+                        Name="CropAndLockReparentActivationShortcut"
+                        x:Uid="CropAndLock_ReparentActivation_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"

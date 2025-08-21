@@ -18,8 +18,8 @@
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical">
                 <tkcontrols:SettingsCard
-                    x:Uid="PowerRename_Toggle_Enable"
                     Name="PowerRenameToggleEnable"
+                    x:Uid="PowerRename_Toggle_Enable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -35,7 +35,10 @@
                     </InfoBar.IconSource>
                 </InfoBar>
                 <controls:SettingsGroup x:Uid="PowerRename_ShellIntegration" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander x:Uid="PowerRename_Toggle_ContextMenu" Name="PowerRenameToggleContextMenu" IsExpanded="False">
+                    <tkcontrols:SettingsExpander
+                        Name="PowerRenameToggleContextMenu"
+                        x:Uid="PowerRename_Toggle_ContextMenu"
+                        IsExpanded="False">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EnabledOnContextExtendedMenu, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="PowerRename_Toggle_StandardContextMenu" />
                             <ComboBoxItem x:Uid="PowerRename_Toggle_ExtendedContextMenu" />
@@ -55,10 +58,16 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="PowerRename_AutoCompleteHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander x:Uid="PowerRename_Toggle_AutoComplete" Name="PowerRenameToggleAutoComplete" IsExpanded="True">
+                    <tkcontrols:SettingsExpander
+                        Name="PowerRenameToggleAutoComplete"
+                        x:Uid="PowerRename_Toggle_AutoComplete"
+                        IsExpanded="True">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.MRUEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="PowerRename_Toggle_MaxDispListNum" Name="PowerRenameToggleMaxDispListNum" IsEnabled="{x:Bind ViewModel.GlobalAndMruEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="PowerRenameToggleMaxDispListNum"
+                                x:Uid="PowerRename_Toggle_MaxDispListNum"
+                                IsEnabled="{x:Bind ViewModel.GlobalAndMruEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="20"
@@ -69,12 +78,15 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch" Name="PowerRenameToggleRestoreFlagsOnLaunch" HeaderIcon="{ui:FontIcon Glyph=&#xe81c;}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerRenameToggleRestoreFlagsOnLaunch"
+                        x:Uid="PowerRename_Toggle_RestoreFlagsOnLaunch"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xe81c;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RestoreFlagsOnLaunch, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="PowerRename_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="PowerRename_Toggle_UseBoostLib" Name="PowerRenameToggleUseBoostLib">
+                    <tkcontrols:SettingsCard Name="PowerRenameToggleUseBoostLib" x:Uid="PowerRename_Toggle_UseBoostLib">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UseBoostLib, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>

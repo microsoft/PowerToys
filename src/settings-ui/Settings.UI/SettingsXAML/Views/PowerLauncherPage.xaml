@@ -323,8 +323,8 @@
                     </InfoBar.ActionButton>
                 </InfoBar>
                 <tkcontrols:SettingsCard
-                    x:Uid="PowerLauncher_EnablePowerLauncher"
                     Name="PowerLauncherEnablePowerLauncher"
+                    x:Uid="PowerLauncher_EnablePowerLauncher"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
@@ -342,8 +342,8 @@
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
-                        x:Uid="Activation_Shortcut"
                         Name="ActivationShortcut"
+                        x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
@@ -394,13 +394,16 @@
 
                 <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
-                        x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
                         Name="PowerLauncherSearchQueryResultsWithDelay"
+                        x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
                         HeaderIcon="{ui:FontIcon Glyph=&#xec48;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs" Name="PowerLauncherFastSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="PowerLauncherFastSearchInputDelayMs"
+                                x:Uid="PowerLauncher_FastSearchInputDelayMs"
+                                IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -410,7 +413,10 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.SearchInputDelayFast, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SlowSearchInputDelayMs" Name="PowerLauncherSlowSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="PowerLauncherSlowSearchInputDelayMs"
+                                x:Uid="PowerLauncher_SlowSearchInputDelayMs"
+                                IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -424,8 +430,8 @@
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsExpander
-                        x:Uid="PowerLauncher_MaximumNumberOfResults"
                         Name="PowerLauncherMaximumNumberOfResults"
+                        x:Uid="PowerLauncher_MaximumNumberOfResults"
                         HeaderIcon="{ui:FontIcon Glyph=&#xec8f;}"
                         IsExpanded="True">
                         <NumberBox
@@ -441,13 +447,16 @@
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsExpander
-                        x:Uid="PowerLauncher_SearchQueryTuningEnabled"
                         Name="PowerLauncherSearchQueryTuningEnabled"
+                        x:Uid="PowerLauncher_SearchQueryTuningEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SearchClickedItemWeight" Name="PowerLauncherSearchClickedItemWeight" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="PowerLauncherSearchClickedItemWeight"
+                                x:Uid="PowerLauncher_SearchClickedItemWeight"
+                                IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -463,15 +472,24 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_TabSelectsContextButtons" Name="PowerLauncherTabSelectsContextButtons" HeaderIcon="{ui:FontIcon Glyph=&#xE7FD;}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerLauncherTabSelectsContextButtons"
+                        x:Uid="PowerLauncher_TabSelectsContextButtons"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7FD;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_UsePinyin" Name="PowerLauncherUsePinyin" HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerLauncherUsePinyin"
+                        x:Uid="PowerLauncher_UsePinyin"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles" Name="PowerLauncherGenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerLauncherGenerateThumbnailsFromFiles"
+                        x:Uid="PowerLauncher_GenerateThumbnailsFromFiles"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
@@ -497,7 +515,10 @@
                       />-->
 
                 <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Run_PositionHeader" Name="RunPositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                    <tkcontrols:SettingsCard
+                        Name="RunPositionHeader"
+                        x:Uid="Run_PositionHeader"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.MonitorPositionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
@@ -505,7 +526,10 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" Name="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                    <tkcontrols:SettingsCard
+                        Name="ColorModeHeader"
+                        x:Uid="ColorModeHeader"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </tkcontrols:SettingsCard.Description>
@@ -516,7 +540,10 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_ShowPluginKeywords" Name="PowerLauncherShowPluginKeywords" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerLauncherShowPluginKeywords"
+                        x:Uid="PowerLauncher_ShowPluginKeywords"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ShowPluginsOverviewIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ShowPluginsOverview_All" />
                             <ComboBoxItem x:Uid="ShowPluginsOverview_NonGlobal" />
@@ -524,7 +551,10 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_TitleFontSize" Name="PowerLauncherTitleFontSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerLauncherTitleFontSize"
+                        x:Uid="PowerLauncher_TitleFontSize"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <TextBlock
                                 VerticalAlignment="Center"
@@ -565,7 +595,10 @@
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <tkcontrols:SettingsCard x:Uid="Run_PluginUse" Name="RunPluginUse" HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
+                    <tkcontrols:SettingsCard
+                        Name="RunPluginUse"
+                        x:Uid="Run_PluginUse"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
                         <tkcontrols:SettingsCard.Description>
                             <StackPanel>
                                 <TextBlock x:Uid="Run_PluginUseDescription" />
@@ -655,7 +688,10 @@
 
                                         </StackPanel>
                                         <tkcontrols:SettingsExpander.Items>
-                                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_ActionKeyword" Name="PowerLauncherActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                            <tkcontrols:SettingsCard
+                                                Name="PowerLauncherActionKeyword"
+                                                x:Uid="PowerLauncher_ActionKeyword"
+                                                IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                 <TextBox MinWidth="{StaticResource SettingActionControlMinWidth}" Text="{x:Bind ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                             </tkcontrols:SettingsCard>
                                             <tkcontrols:SettingsCard
@@ -688,7 +724,10 @@
                                                     </StackPanel>
                                                 </CheckBox>
                                             </tkcontrols:SettingsCard>
-                                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_PluginWeightBoost" Name="PowerLauncherPluginWeightBoost" IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
+                                            <tkcontrols:SettingsCard
+                                                Name="PowerLauncherPluginWeightBoost"
+                                                x:Uid="PowerLauncher_PluginWeightBoost"
+                                                IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                 <NumberBox
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     LargeChange="50"

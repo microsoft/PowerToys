@@ -32,8 +32,8 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <tkcontrols:SettingsCard
-                    x:Uid="ImageResizer_EnableToggle"
                     Name="ImageResizerEnableToggle"
+                    x:Uid="ImageResizer_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ImageResizer.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -51,7 +51,10 @@
                 </InfoBar>
 
                 <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_Presets" Name="ImageResizerPresets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
+                    <tkcontrols:SettingsCard
+                        Name="ImageResizerPresets"
+                        x:Uid="ImageResizer_Presets"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
                             Click="AddSizeButton_Click"
@@ -194,7 +197,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FallBackEncoderText" Name="ImageResizerFallBackEncoderText">
+                    <tkcontrols:SettingsCard Name="ImageResizerFallBackEncoderText" x:Uid="ImageResizer_FallBackEncoderText">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Encoder, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
                             <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
@@ -205,7 +208,7 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_Encoding" Name="ImageResizerEncoding">
+                    <tkcontrols:SettingsCard Name="ImageResizerEncoding" x:Uid="ImageResizer_Encoding">
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
@@ -213,7 +216,7 @@
                             Value="{x:Bind ViewModel.JPEGQualityLevel, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_PNGInterlacing" Name="ImageResizerPNGInterlacing">
+                    <tkcontrols:SettingsCard Name="ImageResizerPNGInterlacing" x:Uid="ImageResizer_PNGInterlacing">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PngInterlaceOption, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Default" />
                             <ComboBoxItem x:Uid="On" />
@@ -221,7 +224,7 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_TIFFCompression" Name="ImageResizerTIFFCompression">
+                    <tkcontrols:SettingsCard Name="ImageResizerTIFFCompression" x:Uid="ImageResizer_TIFFCompression">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.TiffCompressOption, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default" />
                             <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None" />
@@ -235,7 +238,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="File" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader" Name="ImageResizerFilenameFormatHeader">
+                    <tkcontrols:SettingsCard Name="ImageResizerFilenameFormatHeader" x:Uid="ImageResizer_FilenameFormatHeader">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <TextBox
                                 x:Uid="ImageResizer_FilenameFormatPlaceholder"
@@ -282,7 +285,7 @@
                         </StackPanel>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FileModifiedDate" Name="ImageResizerFileModifiedDate">
+                    <tkcontrols:SettingsCard Name="ImageResizerFileModifiedDate" x:Uid="ImageResizer_FileModifiedDate">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.KeepDateModified, Mode=TwoWay, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate" />
                             <ComboBoxItem x:Uid="ImageResizer_UseResizeDate" />

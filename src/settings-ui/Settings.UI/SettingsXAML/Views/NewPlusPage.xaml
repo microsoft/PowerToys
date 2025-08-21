@@ -19,8 +19,8 @@
                 Orientation="Vertical"
                 Spacing="2">
                 <tkcontrols:SettingsCard
-                    x:Uid="NewPlus_Enable_Toggle"
                     Name="NewPlusEnableToggle"
+                    x:Uid="NewPlus_Enable_Toggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -38,8 +38,8 @@
 
                 <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        x:Uid="NewPlus_Templates_Location"
                         Name="NewPlusTemplatesLocation"
+                        x:Uid="NewPlus_Templates_Location"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.OpenCurrentNewTemplateFolder}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF12B;}"
@@ -68,7 +68,10 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" Name="NewPlusHideFileExtensionToggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="NewPlusHideFileExtensionToggle"
+                        x:Uid="NewPlus_Hide_File_Extension_Toggle"
+                        IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
@@ -81,7 +84,7 @@
                             <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                         </InfoBar.IconSource>
                     </InfoBar>
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle" Name="NewPlusHideStartingDigitsToggle">
+                    <tkcontrols:SettingsCard Name="NewPlusHideStartingDigitsToggle" x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
                         <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
                             <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
@@ -90,7 +93,10 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle" Name="NewPlusBehaviourReplaceVariablesToggle" IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="NewPlusBehaviourReplaceVariablesToggle"
+                        x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle"
+                        IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <ToggleSwitch x:Uid="ReplaceVariablesToggle" IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
                             <Button

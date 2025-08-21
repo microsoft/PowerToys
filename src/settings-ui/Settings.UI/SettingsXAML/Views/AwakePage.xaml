@@ -25,8 +25,8 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
-                    x:Uid="Awake_EnableSettingsCard"
                     Name="AwakeEnableSettingsCard"
+                    x:Uid="Awake_EnableSettingsCard"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -44,7 +44,10 @@
 
                 <controls:SettingsGroup x:Uid="Awake_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <tkcontrols:SettingsCard x:Uid="Awake_ModeSettingsCard" Name="AwakeModeSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                    <tkcontrols:SettingsCard
+                        Name="AwakeModeSettingsCard"
+                        x:Uid="Awake_ModeSettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
                             <ComboBoxItem x:Uid="Awake_NoKeepAwakeSelector" />
                             <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwakeSelector" />
@@ -54,24 +57,24 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsExpander
-                        x:Uid="Awake_ExpirationSettingsExpander"
                         Name="AwakeExpirationSettingsExpander"
+                        x:Uid="Awake_ExpirationSettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEC92;}"
                         IsExpanded="True"
                         Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Date" Name="AwakeExpirationSettingsExpanderDate">
+                            <tkcontrols:SettingsCard Name="AwakeExpirationSettingsExpanderDate" x:Uid="Awake_ExpirationSettingsExpander_Date">
                                 <DatePicker Date="{x:Bind ViewModel.ExpirationDateTime, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Time" Name="AwakeExpirationSettingsExpanderTime">
+                            <tkcontrols:SettingsCard Name="AwakeExpirationSettingsExpanderTime" x:Uid="Awake_ExpirationSettingsExpander_Time">
                                 <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsCard
-                        x:Uid="Awake_IntervalSettingsCard"
                         Name="AwakeIntervalSettingsCard"
+                        x:Uid="Awake_IntervalSettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
 

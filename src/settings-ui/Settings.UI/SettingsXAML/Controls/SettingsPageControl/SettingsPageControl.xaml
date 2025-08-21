@@ -52,9 +52,10 @@
                     <Border
                         MaxWidth="160"
                         Margin="0,0,16,0"
-                        HorizontalAlignment="Left" Visibility="{x:Bind ModuleImageSource, Converter={StaticResource EmptyObjectToObjectConverter} }"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Top"
-                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        CornerRadius="{StaticResource OverlayCornerRadius}"
+                        Visibility="{x:Bind ModuleImageSource, Converter={StaticResource EmptyObjectToObjectConverter}}">
                         <Image AutomationProperties.AccessibilityView="Raw" Source="{x:Bind ModuleImageSource, Converter={StaticResource UriToImageSourceConverter}, Mode=OneWay}" />
                     </Border>
 

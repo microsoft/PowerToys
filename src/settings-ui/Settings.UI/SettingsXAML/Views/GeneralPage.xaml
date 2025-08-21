@@ -211,8 +211,8 @@
 
                 <controls:SettingsGroup x:Uid="Admin_Mode">
                     <tkcontrols:SettingsExpander
-                        x:Uid="Admin_Mode_Running_As"
                         Name="AdminModeRunningAs"
+                        x:Uid="Admin_Mode_Running_As"
                         Header="{x:Bind ViewModel.RunningAsText, Mode=OneWay}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsExpanded="True">
@@ -235,7 +235,10 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
-                    <tkcontrols:SettingsCard x:Uid="LanguageHeader" Name="LanguageHeader" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+                    <tkcontrols:SettingsCard
+                        Name="LanguageHeader"
+                        x:Uid="LanguageHeader"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
                         <ComboBox
                             x:Name="Languages_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -254,7 +257,10 @@
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" Name="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                    <tkcontrols:SettingsCard
+                        Name="ColorModeHeader"
+                        x:Uid="ColorModeHeader"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </tkcontrols:SettingsCard.Description>
@@ -265,11 +271,14 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp" Name="GeneralPageRunAtStartUp" IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <tkcontrols:SettingsCard
+                        Name="GeneralPageRunAtStartUp"
+                        x:Uid="GeneralPage_RunAtStartUp"
+                        IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ShowSystemTrayIcon" Name="ShowSystemTrayIcon">
+                    <tkcontrols:SettingsCard Name="ShowSystemTrayIcon" x:Uid="ShowSystemTrayIcon">
                         <ToggleSwitch x:Uid="ShowSystemTrayIcon_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
@@ -287,13 +296,16 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
-                    <tkcontrols:SettingsExpander x:Uid="General_SettingsBackupAndRestore" Name="GeneralSettingsBackupAndRestore" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
+                    <tkcontrols:SettingsExpander
+                        Name="GeneralSettingsBackupAndRestore"
+                        x:Uid="General_SettingsBackupAndRestore"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
                             <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{Binding RestoreConfigsEventHandler}" />
                         </StackPanel>
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="General_SettingsBackupAndRestoreLocationText" Name="GeneralSettingsBackupAndRestoreLocationText">
+                            <tkcontrols:SettingsCard Name="GeneralSettingsBackupAndRestoreLocationText" x:Uid="General_SettingsBackupAndRestoreLocationText">
                                 <Grid ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -327,8 +339,8 @@
                                 </Grid>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
-                                x:Uid="General_SettingsBackupAndRestoreStatusInfo"
                                 Name="GeneralSettingsBackupAndRestoreStatusInfo"
+                                x:Uid="General_SettingsBackupAndRestoreStatusInfo"
                                 HorizontalContentAlignment="Left"
                                 ContentAlignment="Vertical">
                                 <Grid
@@ -391,7 +403,10 @@
                     IsTabStop="{x:Bind ViewModel.SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                     Severity="{x:Bind ViewModel.BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
                 <controls:SettingsGroup x:Uid="General_Experimentation" Visibility="Visible">
-                    <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableExperimentation" Name="GeneralPageEnableExperimentation" IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <tkcontrols:SettingsCard
+                        Name="GeneralPageEnableExperimentation"
+                        x:Uid="GeneralPage_EnableExperimentation"
+                        IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <tkcontrols:SettingsCard.HeaderIcon>
                             <PathIcon Data="M1859 1758q14 23 21 47t7 51q0 40-15 75t-41 61-61 41-75 15H354q-40 0-75-15t-61-41-41-61-15-75q0-27 6-51t21-47l569-992q10-14 10-34V128H640V0h768v128h-128v604q0 19 10 35l569 991zM896 732q0 53-27 99l-331 577h972l-331-577q-27-46-27-99V128H896v604zm799 1188q26 0 44-19t19-45q0-10-2-17t-8-16l-164-287H464l-165 287q-9 15-9 33 0 26 18 45t46 19h1341z" />
                         </tkcontrols:SettingsCard.HeaderIcon>

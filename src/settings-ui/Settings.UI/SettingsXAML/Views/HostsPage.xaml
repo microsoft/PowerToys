@@ -14,8 +14,8 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
-                    x:Uid="Hosts_EnableToggleControl_HeaderText"
                     Name="HostsEnableToggleControlHeaderText"
+                    x:Uid="Hosts_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -32,32 +32,41 @@
                 </InfoBar>
                 <controls:SettingsGroup x:Uid="Hosts_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        x:Uid="Hosts_LaunchButtonControl"
                         Name="HostsLaunchButtonControl"
+                        x:Uid="Hosts_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
                     <tkcontrols:SettingsCard
-                        x:Uid="Hosts_Toggle_LaunchAdministrator"
                         Name="HostsToggleLaunchAdministrator"
+                        x:Uid="Hosts_Toggle_LaunchAdministrator"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsEnabled="{x:Bind ViewModel.LaunchAdministratorEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LaunchAdministrator, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_ShowStartupWarning" Name="HostsToggleShowStartupWarning" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
+                    <tkcontrols:SettingsCard
+                        Name="HostsToggleShowStartupWarning"
+                        x:Uid="Hosts_Toggle_ShowStartupWarning"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowStartupWarning, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Hosts_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Hosts_AdditionalLinesPosition" Name="HostsAdditionalLinesPosition" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
+                    <tkcontrols:SettingsCard
+                        Name="HostsAdditionalLinesPosition"
+                        x:Uid="Hosts_AdditionalLinesPosition"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.AdditionalLinesPosition, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Top" />
                             <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Bottom" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_LoopbackDuplicates" Name="HostsToggleLoopbackDuplicates" HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
+                    <tkcontrols:SettingsCard
+                        Name="HostsToggleLoopbackDuplicates"
+                        x:Uid="Hosts_Toggle_LoopbackDuplicates"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LoopbackDuplicates, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="Hosts_NoLeadingSpaces" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">

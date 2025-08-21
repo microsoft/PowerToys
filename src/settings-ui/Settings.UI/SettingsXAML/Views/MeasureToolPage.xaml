@@ -15,8 +15,8 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
-                    x:Uid="MeasureTool_EnableMeasureTool"
                     Name="MeasureToolEnableMeasureTool"
+                    x:Uid="MeasureTool_EnableMeasureTool"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -32,10 +32,13 @@
                     </InfoBar.IconSource>
                 </InfoBar>
                 <controls:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="MeasureTool_ActivationShortcut" Name="MeasureToolActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard
+                        Name="MeasureToolActivationShortcut"
+                        x:Uid="MeasureTool_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MeasureTool_DefaultMeasureStyle" Name="MeasureToolDefaultMeasureStyle">
+                    <tkcontrols:SettingsCard Name="MeasureToolDefaultMeasureStyle" x:Uid="MeasureTool_DefaultMeasureStyle">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.DefaultMeasureStyle, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_None" />
                             <ComboBoxItem x:Uid="MeasureTool_DefaultMeasureStyle_Bounds" />
@@ -48,7 +51,10 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MeasureTool_Settings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="MeasureTool_ContinuousCapture" Name="MeasureToolContinuousCapture" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
+                    <tkcontrols:SettingsCard
+                        Name="MeasureToolContinuousCapture"
+                        x:Uid="MeasureTool_ContinuousCapture"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
                         <ToggleSwitch x:Uid="MeasureTool_ContinuousCapture_ToggleSwitch" IsOn="{x:Bind ViewModel.ContinuousCapture, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
@@ -58,11 +64,14 @@
                         IsTabStop="{x:Bind ViewModel.ShowContinuousCaptureWarning, Mode=OneWay}"
                         Severity="Warning" />
 
-                    <tkcontrols:SettingsCard x:Uid="MeasureTool_PerColorChannelEdgeDetection" Name="MeasureToolPerColorChannelEdgeDetection" HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
+                    <tkcontrols:SettingsCard
+                        Name="MeasureToolPerColorChannelEdgeDetection"
+                        x:Uid="MeasureTool_PerColorChannelEdgeDetection"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7FB;}">
                         <ToggleSwitch x:Uid="MeasureTool_PerColorChannelEdgeDetection_ToggleSwitch" IsOn="{x:Bind ViewModel.PerColorChannelEdgeDetection, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MeasureTool_PixelTolerance" Name="MeasureToolPixelTolerance">
+                    <tkcontrols:SettingsCard Name="MeasureToolPixelTolerance" x:Uid="MeasureTool_PixelTolerance">
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="255"
@@ -70,7 +79,10 @@
                             Value="{x:Bind ViewModel.PixelTolerance, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MeasureTool_UnitsOfMeasure" Name="MeasureToolUnitsOfMeasure" HeaderIcon="{ui:FontIcon Glyph=&#xECC6;}">
+                    <tkcontrols:SettingsCard
+                        Name="MeasureToolUnitsOfMeasure"
+                        x:Uid="MeasureTool_UnitsOfMeasure"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECC6;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.UnitsOfMeasure, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Pixels" />
                             <ComboBoxItem x:Uid="MeasureTool_UnitsOfMeasure_Inches" />
@@ -79,11 +91,11 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MeasureTool_DrawFeetOnCross" Name="MeasureToolDrawFeetOnCross">
+                    <tkcontrols:SettingsCard Name="MeasureToolDrawFeetOnCross" x:Uid="MeasureTool_DrawFeetOnCross">
                         <ToggleSwitch x:Uid="MeasureTool_DrawFeetOnCross_ToggleSwitch" IsOn="{x:Bind ViewModel.DrawFeetOnCross, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MeasureTool_MeasureCrossColor" Name="MeasureToolMeasureCrossColor">
+                    <tkcontrols:SettingsCard Name="MeasureToolMeasureCrossColor" x:Uid="MeasureTool_MeasureCrossColor">
                         <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.CrossColor, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>

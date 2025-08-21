@@ -17,8 +17,8 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
-                    x:Uid="Workspaces_EnableToggleControl_HeaderText"
                     Name="WorkspacesEnableToggleControlHeaderText"
+                    x:Uid="Workspaces_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -35,13 +35,16 @@
                 </InfoBar>
                 <controls:SettingsGroup x:Uid="Workspaces_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <tkcontrols:SettingsCard x:Uid="Workspaces_ActivationShortcut" Name="WorkspacesActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard
+                        Name="WorkspacesActivationShortcut"
+                        x:Uid="Workspaces_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
-                        x:Uid="Workspaces_LaunchEditorButtonControl"
                         Name="WorkspacesLaunchEditorButtonControl"
+                        x:Uid="Workspaces_LaunchEditorButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEditorEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"

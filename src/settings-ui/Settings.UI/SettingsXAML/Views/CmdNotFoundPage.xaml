@@ -36,8 +36,8 @@
                 </InfoBar>
 
                 <tkcontrols:SettingsExpander
-                    x:Uid="CmdNotFound_Enable"
                     Name="CmdNotFoundEnable"
+                    x:Uid="CmdNotFound_Enable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}"
                     IsExpanded="True">
                     <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsCommandNotFoundModuleInstalled, Mode=OneWay}">
@@ -86,7 +86,7 @@
                         </StackPanel>
                     </tkcontrols:SettingsExpander.ItemsHeader>
                     <tkcontrols:SettingsExpander.Items>
-                        <tkcontrols:SettingsCard x:Uid="CmdNotFound_PowerShellDetection" Name="CmdNotFoundPowerShellDetection">
+                        <tkcontrols:SettingsCard Name="CmdNotFoundPowerShellDetection" x:Uid="CmdNotFound_PowerShellDetection">
                             <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsPowerShell7Detected, Mode=OneWay}">
                                 <tkcontrols:Case Value="True">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -119,7 +119,7 @@
                             </tkcontrols:SwitchPresenter>
                         </tkcontrols:SettingsCard>
 
-                        <tkcontrols:SettingsCard x:Uid="CmdNotFound_WinGetClientDetection" Name="CmdNotFoundWinGetClientDetection">
+                        <tkcontrols:SettingsCard Name="CmdNotFoundWinGetClientDetection" x:Uid="CmdNotFound_WinGetClientDetection">
                             <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsWinGetClientModuleDetected, Mode=OneWay}">
                                 <tkcontrols:Case Value="True">
                                     <StackPanel Orientation="Horizontal" Spacing="8">

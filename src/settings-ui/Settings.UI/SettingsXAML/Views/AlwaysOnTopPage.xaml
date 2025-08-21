@@ -18,8 +18,8 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
-                    x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
                     Name="AlwaysOnTopEnableToggleControlHeaderText"
+                    x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -37,8 +37,8 @@
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
                     <tkcontrols:SettingsExpander
-                        x:Uid="AlwaysOnTop_ActivationShortcut"
                         Name="AlwaysOnTopActivationShortcut"
+                        x:Uid="AlwaysOnTop_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
@@ -52,33 +52,42 @@
 
                 <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
-                        x:Uid="AlwaysOnTop_FrameEnabled"
                         Name="AlwaysOnTopFrameEnabled"
+                        x:Uid="AlwaysOnTop_FrameEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsExpanded="True">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.FrameEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode" Name="AlwaysOnTopFrameColorMode" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="AlwaysOnTopFrameColorMode"
+                                x:Uid="AlwaysOnTop_FrameColor_Mode"
+                                IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.FrameAccentColor, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Custom_Color" />
                                     <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Windows_Default" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
-                                x:Uid="AlwaysOnTop_FrameColor"
                                 Name="AlwaysOnTopFrameColor"
+                                x:Uid="AlwaysOnTop_FrameColor"
                                 IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.FrameAccentColor, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FrameColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameOpacity" Name="AlwaysOnTopFrameOpacity" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="AlwaysOnTopFrameOpacity"
+                                x:Uid="AlwaysOnTop_FrameOpacity"
+                                IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="0"
                                     Value="{x:Bind ViewModel.FrameOpacity, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameThickness" Name="AlwaysOnTopFrameThickness" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="AlwaysOnTopFrameThickness"
+                                x:Uid="AlwaysOnTop_FrameThickness"
+                                IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="5"
@@ -100,8 +109,8 @@
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
-                        x:Uid="AlwaysOnTop_ExcludedApps"
                         Name="AlwaysOnTopExcludedApps"
+                        x:Uid="AlwaysOnTop_ExcludedApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Items>
