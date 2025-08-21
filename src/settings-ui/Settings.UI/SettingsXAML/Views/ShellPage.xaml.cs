@@ -587,14 +587,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (results.Count == 0)
             {
                 // Explicit no-results row
+                var rl = ResourceLoaderInstance.ResourceLoader;
+                var noResultsPrefix = rl.GetString("Shell_Search_NoResults");
+                if (string.IsNullOrEmpty(noResultsPrefix))
+                {
+                    noResultsPrefix = "No results for";
+                }
+
+                var headerText = $"{noResultsPrefix} '{query}'";
                 top = new List<SuggestionItem>
                 {
                     new SuggestionItem
                     {
-                        Header = $"No results for '{query}'",
+                        Header = headerText,
                         IsNoResults = true,
                     },
                 };
+
                 Logger.LogDebug($"[Search][TextChanged][{traceId}] no results -> added placeholder item (count={top.Count})");
             }
             else
@@ -643,9 +652,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 if (results.Count > 5)
                 {
                     // Add a tail item to show all results if there are more than 5
+                    var rl = ResourceLoaderInstance.ResourceLoader;
+                    var showAllText = rl.GetString("Shell_Search_ShowAll");
+                    if (string.IsNullOrEmpty(showAllText))
+                    {
+                        showAllText = "Show all results";
+                    }
+
                     top.Add(new SuggestionItem
                     {
-                        Header = "Show all results",
+                        Header = showAllText,
                         Icon = "\uE721", // Find
                         Subtitle = string.Empty,
                         IsShowAll = true,

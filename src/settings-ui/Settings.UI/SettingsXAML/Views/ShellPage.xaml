@@ -118,11 +118,11 @@
                     TextWrapping="NoWrap" />
                 <TextBlock
                     x:Name="DebugMessage"
+                    x:Uid="Shell_DebugLabel"
                     Margin="8,0,0,0"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Debug"
                     TextWrapping="NoWrap"
                     Visibility="Collapsed" />
             </StackPanel>
@@ -168,6 +168,7 @@
             <NavigationView.PaneCustomContent>
                 <AutoSuggestBox
                     x:Name="SearchBox"
+                    x:Uid="Shell_SearchBox"
                     MinWidth="0"
                     Margin="12,8"
                     Padding="4"
@@ -175,7 +176,6 @@
                     BorderThickness="1"
                     GotFocus="SearchBox_GotFocus"
                     ItemTemplateSelector="{StaticResource SearchSuggestionTemplateSelector}"
-                    PlaceholderText="Search for settings"
                     QueryIcon="Find"
                     QuerySubmitted="SearchBox_QuerySubmitted"
                     SuggestionChosen="SearchBox_SuggestionChosen"

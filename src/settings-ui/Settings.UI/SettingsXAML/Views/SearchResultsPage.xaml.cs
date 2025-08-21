@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (e.Parameter is SearchResultsNavigationParams searchParams)
             {
                 ViewModel.SetSearchResults(searchParams.Query, searchParams.Results);
-                PageControl.ModuleDescription = $"Results for \"{searchParams.Query}\"";
+                PageControl.ModuleDescription = string.Empty;
             }
         }
 
