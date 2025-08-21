@@ -714,6 +714,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Search", "src\common\Common.Search\Common.Search.csproj", "{38F187B2-6638-5A40-072F-DBE5E54070A0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Settings.UI.XamlIndexBuilder", "src\settings-ui\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj", "{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MouseUtils.UITests", "src\modules\MouseUtils\MouseUtils.UITests\MouseUtils.UITests.csproj", "{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workspaces.Editor.UITests", "src\modules\Workspaces\WorkspacesEditorUITest\Workspaces.Editor.UITests.csproj", "{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}"
