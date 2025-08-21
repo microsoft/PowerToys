@@ -201,6 +201,15 @@ public class Win32Program : IProgram
             });
         }
 
+        if (AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
+        {
+            commands.Add(new CommandContextItem(
+                new UninstallApplicationCommand(this))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
+            });
+        }
+
         commands.Add(new CommandContextItem(
                     new Commands.CopyPathCommand(FullPath))
         {
