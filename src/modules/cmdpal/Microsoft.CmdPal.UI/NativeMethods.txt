@@ -49,6 +49,12 @@ CoWaitForMultipleObjects
 INFINITE
 CWMO_FLAGS
 
+GetCurrentThreadId
+SetWindowsHookEx
+UnhookWindowsHookEx
+CallNextHookEx
+GetModuleHandle
+
 GetSystemMenu
 RemoveMenu
 DrawMenuBar

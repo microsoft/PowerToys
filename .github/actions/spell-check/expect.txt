@@ -25,11 +25,14 @@ ADMINS
 adml
 admx
 advancedpaste
+advancedpasteui
+advancedpasteuishortcut
 advfirewall
 AFeature
 affordances
 AFX
 AGGREGATABLE
+AHK
 AHybrid
 akv
 ALarger
@@ -40,6 +43,7 @@ ALLINPUT
 Allman
 Allmodule
 ALLOWUNDO
+allpc
 ALLVIEW
 ALPHATYPE
 AModifier
@@ -115,6 +119,7 @@ bigbar
 bigobj
 binlog
 binres
+binskim
 BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
@@ -255,6 +260,7 @@ Corpor
 cotaskmem
 COULDNOT
 countof
+covrun
 cpcontrols
 cph
 cplusplus
@@ -627,6 +633,7 @@ HKCU
 hkey
 HKLM
 HKM
+hkmng
 HKPD
 HKU
 HMD
@@ -635,6 +642,7 @@ hmodule
 hmonitor
 homies
 homljgmgpmcbpjbnjpfijnhipfkiclkd
+HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
@@ -643,7 +651,11 @@ Hostx
 hotfixes
 hotkeycontrol
 HOTKEYF
+hotkeylockmachine
+hotkeyreconnect
 hotkeys
+hotkeyswitch
+hotkeytoggleeasymouse
 hotlight
 hotspot
 HPAINTBUFFER
@@ -656,6 +668,7 @@ HROW
 hsb
 HSCROLL
 hsi
+HSpeed
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -701,9 +714,12 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
+imagetotext
+imagetotextshortcut
 imagingdevices
 ime
 imgflip
+inapp
 inbox
 INCONTACT
 Indo
@@ -757,6 +773,7 @@ istep
 ith
 ITHUMBNAIL
 IUI
+IUWP
 IWIC
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -786,6 +803,7 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+kvp
 Kybd
 lastcodeanalysissucceeded
 LASTEXITCODE
@@ -824,6 +842,7 @@ localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
+LOCKMACHINE
 LOCKTYPE
 LOGFONT
 LOGFONTW
@@ -909,6 +928,7 @@ MDL
 mdtext
 mdtxt
 mdwn
+measuretool
 meme
 memicmp
 MENUITEMINFO
@@ -958,6 +978,7 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
+mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -969,6 +990,7 @@ msc
 mscorlib
 msctls
 msdata
+msdia
 MSDL
 MSGFLT
 MSHCTX
@@ -1096,6 +1118,7 @@ NOTSRCCOPY
 NOTSRCERASE
 notwindows
 NOTXORPEN
+nowarn
 NOZORDER
 NPH
 npmjs
@@ -1157,6 +1180,18 @@ PARENTRELATIVEFORADDRESSBAR
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
+pasteashtmlfile
+pasteashtmlfileshortcut
+pasteasjson
+pasteasjsonshortcut
+pasteasmarkdown
+pasteasmarkdownshortcut
+pasteasplaintext
+pasteasplaintextshortcut
+pasteaspngfile
+pasteaspngfileshortcut
+pasteastxtfile
+pasteastxtfileshortcut
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
@@ -1224,6 +1259,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1364,6 +1400,7 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 reparented
+reparenthotkey
 reparenting
 reportfileaccesses
 requery
@@ -1613,6 +1650,7 @@ STYLECHANGED
 STYLECHANGING
 subkeys
 sublang
+Subdomain
 SUBMODULEUPDATE
 subresource
 Superbar
@@ -1683,6 +1721,7 @@ THH
 THICKFRAME
 THISCOMPONENT
 throughs
+thumbnailhotkey
 TILEDWINDOW
 TILLSON
 timedate
@@ -1697,6 +1736,7 @@ tlb
 tlbimp
 tlc
 TNP
+TOGGLEEASYMOUSE
 Toolhelp
 toolkitconverters
 toolwindow
@@ -1710,6 +1750,7 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
+transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
@@ -1824,6 +1865,7 @@ VSINSTALLDIR
 VSM
 vso
 vsonline
+VSpeed
 vstemplate
 vstest
 VSTHRD
@@ -1960,10 +2002,13 @@ XNamespace
 Xoshiro
 XPels
 XPixel
+XPos
 XResource
 xsi
+XSpeed
 XStr
 xstyler
+XTimer
 XUP
 XVIRTUALSCREEN
 xxxxxx
@@ -1973,7 +2018,10 @@ YIncrement
 yinle
 yinyue
 YPels
+YPos
 YResolution
+YSpeed
+YTimer
 YStr
 YVIRTUALSCREEN
 ZEROINIT

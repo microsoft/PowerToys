@@ -111,10 +111,6 @@
   </ItemGroup>
 
   <ItemGroup>
-	<RdXmlFile Include="rd.xml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.ClipboardHistory\Microsoft.CmdPal.Ext.ClipboardHistory.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />

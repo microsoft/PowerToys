@@ -228,7 +228,7 @@
     <comment>Area Apps</comment>
   </data>
   <data name="AppSettingsApp" xml:space="preserve">
-    <value>System settings</value>
+    <value>Settings app</value>
     <comment>Type of the setting is a "Modern Windows settings". We use the same term as used in start menu search at the moment. </comment>
   </data>
   <data name="AppsForWebsites" xml:space="preserve">
@@ -1319,11 +1319,11 @@
     <value>On-Screen</value>
   </data>
   <data name="OpenControlPanel" xml:space="preserve">
-    <value>Control Panel (Application homepage)</value>
+    <value>Open Control Panel</value>
     <comment>'Control Panel' is here the name of the legacy settings app.</comment>
   </data>
   <data name="OpenSettingsApp" xml:space="preserve">
-    <value>Settings (Application homepage)</value>
+    <value>Open Settings app</value>
     <comment>'Settings' is here the name of the modern settings app.</comment>
   </data>
   <data name="Os" xml:space="preserve">
@@ -2080,7 +2080,8 @@
     <comment>Mean zooming of things via a magnifier</comment>
   </data>
   <data name="OpenSettings" xml:space="preserve">
-    <value>Open Settings</value>
+    <value>Open</value>
+    <comment>Open 'the setting' in Settings app, Control Panel or MMC.</comment>
   </data>
   <data name="WindowsSettingsProvider_DisplayName" xml:space="preserve">
     <value>Windows Settings</value>
@@ -2096,5 +2097,14 @@
   </data>
   <data name="settings_fallback_subtitle" xml:space="preserve">
     <value>Search Windows settings for this device</value>
+  </data>
+  <data name="PluginNoResultsMessageHelp" xml:space="preserve">
+    <value>Tip: Use ':'  to search for setting categories (e.g., Update:), and &gt; to search by setting path (e.g., Settings app&gt;Apps).</value>
+  </data>
+  <data name="PluginNoResultsMessage" xml:space="preserve">
+    <value>No settings found</value>
+  </data>
+  <data name="OpenMMC" xml:space="preserve">
+    <value>Open Microsoft Management Console</value>
   </data>
 </root>
