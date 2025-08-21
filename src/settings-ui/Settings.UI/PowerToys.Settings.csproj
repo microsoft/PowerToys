@@ -120,6 +120,16 @@
 		<RuntimeIndexJsonPath>$(OutDir)Assets\Settings\search.index.json</RuntimeIndexJsonPath>
 	</PropertyGroup>
 
+	<!-- Choose a host-compatible RID for the build-time XamlIndexBuilder tool -->
+	<PropertyGroup>
+		<!-- Azure/Windows x64 agents report AMD64; use win-x64 -->
+		<XamlIndexerRuntimeIdentifier Condition="'$(PROCESSOR_ARCHITECTURE)' == 'AMD64'">win-x64</XamlIndexerRuntimeIdentifier>
+		<!-- Windows arm64 hosts -->
+		<XamlIndexerRuntimeIdentifier Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64'">win-arm64</XamlIndexerRuntimeIdentifier>
+		<!-- Fallback to x64 if unknown -->
+		<XamlIndexerRuntimeIdentifier Condition="'$(XamlIndexerRuntimeIdentifier)' == ''">win-x64</XamlIndexerRuntimeIdentifier>
+	</PropertyGroup>
+
 	<PropertyGroup>
 		<!-- TODO: fix issues and reenable -->
 		<!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
@@ -180,7 +190,7 @@
 	</ItemGroup>
 
 	<Target Name="GenerateXamlSearchIndex" BeforeTargets="PrepareResourceNames" Inputs="@(Page->'%(FullPath)')" Outputs="$(GeneratedJsonFile)">
-		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Publish" Properties="Configuration=$(Configuration);&#xD;&#xA;SelfContained=true;&#xD;&#xA;PublishSingleFile=true;&#xD;&#xA;PublishDir=$(IndexerPublishDir)">
+		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Publish" Properties="Configuration=$(Configuration);&#xD;&#xA;SelfContained=true;&#xD;&#xA;PublishSingleFile=true;&#xD;&#xA;RuntimeIdentifier=$(XamlIndexerRuntimeIdentifier);&#xD;&#xA;PublishDir=$(IndexerPublishDir)">
 			<Output TaskParameter="TargetOutputs" ItemName="IndexerPublishOutputs" />
 		</MSBuild>
 

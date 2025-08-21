@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
