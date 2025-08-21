@@ -36,17 +36,17 @@
                         Stretch="Uniform">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Viewbox>
-                    <TextBlock
+                    <StackPanel
+                        Grid.Column="1"
                         Margin="12,0,0,0"
-                        VerticalAlignment="Center"
-                        TextTrimming="CharacterEllipsis">
-                        <Run Text="{x:Bind Header}" />
-                        <LineBreak />
-                        <Run
+                        VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind Header}" />
+                        <TextBlock
                             FontSize="12"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{x:Bind Subtitle}" />
-                    </TextBlock>
+                            Text="{x:Bind Subtitle}"
+                            Visibility="{x:Bind Subtitle, Converter={StaticResource StringVisibilityConverter}}" />
+                    </StackPanel>
                 </Grid>
             </DataTemplate>
             <DataTemplate x:Key="NoResultSearchResultTemplate" x:DataType="models:SuggestionItem">
@@ -69,7 +69,10 @@
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <tkcontrols:TitleBar x:Name="AppTitleBar" PaneButtonClick="PaneToggleBtn_Click">
+        <tkcontrols:TitleBar
+            x:Name="AppTitleBar"
+            AutoConfigureCustomTitleBar="True"
+            PaneButtonClick="PaneToggleBtn_Click">
             <tkcontrols:TitleBar.Icon>
                 <BitmapIcon ShowAsMonochrome="False" UriSource="/Assets/Settings/icon.ico" />
             </tkcontrols:TitleBar.Icon>
@@ -77,7 +80,6 @@
                 <AutoSuggestBox
                     x:Name="SearchBox"
                     x:Uid="Shell_SearchBox"
-                    Width="400"
                     MinWidth="0"
                     HorizontalAlignment="Stretch"
                     BorderThickness="1"

@@ -43,7 +43,6 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             var bootTime = new Stopwatch();
             bootTime.Start();
-            SetTitleBar();
             this.Activated += Window_Activated_SetIcon;
 
             App.ThemeService.ThemeChanged += OnThemeChanged;
@@ -176,6 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             this.InitializeComponent();
+            SetTitleBar();
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
@@ -209,10 +209,14 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void SetTitleBar()
         {
-            ExtendsContentIntoTitleBar = true;
-            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+            AppTitleBar.Window = this;
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
-            SetTitleBar(AppTitleBar);
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            AppTitleBar.Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
+
+#if DEBUG
+            AppTitleBar.Subtitle = "Debug";
+#endif
         }
 
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
@@ -292,14 +296,6 @@ namespace Microsoft.PowerToys.Settings.UI
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
             shellPage.NavView.DisplayModeChanged += NavigationView_DisplayModeChanged;
-
-            var loader = ResourceLoaderInstance.ResourceLoader;
-            AppTitleBar.Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
-
-#if DEBUG
-            AppTitleBar.Subtitle = "Debug";
-#endif
-
             _searchService = new FuzzSearchService<NavigationViewItem>(shellPage.ViewModel.NavItems, (NavigationViewItem item) => item.Content.ToString());
         }
 
