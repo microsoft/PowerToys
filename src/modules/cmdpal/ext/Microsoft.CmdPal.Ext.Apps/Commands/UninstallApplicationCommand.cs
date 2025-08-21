@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -48,6 +49,8 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
 
         try
         {
+            // Which timeout to use for the uninstallation operation?
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
             var packageManager = new PackageManager();
 
             var result = await packageManager.RemovePackageAsync(app.Package.FullName);
@@ -66,6 +69,15 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
             return CommandResult.ShowToast(new ToastArgs()
             {
                 Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_successful), app.DisplayName),
+                Result = CommandResult.KeepOpen(),
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            Logger.LogError($"Timeout exceeded while uninstalling {app.Package.FullName}");
+            return CommandResult.ShowToast(new ToastArgs()
+            {
+                Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), app.DisplayName),
                 Result = CommandResult.KeepOpen(),
             });
         }
