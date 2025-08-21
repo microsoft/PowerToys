@@ -107,7 +107,7 @@ namespace PowerAccent.Core.Tools
             try
             {
                 var json = File.ReadAllText(_filePath);
-                return JsonSerializer.Deserialize(json, SourceGenerationContext.Default.UsageInfoData);
+                return JsonSerializer.Deserialize(json, SourceGenerationContext.Default.UsageInfoData) ?? new UsageInfoData();
             }
             catch (Exception ex)
             {
