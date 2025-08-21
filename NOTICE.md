@@ -1522,6 +1522,7 @@ SOFTWARE.
 - ModernWpfUI
 - Moq
 - MSTest
+- NLog
 - NLog.Extensions.Logging
 - NLog.Schema
 - OpenAI
