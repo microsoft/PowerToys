@@ -32,6 +32,7 @@ AFeature
 affordances
 AFX
 AGGREGATABLE
+AHK
 AHybrid
 akv
 ALarger
@@ -667,6 +668,7 @@ HROW
 hsb
 HSCROLL
 hsi
+HSpeed
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -1862,6 +1864,7 @@ VSINSTALLDIR
 VSM
 vso
 vsonline
+VSpeed
 vstemplate
 vstest
 VSTHRD
@@ -1998,10 +2001,13 @@ XNamespace
 Xoshiro
 XPels
 XPixel
+XPos
 XResource
 xsi
+XSpeed
 XStr
 xstyler
+XTimer
 XUP
 XVIRTUALSCREEN
 xxxxxx
@@ -2011,7 +2017,10 @@ YIncrement
 yinle
 yinyue
 YPels
+YPos
 YResolution
+YSpeed
+YTimer
 YStr
 YVIRTUALSCREEN
 ZEROINIT

@@ -2845,7 +2845,26 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
   </data>
-  <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor.Header" xml:space="preserve">
+    <value>Gliding cursor</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor.Description" xml:space="preserve">
+    <value>An accessibility feature that lets you control the mouse with a single button using guided horizontal and vertical lines</value>
+  </data>
+	<data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
+    <value>Initial line speed</value>
+  </data>
+	<data name="MouseUtils_GlidingCursor_InitialSpeed.Description" xml:space="preserve">
+    <value>Speed of the horizontal or vertical line when it begins moving</value>
+  </data>
+	<data name="MouseUtils_GlidingCursor_DelaySpeed.Header" xml:space="preserve">
+    <value>Reduced line speed</value>
+  </data>
+	<data name="MouseUtils_GlidingCursor_DelaySpeed.Description" xml:space="preserve">
+    <value>Speed after slowing down the line with a second shortcut press</value>
+  </data>
+
+	<data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
   </data>
   <data name="FancyZones_Radio_Default_Theme.Content" xml:space="preserve">
