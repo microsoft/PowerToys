@@ -154,7 +154,7 @@ private:
         {
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
             NewPlusRuntimeRegistration::Unregister();
-            Logger::info("New+ context menu unregistered (Win10)");
+            Logger::info(L"New+ context menu unregistered (Win10)");
 #endif
         }
         powertoy_new_enabled = false;
