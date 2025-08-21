@@ -1495,6 +1495,7 @@ SETRULES
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
+settingscard
 SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
@@ -1756,6 +1757,7 @@ trx
 tsa
 tskill
 tstoi
+tweakable
 TWF
 tymed
 TYPEKEYBOARD

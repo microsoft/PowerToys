@@ -103,7 +103,7 @@ A naive approach will be try to match all the localized text one by one and see 
 Total entry is within thousand(To fill in an exact number), performance is acceptable now.
 ```csharp
 // Match
-query = UerInput();
+query = UserInput();
 matched = {};
 
 indexes = BuildIndex();
@@ -168,10 +168,10 @@ public class SettingsGroup : INotifyPropertyChanged
 ### Runtime index or build time index?
 Now We need to build all the entries in our settings.
 
-Most of the entry properties are static, and in runtime, the `SettingsCard` is compied into native winUI3 controls <small>(I suppose, please correct here if it's wrong)</small>, it's hard to locate all the `SettingsCard`, and performance is terrible if we do dfs for all the pages' elements.
+Most of the entry properties are static, and in runtime, the `SettingsCard` is compiled into native winUI3 controls <small>(I suppose, please correct here if it's wrong)</small>, it's hard to locate all the `SettingsCard`, and performance is terrible if we do search for all the pages' elements.
 
 ### Build time indexing
-We can rely on xmal file parsing to get all the SettingsCard Entries. 
+We can rely on xaml file parsing to get all the SettingsCard Entries. 
 And we don't want xaml file to be brought into production bundle.
 Use a project for parsing and bring that index file into production bundle is a solution.
 ```csproj
@@ -216,35 +216,18 @@ foreach(var entry in entries){
 ```
 So now we have all the entries and entry properties.
 
-## Overrall flow:
+## Overall flow:
 
 ![search workflow](./workflow.png)
 
-## 6. Performance targets & estimation [TBD]
-| Metric        | Target                                        |
-| ------------- | --------------------------------------------- |
-| Memory        | ≤ 150 kB for 1 000 entries                    |
-| Query latency | ≤ 500 ms page result shown per search         |
 
+## 6. Corner cases - that have not addressed yet
 
+1. CmdPal page is not in scope of this effort, that needs additional effort&design to launch and search within cmdpal settings page.
 
+2. Go back button
 
-## 7. Corner cases we can't perform a search
-1. Some SettingsCard does not x:Uid binded, so no text is shown.
-```
-// e.g. Mouse Utils:
-<tkcontrols:SettingsCard ContentAlignment="Left">
-    <CheckBox x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoHide, Mode=TwoWay}" />
-</tkcontrols:SettingsCard>
-```
-
-2. CmdPal page is not in scope of this effort, that needs additional effort&design to launch and search within cmdpal settings page.
-
-3. Go back button
-
-4. icons like this:
-```svg
-                                <PathIcon Data="M 4 16.284 C 1 22.284 29 59.284 71 101.284 L 143 174.284 L 101 220.284 C 54 271.284 5 367.284 14 390.284 C 23 416.284 40 406.284 56 367.284 C 64 347.284 76 320.284 82 307.284 C 97 278.284 160 215.284 175 215.284 C 181 215.284 199 228.284 214 243.284 C 239 270.284 240 273.284 224 286.284 C 202 304.284 180 357.284 180 392.284 C 180 430.284 213 481.284 252 505.284 C 297 532.284 349 531.284 394 500.284 C 414 486.284 434 475.284 438 475.284 C 442 475.284 484 514.284 532 562.284 C 602 631.284 622 647.284 632 637.284 C 642 627.284 581 561.284 335 315.284 C 164 144.284 22 5.284 18 5.284 C 14 5.284 8 10.284 4 16.284 Z M 337 367.284 C 372 401.284 400 435.284 400 442.284 C 400 457.284 349 485.284 321 485.284 C 269 485.284 220 437.284 220 385.284 C 220 357.284 248 305.284 262 305.284 C 269 305.284 303 333.284 337 367.284 Z M 248 132.284 C 228 137.284 225 151.284 241 161.284 C 247 164.284 284 168.284 324 169.284 C 393 171.284 442 188.284 491 227.284 C 522 252.284 578 335.284 585 364.284 C 592 399.284 607 412.284 622 397.284 C 629 390.284 627 370.284 615 333.284 C 590 260.284 506 176.284 427 147.284 C 373 127.284 293 120.284 248 132.284 Z" />
-```
-
-5. Navigation & Expander
+3. Dynamic constructed settings page
+ - Shortcut guide,  with visibility converter
+ - advanced paste dynamically configured setting items
+ - powertoys run's extensions
