@@ -231,7 +231,6 @@ public class StringMatcher
         // while the score is lower if they are more spread out
 
         // The length of the match is assigned a larger weight factor.
-        // I.e. the length is more important than where in the string the match is found.
         const int matchLenWeightFactor = 2;
 
         var score = 100 * (query.Length + 1) * matchLenWeightFactor / (1 + firstIndex + (matchLenWeightFactor * (matchLen + 1)));

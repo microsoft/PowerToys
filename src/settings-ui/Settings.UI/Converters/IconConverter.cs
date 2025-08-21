@@ -27,7 +27,6 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
                 return new FontIcon { Glyph = iconValue };
             }
 
-            // Check if it's still in \uXXXX string format (shouldn't happen after JSON deserialization)
             if (iconValue.StartsWith("\\u", StringComparison.OrdinalIgnoreCase) && iconValue.Length == 6)
             {
                 var hexPart = iconValue.Substring(2); // Remove \u
