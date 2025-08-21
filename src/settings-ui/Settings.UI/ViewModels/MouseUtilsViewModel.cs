@@ -159,7 +159,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 [FindMyMouseSettings.ModuleName] = [FindMyMouseActivationShortcut],
                 [MouseHighlighterSettings.ModuleName] = [MouseHighlighterActivationShortcut],
-                [MousePointerCrosshairsSettings.ModuleName] = [MousePointerCrosshairsActivationShortcut],
+                [MousePointerCrosshairsSettings.ModuleName] = [
+                    MousePointerCrosshairsActivationShortcut,
+                    GlidingCursorActivationShortcut],
                 [MouseJumpSettings.ModuleName] = [MouseJumpActivationShortcut],
             };
 

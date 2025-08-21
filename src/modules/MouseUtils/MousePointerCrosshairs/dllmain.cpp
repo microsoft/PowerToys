@@ -69,9 +69,6 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
 
-    // Hotkey to invoke the module (centralized hook)
-    HotkeyEx m_hotkey;
-
     // Additional hotkeys (legacy API) to support multiple shortcuts
     Hotkey m_activationHotkey{};    // Crosshairs toggle
     Hotkey m_glidingHotkey{};       // Gliding cursor state machine
@@ -215,17 +212,6 @@ public:
     virtual bool is_enabled_by_default() const override
     {
         return false;
-    }
-
-    // HotkeyEx (single hotkey, centralized keyboard hook)
-    virtual std::optional<HotkeyEx> GetHotkeyEx() override
-    {
-        return m_hotkey;
-    }
-
-    virtual void OnHotkeyEx() override
-    {
-        InclusiveCrosshairsSwitch();
     }
 
     // Legacy multi-hotkey support (like CropAndLock)
@@ -499,24 +485,6 @@ private:
                 // Parse primary activation HotKey (for centralized hook)
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
                 auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
-                m_hotkey = HotkeyEx();
-                if (hotkey.win_pressed())
-                {
-                    m_hotkey.modifiersMask |= MOD_WIN;
-                }
-                if (hotkey.ctrl_pressed())
-                {
-                    m_hotkey.modifiersMask |= MOD_CONTROL;
-                }
-                if (hotkey.shift_pressed())
-                {
-                    m_hotkey.modifiersMask |= MOD_SHIFT;
-                }
-                if (hotkey.alt_pressed())
-                {
-                    m_hotkey.modifiersMask |= MOD_ALT;
-                }
-                m_hotkey.vkCode = hotkey.get_code();
 
                 // Map to legacy Hotkey for multi-hotkey API
                 m_activationHotkey.win = hotkey.win_pressed();
@@ -771,12 +739,7 @@ private:
         {
             Logger::info("Mouse Pointer Crosshairs settings are empty");
         }
-        if (!m_hotkey.modifiersMask)
-        {
-            Logger::info("Mouse Pointer Crosshairs  is going to use default shortcut");
-            m_hotkey.modifiersMask = MOD_WIN | MOD_ALT;
-            m_hotkey.vkCode = 0x50; // P key
-        }
+        
         if (m_activationHotkey.key == 0)
         {
             m_activationHotkey.win = true;
