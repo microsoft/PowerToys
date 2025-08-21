@@ -92,7 +92,7 @@ internal sealed partial class TrayIconService
             {
                 _popupMenu = PInvoke.CreatePopupMenu_SafeHandle();
                 PInvoke.InsertMenu(_popupMenu, 0, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, PInvoke.WM_USER + 1, RS_.GetString("TrayMenu_Settings"));
-                PInvoke.InsertMenu(_popupMenu, 1, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, PInvoke.WM_USER + 2, RS_.GetString("TrayMenu_Exit"));
+                PInvoke.InsertMenu(_popupMenu, 1, MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING, PInvoke.WM_USER + 2, RS_.GetString("TrayMenu_Close"));
             }
         }
         else

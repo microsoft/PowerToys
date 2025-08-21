@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -5071,9 +5071,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
     <value>Generate package</value>
   </data>
-  <data name="AppTitleBarShutDown_Tooltip.Text" xml:space="preserve">
-    <value>Shut down</value>
-  </data>
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
   </data>
@@ -5167,6 +5164,23 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
+  </data>
+  <data name="Close_NavViewItem.Content" xml:space="preserve">
+    <value>Close PowerToys</value>
+    <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="CloseDialog.Content" xml:space="preserve">
+    <value>Closing PowerToys will stop all active utilities.</value>
+    <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="CloseDialog.Title" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
+  <data name="CloseDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="CloseDialog.SecondaryButtonText" xml:space="preserve">
+    <value>No</value>
   </data>
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>

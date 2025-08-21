@@ -32,7 +32,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     // This is set from the SearchBar
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowSuggestion))]
-    public partial string Filter { get; set; } = string.Empty;
+    public partial string SearchTextBox { get; set; } = string.Empty;
 
     [ObservableProperty]
     public virtual partial string PlaceholderText { get; private set; } = "Type here to search...";
@@ -41,7 +41,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     [NotifyPropertyChangedFor(nameof(ShowSuggestion))]
     public virtual partial string TextToSuggest { get; protected set; } = string.Empty;
 
-    public bool ShowSuggestion => !string.IsNullOrEmpty(TextToSuggest) && TextToSuggest != Filter;
+    public bool ShowSuggestion => !string.IsNullOrEmpty(TextToSuggest) && TextToSuggest != SearchTextBox;
 
     [ObservableProperty]
     public partial AppExtensionHost ExtensionHost { get; private set; }
@@ -167,9 +167,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         }
     }
 
-    partial void OnFilterChanged(string oldValue, string newValue) => OnFilterUpdated(newValue);
+    partial void OnSearchTextBoxChanged(string oldValue, string newValue) => OnSearchTextBoxUpdated(newValue);
 
-    protected virtual void OnFilterUpdated(string filter)
+    protected virtual void OnSearchTextBoxUpdated(string searchTextBox)
     {
         // The base page has no notion of data, so we do nothing here...
         // subclasses should override.

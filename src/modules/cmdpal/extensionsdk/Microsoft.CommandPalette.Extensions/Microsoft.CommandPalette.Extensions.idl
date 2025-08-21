@@ -122,7 +122,7 @@ namespace Microsoft.CommandPalette.Extensions
     interface ISeparatorFilterItem requires IFilterItem {}
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IFilter requires IFilterItem {
+    interface IFilter requires INotifyPropChanged, IFilterItem {
         String Id { get; };
         String Name { get; };
         IIconInfo Icon { get; };
@@ -131,7 +131,7 @@ namespace Microsoft.CommandPalette.Extensions
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IFilters {
         String CurrentFilterId { get; set; };
-        IFilterItem[] Filters();
+        IFilterItem[] GetFilters();
     }
     
     struct Color
