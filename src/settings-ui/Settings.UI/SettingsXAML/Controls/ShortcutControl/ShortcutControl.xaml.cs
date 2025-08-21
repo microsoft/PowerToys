@@ -10,17 +10,26 @@ using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
+    public enum ShortcutControlSource
+    {
+        SettingsPage,
+        ConflictWindow,
+    }
+
     public sealed partial class ShortcutControl : UserControl, IDisposable
     {
         private readonly UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
@@ -42,6 +51,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
         public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnHasConflictChanged));
         public static readonly DependencyProperty TooltipProperty = DependencyProperty.Register("Tooltip", typeof(string), typeof(ShortcutControl), new PropertyMetadata(null, OnTooltipChanged));
+
+        // Dependency property to track the source/context of the ShortcutControl
+        public static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(ShortcutControlSource), typeof(ShortcutControl), new PropertyMetadata(ShortcutControlSource.SettingsPage));
 
         private static ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
@@ -74,6 +86,47 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             control.UpdateKeyVisualStyles();
+
+            // Check if conflict was resolved (had conflict before, no conflict now)
+            var oldValue = (bool)(e.OldValue ?? false);
+            var newValue = (bool)(e.NewValue ?? false);
+
+            // General conflict resolution telemetry (for all sources)
+            if (oldValue && !newValue)
+            {
+                // Determine the actual source based on the control's context
+                var actualSource = DetermineControlSource(control);
+
+                // Conflict was resolved - send general telemetry
+                PowerToysTelemetry.Log.WriteEvent(new ShortcutConflictResolvedEvent()
+                {
+                    Source = actualSource.ToString(),
+                });
+            }
+        }
+
+        private static ShortcutControlSource DetermineControlSource(ShortcutControl control)
+        {
+            // Walk up the visual tree to find the parent window/container
+            DependencyObject parent = control;
+            while (parent != null)
+            {
+                parent = VisualTreeHelper.GetParent(parent);
+
+                // Check if we're in a ShortcutConflictWindow
+                if (parent != null && parent.GetType().Name == "ShortcutConflictWindow")
+                {
+                    return ShortcutControlSource.ConflictWindow;
+                }
+
+                if (parent != null && (parent.GetType().Name == "MainWindow" || parent.GetType().Name == "ShellPage"))
+                {
+                    return ShortcutControlSource.SettingsPage;
+                }
+            }
+
+            // Fallback to the explicitly set value or default
+            return ShortcutControlSource.ConflictWindow;
         }
 
         private static void OnTooltipChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -106,6 +159,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get => (string)GetValue(TooltipProperty);
             set => SetValue(TooltipProperty, value);
+        }
+
+        public ShortcutControlSource Source
+        {
+            get => (ShortcutControlSource)GetValue(SourceProperty);
+            set => SetValue(SourceProperty, value);
         }
 
         public bool Enabled

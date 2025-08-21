@@ -29,7 +29,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class MouseWithoutBordersViewModel : PageViewModelBase, IDisposable
+    public partial class MouseWithoutBordersViewModel : PageViewModelBase
     {
         protected override string ModuleName => MouseWithoutBordersSettings.ModuleName;
 
@@ -42,6 +42,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         };
 
         private readonly Lock _machineMatrixStringLock = new();
+
+        private bool _disposed;
 
         private static readonly Dictionary<SocketStatus, Brush> StatusColors = new Dictionary<SocketStatus, Brush>()
         {
@@ -1262,38 +1264,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!_disposed)
             {
-                // Cancel the cancellation token source
-                _cancellationTokenSource?.Cancel();
-                _cancellationTokenSource?.Dispose();
+                if (disposing)
+                {
+                    // Cancel the cancellation token source
+                    _cancellationTokenSource?.Cancel();
+                    _cancellationTokenSource?.Dispose();
 
-                // Wait for the machine polling task to complete
-                try
-                {
-                    _machinePollingThreadTask?.Wait(TimeSpan.FromSeconds(1));
-                }
-                catch (AggregateException)
-                {
-                    // Task was cancelled, which is expected
+                    // Wait for the machine polling task to complete
+                    try
+                    {
+                        _machinePollingThreadTask?.Wait(TimeSpan.FromSeconds(1));
+                    }
+                    catch (AggregateException)
+                    {
+                        // Task was cancelled, which is expected
+                    }
+
+                    // Dispose the named pipe stream
+                    try
+                    {
+                        syncHelperStream?.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Error disposing sync helper stream: {ex}");
+                    }
+                    finally
+                    {
+                        syncHelperStream = null;
+                    }
+
+                    // Dispose the semaphore
+                    _ipcSemaphore?.Dispose();
                 }
 
-                // Dispose the named pipe stream
-                try
-                {
-                    syncHelperStream?.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Error disposing sync helper stream: {ex}");
-                }
-                finally
-                {
-                    syncHelperStream = null;
-                }
-
-                // Dispose the semaphore
-                _ipcSemaphore?.Dispose();
+                _disposed = true;
             }
 
             base.Dispose(disposing);
