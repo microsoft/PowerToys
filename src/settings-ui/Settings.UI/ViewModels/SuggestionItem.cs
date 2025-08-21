@@ -25,5 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string Subtitle { get; init; }
 
         public bool IsShowAll { get; init; }
+
+        public bool IsNoResults { get; init; }
     }
 }

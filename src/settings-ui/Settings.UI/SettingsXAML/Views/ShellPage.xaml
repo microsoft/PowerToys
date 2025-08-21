@@ -64,7 +64,7 @@
                 <TextBlock
                     Margin="8"
                     HorizontalAlignment="Center"
-                    Text="Show all results"
+                    Text="{x:Bind Header}"
                     TextAlignment="Center" />
             </Grid>
         </DataTemplate>

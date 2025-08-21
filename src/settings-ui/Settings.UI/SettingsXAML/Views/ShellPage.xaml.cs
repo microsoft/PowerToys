@@ -583,58 +583,75 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _lastSearchResults = results;
             _lastQueryText = query;
 
-            // Project top 5 suggestions
-            var swProject = Stopwatch.StartNew();
-            var top = results.Take(5)
-                .Select(e =>
+            List<SuggestionItem> top;
+            if (results.Count == 0)
+            {
+                // Explicit no-results row
+                top = new List<SuggestionItem>
                 {
-                    string subtitle = string.Empty;
-                    if (e.Type != EntryType.SettingsPage)
+                    new SuggestionItem
                     {
-                        var swSubtitle = Stopwatch.StartNew();
-                        subtitle = SearchIndexService.GetLocalizedPageName(e.PageTypeName);
-                        if (string.IsNullOrEmpty(subtitle))
+                        Header = $"No results for '{query}'",
+                        IsNoResults = true,
+                    },
+                };
+                Logger.LogDebug($"[Search][TextChanged][{traceId}] no results -> added placeholder item (count={top.Count})");
+            }
+            else
+            {
+                // Project top 5 suggestions
+                var swProject = Stopwatch.StartNew();
+                top = results.Take(5)
+                    .Select(e =>
+                    {
+                        string subtitle = string.Empty;
+                        if (e.Type != EntryType.SettingsPage)
                         {
-                            // Fallback: look up the module title from the in-memory index
-                            var swFallback = Stopwatch.StartNew();
-                            subtitle = SearchIndexService.Index
-                                .Where(x => x.Type == EntryType.SettingsPage && x.PageTypeName == e.PageTypeName)
-                                .Select(x => x.Header)
-                                .FirstOrDefault() ?? string.Empty;
-                            swFallback.Stop();
-                            Logger.LogDebug($"[Search][TextChanged][{traceId}] fallback subtitle for '{e.PageTypeName}' took {swFallback.ElapsedMilliseconds} ms");
+                            var swSubtitle = Stopwatch.StartNew();
+                            subtitle = SearchIndexService.GetLocalizedPageName(e.PageTypeName);
+                            if (string.IsNullOrEmpty(subtitle))
+                            {
+                                // Fallback: look up the module title from the in-memory index
+                                var swFallback = Stopwatch.StartNew();
+                                subtitle = SearchIndexService.Index
+                                    .Where(x => x.Type == EntryType.SettingsPage && x.PageTypeName == e.PageTypeName)
+                                    .Select(x => x.Header)
+                                    .FirstOrDefault() ?? string.Empty;
+                                swFallback.Stop();
+                                Logger.LogDebug($"[Search][TextChanged][{traceId}] fallback subtitle for '{e.PageTypeName}' took {swFallback.ElapsedMilliseconds} ms");
+                            }
+
+                            swSubtitle.Stop();
+                            Logger.LogDebug($"[Search][TextChanged][{traceId}] subtitle for '{e.PageTypeName}' took {swSubtitle.ElapsedMilliseconds} ms");
                         }
 
-                        swSubtitle.Stop();
-                        Logger.LogDebug($"[Search][TextChanged][{traceId}] subtitle for '{e.PageTypeName}' took {swSubtitle.ElapsedMilliseconds} ms");
-                    }
+                        return new SuggestionItem
+                        {
+                            Header = e.Header,
+                            Icon = e.Icon,
+                            PageTypeName = e.PageTypeName,
+                            ElementName = e.ElementName,
+                            ParentElementName = e.ParentElementName,
+                            Subtitle = subtitle,
+                            IsShowAll = false,
+                        };
+                    })
+                    .ToList();
+                swProject.Stop();
+                Logger.LogDebug($"[Search][TextChanged][{traceId}] project suggestions took {swProject.ElapsedMilliseconds} ms. topCount={top.Count}");
 
-                    return new SuggestionItem
-                    {
-                        Header = e.Header,
-                        Icon = e.Icon,
-                        PageTypeName = e.PageTypeName,
-                        ElementName = e.ElementName,
-                        ParentElementName = e.ParentElementName,
-                        Subtitle = subtitle,
-                        IsShowAll = false,
-                    };
-                })
-                .ToList();
-            swProject.Stop();
-            Logger.LogDebug($"[Search][TextChanged][{traceId}] project suggestions took {swProject.ElapsedMilliseconds} ms. topCount={top.Count}");
-
-            // Add a tail item to show all results if there are more than 5
-            if (results.Count > 5)
-            {
-                top.Add(new SuggestionItem
+                if (results.Count > 5)
                 {
-                    Header = "Show all results",
-                    Icon = "\uE721", // Find
-                    Subtitle = string.Empty,
-                    IsShowAll = true,
-                });
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] added 'Show all results' item");
+                    // Add a tail item to show all results if there are more than 5
+                    top.Add(new SuggestionItem
+                    {
+                        Header = "Show all results",
+                        Icon = "\uE721", // Find
+                        Subtitle = string.Empty,
+                        IsShowAll = true,
+                    });
+                    Logger.LogDebug($"[Search][TextChanged][{traceId}] added 'Show all results' item");
+                }
             }
 
             var swUi = Stopwatch.StartNew();

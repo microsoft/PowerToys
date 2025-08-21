@@ -20,14 +20,12 @@ public sealed partial class SearchSuggestionTemplateSelector : DataTemplateSelec
     {
         if (item is SuggestionItem suggestionItem)
         {
-            if (suggestionItem.IsShowAll)
+            if (suggestionItem.IsNoResults || suggestionItem.IsShowAll)
             {
                 return NoResultsSuggestionTemplate;
             }
-            else
-            {
-                return DefaultSuggestionTemplate;
-            }
+
+            return DefaultSuggestionTemplate;
         }
 
         return DefaultSuggestionTemplate;
