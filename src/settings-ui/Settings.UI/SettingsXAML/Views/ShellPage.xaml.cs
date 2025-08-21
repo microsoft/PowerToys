@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Windowing;
@@ -113,7 +114,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Gets view model.
         /// </summary>
-        public ShellViewModel ViewModel { get; } = new ShellViewModel();
+        public ShellViewModel ViewModel { get; }
 
         /// <summary>
         /// Gets a collection of functions that handle IPC responses.
@@ -134,6 +135,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             InitializeComponent();
 
+            var settingsUtils = new SettingsUtils();
+            ViewModel = new ShellViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
             DataContext = ViewModel;
             ShellHandler = this;
             ViewModel.Initialize(shellFrame, navigationView, KeyboardAccelerators);
@@ -141,6 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
             // shellFrame.Navigate(typeof(GeneralPage));
             IPCResponseHandleList.Add(ReceiveMessage);
+            Services.IPCResponseService.Instance.RegisterForIPC();
             SetTitleBar();
 
             if (_navViewParentLookup.Count > 0)
@@ -460,17 +464,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
 
-        private void ExitPTItem_Tapped(object sender, RoutedEventArgs e)
+        private async void Close_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            await CloseDialog.ShowAsync();
+        }
+
+        private void CloseDialog_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             const string ptTrayIconWindowClass = "PToyTrayIconWindow"; // Defined in runner/tray_icon.h
-            const nuint ID_EXIT_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
+            const nuint ID_CLOSE_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
 
             // Exit the XAML application
             Application.Current.Exit();
 
             // Invoke the exit command from the tray icon
             IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
-            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
+            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_CLOSE_MENU_COMMAND, 0);
         }
     }
 }

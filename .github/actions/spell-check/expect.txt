@@ -25,11 +25,14 @@ ADMINS
 adml
 admx
 advancedpaste
+advancedpasteui
+advancedpasteuishortcut
 advfirewall
 AFeature
 affordances
 AFX
 AGGREGATABLE
+AHK
 AHybrid
 akv
 ALarger
@@ -38,7 +41,9 @@ ALLAPPS
 ALLCHILDREN
 ALLINPUT
 Allman
+Allmodule
 ALLOWUNDO
+allpc
 ALLVIEW
 ALPHATYPE
 AModifier
@@ -114,6 +119,7 @@ bigbar
 bigobj
 binlog
 binres
+binskim
 BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
@@ -218,6 +224,7 @@ coclass
 CODENAME
 codereview
 Codespaces
+Coen
 COINIT
 colid
 colorconv
@@ -245,6 +252,7 @@ CONTEXTMENUHANDLER
 contractversion
 CONTROLPARENT
 copiedcolorrepresentation
+coppied
 copyable
 COPYPEN
 COREWINDOW
@@ -252,6 +260,7 @@ Corpor
 cotaskmem
 COULDNOT
 countof
+covrun
 cpcontrols
 cph
 cplusplus
@@ -443,6 +452,7 @@ ERRORIMAGE
 ERRORTITLE
 ESettings
 esrp
+etd
 ETDT
 etl
 etw
@@ -527,8 +537,8 @@ frm
 FROMTOUCH
 fsanitize
 fsmgmt
-fxf
 fuzzingtesting
+fxf
 FZE
 gacutil
 Gaeilge
@@ -623,6 +633,7 @@ HKCU
 hkey
 HKLM
 HKM
+hkmng
 HKPD
 HKU
 HMD
@@ -631,6 +642,7 @@ hmodule
 hmonitor
 homies
 homljgmgpmcbpjbnjpfijnhipfkiclkd
+HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
@@ -639,7 +651,11 @@ Hostx
 hotfixes
 hotkeycontrol
 HOTKEYF
+hotkeylockmachine
+hotkeyreconnect
 hotkeys
+hotkeyswitch
+hotkeytoggleeasymouse
 hotlight
 hotspot
 HPAINTBUFFER
@@ -652,6 +668,7 @@ HROW
 hsb
 HSCROLL
 hsi
+HSpeed
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -697,9 +714,12 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
+imagetotext
+imagetotextshortcut
 imagingdevices
 ime
 imgflip
+inapp
 inbox
 INCONTACT
 Indo
@@ -733,6 +753,7 @@ INSTALLSTARTMENUSHORTCUT
 INSTALLSTATE
 Inste
 Interlop
+intput
 INTRESOURCE
 INVALIDARG
 invalidoperatioexception
@@ -752,6 +773,7 @@ istep
 ith
 ITHUMBNAIL
 IUI
+IUWP
 IWIC
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -781,6 +803,7 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+kvp
 Kybd
 lastcodeanalysissucceeded
 LASTEXITCODE
@@ -815,9 +838,11 @@ LMEM
 LMENU
 LOADFROMFILE
 LOBYTE
+localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
+LOCKMACHINE
 LOCKTYPE
 LOGFONT
 LOGFONTW
@@ -903,6 +928,7 @@ MDL
 mdtext
 mdtxt
 mdwn
+measuretool
 meme
 memicmp
 MENUITEMINFO
@@ -952,6 +978,7 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
+mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -963,6 +990,7 @@ msc
 mscorlib
 msctls
 msdata
+msdia
 MSDL
 MSGFLT
 MSHCTX
@@ -1118,6 +1146,7 @@ oldtheme
 oleaut
 OLECHAR
 onebranch
+OOBEUI
 openas
 opencode
 OPENFILENAME
@@ -1151,6 +1180,18 @@ PARENTRELATIVEFORADDRESSBAR
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
+pasteashtmlfile
+pasteashtmlfileshortcut
+pasteasjson
+pasteasjsonshortcut
+pasteasmarkdown
+pasteasmarkdownshortcut
+pasteasplaintext
+pasteasplaintextshortcut
+pasteaspngfile
+pasteaspngfileshortcut
+pasteastxtfile
+pasteastxtfileshortcut
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
@@ -1218,6 +1259,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1358,6 +1400,7 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 reparented
+reparenthotkey
 reparenting
 reportfileaccesses
 requery
@@ -1383,8 +1426,8 @@ RIDEV
 RIGHTSCROLLBAR
 riid
 RKey
-RNumber
 Rns
+RNumber
 rop
 ROUNDSMALL
 ROWSETEXT
@@ -1395,6 +1438,7 @@ Rsp
 rstringalnum
 rstringalpha
 rstringdigit
+rtb
 RTB
 RTLREADING
 rtm
@@ -1433,6 +1477,7 @@ secpol
 securestring
 SEEMASKINVOKEIDLIST
 SELCHANGE
+selfhost
 SENDCHANGE
 sendvirtualinput
 serverside
@@ -1529,6 +1574,7 @@ SLGP
 sln
 SMALLICON
 smartphone
+smileys
 SMTO
 SNAPPROCESS
 snk
@@ -1604,6 +1650,7 @@ STYLECHANGED
 STYLECHANGING
 subkeys
 sublang
+Subdomain
 SUBMODULEUPDATE
 subresource
 Superbar
@@ -1615,6 +1662,8 @@ svgz
 SVSI
 SWFO
 SWP
+SWPNOSIZE
+SWPNOZORDER
 SWRESTORE
 symbolrequestprod
 SYMCACHE
@@ -1672,6 +1721,7 @@ THH
 THICKFRAME
 THISCOMPONENT
 throughs
+thumbnailhotkey
 TILEDWINDOW
 TILLSON
 timedate
@@ -1686,6 +1736,7 @@ tlb
 tlbimp
 tlc
 TNP
+TOGGLEEASYMOUSE
 Toolhelp
 toolkitconverters
 toolwindow
@@ -1699,6 +1750,7 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
+transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
@@ -1754,8 +1806,8 @@ Uptool
 urld
 Usb
 USEDEFAULT
-USEINSTALLERFORTEST
 USEFILEATTRIBUTES
+USEINSTALLERFORTEST
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL
@@ -1813,6 +1865,7 @@ VSINSTALLDIR
 VSM
 vso
 vsonline
+VSpeed
 vstemplate
 vstest
 VSTHRD
@@ -1869,6 +1922,7 @@ winexe
 winforms
 winget
 wingetcreate
+wingetpkgs
 Winhook
 WINL
 winlogon
@@ -1948,10 +2002,13 @@ XNamespace
 Xoshiro
 XPels
 XPixel
+XPos
 XResource
 xsi
+XSpeed
 XStr
 xstyler
+XTimer
 XUP
 XVIRTUALSCREEN
 xxxxxx
@@ -1961,7 +2018,10 @@ YIncrement
 yinle
 yinyue
 YPels
+YPos
 YResolution
+YSpeed
+YTimer
 YStr
 YVIRTUALSCREEN
 ZEROINIT
