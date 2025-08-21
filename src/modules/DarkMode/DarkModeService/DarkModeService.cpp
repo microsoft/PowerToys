@@ -149,6 +149,36 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     // Initialize settings system
     DarkModeSettings::instance().InitFileWatcher();
 
+    auto applyTheme = [](int nowMinutes, int lightMinutes, int darkMinutes, const auto& settings) {
+        bool isLightActive = false;
+
+        if (lightMinutes < darkMinutes)
+        {
+            // Normal case: sunrise < sunset
+            isLightActive = (nowMinutes >= lightMinutes && nowMinutes < darkMinutes);
+        }
+        else
+        {
+            // Wraparound case: e.g. light at 21:00, dark at 06:00
+            isLightActive = (nowMinutes >= lightMinutes || nowMinutes < darkMinutes);
+        }
+
+        if (isLightActive)
+        {
+            if (settings.changeSystem)
+                SetSystemTheme(true);
+            if (settings.changeApps)
+                SetAppsTheme(true);
+        }
+        else
+        {
+            if (settings.changeSystem)
+                SetSystemTheme(false);
+            if (settings.changeApps)
+                SetAppsTheme(false);
+        }
+    };
+
     // --- At service start: immediately honor the schedule ---
     {
         SYSTEMTIME st;
@@ -158,8 +188,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         DarkModeSettings::instance().LoadSettings();
         const auto& settings = DarkModeSettings::instance().settings();
 
-        int refreshLightMinutes = 0;
-        int refreshDarkMinutes = 0;
+        int lightMinutes = 0, darkMinutes = 0;
 
         if (settings.useLocation)
         {
@@ -170,33 +199,19 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                 st.wMonth,
                 st.wDay);
 
-            refreshLightMinutes = sun.sunriseHour * 60 + sun.sunriseMinute;
-            refreshDarkMinutes = sun.sunsetHour * 60 + sun.sunsetMinute;
+            lightMinutes = sun.sunriseHour * 60 + sun.sunriseMinute;
+            darkMinutes = sun.sunsetHour * 60 + sun.sunsetMinute;
         }
         else
         {
-            refreshLightMinutes = settings.lightTime;
-            refreshDarkMinutes = settings.darkTime;
+            lightMinutes = settings.lightTime;
+            darkMinutes = settings.darkTime;
         }
 
-        // Apply whichever should currently be active
-        if (nowMinutes >= refreshDarkMinutes || nowMinutes < refreshLightMinutes)
-        {
-            if (settings.changeSystem)
-                SetSystemTheme(false);
-            if (settings.changeApps)
-                SetAppsTheme(false);
-        }
-        else
-        {
-            if (settings.changeSystem)
-                SetSystemTheme(true);
-            if (settings.changeApps)
-                SetAppsTheme(true);
-        }
+        applyTheme(nowMinutes, lightMinutes, darkMinutes, settings);
     }
 
-    // --- Main loop: only wakes once per minute or stop/parent death ---
+    // --- Main loop: wakes once per minute or stop/parent death ---
     for (;;)
     {
         HANDLE waits[2] = { g_ServiceStopEvent, hParent };
@@ -209,8 +224,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         DarkModeSettings::instance().LoadSettings();
         const auto& settings = DarkModeSettings::instance().settings();
 
-        int lightMinutes = 0;
-        int darkMinutes = 0;
+        int lightMinutes = 0, darkMinutes = 0;
 
         if (settings.useLocation)
         {
@@ -242,22 +256,10 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                    darkMinutes % 60);
         OutputDebugString(msg);
 
-        if (nowMinutes == lightMinutes)
-        {
-            if (settings.changeSystem)
-                SetSystemTheme(true);
-            if (settings.changeApps)
-                SetAppsTheme(true);
-        }
-        else if (nowMinutes == darkMinutes)
-        {
-            if (settings.changeSystem)
-                SetSystemTheme(false);
-            if (settings.changeApps)
-                SetAppsTheme(false);
-        }
+        // Apply theme logic
+        applyTheme(nowMinutes, lightMinutes, darkMinutes, settings);
 
-        // Sleep until next minute, but wake up if stop/parent dies
+        // Sleep until next minute, wake early if stop/parent dies
         GetLocalTime(&st);
         int msToNextMinute = (60 - st.wSecond) * 1000 - st.wMilliseconds;
         if (msToNextMinute < 50)
@@ -275,7 +277,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     return 0;
 }
-
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
