@@ -63,6 +63,7 @@
 		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
 		<PackageReference Include="CommunityToolkit.WinUI.Converters" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.TitleBar" />
 		<PackageReference Include="System.Net.Http" />
 		<PackageReference Include="System.Private.Uri" />
 		<PackageReference Include="System.Text.RegularExpressions" />

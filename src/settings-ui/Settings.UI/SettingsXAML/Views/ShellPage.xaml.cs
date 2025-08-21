@@ -131,6 +131,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static bool IsUserAnAdmin { get; set; }
 
+        public CommunityToolkit.WinUI.Controls.TitleBar TitleBar => AppTitleBar;
+
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
         private List<string> _searchSuggestions = new();
         private ISearchService<NavigationViewItem> _searchService;
@@ -150,7 +152,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ShellPage()
         {
             InitializeComponent();
-
+            SetWindowTitle();
             var settingsUtils = new SettingsUtils();
             ViewModel = new ShellViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
             DataContext = ViewModel;
@@ -160,8 +162,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
             // shellFrame.Navigate(typeof(GeneralPage));
             IPCResponseHandleList.Add(ReceiveMessage);
-            Services.IPCResponseService.Instance.RegisterForIPC();
-            SetTitleBar();
+            IPCResponseService.Instance.RegisterForIPC();
 
             if (_navViewParentLookup.Count > 0)
             {
@@ -364,17 +365,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void OOBEItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void OOBEItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
             OpenOobeWindowCallback();
         }
 
-        private async void FeedbackItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private async void FeedbackItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
             await Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
         }
 
-        private void WhatIsNewItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
             OpenWhatIsNewWindowCallback();
         }
@@ -433,28 +434,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             NavigationService.EnsurePageIsSelected(typeof(DashboardPage));
         }
 
-        private void SetTitleBar()
+        private void SetWindowTitle()
         {
-            var u = App.GetSettingsWindow();
-            if (u != null)
-            {
-                // A custom title bar is required for full window theme and Mica support.
-                // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
-                u.ExtendsContentIntoTitleBar = true;
-                u.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(u));
-                u.SetTitleBar(AppTitleBar);
-                var loader = ResourceLoaderInstance.ResourceLoader;
-                AppTitleBarText.Text = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            AppTitleBar.Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
 #if DEBUG
-                DebugMessage.Visibility = Visibility.Visible;
+            AppTitleBar.Subtitle = "Debug";
 #endif
-            }
         }
 
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
-            SetTitleBar();
             Logger.LogDebug("[Search][Index] Scheduling BuildIndex...");
             var swIndex = Stopwatch.StartNew();
             Task.Run(() =>
@@ -480,15 +470,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
             {
-                PaneToggleBtn.Visibility = Visibility.Visible;
-                AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
-                AppTitleBarText.Margin = new Thickness(12, 0, 0, 0);
+                AppTitleBar.IsPaneButtonVisible = true;
             }
             else
             {
-                PaneToggleBtn.Visibility = Visibility.Collapsed;
-                AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
-                AppTitleBarText.Margin = new Thickness(16, 0, 0, 0);
+                AppTitleBar.IsPaneButtonVisible = false;
             }
         }
 

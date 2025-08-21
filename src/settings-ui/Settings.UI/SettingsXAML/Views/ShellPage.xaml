@@ -11,6 +11,7 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
@@ -81,45 +82,39 @@
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Button
-            x:Name="PaneToggleBtn"
-            Width="48"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Click="PaneToggleBtn_Click"
-            Style="{StaticResource PaneToggleButtonStyle}" />
-        <Grid
+        <tkcontrols:TitleBar
             x:Name="AppTitleBar"
-            Height="{Binding ElementName=navigationView, Path=CompactPaneLength}"
-            Margin="48,0,0,0"
-            VerticalAlignment="Top"
-            IsHitTestVisible="True">
-            <animations:Implicit.Animations>
-                <animations:OffsetAnimation Duration="0:0:0.3" />
-            </animations:Implicit.Animations>
-            <StackPanel Orientation="Horizontal">
-                <Image
-                    Width="16"
-                    Height="16"
-                    HorizontalAlignment="Left"
-                    Source="/Assets/Settings/icon.ico" />
-                <TextBlock
-                    x:Name="AppTitleBarText"
-                    Margin="12,0,0,0"
+            AutoConfigureCustomTitleBar="True"
+            PaneButtonClick="PaneToggleBtn_Click">
+            <tkcontrols:TitleBar.Resources>
+                <x:Double x:Key="TitleBarContentMinWidth">516</x:Double>
+            </tkcontrols:TitleBar.Resources>
+            <tkcontrols:TitleBar.Icon>
+                <BitmapIcon ShowAsMonochrome="False" UriSource="/Assets/Settings/icon.ico" />
+            </tkcontrols:TitleBar.Icon>
+            <tkcontrols:TitleBar.Content>
+                <AutoSuggestBox
+                    x:Name="SearchBox"
+                    x:Uid="Shell_SearchBox"
+                    HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    TextWrapping="NoWrap" />
-                <TextBlock
-                    x:Name="DebugMessage"
-                    x:Uid="Shell_DebugLabel"
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    TextWrapping="NoWrap"
-                    Visibility="Collapsed" />
-            </StackPanel>
-        </Grid>
+                    GotFocus="SearchBox_GotFocus"
+                    ItemTemplateSelector="{StaticResource SearchSuggestionTemplateSelector}"
+                    QueryIcon="Find"
+                    QuerySubmitted="SearchBox_QuerySubmitted"
+                    SuggestionChosen="SearchBox_SuggestionChosen"
+                    TextChanged="SearchBox_TextChanged"
+                    TextMemberPath="Header"
+                    UpdateTextOnSelect="False">
+                    <AutoSuggestBox.KeyboardAccelerators>
+                        <KeyboardAccelerator
+                            Key="F"
+                            Invoked="CtrlF_Invoked"
+                            Modifiers="Control" />
+                    </AutoSuggestBox.KeyboardAccelerators>
+                </AutoSuggestBox>
+            </tkcontrols:TitleBar.Content>
+        </tkcontrols:TitleBar>
         <NavigationView
             x:Name="navigationView"
             Grid.Row="1"
@@ -140,31 +135,6 @@
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
             </NavigationView.Resources>
-            <NavigationView.PaneCustomContent>
-                <AutoSuggestBox
-                    x:Name="SearchBox"
-                    x:Uid="Shell_SearchBox"
-                    MinWidth="0"
-                    Margin="12,8"
-                    Padding="4"
-                    HorizontalAlignment="Stretch"
-                    BorderThickness="1"
-                    GotFocus="SearchBox_GotFocus"
-                    ItemTemplateSelector="{StaticResource SearchSuggestionTemplateSelector}"
-                    QueryIcon="Find"
-                    QuerySubmitted="SearchBox_QuerySubmitted"
-                    SuggestionChosen="SearchBox_SuggestionChosen"
-                    TextChanged="SearchBox_TextChanged"
-                    TextMemberPath="Header"
-                    UpdateTextOnSelect="False">
-                    <AutoSuggestBox.KeyboardAccelerators>
-                        <KeyboardAccelerator
-                            Key="F"
-                            Invoked="CtrlF_Invoked"
-                            Modifiers="Control" />
-                    </AutoSuggestBox.KeyboardAccelerators>
-                </AutoSuggestBox>
-            </NavigationView.PaneCustomContent>
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Uid="Shell_Dashboard"
