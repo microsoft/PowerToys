@@ -105,6 +105,8 @@ public sealed partial class SettingsWindow : WindowEx,
     private void Window_Closed(object sender, WindowEventArgs args)
     {
         WeakReferenceMessenger.Default.Send<SettingsWindowClosedMessage>();
+
+        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
