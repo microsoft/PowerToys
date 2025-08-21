@@ -62,7 +62,7 @@ public sealed partial class SearchBar : UserControl,
         {
             // TODO: In some cases we probably want commands to clear a filter
             // somewhere in the process, so we need to figure out when that is.
-            @this.FilterBox.Text = page.Filter;
+            @this.FilterBox.Text = page.SearchTextBox;
             @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
 
             page.PropertyChanged += @this.Page_PropertyChanged;
@@ -87,7 +87,7 @@ public sealed partial class SearchBar : UserControl,
 
             if (CurrentPageViewModel is not null)
             {
-                CurrentPageViewModel.Filter = string.Empty;
+                CurrentPageViewModel.SearchTextBox = string.Empty;
             }
         }));
     }
@@ -145,7 +145,7 @@ public sealed partial class SearchBar : UserControl,
                 // hack TODO GH #245
                 if (CurrentPageViewModel is not null)
                 {
-                    CurrentPageViewModel.Filter = FilterBox.Text;
+                    CurrentPageViewModel.SearchTextBox = FilterBox.Text;
                 }
             }
 
@@ -156,7 +156,7 @@ public sealed partial class SearchBar : UserControl,
             // hack TODO GH #245
             if (CurrentPageViewModel is not null)
             {
-                CurrentPageViewModel.Filter = FilterBox.Text;
+                CurrentPageViewModel.SearchTextBox = FilterBox.Text;
             }
         }
     }
@@ -320,7 +320,7 @@ public sealed partial class SearchBar : UserControl,
         // Actually plumb Filtering to the view model
         if (CurrentPageViewModel is not null)
         {
-            CurrentPageViewModel.Filter = FilterBox.Text;
+            CurrentPageViewModel.SearchTextBox = FilterBox.Text;
         }
     }
 

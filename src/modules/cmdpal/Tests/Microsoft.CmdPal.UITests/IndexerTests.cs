@@ -69,7 +69,7 @@ public class IndexerTests : CommandPaletteTestBase
 
         searchItem.Click();
 
-        var openButton = this.Find<Button>("Open with");
+        var openButton = this.Find<Button>(By.AccessibilityId("PrimaryCommandButton"));
         Assert.IsNotNull(openButton);
 
         openButton.Click();
@@ -144,7 +144,7 @@ public class IndexerTests : CommandPaletteTestBase
         Assert.IsNotNull(searchItem);
         searchItem.Click();
 
-        var openButton = this.Find<Button>("Browse");
+        var openButton = this.Find<Button>(By.AccessibilityId("SecondaryCommandButton"));
         Assert.IsNotNull(openButton);
 
         openButton.Click();

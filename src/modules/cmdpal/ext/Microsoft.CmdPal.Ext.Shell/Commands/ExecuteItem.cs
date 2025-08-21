@@ -14,14 +14,14 @@ namespace Microsoft.CmdPal.Ext.Shell.Commands;
 
 internal sealed partial class ExecuteItem : InvokableCommand
 {
-    private readonly SettingsManager _settings;
+    private readonly ISettingsInterface _settings;
     private readonly RunAsType _runas;
 
     public string Cmd { get; internal set; } = string.Empty;
 
     private static readonly char[] Separator = [' '];
 
-    public ExecuteItem(string cmd, SettingsManager settings, RunAsType type = RunAsType.None)
+    public ExecuteItem(string cmd, ISettingsInterface settings, RunAsType type = RunAsType.None)
     {
         if (type == RunAsType.Administrator)
         {

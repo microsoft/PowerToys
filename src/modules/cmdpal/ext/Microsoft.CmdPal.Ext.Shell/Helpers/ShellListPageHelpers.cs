@@ -17,9 +17,9 @@ namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 public class ShellListPageHelpers
 {
     private static readonly CompositeFormat CmdHasBeenExecutedTimes = System.Text.CompositeFormat.Parse(Properties.Resources.cmd_has_been_executed_times);
-    private readonly SettingsManager _settings;
+    private readonly ISettingsInterface _settings;
 
-    public ShellListPageHelpers(SettingsManager settings)
+    public ShellListPageHelpers(ISettingsInterface settings)
     {
         _settings = settings;
     }

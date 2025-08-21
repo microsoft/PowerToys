@@ -277,9 +277,11 @@
                         IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard Name="ShowSystemTrayIcon" x:Uid="ShowSystemTrayIcon">
-                        <ToggleSwitch x:Uid="ShowSystemTrayIcon_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="ShowSystemTrayIcon">
+                        <ToggleSwitch
+                            x:Uid="ShowSystemTrayIcon_ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}"
+                            Toggled="ShowSystemTrayIcon_Toggled" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
