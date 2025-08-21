@@ -4,38 +4,18 @@
 
 using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
-using Windows.Foundation;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers;
 
-#pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable SA1649 // File name should match first type name
-public class NavigationParams
-#pragma warning restore SA1649 // File name should match first type name
-#pragma warning restore SA1402 // File may only contain a single type
-{
-    public string ElementName { get; set; }
-
-    public string ParentElementName { get; set; }
-
-    public NavigationParams(string elementName, string parentElementName = null)
-    {
-        ElementName = elementName;
-        ParentElementName = parentElementName;
-    }
-}
-
 public abstract partial class NavigatablePage : Page
 {
+    private const int AnimationWaitDuration = 500;
     private NavigationParams _pendingNavigationParams;
 
     public NavigatablePage()
@@ -71,7 +51,7 @@ public abstract partial class NavigatablePage : Page
                     expander.IsExpanded = true;
 
                     // Give time for the expander to animate
-                    await Task.Delay(500);
+                    await Task.Delay(AnimationWaitDuration);
                 }
             }
 
@@ -121,7 +101,7 @@ public abstract partial class NavigatablePage : Page
         fadeAnimation.InsertKeyFrame(0f, 0f);
         fadeAnimation.InsertKeyFrame(0.5f, 0.3f);
         fadeAnimation.InsertKeyFrame(1f, 0f);
-        fadeAnimation.Duration = TimeSpan.FromMilliseconds(400);
+        fadeAnimation.Duration = TimeSpan.FromMilliseconds(AnimationWaitDuration);
 
         // Apply animation
         dropShadow.StartAnimation("Opacity", fadeAnimation);
@@ -141,7 +121,7 @@ public abstract partial class NavigatablePage : Page
             ctrl.Background = highlightBrush;
 
             // Wait for animation to complete
-            await Task.Delay(400);
+            await Task.Delay(AnimationWaitDuration);
 
             // Restore original background
             ctrl.Background = originalBackground;
@@ -149,7 +129,7 @@ public abstract partial class NavigatablePage : Page
         else
         {
             // For non-control elements, just wait for the glow animation
-            await Task.Delay(400);
+            await Task.Delay(AnimationWaitDuration);
         }
 
         // Clean up the shadow visual

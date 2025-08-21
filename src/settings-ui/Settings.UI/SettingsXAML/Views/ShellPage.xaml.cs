@@ -19,6 +19,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Settings.UI.Library;
 using Windows.Data.Json;
 using Windows.System;
 using WinRT.Interop;
@@ -131,9 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static bool IsUserAnAdmin { get; set; }
 
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
-        private List<string> _searchSuggestions = new();
-        private ISearchService<NavigationViewItem> _searchService;
-        private List<SettingEntry> _currentSearchResults = new();
+        private List<string> _searchSuggestions = [];
 
         private CancellationTokenSource _searchDebounceCts;
         private const int SearchDebounceMs = 500;
@@ -175,8 +174,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     _searchSuggestions.Add(child.Content?.ToString());
                 }
             }
-
-            _searchService = new FuzzSearchService<NavigationViewItem>(ViewModel.NavItems, (NavigationViewItem item) => item.Content.ToString());
         }
 
         public static int SendDefaultIPCMessage(string msg)

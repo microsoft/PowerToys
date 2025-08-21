@@ -21,7 +21,12 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 
     public class Program
     {
-        private static JsonSerializerOptions serializeOption = new JsonSerializerOptions
+        private static readonly HashSet<string> ExcludedXamlFiles = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "ShellPage.xaml",
+        };
+
+        private static JsonSerializerOptions serializeOption = new()
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -51,13 +56,14 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 
                 foreach (var xamlFile in xamlFiles)
                 {
-                    if (xamlFile.Equals("ShellPage.xaml", StringComparison.OrdinalIgnoreCase))
+                    var fileName = Path.GetFileName(xamlFile);
+                    if (ExcludedXamlFiles.Contains(fileName))
                     {
                         // Skip ShellPage.xaml as it contains many elements not relevant for search
                         continue;
                     }
 
-                    Debug.WriteLine($"Processing: {Path.GetFileName(xamlFile)}");
+                    Debug.WriteLine($"Processing: {fileName}");
                     var elements = ExtractSearchableElements(xamlFile);
                     searchableElements.AddRange(elements);
                 }
@@ -311,22 +317,5 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
             // If it doesn't match known patterns, return the original value
             return headerIconAttribute;
         }
-    }
-
-#pragma warning disable SA1402 // File may only contain a single type
-    public class SearchableElementMetadata
-#pragma warning restore SA1402 // File may only contain a single type
-    {
-        public string PageName { get; set; }
-
-        public EntryType Type { get; set; }
-
-        public string ParentElementName { get; set; }
-
-        public string ElementName { get; set; }
-
-        public string ElementUid { get; set; }
-
-        public string Icon { get; set; }
     }
 }
