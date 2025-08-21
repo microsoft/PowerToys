@@ -190,6 +190,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
         int lightMinutes = 0, darkMinutes = 0;
 
+        // TODO: Optimize: sunrise/sunset can be calculated once per day (at midnight)
+        // instead of every loop, since they only change daily.
         if (settings.useLocation)
         {
             SunTimes sun = CalculateSunriseSunset(
