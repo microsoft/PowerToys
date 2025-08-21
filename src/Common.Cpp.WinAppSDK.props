@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <PkgMicrosoft_WindowsAppSDKVersion>1.7.250606001</PkgMicrosoft_WindowsAppSDKVersion>
+    <PkgMicrosoft_Windows_SDK_BuildToolsVersion>10.0.26100.4188</PkgMicrosoft_Windows_SDK_BuildToolsVersion>
+    <PkgMicrosoft_Web_WebView2Version>1.0.2903.40</PkgMicrosoft_Web_WebView2Version>
+  </PropertyGroup>
   
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
+  </ItemGroup>
+
   <!-- WinAppSDK Package Import -->
   <ImportGroup Label="WinAppSDK Props">
-    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK.1.7.250606001\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK.1.7.250606001\build\native\Microsoft.WindowsAppSDK.props')" />
-    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188\build\Microsoft.Windows.SDK.BuildTools.props" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188\build\Microsoft.Windows.SDK.BuildTools.props')" />
+    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK\$(PkgMicrosoft_WindowsAppSDKVersion)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK\$(PkgMicrosoft_WindowsAppSDKVersion)\build\native\Microsoft.WindowsAppSDK.props')" />
+    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools\$(PkgMicrosoft_Windows_SDK_BuildToolsVersion)\build\Microsoft.Windows.SDK.BuildTools.props" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools\$(PkgMicrosoft_Windows_SDK_BuildToolsVersion)\build\Microsoft.Windows.SDK.BuildTools.props')" />
   </ImportGroup>
 
   <!-- WinUI/WinAppSDK Specific Settings -->
@@ -15,21 +27,21 @@
   
   <!-- WinAppSDK Targets Import -->
   <ImportGroup Label="WinAppSDK Targets">
-    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188\build\Microsoft.Windows.SDK.BuildTools.targets')" />
-    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" />
-    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK.1.7.250606001\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK.1.7.250606001\build\native\Microsoft.WindowsAppSDK.targets')" />
+    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools\$(PkgMicrosoft_Windows_SDK_BuildToolsVersion)\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools\$(PkgMicrosoft_Windows_SDK_BuildToolsVersion)\build\Microsoft.Windows.SDK.BuildTools.targets')" />
+    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.Web.WebView2\$(PkgMicrosoft_Web_WebView2Version)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Web.WebView2\$(PkgMicrosoft_Web_WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK\$(PkgMicrosoft_WindowsAppSDKVersion)\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK\$(PkgMicrosoft_WindowsAppSDKVersion)\build\native\Microsoft.WindowsAppSDK.targets')" />
   </ImportGroup>
-  
+
   <!-- Package validation -->
-  <Target Name="EnsureWinAppSDKPackageBuildImports" BeforeTargets="PrepareForBuild">
+  <Target Name="EnsureWinAppSDKPackageBuildImports2" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.</ErrorText>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188\build\Microsoft.Windows.SDK.BuildTools.props'))" />
-    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
-    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets'))" />
-    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK.1.7.250606001\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK.1.7.250606001\build\native\Microsoft.WindowsAppSDK.props'))" />
-    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK.1.7.250606001\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK.1.7.250606001\build\native\Microsoft.WindowsAppSDK.targets'))" />
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools\$(PkgMicrosoft_Windows_SDK_BuildToolsVersion)\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools\$(PkgMicrosoft_Windows_SDK_BuildToolsVersion)\build\Microsoft.Windows.SDK.BuildTools.props'))" />
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools\$(PkgMicrosoft_Windows_SDK_BuildToolsVersion)\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.Windows.SDK.BuildTools\$(PkgMicrosoft_Windows_SDK_BuildToolsVersion)\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.Web.WebView2\$(PkgMicrosoft_Web_WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.Web.WebView2\$(PkgMicrosoft_Web_WebView2Version)\build\native\Microsoft.Web.WebView2.targets'))" />
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK\$(PkgMicrosoft_WindowsAppSDKVersion)\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK\$(PkgMicrosoft_WindowsAppSDKVersion)\build\native\Microsoft.WindowsAppSDK.props'))" />
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK\$(PkgMicrosoft_WindowsAppSDKVersion)\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisFileDirectory)..\packages\Microsoft.WindowsAppSDK\$(PkgMicrosoft_WindowsAppSDKVersion)\build\native\Microsoft.WindowsAppSDK.targets'))" />
   </Target>
   
 </Project>

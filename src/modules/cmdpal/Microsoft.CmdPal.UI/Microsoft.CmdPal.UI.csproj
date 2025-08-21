@@ -136,13 +136,13 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowWalker\Microsoft.CmdPal.Ext.WindowWalker.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WinGet\Microsoft.CmdPal.Ext.WinGet.csproj" />
 
-    <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
+    <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj" Condition="'$(ProjectRestoreStarted)' != 'true'">
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
       <Private>True</Private>
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
     </ProjectReference>
 
-    <ProjectReference Include="..\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj">
+    <ProjectReference Include="..\CmdPalKeyboardService\CmdPalKeyboardService.vcxproj" Condition="'$(ProjectRestoreStarted)' != 'true'">
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
       <Private>True</Private>
       <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
