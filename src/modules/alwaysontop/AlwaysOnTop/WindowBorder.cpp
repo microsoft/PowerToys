@@ -95,10 +95,10 @@ bool WindowBorder::Init(HINSTANCE hinstance)
     wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     RegisterClassExW(&wcex);
 
-    m_window = CreateWindowExW(WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+    m_window = CreateWindowExW(WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT
         , NonLocalizable::ToolWindowClassName
         , L""
-        , WS_POPUP | WS_DISABLED
+        , WS_POPUP
         , windowRect.left
         , windowRect.top
         , windowRect.right - windowRect.left
@@ -247,16 +247,8 @@ LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexce
         return TRUE;
 
     // Prevent from beeping if the border was clicked
-    case WM_SETCURSOR:
-    {
-        HCURSOR hCursor = LoadCursorW(nullptr, IDC_ARROW);
-        if (hCursor)
-        {
-            SetCursor(hCursor);
-        }
-
-        return TRUE;
-    }
+    //case WM_SETCURSOR:
+    //    return TRUE;
 
     default:
     {
