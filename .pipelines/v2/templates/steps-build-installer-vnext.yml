@@ -14,6 +14,9 @@ parameters:
   - name: additionalBuildOptions
     type: string
     default: ''
+  - name: installerSuffix
+    type: string
+    default: "wix5"
 
 steps:
   # Install WiX 5.0.2 tools needed for VNext installer (matching project SDK)
@@ -38,10 +41,10 @@ steps:
       # VNext bundle folder; base name intentionally omits the VNext suffix
       $InstallerFolder = 'PowerToysSetupVNext'
       if ($IsPerUser) {
-        $InstallerBasename = "PowerToysUserSetup-${{ parameters.versionNumber }}-new-installer-$(BuildPlatform)"
+        $InstallerBasename = "PowerToysUserSetup-${{ parameters.versionNumber }}-${{ parameters.installerSuffix }}-$(BuildPlatform)"
       }
       else {
-        $InstallerBasename = "PowerToysSetup-${{ parameters.versionNumber }}-new-installer-$(BuildPlatform)"
+        $InstallerBasename = "PowerToysSetup-${{ parameters.versionNumber }}-${{ parameters.installerSuffix }}-$(BuildPlatform)"
       }
 
       # Export variables for downstream steps

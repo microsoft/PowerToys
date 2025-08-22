@@ -62,9 +62,9 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
-  - name: buildWix5Installer
-    type: boolean
-    default: true
+  - name: installerSuffix
+    type: string
+    default: "wix5"
   - name: useLatestWinAppSDK
     type: boolean
     default: false
@@ -479,20 +479,22 @@ jobs:
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
       buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
-  - ${{ if eq(parameters.buildWix5Installer, true) }}:
-    - template: steps-build-installer-vnext.yml
-      parameters:
-        codeSign: ${{ parameters.codeSign }}
-        signingIdentity: ${{ parameters.signingIdentity }}
-        versionNumber: ${{ parameters.versionNumber }}
-        additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+  - template: steps-build-installer-vnext.yml
+    parameters:
+      codeSign: ${{ parameters.codeSign }}
+      signingIdentity: ${{ parameters.signingIdentity }}
+      versionNumber: ${{ parameters.versionNumber }}
+      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+      installerSuffix: ${{ parameters.installerSuffix }}
 
-    - template: steps-build-installer-vnext.yml
-      parameters:
-        codeSign: ${{ parameters.codeSign }}
-        signingIdentity: ${{ parameters.signingIdentity }}
-        versionNumber: ${{ parameters.versionNumber }}
-        additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+  - template: steps-build-installer-vnext.yml
+    parameters:
+      codeSign: ${{ parameters.codeSign }}
+      signingIdentity: ${{ parameters.signingIdentity }}
+      versionNumber: ${{ parameters.versionNumber }}
+      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+      installerSuffix: ${{ parameters.installerSuffix }}
+      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
@@ -530,10 +532,11 @@ jobs:
 
   - pwsh: |-
       $p = "$(JobOutputDirectory)\"
+      $installerSuffix = "${{ parameters.installerSuffix }}"
       
-      # Calculate hashes for regular installers (without '-new-installer-')
-      $userSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*.exe" | Where-Object { $_.Name -notmatch "-new-installer-" }
-      $machineSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*.exe" | Where-Object { $_.Name -notmatch "-new-installer-" -and $_.Name -notmatch "PowerToysUserSetup" }
+      # Calculate hashes for regular installers (without custom suffix)
+      $userSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*.exe" | Where-Object { $_.Name -notmatch "-$installerSuffix-" }
+      $machineSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*.exe" | Where-Object { $_.Name -notmatch "-$installerSuffix-" -and $_.Name -notmatch "PowerToysUserSetup" }
       
       if ($userSetupFiles.Count -gt 0) {
           $userHash = ($userSetupFiles[0] | Get-FileHash).Hash;
@@ -551,9 +554,9 @@ jobs:
           $machineHash | out-file -filepath $combinedMachinePath
       }
       
-      # Calculate hashes for VNext installers (with '-new-installer-')
-      $userVNextFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*-new-installer-*.exe"
-      $machineVNextFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*-new-installer-*.exe" | Where-Object { $_.Name -notmatch "PowerToysUserSetup" }
+      # Calculate hashes for VNext installers (with custom suffix)
+      $userVNextFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*-$installerSuffix-*.exe"
+      $machineVNextFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*-$installerSuffix-*.exe" | Where-Object { $_.Name -notmatch "PowerToysUserSetup" }
       
       if ($userVNextFiles.Count -gt 0) {
           $userVNextHash = ($userVNextFiles[0] | Get-FileHash).Hash;
