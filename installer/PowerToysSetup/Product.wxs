@@ -176,6 +176,18 @@
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
+      <Custom Action="CleanImageResizerRuntimeRegistry" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="CleanFileLocksmithRuntimeRegistry" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="CleanPowerRenameRuntimeRegistry" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+      <Custom Action="CleanNewPlusRuntimeRegistry" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
       <Custom Action="UnRegisterCmdPalPackage" Before="RemoveFiles">
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
@@ -437,6 +449,35 @@
                 Execute="deferred"
                 BinaryKey="PTCustomActions"
                 DllEntry="UnRegisterContextMenuPackagesCA"
+                />
+
+    <CustomAction Id="CleanImageResizerRuntimeRegistry"
+                  Return="ignore"
+                  Impersonate="yes"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="CleanImageResizerRuntimeRegistryCA"
+                  />
+    <CustomAction Id="CleanFileLocksmithRuntimeRegistry"
+                  Return="ignore"
+                  Impersonate="yes"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="CleanFileLocksmithRuntimeRegistryCA"
+                  />
+    <CustomAction Id="CleanPowerRenameRuntimeRegistry"
+                  Return="ignore"
+                  Impersonate="yes"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="CleanPowerRenameRuntimeRegistryCA"
+                  />
+    <CustomAction Id="CleanNewPlusRuntimeRegistry"
+                  Return="ignore"
+                  Impersonate="yes"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="CleanNewPlusRuntimeRegistryCA"
                   />
 
     <CustomAction Id="UnRegisterCmdPalPackage"
