@@ -111,7 +111,7 @@
     <MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns>
       $(MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns);
       \**\dotnet\dotnet.exe;
-      \**\*vbcscompiler.exe;
+      \**\vbcscompiler.exe;
     </MSBuildCacheAllowFileAccessAfterProjectFinishProcessPatterns>
     <!-- 
       This repo uses a common output directory with many projects writing duplicate outputs. Allow everything, but note this costs some performance in the form of requiring
