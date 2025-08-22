@@ -40,7 +40,7 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
         _win32Target = target ?? throw new ArgumentNullException(nameof(target));
     }
 
-    public static async Task<CommandResult> UninstallUwpAppAsync(UWPApplication app)
+    private async Task<CommandResult> UninstallUwpAppAsync(UWPApplication app)
     {
         if (string.IsNullOrWhiteSpace(app.Package.FullName))
         {
@@ -56,9 +56,10 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
         {
             // Which timeout to use for the uninstallation operation?
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
             var packageManager = new PackageManager();
 
-            var result = await packageManager.RemovePackageAsync(app.Package.FullName);
+            var result = await packageManager.RemovePackageAsync(app.Package.FullName).AsTask(cts.Token);
 
             if (result.ErrorText is not null && result.ErrorText.Length > 0)
             {
@@ -110,7 +111,7 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
     {
         if (_uwpTarget is not null)
         {
-            return UninstallUwpAppAsync(_uwpTarget).Result;
+            return UninstallUwpAppAsync(_uwpTarget).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         if (_win32Target is not null)
