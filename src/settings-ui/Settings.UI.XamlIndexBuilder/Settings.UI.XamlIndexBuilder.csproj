@@ -13,4 +13,8 @@
 		<PackageReference Include="System.Text.Json" />
 		<PackageReference Include="System.CommandLine" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+	</ItemGroup>
 </Project>

@@ -9,16 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Xml.Linq;
+using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 {
-    public enum EntryType
-    {
-        SettingsPage,
-        SettingsCard,
-        SettingsExpander,
-    }
-
     public class Program
     {
         private static readonly HashSet<string> ExcludedXamlFiles = new(StringComparer.OrdinalIgnoreCase)
@@ -51,7 +45,7 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 
             try
             {
-                var searchableElements = new List<SearchableElementMetadata>();
+                var searchableElements = new List<SettingEntry>();
                 var xamlFiles = Directory.GetFiles(xamlDirectory, "*.xaml", SearchOption.AllDirectories);
 
                 foreach (var xamlFile in xamlFiles)
@@ -68,7 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                     searchableElements.AddRange(elements);
                 }
 
-                searchableElements = searchableElements.OrderBy(e => e.PageName).ThenBy(e => e.ElementName).ToList();
+                searchableElements = searchableElements.OrderBy(e => e.PageTypeName).ThenBy(e => e.ElementName).ToList();
 
                 string json = JsonSerializer.Serialize(searchableElements, serializeOption);
                 File.WriteAllText(outputFile, json);
@@ -83,9 +77,9 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
             }
         }
 
-        public static List<SearchableElementMetadata> ExtractSearchableElements(string xamlFile)
+        public static List<SettingEntry> ExtractSearchableElements(string xamlFile)
         {
-            var elements = new List<SearchableElementMetadata>();
+            var elements = new List<SettingEntry>();
             string pageName = Path.GetFileNameWithoutExtension(xamlFile);
 
             try
@@ -124,9 +118,9 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 
                     if (!string.IsNullOrEmpty(elementUid))
                     {
-                        elements.Add(new SearchableElementMetadata
+                        elements.Add(new SettingEntry
                         {
-                            PageName = pageName,
+                            PageTypeName = pageName,
                             Type = EntryType.SettingsPage,
                             ParentElementName = string.Empty,
                             ElementName = string.Empty,
@@ -147,9 +141,9 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                     {
                         var parentElementName = GetParentElementName(element, x);
 
-                        elements.Add(new SearchableElementMetadata
+                        elements.Add(new SettingEntry
                         {
-                            PageName = pageName,
+                            PageTypeName = pageName,
                             Type = EntryType.SettingsCard,
                             ParentElementName = parentElementName,
                             ElementName = elementName,
@@ -170,9 +164,9 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                     {
                         var parentElementName = GetParentElementName(element, x);
 
-                        elements.Add(new SearchableElementMetadata
+                        elements.Add(new SettingEntry
                         {
-                            PageName = pageName,
+                            PageTypeName = pageName,
                             Type = EntryType.SettingsExpander,
                             ParentElementName = parentElementName,
                             ElementName = elementName,

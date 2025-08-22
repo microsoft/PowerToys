@@ -211,6 +211,6 @@
 	<!-- After generating the index, copy it into the output Assets\Settings folder for runtime access -->
 	<Target Name="CopySearchIndexToAssets" AfterTargets="GenerateXamlSearchIndex">
 		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(RuntimeIndexJsonPath)'))" />
-		<Copy SourceFiles="$(GeneratedJsonFile)" DestinationFiles="$(RuntimeIndexJsonPath)" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="$(GeneratedJsonFile)" DestinationFiles="$(RuntimeIndexJsonPath)" SkipUnchangedFiles="false" />
 	</Target>
 </Project>
