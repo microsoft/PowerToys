@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -69,11 +69,6 @@
                     TextAlignment="Center" />
             </Grid>
         </DataTemplate>
-        <Style x:Key="SearchBoxTextStyle" TargetType="TextBox">
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Padding" Value="8,4,8,4" />
-            <Setter Property="FontSize" Value="14" />
-        </Style>
     </UserControl.Resources>
     <i:Interaction.Behaviors>
         <ic:EventTriggerBehavior EventName="Loaded">
@@ -106,7 +101,6 @@
                     MinHeight="36"
                     FontSize="14"
                     Padding="8,0,8,0"
-                    TextBoxStyle="{StaticResource SearchBoxTextStyle}"
                     GotFocus="SearchBox_GotFocus"
                     ItemTemplateSelector="{StaticResource SearchSuggestionTemplateSelector}"
                     QueryIcon="Find"
