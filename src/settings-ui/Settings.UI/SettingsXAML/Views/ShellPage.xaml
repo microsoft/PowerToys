@@ -111,13 +111,9 @@
             <tkcontrols:TitleBar.Content>
                 <AutoSuggestBox
                     x:Name="SearchBox"
-                    x:Uid="Shell_SearchBox"
-                    Height="36"
-                    MinHeight="36"
-                    Padding="8,0,8,0"
+                    x:Uid="Shell_SearchBox"          
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    FontSize="14"
                     GotFocus="SearchBox_GotFocus"
                     ItemTemplateSelector="{StaticResource SearchSuggestionTemplateSelector}"
                     QueryIcon="Find"
