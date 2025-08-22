@@ -104,31 +104,8 @@ bool AddZone(Zone zone, ZonesMap& zones) noexcept
     return true;
 }
 
-int AdjustSpacingForRegistry(int originalSpacing)
-{
-    // Check Windows DWM ColorPrevalence setting
-    // When ColorPrevalence = 0 (accent color not shown), subtract 1 from spacing
-    HKEY hKey;
-    DWORD dwValue = 1; // Default to 1 (accent color shown)
-    DWORD dwSize = sizeof(DWORD);
-    
-    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\DWM", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
-    {
-        RegQueryValueExW(hKey, L"ColorPrevalence", nullptr, nullptr, reinterpret_cast<LPBYTE>(&dwValue), &dwSize);
-        RegCloseKey(hKey);
-    }
-    
-    // Apply -1 margin when ColorPrevalence = 0 (accent color not shown)
-    if (dwValue == 0)
-    {
-        return originalSpacing - 1;
-    }
-    return originalSpacing;
-}
-
 ZonesMap CalculateGridZones(FancyZonesUtils::Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing)
 {
-    spacing = AdjustSpacingForRegistry(spacing);
     ZonesMap zones;
 
     long totalWidth = workArea.width();
@@ -262,7 +239,6 @@ ZonesMap LayoutConfigurator::Rows(FancyZonesUtils::Rect workArea, int zoneCount,
         return {};
     }
 
-    spacing = AdjustSpacingForRegistry(spacing);
     ZonesMap zones;
     
     long totalWidth = workArea.width() - (spacing * 2);
@@ -309,7 +285,6 @@ ZonesMap LayoutConfigurator::Columns(FancyZonesUtils::Rect workArea, int zoneCou
         return {};
     }
 
-    spacing = AdjustSpacingForRegistry(spacing);
     ZonesMap zones;
 
     long totalWidth = workArea.width() - (spacing * (zoneCount + 1));
@@ -355,8 +330,6 @@ ZonesMap LayoutConfigurator::Grid(FancyZonesUtils::Rect workArea, int zoneCount,
     {
         return {};
     }
-
-    spacing = AdjustSpacingForRegistry(spacing);
 
     int rows = 1, columns = 1;
     while (zoneCount / rows >= rows)
@@ -415,8 +388,6 @@ ZonesMap LayoutConfigurator::PriorityGrid(FancyZonesUtils::Rect workArea, int zo
         return {};
     }
 
-    spacing = AdjustSpacingForRegistry(spacing);
-
     constexpr int predefinedLayoutsCount = sizeof(predefinedPriorityGridLayouts) / sizeof(FancyZonesDataTypes::GridLayoutInfo);
     if (zoneCount < predefinedLayoutsCount)
     {
@@ -428,8 +399,6 @@ ZonesMap LayoutConfigurator::PriorityGrid(FancyZonesUtils::Rect workArea, int zo
 
 ZonesMap LayoutConfigurator::Custom(FancyZonesUtils::Rect workArea, HMONITOR monitor, const FancyZonesDataTypes::CustomLayoutData& zoneSet, int spacing) noexcept
 {
-    spacing = AdjustSpacingForRegistry(spacing);
-    
     if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Canvas && std::holds_alternative<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info))
     {
         ZonesMap zones;
