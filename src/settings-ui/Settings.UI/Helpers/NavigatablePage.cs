@@ -15,7 +15,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers;
 
 public abstract partial class NavigatablePage : Page
 {
-    private const int AnimationWaitDuration = 500;
+    private const int ExpandWaitDuration = 500;
+    private const int AnimationDuration = 1000;
+
     private NavigationParams _pendingNavigationParams;
 
     public NavigatablePage()
@@ -51,7 +53,7 @@ public abstract partial class NavigatablePage : Page
                     expander.IsExpanded = true;
 
                     // Give time for the expander to animate
-                    await Task.Delay(AnimationWaitDuration);
+                    await Task.Delay(ExpandWaitDuration);
                 }
             }
 
@@ -101,7 +103,7 @@ public abstract partial class NavigatablePage : Page
         fadeAnimation.InsertKeyFrame(0f, 0f);
         fadeAnimation.InsertKeyFrame(0.5f, 0.3f);
         fadeAnimation.InsertKeyFrame(1f, 0f);
-        fadeAnimation.Duration = TimeSpan.FromMilliseconds(AnimationWaitDuration);
+        fadeAnimation.Duration = TimeSpan.FromMilliseconds(AnimationDuration);
 
         // Apply animation
         dropShadow.StartAnimation("Opacity", fadeAnimation);
@@ -114,14 +116,14 @@ public abstract partial class NavigatablePage : Page
             // Create a simple semi-transparent gray brush
             var highlightBrush = new SolidColorBrush();
             var grayColor = Microsoft.UI.Colors.Gray;
-            grayColor.A = 25; // Very subtle transparency
+            grayColor.A = 50; // Very subtle transparency
             highlightBrush.Color = grayColor;
 
             // Apply the highlight
             ctrl.Background = highlightBrush;
 
             // Wait for animation to complete
-            await Task.Delay(AnimationWaitDuration);
+            await Task.Delay(AnimationDuration);
 
             // Restore original background
             ctrl.Background = originalBackground;
@@ -129,7 +131,7 @@ public abstract partial class NavigatablePage : Page
         else
         {
             // For non-control elements, just wait for the glow animation
-            await Task.Delay(AnimationWaitDuration);
+            await Task.Delay(AnimationDuration);
         }
 
         // Clean up the shadow visual
