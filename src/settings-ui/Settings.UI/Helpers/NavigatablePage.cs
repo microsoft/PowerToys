@@ -105,15 +105,13 @@ public abstract partial class NavigatablePage : Page
         fadeAnimation.InsertKeyFrame(1f, 0f);
         fadeAnimation.Duration = TimeSpan.FromMilliseconds(AnimationDuration);
 
-        // Apply animation
         dropShadow.StartAnimation("Opacity", fadeAnimation);
 
-        // If it's a control, add a subtle background highlight
         if (target is Control ctrl)
         {
+            // TODO: abiliity to adjust brush color and animation from settings.
             var originalBackground = ctrl.Background;
 
-            // Create a simple semi-transparent gray brush
             var highlightBrush = new SolidColorBrush();
             var grayColor = Microsoft.UI.Colors.Gray;
             grayColor.A = 50; // Very subtle transparency
