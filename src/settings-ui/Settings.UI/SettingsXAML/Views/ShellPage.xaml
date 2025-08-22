@@ -111,7 +111,7 @@
             <tkcontrols:TitleBar.Content>
                 <AutoSuggestBox
                     x:Name="SearchBox"
-                    x:Uid="Shell_SearchBox"          
+                    x:Uid="Shell_SearchBox"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
                     GotFocus="SearchBox_GotFocus"
