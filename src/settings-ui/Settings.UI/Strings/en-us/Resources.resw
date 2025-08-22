@@ -485,7 +485,7 @@
   </data>
   <data name="Shell_Awake.Content" xml:space="preserve">
     <value>Awake</value>
-    <comment>Product name: Navigation view item name for Awake</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
@@ -2280,6 +2280,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
@@ -2333,12 +2334,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_Awake.Description" xml:space="preserve">
     <value>Awake is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Oobe_Awake_HowToUse.Text" xml:space="preserve">
     <value>Open **PowerToys Settings** and enable Awake</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
     <value>You can always change modes quickly by **right-clicking the Awake icon** in the system tray.</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Title" xml:space="preserve">
     <value>An error occurred trying to install this update:</value>
@@ -2433,6 +2437,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_ModeSettingsCard.Description" xml:space="preserve">
     <value>Manage the state of your device when Awake is active</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="ExcludedApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
