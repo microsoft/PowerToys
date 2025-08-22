@@ -3,11 +3,11 @@
     x:Class="KeyboardManagerEditorUI.Pages.URLs"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:KeyboardManagerEditorUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
     xmlns:local="using:KeyboardManagerEditorUI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:styles="using:KeyboardManagerEditorUI.Styles"
     mc:Ignorable="d">
 
     <Grid Padding="16">
@@ -32,7 +32,7 @@
 
             <Grid
                 HorizontalAlignment="Stretch"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="{ThemeResource OverlayCornerRadius}">
@@ -104,10 +104,10 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <styles:KeyVisual
+                                            <controls:KeyVisual
                                                 HorizontalAlignment="Left"
                                                 Content="{Binding}"
-                                                VisualType="SmallOutline" />
+                                                Style="{StaticResource DefaultKeyVisualStyle}" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -150,8 +150,8 @@
                     Style="{StaticResource CustomShortcutToggleButtonStyle}">
                     <ToggleButton.Content>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <styles:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_WinLeft')}" VisualType="SmallOutline" />
-                            <styles:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_B')}" VisualType="SmallOutline" />
+                            <controls:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_WinLeft')}" Style="{StaticResource DefaultKeyVisualStyle}" />
+                            <controls:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('UrlPage_B')}" Style="{StaticResource DefaultKeyVisualStyle}" />
                         </StackPanel>
                     </ToggleButton.Content>
                 </ToggleButton>

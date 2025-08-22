@@ -3,12 +3,12 @@
     x:Class="KeyboardManagerEditorUI.Pages.Remappings"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls="using:KeyboardManagerEditorUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
     xmlns:local="using:KeyboardManagerEditorUI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:styles="using:KeyboardManagerEditorUI.Styles"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
     <Grid Padding="16">
@@ -33,7 +33,7 @@
             </Button>
             <Grid
                 HorizontalAlignment="Stretch"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource OverlayCornerRadius}">
@@ -114,7 +114,7 @@
                                     ItemsSource="{x:Bind OriginalKeys}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <controls:WrapPanel
+                                            <tkcontrols:WrapPanel
                                                 MaxWidth="230"
                                                 HorizontalSpacing="4"
                                                 Orientation="Horizontal" />
@@ -122,10 +122,10 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <styles:KeyVisual
+                                            <controls:KeyVisual
                                                 HorizontalAlignment="Left"
                                                 Content="{Binding}"
-                                                VisualType="SmallOutline" />
+                                                Style="{StaticResource DefaultKeyVisualStyle}" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -137,7 +137,7 @@
                                     ItemsSource="{x:Bind RemappedKeys}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <controls:WrapPanel
+                                            <tkcontrols:WrapPanel
                                                 MaxWidth="230"
                                                 HorizontalSpacing="4"
                                                 Orientation="Horizontal" />
@@ -145,10 +145,10 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <styles:KeyVisual
+                                            <controls:KeyVisual
                                                 HorizontalAlignment="Left"
                                                 Content="{Binding}"
-                                                VisualType="Small" />
+                                                Style="{StaticResource AccentKeyVisualStyle}" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -191,7 +191,7 @@
             PrimaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_DialogPrimary')}"
             SecondaryButtonText="{x:Bind helper:ResourceLoaderInstance.GetString('RemappingsPage_DialogSecondary')}">
             <Grid>
-                <styles:InputControl x:Name="RemappingControl" />
+                <controls:InputControl x:Name="RemappingControl" />
             </Grid>
         </ContentDialog>
         <TeachingTip

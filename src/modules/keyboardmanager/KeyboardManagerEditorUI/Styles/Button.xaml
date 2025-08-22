@@ -4,8 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:KeyboardManagerEditorUI.Styles">
 
-    <x:Double x:Key="ContentDialogMaxWidth">960</x:Double>
-
     <Style x:Key="CustomShortcutToggleButtonStyle" TargetType="ToggleButton">
         <Setter Property="Background" Value="{ThemeResource ToggleButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource ToggleButtonForeground}" />
@@ -39,7 +37,6 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
-
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">

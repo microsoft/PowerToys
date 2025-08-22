@@ -3,11 +3,11 @@
     x:Class="KeyboardManagerEditorUI.Pages.Programs"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:KeyboardManagerEditorUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helper="using:KeyboardManagerEditorUI.Helpers"
     xmlns:local="using:KeyboardManagerEditorUI.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:styles="using:KeyboardManagerEditorUI.Styles"
     mc:Ignorable="d">
 
     <Grid Padding="16">
@@ -31,7 +31,7 @@
             </Button>
             <Grid
                 HorizontalAlignment="Stretch"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource OverlayCornerRadius}">
@@ -103,10 +103,10 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <styles:KeyVisual
+                                            <controls:KeyVisual
                                                 HorizontalAlignment="Left"
                                                 Content="{Binding}"
-                                                VisualType="SmallOutline" />
+                                                Style="{StaticResource DefaultKeyVisualStyle}" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -165,8 +165,8 @@
                     Style="{StaticResource CustomShortcutToggleButtonStyle}">
                     <ToggleButton.Content>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <styles:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleKey1')}" VisualType="SmallOutline" />
-                            <styles:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleKey2')}" VisualType="SmallOutline" />
+                            <controls:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleKey1')}" Style="{StaticResource AccentKeyVisualStyle}" />
+                            <controls:KeyVisual Content="{x:Bind helper:ResourceLoaderInstance.GetString('ProgramsPage_ExampleKey2')}" Style="{StaticResource AccentKeyVisualStyle}" />
                         </StackPanel>
                     </ToggleButton.Content>
                 </ToggleButton>

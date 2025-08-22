@@ -27,10 +27,6 @@
     <None Remove="Pages\Programs.xaml" />
     <None Remove="Pages\Text.xaml" />
     <None Remove="Pages\URLs.xaml" />
-    <None Remove="Styles\CommonStyle.xaml" />
-    <None Remove="Styles\InputControl.xaml" />
-    <None Remove="Styles\KeyVisual.xaml" />
-    <None Remove="Styles\TextPageInputControl.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,12 +55,7 @@
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Styles\TextPageInputControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Styles\CommonStyle.xaml">
+    <Page Update="Styles\Button.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -89,14 +80,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Styles\InputControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Styles\KeyVisual.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+    <Folder Include="Controls\" />
   </ItemGroup>
 
   <!--

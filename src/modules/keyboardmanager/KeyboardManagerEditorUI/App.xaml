@@ -8,10 +8,13 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <ResourceDictionary Source="/Styles/KeyVisual.xaml" />
-                <ResourceDictionary Source="/Styles/CommonStyle.xaml" />
+                <ResourceDictionary Source="/Controls/KeyVisual/KeyVisual.xaml" />
+                <ResourceDictionary Source="/Controls/KeyVisual/KeyCharPresenter.xaml" />
+                <ResourceDictionary Source="/Styles/Button.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->
+
+            <x:Double x:Key="ContentDialogMaxWidth">960</x:Double>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

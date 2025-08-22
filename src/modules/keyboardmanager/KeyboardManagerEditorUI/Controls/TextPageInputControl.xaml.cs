@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.System;
 
-namespace KeyboardManagerEditorUI.Styles
+namespace KeyboardManagerEditorUI.Controls
 {
     public sealed partial class TextPageInputControl : UserControl, IKeyboardHookTarget
     {

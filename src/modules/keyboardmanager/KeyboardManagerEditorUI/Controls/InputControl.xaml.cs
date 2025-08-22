@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.System;
 
-namespace KeyboardManagerEditorUI.Styles
+namespace KeyboardManagerEditorUI.Controls
 {
     public sealed partial class InputControl : UserControl, IDisposable, IKeyboardHookTarget
     {
