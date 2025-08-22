@@ -29,17 +29,26 @@ steps:
     displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Clean installer to reduce cross-contamination
 
   - pwsh: |-
+      # Determine whether this is a per-user build
       $IsPerUser = $${{ parameters.buildUserInstaller }}
-      $InstallerBuildSlug = "MachineSetup"
-      $InstallerBasename = "PowerToysSetupVNext"
-      If($IsPerUser) {
-        $InstallerBuildSlug = "UserSetup"
-        $InstallerBasename = "PowerToysUserSetupVNext"
+
+      # Build slug used to locate the artifacts
+      $InstallerBuildSlug = if ($IsPerUser) { 'UserSetup' } else { 'MachineSetup' }
+
+      # VNext bundle folder; base name intentionally omits the VNext suffix
+      $InstallerFolder = 'PowerToysSetupVNext'
+      if ($IsPerUser) {
+        $InstallerBasename = "PowerToysUserSetup-${{ parameters.versionNumber }}-new-installer-$(BuildPlatform)"
       }
-      $InstallerBasename += "-${{ parameters.versionNumber }}-$(BuildPlatform)"
+      else {
+        $InstallerBasename = "PowerToysSetup-${{ parameters.versionNumber }}-new-installer-$(BuildPlatform)"
+      }
+
+      # Export variables for downstream steps
       Write-Host "##vso[task.setvariable variable=InstallerBuildSlug]$InstallerBuildSlug"
       Write-Host "##vso[task.setvariable variable=InstallerRelativePath]$(BuildPlatform)\$(BuildConfiguration)\$InstallerBuildSlug"
       Write-Host "##vso[task.setvariable variable=InstallerBasename]$InstallerBasename"
+      Write-Host "##vso[task.setvariable variable=InstallerFolder]$InstallerFolder"
     displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Prepare Installer variables
 
   # This dll needs to be built and signed before building the MSI.
@@ -91,7 +100,7 @@ steps:
       maximumCpuCount: true
 
   - script: |-
-      wix msi decompile installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).msi -x $(build.sourcesdirectory)\extractedMsi
+      wix msi decompile installer\$(InstallerFolder)\$(InstallerRelativePath)\$(InstallerBasename).msi -x $(build.sourcesdirectory)\extractedMsi
       dir $(build.sourcesdirectory)\extractedMsi
     displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Extract and verify MSI"
 
@@ -112,7 +121,7 @@ steps:
         displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign VNext MSI
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
-          FolderPath: 'installer/PowerToysSetupVNext/$(InstallerRelativePath)'
+          FolderPath: 'installer/$(InstallerFolder)/$(InstallerRelativePath)'
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
@@ -140,7 +149,7 @@ steps:
   # The entirety of bundle unpacking/re-packing is unnecessary if we are not code signing it.
   - ${{ if eq(parameters.codeSign, true) }}:
     - script: |-
-        wix burn detach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe
+        wix burn detach installer\$(InstallerFolder)\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe
       displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Extract Engine from Bundle"
 
     - template: steps-esrp-signing.yml
@@ -176,7 +185,7 @@ steps:
             ]
 
     - script: |-
-        wix burn reattach installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe -o installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe
+        wix burn reattach installer\$(InstallerFolder)\$(InstallerRelativePath)\$(InstallerBasename).exe -engine installer\engine.exe -o installer\$(InstallerFolder)\$(InstallerRelativePath)\$(InstallerBasename).exe
       displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} WiX5: Reattach Engine to Bundle"
 
     - template: steps-esrp-signing.yml
@@ -184,7 +193,7 @@ steps:
         displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign Final Bootstrapper
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
-          FolderPath: 'installer/PowerToysSetupVNext/$(InstallerRelativePath)'
+          FolderPath: 'installer/$(InstallerFolder)/$(InstallerRelativePath)'
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'

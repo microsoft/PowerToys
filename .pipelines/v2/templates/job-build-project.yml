@@ -62,6 +62,9 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: buildWix5Installer
+    type: boolean
+    default: true
   - name: useLatestWinAppSDK
     type: boolean
     default: false
@@ -476,20 +479,20 @@ jobs:
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
       buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
-  - template: steps-build-installer-vnext.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+  - ${{ if eq(parameters.buildWix5Installer, true) }}:
+    - template: steps-build-installer-vnext.yml
+      parameters:
+        codeSign: ${{ parameters.codeSign }}
+        signingIdentity: ${{ parameters.signingIdentity }}
+        versionNumber: ${{ parameters.versionNumber }}
+        additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
-  - template: steps-build-installer-vnext.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
+    - template: steps-build-installer-vnext.yml
+      parameters:
+        codeSign: ${{ parameters.codeSign }}
+        signingIdentity: ${{ parameters.signingIdentity }}
+        versionNumber: ${{ parameters.versionNumber }}
+        additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
@@ -509,16 +512,9 @@ jobs:
   - task: CopyFiles@2
     displayName: Stage Installers
     inputs:
-      contents: "**/PowerToys*Setup-*.exe"
-      flattenFolders: True
-      targetFolder: $(JobOutputDirectory)
-
-  - task: CopyFiles@2
-    displayName: Stage VNext Installers
-    inputs:
       contents: |-
-        installer/PowerToysSetupVNext/**/PowerToys*SetupVNext-*.exe
-        !installer/PowerToysSetupVNext/obj/**
+        **/PowerToys*Setup-*.exe
+        !**/PowerToysSetupVNext/obj/**
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)
 
@@ -534,48 +530,47 @@ jobs:
 
   - pwsh: |-
       $p = "$(JobOutputDirectory)\"
-      $userHash = ((Get-Item $p\PowerToysUserSetup*.exe | Get-FileHash).Hash);
-      $machineHash = ((Get-Item $p\PowerToysSetup*.exe | Get-FileHash).Hash);
-      $userPlat = "hash_user_$(BuildPlatform).txt";
-      $machinePlat = "hash_machine_$(BuildPlatform).txt";
-      $combinedUserPath = $p + $userPlat;
-      $combinedMachinePath = $p + $machinePlat;
-
-      echo $p
-
-      echo $userPlat
-      echo $userHash
-      echo $combinedUserPath
-
-      echo $machinePlat
-      echo $machineHash
-      echo $combinedMachinePath
-
-      $userHash | out-file -filepath $combinedUserPath
-      $machineHash | out-file -filepath $combinedMachinePath
-    displayName: Calculate file hashes
-
-  # Output config for installer vnext
-  - pwsh: |-
-      $p = "$(JobOutputDirectory)\"
-      $userHash = ((Get-Item $p\PowerToysUserSetupVNext*.exe | Get-FileHash).Hash);
-      $machineHash = ((Get-Item $p\PowerToysSetupVNext*.exe | Get-FileHash).Hash);
-      $userPlat = "hash_user_$(BuildPlatform).txt";
-      $machinePlat = "hash_machine_$(BuildPlatform).txt";
-      $combinedUserPath = $p + $userPlat;
-      $combinedMachinePath = $p + $machinePlat;
       
-      echo $p
-      echo $userPlat
-      echo $userHash
-      echo $combinedUserPath
-      echo $machinePlat
-      echo $machineHash
-      echo $combinedMachinePath
+      # Calculate hashes for regular installers (without '-new-installer-')
+      $userSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*.exe" | Where-Object { $_.Name -notmatch "-new-installer-" }
+      $machineSetupFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*.exe" | Where-Object { $_.Name -notmatch "-new-installer-" -and $_.Name -notmatch "PowerToysUserSetup" }
       
-      $userHash | out-file -filepath $combinedUserPath
-      $machineHash | out-file -filepath $combinedMachinePath
-    displayName: Calculate file hashes
+      if ($userSetupFiles.Count -gt 0) {
+          $userHash = ($userSetupFiles[0] | Get-FileHash).Hash;
+          $userPlat = "hash_user_$(BuildPlatform).txt";
+          $combinedUserPath = $p + $userPlat;
+          echo "Regular User: $userHash"
+          $userHash | out-file -filepath $combinedUserPath
+      }
+      
+      if ($machineSetupFiles.Count -gt 0) {
+          $machineHash = ($machineSetupFiles[0] | Get-FileHash).Hash;
+          $machinePlat = "hash_machine_$(BuildPlatform).txt";
+          $combinedMachinePath = $p + $machinePlat;
+          echo "Regular Machine: $machineHash"
+          $machineHash | out-file -filepath $combinedMachinePath
+      }
+      
+      # Calculate hashes for VNext installers (with '-new-installer-')
+      $userVNextFiles = Get-ChildItem -Path $p -Filter "PowerToysUserSetup*-new-installer-*.exe"
+      $machineVNextFiles = Get-ChildItem -Path $p -Filter "PowerToysSetup*-new-installer-*.exe" | Where-Object { $_.Name -notmatch "PowerToysUserSetup" }
+      
+      if ($userVNextFiles.Count -gt 0) {
+          $userVNextHash = ($userVNextFiles[0] | Get-FileHash).Hash;
+          $userVNextPlat = "hash_user_vnext_$(BuildPlatform).txt";
+          $combinedUserVNextPath = $p + $userVNextPlat;
+          echo "VNext User: $userVNextHash"
+          $userVNextHash | out-file -filepath $combinedUserVNextPath
+      }
+      
+      if ($machineVNextFiles.Count -gt 0) {
+          $machineVNextHash = ($machineVNextFiles[0] | Get-FileHash).Hash;
+          $machineVNextPlat = "hash_machine_vnext_$(BuildPlatform).txt";
+          $combinedMachineVNextPath = $p + $machineVNextPlat;
+          echo "VNext Machine: $machineVNextHash"
+          $machineVNextHash | out-file -filepath $combinedMachineVNextPath
+      }
+    displayName: Calculate file hashes for all installers
 
   # Publishing the GPO files
   - pwsh: |-

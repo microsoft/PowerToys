@@ -42,6 +42,10 @@ parameters:
     type: boolean
     displayName: "Enable AOT (Ahead-of-Time) Compilation for CmdPal"
     default: true
+  - name: buildWix5Installer
+    type: boolean
+    displayName: "Build with WiX5-style installer naming (append '-new-installer')"
+    default: true
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
@@ -105,6 +109,7 @@ extends:
                 clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
               additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=${{ parameters.enableAOT }}
+              buildWix5Installer: ${{ parameters.buildWix5Installer }}
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
