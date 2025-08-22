@@ -146,6 +146,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Remove="C:\PowerToys\src\settings-ui\Settings.UI\obj\x64\Debug\XamlIndexBuilder\search.index.json" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- Embed the generated search index; logical name must match PrebuiltIndexResourceName -->
 		<EmbeddedResource Include="$(GeneratedJsonFile)">
 			<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>

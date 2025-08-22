@@ -685,6 +685,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // Navigate to full results page
                 var searchParams = new SearchResultsNavigationParams(queryText, _lastSearchResults);
                 NavigationService.Navigate<SearchResultsPage>(searchParams);
+
+                SearchBox.Text = string.Empty;
                 return;
             }
 
@@ -701,6 +703,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     var navigationParams = new NavigationParams(item.ElementName, item.ParentElementName);
                     NavigationService.Navigate(pageType, navigationParams);
                 }
+
+                // Clear the search box after navigation
+                SearchBox.Text = string.Empty;
             }
         }
 
