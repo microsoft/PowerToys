@@ -78,11 +78,12 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
                     Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-                <TextBlock VerticalAlignment="Center"
-                           HorizontalAlignment="Stretch"
-                           TextAlignment="Center"
-                           x:Uid="Shell_Search_ShowAll"
-                           Text="Show all results" />
+                <TextBlock
+                    x:Uid="Shell_Search_ShowAll"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Text="Show all results"
+                    TextAlignment="Center" />
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
