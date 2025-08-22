@@ -77,8 +77,8 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>{b6e94700-df38-41f6-a3fd-18b69674ab1e}</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
-    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetupVNext-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-new-installer-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-new-installer-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
     <NuGetPackageImportStamp>

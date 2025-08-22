@@ -22,11 +22,11 @@
     <Configuration>Release</Configuration>
     <Platform Condition="'$(Platform)'=='x64'">x64</Platform>
     <Platform Condition="'$(Platform)'!='x64'">arm64</Platform>
-    <OutputName>PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
+    <OutputName>PowerToysSetup-$(Version)-new-installer-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
-    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
-    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetupVNext-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-new-installer-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-new-installer-$(Platform)</OutputName>
     <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
     <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
     <IntermediateOutputPath Condition=" '$(PerUser)' != 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\MachineSetup</IntermediateOutputPath>
