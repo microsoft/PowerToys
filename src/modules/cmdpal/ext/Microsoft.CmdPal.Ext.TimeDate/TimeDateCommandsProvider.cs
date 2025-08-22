@@ -5,6 +5,8 @@
 using System;
 using System.Globalization;
 using System.Text;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions;
@@ -12,18 +14,26 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
-public partial class TimeDateCommandsProvider : CommandProvider
+public partial class TimeDateCommandsProvider : CommandProvider, IRecipient<UpdatePinyinSettingsMessage>
 {
     private readonly CommandItem _command;
     private static readonly SettingsManager _settingsManager = new SettingsManager();
     private static readonly CompositeFormat MicrosoftPluginTimedatePluginDescription = System.Text.CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_plugin_description);
-    private static readonly TimeDateExtensionPage _timeDateExtensionPage = new(_settingsManager);
-    private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
+    private readonly TimeDateExtensionPage _timeDateExtensionPage;
+    private readonly FallbackTimeDateItem _fallbackTimeDateItem;
+    private bool _isPinYinInput;
 
     public TimeDateCommandsProvider()
+        : this(false)
+    {
+    }
+
+    public TimeDateCommandsProvider(bool isPinYinInput)
     {
         DisplayName = Resources.Microsoft_plugin_timedate_plugin_name;
         Id = "DateTime";
+        _timeDateExtensionPage = new TimeDateExtensionPage(_settingsManager, isPinYinInput);
+
         _command = new CommandItem(_timeDateExtensionPage)
         {
             Icon = _timeDateExtensionPage.Icon,
@@ -34,6 +44,23 @@ public partial class TimeDateCommandsProvider : CommandProvider
 
         Icon = _timeDateExtensionPage.Icon;
         Settings = _settingsManager.Settings;
+        _isPinYinInput = isPinYinInput;
+        _fallbackTimeDateItem = new FallbackTimeDateItem(_settingsManager, isPinYinInput);
+
+        // Register for PinYin settings updates
+        WeakReferenceMessenger.Default.Register<UpdatePinyinSettingsMessage>(this);
+    }
+
+    public void UpdatePinYinInput(bool isPinYinInput)
+    {
+        _isPinYinInput = isPinYinInput;
+        _fallbackTimeDateItem.UpdatePinYinInput(isPinYinInput);
+        _timeDateExtensionPage.UpdatePinyinInputSetting(isPinYinInput);
+    }
+
+    public void Receive(UpdatePinyinSettingsMessage message)
+    {
+        UpdatePinYinInput(message.IsPinyinInput);
     }
 
     private string GetTranslatedPluginDescription()

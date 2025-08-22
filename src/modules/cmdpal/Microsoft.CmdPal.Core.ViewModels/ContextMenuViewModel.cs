@@ -13,7 +13,8 @@ using Windows.System;
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ContextMenuViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>
+    IRecipient<UpdateCommandBarMessage>,
+    IRecipient<UpdatePinyinSettingsMessage>
 {
     public ICommandBarContext? SelectedItem
     {
@@ -38,14 +39,34 @@ public partial class ContextMenuViewModel : ObservableObject,
 
     private string _lastSearchText = string.Empty;
 
-    public ContextMenuViewModel()
+    private MatchOption _matchOption;
+
+    public ContextMenuViewModel(MatchOption option)
     {
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdatePinyinSettingsMessage>(this);
+        _matchOption = option;
+    }
+
+    public ContextMenuViewModel()
+        : this(new MatchOption() { Language = MatchLanguage.English })
+    {
     }
 
     public void Receive(UpdateCommandBarMessage message)
     {
         SelectedItem = message.ViewModel;
+    }
+
+    public void Receive(UpdatePinyinSettingsMessage message)
+    {
+        _matchOption.Language = message.IsPinyinInput ? MatchLanguage.Chinese : MatchLanguage.English;
+
+        // Refresh the search results if there's an active search
+        if (!string.IsNullOrEmpty(_lastSearchText))
+        {
+            SetSearchText(_lastSearchText);
+        }
     }
 
     public void UpdateContextItems()
@@ -94,7 +115,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         ListHelpers.InPlaceUpdateList(FilteredItems, newResults);
     }
 
-    private static int ScoreContextCommand(string query, CommandContextItemViewModel item)
+    private int ScoreContextCommand(string query, CommandContextItemViewModel item)
     {
         if (string.IsNullOrEmpty(query) || string.IsNullOrWhiteSpace(query))
         {
@@ -106,9 +127,9 @@ public partial class ContextMenuViewModel : ObservableObject,
             return 0;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, item.Title);
+        var nameMatch = StringMatcher.FuzzySearch(query, item.Title, _matchOption.Language);
 
-        var descriptionMatch = StringMatcher.FuzzySearch(query, item.Subtitle);
+        var descriptionMatch = StringMatcher.FuzzySearch(query, item.Subtitle, _matchOption.Language);
 
         return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
     }

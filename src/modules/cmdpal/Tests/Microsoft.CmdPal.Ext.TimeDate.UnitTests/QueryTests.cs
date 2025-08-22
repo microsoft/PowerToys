@@ -50,7 +50,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var settings = new Settings();
 
         // Act
-        var results = TimeDateCalculator.ExecuteSearch(settings, query);
+        var results = TimeDateCalculator.ExecuteSearch(settings, query, false);
 
         // Assert
         Assert.IsTrue(

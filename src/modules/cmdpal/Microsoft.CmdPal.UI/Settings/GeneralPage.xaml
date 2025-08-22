@@ -84,6 +84,10 @@
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_IsPinYinInput_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.IsPinYinInput, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Example 'About' section  -->
                     <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 

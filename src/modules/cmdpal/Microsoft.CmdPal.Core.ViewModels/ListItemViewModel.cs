@@ -9,7 +9,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class ListItemViewModel(IListItem model, WeakReference<IPageContext> context)
+public partial class ListItemViewModel(IListItem model, WeakReference<IPageContext> context, MatchOption matchOption)
     : CommandItemViewModel(new(model), context)
 {
     public new ExtensionObject<IListItem> Model { get; } = new(model);
@@ -28,6 +28,8 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
     [MemberNotNullWhen(true, nameof(Details))]
     public bool HasDetails => Details is not null;
+
+    private MatchOption _matchOption = matchOption;
 
     public override void InitializeProperties()
     {
@@ -97,7 +99,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
     // TODO: Do we want filters to match descriptions and other properties? Tags, etc... Yes?
     // TODO: Do we want to save off the score here so we can sort by it in our ListViewModel?
-    public bool MatchesFilter(string filter) => StringMatcher.FuzzySearch(filter, Title).Success || StringMatcher.FuzzySearch(filter, Subtitle).Success;
+    public bool MatchesFilter(string filter) => StringMatcher.FuzzySearch(filter, Title, _matchOption.Language).Success || StringMatcher.FuzzySearch(filter, Subtitle, _matchOption.Language).Success;
 
     public override string ToString() => $"{Name} ListItemViewModel";
 

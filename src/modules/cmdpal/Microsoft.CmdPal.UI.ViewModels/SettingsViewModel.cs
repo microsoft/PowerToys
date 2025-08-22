@@ -118,6 +118,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IsPinYinInput
+    {
+        get => _settings.IsPinYinInput;
+        set
+        {
+            _settings.IsPinYinInput = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)

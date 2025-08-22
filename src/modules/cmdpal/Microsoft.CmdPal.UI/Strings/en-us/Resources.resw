@@ -407,6 +407,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Description" xml:space="preserve">
     <value>Choose if Command Palette is visible in the system tray</value>
   </data>
+  <data name="Settings_GeneralPage_IsPinYinInput_SettingsCard.Header" xml:space="preserve">
+    <value>Input Chinese in CmdPal</value>
+  </data>
+	<data name="Settings_GeneralPage_IsPinYinInput_SettingsCard.Description" xml:space="preserve">
+    <value>Enable Chinese PinYin support</value>
+  </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>

@@ -132,14 +132,6 @@ public partial class App : Application
             Logger.LogError(ex.ToString());
         }
 
-        services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
-        services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
-        services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
-        services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
-        services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
-
         // Models
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
@@ -156,10 +148,20 @@ public partial class App : Application
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton(new TelemetryForwarder());
 
+        services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
+        services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
+        services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
+        services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
+        services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
+        services.AddSingleton<ICommandProvider>(provider => new TimeDateCommandsProvider(sm.IsPinYinInput));
+        services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
+
         // ViewModels
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
 
-        return services.BuildServiceProvider();
+        var serviceProvider = services.BuildServiceProvider();
+
+        return serviceProvider;
     }
 }

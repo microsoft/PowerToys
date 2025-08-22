@@ -38,6 +38,16 @@ public partial class StringMatcher
         return Instance.FuzzyMatch(query, stringToCompare);
     }
 
+    public static MatchResult FuzzySearch(string query, string stringToCompare, MatchLanguage language)
+    {
+        var opt = new MatchOption
+        {
+            Language = language,
+        };
+
+        return Instance.FuzzyMatch(query, stringToCompare, opt);
+    }
+
     public MatchResult FuzzyMatch(string query, string stringToCompare)
     {
         try

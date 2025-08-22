@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -138,6 +139,9 @@ public sealed partial class CommandBar : UserControl,
     {
         // We need to wait until our flyout is opened to try and toss focus
         // at its search box. The control isn't in the UI tree before that
-        ContextControl.FocusSearchBox();
+        if (ContextMenuFlyout.Content is ContextMenu contextMenu)
+        {
+            contextMenu.FocusSearchBox();
+        }
     }
 }

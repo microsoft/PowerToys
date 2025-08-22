@@ -7,6 +7,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -41,6 +43,20 @@ public partial class SettingsModel : ObservableObject
     public bool ShowSystemTrayIcon { get; set; } = true;
 
     public bool IgnoreShortcutWhenFullscreen { get; set; }
+
+    private bool _isPinYinInput;
+
+    public bool IsPinYinInput
+    {
+        get => _isPinYinInput;
+        set
+        {
+            if (SetProperty(ref _isPinYinInput, value))
+            {
+                WeakReferenceMessenger.Default.Send(new UpdatePinyinSettingsMessage(value));
+            }
+        }
+    }
 
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 

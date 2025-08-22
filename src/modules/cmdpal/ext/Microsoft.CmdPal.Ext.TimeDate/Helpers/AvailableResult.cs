@@ -61,10 +61,10 @@ internal sealed class AvailableResult
         };
     }
 
-    public int Score(string query, string label, string tags)
+    public int Score(string query, string label, string tags, bool isPinyinInput)
     {
         // Get match for label (or for tags if label score is <1)
-        var score = StringMatcher.FuzzySearch(query, label).Score;
+        var score = StringMatcher.FuzzySearch(query, label, isPinyinInput ? MatchLanguage.Chinese : MatchLanguage.English).Score;
         if (score < 1)
         {
             foreach (var t in tags.Split(";"))

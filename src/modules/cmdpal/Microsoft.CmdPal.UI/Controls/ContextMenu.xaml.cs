@@ -6,6 +6,9 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,11 +21,14 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class ContextMenu : UserControl,
     IRecipient<OpenContextMenuMessage>,
     IRecipient<UpdateCommandBarMessage>,
-    IRecipient<TryCommandKeybindingMessage>
+    IRecipient<TryCommandKeybindingMessage>,
+    IRecipient<UpdatePinyinSettingsMessage>
 {
-    public ContextMenuViewModel ViewModel { get; } = new();
+    private bool _isPinyinInput;
 
-    public ContextMenu()
+    public ContextMenuViewModel ViewModel { get; private set; } = null!;
+
+    public ContextMenu(SettingsModel settingsModel)
     {
         this.InitializeComponent();
 
@@ -30,11 +36,20 @@ public sealed partial class ContextMenu : UserControl,
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdatePinyinSettingsMessage>(this);
+
+        _isPinyinInput = settingsModel.IsPinYinInput;
+        ViewModel = new ContextMenuViewModel(new MatchOption() { Language = _isPinyinInput ? MatchLanguage.Chinese : MatchLanguage.English });
 
         if (ViewModel is not null)
         {
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         }
+    }
+
+    public ContextMenu()
+        : this(App.Current.Services.GetService<SettingsModel>()!)
+    {
     }
 
     public void Receive(OpenContextMenuMessage message)
@@ -69,6 +84,14 @@ public sealed partial class ContextMenu : UserControl,
         {
             msg.Handled = false;
         }
+    }
+
+    public void Receive(UpdatePinyinSettingsMessage message)
+    {
+        _isPinyinInput = message.IsPinyinInput;
+
+        // Send the message to ViewModel to update its match option
+        ViewModel?.Receive(message);
     }
 
     private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e)

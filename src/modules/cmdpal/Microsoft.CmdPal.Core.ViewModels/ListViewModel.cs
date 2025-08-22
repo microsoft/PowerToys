@@ -67,6 +67,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private ListItemViewModel? _lastSelectedItem;
 
+    private MatchOption _matchOption;
+
     public override bool IsInitialized
     {
         get => base.IsInitialized; protected set
@@ -76,11 +78,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, MatchOption matchOption)
         : base(model, scheduler, host)
     {
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
+        _matchOption = matchOption;
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
@@ -162,7 +165,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 // Check for cancellation during item processing
                 cancellationToken.ThrowIfCancellationRequested();
 
-                ListItemViewModel viewModel = new(item, new(this));
+                ListItemViewModel viewModel = new(item, new(this), _matchOption);
 
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
@@ -305,22 +308,22 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// Apply our current filter text to the list of items, and update
     /// FilteredItems to match the results.
     /// </summary>
-    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, Filter));
+    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, Filter, _matchOption.Language));
 
     /// <summary>
     /// Helper to generate a weighting for a given list item, based on title,
     /// subtitle, etc. Largely a copy of the version in ListHelpers, but
     /// operating on ViewModels instead of extension objects.
     /// </summary>
-    private static int ScoreListItem(string query, CommandItemViewModel listItem)
+    private static int ScoreListItem(string query, CommandItemViewModel listItem, MatchLanguage language)
     {
         if (string.IsNullOrEmpty(query))
         {
             return 1;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
-        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
+        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title, language);
+        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle, language);
         return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
     }
 
@@ -331,11 +334,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     // Similarly stolen from ListHelpers.FilterList
-    public static IEnumerable<ListItemViewModel> FilterList(IEnumerable<ListItemViewModel> items, string query)
+    public static IEnumerable<ListItemViewModel> FilterList(IEnumerable<ListItemViewModel> items, string query, MatchLanguage language)
     {
         var scores = items
             .Where(i => !i.IsInErrorState)
-            .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = ScoreListItem(query, li) })
+            .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = ScoreListItem(query, li, language) })
             .Where(score => score.Score > 0)
             .OrderByDescending(score => score.Score);
         return scores

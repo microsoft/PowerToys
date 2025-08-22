@@ -34,6 +34,8 @@ public partial class MainListPage : DynamicListPage,
     private InterlockedBoolean _refreshRunning;
     private InterlockedBoolean _refreshRequested;
 
+    private MatchLanguage _matchLanague;
+
     public MainListPage(IServiceProvider serviceProvider)
     {
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
@@ -296,19 +298,19 @@ public partial class MainListPage : DynamicListPage,
         // * otherwise full weight match
         var nameMatch = isWhiteSpace ?
             (title.Contains(query) ? 1 : 0) :
-            StringMatcher.FuzzySearch(query, title).Score;
+            StringMatcher.FuzzySearch(query, title, _matchLanague).Score;
 
         // Subtitle:
         // * whitespace query: 1/2 point
         // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
         var descriptionMatch = isWhiteSpace ?
             (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
-            (StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle).Score - 4) / 2.0;
+            (StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle, _matchLanague).Score - 4) / 2.0;
 
         // Extension title: despite not being visible, give the extension name itself some weight
         // * whitespace query: 0 points
         // * otherwise more weight than a subtitle, but not much
-        var extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName).Score / 1.5;
+        var extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName, _matchLanague).Score / 1.5;
 
         var scores = new[]
         {
@@ -370,5 +372,9 @@ public partial class MainListPage : DynamicListPage,
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
 
-    private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
+    private void HotReloadSettings(SettingsModel settings)
+    {
+        ShowDetails = settings.ShowAppDetails;
+        _matchLanague = settings.IsPinYinInput ? MatchLanguage.Chinese : MatchLanguage.English;
+    }
 }

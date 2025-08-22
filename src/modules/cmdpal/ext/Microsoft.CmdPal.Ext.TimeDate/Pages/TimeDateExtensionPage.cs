@@ -21,7 +21,9 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
 
     private ISettingsInterface _settingsManager;
 
-    public TimeDateExtensionPage(ISettingsInterface settingsManager)
+    private bool _isPinyinInput;
+
+    public TimeDateExtensionPage(ISettingsInterface settingsManager, bool isPinyinInput = false)
     {
         Icon = Icons.TimeDateExtIcon;
         Title = Resources.Microsoft_plugin_timedate_main_page_title;
@@ -30,6 +32,12 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
         Id = "com.microsoft.cmdpal.timedate";
         _settingsManager = settingsManager;
         ShowDetails = true;
+        _isPinyinInput = isPinyinInput;
+    }
+
+    public void UpdatePinyinInputSetting(bool flag)
+    {
+        _isPinyinInput = flag;
     }
 
     public override IListItem[] GetItems()
@@ -64,7 +72,7 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
     {
         try
         {
-            var result = TimeDateCalculator.ExecuteSearch(_settingsManager, query);
+            var result = TimeDateCalculator.ExecuteSearch(_settingsManager, query, _isPinyinInput);
             UpdateResult(result);
         }
         catch (Exception)

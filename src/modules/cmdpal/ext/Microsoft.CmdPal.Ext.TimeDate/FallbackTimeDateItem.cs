@@ -16,6 +16,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
     private readonly HashSet<string> _validOptions;
     private ISettingsInterface _settingsManager;
     private DateTime? _timestamp;
+    private bool _isPinYinInput;
 
     public FallbackTimeDateItem(ISettingsInterface settings, DateTime? timestamp = null)
          : base(new NoOpCommand(), Resources.Microsoft_plugin_timedate_fallback_display_title)
@@ -24,6 +25,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
         Subtitle = string.Empty;
         _settingsManager = settings;
         _timestamp = timestamp;
+        _isPinYinInput = false; // Default value
 
         _validOptions = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -38,6 +40,17 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 
             Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagWeek", CultureInfo.CurrentCulture),
         };
+    }
+
+    public FallbackTimeDateItem(ISettingsInterface settings, bool isPinYinInput, DateTime? timestamp = null)
+         : this(settings, timestamp)
+    {
+        _isPinYinInput = isPinYinInput;
+    }
+
+    public void UpdatePinYinInput(bool isPinYinInput)
+    {
+        _isPinYinInput = isPinYinInput;
     }
 
     public override void UpdateQuery(string query)
@@ -56,7 +69,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 
         foreach (var f in availableResults)
         {
-            var score = f.Score(query, f.Label, f.AlternativeSearchTag);
+            var score = f.Score(query, f.Label, f.AlternativeSearchTag, _isPinYinInput);
             if (score > maxScore)
             {
                 maxScore = score;

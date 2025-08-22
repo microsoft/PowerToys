@@ -27,7 +27,7 @@ public sealed partial class TimeDateCalculator
     /// </summary>
     /// <param name="query">Search query object</param>
     /// <returns>List of Wox <see cref="Result"/>s.</returns>
-    public static List<ListItem> ExecuteSearch(ISettingsInterface settings, string query)
+    public static List<ListItem> ExecuteSearch(ISettingsInterface settings, string query, bool isPinyinInput)
     {
         var isEmptySearchInput = string.IsNullOrWhiteSpace(query);
         List<AvailableResult> availableFormats = new List<AvailableResult>();
@@ -82,7 +82,7 @@ public sealed partial class TimeDateCalculator
             // Generate filtered list of results
             foreach (var f in availableFormats)
             {
-                var score = f.Score(query, f.Label, f.AlternativeSearchTag);
+                var score = f.Score(query, f.Label, f.AlternativeSearchTag, isPinyinInput);
 
                 if (score > 0)
                 {

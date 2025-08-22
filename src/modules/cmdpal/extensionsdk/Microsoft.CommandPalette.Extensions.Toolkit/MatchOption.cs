@@ -22,4 +22,6 @@ public partial class MatchOption
     public string Suffix { get; set; } = string.Empty;
 
     public bool IgnoreCase { get; set; } = true;
+
+    public MatchLanguage Language { get; set; } = MatchLanguage.English;
 }
