@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
 	<Import Project="..\..\Common.SelfContained.props" />
 
@@ -15,6 +15,20 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
 	</ItemGroup>
+
+	<!-- Default inputs/outputs if not provided by caller -->
+	<PropertyGroup>
+		<!-- Default to Settings project Views folder -->
+		<XamlViewsDir Condition="'$(XamlViewsDir)' == ''">$(SolutionDir)src\settings-ui\Settings.UI\SettingsXAML\Views</XamlViewsDir>
+		<!-- Generate directly into Settings Assets folder to avoid relying on obj -->
+		<GeneratedJsonFile Condition="'$(GeneratedJsonFile)' == ''">$(SolutionDir)src\settings-ui\Settings.UI\Assets\Settings\search.index.json</GeneratedJsonFile>
+	</PropertyGroup>
+
+	<!-- After building this tool, run it to produce the index into the known location -->
+	<Target Name="GenerateSearchIndexSelf" AfterTargets="Build">
+		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
+		<!--<Exec Command="&quot;$(TargetPath)&quot; &quot;$(XamlViewsDir)&quot; &quot;$(GeneratedJsonFile)&quot;" />-->
+	</Target>
 </Project>

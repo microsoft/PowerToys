@@ -112,31 +112,12 @@
 		</ProjectReference>
 	</ItemGroup>
 
+	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->
 	<PropertyGroup>
-		<IndexerPublishDir>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\XamlIndexBuilder\</IndexerPublishDir>
-		<IndexerExeFile>$(IndexerPublishDir)XamlIndexBuilder.exe</IndexerExeFile>
-		<XamlViewsDir>$(MSBuildProjectDirectory)\SettingsXAML\Views</XamlViewsDir>
-		<!-- Generate the index under obj so it stays out of source control -->
-		<GeneratedJsonFile>$(IndexerPublishDir)search.index.json</GeneratedJsonFile>
-		<RuntimeIndexJsonPath>$(OutDir)Assets\Settings\search.index.json</RuntimeIndexJsonPath>
+		<GeneratedJsonFile>$(MSBuildProjectDirectory)\Assets\Settings\search.index.json</GeneratedJsonFile>
 	</PropertyGroup>
 
-	<!-- Choose a host-compatible RID for the build-time XamlIndexBuilder tool -->
-	<PropertyGroup>
-		<!-- Azure/Windows x64 agents report AMD64; use win-x64 -->
-		<XamlIndexerRuntimeIdentifier Condition="'$(PROCESSOR_ARCHITECTURE)' == 'AMD64'">win-x64</XamlIndexerRuntimeIdentifier>
-		<!-- Windows arm64 hosts -->
-		<XamlIndexerRuntimeIdentifier Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64'">win-arm64</XamlIndexerRuntimeIdentifier>
-		<!-- Fallback to x64 if unknown -->
-		<XamlIndexerRuntimeIdentifier Condition="'$(XamlIndexerRuntimeIdentifier)' == ''">win-x64</XamlIndexerRuntimeIdentifier>
-	</PropertyGroup>
-
-	<!-- Ensure Platform for the nested Publish matches the chosen RID to avoid NETSDK1032 -->
-	<PropertyGroup>
-		<XamlIndexerPlatform Condition="'$(PROCESSOR_ARCHITECTURE)' == 'AMD64'">x64</XamlIndexerPlatform>
-		<XamlIndexerPlatform Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64'">ARM64</XamlIndexerPlatform>
-		<XamlIndexerPlatform Condition="'$(XamlIndexerPlatform)' == ''">x64</XamlIndexerPlatform>
-	</PropertyGroup>
+	<!-- No RID/Platform plumbing needed here. XamlIndexBuilder handles generation after its own Build. -->
 
 	<PropertyGroup>
 		<!-- TODO: fix issues and reenable -->
@@ -145,11 +126,13 @@
 		<NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
 	</PropertyGroup>
 
-	<ItemGroup>
-	  <EmbeddedResource Remove="C:\PowerToys\src\settings-ui\Settings.UI\obj\x64\Debug\XamlIndexBuilder\search.index.json" />
-	</ItemGroup>
+	<!-- Removed hard-coded resource exclusion. -->
 
 	<ItemGroup>
+		<!-- Ensure the generated search index is present in the project -->
+		<Content Include="$(GeneratedJsonFile)">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<!-- Embed the generated search index; logical name must match PrebuiltIndexResourceName -->
 		<EmbeddedResource Include="$(GeneratedJsonFile)">
 			<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>
@@ -201,20 +184,5 @@
 		</Page>
 	</ItemGroup>
 
-	<Target Name="GenerateXamlSearchIndex" BeforeTargets="PrepareResourceNames" Inputs="@(Page->'%(FullPath)')" Outputs="$(GeneratedJsonFile)">
-		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Publish" Properties="Configuration=$(Configuration);&#xD;&#xA;Platform=$(XamlIndexerPlatform);&#xD;&#xA;SelfContained=true;&#xD;&#xA;PublishSingleFile=true;&#xD;&#xA;RuntimeIdentifier=$(XamlIndexerRuntimeIdentifier);&#xD;&#xA;PublishDir=$(IndexerPublishDir)">
-			<Output TaskParameter="TargetOutputs" ItemName="IndexerPublishOutputs" />
-		</MSBuild>
-
-		<MakeDir Directories="$(IndexerPublishDir)" />
-		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
-
-		<Exec Command="$(IndexerExeFile) &quot;$(XamlViewsDir)&quot; &quot;$(GeneratedJsonFile)&quot;" />
-	</Target>
-
-	<!-- After generating the index, copy it into the output Assets\Settings folder for runtime access -->
-	<Target Name="CopySearchIndexToAssets" AfterTargets="GenerateXamlSearchIndex">
-		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(RuntimeIndexJsonPath)'))" />
-		<Copy SourceFiles="$(GeneratedJsonFile)" DestinationFiles="$(RuntimeIndexJsonPath)" SkipUnchangedFiles="false" />
-	</Target>
+	<!-- Removed nested publish/exec and copy targets. -->
 </Project>
