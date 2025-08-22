@@ -20,6 +20,11 @@ parameters:
     type: string
     default: '0.0.1'
 
+  - name: installerSuffix
+    type: string
+    displayName: "WiX5 installer suffix (e.g., 'wix5', 'vnext', etc.)"
+    default: "wix5"
+
   - name: buildConfigurations
     displayName: "Build Configurations"
     type: object
@@ -42,10 +47,6 @@ parameters:
     type: boolean
     displayName: "Enable AOT (Ahead-of-Time) Compilation for CmdPal"
     default: true
-  - name: installerSuffix
-    type: string
-    displayName: "WiX5 installer suffix (e.g., 'wix5', 'vnext', etc.)"
-    default: "wix5"
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
