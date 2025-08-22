@@ -278,17 +278,17 @@
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Shift" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
-                        IsEnabled="{x:Bind ViewModel.EasyMouseEnabled, Mode=OneWay}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
-                        <ToggleSwitch x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ToggleSwitch"
-                                      IsOn="{x:Bind ViewModel.DisableEasyMouseWhenForegroundWindowIsFullscreen, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard
+                        x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
+                        IsEnabled="{x:Bind ViewModel.EasyMouseEnabled, Mode=OneWay}">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ToggleSwitch" IsOn="{x:Bind ViewModel.DisableEasyMouseWhenForegroundWindowIsFullscreen, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <InfoBar
                         x:Uid="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine"
-                        IsOpen="True"
                         IsClosable="False"
+                        IsOpen="True"
                         Severity="Informational" />
 
                     <tkcontrols:SettingsExpander
@@ -299,16 +299,17 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
-                                HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl"
                                     MinWidth="240"
                                     MinHeight="160"
                                     AcceptsReturn="True"
+                                    IsSpellCheckEnabled="False"
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
-                                    IsSpellCheckEnabled="False"
                                     Text="{x:Bind ViewModel.EasyMouseFullscreenSwitchBlockExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </tkcontrols:SettingsCard>
