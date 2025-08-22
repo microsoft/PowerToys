@@ -246,10 +246,6 @@ LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexce
     case WM_ERASEBKGND:
         return TRUE;
 
-    // Prevent from beeping if the border was clicked
-    //case WM_SETCURSOR:
-    //    return TRUE;
-
     default:
     {
         return DefWindowProc(m_window, message, wparam, lparam);
