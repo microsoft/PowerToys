@@ -37,7 +37,7 @@
   <?if $(var.PerUser) = "true"?>
         <?define PerMachineYesNo="no"?>
         <?define MSIPath="UserSetup"?>
-        <?define MSIName="PowerToysUserSetupVNext-$(var.Version)-$(var.PowerToysPlatform).msi"?>
+        <?define MSIName="PowerToysUserSetup-$(var.Version)-$(var.InstallerSuffix)-$(var.PowerToysPlatform).msi"?>
         <?define DefaultInstallDir="LocalAppDataFolder" ?>
         <?define RegistryScope="HKCU" ?>
         <?define InstallScope="perUser" ?>
@@ -46,7 +46,7 @@
    <?else?>
         <?define PerMachineYesNo="yes"?>
         <?define MSIPath="MachineSetup"?>
-        <?define MSIName="PowerToysSetupVNext-$(var.Version)-$(var.PowerToysPlatform).msi"?>
+        <?define MSIName="PowerToysSetup-$(var.Version)-$(var.InstallerSuffix)-$(var.PowerToysPlatform).msi"?>
         <?define DefaultInstallDir="ProgramFiles64Folder" ?>
         <?define RegistryScope="HKLM" ?>
         <?define InstallScope="perMachine" ?>
