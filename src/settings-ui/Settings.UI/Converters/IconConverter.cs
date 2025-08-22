@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
@@ -17,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
             if (value is not string iconValue || string.IsNullOrEmpty(iconValue))
             {
                 // Return a default icon based on the parameter
-                var defaultGlyph = parameter?.ToString() ?? "\uE8B7"; // Default folder icon
+                var defaultGlyph = parameter?.ToString() ?? "\uE8B7"; // Default gear icon
                 return new FontIcon { Glyph = defaultGlyph };
             }
 
@@ -25,6 +26,34 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
             if (iconValue.Length == 1)
             {
                 return new FontIcon { Glyph = iconValue };
+            }
+
+            // Handle HTML numeric character references, e.g. "&#xE80F;" or "&#59951;"
+            if (iconValue.StartsWith("&#", StringComparison.Ordinal) && iconValue.EndsWith(';'))
+            {
+                var inner = iconValue.Substring(2, iconValue.Length - 3); // strip &# and ;
+                try
+                {
+                    string glyph;
+                    if (inner.StartsWith("x", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var hex = inner.Substring(1);
+                        if (int.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out int codePointHex))
+                        {
+                            glyph = char.ConvertFromUtf32(codePointHex);
+                            return new FontIcon { Glyph = glyph };
+                        }
+                    }
+                    else if (int.TryParse(inner, out int codePointDec))
+                    {
+                        glyph = char.ConvertFromUtf32(codePointDec);
+                        return new FontIcon { Glyph = glyph };
+                    }
+                }
+                catch
+                {
+                    // fall through to other handlers
+                }
             }
 
             if (iconValue.StartsWith("\\u", StringComparison.OrdinalIgnoreCase) && iconValue.Length == 6)
@@ -38,7 +67,7 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
             }
 
             // Check if it's an image path
-            if (iconValue.Contains('/') || iconValue.Contains('\\') || iconValue.Contains(".png") || iconValue.Contains(".jpg") || iconValue.Contains(".ico"))
+            if (iconValue.Contains('/') || iconValue.Contains('\\') || iconValue.Contains(".png", StringComparison.OrdinalIgnoreCase) || iconValue.Contains(".jpg", StringComparison.OrdinalIgnoreCase) || iconValue.Contains(".ico", StringComparison.OrdinalIgnoreCase) || iconValue.Contains(".svg", StringComparison.OrdinalIgnoreCase))
             {
                 // Handle different path formats
                 var imagePath = iconValue;
@@ -55,11 +84,24 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
                     imagePath = "/" + imagePath;
                 }
 
-                return new BitmapIcon
+                var uri = new Uri($"ms-appx://{imagePath}");
+
+                if (imagePath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
                 {
-                    UriSource = new Uri($"ms-appx://{imagePath}"),
-                    ShowAsMonochrome = false,
-                };
+                    // Render SVG using ImageIcon + SvgImageSource
+                    return new ImageIcon
+                    {
+                        Source = new SvgImageSource(uri),
+                    };
+                }
+                else
+                {
+                    return new BitmapIcon
+                    {
+                        UriSource = uri,
+                        ShowAsMonochrome = false,
+                    };
+                }
             }
 
             // Try to interpret as raw SVG path data (PathIcon.Data)

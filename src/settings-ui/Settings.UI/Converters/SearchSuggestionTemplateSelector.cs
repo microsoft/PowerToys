@@ -16,13 +16,20 @@ public sealed partial class SearchSuggestionTemplateSelector : DataTemplateSelec
 
     public DataTemplate NoResultsSuggestionTemplate { get; set; }
 
+    public DataTemplate ShowAllSuggestionTemplate { get; set; }
+
     protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
     {
         if (item is SuggestionItem suggestionItem)
         {
-            if (suggestionItem.IsNoResults || suggestionItem.IsShowAll)
+            if (suggestionItem.IsNoResults)
             {
                 return NoResultsSuggestionTemplate;
+            }
+
+            if (suggestionItem.IsShowAll)
+            {
+                return ShowAllSuggestionTemplate ?? NoResultsSuggestionTemplate ?? DefaultSuggestionTemplate;
             }
 
             return DefaultSuggestionTemplate;

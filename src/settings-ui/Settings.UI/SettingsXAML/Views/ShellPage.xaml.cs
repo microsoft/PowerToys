@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -586,14 +586,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
 
                 var headerText = $"{noResultsPrefix} '{query}'";
-                top = new List<SuggestionItem>
-                {
-                    new SuggestionItem
+                top =
+                [
+                    new()
                     {
                         Header = headerText,
                         IsNoResults = true,
                     },
-                };
+                ];
 
                 Logger.LogDebug($"[Search][TextChanged][{traceId}] no results -> added placeholder item (count={top.Count})");
             }
@@ -601,7 +601,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 // Project top 5 suggestions
                 var swProject = Stopwatch.StartNew();
-                top = results.Take(5)
+                top = [.. results.Take(5)
                     .Select(e =>
                     {
                         string subtitle = string.Empty;
@@ -635,28 +635,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                             Subtitle = subtitle,
                             IsShowAll = false,
                         };
-                    })
-                    .ToList();
+                    })];
                 swProject.Stop();
                 Logger.LogDebug($"[Search][TextChanged][{traceId}] project suggestions took {swProject.ElapsedMilliseconds} ms. topCount={top.Count}");
 
                 if (results.Count > 5)
                 {
                     // Add a tail item to show all results if there are more than 5
-                    var rl = ResourceLoaderInstance.ResourceLoader;
-                    var showAllText = rl.GetString("Shell_Search_ShowAll");
-                    if (string.IsNullOrEmpty(showAllText))
-                    {
-                        showAllText = "Show all results";
-                    }
-
-                    top.Add(new SuggestionItem
-                    {
-                        Header = showAllText,
-                        Icon = "\uE721", // Find
-                        Subtitle = string.Empty,
-                        IsShowAll = true,
-                    });
+                    top.Add(new SuggestionItem { IsShowAll = true });
                     Logger.LogDebug($"[Search][TextChanged][{traceId}] added 'Show all results' item");
                 }
             }

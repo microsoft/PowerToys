@@ -23,7 +23,8 @@
         <converters:SearchSuggestionTemplateSelector
             x:Key="SearchSuggestionTemplateSelector"
             DefaultSuggestionTemplate="{StaticResource DefaultSearchResultTemplate}"
-            NoResultsSuggestionTemplate="{StaticResource NoResultSearchResultTemplate}" />
+            NoResultsSuggestionTemplate="{StaticResource NoResultSearchResultTemplate}"
+            ShowAllSuggestionTemplate="{StaticResource ShowAllSearchResultTemplate}" />
         <DataTemplate x:Key="DefaultSearchResultTemplate" x:DataType="models:SuggestionItem">
             <Grid Padding="16,8">
                 <Grid.ColumnDefinitions>
@@ -67,6 +68,21 @@
                     HorizontalAlignment="Center"
                     Text="{x:Bind Header}"
                     TextAlignment="Center" />
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="ShowAllSearchResultTemplate" x:DataType="models:SuggestionItem">
+            <Grid Padding="16,8">
+                <Rectangle
+                    Height="1"
+                    Margin="0,-4,0,0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Top"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                <TextBlock VerticalAlignment="Center"
+                           HorizontalAlignment="Stretch"
+                           TextAlignment="Center"
+                           x:Uid="Shell_Search_ShowAll"
+                           Text="Show all results" />
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
