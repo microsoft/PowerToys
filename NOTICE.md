@@ -1539,7 +1539,7 @@ SOFTWARE.
 - Microsoft.Windows.CsWin32 0.3.183
 - Microsoft.Windows.CsWinRT 2.2.0
 - Microsoft.Windows.SDK.BuildTools 10.0.26100.4188
-- Microsoft.WindowsAppSDK 1.7.250513003
+- Microsoft.WindowsAppSDK 1.8.250814004-preview
 - Microsoft.WindowsPackageManager.ComInterop 1.10.340
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
