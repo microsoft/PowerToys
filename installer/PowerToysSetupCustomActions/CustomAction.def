@@ -28,3 +28,7 @@ EXPORTS
 	UninstallCommandNotFoundModuleCA
 	UpgradeCommandNotFoundModuleCA
 	UnsetAdvancedPasteAPIKeyCA
+	CleanImageResizerRuntimeRegistryCA
+	CleanFileLocksmithRuntimeRegistryCA
+	CleanPowerRenameRuntimeRegistryCA
+	CleanNewPlusRuntimeRegistryCA

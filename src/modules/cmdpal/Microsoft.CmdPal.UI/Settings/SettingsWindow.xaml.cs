@@ -10,6 +10,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
@@ -21,6 +22,9 @@ public sealed partial class SettingsWindow : WindowEx,
     IRecipient<QuitMessage>
 {
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
+
+    // Gets or sets optional action invoked after NavigationView is loaded.
+    public Action NavigationViewLoaded { get; set; } = () => { };
 
     public SettingsWindow()
     {
@@ -35,10 +39,33 @@ public sealed partial class SettingsWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
     }
 
+    // Handles NavigationView loaded event.
+    // Sets up initial navigation and accessibility notifications.
     private void NavView_Loaded(object sender, RoutedEventArgs e)
     {
+        // Delay necessary to ensure NavigationView visual state can match navigation
+        Task.Delay(500).ContinueWith(_ => this.NavigationViewLoaded?.Invoke(), TaskScheduler.FromCurrentSynchronizationContext());
+
         NavView.SelectedItem = NavView.MenuItems[0];
         Navigate("General");
+
+        if (sender is NavigationView navigationView)
+        {
+            // Register for pane open/close changes to announce to screen readers
+            navigationView.RegisterPropertyChangedCallback(NavigationView.IsPaneOpenProperty, AnnounceNavigationPaneStateChanged);
+        }
+    }
+
+    // Announces navigation pane open/close state to screen readers for accessibility.
+    private void AnnounceNavigationPaneStateChanged(DependencyObject sender, DependencyProperty dp)
+    {
+        if (sender is NavigationView navigationView)
+        {
+            UIHelper.AnnounceActionForAccessibility(
+            ue: (UIElement)sender,
+            (sender as NavigationView)?.IsPaneOpen == true ? RS_.GetString("NavigationPaneOpened") : RS_.GetString("NavigationPaneClosed"),
+            "NavigationViewPaneIsOpenChangeNotificationId");
+        }
     }
 
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
@@ -109,24 +136,15 @@ public sealed partial class SettingsWindow : WindowEx,
         WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
-    private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
-    {
-        NavView.IsPaneOpen = !NavView.IsPaneOpen;
-    }
-
     private void NavView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
     {
         if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
         {
-            PaneToggleBtn.Visibility = Visibility.Visible;
             NavView.IsPaneToggleButtonVisible = false;
-            AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
         }
         else
         {
-            PaneToggleBtn.Visibility = Visibility.Collapsed;
             NavView.IsPaneToggleButtonVisible = true;
-            AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
         }
     }
 

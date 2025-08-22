@@ -34,6 +34,7 @@
     <ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="PowerRenameConstants.h" />
     <ClInclude Include="PowerRenameExt.h" />
+    <ClInclude Include="RuntimeRegistration.h" />
     <ClInclude Include="pch.h" />
     <None Include="resource.base.h" />
     <ClInclude Include="targetver.h" />

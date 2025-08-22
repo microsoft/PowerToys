@@ -110,6 +110,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         get => Alias?.Alias ?? string.Empty;
         set
         {
+            var previousAlias = Alias?.Alias ?? string.Empty;
+
             if (string.IsNullOrEmpty(value))
             {
                 Alias = null;
@@ -126,9 +128,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
                 }
             }
 
-            HandleChangeAlias();
-            OnPropertyChanged(nameof(AliasText));
-            OnPropertyChanged(nameof(IsDirectAlias));
+            // Only call HandleChangeAlias if there was an actual change.
+            if (previousAlias != Alias?.Alias)
+            {
+                HandleChangeAlias();
+                OnPropertyChanged(nameof(AliasText));
+                OnPropertyChanged(nameof(IsDirectAlias));
+            }
         }
     }
 
