@@ -109,7 +109,7 @@ public abstract partial class NavigatablePage : Page
 
         if (target is Control ctrl)
         {
-            // TODO: abiliity to adjust brush color and animation from settings.
+            // TODO: ability to adjust brush color and animation from settings.
             var originalBackground = ctrl.Background;
 
             var highlightBrush = new SolidColorBrush();
