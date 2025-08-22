@@ -5,13 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public class AllAppsSettings : JsonSettingsManager
+public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 {
     private static readonly string _namespace = "apps";
 
@@ -44,25 +45,25 @@ public class AllAppsSettings : JsonSettingsManager
     private readonly ToggleSetting _enableStartMenuSource = new(
         Namespaced(nameof(EnableStartMenuSource)),
         Resources.enable_start_menu_source,
-        Resources.enable_start_menu_source,
+        string.Empty,
         true);
 
     private readonly ToggleSetting _enableDesktopSource = new(
         Namespaced(nameof(EnableDesktopSource)),
         Resources.enable_desktop_source,
-        Resources.enable_desktop_source,
+        string.Empty,
         true);
 
     private readonly ToggleSetting _enableRegistrySource = new(
         Namespaced(nameof(EnableRegistrySource)),
         Resources.enable_registry_source,
-        Resources.enable_registry_source,
+        string.Empty,
         false); // This one is very noisy
 
     private readonly ToggleSetting _enablePathEnvironmentVariableSource = new(
         Namespaced(nameof(EnablePathEnvironmentVariableSource)),
         Resources.enable_path_environment_variable_source,
-        Resources.enable_path_environment_variable_source,
+        string.Empty,
         false); // this one is very VERY noisy
 
     public double MinScoreThreshold { get; set; } = 0.75;

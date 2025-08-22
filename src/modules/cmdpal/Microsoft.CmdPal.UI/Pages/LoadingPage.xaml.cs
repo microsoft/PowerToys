@@ -24,7 +24,7 @@ public sealed partial class LoadingPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         if (e.Parameter is ShellViewModel shellVM
-            && shellVM.LoadCommand != null)
+            && shellVM.LoadCommand is not null)
         {
             // This will load the built-in commands, then navigate to the main page.
             // Once the mainpage loads, we'll start loading extensions.

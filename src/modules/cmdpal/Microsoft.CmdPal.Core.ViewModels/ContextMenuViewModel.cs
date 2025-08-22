@@ -8,14 +8,12 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Diagnostics.Utilities;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class ContextMenuViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>,
-    IRecipient<OpenContextMenuMessage>
+    IRecipient<UpdateCommandBarMessage>
 {
     public ICommandBarContext? SelectedItem
     {
@@ -43,7 +41,6 @@ public partial class ContextMenuViewModel : ObservableObject,
     public ContextMenuViewModel()
     {
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
-        WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
     }
 
     public void Receive(UpdateCommandBarMessage message)
@@ -51,19 +48,9 @@ public partial class ContextMenuViewModel : ObservableObject,
         SelectedItem = message.ViewModel;
     }
 
-    public void Receive(OpenContextMenuMessage message)
-    {
-        FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
-
-        ResetContextMenu();
-
-        OnPropertyChanging(nameof(FilterOnTop));
-        OnPropertyChanged(nameof(FilterOnTop));
-    }
-
     public void UpdateContextItems()
     {
-        if (SelectedItem != null)
+        if (SelectedItem is not null)
         {
             if (SelectedItem.MoreCommands.Count() > 1)
             {
@@ -80,14 +67,14 @@ public partial class ContextMenuViewModel : ObservableObject,
             return;
         }
 
-        if (SelectedItem == null)
+        if (SelectedItem is null)
         {
             return;
         }
 
         _lastSearchText = searchText;
 
-        if (CurrentContextMenu == null)
+        if (CurrentContextMenu is null)
         {
             ListHelpers.InPlaceUpdateList(FilteredItems, []);
             return;
@@ -136,7 +123,7 @@ public partial class ContextMenuViewModel : ObservableObject,
     /// that have a shortcut key set.</returns>
     public Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
     {
-        if (CurrentContextMenu == null)
+        if (CurrentContextMenu is null)
         {
             return [];
         }
@@ -152,7 +139,7 @@ public partial class ContextMenuViewModel : ObservableObject,
     public ContextKeybindingResult? CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
         var keybindings = Keybindings();
-        if (keybindings != null)
+        if (keybindings is not null)
         {
             // Does the pressed key match any of the keybindings?
             var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
@@ -192,7 +179,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu!]);
     }
 
-    private void ResetContextMenu()
+    public void ResetContextMenu()
     {
         while (ContextMenuStack.Count > 1)
         {
@@ -202,7 +189,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         OnPropertyChanging(nameof(CurrentContextMenu));
         OnPropertyChanged(nameof(CurrentContextMenu));
 
-        if (CurrentContextMenu != null)
+        if (CurrentContextMenu is not null)
         {
             ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu!]);
         }
@@ -210,7 +197,7 @@ public partial class ContextMenuViewModel : ObservableObject,
 
     public ContextKeybindingResult InvokeCommand(CommandItemViewModel? command)
     {
-        if (command == null)
+        if (command is null)
         {
             return ContextKeybindingResult.Unhandled;
         }

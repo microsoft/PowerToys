@@ -14,7 +14,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Helpers;
 
-public class SettingsManager : JsonSettingsManager
+public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
     private readonly string _historyPath;
 
@@ -67,7 +67,7 @@ public class SettingsManager : JsonSettingsManager
 
     public void SaveHistory(HistoryItem historyItem)
     {
-        if (historyItem == null)
+        if (historyItem is null)
         {
             return;
         }

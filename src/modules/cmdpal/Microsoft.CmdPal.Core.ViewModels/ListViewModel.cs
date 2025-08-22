@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -25,13 +26,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [ObservableProperty]
     public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
+    public FiltersViewModel? Filters { get; set; }
+
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
     private readonly ExtensionObject<IListPage> _model;
 
     private readonly Lock _listLock = new();
 
-    private bool _isLoading;
+    private InterlockedBoolean _isLoading;
     private bool _isFetching;
 
     public event TypedEventHandler<ListViewModel, object>? ItemsUpdated;
@@ -56,10 +59,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public CommandItemViewModel EmptyContent { get; private set; }
 
+    public bool IsMainPage { get; init; }
+
     private bool _isDynamic;
 
     private Task? _initializeItemsTask;
     private CancellationTokenSource? _cancellationTokenSource;
+    private CancellationTokenSource? _fetchItemsCancellationTokenSource;
 
     private ListItemViewModel? _lastSelectedItem;
 
@@ -82,7 +88,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
 
-    protected override void OnFilterUpdated(string filter)
+    protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
         //// TODO: Just temp testing, need to think about where we want to filter, as AdvancedCollectionView in View could be done, but then grouping need CollectionViewSource, maybe we do grouping in view
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
@@ -100,7 +106,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     if (_model.Unsafe is IDynamicListPage dynamic)
                     {
-                        dynamic.SearchText = filter;
+                        dynamic.SearchText = searchTextBox;
                     }
                 }
                 catch (Exception ex)
@@ -119,29 +125,65 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             ItemsUpdated?.Invoke(this, EventArgs.Empty);
             UpdateEmptyContent();
-            _isLoading = false;
+            _isLoading.Clear();
         }
+    }
+
+    public void UpdateCurrentFilter(string currentFilterId)
+    {
+        // We're getting called on the UI thread.
+        // Hop off to a BG thread to update the extension.
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                if (_model.Unsafe is IListPage listPage)
+                {
+                    listPage.Filters?.CurrentFilterId = currentFilterId;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowException(ex, _model?.Unsafe?.Name);
+            }
+        });
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems()
     {
+        // Cancel any previous FetchItems operation
+        _fetchItemsCancellationTokenSource?.Cancel();
+        _fetchItemsCancellationTokenSource?.Dispose();
+        _fetchItemsCancellationTokenSource = new CancellationTokenSource();
+
+        var cancellationToken = _fetchItemsCancellationTokenSource.Token;
+
         // TEMPORARY: just plop all the items into a single group
         // see 9806fe5d8 for the last commit that had this with sections
         _isFetching = true;
 
+        // Collect all the items into new viewmodels
+        Collection<ListItemViewModel> newViewModels = [];
+
         try
         {
+            // Check for cancellation before starting expensive operations
+            cancellationToken.ThrowIfCancellationRequested();
+
             var newItems = _model.Unsafe!.GetItems();
 
-            // Collect all the items into new viewmodels
-            Collection<ListItemViewModel> newViewModels = [];
+            // Check for cancellation after getting items from extension
+            cancellationToken.ThrowIfCancellationRequested();
 
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
             // building new viewmodels for the ones we haven't already built.
             foreach (var item in newItems)
             {
+                // Check for cancellation during item processing
+                cancellationToken.ThrowIfCancellationRequested();
+
                 ListItemViewModel viewModel = new(item, new(this));
 
                 // If an item fails to load, silently ignore it.
@@ -151,24 +193,56 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
             }
 
+            // Check for cancellation before initializing first twenty items
+            cancellationToken.ThrowIfCancellationRequested();
+
             var firstTwenty = newViewModels.Take(20);
             foreach (var item in firstTwenty)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 item?.SafeInitializeProperties();
             }
 
             // Cancel any ongoing search
             _cancellationTokenSource?.Cancel();
 
+            // Check for cancellation before updating the list
+            cancellationToken.ThrowIfCancellationRequested();
+
+            List<ListItemViewModel> removedItems = [];
             lock (_listLock)
             {
                 // Now that we have new ViewModels for everything from the
                 // extension, smartly update our list of VMs
-                ListHelpers.InPlaceUpdateList(Items, newViewModels);
+                ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
+
+                // DO NOT ThrowIfCancellationRequested AFTER THIS! If you do,
+                // you'll clean up list items that we've now transferred into
+                // .Items
+            }
+
+            // If we removed items, we need to clean them up, to remove our event handlers
+            foreach (var removedItem in removedItems)
+            {
+                removedItem.SafeCleanup();
             }
 
             // TODO: Iterate over everything in Items, and prune items from the
             // cache if we don't need them anymore
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected, don't treat as error
+
+            // However, if we were cancelled, we didn't actually add these items to
+            // our Items list. Before we release them to the GC, make sure we clean
+            // them up
+            foreach (var vm in newViewModels)
+            {
+                vm.SafeCleanup();
+            }
+
+            return;
         }
         catch (Exception ex)
         {
@@ -219,7 +293,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
 
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
-                _isLoading = false;
+                _isLoading.Clear();
             });
     }
 
@@ -253,7 +327,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// Apply our current filter text to the list of items, and update
     /// FilteredItems to match the results.
     /// </summary>
-    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, Filter));
+    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, SearchTextBox));
 
     /// <summary>
     /// Helper to generate a weighting for a given list item, based on title,
@@ -295,11 +369,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void InvokeItem(ListItemViewModel? item)
     {
-        if (item != null)
+        if (item is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
         }
-        else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe != null)
+        else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
                 EmptyContent.PrimaryCommand.Command.Model,
@@ -311,14 +385,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void InvokeSecondaryCommand(ListItemViewModel? item)
     {
-        if (item != null)
+        if (item is not null)
         {
-            if (item.SecondaryCommand != null)
+            if (item.SecondaryCommand is not null)
             {
                 WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
             }
         }
-        else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe != null)
+        else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
                 EmptyContent.SecondaryCommand.Command.Model,
@@ -329,12 +403,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
-        if (_lastSelectedItem != null)
+        if (_lastSelectedItem is not null)
         {
             _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
         }
 
-        if (item != null)
+        if (item is not null)
         {
             SetSelectedItem(item);
         }
@@ -370,6 +444,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                }
 
                TextToSuggest = item.TextToSuggest;
+               WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
            });
 
         _lastSelectedItem = item;
@@ -379,7 +454,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var item = _lastSelectedItem;
-        if (item == null)
+        if (item is null)
         {
             return;
         }
@@ -423,6 +498,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
                WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
 
+               WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(string.Empty));
+
                TextToSuggest = string.Empty;
            });
     }
@@ -432,7 +509,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.InitializeProperties();
 
         var model = _model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -452,6 +529,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
 
+        Filters = new(new(model.Filters), PageContext);
+        Filters.InitializeProperties();
+        UpdateProperty(nameof(Filters));
+
         FetchItems();
         model.ItemsChanged += Model_ItemsChanged;
     }
@@ -459,26 +540,43 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public void LoadMoreIfNeeded()
     {
         var model = this._model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
-        if (model.HasMoreItems && !_isLoading)
+        if (!_isLoading.Set())
         {
-            _isLoading = true;
-            _ = Task.Run(() =>
+            return;
+
+            // NOTE: May miss newly available items until next scroll if model
+            // state changes between our check and this reset
+        }
+
+        _ = Task.Run(() =>
+        {
+            // Execute all COM calls on background thread to avoid reentrancy issues with UI
+            // with the UI thread when COM starts inner message pump
+            try
             {
-                try
+                if (model.HasMoreItems)
                 {
                     model.LoadMore();
+
+                    // _isLoading flag will be set as a result of LoadMore,
+                    // which must raise ItemsChanged to end the loading.
                 }
-                catch (Exception ex)
+                else
                 {
-                    ShowException(ex, model.Name);
+                    _isLoading.Clear();
                 }
-            });
-        }
+            }
+            catch (Exception ex)
+            {
+                _isLoading.Clear();
+                ShowException(ex, model.Name);
+            }
+        });
     }
 
     protected override void FetchProperty(string propertyName)
@@ -486,7 +584,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         base.FetchProperty(propertyName);
 
         var model = this._model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -506,6 +604,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 EmptyContent = new(new(model.EmptyContent), PageContext);
                 EmptyContent.SlowInitializeProperties();
                 break;
+            case nameof(Filters):
+                Filters = new(new(model.Filters), PageContext);
+                Filters.InitializeProperties();
+                break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
                 break;
@@ -517,7 +619,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void UpdateEmptyContent()
     {
         UpdateProperty(nameof(ShowEmptyContent));
-        if (!ShowEmptyContent || EmptyContent.Model.Unsafe == null)
+        if (!ShowEmptyContent || EmptyContent.Model.Unsafe is null)
         {
             return;
         }
@@ -537,6 +639,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
+
+        _fetchItemsCancellationTokenSource?.Cancel();
+        _fetchItemsCancellationTokenSource?.Dispose();
+        _fetchItemsCancellationTokenSource = null;
     }
 
     protected override void UnsafeCleanup()
@@ -547,6 +653,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(null), PageContext); // necessary?
 
         _cancellationTokenSource?.Cancel();
+        _fetchItemsCancellationTokenSource?.Cancel();
 
         lock (_listLock)
         {
@@ -564,8 +671,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
             FilteredItems.Clear();
         }
 
+        Filters?.SafeCleanup();
+
         var model = _model.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
         }
