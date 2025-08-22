@@ -483,7 +483,7 @@
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="http://aka.ms/mm" Text="Mouse without Borders" />
-            <controls:PageLink Link="https://github.com/microsoft/PowerToys/blob/main/COMMUNITY.md#mouse-without-borders-original-contributors" Text="Truong Do (�? �?c Tru?ng) and other original contributors" />
+            <controls:PageLink Link="https://github.com/microsoft/PowerToys/blob/main/COMMUNITY.md#mouse-without-borders-original-contributors" Text="Truong Do (Đỗ Đức Trường) and other original contributors" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </local:NavigatablePage>
