@@ -37,15 +37,15 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.plugin_global_if_uri,
         false);
 
-    private readonly ChoiceSetSetting _showHistory = new(
-        Namespaced(nameof(ShowHistory)),
-        Resources.plugin_show_history,
-        Resources.plugin_show_history,
+    private readonly ChoiceSetSetting _historyItemCount = new(
+        Namespaced("ShowHistory"),
+        Resources.plugin_history_item_count,
+        Resources.plugin_history_item_count,
         _choices);
 
     public bool GlobalIfURI => _globalIfURI.Value;
 
-    public uint ShowHistory => uint.TryParse(_showHistory.Value, out var value) ? value : 0;
+    public uint HistoryItemCount => uint.TryParse(_historyItemCount.Value, out var value) ? value : 0;
 
     internal static string SettingsJsonPath()
     {
@@ -90,11 +90,11 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
             // Add the new history item
             historyItems.Add(historyItem);
 
-            // Determine the maximum number of items to keep based on ShowHistory
-            if (ShowHistory > 0)
+            // Determine the maximum number of items to keep based on HistoryItemCount
+            if (HistoryItemCount > 0)
             {
                 // Keep only the most recent `maxHistoryItems` items
-                while (historyItems.Count > ShowHistory)
+                while (historyItems.Count > HistoryItemCount)
                 {
                     historyItems.RemoveAt(0); // Remove the oldest item
                 }
@@ -150,7 +150,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         _historyPath = HistoryStateJsonPath();
 
         Settings.Add(_globalIfURI);
-        Settings.Add(_showHistory);
+        Settings.Add(_historyItemCount);
 
         // Load settings from file upon initialization
         LoadSettings();
@@ -188,11 +188,11 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         base.SaveSettings();
         try
         {
-            if (ShowHistory == 0)
+            if (HistoryItemCount == 0)
             {
                 ClearHistory();
             }
-            else if (ShowHistory > 0)
+            else if (HistoryItemCount > 0)
             {
                 // Trim the history file if there are more items than the new limit
                 if (File.Exists(_historyPath))
@@ -201,10 +201,10 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
                     var historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(existingContent, WebSearchJsonSerializationContext.Default.ListHistoryItem) ?? [];
 
                     // Check if trimming is needed
-                    if (historyItems.Count > ShowHistory)
+                    if (historyItems.Count > HistoryItemCount)
                     {
-                        // Trim the list to keep only the most recent `ShowHistory` items
-                        historyItems = historyItems.Skip(historyItems.Count - (int)ShowHistory).ToList();
+                        // Trim the list to keep only the most recent `HistoryItemCount` items
+                        historyItems = historyItems.Skip((int)(historyItems.Count - HistoryItemCount)).ToList();
 
                         // Save the trimmed history back to the file
                         var trimmedHistoryJson = JsonSerializer.Serialize(historyItems, WebSearchJsonSerializationContext.Default.ListHistoryItem);
