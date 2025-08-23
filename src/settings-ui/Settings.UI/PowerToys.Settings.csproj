@@ -129,12 +129,12 @@
 	<!-- Removed hard-coded resource exclusion. -->
 
 	<ItemGroup>
-		<!-- Ensure the generated search index is present in the project -->
-		<Content Include="$(GeneratedJsonFile)">
+		<!-- Ensure the generated search index is present in the project; only if it exists to prevent CS1566 in clean CI -->
+		<Content Include="$(GeneratedJsonFile)" Condition="Exists('$(GeneratedJsonFile)')">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<!-- Embed the generated search index; logical name must match PrebuiltIndexResourceName -->
-		<EmbeddedResource Include="$(GeneratedJsonFile)">
+		<EmbeddedResource Include="$(GeneratedJsonFile)" Condition="Exists('$(GeneratedJsonFile)')">
 			<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>
 		</EmbeddedResource>
 	</ItemGroup>
