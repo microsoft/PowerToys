@@ -8,9 +8,7 @@
                 "PowerToysSetupCustomActionsVNext.dll",
                 "SilentFilesInUseBAFunction.dll",
                 "PowerToys*Setup-*.exe",
-                "PowerToys*Setup-*.msi",
-                "PowerToys*Setup-*-new-installer-*.exe",
-                "PowerToys*Setup-*-new-installer-*.msi"
+                "PowerToys*Setup-*.msi"
             ],
             "SigningInfo": {
                 "Operations": [
