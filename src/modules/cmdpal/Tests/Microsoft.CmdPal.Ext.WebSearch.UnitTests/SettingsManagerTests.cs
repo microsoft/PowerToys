@@ -16,7 +16,7 @@ namespace Microsoft.CmdPal.Ext.WebSearch.UnitTests;
 public class SettingsManagerTests : CommandPaletteUnitTestBase
 {
     [TestMethod]
-    public async Task HistoryChangedEventIsRaisedOnSave()
+    public async Task HistoryChangedEventIsRaisedWhenItemIsAdded()
     {
         // Setup
         var settings = new MockSettingsInterface(showHistory: "5");
@@ -29,7 +29,7 @@ public class SettingsManagerTests : CommandPaletteUnitTestBase
             settings.HistoryChanged += Handler;
 
             // Act
-            settings.SaveHistory(new HistoryItem("test event", DateTime.UtcNow));
+            settings.AddHistoryItem(new HistoryItem("test event", DateTime.UtcNow));
             await Task.Delay(50);
 
             // Assert

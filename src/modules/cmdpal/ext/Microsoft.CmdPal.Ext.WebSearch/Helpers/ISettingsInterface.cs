@@ -16,7 +16,7 @@ public interface ISettingsInterface
 
     public string ShowHistory { get; }
 
-    public List<ListItem> LoadHistory();
+    public IReadOnlyList<HistoryItem> HistoryItems { get; }
 
-    public void SaveHistory(HistoryItem historyItem);
+    public void AddHistoryItem(HistoryItem historyItem);
 }

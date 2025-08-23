@@ -29,6 +29,8 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
 
     public WebSearchListPage(ISettingsInterface settingsManager)
     {
+        ArgumentNullException.ThrowIfNull(settingsManager);
+
         Name = Resources.command_item_title;
         Title = Resources.command_item_title;
         Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
@@ -50,20 +52,35 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
         RequeryAndUpdateItems(SearchText);
     }
 
-    private void UpdateHistory()
-    {
-        var showHistory = _settingsManager.ShowHistory;
-        var history = showHistory != Resources.history_none ? _settingsManager.LoadHistory() : [];
-        lock (_sync)
-        {
-            _historyItems = history;
-        }
-    }
-
     private void SettingsManagerOnHistoryChanged(object? sender, EventArgs e)
     {
         UpdateHistory();
         RequeryAndUpdateItems(SearchText);
+    }
+
+    private void UpdateHistory()
+    {
+        var showHistory = _settingsManager.ShowHistory;
+        List<ListItem> history = [];
+
+        if (showHistory != Resources.history_none)
+        {
+            var items = _settingsManager.HistoryItems;
+            for (var index = items.Count - 1; index >= 0; index--)
+            {
+                var historyItem = items[index];
+                history.Add(new ListItem(new SearchWebCommand(historyItem.SearchString, _settingsManager))
+                {
+                    Title = historyItem.SearchString,
+                    Subtitle = historyItem.Timestamp.ToString("g", CultureInfo.InvariantCulture),
+                });
+            }
+        }
+
+        lock (_sync)
+        {
+            _historyItems = history;
+        }
     }
 
     private static IListItem[] Query(string query, List<ListItem> historySnapshot, ISettingsInterface settingsManager, IconInfo newSearchIcon)
