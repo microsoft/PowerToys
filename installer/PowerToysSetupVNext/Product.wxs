@@ -230,13 +230,13 @@
 
     <CustomAction Id="UnRegisterContextMenuPackages" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterContextMenuPackagesCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="CleanImageResizerRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanImageResizerRuntimeRegistryCA" BinaryKey="PTCustomActions" />
+    <CustomAction Id="CleanImageResizerRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanImageResizerRuntimeRegistryCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="CleanFileLocksmithRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanFileLocksmithRuntimeRegistryCA" BinaryKey="PTCustomActions" />
+    <CustomAction Id="CleanFileLocksmithRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanFileLocksmithRuntimeRegistryCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="CleanPowerRenameRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanPowerRenameRuntimeRegistryCA" BinaryKey="PTCustomActions" />
-    
-    <CustomAction Id="CleanNewPlusRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanNewPlusRuntimeRegistryCA" BinaryKey="PTCustomActions" />
+    <CustomAction Id="CleanPowerRenameRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanPowerRenameRuntimeRegistryCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="CleanNewPlusRuntimeRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanNewPlusRuntimeRegistryCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="UnRegisterCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterCmdPalPackageCA" BinaryRef="PTCustomActions" />
 
