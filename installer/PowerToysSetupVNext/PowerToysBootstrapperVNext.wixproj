@@ -3,7 +3,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <PropertyGroup>
-    <DefineConstants>Version=$(Version)</DefineConstants>
+    <DefineConstants>Version=$(Version);InstallerSuffix=$(InstallerSuffix)</DefineConstants>
     <Name>PowerToysVNextBootstrapper</Name>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
