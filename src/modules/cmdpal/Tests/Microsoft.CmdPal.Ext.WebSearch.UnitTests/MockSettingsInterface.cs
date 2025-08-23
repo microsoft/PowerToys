@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
@@ -12,6 +13,8 @@ namespace Microsoft.CmdPal.Ext.WebSearch.UnitTests;
 public class MockSettingsInterface : ISettingsInterface
 {
     private readonly List<HistoryItem> _historyItems;
+
+    public event EventHandler HistoryChanged;
 
     public bool GlobalIfURI { get; set; }
 
@@ -57,6 +60,8 @@ public class MockSettingsInterface : ISettingsInterface
                 _historyItems.RemoveAt(0); // Remove the oldest item
             }
         }
+
+        HistoryChanged?.Invoke(this, EventArgs.Empty);
     }
 
     // Helper method for testing

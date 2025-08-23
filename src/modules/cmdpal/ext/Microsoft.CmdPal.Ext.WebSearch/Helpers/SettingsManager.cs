@@ -16,6 +16,8 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Helpers;
 
 public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
+    public event EventHandler? HistoryChanged;
+
     private readonly string _historyPath;
 
     private static readonly string _namespace = "websearch";
@@ -72,6 +74,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
             return;
         }
 
+        var saved = false;
+
         try
         {
             List<HistoryItem> historyItems;
@@ -103,10 +107,16 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
             // Serialize the updated list back to JSON and save it
             var historyJson = JsonSerializer.Serialize(historyItems, WebSearchJsonSerializationContext.Default.ListHistoryItem);
             File.WriteAllText(_historyPath, historyJson);
+            saved = true;
         }
         catch (Exception ex)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = ex.ToString() });
+        }
+
+        if (saved)
+        {
+            HistoryChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
