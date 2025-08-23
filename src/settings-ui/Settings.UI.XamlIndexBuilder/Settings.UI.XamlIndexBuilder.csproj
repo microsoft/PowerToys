@@ -23,10 +23,12 @@
 		<GeneratedJsonFile Condition="'$(GeneratedJsonFile)' == ''">$(MSBuildProjectDirectory)\..\Settings.UI\Assets\Settings\search.index.json</GeneratedJsonFile>
 	</PropertyGroup>
 
-	<!-- After building this tool, run it to produce the index into the known location -->
-	<Target Name="GenerateSearchIndexSelf" AfterTargets="Build">
-		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
-		<Message Importance="high" Text="[XamlIndexBuilder] Generating search index. Views='$(XamlViewsDir)'; Out='$(GeneratedJsonFile)'; Tool='$(TargetPath)'." />
-		<Exec Command="&quot;$(TargetPath)&quot; &quot;$(XamlViewsDir)&quot; &quot;$(GeneratedJsonFile)&quot;" />
-	</Target>
+    <Target Name="GenerateSearchIndexSelf" AfterTargets="Build">
+        <PropertyGroup>
+            <_ToolCommand>&quot;$(TargetDir)$(AssemblyName).exe&quot;</_ToolCommand>
+        </PropertyGroup>
+        <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
+        <Message Importance="high" Text="[XamlIndexBuilder] Generating search index. Views='$(XamlViewsDir)'; Out='$(GeneratedJsonFile)'; Tool='$(_ToolCommand)'." />
+        <Exec Command="$(_ToolCommand) &quot;$(XamlViewsDir)&quot; &quot;$(GeneratedJsonFile)&quot;" />
+    </Target>
 </Project>
