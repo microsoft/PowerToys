@@ -16,6 +16,7 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Helpers;
 
 public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
+    private const string HistoryItemCountLegacySettingsKey = "ShowHistory";
     private readonly string _historyPath;
 
     private static readonly string _namespace = "websearch";
@@ -38,7 +39,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         false);
 
     private readonly ChoiceSetSetting _historyItemCount = new(
-        Namespaced("ShowHistory"),
+        Namespaced(HistoryItemCountLegacySettingsKey),
         Resources.plugin_history_item_count,
         Resources.plugin_history_item_count,
         _choices);
