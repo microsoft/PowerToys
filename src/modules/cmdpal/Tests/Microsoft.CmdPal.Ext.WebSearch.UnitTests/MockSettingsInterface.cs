@@ -15,9 +15,9 @@ public class MockSettingsInterface : ISettingsInterface
 
     public bool GlobalIfURI { get; set; }
 
-    public string ShowHistory { get; set; }
+    public uint ShowHistory { get; set; }
 
-    public MockSettingsInterface(string showHistory = "none", bool globalIfUri = true, List<HistoryItem> mockHistory = null)
+    public MockSettingsInterface(uint showHistory = 0, bool globalIfUri = true, List<HistoryItem> mockHistory = null)
     {
         _historyItems = mockHistory ?? new List<HistoryItem>();
         GlobalIfURI = globalIfUri;
@@ -50,9 +50,9 @@ public class MockSettingsInterface : ISettingsInterface
         _historyItems.Add(historyItem);
 
         // Simulate the same logic as SettingsManager
-        if (int.TryParse(ShowHistory, out var maxHistoryItems) && maxHistoryItems > 0)
+        if (ShowHistory > 0)
         {
-            while (_historyItems.Count > maxHistoryItems)
+            while (_historyItems.Count > ShowHistory)
             {
                 _historyItems.RemoveAt(0); // Remove the oldest item
             }

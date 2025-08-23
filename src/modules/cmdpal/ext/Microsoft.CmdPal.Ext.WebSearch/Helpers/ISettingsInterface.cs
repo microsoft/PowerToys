@@ -11,7 +11,7 @@ public interface ISettingsInterface
 {
     public bool GlobalIfURI { get; }
 
-    public string ShowHistory { get; }
+    public uint ShowHistory { get; }
 
     public List<ListItem> LoadHistory();
 
