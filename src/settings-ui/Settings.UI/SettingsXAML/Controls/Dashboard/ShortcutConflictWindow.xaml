@@ -1,0 +1,176 @@
+﻿<winuiex:WindowEx
+    x:Class="Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard.ShortcutConflictWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hotkeyConflicts="using:Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:winuiex="using:WinUIEx"
+    MinWidth="480"
+    MinHeight="600"
+    MaxWidth="900"
+    MaxHeight="1000"
+    Closed="WindowEx_Closed"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="RootGrid">
+        <Grid.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.ThemeDictionaries>
+                    <ResourceDictionary x:Key="Default">
+                        <LinearGradientBrush x:Key="WindowsLogoGradient" StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0.0" Color="#FF80F9FF" />
+                            <GradientStop Offset="1" Color="#FF0B9CFF" />
+                        </LinearGradientBrush>
+                    </ResourceDictionary>
+                    <ResourceDictionary x:Key="Light">
+                        <LinearGradientBrush x:Key="WindowsLogoGradient" StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0.0" Color="#FF4DD2FF" />
+                            <GradientStop Offset="0.75" Color="#FF0078D4" />
+                        </LinearGradientBrush>
+                    </ResourceDictionary>
+                    <ResourceDictionary x:Key="HighContrast">
+                        <SolidColorBrush x:Key="WindowsLogoGradient" Color="{StaticResource SystemColorHighlightTextColor}" />
+                    </ResourceDictionary>
+                </ResourceDictionary.ThemeDictionaries>
+            </ResourceDictionary>
+        </Grid.Resources>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Title Bar Area  -->
+        <Grid
+            x:Name="titleBar"
+            Height="48"
+            ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
+                <ColumnDefinition x:Name="IconColumn" Width="Auto" />
+                <ColumnDefinition x:Name="TitleColumn" Width="Auto" />
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
+            </Grid.ColumnDefinitions>
+            <Image
+                Grid.Column="1"
+                Width="16"
+                Height="16"
+                VerticalAlignment="Center"
+                Source="/Assets/Settings/icon.ico" />
+            <TextBlock
+                x:Uid="ShortcutConflictWindow_TitleTxt"
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}" />
+        </Grid>
+
+        <!--  Description text  -->
+        <TextBlock
+            x:Uid="ShortcutConflictWindow_Description"
+            Grid.Row="1"
+            Margin="16,24,16,24"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Style="{StaticResource BodyTextBlockStyle}"
+            TextWrapping="Wrap" />
+
+        <!--  Main Content Area  -->
+        <ScrollViewer Grid.Row="2">
+            <Grid Margin="16,0,16,16">
+                <!--  Conflicts List  -->
+                <ItemsControl x:Name="ConflictItemsControl" ItemsSource="{x:Bind ViewModel.ConflictItems, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" Spacing="32" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="hotkeyConflicts:HotkeyConflictGroupData">
+                            <StackPanel Orientation="Vertical">
+                                <!--  Hotkey Header  -->
+                                <controls:ShortcutWithTextLabelControl
+                                    x:Uid="ShortcutConflictWindow_ModulesUsingShortcut"
+                                    Margin="0,0,0,8"
+                                    FontWeight="SemiBold"
+                                    Keys="{x:Bind Hotkey.GetKeysList()}"
+                                    LabelPlacement="Before" />
+
+                                <!--  PowerToys Module Cards  -->
+                                <ItemsControl Grid.Row="1" ItemsSource="{x:Bind Modules}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="hotkeyConflicts:ModuleHotkeyData">
+                                            <tkcontrols:SettingsCard
+                                                Margin="0,0,0,4"
+                                                Click="SettingsCard_Click"
+                                                Description="{x:Bind DisplayName}"
+                                                Header="{x:Bind Header}"
+                                                IsClickEnabled="True">
+                                                <tkcontrols:SettingsCard.HeaderIcon>
+                                                    <BitmapIcon ShowAsMonochrome="False" UriSource="{x:Bind IconPath}" />
+                                                </tkcontrols:SettingsCard.HeaderIcon>
+                                                <!--  ShortcutControl with TwoWay binding and enabled for editing  -->
+                                                <controls:ShortcutControl
+                                                    x:Name="ShortcutControl"
+                                                    MinWidth="140"
+                                                    Margin="2"
+                                                    VerticalAlignment="Center"
+                                                    HasConflict="True"
+                                                    HotkeySettings="{x:Bind HotkeySettings, Mode=TwoWay}"
+                                                    IsEnabled="True" />
+                                            </tkcontrols:SettingsCard>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!--  System Conflict Card (only show if it's a system conflict)  -->
+                                <tkcontrols:SettingsCard
+                                    x:Name="SystemConflictCard"
+                                    x:Uid="ShortcutConflictWindow_SystemCard"
+                                    Visibility="{x:Bind IsSystemConflict}">
+                                    <tkcontrols:SettingsCard.HeaderIcon>
+                                        <PathIcon Data="M9 20H0V11H9V20ZM20 20H11V11H20V20ZM9 9H0V0H9V9ZM20 9H11V0H20V9Z" Foreground="{ThemeResource WindowsLogoGradient}" />
+                                    </tkcontrols:SettingsCard.HeaderIcon>
+                                    <!--  System shortcut message  -->
+                                    <TextBlock
+                                        x:Uid="ShortcutConflictWindow_SystemShortcutMessage"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        TextWrapping="Wrap" />
+                                </tkcontrols:SettingsCard>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </ScrollViewer>
+        <!--  Empty State (when no conflicts)  -->
+        <StackPanel
+            x:Name="EmptyStatePanel"
+            Grid.Row="2"
+            Margin="24"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Visibility="Collapsed">
+            <FontIcon
+                HorizontalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
+                FontSize="48"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Glyph="&#xE73E;" />
+            <TextBlock Margin="0,16,0,4" HorizontalAlignment="Center">
+                <Run x:Uid="ShortcutConflictWindow_NoConflictsTitle" />
+                <Run x:Uid="ShortcutConflictWindow_NoConflictsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </TextBlock>
+        </StackPanel>
+    </Grid>
+</winuiex:WindowEx>

@@ -15,6 +15,7 @@
 #include <common/utils/package.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
+#include "RuntimeRegistration.h"
 
 #include <atomic>
 
@@ -196,11 +197,16 @@ public:
         {
             std::wstring path = get_module_folderpath(g_hInst);
             std::wstring packageUri = path + L"\\PowerRenameContextMenuPackage.msix";
-
             if (!package::IsPackageRegisteredWithPowerToysVersion(PowerRenameConstants::ModulePackageDisplayName))
             {
                 package::RegisterSparsePackage(path, packageUri);
             }
+        }
+        else
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            PowerRenameRuntimeRegistration::EnsureRegistered();
+#endif
         }
     }
 
@@ -209,6 +215,13 @@ public:
     {
         m_enabled = false;
         Logger::info(L"PowerRename disabled");
+        if (!package::IsWin11OrGreater())
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            PowerRenameRuntimeRegistration::Unregister();
+            Logger::info(L"PowerRename context menu unregistered (Win10)");
+#endif
+        }
     }
 
     // Returns if the powertoy is enabled

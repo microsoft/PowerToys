@@ -20,10 +20,20 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private readonly AddBookmarkPage _addNewCommand = new(null);
 
+    private readonly IBookmarkDataSource _dataSource;
+    private readonly BookmarkJsonParser _parser;
     private Bookmarks? _bookmarks;
 
     public BookmarksCommandProvider()
+        : this(new FileBookmarkDataSource(StateJsonPath()))
     {
+    }
+
+    internal BookmarksCommandProvider(IBookmarkDataSource dataSource)
+    {
+        _dataSource = dataSource;
+        _parser = new BookmarkJsonParser();
+
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
         Icon = Icons.PinIcon;
@@ -49,10 +59,14 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private void SaveAndUpdateCommands()
     {
-        if (_bookmarks is not null)
+        try
         {
-            var jsonPath = BookmarksCommandProvider.StateJsonPath();
-            Bookmarks.WriteToFile(jsonPath, _bookmarks);
+            var jsonData = _parser.SerializeBookmarks(_bookmarks);
+            _dataSource.SaveBookmarkData(jsonData);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to save bookmarks: {ex.Message}");
         }
 
         LoadCommands();
@@ -82,11 +96,8 @@ public partial class BookmarksCommandProvider : CommandProvider
     {
         try
         {
-            var jsonFile = StateJsonPath();
-            if (File.Exists(jsonFile))
-            {
-                _bookmarks = Bookmarks.ReadFromFile(jsonFile);
-            }
+            var jsonData = _dataSource.GetBookmarkData();
+            _bookmarks = _parser.ParseBookmarks(jsonData);
         }
         catch (Exception ex)
         {
