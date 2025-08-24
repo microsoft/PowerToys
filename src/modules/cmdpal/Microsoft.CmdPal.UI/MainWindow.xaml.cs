@@ -519,9 +519,24 @@ public sealed partial class MainWindow : WindowEx,
         }
         catch (COMException ex)
         {
+            const int HResultRpcServerNotRunning = -2147023174;
+
             // Accessing properties activatedEventArgs.Kind and activatedEventArgs.Data might cause COMException
             // if the args are not valid or not passed correctly.
-            Logger.LogError("COM exception when activating the application", ex);
+            if (ex.HResult == HResultRpcServerNotRunning)
+            {
+                Logger.LogWarning(
+                    $"COM exception (HRESULT {ex.HResult}) when accessing activation arguments. " +
+                    $"This might be due to the calling application not passing them correctly or exiting before we could read them. " +
+                    $"The application will continue running and fall back to showing the Command Palette window.");
+            }
+            else
+            {
+                Logger.LogError(
+                    $"COM exception (HRESULT {ex.HResult}) when activating the application. " +
+                    $"The application will continue running and fall back to showing the Command Palette window.",
+                    ex);
+            }
         }
 
         Summon(string.Empty);
