@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<!-- Do not import CsWinRT/Windows SDK for this pure console tool -->
+	<!-- Import common props to satisfy repo audit; override problematic bits below for this console tool. -->
+	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
 
 	<PropertyGroup>
-	<!-- Override the common -windows TFM to a plain net TFM so the tool doesn't require WindowsDesktop runtime packs on ARM64 -->
-	<TargetFramework>net9.0</TargetFramework>
+		<!-- Override the common -windows TFM to a plain net TFM so the tool doesn't require WindowsDesktop/WinRT runtime packs -->
+		<TargetFramework>net9.0</TargetFramework>
 		<OutputType>Exe</OutputType>
 	<RootNamespace>Microsoft.PowerToys.Tools.XamlIndexBuilder</RootNamespace>
 		<AssemblyName>XamlIndexBuilder</AssemblyName>
@@ -16,6 +17,11 @@
 		<!-- Keep tool output out of product scan paths to avoid deps.json audit conflicts -->
 		<OutputPath>$(MSBuildProjectDirectory)\obj\XamlIndexBuilder\$(Configuration)\</OutputPath>
 	</PropertyGroup>
+
+	<!-- Remove CsWinRT package introduced by common props; not needed for this tool and causes Windows metadata errors -->
+	<ItemGroup>
+		<PackageReference Remove="Microsoft.Windows.CsWinRT" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="System.Text.Json" />
