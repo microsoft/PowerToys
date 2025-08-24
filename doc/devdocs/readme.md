@@ -76,7 +76,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 1. Windows 10 April 2018 Update (version 1803) or newer
 1. Visual Studio Community/Professional/Enterprise 2022 17.4 or newer
 1. A local clone of the PowerToys repository
-1. Enable long paths (remove the [maximum path length limitation](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry) to prevent issues when restoring NuGet packages or generating source files)
+1. Enable long paths (remove the [maximum path length limitation](https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation?tabs=registry) to prevent issues when restoring NuGet packages or generating source files)
 
 
 ### Install Visual Studio dependencies
