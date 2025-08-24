@@ -6,7 +6,14 @@
 		<OutputType>Exe</OutputType>
 		<RootNamespace>Microsoft.PowerToys.Settings.UI.XamlIndexBuilder</RootNamespace>
 		<AssemblyName>XamlIndexBuilder</AssemblyName>
-		<OutputType>Exe</OutputType>
+		<!-- Platform-agnostic: framework-dependent DLL executed via dotnet -->
+		<SelfContained>false</SelfContained>
+		<UseAppHost>false</UseAppHost>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<!-- Ensure no RID forces native apphost; keep empty to produce DLL only -->
+		<RuntimeIdentifier></RuntimeIdentifier>
+		<!-- Keep tool output out of product scan paths to avoid deps.json audit conflicts -->
+		<OutputPath>$(MSBuildProjectDirectory)\obj\XamlIndexBuilder\$(Configuration)\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -19,16 +26,15 @@
 	</ItemGroup>
 
 	<PropertyGroup>
+		<!-- Fallback to dotnet if not provided by the environment -->
+		<DotNetExe Condition="'$(DotNetExe)' == ''">dotnet</DotNetExe>
 		<XamlViewsDir Condition="'$(XamlViewsDir)' == ''">$(MSBuildProjectDirectory)\..\Settings.UI\SettingsXAML\Views</XamlViewsDir>
 		<GeneratedJsonFile Condition="'$(GeneratedJsonFile)' == ''">$(MSBuildProjectDirectory)\..\Settings.UI\Assets\Settings\search.index.json</GeneratedJsonFile>
 	</PropertyGroup>
-
-    <Target Name="GenerateSearchIndexSelf" AfterTargets="Build">
-        <PropertyGroup>
-            <_ToolCommand>&quot;$(TargetDir)$(AssemblyName).exe&quot;</_ToolCommand>
-        </PropertyGroup>
-        <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
-        <Message Importance="high" Text="[XamlIndexBuilder] Generating search index. Views='$(XamlViewsDir)'; Out='$(GeneratedJsonFile)'; Tool='$(_ToolCommand)'." />
-        <Exec Command="$(_ToolCommand) &quot;$(XamlViewsDir)&quot; &quot;$(GeneratedJsonFile)&quot;" />
-    </Target>
+	<Target Name="GenerateSearchIndexSelf" AfterTargets="Build">
+		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
+		<Message Importance="high" Text="[XamlIndexBuilder] Generating search index. Views='$(XamlViewsDir)'; Out='$(GeneratedJsonFile)'; Tool='$(TargetPath)'; DotNet='$(DotNetExe)'." />
+		<!-- Execute via dotnet so host architecture doesn't need to match -->
+		<Exec Command="&quot;$(DotNetExe)&quot; &quot;$(TargetPath)&quot; &quot;$(XamlViewsDir)&quot; &quot;$(GeneratedJsonFile)&quot;" />
+	</Target>
 </Project>
