@@ -32,6 +32,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Enumerating.h" />
+    <ClInclude Include="ExifReader.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="MRUListHandler.h" />
     <ClInclude Include="PowerRenameEnum.h" />
@@ -50,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Enumerating.cpp" />
+    <ClCompile Include="ExifReader.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="MRUListHandler.cpp" />
     <ClCompile Include="PowerRenameEnum.cpp" />
