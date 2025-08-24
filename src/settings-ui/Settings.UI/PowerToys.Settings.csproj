@@ -106,10 +106,6 @@
 		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
 		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
 		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
-		<!-- Add reference to XamlIndexBuilder (build-time only) -->
-		<ProjectReference Include="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" ReferenceOutputAssembly="false">
-			<IsXamlIndexer>true</IsXamlIndexer>
-		</ProjectReference>
 	</ItemGroup>
 
 	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->
@@ -185,4 +181,13 @@
 	</ItemGroup>
 
 	<!-- Removed nested publish/exec and copy targets. -->
+
+	<!-- Build XamlIndexBuilder before compiling Settings to ensure the search index exists without taking a project reference. -->
+	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile">
+		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
+		<MSBuild
+			Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj"
+			Targets="Build"
+			Properties="Configuration=$(Configuration);Platform=Any CPU;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
+	</Target>
 </Project>
