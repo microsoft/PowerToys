@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
+namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
 {
     public static class ModuleIconResolver
     {

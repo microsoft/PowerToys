@@ -9,9 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Xml.Linq;
-using Settings.UI.Library;
 
-namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
+namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
 {
     public class Program
     {
