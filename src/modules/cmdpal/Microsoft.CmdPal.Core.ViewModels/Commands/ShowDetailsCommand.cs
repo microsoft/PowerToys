@@ -19,7 +19,11 @@ public sealed partial class ShowDetailsCommand : InvokableCommand
     public ShowDetailsCommand(DetailsViewModel details)
     {
         Id = ShowDetailsCommandId;
+<<<<<<< HEAD
         Name = Properties.Resources.ShowDetailsCommand;
+=======
+        Name = "Show details";
+>>>>>>> 2bd0fa5e6bc6b084c956dbf57d1669341b173b6d
         Icon = IconInfo;
         Details = details;
     }
