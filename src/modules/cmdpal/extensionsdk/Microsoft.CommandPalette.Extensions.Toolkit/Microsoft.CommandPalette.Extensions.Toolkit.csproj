@@ -46,6 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.vcxproj" />
   </ItemGroup>
 

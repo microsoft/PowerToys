@@ -4,22 +4,20 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using Microsoft.CmdPal.Core.Common.Properties;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CommandPalette.Extensions.Toolkit.Properties;
 
-namespace Microsoft.CmdPal.Core.Common.Commands;
+namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class OpenInConsoleCommand : InvokableCommand
 {
-    internal static IconInfo OpenInConsoleIcon { get; } = new("\uE756");
+    internal static IconInfo OpenInConsoleIcon { get; } = new("\uE756"); // "CommandPrompt"
 
     private readonly string _path;
 
     public OpenInConsoleCommand(string fullPath)
     {
         this._path = fullPath;
-        this.Name = Resources.Indexer_Command_OpenPathInConsole;
+        this.Name = Resources.OpenInConsoleCommand_Name;
         this.Icon = OpenInConsoleIcon;
     }
 
@@ -36,7 +34,7 @@ public partial class OpenInConsoleCommand : InvokableCommand
             }
             catch (Win32Exception ex)
             {
-                CoreLogger.LogError($"Unable to open '{_path}'", ex);
+                ExtensionHost.LogMessage(new LogMessage($"Unable to open '{_path}'\n{ex.Message}\n{ex.StackTrace}") { State = MessageState.Error });
             }
         }
 
