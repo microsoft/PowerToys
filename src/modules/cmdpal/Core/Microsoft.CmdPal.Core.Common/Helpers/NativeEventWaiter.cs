@@ -7,7 +7,7 @@ using System.Threading;
 
 using Microsoft.UI.Dispatching;
 
-namespace Microsoft.CmdPal.Common.Helpers;
+namespace Microsoft.CmdPal.Core.Common.Helpers;
 
 public static partial class NativeEventWaiter
 {

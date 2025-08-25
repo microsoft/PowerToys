@@ -4,11 +4,11 @@
 
 using System.Runtime.InteropServices;
 using ManagedCsWin32;
-using Microsoft.CmdPal.Common.Properties;
+using Microsoft.CmdPal.Core.Common.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace Microsoft.CmdPal.Common.Commands;
+namespace Microsoft.CmdPal.Core.Common.Commands;
 
 public partial class OpenWithCommand : InvokableCommand
 {

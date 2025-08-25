@@ -40,7 +40,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
+    <ProjectReference Include="..\..\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
   </ItemGroup>
 
   <!--

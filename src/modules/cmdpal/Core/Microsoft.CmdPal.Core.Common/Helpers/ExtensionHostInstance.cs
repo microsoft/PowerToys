@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.Common;
+namespace Microsoft.CmdPal.Core.Common;
 
 public partial class ExtensionHostInstance
 {

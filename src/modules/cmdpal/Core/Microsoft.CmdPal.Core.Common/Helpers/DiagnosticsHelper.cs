@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.CmdPal.Common.Helpers;
+namespace Microsoft.CmdPal.Core.Common.Helpers;
 
 /// <summary>
 /// Provides utility methods for building diagnostic and error messages.

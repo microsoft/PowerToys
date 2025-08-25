@@ -5,11 +5,10 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using ManagedCommon;
-using Microsoft.CmdPal.Common.Properties;
+using Microsoft.CmdPal.Core.Common.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.Common.Commands;
+namespace Microsoft.CmdPal.Core.Common.Commands;
 
 public partial class OpenInConsoleCommand : InvokableCommand
 {

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
-    <RootNamespace>Microsoft.CmdPal.Common</RootNamespace>
+    <RootNamespace>Microsoft.CmdPal.Core.Common</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWinUI>true</UseWinUI>
     <LangVersion>preview</LangVersion>
@@ -11,7 +11,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
-    <ProjectPriFileName>Microsoft.CmdPal.Common.pri</ProjectPriFileName>
+    <ProjectPriFileName>Microsoft.CmdPal.Core.Common.pri</ProjectPriFileName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,9 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
-    <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+    <!-- <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" /> -->
+    <!-- <ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" /> -->
+    <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
 
   <ItemGroup>

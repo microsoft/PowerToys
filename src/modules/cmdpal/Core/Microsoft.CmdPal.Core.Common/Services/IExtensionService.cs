@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
-namespace Microsoft.CmdPal.Common.Services;
+namespace Microsoft.CmdPal.Core.Common.Services;
 
 public interface IExtensionService
 {

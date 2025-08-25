@@ -7,7 +7,7 @@ using System.Security.Principal;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
-namespace Microsoft.CmdPal.Common.Helpers;
+namespace Microsoft.CmdPal.Core.Common.Helpers;
 
 public static partial class RuntimeHelper
 {
