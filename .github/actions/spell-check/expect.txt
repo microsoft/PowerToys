@@ -168,6 +168,7 @@ callbackptr
 calpwstr
 Cangjie
 CANRENAME
+Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
@@ -574,6 +575,7 @@ GPOCA
 gpp
 gpu
 gradians
+Gridcustomlayout
 GSM
 gtm
 guiddata
