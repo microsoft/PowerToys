@@ -310,7 +310,7 @@
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
-                        Name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+                        Name="MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreen"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
                         IsEnabled="{x:Bind ViewModel.EasyMouseEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ToggleSwitch" IsOn="{x:Bind ViewModel.DisableEasyMouseWhenForegroundWindowIsFullscreen, Mode=TwoWay}" />
@@ -323,14 +323,14 @@
 
                     <tkcontrols:SettingsExpander
                         x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
-                        Name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
+                        Name="MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsEnabled="{x:Bind ViewModel.IsEasyMouseBlockingOnFullscreenEnabled, Mode=OneWay}"
                         IsExpanded="False">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
-                                Name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
+                                Name="MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreenExcludedApps"
                                 HorizontalContentAlignment="Stretch"
                                 ContentAlignment="Vertical">
                                 <TextBox
