@@ -267,30 +267,40 @@ namespace PowerAccent.Core
         }
 
         // Currencies (source: https://www.eurochange.co.uk/travel-money/world-currency-abbreviations-symbols-and-codes-travel-money)
-        private static string[] GetDefaultLetterKeyCUR(LetterKey letter)
+        private static string[] GetDefaultLetterKeyCUR(LetterKey letter) => letter switch
         {
-            return letter switch
+            LetterKey.VK_B => new[] { "฿", "в", "₿" },
+            LetterKey.VK_C => new[] { "¢", "₡", "č" },
+            LetterKey.VK_D => new[] { "₫" },
+            LetterKey.VK_E => new[] { "€", "£" },
+            LetterKey.VK_F => new[] { "ƒ" },
+            LetterKey.VK_H => new[] { "₴" },
+            LetterKey.VK_K => new[] { "₭" },
+            LetterKey.VK_L => new[] { "ł", "£" },
+            LetterKey.VK_M => new[] { "₼" },
+            LetterKey.VK_N => new[] { "л" },
+            LetterKey.VK_O => new[] { "¤" },
+            LetterKey.VK_P => new[] { "£", "₽" },
+            LetterKey.VK_R => new[] { "₹", "៛", "﷼" },
+            LetterKey.VK_S => new[] { "$", "₪" },
+            LetterKey.VK_T => new[] { "₮", "₺", "₸" },
+            LetterKey.VK_W => new[] { "₩" },
+            LetterKey.VK_Y => new[] { "¥" },
+            LetterKey.VK_Z => new[] { "z" },
+            LetterKey.VK_3 => new[]
             {
-                LetterKey.VK_B => new[] { "฿", "в" },
-                LetterKey.VK_C => new[] { "¢", "₡", "č" },
-                LetterKey.VK_D => new[] { "₫" },
-                LetterKey.VK_E => new[] { "€" },
-                LetterKey.VK_F => new[] { "ƒ" },
-                LetterKey.VK_H => new[] { "₴" },
-                LetterKey.VK_K => new[] { "₭" },
-                LetterKey.VK_L => new[] { "ł" },
-                LetterKey.VK_N => new[] { "л" },
-                LetterKey.VK_M => new[] { "₼" },
-                LetterKey.VK_P => new[] { "£", "₽" },
-                LetterKey.VK_R => new[] { "₹", "៛", "﷼" },
-                LetterKey.VK_S => new[] { "$", "₪" },
-                LetterKey.VK_T => new[] { "₮", "₺", "₸" },
-                LetterKey.VK_W => new[] { "₩" },
-                LetterKey.VK_Y => new[] { "¥" },
-                LetterKey.VK_Z => new[] { "z" },
-                _ => Array.Empty<string>(),
-            };
-        }
+            "฿", "в", "₿", "¢", "₡", "č", "₫", "€", "£", "ƒ",
+            "₴", "₭", "ł", "₼", "л", "¤", "₽", "₹", "៛", "﷼",
+            "$","₪", "₮", "₺", "₸", "₩", "¥", "z",
+            }, // VK_3  is commonly used for the locale currency symbol
+            LetterKey.VK_4 => new[]
+            {
+            "฿", "в", "₿", "¢", "₡", "č", "₫", "€", "£", "ƒ",
+            "₴", "₭", "ł", "₼", "л", "¤", "₽", "₹", "៛", "﷼",
+            "$","₪", "₮", "₺", "₸", "₩", "¥", "z",
+            }, // VK_4  is commonly used for the locale currency symbol
+            _ => Array.Empty<string>(),
+        };
 
         // Croatian
         private static string[] GetDefaultLetterKeyHR(LetterKey letter)
