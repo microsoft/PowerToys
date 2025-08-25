@@ -202,12 +202,9 @@ public:
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-        else
-        {
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            PowerRenameRuntimeRegistration::EnsureRegistered();
+        PowerRenameRuntimeRegistration::EnsureRegistered();
 #endif
-        }
     }
 
     // Disable the powertoy
@@ -215,13 +212,10 @@ public:
     {
         m_enabled = false;
         Logger::info(L"PowerRename disabled");
-        if (!package::IsWin11OrGreater())
-        {
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            PowerRenameRuntimeRegistration::Unregister();
-            Logger::info(L"PowerRename context menu unregistered (Win10)");
+        PowerRenameRuntimeRegistration::Unregister();
+        Logger::info(L"PowerRename context menu unregistered (Win10)");
 #endif
-        }
     }
 
     // Returns if the powertoy is enabled
