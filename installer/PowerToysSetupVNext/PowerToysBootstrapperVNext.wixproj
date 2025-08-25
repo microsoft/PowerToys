@@ -3,7 +3,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <PropertyGroup>
-    <DefineConstants>Version=$(Version)</DefineConstants>
+    <DefineConstants>Version=$(Version);InstallerSuffix=$(InstallerSuffix)</DefineConstants>
     <Name>PowerToysVNextBootstrapper</Name>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
@@ -22,11 +22,12 @@
     <Configuration>Release</Configuration>
     <Platform Condition="'$(Platform)'=='x64'">x64</Platform>
     <Platform Condition="'$(Platform)'!='x64'">arm64</Platform>
-    <OutputName>PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
+    <InstallerSuffix Condition="'$(InstallerSuffix)'==''">wix5</InstallerSuffix>
+    <OutputName>PowerToysSetup-$(Version)-$(InstallerSuffix)-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
-    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
-    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetupVNext-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(InstallerSuffix)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(InstallerSuffix)-$(Platform)</OutputName>
     <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
     <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
     <IntermediateOutputPath Condition=" '$(PerUser)' != 'true' ">$(BaseIntermediateOutputPath)$(Platform)\$(Configuration)\MachineSetup</IntermediateOutputPath>

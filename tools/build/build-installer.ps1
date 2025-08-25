@@ -21,9 +21,12 @@ Specifies the build configuration (e.g., 'Debug', 'Release'). Default is 'Releas
 .PARAMETER PerUser
 Specifies whether to build a per-user installer (true) or machine-wide installer (false). Default is true (per-user).
 
+.PARAMETER InstallerSuffix
+Specifies the suffix for the installer naming (e.g., 'wix5', 'vnext'). Default is 'wix5'.
+
 .EXAMPLE
 .\build-installer.ps1
-Runs the installer build pipeline for ARM64 Release (default).
+Runs the installer build pipeline for x64 Release with default suffix (wix5).
 
 .EXAMPLE
 .\build-installer.ps1 -Platform x64 -Configuration Release
@@ -32,6 +35,10 @@ Runs the pipeline for x64 Release.
 .EXAMPLE
 .\build-installer.ps1 -Platform x64 -Configuration Release -PerUser false
 Runs the pipeline for x64 Release with machine-wide installer.
+
+.EXAMPLE
+.\build-installer.ps1 -Platform x64 -Configuration Release -InstallerSuffix vnext
+Runs the pipeline for x64 Release with 'vnext' suffix.
 
 .NOTES
 - Make sure to run this script from a Developer PowerShell (e.g., VS2022 Developer PowerShell).
@@ -47,7 +54,8 @@ Runs the pipeline for x64 Release with machine-wide installer.
 param (
     [string]$Platform = 'x64',
     [string]$Configuration = 'Release',
-    [string]$PerUser = 'true'
+    [string]$PerUser = 'true',
+    [string]$InstallerSuffix = 'wix5'
 )
 
 # Find the PowerToys repository root automatically
@@ -153,8 +161,8 @@ try {
 
 RunMSBuild 'installer\PowerToysSetup.sln' '/t:restore /p:RestorePackagesConfig=true'
 
-RunMSBuild 'installer\PowerToysSetup.sln' "/m /t:PowerToysInstallerVNext /p:PerUser=$PerUser"
+RunMSBuild 'installer\PowerToysSetup.sln' "/m /t:PowerToysInstallerVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix"
 
-RunMSBuild 'installer\PowerToysSetup.sln' "/m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser"
+RunMSBuild 'installer\PowerToysSetup.sln' "/m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix"
 
 Write-Host '[PIPELINE] Completed'
