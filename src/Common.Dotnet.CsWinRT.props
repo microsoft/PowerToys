@@ -4,11 +4,11 @@
   <Import Project=".\Common.Dotnet.PrepareGeneratedFolder.targets" />
 
   <PropertyGroup>
+    <CoreTargetFramework>net9.0</CoreTargetFramework>
     <WindowsSdkPackageVersion>10.0.26100.68-preview</WindowsSdkPackageVersion>
-    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>$(CoreTargetFramework)-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-    <CoreTargetFramework>$([System.Text.RegularExpressions.Regex]::Replace('$(TargetFramework)', '^net([0-9]+)\.([0-9]+)(?:-windows.*)?$', 'net$1.$2'))</CoreTargetFramework>
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
