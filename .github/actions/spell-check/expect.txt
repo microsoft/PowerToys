@@ -400,6 +400,7 @@ DString
 DSVG
 DTo
 DUMMYUNIONNAME
+dutil
 DVASPECT
 DVASPECTINFO
 DVD
@@ -1789,6 +1790,7 @@ uncompilable
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
+unins
 uninstalls
 Uniquifies
 unitconverter
