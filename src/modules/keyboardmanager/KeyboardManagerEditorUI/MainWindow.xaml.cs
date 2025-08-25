@@ -66,7 +66,6 @@ namespace KeyboardManagerEditorUI
                     case "Programs": NavigationFrame.Navigate(typeof(Pages.Programs)); break;
                     case "Text": NavigationFrame.Navigate(typeof(Pages.Text)); break;
                     case "URLs": NavigationFrame.Navigate(typeof(Pages.URLs)); break;
-                    case "Mouse": NavigationFrame.Navigate(typeof(Pages.Mouse)); break;
                 }
             }
         }
