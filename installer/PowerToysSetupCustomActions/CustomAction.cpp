@@ -1153,6 +1153,113 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
     return WcaFinalize(er);
 }
 
+UINT __stdcall CleanImageResizerRuntimeRegistryCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "CleanImageResizerRuntimeRegistryCA");
+
+    try
+    {
+        const wchar_t* CLSID_STR = L"{51B4D7E5-7568-4234-B4BB-47FB3C016A69}";
+        const wchar_t* exts[] = { L".bmp", L".dib", L".gif", L".jfif", L".jpe", L".jpeg", L".jpg", L".jxr", L".png", L".rle", L".tif", L".tiff", L".wdp" };
+
+        auto deleteKeyRecursive = [](HKEY root, const std::wstring &path) {
+            RegDeleteTreeW(root, path.c_str());
+        };
+
+        // InprocServer32 chain root CLSID
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\CLSID\\" + std::wstring(CLSID_STR));
+        // DragDrop handler
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\Directory\\ShellEx\\DragDropHandlers\\ImageResizer");
+        // Extensions
+        for (auto ext : exts)
+        {
+            deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\SystemFileAssociations\\" + std::wstring(ext) + L"\\ShellEx\\ContextMenuHandlers\\ImageResizer");
+        }
+        // Sentinel
+        RegDeleteTreeW(HKEY_CURRENT_USER, L"Software\\Microsoft\\PowerToys\\ImageResizer");
+    }
+    catch (...)
+    {
+        er = ERROR_INSTALL_FAILURE;
+    }
+
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall CleanFileLocksmithRuntimeRegistryCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "CleanFileLocksmithRuntimeRegistryCA");
+    try
+    {
+        const wchar_t* CLSID_STR = L"{84D68575-E186-46AD-B0CB-BAEB45EE29C0}";
+        auto deleteKeyRecursive = [](HKEY root, const std::wstring& path) {
+            RegDeleteTreeW(root, path.c_str());
+        };
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\CLSID\\" + std::wstring(CLSID_STR));
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\AllFileSystemObjects\\ShellEx\\ContextMenuHandlers\\FileLocksmithExt");
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\Drive\\ShellEx\\ContextMenuHandlers\\FileLocksmithExt");
+        RegDeleteTreeW(HKEY_CURRENT_USER, L"Software\\Microsoft\\PowerToys\\FileLocksmith");
+    }
+    catch (...)
+    {
+        er = ERROR_INSTALL_FAILURE;
+    }
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall CleanPowerRenameRuntimeRegistryCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "CleanPowerRenameRuntimeRegistryCA");
+    try
+    {
+        const wchar_t* CLSID_STR = L"{0440049F-D1DC-4E46-B27B-98393D79486B}";
+        auto deleteKeyRecursive = [](HKEY root, const std::wstring& path) {
+            RegDeleteTreeW(root, path.c_str());
+        };
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\CLSID\\" + std::wstring(CLSID_STR));
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\AllFileSystemObjects\\ShellEx\\ContextMenuHandlers\\PowerRenameExt");
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\Directory\\background\\ShellEx\\ContextMenuHandlers\\PowerRenameExt");
+        RegDeleteTreeW(HKEY_CURRENT_USER, L"Software\\Microsoft\\PowerToys\\PowerRename");
+    }
+    catch (...)
+    {
+        er = ERROR_INSTALL_FAILURE;
+    }
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall CleanNewPlusRuntimeRegistryCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "CleanNewPlusRuntimeRegistryCA");
+    try
+    {
+        const wchar_t* CLSID_STR = L"{FF90D477-E32A-4BE8-8CC5-A502A97F5401}";
+        auto deleteKeyRecursive = [](HKEY root, const std::wstring& path) {
+            RegDeleteTreeW(root, path.c_str());
+        };
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\CLSID\\" + std::wstring(CLSID_STR));
+        deleteKeyRecursive(HKEY_CURRENT_USER, L"Software\\Classes\\Directory\\background\\ShellEx\\ContextMenuHandlers\\NewPlusShellExtensionWin10");
+        RegDeleteTreeW(HKEY_CURRENT_USER, L"Software\\Microsoft\\PowerToys\\NewPlus");
+    }
+    catch (...)
+    {
+        er = ERROR_INSTALL_FAILURE;
+    }
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
+    return WcaFinalize(er);
+}
+
 UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;

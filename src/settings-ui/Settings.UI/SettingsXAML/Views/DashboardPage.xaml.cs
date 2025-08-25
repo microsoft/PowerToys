@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// Dashboard Settings Page.
     /// </summary>
-    public sealed partial class DashboardPage : Page, IRefreshablePage
+    public sealed partial class DashboardPage : NavigatablePage, IRefreshablePage
     {
         /// <summary>
         /// Gets or sets view model.
@@ -39,6 +39,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new DashboardViewModel(
                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()

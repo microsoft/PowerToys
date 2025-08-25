@@ -15,7 +15,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class AdvancedPastePage : Page, IRefreshablePage
+    public sealed partial class AdvancedPastePage : NavigatablePage, IRefreshablePage
     {
         private AdvancedPasteViewModel ViewModel { get; set; }
 
@@ -31,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()

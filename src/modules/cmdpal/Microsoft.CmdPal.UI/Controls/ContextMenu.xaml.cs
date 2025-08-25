@@ -31,7 +31,7 @@ public sealed partial class ContextMenu : UserControl,
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
 
-        if (ViewModel != null)
+        if (ViewModel is not null)
         {
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         }
@@ -270,7 +270,7 @@ public sealed partial class ContextMenu : UserControl,
 
     private bool IsSeparator(object item)
     {
-        return item is SeparatorContextItemViewModel;
+        return item is SeparatorViewModel;
     }
 
     private void UpdateUiForStackChange()

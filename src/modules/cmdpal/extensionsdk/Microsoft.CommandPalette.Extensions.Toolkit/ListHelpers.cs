@@ -65,12 +65,32 @@ public partial class ListHelpers
     public static void InPlaceUpdateList<T>(IList<T> original, IEnumerable<T> newContents)
         where T : class
     {
+        InPlaceUpdateList(original, newContents, out _);
+    }
+
+    /// <summary>
+    /// Modifies the contents of `original` in-place, to match those of
+    /// `newContents`. The canonical use being:
+    /// ```cs
+    /// ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(ItemsToFilter, TextToFilterOn));
+    /// ```
+    /// </summary>
+    /// <typeparam name="T">Any type that can be compared for equality</typeparam>
+    /// <param name="original">Collection to modify</param>
+    /// <param name="newContents">The enumerable which `original` should match</param>
+    /// <param name="removedItems">List of items that were removed from the original collection</param>
+    public static void InPlaceUpdateList<T>(IList<T> original, IEnumerable<T> newContents, out List<T> removedItems)
+        where T : class
+    {
+        removedItems = [];
+
         // we're not changing newContents - stash this so we don't re-evaluate it every time
         var numberOfNew = newContents.Count();
 
         // Short circuit - new contents should just be empty
         if (numberOfNew == 0)
         {
+            removedItems.AddRange(original);
             original.Clear();
             return;
         }
@@ -92,6 +112,7 @@ public partial class ListHelpers
                     for (var k = i; k < j; k++)
                     {
                         // This item from the original list was not in the new list. Remove it.
+                        removedItems.Add(original[i]);
                         original.RemoveAt(i);
                     }
 
@@ -120,6 +141,7 @@ public partial class ListHelpers
         while (original.Count > numberOfNew)
         {
             // RemoveAtEnd
+            removedItems.Add(original[original.Count - 1]);
             original.RemoveAt(original.Count - 1);
         }
 

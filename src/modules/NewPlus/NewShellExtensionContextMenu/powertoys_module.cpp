@@ -16,6 +16,7 @@
 #include "trace.h"
 #include "new_utilities.h"
 #include "Generated Files/resource.h"
+#include "RuntimeRegistration.h"
 
 // Note: Settings are managed via Settings and UI Settings
 class NewModule : public PowertoyModuleIface
@@ -93,8 +94,16 @@ public:
 
         // Log telemetry
         Trace::EventToggleOnOff(true);
-
-        newplus::utilities::register_msix_package();
+        if (package::IsWin11OrGreater())
+        {
+            newplus::utilities::register_msix_package();
+        }
+        else
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            NewPlusRuntimeRegistration::EnsureRegisteredWin10();
+#endif
+        }
 
         powertoy_new_enabled = true;
     }
@@ -140,6 +149,13 @@ private:
         if (traceEvent)
         {
             Trace::EventToggleOnOff(false);
+        }
+        if (!package::IsWin11OrGreater())
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            NewPlusRuntimeRegistration::Unregister();
+            Logger::info(L"New+ context menu unregistered (Win10)");
+#endif
         }
         powertoy_new_enabled = false;
     }
