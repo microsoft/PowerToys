@@ -228,6 +228,11 @@ internal sealed partial class ErrorReportWindow
         PInvoke.DrawMenuBar(hwnd);
     }
 
+    private static TextWrapping BoolToWrapping(bool? wordWrap)
+    {
+        return wordWrap == true ? TextWrapping.Wrap : TextWrapping.NoWrap;
+    }
+
     private void ErrorReportWindow_OnClosed(object sender, WindowEventArgs args)
     {
         // If the window is closed, we can exit or recover based on the mode

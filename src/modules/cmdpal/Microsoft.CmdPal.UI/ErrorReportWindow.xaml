@@ -2,7 +2,7 @@
     x:Class="Microsoft.CmdPal.UI.ErrorReportWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:local="using:Microsoft.CmdPal.UI"
     Title="Command Palette - Error Report"
     Closed="ErrorReportWindow_OnClosed">
 
@@ -12,11 +12,6 @@
             <Thickness x:Key="WindowPadding">24</Thickness>
             <x:Double x:Key="ElementSpacing">8</x:Double>
             <FontFamily x:Key="MonospaceFontFamily">Cascadia Code, Consolas, Courier New, monospace</FontFamily>
-
-            <converters:BoolToObjectConverter
-                x:Key="BoolToWrappingConverter"
-                FalseValue="NoWrap"
-                TrueValue="Wrap" />
 
             <Style x:Key="ReportTextBoxStyle" TargetType="TextBox">
                 <Setter Property="MinHeight" Value="320" />
@@ -98,7 +93,7 @@
                     Grid.Column="0"
                     Grid.ColumnSpan="4"
                     Style="{StaticResource ReportTextBoxStyle}"
-                    TextWrapping="{Binding ElementName=WrapToggle, Path=IsChecked, Mode=OneWay, Converter={StaticResource BoolToWrappingConverter}}" />
+                    TextWrapping="{x:Bind local:ErrorReportWindow.BoolToWrapping(WrapToggle.IsChecked), Mode=OneWay}" />
 
                 <CheckBox
                     x:Name="WrapToggle"
