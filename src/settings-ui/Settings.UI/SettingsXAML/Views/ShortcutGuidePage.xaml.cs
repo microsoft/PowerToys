@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class ShortcutGuidePage : Page, IRefreshablePage
+    public sealed partial class ShortcutGuidePage : NavigatablePage, IRefreshablePage
     {
         private ShortcutGuideViewModel ViewModel { get; set; }
 
@@ -20,6 +20,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var settingsUtils = new SettingsUtils();
             ViewModel = new ShortcutGuideViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
+
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         private void OpenColorsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

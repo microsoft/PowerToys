@@ -52,18 +52,18 @@ public sealed partial class SearchBar : UserControl,
         //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
         var @this = (SearchBar)d;
 
-        if (@this != null
+        if (@this is not null
             && e.OldValue is PageViewModel old)
         {
             old.PropertyChanged -= @this.Page_PropertyChanged;
         }
 
-        if (@this != null
+        if (@this is not null
             && e.NewValue is PageViewModel page)
         {
             // TODO: In some cases we probably want commands to clear a filter
             // somewhere in the process, so we need to figure out when that is.
-            @this.FilterBox.Text = page.Filter;
+            @this.FilterBox.Text = page.SearchTextBox;
             @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
 
             page.PropertyChanged += @this.Page_PropertyChanged;
@@ -86,9 +86,9 @@ public sealed partial class SearchBar : UserControl,
         {
             this.FilterBox.Text = string.Empty;
 
-            if (CurrentPageViewModel != null)
+            if (CurrentPageViewModel is not null)
             {
-                CurrentPageViewModel.Filter = string.Empty;
+                CurrentPageViewModel.SearchTextBox = string.Empty;
             }
         }));
     }
@@ -144,9 +144,9 @@ public sealed partial class SearchBar : UserControl,
                 FilterBox.Text = string.Empty;
 
                 // hack TODO GH #245
-                if (CurrentPageViewModel != null)
+                if (CurrentPageViewModel is not null)
                 {
-                    CurrentPageViewModel.Filter = FilterBox.Text;
+                    CurrentPageViewModel.SearchTextBox = FilterBox.Text;
                 }
             }
 
@@ -155,9 +155,9 @@ public sealed partial class SearchBar : UserControl,
         else if (e.Key == VirtualKey.Back)
         {
             // hack TODO GH #245
-            if (CurrentPageViewModel != null)
+            if (CurrentPageViewModel is not null)
             {
-                CurrentPageViewModel.Filter = FilterBox.Text;
+                CurrentPageViewModel.SearchTextBox = FilterBox.Text;
             }
         }
     }
@@ -319,9 +319,9 @@ public sealed partial class SearchBar : UserControl,
         }
 
         // Actually plumb Filtering to the view model
-        if (CurrentPageViewModel != null)
+        if (CurrentPageViewModel is not null)
         {
-            CurrentPageViewModel.Filter = FilterBox.Text;
+            CurrentPageViewModel.SearchTextBox = FilterBox.Text;
         }
     }
 

@@ -28,6 +28,8 @@
             "PowerToys.GPOWrapperProjection.dll",
             "PowerToys.AllExperiments.dll",
 
+            "Common.Search.dll",
+
             "PowerToys.AlwaysOnTop.exe",
             "PowerToys.AlwaysOnTopModuleInterface.dll",
 
@@ -280,6 +282,7 @@
                 "Mono.Cecil.Pdb.dll",
                 "Mono.Cecil.Rocks.dll",
                 "Newtonsoft.Json.dll",
+                "CommunityToolkit.WinUI.Controls.TitleBar.dll",
 
                 "NLog.dll",
                 "HtmlAgilityPack.dll",

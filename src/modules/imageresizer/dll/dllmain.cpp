@@ -14,6 +14,7 @@
 #include <common/utils/resources.h>
 #include <common/utils/logger_helper.h>
 #include <interface/powertoy_module_interface.h>
+#include "RuntimeRegistration.h"
 
 CImageResizerExtModule _AtlModule;
 HINSTANCE g_hInst_imageResizer = 0;
@@ -106,12 +107,14 @@ public:
         {
             std::wstring path = get_module_folderpath(g_hInst_imageResizer);
             std::wstring packageUri = path + L"\\ImageResizerContextMenuPackage.msix";
-
             if (!package::IsPackageRegisteredWithPowerToysVersion(ImageResizerConstants::ModulePackageDisplayName))
             {
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+        ImageResizerRuntimeRegistration::EnsureRegistered();
+#endif
 
         Trace::EnableImageResizer(m_enabled);
     }
@@ -121,6 +124,10 @@ public:
     {
         m_enabled = false;
         Trace::EnableImageResizer(m_enabled);
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+        ImageResizerRuntimeRegistration::Unregister();
+        Logger::info(L"ImageResizer context menu unregistered (Win10)");
+#endif
     }
 
     // Returns if the powertoys is enabled

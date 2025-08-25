@@ -55,7 +55,7 @@ public partial class AppStateModel : ObservableObject
 
             var loaded = JsonSerializer.Deserialize<AppStateModel>(jsonContent, JsonSerializationContext.Default.AppStateModel);
 
-            Debug.WriteLine(loaded != null ? "Loaded settings file" : "Failed to parse");
+            Debug.WriteLine(loaded is not null ? "Loaded settings file" : "Failed to parse");
 
             return loaded ?? new();
         }

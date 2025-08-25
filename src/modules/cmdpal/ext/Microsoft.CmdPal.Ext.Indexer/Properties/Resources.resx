@@ -180,4 +180,10 @@
   <data name="Indexer_fallback_searchPage_title" xml:space="preserve">
     <value>Search for "{0}" in files</value>
   </data>
+  <data name="Indexer_NoResultsMessage" xml:space="preserve">
+    <value>No items found</value>
+  </data>
+  <data name="Indexer_NoResultsMessageTip" xml:space="preserve">
+    <value>Tip: Refine your search using filters, just like in File Explorer (e.g., type:directory).</value>
+  </data>
 </root>

@@ -93,7 +93,7 @@ public partial class StringMatcher
 
         query = query.Trim();
 
-        // if (_alphabet != null)
+        // if (_alphabet is not null)
         // {
         //    query = _alphabet.Translate(query);
         //    stringToCompare = _alphabet.Translate(stringToCompare);

@@ -18,18 +18,18 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
     public bool Initialized { get; private set; }
 
     public bool HasSettings =>
-        _model.Unsafe != null && // We have a settings model AND
-        (!Initialized || SettingsPage != null); // we weren't initialized, OR we were, and we do have a settings page
+        _model.Unsafe is not null && // We have a settings model AND
+        (!Initialized || SettingsPage is not null); // we weren't initialized, OR we were, and we do have a settings page
 
     private void UnsafeInitializeProperties()
     {
         var model = _model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
-        if (model.SettingsPage != null)
+        if (model.SettingsPage is not null)
         {
             SettingsPage = new CommandPaletteContentPageViewModel(model.SettingsPage, mainThread, provider.ExtensionHost);
             SettingsPage.InitializeProperties();

@@ -11,141 +11,177 @@
     Loaded="Page_Loaded"
     mc:Ignorable="d">
 
+    <!--  Main layout container  -->
+    <Grid>
+        <!--  Main content grid  -->
+        <Grid Margin="0,24,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-    <Grid Margin="0,24,0,0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+            <!--  Compact Header overlay that covers both InfoBar and Title sections  -->
+            <Border
+                x:Name="HeaderOverlay"
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                Margin="0,-24,0,0"
+                VerticalAlignment="Top"
+                BorderThickness="0"
+                Canvas.ZIndex="1">
 
-        <tkcontrols:SettingsCard
-            x:Name="WhatsNewDataDiagnosticsInfoBar"
-            x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar"
-            Margin="0,-24,0,0"
-            Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
-            IsTabStop="{x:Bind ShowDataDiagnosticsInfoBar, Mode=OneWay}"
-            Visibility="{x:Bind ShowDataDiagnosticsInfoBar, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-            <tkcontrols:SettingsCard.HeaderIcon>
-                <FontIcon Foreground="{ThemeResource InfoBarInformationalSeverityIconBackground}" Glyph="&#xF167;" />
-            </tkcontrols:SettingsCard.HeaderIcon>
-            <tkcontrols:SettingsCard.Description>
-                <StackPanel>
-                    <TextBlock x:Name="WhatsNewDataDiagnosticsInfoBarDescText">
-                        <Hyperlink NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation">
-                            <Run x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc" />
-                        </Hyperlink>
-                    </TextBlock>
-                    <TextBlock x:Name="WhatsNewDataDiagnosticsInfoBarDescTextYesClicked" Visibility="Collapsed">
-                        <Run x:Uid="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Desc" />
-                        <Hyperlink Click="DataDiagnostics_OpenSettings_Click">
-                            <Run x:Uid="Oobe_WhatsNew_DataDiagnostics_Yes_Click_OpenSettings_Text" />
-                        </Hyperlink>
-                    </TextBlock>
-                </StackPanel>
-            </tkcontrols:SettingsCard.Description>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button
-                    x:Name="DataDiagnosticsButtonYes"
-                    x:Uid="Oobe_WhatsNew_DataDiagnostics_Button_Yes"
-                    Click="DataDiagnostics_InfoBar_YesNo_Click"
-                    CommandParameter="Yes" />
-                <HyperlinkButton
-                    x:Name="DataDiagnosticsButtonNo"
-                    x:Uid="Oobe_WhatsNew_DataDiagnostics_Button_No"
-                    Click="DataDiagnostics_InfoBar_YesNo_Click"
-                    CommandParameter="No" />
-                <Button
-                    Margin="16,0,0,0"
-                    Click="DataDiagnostics_InfoBar_Close_Click"
-                    Content="{ui:FontIcon Glyph=&#xE894;,
-                                          FontSize=16}"
-                    Style="{StaticResource SubtleButtonStyle}" />
-            </StackPanel>
-        </tkcontrols:SettingsCard>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-        <StackPanel
-            Grid.Row="1"
-            Margin="32,16,0,16"
-            VerticalAlignment="Top"
-            Orientation="Vertical">
-            <TextBlock
-                x:Uid="Oobe_WhatsNew"
-                AutomationProperties.HeadingLevel="Level1"
-                Style="{StaticResource TitleTextBlockStyle}" />
-            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Style="{StaticResource TextButtonStyle}">
-                <TextBlock x:Uid="Oobe_WhatsNew_DetailedReleaseNotesLink" TextWrapping="Wrap" />
-            </HyperlinkButton>
-        </StackPanel>
+                    <tkcontrols:SettingsCard
+                        x:Name="WhatsNewDataDiagnosticsInfoBar"
+                        x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar"
+                        Grid.Row="0"
+                        Padding="12,8,12,8"
+                        Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                        IsTabStop="{x:Bind ShowDataDiagnosticsInfoBar, Mode=OneWay}"
+                        Visibility="{x:Bind ShowDataDiagnosticsInfoBar, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <tkcontrols:SettingsCard.HeaderIcon>
+                            <FontIcon Foreground="{ThemeResource InfoBarInformationalSeverityIconBackground}" Glyph="&#xF167;" />
+                        </tkcontrols:SettingsCard.HeaderIcon>
+                        <tkcontrols:SettingsCard.Description>
+                            <StackPanel>
+                                <TextBlock x:Name="WhatsNewDataDiagnosticsInfoBarDescText">
+                                    <Hyperlink NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation">
+                                        <Run x:Uid="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc" />
+                                    </Hyperlink>
+                                </TextBlock>
+                                <TextBlock x:Name="WhatsNewDataDiagnosticsInfoBarDescTextYesClicked" Visibility="Collapsed">
+                                    <Run x:Uid="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Desc" />
+                                    <Hyperlink Click="DataDiagnostics_OpenSettings_Click">
+                                        <Run x:Uid="Oobe_WhatsNew_DataDiagnostics_Yes_Click_OpenSettings_Text" />
+                                    </Hyperlink>
+                                </TextBlock>
+                            </StackPanel>
+                        </tkcontrols:SettingsCard.Description>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button
+                                x:Name="DataDiagnosticsButtonYes"
+                                x:Uid="Oobe_WhatsNew_DataDiagnostics_Button_Yes"
+                                Click="DataDiagnostics_InfoBar_YesNo_Click"
+                                CommandParameter="Yes" />
+                            <HyperlinkButton
+                                x:Name="DataDiagnosticsButtonNo"
+                                x:Uid="Oobe_WhatsNew_DataDiagnostics_Button_No"
+                                Click="DataDiagnostics_InfoBar_YesNo_Click"
+                                CommandParameter="No" />
+                            <Button
+                                Margin="16,0,0,0"
+                                Click="DataDiagnostics_InfoBar_Close_Click"
+                                Content="{ui:FontIcon Glyph=&#xE894;,
+                                                      FontSize=16}"
+                                Style="{StaticResource SubtleButtonStyle}" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
 
-        <InfoBar
-            x:Name="ErrorInfoBar"
-            x:Uid="Oobe_WhatsNew_LoadingError"
-            Grid.Row="2"
-            VerticalAlignment="Top"
-            IsClosable="False"
-            IsTabStop="False"
-            Severity="Error">
-            <InfoBar.ActionButton>
-                <Button
-                    x:Uid="RetryBtn"
-                    HorizontalAlignment="Right"
-                    Click="LoadReleaseNotes_Click">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="16" Glyph="&#xE72C;" />
-                        <TextBlock x:Uid="RetryLabel" />
-                    </StackPanel>
-                </Button>
-            </InfoBar.ActionButton>
-        </InfoBar>
-        <InfoBar
-            x:Name="ProxyWarningInfoBar"
-            x:Uid="Oobe_WhatsNew_ProxyAuthenticationWarning"
-            Grid.Row="2"
-            VerticalAlignment="Top"
-            IsClosable="False"
-            IsTabStop="False"
-            Severity="Warning">
-            <InfoBar.ActionButton>
-                <Button
-                    x:Uid="RetryBtn"
-                    HorizontalAlignment="Right"
-                    Click="LoadReleaseNotes_Click">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="16" Glyph="&#xE72C;" />
-                        <TextBlock x:Uid="RetryLabel" />
-                    </StackPanel>
-                </Button>
-            </InfoBar.ActionButton>
-        </InfoBar>
+                    <Grid Grid.Row="1" Margin="16,12,0,12">
+                        <StackPanel
+                            VerticalAlignment="Top"
+                            Orientation="Vertical"
+                            Spacing="4">
+                            <TextBlock
+                                x:Uid="Oobe_WhatsNew"
+                                AutomationProperties.HeadingLevel="Level1"
+                                Style="{StaticResource TitleTextBlockStyle}" />
+                            <HyperlinkButton NavigateUri="https://github.com/microsoft/PowerToys/releases" Style="{StaticResource TextButtonStyle}">
+                                <TextBlock x:Uid="Oobe_WhatsNew_DetailedReleaseNotesLink" TextWrapping="Wrap" />
+                            </HyperlinkButton>
+                        </StackPanel>
 
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="32,24,32,24">
-                <ProgressRing
-                    x:Name="LoadingProgressRing"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    IsIndeterminate="True"
-                    Visibility="Visible" />
-                <tk7controls:MarkdownTextBlock
-                    x:Name="ReleaseNotesMarkdown"
-                    VerticalAlignment="Top"
-                    Background="Transparent"
-                    Header1FontSize="20"
-                    Header1FontWeight="SemiBold"
-                    Header1Margin="0,0,0,4"
-                    Header3FontSize="16"
-                    Header3FontWeight="SemiBold"
-                    Header4FontSize="16"
-                    Header4FontWeight="SemiBold"
-                    HorizontalRuleMargin="24"
-                    LinkClicked="ReleaseNotesMarkdown_LinkClicked"
-                    ListMargin="-18,4,0,12"
-                    ParagraphMargin="0,0,0,0"
-                    TableMargin="24"
-                    Visibility="Collapsed" />
-            </Grid>
-        </ScrollViewer>
+                        <!--  ShortcutConflictControl positioned at the right side  -->
+                        <controls:ShortcutConflictControl
+                            Grid.RowSpan="2"
+                            Margin="0,0,16,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            AllHotkeyConflictsData="{x:Bind AllHotkeyConflictsData, Mode=OneWay}"
+                            Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!--  Reduced spacer for the compact header overlay  -->
+            <Grid Grid.Row="0" Height="0" />
+            <Grid Grid.Row="1" Height="80" />
+
+            <InfoBar
+                x:Name="ErrorInfoBar"
+                x:Uid="Oobe_WhatsNew_LoadingError"
+                Grid.Row="2"
+                VerticalAlignment="Top"
+                IsClosable="False"
+                IsTabStop="False"
+                Severity="Error">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="RetryBtn"
+                        HorizontalAlignment="Right"
+                        Click="LoadReleaseNotes_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                            <TextBlock x:Uid="RetryLabel" />
+                        </StackPanel>
+                    </Button>
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <InfoBar
+                x:Name="ProxyWarningInfoBar"
+                x:Uid="Oobe_WhatsNew_ProxyAuthenticationWarning"
+                Grid.Row="2"
+                VerticalAlignment="Top"
+                IsClosable="False"
+                IsTabStop="False"
+                Severity="Warning">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="RetryBtn"
+                        HorizontalAlignment="Right"
+                        Click="LoadReleaseNotes_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                            <TextBlock x:Uid="RetryLabel" />
+                        </StackPanel>
+                    </Button>
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+                <Grid Margin="32,16,32,24">
+                    <ProgressRing
+                        x:Name="LoadingProgressRing"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsIndeterminate="True"
+                        Visibility="Visible" />
+                    <tk7controls:MarkdownTextBlock
+                        x:Name="ReleaseNotesMarkdown"
+                        VerticalAlignment="Top"
+                        Background="Transparent"
+                        Header1FontSize="20"
+                        Header1FontWeight="SemiBold"
+                        Header1Margin="0,0,0,4"
+                        Header3FontSize="16"
+                        Header3FontWeight="SemiBold"
+                        Header4FontSize="16"
+                        Header4FontWeight="SemiBold"
+                        HorizontalRuleMargin="24"
+                        LinkClicked="ReleaseNotesMarkdown_LinkClicked"
+                        ListMargin="-18,4,0,12"
+                        ParagraphMargin="0,0,0,0"
+                        TableMargin="24"
+                        Visibility="Collapsed" />
+                </Grid>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>
