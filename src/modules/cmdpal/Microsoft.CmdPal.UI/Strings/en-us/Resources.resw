@@ -435,4 +435,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Show status messages</value>
   </data>
+  <data name="NavigationPaneClosed" xml:space="preserve">
+    <value>Navigation pane closed</value>
+  </data>
+  <data name="NavigationPageOpened" xml:space="preserve">
+    <value>Navigation page opened</value>
+  </data>
 </root>

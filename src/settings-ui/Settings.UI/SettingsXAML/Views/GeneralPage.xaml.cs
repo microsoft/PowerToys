@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// General Settings Page.
     /// </summary>
-    public sealed partial class GeneralPage : Page, IRefreshablePage
+    public sealed partial class GeneralPage : NavigatablePage, IRefreshablePage
     {
         private static DateTime OkToHideBackupAndRestoreMessageTime { get; set; }
 

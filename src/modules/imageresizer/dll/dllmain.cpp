@@ -112,12 +112,9 @@ public:
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-        else
-        {
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            ImageResizerRuntimeRegistration::EnsureRegistered();
+        ImageResizerRuntimeRegistration::EnsureRegistered();
 #endif
-        }
 
         Trace::EnableImageResizer(m_enabled);
     }
@@ -127,13 +124,10 @@ public:
     {
         m_enabled = false;
         Trace::EnableImageResizer(m_enabled);
-        if (!package::IsWin11OrGreater())
-        {
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            ImageResizerRuntimeRegistration::Unregister();
-            Logger::info(L"ImageResizer context menu unregistered (Win10)");
+        ImageResizerRuntimeRegistration::Unregister();
+        Logger::info(L"ImageResizer context menu unregistered (Win10)");
 #endif
-        }
     }
 
     // Returns if the powertoys is enabled

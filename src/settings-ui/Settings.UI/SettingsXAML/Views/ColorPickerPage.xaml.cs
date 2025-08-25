@@ -15,7 +15,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class ColorPickerPage : Page, IRefreshablePage
+    public sealed partial class ColorPickerPage : NavigatablePage, IRefreshablePage
     {
         public ColorPickerViewModel ViewModel { get; set; }
 

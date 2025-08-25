@@ -168,6 +168,7 @@ callbackptr
 calpwstr
 Cangjie
 CANRENAME
+Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
@@ -399,6 +400,7 @@ DString
 DSVG
 DTo
 DUMMYUNIONNAME
+dutil
 DVASPECT
 DVASPECTINFO
 DVD
@@ -574,6 +576,7 @@ GPOCA
 gpp
 gpu
 gradians
+Gridcustomlayout
 GSM
 gtm
 guiddata
@@ -1008,6 +1011,7 @@ Mso
 msrc
 msstore
 msvcp
+MT
 MTND
 MULTIPLEUSE
 multizone
@@ -1020,6 +1024,8 @@ MYICON
 NAMECHANGE
 namespaceanddescendants
 nao
+Navigatable
+NavigatablePage
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1497,6 +1503,7 @@ SETRULES
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
+settingscard
 SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
@@ -1754,11 +1761,13 @@ transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
+Tru
 trl
 trx
 tsa
 tskill
 tstoi
+tweakable
 TWF
 tymed
 TYPEKEYBOARD
@@ -1786,6 +1795,7 @@ uncompilable
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
+unins
 uninstalls
 Uniquifies
 unitconverter

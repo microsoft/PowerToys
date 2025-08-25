@@ -23,6 +23,7 @@
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.250703-build.2173" />
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.TitleBar" Version="0.0.1-build.2206" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
@@ -108,6 +109,14 @@
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
     <PackageVersion Include="WyHash" Version="1.0.5" />
+    <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Firewall.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Util.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.UI.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.NetFx.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Bal.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.BootstrapperApplicationApi" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.WixStandardBootstrapperApplicationFunctionApi" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->
