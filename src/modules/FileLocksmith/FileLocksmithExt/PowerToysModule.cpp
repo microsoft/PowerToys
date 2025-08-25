@@ -88,12 +88,9 @@ public:
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-        else
-        {
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            FileLocksmithRuntimeRegistration::EnsureRegistered();
+        FileLocksmithRuntimeRegistration::EnsureRegistered();
 #endif
-        }
 
         m_enabled = true;
     }
@@ -101,13 +98,10 @@ public:
     virtual void disable() override
     {
         Logger::info(L"File Locksmith disabled");
-        if (!package::IsWin11OrGreater())
-        {
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            FileLocksmithRuntimeRegistration::Unregister();
-            Logger::info(L"File Locksmith context menu unregistered (Win10)");
+        FileLocksmithRuntimeRegistration::Unregister();
+        Logger::info(L"File Locksmith context menu unregistered (Win10)");
 #endif
-        }
         m_enabled = false;
     }
 

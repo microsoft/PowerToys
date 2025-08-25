@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -181,15 +182,15 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         if (more is not null)
         {
             MoreCommands = more
-                .Select(item =>
+                .Select<IContextItem, IContextItemViewModel>(item =>
                 {
                     if (item is ICommandContextItem contextItem)
                     {
-                        return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
+                        return new CommandContextItemViewModel(contextItem, PageContext);
                     }
                     else
                     {
-                        return new SeparatorViewModel() as IContextItemViewModel;
+                        return new SeparatorViewModel();
                     }
                 })
                 .ToList();
@@ -237,8 +238,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             FastInitializeProperties();
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError("error fast initializing CommandItemViewModel", ex);
             Command = new(null, PageContext);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
@@ -257,9 +259,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             SlowInitializeProperties();
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             Initialized |= InitializedState.Error;
+            Logger.LogError("error slow initializing CommandItemViewModel", ex);
         }
 
         return false;
@@ -272,8 +275,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             InitializeProperties();
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError("error initializing CommandItemViewModel", ex);
             Command = new(null, PageContext);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
@@ -342,15 +346,15 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 if (more is not null)
                 {
                     var newContextMenu = more
-                        .Select(item =>
+                        .Select<IContextItem, IContextItemViewModel>(item =>
                         {
                             if (item is ICommandContextItem contextItem)
                             {
-                                return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
+                                return new CommandContextItemViewModel(contextItem, PageContext);
                             }
                             else
                             {
-                                return new SeparatorViewModel() as IContextItemViewModel;
+                                return new SeparatorViewModel();
                             }
                         })
                         .ToList();
