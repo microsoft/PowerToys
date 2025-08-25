@@ -168,6 +168,7 @@ callbackptr
 calpwstr
 Cangjie
 CANRENAME
+Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
@@ -574,6 +575,7 @@ GPOCA
 gpp
 gpu
 gradians
+Gridcustomlayout
 GSM
 gtm
 guiddata
@@ -1008,6 +1010,7 @@ Mso
 msrc
 msstore
 msvcp
+MT
 MTND
 MULTIPLEUSE
 multizone

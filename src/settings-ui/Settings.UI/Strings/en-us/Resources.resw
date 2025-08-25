@@ -398,6 +398,9 @@
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
     <value>Advanced Settings</value>
   </data>
+  <data name="MouseWithoutBorders_EasyMouseSettings_Group.Header" xml:space="preserve">
+    <value>Easy Mouse</value>
+  </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
   </data>
@@ -418,6 +421,27 @@
   <data name="MouseWithoutBorders_EasyMouseOption_Shift.Content" xml:space="preserve">
     <value>Shift</value>
     <comment>This is the Shift keyboard key</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Header" xml:space="preserve">
+    <value>Disable Easy Mouse when an application is running in full screen.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
+    <value>Prevent Easy Mouse from moving to another machine when an application is in full-screen mode.</value>
+  </data>
+  <data name="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine.Title" xml:space="preserve">
+    <value>Disabling Easy Mouse in full-screen mode only affects the host PC. It won’t stop the mouse from moving away from remote machines.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>msedge.exe
+firefox.exe
+opera.exe</value>
+    <comment>Allow easy mouse when chrome is in fullscreen mode.</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Header" xml:space="preserve">
+    <value>Ignored fullscreen applications</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Description" xml:space="preserve">
+    <value>Allow Easy Mouse to move between machines even if one of these applications is running in full screen, separate each executable with a new line.</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
     <value>Shortcut to lock all machines.</value>
@@ -485,7 +509,7 @@
   </data>
   <data name="Shell_Awake.Content" xml:space="preserve">
     <value>Awake</value>
-    <comment>Product name: Navigation view item name for Awake</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
@@ -2280,6 +2304,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
@@ -2333,12 +2358,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_Awake.Description" xml:space="preserve">
     <value>Awake is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Oobe_Awake_HowToUse.Text" xml:space="preserve">
     <value>Open **PowerToys Settings** and enable Awake</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
     <value>You can always change modes quickly by **right-clicking the Awake icon** in the system tray.</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Title" xml:space="preserve">
     <value>An error occurred trying to install this update:</value>
@@ -2433,6 +2461,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_ModeSettingsCard.Description" xml:space="preserve">
     <value>Manage the state of your device when Awake is active</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="ExcludedApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
@@ -3564,6 +3593,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Macedonian" xml:space="preserve">
     <value>Macedonian</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Maltese" xml:space="preserve">
+    <value>Maltese</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Maori" xml:space="preserve">
     <value>Maori</value>
   </data>
@@ -3836,7 +3868,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
   <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
-    <value>Advanced Paste is a tool to put your clipboard content into any format you need. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key.</value>
+    <value>A tool to quickly format clipboard content into plain text, Markdown, JSON, and more. An AI-powered option requiring an OpenAI API key is available for advanced formatting.</value>
   </data>
   <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
     <value>Advanced Paste</value>
