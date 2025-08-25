@@ -218,6 +218,6 @@
     <value>This will remove the selected app from your system. Do you want to proceed?</value>
   </data>
   <data name="uninstall_application_confirm_title" xml:space="preserve">
-    <value>Uninstall Application?</value>
+    <value>Uninstall application?</value>
   </data>
 </root>

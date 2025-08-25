@@ -295,7 +295,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstall Application?.
+        ///   Looks up a localized string similar to Uninstall application?.
         /// </summary>
         internal static string uninstall_application_confirm_title {
             get {
