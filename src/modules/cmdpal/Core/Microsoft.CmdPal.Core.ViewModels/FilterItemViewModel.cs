@@ -9,7 +9,7 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public partial class FilterItemViewModel : ExtensionObjectViewModel, IFilterItemViewModel
 {
-    private ExtensionObject<IFilter> _model;
+    private readonly ExtensionObject<IFilter> _model;
 
     public string Id { get; set; } = string.Empty;
 

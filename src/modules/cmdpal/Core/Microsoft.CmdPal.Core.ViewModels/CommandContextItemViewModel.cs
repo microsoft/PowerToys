@@ -39,14 +39,9 @@ public partial class CommandContextItemViewModel(ICommandContextItem contextItem
 
         IsCritical = contextItem.IsCritical;
 
-        // I actually don't think this will ever actually be null, because
-        // KeyChord is a struct, which isn't nullable in WinRT
-        if (contextItem.RequestedShortcut != null)
-        {
-            RequestedShortcut = new(
-                contextItem.RequestedShortcut.Modifiers,
-                contextItem.RequestedShortcut.Vkey,
-                contextItem.RequestedShortcut.ScanCode);
-        }
+        RequestedShortcut = new(
+            contextItem.RequestedShortcut.Modifiers,
+            contextItem.RequestedShortcut.Vkey,
+            contextItem.RequestedShortcut.ScanCode);
     }
 }

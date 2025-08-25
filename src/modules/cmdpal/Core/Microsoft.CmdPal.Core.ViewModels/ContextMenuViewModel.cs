@@ -82,7 +82,7 @@ public partial class ContextMenuViewModel : ObservableObject,
 
         if (string.IsNullOrEmpty(searchText))
         {
-            ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu]);
+            ListHelpers.InPlaceUpdateList(FilteredItems, CurrentContextMenu);
             return;
         }
 
@@ -167,7 +167,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         OnPropertyChanging(nameof(CurrentContextMenu));
         OnPropertyChanged(nameof(CurrentContextMenu));
 
-        ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu!]);
+        ListHelpers.InPlaceUpdateList(FilteredItems, CurrentContextMenu!);
     }
 
     private void PushContextStack(IEnumerable<IContextItemViewModel> commands)
@@ -176,7 +176,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         OnPropertyChanging(nameof(CurrentContextMenu));
         OnPropertyChanged(nameof(CurrentContextMenu));
 
-        ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu!]);
+        ListHelpers.InPlaceUpdateList(FilteredItems, CurrentContextMenu!);
     }
 
     public void ResetContextMenu()
@@ -191,7 +191,7 @@ public partial class ContextMenuViewModel : ObservableObject,
 
         if (CurrentContextMenu is not null)
         {
-            ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu!]);
+            ListHelpers.InPlaceUpdateList(FilteredItems, CurrentContextMenu!);
         }
     }
 
