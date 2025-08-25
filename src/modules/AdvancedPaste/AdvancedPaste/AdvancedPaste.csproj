@@ -67,8 +67,6 @@
     <PackageReference Include="ReverseMarkdown" />
     <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="WinUIEx" />
-    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
-    <PackageReference Include="System.Text.Json" />
     <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
     <PackageReference Include="Microsoft.Web.WebView2" />
     <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
