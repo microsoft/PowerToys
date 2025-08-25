@@ -25,7 +25,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 [Serializable]
 public class Win32Program : IProgram
 {
-    public static readonly Win32Program InvalidProgram = new Win32Program { Valid = false, Enabled = false };
+    public static readonly Win32Program InvalidProgram = new() { Valid = false, Enabled = false };
 
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly IPath Path = FileSystem.Path;
@@ -84,7 +84,7 @@ public class Win32Program : IProgram
     private const string ShortcutExtension = "lnk";
     private const string ApplicationReferenceExtension = "appref-ms";
     private const string InternetShortcutExtension = "url";
-    private static readonly HashSet<string> ExecutableApplicationExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "cpl", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
+    private static readonly HashSet<string> ExecutableApplicationExtensions = new(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "cpl", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
 
     private const string ProxyWebApp = "_proxy.exe";
     private const string AppIdArgument = "--app-id";
@@ -202,13 +202,13 @@ public class Win32Program : IProgram
         }
 
         commands.Add(new CommandContextItem(
-                    new Commands.CopyPathCommand(FullPath))
+                    new CopyPathCommand(FullPath))
         {
             RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
         });
 
         commands.Add(new CommandContextItem(
-                    new OpenPathCommand(ParentDirectory))
+                    new OpenFileCommand(ParentDirectory))
         {
             RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E),
         });
@@ -272,7 +272,7 @@ public class Win32Program : IProgram
         }
     }
 
-    private static readonly Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
+    private static readonly Regex InternetShortcutURLPrefixes = new(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
 
     // This function filters Internet Shortcut programs
     private static Win32Program InternetShortcutProgram(string path)
@@ -738,16 +738,13 @@ public class Win32Program : IProgram
 
     private sealed class Win32ProgramEqualityComparer : IEqualityComparer<Win32Program>
     {
-        public static readonly Win32ProgramEqualityComparer Default = new Win32ProgramEqualityComparer();
+        public static readonly Win32ProgramEqualityComparer Default = new();
 
         public bool Equals(Win32Program? app1, Win32Program? app2)
         {
-            if (app1 is null && app2 is null)
-            {
-                return true;
-            }
-
-            return app1 is not null
+            return app1 is null && app2 is null
+                ? true
+                : app1 is not null
                     && app2 is not null
                     && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
                     .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));

@@ -95,14 +95,14 @@ public class UWPApplication : IUWPApplication
 
         commands.Add(
             new CommandContextItem(
-                new Commands.CopyPathCommand(Location))
+                new CopyPathCommand(Location))
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
             });
 
         commands.Add(
             new CommandContextItem(
-                new OpenPathCommand(Location)
+                new OpenFileCommand(Location)
                 {
                     Name = Resources.open_containing_folder,
                 })

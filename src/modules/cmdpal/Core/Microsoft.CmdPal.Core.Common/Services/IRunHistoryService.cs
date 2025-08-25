@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.CmdPal.Common.Services;
+namespace Microsoft.CmdPal.Core.Common.Services;
 
 public interface IRunHistoryService
 {

@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;

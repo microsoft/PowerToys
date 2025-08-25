@@ -5,7 +5,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
@@ -117,7 +117,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex.ToString());
+                    ManagedCommon.Logger.LogError(ex.ToString());
                 }
             }
         }
