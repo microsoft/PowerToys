@@ -36,8 +36,7 @@ public partial class FiltersViewModel : ExtensionObjectViewModel
                 var filters = _filtersModel.Unsafe.GetFilters();
                 Filters = filters.Select<IFilterItem, IFilterItemViewModel>(filter =>
                 {
-                    var filterItem = filter as IFilter;
-                    if (filterItem != null)
+                    if (filter is IFilter filterItem)
                     {
                         var filterVM = new FilterItemViewModel(filterItem!, PageContext);
                         filterVM.InitializeProperties();
