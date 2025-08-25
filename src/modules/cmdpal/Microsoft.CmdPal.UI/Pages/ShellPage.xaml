@@ -446,7 +446,7 @@
                 </ScrollViewer>
                 <!--  /DetailsContent  -->
             </Grid>
-            <ScrollView
+            <Grid
                 Grid.Row="2"
                 Grid.ColumnSpan="2"
                 MaxHeight="120"
@@ -455,25 +455,40 @@
                 BorderThickness="0,1,0,1"
                 CornerRadius="0"
                 Visibility="{x:Bind ViewModel.CurrentPage.ErrorMessage, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
-                <TextBlock Margin="16,8,16,16" IsTextSelectionEnabled="True">
-                    <Run
-                        FontWeight="SemiBold"
-                        Foreground="{ThemeResource SystemErrorTextColor}"
-                        Text="Error(s) on page:" />
-                    <LineBreak /><Run Text="{x:Bind ViewModel.CurrentPage.ErrorMessage, Mode=OneWay}" />
-                </TextBlock>
-            </ScrollView>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ScrollView Grid.Column="0">
+                    <TextBlock Margin="16,8,8,16" IsTextSelectionEnabled="True">
+                        <Run
+                            x:Uid="ShellPage_ErrorMessage_ErrorsOnThisPageRun"
+                            FontWeight="SemiBold"
+                            Foreground="{ThemeResource SystemErrorTextColor}" />
+                        <LineBreak /><Run Text="{x:Bind ViewModel.CurrentPage.ErrorMessage, Mode=OneWay}" />
+                    </TextBlock>
+                </ScrollView>
+                <Grid Grid.Column="1" Margin="8">
+                    <Button
+                        x:Name="OpenErrorReportButton"
+                        x:Uid="ShellPage_ErrorMessage_OpenErrorReportButton"
+                        Click="OpenErrorReportButton_OnClick"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <FontIcon FontSize="16" Glyph="&#xE8A7;" />
+                    </Button>
+                </Grid>
+            </Grid>
         </Grid>
 
         <!--
             Horrifying: You may ask yourself - why is there a Background on this InfoBar?
-            
+
             Well, as it turns out, the Informational InfoBar has a transparent
             background. It just cannot be bothered. So, we need to manually give
             it one to actually obscure the text beneath it. And you can't just give
             the InfoBar itself a Background, because then the other Severity's
             won't get colorized.
-            
+
             See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
         -->
         <StackPanel
