@@ -286,6 +286,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to View log folder.
+        /// </summary>
+        public static string builtin_log_folder_command_name {
+            get {
+                return ResourceManager.GetString("builtin_log_folder_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to View log.
         /// </summary>
         public static string builtin_log_name {
