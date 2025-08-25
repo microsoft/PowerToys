@@ -2,15 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Runtime.InteropServices;
-using ManagedCommon;
 using ManagedCsWin32;
-using Microsoft.CmdPal.Common.Properties;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CommandPalette.Extensions.Toolkit.Properties;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace Microsoft.CmdPal.Common.Commands;
+namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class OpenPropertiesCommand : InvokableCommand
 {
@@ -46,7 +43,7 @@ public partial class OpenPropertiesCommand : InvokableCommand
     public OpenPropertiesCommand(string fullPath)
     {
         this._path = fullPath;
-        this.Name = Resources.Indexer_Command_OpenProperties;
+        this.Name = Resources.OpenPropertiesCommand_Name;
         this.Icon = OpenPropertiesIcon;
     }
 
@@ -58,7 +55,7 @@ public partial class OpenPropertiesCommand : InvokableCommand
         }
         catch (Exception ex)
         {
-            Logger.LogError("Error showing file properties: ", ex);
+            ExtensionHost.LogMessage(new LogMessage($"Error showing file properties '{_path}'\n{ex.Message}\n{ex.StackTrace}") { State = MessageState.Error });
         }
 
         return CommandResult.Dismiss();

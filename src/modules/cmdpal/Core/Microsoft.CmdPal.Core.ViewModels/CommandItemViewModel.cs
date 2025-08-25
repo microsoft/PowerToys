@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
-using ManagedCommon;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -184,14 +184,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             MoreCommands = more
                 .Select<IContextItem, IContextItemViewModel>(item =>
                 {
-                    if (item is ICommandContextItem contextItem)
-                    {
-                        return new CommandContextItemViewModel(contextItem, PageContext);
-                    }
-                    else
-                    {
-                        return new SeparatorViewModel();
-                    }
+                    return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
                 })
                 .ToList();
         }
@@ -240,7 +233,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
         catch (Exception ex)
         {
-            Logger.LogError("error fast initializing CommandItemViewModel", ex);
+            CoreLogger.LogError("error fast initializing CommandItemViewModel", ex);
             Command = new(null, PageContext);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
@@ -262,7 +255,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         catch (Exception ex)
         {
             Initialized |= InitializedState.Error;
-            Logger.LogError("error slow initializing CommandItemViewModel", ex);
+            CoreLogger.LogError("error slow initializing CommandItemViewModel", ex);
         }
 
         return false;
@@ -277,7 +270,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
         catch (Exception ex)
         {
-            Logger.LogError("error initializing CommandItemViewModel", ex);
+            CoreLogger.LogError("error initializing CommandItemViewModel", ex);
             Command = new(null, PageContext);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
@@ -348,14 +341,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                     var newContextMenu = more
                         .Select<IContextItem, IContextItemViewModel>(item =>
                         {
-                            if (item is ICommandContextItem contextItem)
-                            {
-                                return new CommandContextItemViewModel(contextItem, PageContext);
-                            }
-                            else
-                            {
-                                return new SeparatorViewModel();
-                            }
+                            return item is ICommandContextItem contextItem ? new CommandContextItemViewModel(contextItem, PageContext) : new SeparatorViewModel();
                         })
                         .ToList();
                     lock (MoreCommands)
