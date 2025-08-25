@@ -309,8 +309,8 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
-                        x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
                         Name="MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreen"
+                        x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
                         IsEnabled="{x:Bind ViewModel.EasyMouseEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ToggleSwitch" IsOn="{x:Bind ViewModel.DisableEasyMouseWhenForegroundWindowIsFullscreen, Mode=TwoWay}" />
@@ -322,15 +322,15 @@
                         Severity="Informational" />
 
                     <tkcontrols:SettingsExpander
-                        x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
                         Name="MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
+                        x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsEnabled="{x:Bind ViewModel.IsEasyMouseBlockingOnFullscreenEnabled, Mode=OneWay}"
                         IsExpanded="False">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
-                                x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
                                 Name="MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreenExcludedApps"
+                                x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
                                 HorizontalContentAlignment="Stretch"
                                 ContentAlignment="Vertical">
                                 <TextBox
@@ -349,13 +349,13 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup 
-                    x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group" 
+                <controls:SettingsGroup
                     Name="MouseWithoutBordersKeyboardShortcutsGroup"
+                    x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard 
-                        x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut"
+                    <tkcontrols:SettingsCard
                         Name="MouseWithoutBordersToggleEasyMouseShortcut"
+                        x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
