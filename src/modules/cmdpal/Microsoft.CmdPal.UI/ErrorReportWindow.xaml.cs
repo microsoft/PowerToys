@@ -123,6 +123,18 @@ internal sealed partial class ErrorReportWindow
         }
     }
 
+    private void InitializeUI(Options options)
+    {
+        SummaryTextBlock.Text = string.IsNullOrWhiteSpace(options.Summary)
+            ? options.Mode == TroubleMode.Recoverable
+                ? ResourceLoaderInstance.ResourceLoader.GetString("ErrorReportWindow_Summary_Recoverable")
+                : ResourceLoaderInstance.ResourceLoader.GetString("ErrorReportWindow_Summary_Unrecoverable")
+            : options.Summary;
+        DetailsBox.Text = options.ErrorReport ?? string.Empty;
+        ContinueBtn.Visibility = options.Mode == TroubleMode.Recoverable ? Visibility.Visible : Visibility.Collapsed;
+        RevealBtn.Visibility = !string.IsNullOrWhiteSpace(options.ReportFilePath) ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     private void CenterAndResizeSafe()
     {
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
@@ -268,18 +280,6 @@ internal sealed partial class ErrorReportWindow
     private void ExitBtn_Click(object sender, RoutedEventArgs e)
     {
         ExitApp();
-    }
-
-    private void InitializeUI(Options options)
-    {
-        SummaryTextBlock.Text = string.IsNullOrWhiteSpace(options.Summary)
-            ? options.Mode == TroubleMode.Recoverable
-                ? ResourceLoaderInstance.ResourceLoader.GetString("ErrorReportWindow_Summary_Recoverable")
-                : ResourceLoaderInstance.ResourceLoader.GetString("ErrorReportWindow_Summary_Unrecoverable")
-            : options.Summary;
-        DetailsBox.Text = options.ErrorReport ?? string.Empty;
-        ContinueBtn.Visibility = options.Mode == TroubleMode.Recoverable ? Visibility.Visible : Visibility.Collapsed;
-        RevealBtn.Visibility = !string.IsNullOrWhiteSpace(options.ReportFilePath) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     internal sealed class Options
