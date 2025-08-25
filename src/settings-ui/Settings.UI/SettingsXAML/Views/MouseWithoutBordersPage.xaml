@@ -299,16 +299,6 @@
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowClipboardAndNetworkStatusMessages, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
-                <controls:SettingsGroup
-                    x:Name="KeyboardShortcutsGroup"
-                    x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group"
-                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="MouseWithoutBordersEasyMouseOption"
-                        x:Uid="MouseWithoutBorders_EasyMouseOption"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
-                    </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_EasyMouseSettings_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_EasyMouseOption" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.EasyMouseOptionIndex, Mode=TwoWay}">
@@ -320,15 +310,10 @@
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+                        Name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
                         IsEnabled="{x:Bind ViewModel.EasyMouseEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ToggleSwitch" IsOn="{x:Bind ViewModel.DisableEasyMouseWhenForegroundWindowIsFullscreen, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
-                        Name="MouseWithoutBordersToggleEasyMouseShortcut"
-                        x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine"
@@ -338,12 +323,14 @@
 
                     <tkcontrols:SettingsExpander
                         x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
+                        Name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsEnabled="{x:Bind ViewModel.IsEasyMouseBlockingOnFullscreenEnabled, Mode=OneWay}"
                         IsExpanded="False">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
+                                Name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
                                 HorizontalContentAlignment="Stretch"
                                 ContentAlignment="Vertical">
                                 <TextBox
@@ -362,8 +349,14 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                <controls:SettingsGroup 
+                    x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group" 
+                    Name="MouseWithoutBordersKeyboardShortcutsGroup"
+                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard 
+                        x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut"
+                        Name="MouseWithoutBordersToggleEasyMouseShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
