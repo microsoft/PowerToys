@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.Common;
 
 namespace Microsoft.CmdPal.UI;
 
