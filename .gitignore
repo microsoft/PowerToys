@@ -355,5 +355,8 @@ src/common/Telemetry/*.etl
 # MSBuildCache
 /MSBuildCacheLogs/
 
+# PowerToys Settings generated search index (legacy location) and obj outputs
+/src/settings-ui/Settings.UI/Assets/Settings/search.index.json
+
 # PowerToysInstaller Build Temp Files
 installer/*/*.wxs.bk

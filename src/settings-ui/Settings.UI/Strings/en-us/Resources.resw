@@ -151,6 +151,22 @@
     <value>Customize the shortcut to bring up the command bar</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
+  <data name="Shell_DebugLabel.Text" xml:space="preserve">
+    <value>Debug</value>
+    <comment>Debug label visible in title bar when debugging</comment>
+  </data>
+  <data name="Shell_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search for settings</value>
+    <comment>Placeholder in settings search box</comment>
+  </data>
+  <data name="Shell_Search_NoResults" xml:space="preserve">
+    <value>No results for</value>
+    <comment>Prefix used in the no-results row; the query is appended in code, e.g., "No results for 'abc'"</comment>
+  </data>
+  <data name="Shell_Search_ShowAll" xml:space="preserve">
+    <value>Show all results</value>
+    <comment>Tail item text to navigate to full results</comment>
+  </data>
   <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
     <value>Default mode</value>
   </data>
@@ -5200,6 +5216,18 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
+  </data>
+  <data name="SearchResults_Title.ModuleTitle" xml:space="preserve">
+    <value>Search results</value>
+  </data>
+  <data name="SearchResults_ModulesTitle.Header" xml:space="preserve">
+    <value>Modules</value>
+  </data>
+  <data name="SearchResults_NoResultsHeader.Text" xml:space="preserve">
+    <value>No results</value>
+  </data>
+  <data name="SearchResults_NoResultsDescription.Text" xml:space="preserve">
+    <value>Try a different search term</value>
   </data>
   <data name="InAppHotkeyConflictTooltipText" xml:space="preserve">
     <value>This shortcut is already in use by another utility.</value>

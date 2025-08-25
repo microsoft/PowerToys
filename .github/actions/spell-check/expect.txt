@@ -1024,6 +1024,8 @@ MYICON
 NAMECHANGE
 namespaceanddescendants
 nao
+Navigatable
+NavigatablePage
 NCACTIVATE
 ncc
 NCCALCSIZE
@@ -1501,6 +1503,7 @@ SETRULES
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
+settingscard
 SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
@@ -1758,11 +1761,13 @@ transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
+Tru
 trl
 trx
 tsa
 tskill
 tstoi
+tweakable
 TWF
 tymed
 TYPEKEYBOARD
