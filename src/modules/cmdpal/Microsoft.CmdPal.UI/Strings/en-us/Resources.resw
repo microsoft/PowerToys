@@ -435,6 +435,127 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="StatusMessagesButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Show status messages</value>
   </data>
+  <data name="ErrorReportWindow_Title" xml:space="preserve">
+    <value>Error Report</value>
+    <comment>Window caption</comment>
+  </data>
+  <data name="ErrorReportWindow_RevealButton_CaptionTextBlock.Text" xml:space="preserve">
+    <value>Open report location</value>
+  </data>
+  <data name="ErrorReportWindow_RevealButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open report location</value>
+  </data>
+  <data name="ErrorReportWindow_CopyButton_CaptionTextBlock.Text" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+  </data>
+  <data name="ErrorReportWindow_CopyButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Copy report to Clipboard</value>
+  </data>
+  <data name="ErrorReportWindow_ContinueButton.Content" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="ErrorReportWindow_ContinueButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="ErrorReportWindow_ContinueButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="ErrorReportWindow_RestartButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="ErrorReportWindow_ExitButton.Content" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="ErrorReportWindow_ExitButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="ErrorReportWindow_ExitButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="ErrorReportWindow_ContinueButton.AccessKey" xml:space="preserve">
+    <value>C</value>
+  </data>
+  <data name="ErrorReportWindow_RestartButton.AccessKey" xml:space="preserve">
+    <value>T</value>
+  </data>
+  <data name="ErrorReportWindow_ExitButton.AccessKey" xml:space="preserve">
+    <value>X</value>
+  </data>
+  <data name="ErrorReportWindow_WordWrapCheckBox.Content" xml:space="preserve">
+    <value>Word wrap</value>
+  </data>
+  <data name="ErrorReportWindow_WordWrapCheckBox.AccessKey" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="ErrorReportWindow_RevealButton.AccessKey" xml:space="preserve">
+    <value>L</value>
+  </data>
+  <data name="ErrorReportWindow_CopyButton.AccessKey" xml:space="preserve">
+    <value>O</value>
+  </data>
+  <data name="ErrorReportWindow_Instructions_Part1Run.Text" xml:space="preserve">
+    <value>Please file a report in the</value>
+  </data>
+  <data name="ErrorReportWindow_Instructions_ReportBugHyperlinkRun.Text" xml:space="preserve">
+    <value>PowerToys GitHub repository</value>
+  </data>
+  <data name="ErrorReportWindow_Instructions_Part2Run.Text" xml:space="preserve">
+    <value>and include the error report shown below.</value>
+  </data>
+  <data name="ErrorReportWindow_Instructions_Part3Run.Text" xml:space="preserve">
+    <value>Before sending, take a quick look to make sure it doesn’t contain any personal or sensitive information.</value>
+  </data>
+  <data name="ErrorReportWindow_Summary_Recoverable" xml:space="preserve">
+    <value>A recoverable error occurred</value>
+  </data>
+  <data name="ErrorReportWindow_Summary_Unrecoverable" xml:space="preserve">
+    <value>An unrecoverable error occurred</value>
+  </data>
+  <data name="ErrorReportWindow_RestartButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="ErrorReportWindow_RestartButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="ErrorReportWindow_RevealButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reveal</value>
+  </data>
+  <data name="ErrorReportWindow_ReportTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Error report content</value>
+  </data>
+  <data name="ErrorReportWindow_AppTitleBar_TitleTextBlock" xml:space="preserve">
+    <value>Command Palette - Error Report</value>
+  </data>
+  <data name="ShellPage_ErrorMessage_OpenErrorReportButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open error report</value>
+  </data>
+  <data name="ShellPage_ErrorMessage_ErrorsOnThisPageRun.Text" xml:space="preserve">
+    <value>Error(s) on page:</value>
+  </data>
+  <data name="ErrorReport_Notification_Summary_Recoverable" xml:space="preserve">
+    <value>An error occurred</value>
+  </data>
+  <data name="ErrorReport_Notification_Summary_Unrecoverable" xml:space="preserve">
+    <value>An error occurred and Command Palette had to close</value>
+  </data>
+  <data name="ErrorReport_Notification_Body_ErrorReportWasSaved" xml:space="preserve">
+    <value>An error report was saved.</value>
+  </data>
+  <data name="ErrorReport_Notification_ReopenButton_Text" xml:space="preserve">
+    <value>Reopen</value>
+  </data>
+  <data name="ErrorReport_Notification_OpenReportButton_Text" xml:space="preserve">
+    <value>Open Report</value>
+  </data>
+  <data name="ErrorReportWindow_Summary_ErrorOnPage" xml:space="preserve">
+    <value>A recoverable error occurred on a page</value>
+  </data>
+  <data name="ErrorReportWindow_RestartFailedMessageBox_Body" xml:space="preserve">
+    <value>Failed to restart the application. Please restart it manually.</value>
+  </data>
+  <data name="ErrorReportWindow_RestartFailedMessageBox_Title" xml:space="preserve">
+    <value>Restart failed</value>
+  </data>
   <data name="NavigationPaneClosed" xml:space="preserve">
     <value>Navigation pane closed</value>
   </data>
