@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.FiltersDropDown"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+            <cmdpalUI:FilterTemplateSelector
+                x:Key="FilterTemplateSelector"
+                Default="{StaticResource FilterItemViewModelTemplate}"
+                Separator="{StaticResource SeparatorViewModelTemplate}" />
+
+            <Style
+                x:Name="ComboBoxStyle"
+                BasedOn="{StaticResource DefaultComboBoxStyle}"
+                TargetType="ComboBox">
+                <Style.Setters>
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Setter Property="Margin" Value="0,0,12,0" />
+                    <Setter Property="Padding" Value="16,4" />
+                </Style.Setters>
+            </Style>
+
+            <!--  Template for the filter items  -->
+            <DataTemplate x:Key="FilterItemViewModelTemplate" x:DataType="coreViewModels:FilterItemViewModel">
+                <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Margin="4,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        SourceKey="{x:Bind Icon}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Name}" />
+                </Grid>
+            </DataTemplate>
+
+            <!--  Template for separators  -->
+            <DataTemplate x:Key="SeparatorViewModelTemplate" x:DataType="coreViewModels:SeparatorViewModel">
+                <Rectangle
+                    Height="1"
+                    Margin="-16,-12,-12,-12"
+                    Fill="{ThemeResource MenuFlyoutSeparatorThemeBrush}" />
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <ComboBox
+        Name="FiltersComboBox"
+        x:Uid="FiltersComboBox"
+        VerticalAlignment="Center"
+        ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
+        ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
+        PlaceholderText="Filters"
+        PreviewKeyDown="FiltersComboBox_PreviewKeyDown"
+        SelectionChanged="FiltersComboBox_SelectionChanged"
+        Style="{StaticResource ComboBoxStyle}"
+        Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+        <ComboBox.ItemContainerStyle>
+            <Style BasedOn="{StaticResource DefaultComboBoxItemStyle}" TargetType="ComboBoxItem">
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="Padding" Value="12,8" />
+            </Style>
+        </ComboBox.ItemContainerStyle>
+        <ComboBox.ItemContainerTransitions>
+            <TransitionCollection />
+        </ComboBox.ItemContainerTransitions>
+    </ComboBox>
+</UserControl>

@@ -5,13 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public class AllAppsSettings : JsonSettingsManager
+public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 {
     private static readonly string _namespace = "apps";
 

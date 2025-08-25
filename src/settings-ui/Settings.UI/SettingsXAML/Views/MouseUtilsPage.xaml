@@ -363,6 +363,27 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        x:Uid="MouseUtils_GlidingCursor"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE7;}"
+                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.GlidingCursorActivationShortcut, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_GlidingCursor_InitialSpeed">
+                                <Slider
+                                    Maximum="60"
+                                    Minimum="5"
+                                    Value="{x:Bind ViewModel.GlidingCursorTravelSpeed, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_GlidingCursor_DelaySpeed">
+                                <Slider
+                                    Maximum="60"
+                                    Minimum="5"
+                                    Value="{x:Bind ViewModel.GlidingCursorDelaySpeed, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
