@@ -4,9 +4,9 @@
 
 using System.Text.RegularExpressions;
 
-namespace Microsoft.CmdPal.UI.Helpers;
+namespace Microsoft.CmdPal.Common.Services.Sanitizer.Abstraction;
 
-internal readonly record struct SanitizationRule
+public readonly record struct SanitizationRule
 {
     public SanitizationRule(Regex regex, string replacement, string description = "")
     {

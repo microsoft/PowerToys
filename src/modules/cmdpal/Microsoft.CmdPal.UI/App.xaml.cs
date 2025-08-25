@@ -62,13 +62,14 @@ public partial class App : Application, IDisposable
     /// </summary>
     public App()
     {
-        Services = ConfigureServices();
-
-        _globalErrorHandler.Register(this, new GlobalErrorHandler.Options
+#if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
+        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default with
         {
-            AppDomainUnhandledExceptionHandling = GlobalErrorHandler.LogTypes.WriteToLog | GlobalErrorHandler.LogTypes.ShowNotification | GlobalErrorHandler.LogTypes.WriteToFile,
-            UnobservedTaskExceptionHandling = GlobalErrorHandler.LogTypes.WriteToLog | GlobalErrorHandler.LogTypes.ShowNotification | GlobalErrorHandler.LogTypes.WriteToFile,
+            StoreReportOnUserDesktop = true,
         });
+#endif
+
+        Services = ConfigureServices();
 
         this.InitializeComponent();
 

@@ -25,6 +25,16 @@ namespace ManagedCommon
         private static readonly string Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "Unknown";
 
         /// <summary>
+        /// Gets the path to the log directory for the current version of the app.
+        /// </summary>
+        public static string CurrentVersionLogDirectoryPath { get; private set; }
+
+        /// <summary>
+        /// Gets the path to the log directory for the app.
+        /// </summary>
+        public static string AppLogDirectoryPath { get; private set; }
+
+        /// <summary>
         /// Initializes the logger and sets the path for logging.
         /// </summary>
         /// <example>InitializeLogger("\\FancyZones\\Editor\\Logs")</example>
@@ -43,11 +53,13 @@ namespace ManagedCommon
             }
 
             string versionedPath = Path.Combine(basePath, Version);
-
             if (!Directory.Exists(versionedPath))
             {
                 Directory.CreateDirectory(versionedPath);
             }
+
+            AppLogDirectoryPath = basePath;
+            CurrentVersionLogDirectoryPath = versionedPath;
 
             var logFilePath = Path.Combine(versionedPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
 

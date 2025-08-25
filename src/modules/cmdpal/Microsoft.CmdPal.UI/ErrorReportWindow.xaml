@@ -2,6 +2,7 @@
     x:Class="Microsoft.CmdPal.UI.ErrorReportWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     Title="Command Palette - Error Report"
     Closed="ErrorReportWindow_OnClosed">
 
@@ -10,164 +11,157 @@
         <Grid.Resources>
             <Thickness x:Key="WindowPadding">24</Thickness>
             <x:Double x:Key="ElementSpacing">8</x:Double>
+            <FontFamily x:Key="MonospaceFontFamily">Cascadia Code, Consolas, Courier New, monospace</FontFamily>
+
+            <converters:BoolToObjectConverter
+                x:Key="BoolToWrappingConverter"
+                FalseValue="NoWrap"
+                TrueValue="Wrap" />
+
+            <Style x:Key="ReportTextBoxStyle" TargetType="TextBox">
+                <Setter Property="MinHeight" Value="320" />
+                <Setter Property="AcceptsReturn" Value="True" />
+                <Setter Property="FontFamily" Value="{StaticResource MonospaceFontFamily}" />
+                <Setter Property="IsReadOnly" Value="True" />
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            </Style>
+
+            <Style
+                x:Key="FooterButtonStyle"
+                BasedOn="{StaticResource DefaultButtonStyle}"
+                TargetType="Button">
+                <Setter Property="MinWidth" Value="100" />
+            </Style>
+
+            <Style x:Key="IconLabelPanelStyle" TargetType="StackPanel">
+                <Setter Property="Orientation" Value="Horizontal" />
+                <Setter Property="Spacing" Value="{StaticResource ElementSpacing}" />
+            </Style>
         </Grid.Resources>
 
-        <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid
+            Padding="{StaticResource WindowPadding}"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource ContentDialogSeparatorBorderBrush}"
+            BorderThickness="{ThemeResource ContentDialogSeparatorThickness}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
+            <StackPanel Grid.Row="0">
+                <TextBlock
+                    x:Name="SummaryTextBlock"
+                    x:Uid="ErrorReportWindow_SummaryHeader"
+                    Margin="0,0,0,24"
+                    Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Style="{StaticResource BodyTextBlockStyle}">
+                    <Span>
+                        <Run x:Uid="ErrorReportWindow_Instructions_Part1Run" />
+                        <Hyperlink x:Uid="ErrorReportWindow_Instructions_ReportBugHyperlink" NavigateUri="https://aka.ms/powerToysReportBug">
+                            <Run x:Uid="ErrorReportWindow_Instructions_ReportBugHyperlinkRun" />
+                        </Hyperlink>
+                        <Run x:Uid="ErrorReportWindow_Instructions_Part2Run" />
+                        <Run x:Uid="ErrorReportWindow_Instructions_Part3Run" />
+                    </Span>
+                </TextBlock>
+            </StackPanel>
+
+            <!--  Content  -->
             <Grid
-                Padding="{StaticResource WindowPadding}"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource ContentDialogSeparatorBorderBrush}"
-                BorderThickness="{ThemeResource ContentDialogSeparatorThickness}">
+                Grid.Row="1"
+                Margin="0,12,0,0"
+                ColumnSpacing="{StaticResource ElementSpacing}"
+                RowSpacing="{StaticResource ElementSpacing}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-                <StackPanel>
-                    <TextBlock
-                        x:Name="SummaryText"
-                        Margin="0,0,0,24"
-                        Style="{StaticResource TitleTextBlockStyle}" />
-                    <TextBlock Style="{StaticResource BodyTextBlockStyle}">
-                        <!--
-                            Dang, whitespace handling in XAML is tricky, po be polite.
-                        -->
-                        <Span xml:space="default">
-                            <Run Text="Please file a report in the" />
-                            <Hyperlink NavigateUri="https://aka.ms/powerToysReportBug">
-                                <Run Text="PowerToys GitHub repository" />
-                            </Hyperlink>
-                            <Run Text="and include the error report shown below." />
-                            <Run Text="Before sending, take a quick look to make sure it doesn’t contain any personal or sensitive information." />
-                        </Span>
-                    </TextBlock>
-
-                </StackPanel>
-
-                <!--  Content  -->
-                <Grid
+                <TextBox
+                    x:Name="DetailsBox"
+                    x:Uid="ErrorReportWindow_ReportTextBox"
                     Grid.Row="1"
-                    Margin="0,12,0,0"
-                    ColumnSpacing="{StaticResource ElementSpacing}"
-                    RowSpacing="{StaticResource ElementSpacing}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                    Grid.Column="0"
+                    Grid.ColumnSpan="4"
+                    Style="{StaticResource ReportTextBoxStyle}"
+                    TextWrapping="{Binding ElementName=WrapToggle, Path=IsChecked, Mode=OneWay, Converter={StaticResource BoolToWrappingConverter}}" />
 
-                    <TextBlock
-                        Grid.Row="0"
-                        Grid.ColumnSpan="4"
-                        Text="Report:" />
+                <CheckBox
+                    x:Name="WrapToggle"
+                    x:Uid="ErrorReportWindow_WordWrapCheckBox"
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    VerticalAlignment="Center" />
 
-                    <TextBox
-                        x:Name="DetailsBox"
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        Grid.ColumnSpan="4"
-                        MinHeight="320"
-                        AcceptsReturn="True"
-                        AutomationProperties.Name="Error report"
-                        BorderThickness="1"
-                        FontFamily="Consolas"
-                        IsReadOnly="True"
-                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                        ScrollViewer.VerticalScrollBarVisibility="Auto"
-                        TextWrapping="NoWrap" />
+                <Button
+                    x:Name="RevealBtn"
+                    x:Uid="ErrorReportWindow_RevealButton"
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Click="RevealBtn_Click"
+                    Style="{ThemeResource DefaultButtonStyle}">
+                    <StackPanel Style="{StaticResource IconLabelPanelStyle}">
+                        <FontIcon FontSize="16" Glyph="&#xE8DA;" />
+                        <TextBlock x:Uid="ErrorReportWindow_RevealButton_CaptionTextBlock" />
+                    </StackPanel>
+                </Button>
 
-                    <CheckBox
-                        x:Name="WrapToggle"
-                        Grid.Row="2"
-                        Grid.Column="0"
-                        VerticalAlignment="Center"
-                        AccessKey="W"
-                        Checked="WrapToggle_Checked"
-                        Content="Word wrap"
-                        Unchecked="WrapToggle_Checked" />
-
-                    <Button
-                        x:Name="RevealBtn"
-                        Grid.Row="2"
-                        Grid.Column="2"
-                        AccessKey="L"
-                        AutomationProperties.Name="Open report location"
-                        Click="RevealBtn_Click"
-                        Style="{ThemeResource DefaultButtonStyle}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon FontSize="16" Glyph="&#xE8DA;" />
-                            <TextBlock Text="Open report location" />
-                        </StackPanel>
-                    </Button>
-                    <Button
-                        x:Name="CopyBtn"
-                        Grid.Row="2"
-                        Grid.Column="3"
-                        AccessKey="O"
-                        AutomationProperties.Name="Copy to Clipboard"
-                        Click="CopyBtn_Click"
-                        Style="{ThemeResource DefaultButtonStyle}">
-                        <Button.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="C" Modifiers="Control" />
-                        </Button.KeyboardAccelerators>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon FontSize="16" Glyph="&#xE8C8;" />
-                            <TextBlock Text="Copy to Clipboard" />
-                        </StackPanel>
-                    </Button>
-                </Grid>
-
+                <Button
+                    x:Name="CopyBtn"
+                    x:Uid="ErrorReportWindow_CopyButton"
+                    Grid.Row="2"
+                    Grid.Column="3"
+                    Click="CopyBtn_Click"
+                    Style="{ThemeResource DefaultButtonStyle}">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="C" Modifiers="Control" />
+                    </Button.KeyboardAccelerators>
+                    <StackPanel Style="{StaticResource IconLabelPanelStyle}">
+                        <FontIcon FontSize="16" Glyph="&#xE8C8;" />
+                        <TextBlock x:Uid="ErrorReportWindow_CopyButton_CaptionTextBlock" />
+                    </StackPanel>
+                </Button>
             </Grid>
 
-            <!--  Buttons  -->
-            <StackPanel
-                Grid.Row="1"
-                Padding="{StaticResource WindowPadding}"
-                HorizontalAlignment="Right"
-                Orientation="Horizontal"
-                Spacing="{StaticResource ElementSpacing}">
-                <Button
-                    x:Name="RetryBtn"
-                    MinWidth="100"
-                    AccessKey="R"
-                    Click="RetryBtn_Click"
-                    Content="Retry"
-                    Style="{ThemeResource DefaultButtonStyle}"
-                    Visibility="Collapsed" />
-                <Button
-                    x:Name="ContinueBtn"
-                    MinWidth="100"
-                    AccessKey="C"
-                    Click="ContinueBtn_Click"
-                    Content="Continue"
-                    Style="{ThemeResource DefaultButtonStyle}"
-                    Visibility="Collapsed" />
-                <Button
-                    x:Name="RestartBtn"
-                    MinWidth="100"
-                    AccessKey="T"
-                    Click="RestartBtn_Click"
-                    Content="Restart"
-                    Style="{ThemeResource DefaultButtonStyle}" />
-                <Button
-                    x:Name="QuitBtn"
-                    MinWidth="100"
-                    AccessKey="X"
-                    Click="QuitBtn_Click"
-                    Content="Exit"
-                    Style="{ThemeResource DefaultButtonStyle}" />
-            </StackPanel>
         </Grid>
+
+        <!--  Buttons  -->
+        <StackPanel
+            Grid.Row="1"
+            Padding="{StaticResource WindowPadding}"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="{StaticResource ElementSpacing}">
+            <Button
+                x:Name="ContinueBtn"
+                x:Uid="ErrorReportWindow_ContinueButton"
+                Click="ContinueBtn_Click"
+                Style="{StaticResource FooterButtonStyle}"
+                Visibility="Collapsed" />
+            <Button
+                x:Name="RestartBtn"
+                x:Uid="ErrorReportWindow_RestartButton"
+                Click="RestartBtn_Click"
+                Style="{StaticResource FooterButtonStyle}" />
+            <Button
+                x:Name="ExitBtn"
+                x:Uid="ErrorReportWindow_ExitButton"
+                Click="ExitBtn_Click"
+                Style="{StaticResource FooterButtonStyle}" />
+        </StackPanel>
     </Grid>
 </Window>

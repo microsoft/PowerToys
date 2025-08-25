@@ -31,11 +31,11 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE783;}"
                         IsExpanded="True">
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard Header="Throw an unhandled exception from UI thread">
+                            <controls:SettingsCard Header="Throw an unhandled exception from the UI thread">
                                 <Button Click="ThrowPlainMainThreadException_Click" Content="Throw" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard Header="Throw an unhandled exception from UI thread (with PIIs)">
-                                <Button Click="ThrowPlainMainThreadExceptionPiis_Click" Content="Throw" />
+                            <controls:SettingsCard Header="Throw an unhandled exception from the UI thread (with PII)">
+                                <Button Click="ThrowPlainMainThreadExceptionPii_Click" Content="Throw" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Description="Throw with delay, when the task is collected by the GC" Header="Throw unobserved exception from a task">
                                 <Button Click="ThrowExceptionInUnobservedTask_Click" Content="Throw" />
@@ -46,14 +46,11 @@
                     <!--  Diagnostics Section  -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Diagnostics" />
                     <controls:SettingsCard
-                        ActionIcon="{ui:FontIcon Glyph=&#xE838;}"
-                        ActionIconToolTip="Open logs folder"
-                        Click="OpenLogsCardClicked"
-                        Description="Opens the folder with Command Palette logs."
+                        Description="Opens the folder with Command Palette logs"
                         Header="Open logs folder"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xF7BB;}"
-                        IsClickEnabled="True" />
-
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF7BB;}">
+                        <Button Click="OpenLogsCardClicked" Content="Open folder" />
+                    </controls:SettingsCard>
 
                 </StackPanel>
             </Grid>
