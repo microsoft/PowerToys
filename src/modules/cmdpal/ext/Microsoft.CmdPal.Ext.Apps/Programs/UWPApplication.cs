@@ -22,7 +22,7 @@ using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Serializable]
-public class UWPApplication : IProgram
+public class UWPApplication : IUWPApplication
 {
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly IPath Path = FileSystem.Path;
@@ -95,7 +95,7 @@ public class UWPApplication : IProgram
 
         commands.Add(
             new CommandContextItem(
-                new Commands.CopyPathCommand(Location))
+                new CopyTextCommand(Location) { Name = Resources.copy_path })
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
             });
@@ -308,7 +308,7 @@ public class UWPApplication : IProgram
     private bool SetScaleIcons(string path, string colorscheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
-        if (extension != null)
+        if (extension is not null)
         {
             var end = path.Length - extension.Length;
             var prefix = path.Substring(0, end);
@@ -363,7 +363,7 @@ public class UWPApplication : IProgram
     private bool SetTargetSizeIcon(string path, string colorscheme, bool highContrast = false)
     {
         var extension = Path.GetExtension(path);
-        if (extension != null)
+        if (extension is not null)
         {
             var end = path.Length - extension.Length;
             var prefix = path.Substring(0, end);
@@ -517,7 +517,7 @@ public class UWPApplication : IProgram
         }
     }
 
-    internal AppItem ToAppItem()
+    public AppItem ToAppItem()
     {
         var app = this;
         var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;
@@ -576,7 +576,7 @@ public class UWPApplication : IProgram
 
             var group = new DrawingGroup();
             var converted = ColorConverter.ConvertFromString(currentBackgroundColor);
-            if (converted != null)
+            if (converted is not null)
             {
                 var color = (Color)converted;
                 var brush = new SolidColorBrush(color);

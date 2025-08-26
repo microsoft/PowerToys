@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -35,6 +36,17 @@ public partial class ContentIcon : FontIcon
     {
         if (this.FindDescendants().OfType<Grid>().FirstOrDefault() is Grid grid && Content is not null)
         {
+            if (grid.Children.Contains(Content))
+            {
+                return;
+            }
+
+            if (Content is FrameworkElement element && element.Parent is not null)
+            {
+                Debug.Assert(false, $"IconBoxElement Content is already parented to {element.Parent.GetType().Name}");
+                return;
+            }
+
             grid.Children.Add(Content);
         }
     }

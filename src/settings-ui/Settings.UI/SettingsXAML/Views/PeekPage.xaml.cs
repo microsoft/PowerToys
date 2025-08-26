@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PeekPage : Page, IRefreshablePage
+    public sealed partial class PeekPage : NavigatablePage, IRefreshablePage
     {
         private PeekViewModel ViewModel { get; set; }
 
@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 DispatcherQueue);
             DataContext = ViewModel;
             InitializeComponent();
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
         public void RefreshEnabledState()

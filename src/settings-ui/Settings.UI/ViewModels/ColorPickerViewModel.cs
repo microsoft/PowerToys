@@ -9,9 +9,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Timers;
-
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -20,9 +20,11 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class ColorPickerViewModel : Observable, IDisposable
+    public partial class ColorPickerViewModel : PageViewModelBase
     {
-        private bool disposedValue;
+        protected override string ModuleName => ColorPickerSettings.ModuleName;
+
+        private bool _disposed;
 
         // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it; otherwise, we schedule saving it after this interval
         private const int SaveSettingsDelayInMs = 500;
@@ -85,6 +87,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.ColorPicker;
             }
+        }
+
+        public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
+        {
+            var hotkeysDict = new Dictionary<string, HotkeySettings[]>
+            {
+                [ModuleName] = [ActivationShortcut],
+            };
+
+            return hotkeysDict;
         }
 
         public bool IsEnabled
@@ -409,23 +421,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsEnabled));
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposed)
             {
                 if (disposing)
                 {
-                    _delayedTimer.Dispose();
+                    _delayedTimer?.Dispose();
+                    foreach (var colorFormat in ColorFormats)
+                    {
+                        colorFormat.PropertyChanged -= ColorFormat_PropertyChanged;
+                    }
+
+                    ColorFormats.CollectionChanged -= ColorFormats_CollectionChanged;
                 }
 
-                disposedValue = true;
+                _disposed = true;
             }
-        }
 
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            base.Dispose(disposing);
         }
 
         internal ColorFormatModel GetNewColorFormatModel()

@@ -19,16 +19,23 @@ public partial class AllAppsCommandProvider : CommandProvider
 
     public static readonly AllAppsPage Page = new();
 
+    private readonly AllAppsPage _page;
     private readonly CommandItem _listItem;
 
     public AllAppsCommandProvider()
+        : this(Page)
     {
+    }
+
+    public AllAppsCommandProvider(AllAppsPage page)
+    {
+        _page = page ?? throw new ArgumentNullException(nameof(page));
         Id = WellKnownId;
         DisplayName = Resources.installed_apps;
         Icon = Icons.AllAppsIcon;
         Settings = AllAppsSettings.Instance.Settings;
 
-        _listItem = new(Page)
+        _listItem = new(_page)
         {
             Subtitle = Resources.search_installed_apps,
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
@@ -38,11 +45,11 @@ public partial class AllAppsCommandProvider : CommandProvider
         PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem, ..Page.GetPinnedApps()];
+    public override ICommandItem[] TopLevelCommands() => [_listItem, .._page.GetPinnedApps()];
 
     public ICommandItem? LookupApp(string displayName)
     {
-        var items = Page.GetItems();
+        var items = _page.GetItems();
 
         // We're going to do this search in two directions:
         // First, is this name a substring of any app...
