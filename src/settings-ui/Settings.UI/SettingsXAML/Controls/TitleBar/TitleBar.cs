@@ -79,7 +79,6 @@ public partial class TitleBar : Control
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
 #pragma warning restore SA1310 // Field names should not contain underscore
 
-    // Internal tracking (if AutoConfigureCustomTitleBar is on) if we've actually setup the TitleBar yet or not
     // We only want to reset TitleBar configuration in app, if we're the TitleBar instance that's managing that state.
     private bool _isAutoConfigCompleted;
 

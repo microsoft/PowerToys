@@ -162,7 +162,7 @@ public partial class TitleBar : Control
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether gets or sets if the TitleBar should auto configure ExtendContentIntoTitleBar and CaptionButtion background colors.
+    /// Gets or sets a value indicating whether gets or sets if the TitleBar should auto configure ExtendContentIntoTitleBar and CaptionButton background colors.
     /// </summary>
     public bool AutoConfigureCustomTitleBar
     {
@@ -171,7 +171,7 @@ public partial class TitleBar : Control
     }
 
     /// <summary>
-    /// Gets or sets the window the TitleBar should configure (WASDK only).
+    /// Gets or sets the window the TitleBar should configure.
     /// </summary>
     public Window Window
     {
