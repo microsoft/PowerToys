@@ -13,14 +13,14 @@ using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers;
 
-public abstract partial class NavigatablePage : Page
+public abstract partial class NavigablePage : Page
 {
     private const int ExpandWaitDuration = 500;
     private const int AnimationDuration = 1000;
 
     private NavigationParams _pendingNavigationParams;
 
-    public NavigatablePage()
+    public NavigablePage()
     {
         Loaded += OnPageLoaded;
     }

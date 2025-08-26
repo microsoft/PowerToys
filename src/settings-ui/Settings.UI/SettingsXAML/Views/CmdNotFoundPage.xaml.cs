@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class CmdNotFoundPage : NavigatablePage
+    public sealed partial class CmdNotFoundPage : NavigablePage
     {
         private CmdNotFoundViewModel ViewModel { get; set; }
 
