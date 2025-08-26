@@ -55,7 +55,7 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
         try
         {
             // Which timeout to use for the uninstallation operation?
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60)))
             {
                 var packageManager = new PackageManager();
                 var result = await packageManager.RemovePackageAsync(app.Package.FullName).AsTask(cts.Token);
@@ -75,7 +75,7 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
             return CommandResult.ShowToast(new ToastArgs()
             {
                 Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_successful), app.DisplayName),
-                Result = CommandResult.KeepOpen(),
+                Result = CommandResult.GoHome(),
             });
         }
         catch (OperationCanceledException)
