@@ -18,7 +18,7 @@ parameters:
     default: true
   - name: useVSPreview
     type: boolean
-    default: false
+    default: true
   - name: useLatestWebView2
     type: boolean
     default: false

@@ -60,8 +60,6 @@
     <PackageReference Include="System.Data.OleDb" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="UnitsNet" />
-    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>

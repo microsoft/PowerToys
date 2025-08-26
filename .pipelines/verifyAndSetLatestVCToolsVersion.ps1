@@ -1,9 +1,10 @@
-$VSInstances = ([xml](& 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -include packages -format xml))
+$extraVersionTarget = $env:VCWhereExtraVersionTarget;
+$VSInstances = ([xml](& 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -latest $extraVersionTarget -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -include packages -format xml))
 $VSPackages = $VSInstances.instances.instance.packages.package
 $LatestVCPackage = ($VSPackages | ? { $_.id -eq "Microsoft.VisualCpp.Tools.Core" })
 $LatestVCToolsVersion = $LatestVCPackage.version;
 
-$VSRoot = (& 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property 'resolvedInstallationPath')
+$VSRoot = (& 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -latest $extraVersionTarget -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property 'resolvedInstallationPath')
 $VCToolsRoot = Join-Path $VSRoot "VC\Tools\MSVC"
 
 # We have observed a few instances where the VC tools package version actually
