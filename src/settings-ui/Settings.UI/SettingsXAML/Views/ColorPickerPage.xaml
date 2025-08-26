@@ -1,9 +1,10 @@
-﻿<Page
+﻿<local:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ColorPickerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
@@ -21,6 +22,7 @@
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                 Orientation="Vertical">
                 <tkcontrols:SettingsCard
+                    Name="ColorPickerEnableColorPicker"
                     x:Uid="ColorPicker_EnableColorPicker"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
@@ -38,11 +40,17 @@
                 </InfoBar>
 
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard
+                        Name="ActivationShortcut"
+                        x:Uid="Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
+                    <tkcontrols:SettingsCard
+                        Name="ColorPickerActivationAction"
+                        x:Uid="ColorPicker_ActivationAction"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="ColorPicker_OpenEditor" />
                             <ComboBoxItem x:Uid="ColorPicker_PickColor" />
@@ -50,25 +58,35 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsExpander
+                        Name="ColorPickerMouseActions"
                         x:Uid="ColorPicker_MouseActions"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
                         IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="ColorPicker_PrimaryClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="ColorPickerPrimaryClick"
+                                x:Uid="ColorPicker_PrimaryClick"
+                                IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PrimaryClickBehavior, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorThenEditor" />
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorAndClose" />
                                     <ComboBoxItem x:Uid="ColorPicker_Close" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="ColorPicker_MiddleClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="ColorPickerMiddleClick"
+                                x:Uid="ColorPicker_MiddleClick"
+                                IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.MiddleClickBehavior, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorThenEditor" />
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorAndClose" />
                                     <ComboBoxItem x:Uid="ColorPicker_Close" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="ColorPicker_SecondaryClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                Name="ColorPickerSecondaryClick"
+                                x:Uid="ColorPicker_SecondaryClick"
+                                IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.SecondaryClickBehavior, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorThenEditor" />
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorAndClose" />
@@ -80,7 +98,10 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
+                    <tkcontrols:SettingsCard
+                        Name="ColorPickerCopiedColorRepresentation"
+                        x:Uid="ColorPicker_CopiedColorRepresentation"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -92,7 +113,7 @@
                             SelectedValuePath="Key" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ColorPicker_ShowColorName">
+                    <tkcontrols:SettingsCard Name="ColorPickerShowColorName" x:Uid="ColorPicker_ShowColorName">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <!--
@@ -211,4 +232,4 @@
             <controls:PageLink Link="https://medium.com/@Niels9001/a-fluent-color-meter-for-powertoys-20407ededf0c" Text="Niels Laute's UX concept" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
-</Page>
+</local:NavigatablePage>

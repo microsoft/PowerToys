@@ -97,13 +97,26 @@ public partial class AliasManager : ObservableObject
             }
         }
 
-        // Look for the old alias, and remove it
         List<CommandAlias> toRemove = [];
         foreach (var kv in _aliases)
         {
+            // Look for the old aliases for the command, and remove it
             if (kv.Value.CommandId == commandId)
             {
                 toRemove.Add(kv.Value);
+            }
+
+            // Look for the alias belonging to another command, and remove it
+            if (newAlias is not null && kv.Value.Alias == newAlias.Alias)
+            {
+                toRemove.Add(kv.Value);
+
+                // Remove alias from other TopLevelViewModels it may be assigned to
+                var topLevelCommand = _topLevelCommandManager.LookupCommand(kv.Value.CommandId);
+                if (topLevelCommand is not null)
+                {
+                    topLevelCommand.AliasText = string.Empty;
+                }
             }
         }
 

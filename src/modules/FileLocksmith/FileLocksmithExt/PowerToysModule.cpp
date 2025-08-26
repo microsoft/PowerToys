@@ -12,6 +12,7 @@
 #include "FileLocksmithLib/Constants.h"
 #include "FileLocksmithLib/Settings.h"
 #include "FileLocksmithLib/Trace.h"
+#include "RuntimeRegistration.h"
 
 #include "dllmain.h"
 #include "Generated Files/resource.h"
@@ -82,12 +83,14 @@ public:
         {
             std::wstring path = get_module_folderpath(globals::instance);
             std::wstring packageUri = path + L"\\FileLocksmithContextMenuPackage.msix";
-
             if (!package::IsPackageRegisteredWithPowerToysVersion(constants::nonlocalizable::ContextMenuPackageName))
             {
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+        FileLocksmithRuntimeRegistration::EnsureRegistered();
+#endif
 
         m_enabled = true;
     }
@@ -95,6 +98,10 @@ public:
     virtual void disable() override
     {
         Logger::info(L"File Locksmith disabled");
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+        FileLocksmithRuntimeRegistration::Unregister();
+        Logger::info(L"File Locksmith context menu unregistered (Win10)");
+#endif
         m_enabled = false;
     }
 

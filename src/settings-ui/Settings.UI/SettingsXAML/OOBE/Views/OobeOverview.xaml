@@ -20,33 +20,56 @@
                     </HyperlinkButton>
                 </StackPanel>
 
-                <StackPanel
-                    Orientation="Vertical"
-                    Spacing="8"
-                    Visibility="{x:Bind ShowDataDiagnosticsSetting, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Orientation="Vertical" Visibility="{x:Bind ShowDataDiagnosticsSetting, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock
                         x:Uid="Oobe_Overview_Telemetry_Title"
-                        Margin="0,20,0,0"
-                        Style="{StaticResource SubtitleTextBlockStyle}" />
+                        Margin="0,24,0,0"
+                        Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock x:Uid="Oobe_Overview_Telemetry_Desc" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
                     <tkcontrols:SettingsCard
                         x:Uid="Oobe_Overview_EnableDataDiagnostics"
+                        Margin="0,8,0,0"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
                         IsEnabled="{x:Bind ShowDataDiagnosticsSetting, Mode=OneWay}">
+                        <tkcontrols:SettingsCard.Description>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock
+                                    x:Uid="GeneralPage_EnableDataDiagnosticsText"
+                                    Style="{StaticResource SecondaryTextStyle}"
+                                    TextWrapping="WrapWholeWords" />
+                                <HyperlinkButton
+                                    x:Uid="GeneralPage_DiagnosticsAndFeedback_Link"
+                                    Margin="0,2,0,0"
+                                    FontWeight="SemiBold"
+                                    NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
+                                <HyperlinkButton
+                                    x:Uid="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link"
+                                    Margin="0,2,0,0"
+                                    Click="GeneralSettingsLaunchButton_Click"
+                                    FontWeight="SemiBold" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard.Description>
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind EnableDataDiagnostics, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <HyperlinkButton
-                        x:Uid="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link"
-                        Margin="-8,0,0,0"
-                        Click="GeneralSettingsLaunchButton_Click" />
+                    <!--  Show title and description only when there are conflicts  -->
+                    <TextBlock
+                        x:Uid="Oobe_Overview_Hotkey_Conflict_Title"
+                        Margin="0,24,0,8"
+                        Style="{StaticResource BodyStrongTextBlockStyle}" />
 
-                    <HyperlinkButton
-                        x:Uid="Oobe_Overview_DiagnosticsAndFeedback_Link"
-                        Margin="-8,0,0,0"
-                        NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
-
+                    <!--  Always show shortcut status card  -->
+                    <tkcontrols:SettingsCard Description="{x:Bind ConflictDescription, Mode=OneWay}" Header="{x:Bind ConflictText, Mode=OneWay}">
+                        <tkcontrols:SettingsCard.HeaderIcon>
+                            <FontIcon Foreground="{x:Bind IconForeground, Mode=OneWay}" Glyph="{x:Bind IconGlyph, Mode=OneWay}" />
+                        </tkcontrols:SettingsCard.HeaderIcon>
+                        <!--  Only show button when there are conflicts  -->
+                        <Button
+                            x:Uid="ResolveConflicts_Button"
+                            Click="ShortcutConflictBtn_Click"
+                            Visibility="{x:Bind HasConflicts, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </tkcontrols:SettingsCard>
                 </StackPanel>
             </StackPanel>
         </controls:OOBEPageControl.PageContent>
