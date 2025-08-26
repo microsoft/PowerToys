@@ -6,6 +6,7 @@ using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.Controls;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
@@ -42,6 +43,13 @@ public abstract partial class NavigatablePage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
+        // If we have navigation parameters, disable default focus in SettingsPageControl
+        // to allow proper focus management of the target element
+        if (_pendingNavigationParams != null && !string.IsNullOrEmpty(_pendingNavigationParams.ElementName))
+        {
+            SetSettingsPageControlDefaultFocus(false);
+        }
+
         if (_pendingNavigationParams != null && !string.IsNullOrEmpty(_pendingNavigationParams.ElementName))
         {
             // First, expand parent if specified
@@ -65,6 +73,12 @@ public abstract partial class NavigatablePage : Page
                 VerticalOffset = -20,
                 AnimationDesired = true,
             });
+
+            // Ensure the target element gets focus after bringing it into view
+            if (target is Control targetControl)
+            {
+                targetControl.Focus(FocusState.Programmatic);
+            }
 
             await OnTargetElementNavigatedAsync(target, _pendingNavigationParams.ElementName);
 
@@ -140,5 +154,36 @@ public abstract partial class NavigatablePage : Page
     {
         var element = this.FindName(name) as FrameworkElement;
         return element;
+    }
+
+    private void SetSettingsPageControlDefaultFocus(bool shouldSetDefaultFocus)
+    {
+        // Find any SettingsPageControl in the page and set the focus behavior
+        var settingsPageControl = FindSettingsPageControl(this);
+        if (settingsPageControl != null)
+        {
+            settingsPageControl.ShouldSetDefaultFocus = shouldSetDefaultFocus;
+        }
+    }
+
+    private SettingsPageControl FindSettingsPageControl(DependencyObject parent)
+    {
+        if (parent is SettingsPageControl settingsPageControl)
+        {
+            return settingsPageControl;
+        }
+
+        int childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < childCount; i++)
+        {
+            var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+            var result = FindSettingsPageControl(child);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        return null;
     }
 }
