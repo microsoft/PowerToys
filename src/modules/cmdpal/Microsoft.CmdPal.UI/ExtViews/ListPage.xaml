@@ -28,7 +28,6 @@
             Source="{x:Bind ViewModel.Items, Mode=OneWay}" />-->
 
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <cmdpalUI:GalleryGridLayoutToHeightConverter x:Key="GalleryGridLayoutToHeightConverter" />
         <converters:StringVisibilityConverter
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
