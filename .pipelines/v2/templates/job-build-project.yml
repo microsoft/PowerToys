@@ -174,9 +174,9 @@ jobs:
     - task: VisualStudioTestPlatformInstaller@1
       displayName: Ensure VSTest Platform
 
-  # - pwsh: |-
-  #     & '.pipelines/applyXamlStyling.ps1' -Main
-  #   displayName: Verify XAML formatting
+  - pwsh: |-
+      & '.pipelines/applyXamlStyling.ps1' -Passive
+    displayName: Verify XAML formatting
 
   - pwsh: |-
       & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
