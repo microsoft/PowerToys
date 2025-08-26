@@ -36,7 +36,7 @@ public sealed partial class AllAppsPage : ListPage
         _appCache = appCache ?? throw new ArgumentNullException(nameof(appCache));
         this.Name = Resources.all_apps;
         this.Icon = Icons.AllAppsIcon;
-        this.ShowDetails = tr;
+        this.ShowDetails = true;
         this.IsLoading = true;
         this.PlaceholderText = Resources.search_installed_apps_placeholder;
 
