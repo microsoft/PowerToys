@@ -277,7 +277,6 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
 
         public static string GetElementName(XElement element, XNamespace x)
         {
-            // Prefer unscoped Name, fallback to x:Name
             var name = element.Attribute("Name")?.Value;
             if (string.IsNullOrEmpty(name))
             {

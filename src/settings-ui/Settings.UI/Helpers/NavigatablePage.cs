@@ -153,7 +153,7 @@ public abstract partial class NavigatablePage : Page
                 }
 
                 ctrl.Focus(FocusState.Programmatic);
-                                        
+
             }
 
             // Target is not a Control. Find first focusable descendant Control.
@@ -216,16 +216,12 @@ public abstract partial class NavigatablePage : Page
 
     protected FrameworkElement FindElementByName(string name)
     {
-        // 1. Try the Page's own namescope first.
         var element = this.FindName(name) as FrameworkElement;
         if (element != null)
         {
             return element;
         }
 
-        // 2. Walk the visual tree to cross UserControl / DataTemplate namescope boundaries.
-        //    Each UserControl / DataTemplate creates its own namescope, so Page.FindName cannot see inside.
-        //    We do a breadth-first search; when we hit a FrameworkElement we also try its own FindName.
         if (this.Content is DependencyObject root)
         {
             var found = FindInDescendants(root, name);
