@@ -153,7 +153,6 @@ public abstract partial class NavigatablePage : Page
                 }
 
                 ctrl.Focus(FocusState.Programmatic);
-
             }
 
             // Target is not a Control. Find first focusable descendant Control.
