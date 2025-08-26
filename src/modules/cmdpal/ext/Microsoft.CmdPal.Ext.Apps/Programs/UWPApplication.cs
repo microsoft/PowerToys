@@ -22,7 +22,7 @@ using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Serializable]
-public class UWPApplication : IProgram
+public class UWPApplication : IUWPApplication
 {
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly IPath Path = FileSystem.Path;
@@ -95,7 +95,7 @@ public class UWPApplication : IProgram
 
         commands.Add(
             new CommandContextItem(
-                new Commands.CopyPathCommand(Location))
+                new CopyTextCommand(Location) { Name = Resources.copy_path })
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
             });
@@ -517,7 +517,7 @@ public class UWPApplication : IProgram
         }
     }
 
-    internal AppItem ToAppItem()
+    public AppItem ToAppItem()
     {
         var app = this;
         var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;

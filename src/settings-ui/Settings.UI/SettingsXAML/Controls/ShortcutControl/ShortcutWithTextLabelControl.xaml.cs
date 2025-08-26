@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(TextProperty, value); }
         }
 
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(ShortcutWithTextLabelControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), typeof(string), typeof(ShortcutWithTextLabelControl), new PropertyMetadata(default(string)));
 
         public List<object> Keys
         {
@@ -25,11 +25,40 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set { SetValue(KeysProperty, value); }
         }
 
-        public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(ShortcutWithTextLabelControl), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty KeysProperty = DependencyProperty.Register(nameof(Keys), typeof(List<object>), typeof(ShortcutWithTextLabelControl), new PropertyMetadata(default(string)));
+
+        public LabelPlacement LabelPlacement
+        {
+            get { return (LabelPlacement)GetValue(LabelPlacementProperty); }
+            set { SetValue(LabelPlacementProperty, value); }
+        }
+
+        public static readonly DependencyProperty LabelPlacementProperty = DependencyProperty.Register(nameof(LabelPlacement), typeof(LabelPlacement), typeof(ShortcutWithTextLabelControl), new PropertyMetadata(defaultValue: LabelPlacement.After, OnIsLabelPlacementChanged));
 
         public ShortcutWithTextLabelControl()
         {
             this.InitializeComponent();
         }
+
+        private static void OnIsLabelPlacementChanged(DependencyObject d, DependencyPropertyChangedEventArgs newValue)
+        {
+            if (d is ShortcutWithTextLabelControl labelControl)
+            {
+                if (labelControl.LabelPlacement == LabelPlacement.Before)
+                {
+                  VisualStateManager.GoToState(labelControl, "LabelBefore", true);
+                }
+                else
+                {
+                    VisualStateManager.GoToState(labelControl, "LabelAfter", true);
+                }
+            }
+        }
+    }
+
+    public enum LabelPlacement
+    {
+        Before,
+        After,
     }
 }

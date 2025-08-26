@@ -1,4 +1,4 @@
-﻿<Page
+﻿<local:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,6 +6,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
@@ -13,7 +14,7 @@
     AutomationProperties.LandmarkType="Main"
     DataContext="DashboardViewModel"
     mc:Ignorable="d">
-    <Page.Resources>
+    <local:NavigatablePage.Resources>
         <converters:ModuleItemTemplateSelector
             x:Key="ModuleItemTemplateSelector"
             ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
@@ -73,7 +74,7 @@
                     TextWrapping="WrapWholeWords" />
             </Grid>
         </DataTemplate>
-    </Page.Resources>
+    </local:NavigatablePage.Resources>
     <Grid Margin="16,0,0,0" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -133,7 +134,7 @@
                 Grid.Column="1"
                 Orientation="Horizontal"
                 Spacing="16">
-                <!--<controls:ShortcutConflictControl/>-->
+                <controls:ShortcutConflictControl AllHotkeyConflictsData="{x:Bind ViewModel.AllHotkeyConflictsData, Mode=OneWay}" />
                 <controls:CheckUpdateControl />
             </StackPanel>
         </Grid>
@@ -362,4 +363,4 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
     </Grid>
-</Page>
+</local:NavigatablePage>
