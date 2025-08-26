@@ -162,7 +162,6 @@ public partial class TitleBar : Control
 
     public void SetDragRegion(NonClientRegionKind nonClientRegionKind, params FrameworkElement[] frameworkElements)
     {
-        var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(Window.AppWindow.Id);
         List<RectInt32> rects = new List<RectInt32>();
         var scale = GetRasterizationScaleForElement(this);
 
@@ -185,13 +184,12 @@ public partial class TitleBar : Control
 
         if (rects.Count > 0)
         {
-            nonClientInputSrc.SetRegionRects(nonClientRegionKind, rects.ToArray());
+            InputNonClientPointerSource.GetForWindowId(Window.AppWindow.Id).SetRegionRects(nonClientRegionKind, rects.ToArray());
         }
     }
 
     public void ClearDragRegions(NonClientRegionKind nonClientRegionKind)
     {
-        var noninputsrc = InputNonClientPointerSource.GetForWindowId(Window.AppWindow.Id);
-        noninputsrc.ClearRegionRects(nonClientRegionKind);
+        InputNonClientPointerSource.GetForWindowId(Window.AppWindow.Id).ClearRegionRects(nonClientRegionKind);
     }
 }

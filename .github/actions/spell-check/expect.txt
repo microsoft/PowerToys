@@ -49,6 +49,7 @@ ALPHATYPE
 AModifier
 amr
 ANDSCANS
+animatedvisuals
 Animnate
 ANull
 AOC
