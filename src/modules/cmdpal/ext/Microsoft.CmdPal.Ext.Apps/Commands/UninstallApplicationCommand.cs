@@ -56,19 +56,19 @@ internal sealed partial class UninstallApplicationCommand : InvokableCommand
         {
             // Which timeout to use for the uninstallation operation?
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-
-            var packageManager = new PackageManager();
-
-            var result = await packageManager.RemovePackageAsync(app.Package.FullName).AsTask(cts.Token);
-
-            if (result.ErrorText is not null && result.ErrorText.Length > 0)
             {
-                Logger.LogError($"Failed to uninstall {app.Package.FullName}: {result.ErrorText}");
-                return CommandResult.ShowToast(new ToastArgs()
+                var packageManager = new PackageManager();
+                var result = await packageManager.RemovePackageAsync(app.Package.FullName).AsTask(cts.Token);
+
+                if (result.ErrorText is not null && result.ErrorText.Length > 0)
                 {
-                    Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), app.DisplayName),
-                    Result = CommandResult.KeepOpen(),
-                });
+                    Logger.LogError($"Failed to uninstall {app.Package.FullName}: {result.ErrorText}");
+                    return CommandResult.ShowToast(new ToastArgs()
+                    {
+                        Message = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_failed), app.DisplayName),
+                        Result = CommandResult.KeepOpen(),
+                    });
+                }
             }
 
             // TODO: Update the Search results after uninstalling the app - unsure how to do this yet.
