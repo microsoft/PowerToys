@@ -16,6 +16,8 @@ public partial class GalleryGridLayout : BaseObservable, IGalleryGridLayout
         }
     }
 
+    = true;
+
     public virtual bool ShowSubtitle
     {
         get => field;
@@ -25,4 +27,6 @@ public partial class GalleryGridLayout : BaseObservable, IGalleryGridLayout
             OnPropertyChanged(nameof(ShowSubtitle));
         }
     }
+
+    = true;
 }

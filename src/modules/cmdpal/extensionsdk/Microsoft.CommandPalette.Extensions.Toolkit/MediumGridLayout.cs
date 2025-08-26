@@ -15,4 +15,6 @@ public partial class MediumGridLayout : BaseObservable, IMediumGridLayout
             OnPropertyChanged(nameof(ShowTitle));
         }
     }
+
+    = true;
 }

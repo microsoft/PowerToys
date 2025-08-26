@@ -13,7 +13,7 @@ internal sealed partial class SampleGalleryListPage : ListPage
     {
         Icon = new IconInfo("\uE7C5");
         Name = "Sample Gallery List Page";
-        GridProperties = new GalleryGridLayout() { ShowTitle = true, ShowSubtitle = true };
+        GridProperties = new GalleryGridLayout();
     }
 
     public override IListItem[] GetItems()
