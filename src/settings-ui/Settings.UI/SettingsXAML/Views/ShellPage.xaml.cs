@@ -574,7 +574,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _lastSearchResults = results;
             _lastQueryText = query;
 
-            List<SuggestionItem> top;
+            var suggestions = BuildSuggestionItems(results, query);
+            Logger.LogDebug($"[Search][TextChanged][{traceId}] built {suggestions.Count} suggestions");
+
+            var swUi = Stopwatch.StartNew();
+            sender.ItemsSource = suggestions;
+            sender.IsSuggestionListOpen = suggestions.Count > 0;
+            swUi.Stop();
+            swOverall.Stop();
+            Logger.LogDebug($"[Search][TextChanged][{traceId}] UI update took {swUi.ElapsedMilliseconds} ms. total={swOverall.ElapsedMilliseconds} ms");
+        }
+
+        private List<SuggestionItem> BuildSuggestionItems(List<SettingEntry> results, string query)
+        {
+            List<SuggestionItem> suggestions;
+            
             if (results.Count == 0)
             {
                 // Explicit no-results row
@@ -586,7 +600,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
 
                 var headerText = $"{noResultsPrefix} '{query}'";
-                top =
+                suggestions =
                 [
                     new()
                     {
@@ -594,35 +608,25 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                         IsNoResults = true,
                     },
                 ];
-
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] no results -> added placeholder item (count={top.Count})");
             }
             else
             {
                 // Project top 5 suggestions
-                var swProject = Stopwatch.StartNew();
-                top = [.. results.Take(5)
+                suggestions = [.. results.Take(5)
                     .Select(e =>
                     {
                         string subtitle = string.Empty;
                         if (e.Type != EntryType.SettingsPage)
                         {
-                            var swSubtitle = Stopwatch.StartNew();
                             subtitle = SearchIndexService.GetLocalizedPageName(e.PageTypeName);
                             if (string.IsNullOrEmpty(subtitle))
                             {
                                 // Fallback: look up the module title from the in-memory index
-                                var swFallback = Stopwatch.StartNew();
                                 subtitle = SearchIndexService.Index
                                     .Where(x => x.Type == EntryType.SettingsPage && x.PageTypeName == e.PageTypeName)
                                     .Select(x => x.Header)
                                     .FirstOrDefault() ?? string.Empty;
-                                swFallback.Stop();
-                                Logger.LogDebug($"[Search][TextChanged][{traceId}] fallback subtitle for '{e.PageTypeName}' took {swFallback.ElapsedMilliseconds} ms");
                             }
-
-                            swSubtitle.Stop();
-                            Logger.LogDebug($"[Search][TextChanged][{traceId}] subtitle for '{e.PageTypeName}' took {swSubtitle.ElapsedMilliseconds} ms");
                         }
 
                         return new SuggestionItem
@@ -636,23 +640,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                             IsShowAll = false,
                         };
                     })];
-                swProject.Stop();
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] project suggestions took {swProject.ElapsedMilliseconds} ms. topCount={top.Count}");
 
                 if (results.Count > 5)
                 {
                     // Add a tail item to show all results if there are more than 5
-                    top.Add(new SuggestionItem { IsShowAll = true });
-                    Logger.LogDebug($"[Search][TextChanged][{traceId}] added 'Show all results' item");
+                    suggestions.Add(new SuggestionItem { IsShowAll = true });
                 }
             }
 
-            var swUi = Stopwatch.StartNew();
-            sender.ItemsSource = top;
-            sender.IsSuggestionListOpen = top.Count > 0;
-            swUi.Stop();
-            swOverall.Stop();
-            Logger.LogDebug($"[Search][TextChanged][{traceId}] UI update took {swUi.ElapsedMilliseconds} ms. total={swOverall.ElapsedMilliseconds} ms");
+            return suggestions;
         }
 
         private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
@@ -713,8 +709,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            // do not prompt unless search for text.
-            return;
+            if (sender is AutoSuggestBox searchBox)
+            {
+                var currentText = searchBox.Text?.Trim() ?? string.Empty;
+                
+                // If there's text in the search box and we have cached results for that text, restore the suggestions
+                if (!string.IsNullOrWhiteSpace(currentText) && 
+                    _lastSearchResults?.Count > 0 && 
+                    string.Equals(_lastQueryText, currentText, StringComparison.Ordinal))
+                {
+                    Logger.LogDebug($"[Search][GotFocus] restoring cached results for '{currentText}'. results={_lastSearchResults.Count}");
+                    
+                    var suggestions = BuildSuggestionItems(_lastSearchResults, currentText);
+                    searchBox.ItemsSource = suggestions;
+                    searchBox.IsSuggestionListOpen = suggestions.Count > 0;
+                }
+            }
         }
 
         private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
