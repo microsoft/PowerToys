@@ -793,6 +793,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Window
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.UnitTestBase", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.UnitTestsBase\Microsoft.CmdPal.Ext.UnitTestBase.csproj", "{00D8659C-2068-40B6-8B86-759CD6284BBB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E11826E1-76DF-42AC-985C-164CC2EE57A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenRuler.UITests", "src\modules\MeasureTool\Tests\ScreenRuler.UITests\ScreenRuler.UITests.csproj", "{66C069F8-C548-4CA6-8CDE-239104D68E88}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Apps.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.Apps.UnitTests\Microsoft.CmdPal.Ext.Apps.UnitTests.csproj", "{E816D7B1-4688-4ECB-97CC-3D8E798F3830}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Bookmarks.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.Bookmarks.UnitTests\Microsoft.CmdPal.Ext.Bookmarks.UnitTests.csproj", "{E816D7B3-4688-4ECB-97CC-3D8E798F3832}"
