@@ -110,7 +110,7 @@ public partial class ShellViewModel : ObservableObject,
         return true;
     }
 
-    public void LoadPageViewModel(PageViewModel viewModel)
+    public async Task LoadPageViewModelAsync(PageViewModel viewModel)
     {
         // Note: We removed the general loading state, extensions sometimes use their `IsLoading`, but it's inconsistently implemented it seems.
         // IsInitialized is our main indicator of the general overall state of loading props/items from a page we use for the progress bar
@@ -122,7 +122,7 @@ public partial class ShellViewModel : ObservableObject,
         if (!viewModel.IsInitialized
             && viewModel.InitializeCommand is not null)
         {
-            _ = Task.Run(async () =>
+            var outer = Task.Run(async () =>
             {
                 // You know, this creates the situation where we wait for
                 // both loading page properties, AND the items, before we
@@ -138,42 +138,29 @@ public partial class ShellViewModel : ObservableObject,
 
                 if (viewModel.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
                 {
-                    // TODO: Handle failure case
                     if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
                     {
                         CoreLogger.LogError(ex.ToString());
                     }
-
-                    // TODO GH #239 switch back when using the new MD text block
-                    // _ = _queue.EnqueueAsync(() =>
-                    /*_queue.TryEnqueue(new(() =>
-                    {
-                        LoadedState = ViewModelLoadedState.Error;
-                    }));*/
                 }
                 else
                 {
-                    // TODO GH #239 switch back when using the new MD text block
-                    // _ = _queue.EnqueueAsync(() =>
-                    _ = Task.Factory.StartNew(
+                    var t = Task.Factory.StartNew(
                         () =>
                         {
-                            // bool f = await viewModel.InitializeCommand.ExecutionTask.;
-                            // var result = viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
-                            // var result = viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault<bool?>()!;
-                            CurrentPage = viewModel; // result ? viewModel : null;
-                            ////LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
+                            CurrentPage = viewModel;
                         },
                         CancellationToken.None,
                         TaskCreationOptions.None,
                         _scheduler);
+                    await t;
                 }
             });
+            await outer;
         }
         else
         {
             CurrentPage = viewModel;
-            ////LoadedState = ViewModelLoadedState.Loaded;
         }
     }
 
@@ -212,9 +199,14 @@ public partial class ShellViewModel : ObservableObject,
                 }
 
                 // Kick off async loading of our ViewModel
-                LoadPageViewModel(pageViewModel);
-                OnUIThread(() => { WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)); });
-                WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation));
+                LoadPageViewModelAsync(pageViewModel)
+                    .ContinueWith(
+                        (Task t) =>
+                        {
+                            OnUIThread(() => { WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)); });
+                            WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation));
+                        },
+                        _scheduler);
 
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.

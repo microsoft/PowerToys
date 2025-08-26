@@ -18,6 +18,7 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 public partial class ListViewModel : PageViewModel, IDisposable
 {
     // private readonly HashSet<ListItemViewModel> _itemCache = [];
+    private readonly TaskFactory filterTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
 
     // TODO: Do we want a base "ItemsPageViewModel" for anything that's going to have items?
 
@@ -64,8 +65,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private bool _isDynamic;
 
     private Task? _initializeItemsTask;
+
+    // For cancelling the the task to load the properties from the items in the list
     private CancellationTokenSource? _cancellationTokenSource;
+
+    // For cancelling the the task for calling GetItems on the extension
     private CancellationTokenSource? _fetchItemsCancellationTokenSource;
+
+    // For cancelling ongoing calls to update the extension's SearchText
+    private CancellationTokenSource? filterCancellationTokenSource;
 
     private ListItemViewModel? _lastSelectedItem;
 
@@ -98,10 +106,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // something needs to change, by raising ItemsChanged.
         if (_isDynamic)
         {
-            // We're getting called on the UI thread.
-            // Hop off to a BG thread to update the extension.
-            _ = Task.Run(() =>
+            filterCancellationTokenSource?.Cancel();
+            filterCancellationTokenSource?.Dispose();
+            filterCancellationTokenSource = new CancellationTokenSource();
+
+            // Hop off to an exclusive scheduler background thread to update the extension. We do
+            // this to ensure that all filter update requests are serialized and in-order, so providers
+            // know to cancel previous requests when a new one comes in, otherwise they may execute concurrently.
+            _ = filterTaskFactory.StartNew(
+                () =>
             {
+                filterCancellationTokenSource.Token.ThrowIfCancellationRequested();
+
                 try
                 {
                     if (_model.Unsafe is IDynamicListPage dynamic)
@@ -109,11 +125,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         dynamic.SearchText = searchTextBox;
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                }
                 catch (Exception ex)
                 {
                     ShowException(ex, _model?.Unsafe?.Name);
                 }
-            });
+            },
+                filterCancellationTokenSource.Token,
+                TaskCreationOptions.None,
+                filterTaskFactory.Scheduler!);
         }
         else
         {
@@ -640,6 +662,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
 
+        filterCancellationTokenSource?.Cancel();
+        filterCancellationTokenSource?.Dispose();
+        filterCancellationTokenSource = null;
+
         _fetchItemsCancellationTokenSource?.Cancel();
         _fetchItemsCancellationTokenSource?.Dispose();
         _fetchItemsCancellationTokenSource = null;
@@ -653,6 +679,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(null), PageContext); // necessary?
 
         _cancellationTokenSource?.Cancel();
+        filterCancellationTokenSource?.Cancel();
         _fetchItemsCancellationTokenSource?.Cancel();
 
         lock (_listLock)
