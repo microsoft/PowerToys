@@ -34,6 +34,8 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: pool
+    type: string
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
@@ -46,6 +48,7 @@ stages:
           useVSPreview: ${{ parameters.useVSPreview }}
           useLatestWebView2: ${{ parameters.useLatestWebView2 }}
           uiTestModules: ${{ parameters.uiTestModules }}
+          pool: ${{ parameters.pool }}
 
     # Official build path: build UI tests only + download official build + run tests  
     - ${{ if ne(parameters.buildSource, 'buildNow') }}:
