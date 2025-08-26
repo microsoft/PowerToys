@@ -65,7 +65,7 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="ShowAllSearchResultTemplate" x:DataType="models:SuggestionItem">
-            <Grid >
+            <Grid>
                 <Rectangle
                     Height="1"
                     Margin="0,-12,0,0"
@@ -86,7 +86,6 @@
             <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadedCommand}" />
         </ic:EventTriggerBehavior>
     </i:Interaction.Behaviors>
-
     <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
