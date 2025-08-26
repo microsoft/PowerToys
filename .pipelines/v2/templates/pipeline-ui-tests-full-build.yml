@@ -25,7 +25,7 @@ stages:
     jobs:
       - template: job-build-project.yml
         parameters:
-          pool: ${{ parameters.pool }}
+          pool: [ ${{ parameters.pool }} ]
           buildPlatforms:
             - ${{ parameters.platform }}
           buildConfigurations: [Release]
