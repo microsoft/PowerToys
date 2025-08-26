@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.Text;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
@@ -33,13 +35,17 @@ internal sealed partial class UninstallApplicationConfirmation : InvokableComman
     {
         UninstallApplicationCommand uninstallCommand;
 
+        var applicationTitle = Resources.uninstall_application;
+
         if (_uwpTarget is not null)
         {
             uninstallCommand = new UninstallApplicationCommand(_uwpTarget);
+            applicationTitle = _uwpTarget.DisplayName;
         }
         else if (_win32Target is not null)
         {
             uninstallCommand = new UninstallApplicationCommand(_win32Target);
+            applicationTitle = _win32Target.Name;
         }
         else
         {
@@ -49,7 +55,7 @@ internal sealed partial class UninstallApplicationConfirmation : InvokableComman
 
         var confirmArgs = new ConfirmationArgs()
         {
-            Title = Resources.uninstall_application_confirm_title,
+            Title = string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(Resources.uninstall_application_confirm_title), applicationTitle),
             Description = Resources.uninstall_application_confirm_description,
             PrimaryCommand = uninstallCommand,
             IsPrimaryCommandCritical = true,

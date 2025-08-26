@@ -277,7 +277,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstall Application.
+        ///   Looks up a localized string similar to Uninstall.
         /// </summary>
         internal static string uninstall_application {
             get {
@@ -286,7 +286,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This will remove the selected app from your system. Do you want to proceed?.
+        ///   Looks up a localized string similar to This app and its related information will be removed..
         /// </summary>
         internal static string uninstall_application_confirm_description {
             get {
@@ -295,7 +295,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstall application?.
+        ///   Looks up a localized string similar to Uninstall &quot;{0}&quot;?.
         /// </summary>
         internal static string uninstall_application_confirm_title {
             get {

@@ -206,7 +206,7 @@
     <value>Unpin</value>
   </data>
   <data name="uninstall_application" xml:space="preserve">
-    <value>Uninstall Application</value>
+    <value>Uninstall</value>
   </data>
   <data name="uninstall_application_successful" xml:space="preserve">
     <value>'{0}' has been successfully uninstalled.</value>
@@ -215,9 +215,9 @@
     <value>Error while uninstalling '{0}'</value>
   </data>
   <data name="uninstall_application_confirm_description" xml:space="preserve">
-    <value>This will remove the selected app from your system. Do you want to proceed?</value>
+    <value>This app and its related information will be removed.</value>
   </data>
   <data name="uninstall_application_confirm_title" xml:space="preserve">
-    <value>Uninstall application?</value>
+    <value>Uninstall "{0}"?</value>
   </data>
 </root>
