@@ -1445,7 +1445,6 @@ rstringalnum
 rstringalpha
 rstringdigit
 rtb
-RTB
 RTLREADING
 rtm
 runas
