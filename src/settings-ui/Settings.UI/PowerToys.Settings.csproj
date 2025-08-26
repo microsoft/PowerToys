@@ -180,9 +180,6 @@
 		</Page>
 	</ItemGroup>
 
-	<!-- Removed nested publish/exec and copy targets. -->
-
-	<!-- Build XamlIndexBuilder before compiling Settings to ensure the search index exists without taking a project reference. -->
 	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild

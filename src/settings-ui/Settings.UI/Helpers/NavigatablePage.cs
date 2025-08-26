@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers;
 public abstract partial class NavigatablePage : Page
 {
     private const int ExpandWaitDuration = 500;
-    private const int AnimationDuration = 1000;
+    private const int AnimationDuration = 800;
 
     private NavigationParams _pendingNavigationParams;
 
@@ -79,6 +79,9 @@ public abstract partial class NavigatablePage : Page
             return;
         }
 
+        // Attempt to set keyboard focus so that screen readers announce the element and keyboard users land directly on it.
+        TrySetFocus(target);
+
         // Get the visual and compositor
         var visual = ElementCompositionPreview.GetElementVisual(target);
         var compositor = visual.Compositor;
@@ -136,9 +139,134 @@ public abstract partial class NavigatablePage : Page
         ElementCompositionPreview.SetElementChildVisual(target, null);
     }
 
+    private static void TrySetFocus(FrameworkElement target)
+    {
+        try
+        {
+            // Prefer Control.Focus when available.
+            if (target is Control ctrl)
+            {
+                // Ensure it can receive focus.
+                if (!ctrl.IsTabStop)
+                {
+                    ctrl.IsTabStop = true;
+                }
+
+                ctrl.Focus(FocusState.Programmatic);
+                                        
+            }
+
+            // Target is not a Control. Find first focusable descendant Control.
+            var focusCandidate = FindFirstFocusableDescendant(target);
+            if (focusCandidate != null)
+            {
+                if (!focusCandidate.IsTabStop)
+                {
+                    focusCandidate.IsTabStop = true;
+                }
+
+                focusCandidate.Focus(FocusState.Programmatic);
+                return;
+            }
+
+            // Fallback: attempt to focus parent control if no descendant found.
+            if (target.Parent is Control parent)
+            {
+                if (!parent.IsTabStop)
+                {
+                    parent.IsTabStop = true;
+                }
+
+                parent.Focus(FocusState.Programmatic);
+            }
+        }
+        catch
+        {
+            // Swallow focus exceptions; not critical. Could log if logging enabled.
+            // Leave the default focus as it is.
+        }
+    }
+
+    private static Control FindFirstFocusableDescendant(FrameworkElement root)
+    {
+        if (root == null)
+        {
+            return null;
+        }
+
+        var queue = new System.Collections.Generic.Queue<DependencyObject>();
+        queue.Enqueue(root);
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            if (current is Control c && c.IsEnabled && c.Visibility == Visibility.Visible)
+            {
+                return c;
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(current);
+            for (int i = 0; i < count; i++)
+            {
+                queue.Enqueue(VisualTreeHelper.GetChild(current, i));
+            }
+        }
+
+        return null;
+    }
+
     protected FrameworkElement FindElementByName(string name)
     {
+        // 1. Try the Page's own namescope first.
         var element = this.FindName(name) as FrameworkElement;
-        return element;
+        if (element != null)
+        {
+            return element;
+        }
+
+        // 2. Walk the visual tree to cross UserControl / DataTemplate namescope boundaries.
+        //    Each UserControl / DataTemplate creates its own namescope, so Page.FindName cannot see inside.
+        //    We do a breadth-first search; when we hit a FrameworkElement we also try its own FindName.
+        if (this.Content is DependencyObject root)
+        {
+            var found = FindInDescendants(root, name);
+            if (found != null)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
+
+    private static FrameworkElement FindInDescendants(DependencyObject root, string name)
+    {
+        if (root == null || string.IsNullOrEmpty(name))
+        {
+            return null;
+        }
+
+        var queue = new System.Collections.Generic.Queue<DependencyObject>();
+        queue.Enqueue(root);
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            if (current is FrameworkElement fe)
+            {
+                var local = fe.FindName(name) as FrameworkElement;
+                if (local != null)
+                {
+                    return local;
+                }
+            }
+
+            int count = VisualTreeHelper.GetChildrenCount(current);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(current, i);
+                queue.Enqueue(child);
+            }
+        }
+
+        return null;
     }
 }

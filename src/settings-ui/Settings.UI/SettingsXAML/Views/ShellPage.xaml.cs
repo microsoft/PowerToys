@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -141,8 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private const int SearchDebounceMs = 500;
         private bool _disposed;
 
-        // Tracing id for correlating logs of a single search interaction
-        private static long _searchTraceIdCounter;
+        // Removed trace id counter per cleanup
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -442,25 +440,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Logger.LogDebug("[Search][Index] Scheduling BuildIndex...");
-            var swIndex = Stopwatch.StartNew();
             Task.Run(() =>
             {
-                Logger.LogDebug("[Search][Index] BuildIndex started");
                 SearchIndexService.BuildIndex();
             })
-            .ContinueWith(t =>
-            {
-                swIndex.Stop();
-                if (t.IsFaulted)
-                {
-                    Logger.LogDebug($"[Search][Index] BuildIndex FAILED after {swIndex.ElapsedMilliseconds} ms: {t.Exception?.Flatten().InnerException?.Message}");
-                }
-                else
-                {
-                    Logger.LogDebug($"[Search][Index] BuildIndex completed in {swIndex.ElapsedMilliseconds} ms.");
-                }
-            });
+            .ContinueWith(_ => { });
         }
 
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
@@ -511,10 +495,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var query = sender.Text?.Trim() ?? string.Empty;
 
-            var traceId = Interlocked.Increment(ref _searchTraceIdCounter);
-            var swOverall = Stopwatch.StartNew();
-            Logger.LogDebug($"[Search][TextChanged][{traceId}] start. query='{query}'");
-
             // Debounce: cancel previous pending search
             _searchDebounceCts?.Cancel();
             _searchDebounceCts?.Dispose();
@@ -527,7 +507,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 sender.IsSuggestionListOpen = false;
                 _lastSearchResults.Clear();
                 _lastQueryText = string.Empty;
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] empty query. end");
                 return;
             }
 
@@ -537,14 +516,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             catch (TaskCanceledException)
             {
-                // A newer keystroke arrived; abandon this run
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] debounce canceled at +{swOverall.ElapsedMilliseconds} ms");
-                return;
+                return; // debounce canceled
             }
 
             if (token.IsCancellationRequested)
             {
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] token canceled post-debounce at +{swOverall.ElapsedMilliseconds} ms");
                 return;
             }
 
@@ -553,106 +529,25 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             try
             {
                 // If the token is already canceled before scheduling, the task won't start.
-                var swSearch = Stopwatch.StartNew();
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] dispatch search...");
                 results = await Task.Run(() => SearchIndexService.Search(query, token), token);
-                swSearch.Stop();
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] search done in {swSearch.ElapsedMilliseconds} ms. results={results?.Count ?? 0}");
             }
             catch (OperationCanceledException)
             {
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] search canceled at +{swOverall.ElapsedMilliseconds} ms");
                 return;
             }
 
             if (token.IsCancellationRequested)
             {
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] token canceled after search at +{swOverall.ElapsedMilliseconds} ms");
                 return;
             }
 
             _lastSearchResults = results;
             _lastQueryText = query;
 
-            List<SuggestionItem> top;
-            if (results.Count == 0)
-            {
-                // Explicit no-results row
-                var rl = ResourceLoaderInstance.ResourceLoader;
-                var noResultsPrefix = rl.GetString("Shell_Search_NoResults");
-                if (string.IsNullOrEmpty(noResultsPrefix))
-                {
-                    noResultsPrefix = "No results for";
-                }
+            var top = BuildSuggestionItems(query, results);
 
-                var headerText = $"{noResultsPrefix} '{query}'";
-                top =
-                [
-                    new()
-                    {
-                        Header = headerText,
-                        IsNoResults = true,
-                    },
-                ];
-
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] no results -> added placeholder item (count={top.Count})");
-            }
-            else
-            {
-                // Project top 5 suggestions
-                var swProject = Stopwatch.StartNew();
-                top = [.. results.Take(5)
-                    .Select(e =>
-                    {
-                        string subtitle = string.Empty;
-                        if (e.Type != EntryType.SettingsPage)
-                        {
-                            var swSubtitle = Stopwatch.StartNew();
-                            subtitle = SearchIndexService.GetLocalizedPageName(e.PageTypeName);
-                            if (string.IsNullOrEmpty(subtitle))
-                            {
-                                // Fallback: look up the module title from the in-memory index
-                                var swFallback = Stopwatch.StartNew();
-                                subtitle = SearchIndexService.Index
-                                    .Where(x => x.Type == EntryType.SettingsPage && x.PageTypeName == e.PageTypeName)
-                                    .Select(x => x.Header)
-                                    .FirstOrDefault() ?? string.Empty;
-                                swFallback.Stop();
-                                Logger.LogDebug($"[Search][TextChanged][{traceId}] fallback subtitle for '{e.PageTypeName}' took {swFallback.ElapsedMilliseconds} ms");
-                            }
-
-                            swSubtitle.Stop();
-                            Logger.LogDebug($"[Search][TextChanged][{traceId}] subtitle for '{e.PageTypeName}' took {swSubtitle.ElapsedMilliseconds} ms");
-                        }
-
-                        return new SuggestionItem
-                        {
-                            Header = e.Header,
-                            Icon = e.Icon,
-                            PageTypeName = e.PageTypeName,
-                            ElementName = e.ElementName,
-                            ParentElementName = e.ParentElementName,
-                            Subtitle = subtitle,
-                            IsShowAll = false,
-                        };
-                    })];
-                swProject.Stop();
-                Logger.LogDebug($"[Search][TextChanged][{traceId}] project suggestions took {swProject.ElapsedMilliseconds} ms. topCount={top.Count}");
-
-                if (results.Count > 5)
-                {
-                    // Add a tail item to show all results if there are more than 5
-                    top.Add(new SuggestionItem { IsShowAll = true });
-                    Logger.LogDebug($"[Search][TextChanged][{traceId}] added 'Show all results' item");
-                }
-            }
-
-            var swUi = Stopwatch.StartNew();
             sender.ItemsSource = top;
             sender.IsSuggestionListOpen = top.Count > 0;
-            swUi.Stop();
-            swOverall.Stop();
-            Logger.LogDebug($"[Search][TextChanged][{traceId}] UI update took {swUi.ElapsedMilliseconds} ms. total={swOverall.ElapsedMilliseconds} ms");
         }
 
         private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
@@ -713,19 +608,93 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            // do not prompt unless search for text.
-            return;
+            var box = sender as AutoSuggestBox;
+            var current = box?.Text?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(current))
+            {
+                return; // nothing to restore
+            }
+
+            // If current text matches last query and we have results, reconstruct the suggestion list.
+            if (string.Equals(current, _lastQueryText, StringComparison.Ordinal) && _lastSearchResults?.Count > 0)
+            {
+                try
+                {
+                    var top = BuildSuggestionItems(current, _lastSearchResults);
+                    box.ItemsSource = top;
+                    box.IsSuggestionListOpen = top.Count > 0;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Error restoring suggestion list {ex.Message}");
+                }
+            }
+        }
+
+        // Centralized suggestion projection logic used by TextChanged & GotFocus restore.
+        private List<SuggestionItem> BuildSuggestionItems(string query, List<SettingEntry> results)
+        {
+            results ??= new();
+            if (results.Count == 0)
+            {
+                var rl = ResourceLoaderInstance.ResourceLoader;
+                var noResultsPrefix = rl.GetString("Shell_Search_NoResults");
+                if (string.IsNullOrEmpty(noResultsPrefix))
+                {
+                    noResultsPrefix = "No results for";
+                }
+
+                var headerText = $"{noResultsPrefix} '{query}'";
+                return new List<SuggestionItem>
+                {
+                    new()
+                    {
+                        Header = headerText,
+                        IsNoResults = true,
+                    },
+                };
+            }
+
+            var list = results.Take(5).Select(e =>
+            {
+                string subtitle = string.Empty;
+                if (e.Type != EntryType.SettingsPage)
+                {
+                    subtitle = SearchIndexService.GetLocalizedPageName(e.PageTypeName);
+                    if (string.IsNullOrEmpty(subtitle))
+                    {
+                        subtitle = SearchIndexService.Index
+                            .Where(x => x.Type == EntryType.SettingsPage && x.PageTypeName == e.PageTypeName)
+                            .Select(x => x.Header)
+                            .FirstOrDefault() ?? string.Empty;
+                    }
+                }
+
+                return new SuggestionItem
+                {
+                    Header = e.Header,
+                    Icon = e.Icon,
+                    PageTypeName = e.PageTypeName,
+                    ElementName = e.ElementName,
+                    ParentElementName = e.ParentElementName,
+                    Subtitle = subtitle,
+                    IsShowAll = false,
+                };
+            }).ToList();
+
+            if (results.Count > 5)
+            {
+                list.Add(new SuggestionItem { IsShowAll = true });
+            }
+
+            return list;
         }
 
         private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            var swSubmit = Stopwatch.StartNew();
-            Logger.LogDebug("[Search][Submit] start");
-
             // If a suggestion is selected, navigate directly
             if (args.ChosenSuggestion is SuggestionItem chosen)
             {
-                Logger.LogDebug($"[Search][Submit] chosen suggestion -> navigate to {chosen.PageTypeName} element={chosen.ElementName ?? "<page>"}");
                 NavigateFromSuggestion(chosen);
                 return;
             }
@@ -733,7 +702,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var queryText = (args.QueryText ?? _lastQueryText)?.Trim();
             if (string.IsNullOrWhiteSpace(queryText))
             {
-                Logger.LogDebug("[Search][Submit] empty query -> navigate Dashboard");
                 NavigationService.Navigate<DashboardPage>();
                 return;
             }
@@ -741,21 +709,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Prefer cached results (from live search); if empty, perform a fresh search
             var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
                 ? _lastSearchResults
-                : await Task.Run(() =>
-                {
-                    var sw = Stopwatch.StartNew();
-                    Logger.LogDebug($"[Search][Submit] background search for '{queryText}'...");
-                    var r = SearchIndexService.Search(queryText);
-                    sw.Stop();
-                    Logger.LogDebug($"[Search][Submit] background search done in {sw.ElapsedMilliseconds} ms. results={r?.Count ?? 0}");
-                    return r;
-                });
+                : await Task.Run(() => SearchIndexService.Search(queryText));
 
             var searchParams = new SearchResultsNavigationParams(queryText, matched);
-            Logger.LogDebug($"[Search][Submit] navigate to SearchResultsPage (results={matched?.Count ?? 0})");
             NavigationService.Navigate<SearchResultsPage>(searchParams);
-            swSubmit.Stop();
-            Logger.LogDebug($"[Search][Submit] total {swSubmit.ElapsedMilliseconds} ms");
         }
 
         public void Dispose()
