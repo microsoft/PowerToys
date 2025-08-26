@@ -22,12 +22,12 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 
     private static readonly List<ChoiceSetSetting.Choice> _searchResultLimitChoices =
     [
-        new ChoiceSetSetting.Choice(Resources.limit_none, Resources.limit_none),
-        new ChoiceSetSetting.Choice(Resources.limit_0, Resources.limit_0),
-        new ChoiceSetSetting.Choice(Resources.limit_1, Resources.limit_1),
-        new ChoiceSetSetting.Choice(Resources.limit_5, Resources.limit_5),
-        new ChoiceSetSetting.Choice(Resources.limit_10, Resources.limit_10),
-        new ChoiceSetSetting.Choice(Resources.limit_20, Resources.limit_20),
+        new ChoiceSetSetting.Choice(Resources.limit_none, "-1"),
+        new ChoiceSetSetting.Choice(Resources.limit_0, "0"),
+        new ChoiceSetSetting.Choice(Resources.limit_1, "1"),
+        new ChoiceSetSetting.Choice(Resources.limit_5, "5"),
+        new ChoiceSetSetting.Choice(Resources.limit_10, "10"),
+        new ChoiceSetSetting.Choice(Resources.limit_20, "20"),
     ];
 
 #pragma warning disable SA1401 // Fields should be private
