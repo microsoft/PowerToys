@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.PowerToys.Settings.UI.Utilities
+namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
 {
     public static class SunCalc
     {

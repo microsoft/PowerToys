@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.PowerToys.Settings.UI.Utilities
+namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
 {
     public struct SunTimes
     {
