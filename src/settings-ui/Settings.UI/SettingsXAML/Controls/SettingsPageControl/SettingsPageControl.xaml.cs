@@ -71,7 +71,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            PrimaryLinksControl.Focus(FocusState.Programmatic);
+            // Only set focus to primary links if they exist and are visible
+            if (PrimaryLinks?.Count > 0 && PrimaryLinksControl.Visibility == Visibility.Visible)
+            {
+                PrimaryLinksControl.Focus(FocusState.Programmatic);
+            }
         }
     }
 }
