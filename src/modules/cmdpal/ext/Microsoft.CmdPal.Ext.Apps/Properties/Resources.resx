@@ -220,6 +220,6 @@
     <value>0</value>
   </data>
   <data name="limit_none" xml:space="preserve">
-    <value>None</value>
+    <value>Unlimited</value>
   </data>
 </root>
