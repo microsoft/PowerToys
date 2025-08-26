@@ -175,7 +175,7 @@ jobs:
       displayName: Ensure VSTest Platform
 
   - pwsh: |-
-      & '.pipelines/applyXamlStyling.ps1' -Passive
+      & '.pipelines/applyXamlStyling.ps1' -Main
     displayName: Verify XAML formatting
 
   - pwsh: |-
