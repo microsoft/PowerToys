@@ -74,7 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [ReparentActivationShortcut, ThumbnailActivationShortcut],
+                [ModuleName] = [ReparentActivationShortcut, ThumbnailActivationShortcut, ScreenshotActivationShortcut],
             };
 
             return hotkeysDict;
