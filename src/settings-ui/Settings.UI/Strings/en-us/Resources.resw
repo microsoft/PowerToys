@@ -2691,6 +2691,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
+  <data name="WarningShortcutConflict.Title" xml:space="preserve">
+    <value>Shortcut conflict</value>
+  </data>
+  <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
+    <value>A conflict has been detected for this shortcut.</value>
+  </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
   </data>

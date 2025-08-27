@@ -15,7 +15,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerLauncherPage : NavigatablePage, IRefreshablePage
+    public sealed partial class PowerLauncherPage : NavigablePage, IRefreshablePage
     {
         public PowerLauncherViewModel ViewModel { get; set; }
 

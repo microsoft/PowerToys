@@ -15,7 +15,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class AdvancedPastePage : NavigatablePage, IRefreshablePage
+    public sealed partial class AdvancedPastePage : NavigablePage, IRefreshablePage
     {
         private AdvancedPasteViewModel ViewModel { get; set; }
 
