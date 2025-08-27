@@ -10,13 +10,14 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers;
 
 public abstract partial class NavigatablePage : Page
 {
     private const int ExpandWaitDuration = 500;
-    private const int AnimationDuration = 1000;
+    private const int AnimationDuration = 2000;
 
     private NavigationParams _pendingNavigationParams;
 
@@ -85,15 +86,15 @@ public abstract partial class NavigatablePage : Page
 
         // Create a subtle glow effect using drop shadow
         var dropShadow = compositor.CreateDropShadow();
-        dropShadow.Color = Microsoft.UI.Colors.Gray;
-        dropShadow.BlurRadius = 8f;
+        dropShadow.Color = (Color)Application.Current.Resources["SystemAccentColorLight2"];
+        dropShadow.BlurRadius = 16f;
         dropShadow.Opacity = 0f;
         dropShadow.Offset = new Vector3(0, 0, 0);
 
         var spriteVisual = compositor.CreateSpriteVisual();
-        spriteVisual.Size = new Vector2((float)target.ActualWidth + 16, (float)target.ActualHeight + 16);
+        spriteVisual.Size = new Vector2((float)target.ActualWidth, (float)target.ActualHeight);
         spriteVisual.Shadow = dropShadow;
-        spriteVisual.Offset = new Vector3(-8, -8, 0);
+        spriteVisual.Offset = new Vector3(0, 0, 0);
 
         // Insert the shadow visual behind the target element
         ElementCompositionPreview.SetElementChildVisual(target, spriteVisual);
@@ -106,31 +107,7 @@ public abstract partial class NavigatablePage : Page
         fadeAnimation.Duration = TimeSpan.FromMilliseconds(AnimationDuration);
 
         dropShadow.StartAnimation("Opacity", fadeAnimation);
-
-        if (target is Control ctrl)
-        {
-            // TODO: ability to adjust brush color and animation from settings.
-            var originalBackground = ctrl.Background;
-
-            var highlightBrush = new SolidColorBrush();
-            var grayColor = Microsoft.UI.Colors.Gray;
-            grayColor.A = 50; // Very subtle transparency
-            highlightBrush.Color = grayColor;
-
-            // Apply the highlight
-            ctrl.Background = highlightBrush;
-
-            // Wait for animation to complete
-            await Task.Delay(AnimationDuration);
-
-            // Restore original background
-            ctrl.Background = originalBackground;
-        }
-        else
-        {
-            // For non-control elements, just wait for the glow animation
-            await Task.Delay(AnimationDuration);
-        }
+        await Task.Delay(AnimationDuration);
 
         // Clean up the shadow visual
         ElementCompositionPreview.SetElementChildVisual(target, null);
