@@ -21,6 +21,28 @@
 // Note: Settings are managed via Settings and UI Settings
 class NewModule : public PowertoyModuleIface
 {
+private:
+    // Update registration based on enabled state
+    void UpdateRegistration(bool enabled)
+    {
+        if (enabled)
+        {
+            // Ensure registration when enabled
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            NewPlusRuntimeRegistration::EnsureRegisteredWin10();
+            Logger::info(L"New+ context menu registered");
+#endif
+        }
+        else
+        {
+            // Ensure unregistration when disabled
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            NewPlusRuntimeRegistration::Unregister();
+            Logger::info(L"New+ context menu unregistered");
+#endif
+        }
+    }
+
 public:
     NewModule()
     {
@@ -98,14 +120,9 @@ public:
         {
             newplus::utilities::register_msix_package();
         }
-        else
-        {
-#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            NewPlusRuntimeRegistration::EnsureRegisteredWin10();
-#endif
-        }
 
         powertoy_new_enabled = true;
+        UpdateRegistration(powertoy_new_enabled);
     }
 
     virtual void disable() override
@@ -150,19 +167,14 @@ private:
         {
             Trace::EventToggleOnOff(false);
         }
-        if (!package::IsWin11OrGreater())
-        {
-#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            NewPlusRuntimeRegistration::Unregister();
-            Logger::info(L"New+ context menu unregistered (Win10)");
-#endif
-        }
         powertoy_new_enabled = false;
+        UpdateRegistration(powertoy_new_enabled);
     }
 
     void init_settings()
     {
         powertoy_new_enabled = NewSettingsInstance().GetEnabled();
+        UpdateRegistration(powertoy_new_enabled);
     }
 };
 

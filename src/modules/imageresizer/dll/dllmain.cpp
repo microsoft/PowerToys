@@ -43,11 +43,34 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
+    // Update registration based on enabled state
+    void UpdateRegistration(bool enabled)
+    {
+        if (enabled)
+        {
+            // Ensure registration when enabled
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            ImageResizerRuntimeRegistration::EnsureRegistered();
+            Logger::info(L"ImageResizer context menu registered");
+#endif
+        }
+        else
+        {
+            // Ensure unregistration when disabled
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            ImageResizerRuntimeRegistration::Unregister();
+            Logger::info(L"ImageResizer context menu unregistered");
+#endif
+        }
+    }
+
+
 public:
     // Constructor
     ImageResizerModule()
     {
         m_enabled = CSettingsInstance().GetEnabled();
+        UpdateRegistration(m_enabled);
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
         app_key = ImageResizerConstants::ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::imageResizerLoggerName);
@@ -112,10 +135,7 @@ public:
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-        ImageResizerRuntimeRegistration::EnsureRegistered();
-#endif
-
+        UpdateRegistration(m_enabled);
         Trace::EnableImageResizer(m_enabled);
     }
 
@@ -123,11 +143,8 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        UpdateRegistration(m_enabled);
         Trace::EnableImageResizer(m_enabled);
-#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-        ImageResizerRuntimeRegistration::Unregister();
-        Logger::info(L"ImageResizer context menu unregistered (Win10)");
-#endif
     }
 
     // Returns if the powertoys is enabled
