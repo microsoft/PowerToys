@@ -233,7 +233,7 @@ Visibility="{x:Bind ViewModel.ScheduleMode,
             </tkcontrols:SettingsExpander.Items>
           </tkcontrols:SettingsExpander>
           <!-- Force mode buttons -->
-          <tkcontrols:SettingsCard
+          <!--<tkcontrols:SettingsCard
         Header="Force mode now"
         HeaderIcon="{ui:FontIcon Glyph=&#xE706;}"
         Description="Apply light or dark mode immediately">
@@ -245,7 +245,7 @@ Visibility="{x:Bind ViewModel.ScheduleMode,
         Content="Force Dark"
         Command="{x:Bind ViewModel.ForceDarkCommand}" />
             </StackPanel>
-          </tkcontrols:SettingsCard>
+          </tkcontrols:SettingsCard>-->
         </controls:SettingsGroup>
       </StackPanel>
     </controls:SettingsPageControl.ModuleContent>
