@@ -29,6 +29,8 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
     [MemberNotNullWhen(true, nameof(Details))]
     public bool HasDetails => Details is not null;
 
+    public string AccessibleName { get; private set; } = string.Empty;
+
     public override void InitializeProperties()
     {
         if (IsInitialized)
@@ -48,7 +50,11 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
         UpdateTags(li.Tags);
 
         TextToSuggest = li.TextToSuggest;
+        UpdateProperty(nameof(TextToSuggest));
+
         Section = li.Section ?? string.Empty;
+        UpdateProperty(nameof(Section));
+
         var extensionDetails = li.Details;
         if (extensionDetails is not null)
         {
@@ -58,8 +64,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
             UpdateProperty(nameof(HasDetails));
         }
 
-        UpdateProperty(nameof(TextToSuggest));
-        UpdateProperty(nameof(Section));
+        UpdateAccessibleName();
     }
 
     protected override void FetchProperty(string propertyName)
@@ -89,6 +94,10 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details));
                 UpdateProperty(nameof(HasDetails));
+                break;
+            case nameof(Title):
+            case nameof(Subtitle):
+                UpdateAccessibleName();
                 break;
         }
 
@@ -142,5 +151,11 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
             // because we are just overriding CommandItem's FetchProperty and
             // piggy-backing off their PropChanged
         }
+    }
+
+    protected void UpdateAccessibleName()
+    {
+        AccessibleName = Title + ", " + Subtitle;
+        UpdateProperty(nameof(AccessibleName));
     }
 }
