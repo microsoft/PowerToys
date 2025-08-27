@@ -1,6 +1,6 @@
 # PowerToys Installer
 
-## Installer Architecture (WiX 3)
+## Installer Architecture (WiX 3/ WiX 5)
 
 - Uses a bootstrapper to check dependencies and close PowerToys
 - MSI defined in product.wxs
@@ -22,7 +22,7 @@
 
 ### MSI Installer Build Process
 
-- First builds `PowerToysSetupCustomActions` DLL and signs it
+- First builds `PowerToysSetupCustomActions` DLL and signs it, for WiX5 project, installer will build `PowerToysSetupCustomActionsVNext` DLL.
 - Then builds the installer without cleaning, to reuse the signed DLL
 - Uses PowerShell scripts to modify .wxs files before build
 - Restores original .wxs files after build completes
@@ -87,6 +87,13 @@
 
 ### Building PowerToys Locally
 
+#### One stop script for building installer
+1. Open developer powershell for vs 2022
+2. Run tools\build\build-installer.ps1
+> For the first-time setup, please run the installer as an administrator. This ensures that the Wix tool can move wix.target to the desired location and trust the certificate used to sign the MSIX packages.
+
+The following manual steps will not install the MSIX apps (such as Command Palette) on your local installer.
+
 #### Prerequisites for building the MSI installer
 
 1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
@@ -127,6 +134,23 @@ If you prefer, you can alternatively build prerequisite projects for the install
 1. From the `Build` menu choose `Build Solution`.
 
 The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+
+For WiX3 project, run `Developer Command Prompt for VS 2022` in admin mode and execute the following command to build the installer. The generated installer package will be located at `\installer\PowerToysSetup\{platform}\Release\MachineSetup`.
+
+```
+git clean -xfd  -e *exe -- .\installer\
+MSBuild -t:restore  .\installer\PowerToysSetup.sln -p:RestorePackagesConfig=true /p:Platform="x64" /p:Configuration=Release
+MSBuild -m .\installer\PowerToysSetup.sln /t:PowerToysInstaller /p:Configuration=Release /p:Platform="x64" 
+MSBuild -m .\installer\PowerToysSetup.sln /t:PowerToysBootstrapper /p:Configuration=Release /p:Platform="x64" 
+```
+For WiX5 project, run `Developer Command Prompt for VS 2022` in admin mode and execute the following command to build the installer. The generated installer package will be located at `\installer\PowerToysSetupVNext\{platform}\Release\MachineSetup`.
+
+```
+git clean -xfd  -e *exe -- .\installer\
+MSBuild -t:restore  .\installer\PowerToysSetup.sln -p:RestorePackagesConfig=true /p:Platform="x64" /p:Configuration=Release
+MSBuild -t:Restore -m .\installer\PowerToysSetup.sln /t:PowerToysInstallerVNext /p:Configuration=Release /p:Platform="x64"
+MSBuild -t:Restore -m .\installer\PowerToysSetup.sln /t:PowerToysBootstrapperVNext /p:Configuration=Release /p:Platform="x64" 
+```
 
 ### Supported arguments for the .EXE Bootstrapper installer
 

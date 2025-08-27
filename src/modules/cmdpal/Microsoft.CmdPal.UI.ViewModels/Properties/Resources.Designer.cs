@@ -286,6 +286,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to View log folder.
+        /// </summary>
+        public static string builtin_log_folder_command_name {
+            get {
+                return ResourceManager.GetString("builtin_log_folder_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to View log.
         /// </summary>
         public static string builtin_log_name {
@@ -318,6 +327,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string builtin_log_title {
             get {
                 return ResourceManager.GetString("builtin_log_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search for apps, files and commands....
+        /// </summary>
+        public static string builtin_main_list_page_searchbar_placeholder {
+            get {
+                return ResourceManager.GetString("builtin_main_list_page_searchbar_placeholder", resourceCulture);
             }
         }
         

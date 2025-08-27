@@ -32,6 +32,7 @@ namespace Microsoft.PowerToys.UITest
         Runner,
         Workspaces,
         PowerRename,
+        CommandPalette,
     }
 
     /// <summary>
@@ -91,9 +92,7 @@ namespace Microsoft.PowerToys.UITest
         private ModuleConfigData()
         {
             // Check if we should use installer paths from environment variable
-            string? useInstallerForTestEnv =
-                            Environment.GetEnvironmentVariable("useInstallerForTest") ?? Environment.GetEnvironmentVariable("USEINSTALLERFORTEST");
-            UseInstallerForTest = !string.IsNullOrEmpty(useInstallerForTestEnv) && bool.TryParse(useInstallerForTestEnv, out bool result) && result;
+            UseInstallerForTest = EnvironmentConfig.UseInstallerForTest;
 
             // Module information including executable name, window name, and optional subdirectory
             ModuleInfo = new Dictionary<PowerToysModule, ModuleInfo>
@@ -104,6 +103,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.Runner] = new ModuleInfo("PowerToys.exe", "PowerToys"),
                 [PowerToysModule.Workspaces] = new ModuleInfo("PowerToys.WorkspacesEditor.exe", "Workspaces Editor"),
                 [PowerToysModule.PowerRename] = new ModuleInfo("PowerToys.PowerRename.exe", "PowerRename", "WinUI3Apps"),
+                [PowerToysModule.CommandPalette] = new ModuleInfo("Microsoft.CmdPal.UI.exe", "PowerToys Command Palette", "WinUI3Apps\\CmdPal"),
             };
         }
 

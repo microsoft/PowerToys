@@ -32,7 +32,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     private CancellationTokenSource? _cancellationTokenSource;
     private Task<IEnumerable<CatalogPackage>>? _currentSearchTask;
 
-    private IEnumerable<CatalogPackage>? _results;
+    private List<CatalogPackage>? _results;
 
     public static string ExtensionsTag => "windows-commandpalette-extension";
 
@@ -48,12 +48,11 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     public override IListItem[] GetItems()
     {
-        IListItem[] items = [];
         lock (_resultsLock)
         {
             // emptySearchForTag ===
             // we don't have results yet, we haven't typed anything, and we're searching for a tag
-            var emptySearchForTag = _results == null &&
+            var emptySearchForTag = _results is null &&
                 string.IsNullOrEmpty(SearchText) &&
                 HasTag;
 
@@ -61,12 +60,28 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             {
                 IsLoading = true;
                 DoUpdateSearchText(string.Empty);
-                return items;
+                return [];
             }
 
-            if (_results != null && _results.Any())
+            if (_results is not null && _results.Count != 0)
             {
-                ListItem[] results = _results.Select(PackageToListItem).ToArray();
+                var count = _results.Count;
+                var results = new ListItem[count];
+                var next = 0;
+                for (var i = 0; i < count; i++)
+                {
+                    try
+                    {
+                        var li = PackageToListItem(_results[i]);
+                        results[next] = li;
+                        next++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("error converting result to listitem", ex);
+                    }
+                }
+
                 IsLoading = false;
                 return results;
             }
@@ -82,7 +97,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         IsLoading = false;
 
-        return items;
+        return [];
     }
 
     private static ListItem PackageToListItem(CatalogPackage p) => new InstallPackageListItem(p);
@@ -100,7 +115,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     private void DoUpdateSearchText(string newSearch)
     {
         // Cancel any ongoing search
-        if (_cancellationTokenSource != null)
+        if (_cancellationTokenSource is not null)
         {
             Logger.LogDebug("Cancelling old search", memberName: nameof(DoUpdateSearchText));
             _cancellationTokenSource.Cancel();
@@ -108,7 +123,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         _cancellationTokenSource = new CancellationTokenSource();
 
-        CancellationToken cancellationToken = _cancellationTokenSource.Token;
+        var cancellationToken = _cancellationTokenSource.Token;
 
         IsLoading = true;
 
@@ -139,7 +154,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     {
         try
         {
-            IEnumerable<CatalogPackage> results = await searchTask;
+            var results = await searchTask;
 
             // Ensure this is still the latest task
             if (_currentSearchTask == searchTask)
@@ -156,7 +171,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         catch (Exception ex)
         {
             // Handle other exceptions
-            Logger.LogError(ex.Message);
+            Logger.LogError("Unexpected error while processing results", ex);
         }
     }
 
@@ -165,10 +180,10 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         Logger.LogDebug($"Completed search for '{query}'");
         lock (_resultsLock)
         {
-            this._results = results;
+            this._results = results.ToList();
         }
 
-        RaiseItemsChanged(this._results.Count());
+        RaiseItemsChanged();
     }
 
     private async Task<IEnumerable<CatalogPackage>> DoSearchAsync(string query, CancellationToken ct)
@@ -190,12 +205,12 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         HashSet<CatalogPackage> results = new(new PackageIdCompare());
 
         // Default selector: this is the way to do a `winget search <query>`
-        PackageMatchFilter selector = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
+        var selector = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
         selector.Field = Microsoft.Management.Deployment.PackageMatchField.CatalogDefault;
         selector.Value = query;
         selector.Option = PackageFieldMatchOption.ContainsCaseInsensitive;
 
-        FindPackagesOptions opts = WinGetStatics.WinGetFactory.CreateFindPackagesOptions();
+        var opts = WinGetStatics.WinGetFactory.CreateFindPackagesOptions();
         opts.Selectors.Add(selector);
 
         // testing
@@ -204,7 +219,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         // Selectors is "OR", Filters is "AND"
         if (HasTag)
         {
-            PackageMatchFilter tagFilter = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
+            var tagFilter = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
             tagFilter.Field = Microsoft.Management.Deployment.PackageMatchField.Tag;
             tagFilter.Value = _tag;
             tagFilter.Option = PackageFieldMatchOption.ContainsCaseInsensitive;
@@ -215,13 +230,13 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         // Clean up here, then...
         ct.ThrowIfCancellationRequested();
 
-        Lazy<Task<PackageCatalog>> catalogTask = HasTag ? WinGetStatics.CompositeWingetCatalog : WinGetStatics.CompositeAllCatalog;
+        var catalogTask = HasTag ? WinGetStatics.CompositeWingetCatalog : WinGetStatics.CompositeAllCatalog;
 
         // Both these catalogs should have been instantiated by the
         // WinGetStatics static ctor when we were created.
-        PackageCatalog catalog = await catalogTask.Value;
+        var catalog = await catalogTask.Value;
 
-        if (catalog == null)
+        if (catalog is null)
         {
             // This error should have already been displayed by WinGetStatics
             return [];
@@ -235,8 +250,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
             // BODGY, re: microsoft/winget-cli#5151
             // FindPackagesAsync isn't actually async.
-            Task<FindPackagesResult> internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
-            FindPackagesResult searchResults = await internalSearchTask;
+            var internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
+            var searchResults = await internalSearchTask;
 
             // TODO more error handling like this:
             if (searchResults.Status != FindPackagesResultStatus.Ok)
@@ -247,13 +262,17 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             }
 
             Logger.LogDebug($"    got results for ({query})", memberName: nameof(DoSearchAsync));
-            foreach (Management.Deployment.MatchResult? match in searchResults.Matches.ToArray())
+
+            // FYI Using .ToArray or any other kind of enumerable loop
+            // on arrays returned by the winget API are NOT trim safe
+            var count = searchResults.Matches.Count;
+            for (var i = 0; i < count; i++)
             {
+                var match = searchResults.Matches[i];
+
                 ct.ThrowIfCancellationRequested();
 
-                // Print the packages
-                CatalogPackage package = match.CatalogPackage;
-
+                var package = match.CatalogPackage;
                 results.Add(package);
             }
 

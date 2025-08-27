@@ -135,6 +135,9 @@
   <data name="builtin_log_title" xml:space="preserve">
     <value>View log</value>
   </data>
+  <data name="builtin_log_folder_command_name" xml:space="preserve">
+    <value>View log folder</value>
+  </data>
   <data name="builtin_reload_subtitle" xml:space="preserve">
     <value>Reload Command Palette extensions</value>
   </data>
@@ -226,5 +229,8 @@
   </data>
   <data name="builtin_disabled_extension" xml:space="preserve">
     <value>Disabled</value>
+  </data>
+  <data name="builtin_main_list_page_searchbar_placeholder" xml:space="preserve">
+    <value>Search for apps, files and commands...</value>
   </data>
 </root>

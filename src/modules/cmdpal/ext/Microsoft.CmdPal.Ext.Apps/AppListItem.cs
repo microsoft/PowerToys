@@ -72,7 +72,7 @@ internal sealed partial class AppListItem : ListItem
             try
             {
                 var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath, true);
-                if (stream != null)
+                if (stream is not null)
                 {
                     heroImage = IconInfo.FromStream(stream);
                 }
@@ -106,7 +106,7 @@ internal sealed partial class AppListItem : ListItem
             try
             {
                 var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath);
-                if (stream != null)
+                if (stream is not null)
                 {
                     var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
                     icon = new IconInfo(data, data);
@@ -131,7 +131,7 @@ internal sealed partial class AppListItem : ListItem
         var newCommands = new List<IContextItem>();
         newCommands.AddRange(commands);
 
-        newCommands.Add(new SeparatorContextItem());
+        newCommands.Add(new Separator());
 
         // 0x50 = P
         // Full key chord would be Ctrl+P

@@ -14,7 +14,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
-public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
+public abstract partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 {
     private readonly ExtensionObject<IContentPage> _model;
 
@@ -28,7 +28,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     public DetailsViewModel? Details { get; private set; }
 
     [MemberNotNullWhen(true, nameof(Details))]
-    public bool HasDetails => Details != null;
+    public bool HasDetails => Details is not null;
 
     /////// ICommandBarContext ///////
     public IEnumerable<IContextItemViewModel> MoreCommands => Commands.Skip(1);
@@ -67,7 +67,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             foreach (var item in newItems)
             {
                 var viewModel = ViewModelFromContent(item, PageContext);
-                if (viewModel != null)
+                if (viewModel is not null)
                 {
                     viewModel.InitializeProperties();
                     newContent.Add(viewModel);
@@ -104,7 +104,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         base.InitializeProperties();
 
         var model = _model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -113,13 +113,13 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 .ToList()
                 .Select<IContextItem, IContextItemViewModel>(item =>
                 {
-                    if (item is CommandContextItem contextItem)
+                    if (item is ICommandContextItem contextItem)
                     {
                         return new CommandContextItemViewModel(contextItem, PageContext);
                     }
                     else
                     {
-                        return new SeparatorContextItemViewModel();
+                        return new SeparatorViewModel();
                     }
                 })
                 .ToList();
@@ -133,7 +133,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             });
 
         var extensionDetails = model.Details;
-        if (extensionDetails != null)
+        if (extensionDetails is not null)
         {
             Details = new(extensionDetails, PageContext);
             Details.InitializeProperties();
@@ -156,7 +156,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         base.FetchProperty(propertyName);
 
         var model = this._model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -166,19 +166,19 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             case nameof(Commands):
 
                 var more = model.Commands;
-                if (more != null)
+                if (more is not null)
                 {
                     var newContextMenu = more
                             .ToList()
                             .Select(item =>
                             {
-                                if (item is CommandContextItem contextItem)
+                                if (item is ICommandContextItem contextItem)
                                 {
                                     return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
                                 }
                                 else
                                 {
-                                    return new SeparatorContextItemViewModel();
+                                    return new SeparatorViewModel();
                                 }
                             })
                             .ToList();
@@ -216,7 +216,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 break;
             case nameof(Details):
                 var extensionDetails = model.Details;
-                Details = extensionDetails != null ? new(extensionDetails, PageContext) : null;
+                Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 UpdateDetails();
                 break;
         }
@@ -248,7 +248,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     [RelayCommand]
     private void InvokePrimaryCommand(ContentPageViewModel page)
     {
-        if (PrimaryCommand != null)
+        if (PrimaryCommand is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand.Command.Model, PrimaryCommand.Model));
         }
@@ -258,7 +258,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     [RelayCommand]
     private void InvokeSecondaryCommand(ContentPageViewModel page)
     {
-        if (SecondaryCommand != null)
+        if (SecondaryCommand is not null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
         }
@@ -285,7 +285,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         Content.Clear();
 
         var model = _model.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
         }

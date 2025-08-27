@@ -12,7 +12,7 @@ using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public sealed partial class AppCache : IDisposable
+public sealed partial class AppCache : IAppCache, IDisposable
 {
     private Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
 
@@ -24,7 +24,7 @@ public sealed partial class AppCache : IDisposable
 
     public IList<Win32Program> Win32s => _win32ProgramRepository.Items;
 
-    public IList<UWPApplication> UWPs => _packageRepository.Items;
+    public IList<IUWPApplication> UWPs => _packageRepository.Items;
 
     public static readonly Lazy<AppCache> Instance = new(() => new());
 
@@ -46,18 +46,37 @@ public sealed partial class AppCache : IDisposable
             UpdateUWPIconPath(ThemeHelper.GetCurrentTheme());
         });
 
-        Task.WaitAll(a, b);
+        try
+        {
+            Task.WaitAll(a, b);
+        }
+        catch (AggregateException ex)
+        {
+            ManagedCommon.Logger.LogError("One or more errors occurred while indexing apps");
+
+            foreach (var inner in ex.InnerExceptions)
+            {
+                ManagedCommon.Logger.LogError(inner.Message, inner);
+            }
+        }
 
         AllAppsSettings.Instance.LastIndexTime = DateTime.Today;
     }
 
     private void UpdateUWPIconPath(Theme theme)
     {
-        if (_packageRepository != null)
+        if (_packageRepository is not null)
         {
             foreach (UWPApplication app in _packageRepository)
             {
-                app.UpdateLogoPath(theme);
+                try
+                {
+                    app.UpdateLogoPath(theme);
+                }
+                catch (Exception ex)
+                {
+                    ManagedCommon.Logger.LogError($"Failed to update icon path for app {app.Name}", ex);
+                }
             }
         }
     }

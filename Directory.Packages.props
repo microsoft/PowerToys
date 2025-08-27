@@ -34,22 +34,22 @@
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageVersion Include="MessagePack" Version="3.1.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.8" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.8" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.15.0" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="9.0.8" />
     <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.340" />
-    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.183" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <!-- 
@@ -65,11 +65,13 @@
     <!-- Moq to stay below v4.20 due to behavior change. need to be sure fixed -->
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="MSTest" Version="3.8.3" />
-    <PackageVersion Include="NLog" Version="5.0.4" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="NLog" Version="5.2.8" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
     <PackageVersion Include="OpenAI" Version="2.0.0" />
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
+    <PackageVersion Include="RtfPipe" Version="2.0.7677.4303" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.37.2" />
     <!-- Don't update SkiaSharp.Views.WinUI to version 3.* branch as this brakes the HexBox control in Registry Preview. -->
@@ -77,35 +79,43 @@
     <PackageVersion Include="StreamJsonRpc" Version="2.21.69" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- Package System.CodeDom added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="System.CodeDom" Version="9.0.7" />
+    <PackageVersion Include="System.CodeDom" Version="9.0.8" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="System.ComponentModel.Composition" Version="9.0.7" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="9.0.7" />
-    <PackageVersion Include="System.Data.OleDb" Version="9.0.7" />
+    <PackageVersion Include="System.ComponentModel.Composition" Version="9.0.8" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="9.0.8" />
+    <PackageVersion Include="System.Data.OleDb" Version="9.0.8" />
     <!-- Package System.Data.SqlClient added to force it as a dependency of Microsoft.Windows.Compatibility to the latest version available at this time. -->
     <PackageVersion Include="System.Data.SqlClient" Version="4.9.0" />
     <!-- Package System.Diagnostics.EventLog added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="System.Diagnostics.EventLog" Version="9.0.7" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="9.0.8" />
     <!-- Package System.Diagnostics.PerformanceCounter added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.11. -->
-    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.7" />
-    <PackageVersion Include="System.Drawing.Common" Version="9.0.7" />
+    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.8" />
+    <PackageVersion Include="System.Drawing.Common" Version="9.0.8" />
     <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
-    <PackageVersion Include="System.Management" Version="9.0.7" />
+    <PackageVersion Include="System.Management" Version="9.0.8" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
-    <PackageVersion Include="System.Runtime.Caching" Version="9.0.7" />
-    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="9.0.7" />
-    <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.7" />
-    <PackageVersion Include="System.Text.Json" Version="9.0.7" />
+    <PackageVersion Include="System.Runtime.Caching" Version="9.0.8" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="9.0.8" />
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.8" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.8" />
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
-    <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
+    <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
     <PackageVersion Include="WyHash" Version="1.0.5" />
+    <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Firewall.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Util.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.UI.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.NetFx.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Bal.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.BootstrapperApplicationApi" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.WixStandardBootstrapperApplicationFunctionApi" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->

@@ -23,6 +23,12 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
+  
+  <!-- For debugging purposes, uncomment this block to enable AOT builds -->
+  <!-- <PropertyGroup>
+    <EnableCmdPalAOT>true</EnableCmdPalAOT>
+    <CIBuild>true</CIBuild>
+  </PropertyGroup> -->
 
   <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>
@@ -107,10 +113,6 @@
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
-  </ItemGroup>
-
-  <ItemGroup>
-	<RdXmlFile Include="rd.xml" />
   </ItemGroup>
 
   <ItemGroup>
