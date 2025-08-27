@@ -1,6 +1,11 @@
 ## Background
 This document describes how to collect pull requests for a milestone, request a GitHub Copilot code review for each, and produce release‑notes summaries grouped by label.
 
+## Agent‑mode execution policy (important)
+- By default, do NOT run terminal commands or PowerShell scripts. Perform all collection, parsing, grouping, and summarization entirely in Agent mode using available files and MCP capabilities.
+- Only execute existing scripts if the user explicitly asks you to (opt‑in). Otherwise, assume the input artifacts (milestone_prs.json, sorted_prs.csv, grouped_csv/*) are present or will be provided.
+- Do NOT create new scripts unless requested and justified.
+
 ## Prerequisites
 - Windows with PowerShell 7+ (pwsh)
 - GitHub CLI installed and authenticated to the target repo
@@ -18,28 +23,25 @@ This document describes how to collect pull requests for a milestone, request a 
 - `SampleOutput.md`: Example formatting for summary content
 
 ## Step-by-step
-1) Run `dump-prs-information.ps1` to export PRs for the target milestone (initial run, CopilotSummary likely empty)
+1) run `dump-prs-information.ps1` to export PRs for the target milestone (initial run, CopilotSummary likely empty)
 	- Open `dump-prs-information.ps1` and set:
 	  - `$repo` (e.g., `microsoft/PowerToys`)
 	  - `$milestone` (milestone title exactly as in GitHub, e.g., `PowerToys 0.94`)
-	- Run the script in PowerShell; it will generate `milestone_prs.json` and `sorted_prs.csv`.
+	- run the script in PowerShell; it will generate `milestone_prs.json` and `sorted_prs.csv`.
 
-2) Request Copilot reviews for each PR listed in the CSV in Agent mode (don't generate any ps1)
+2) Request Copilot reviews for each PR listed in the CSV in Agent mode (MUST NOT generate or run any ps1)
 	- Use MCP tools "MCP Server: github-remote" in current Agent mode to request Copilot reviews for all PR Ids in `sorted_prs.csv`.
 
-3) After Copilot reviews complete, run `dump-prs-information.ps1` again
+3) run `dump-prs-information.ps1` again
 	- This refresh collects the latest Copilot review body into the `CopilotSummary` column in `sorted_prs.csv`.
 
-4) (Optional) Use `diff_prs.ps1` for incremental rounds
-	- Provide a prior CSV (`-BaseCsv`) and the latest CSV (`-AllCsv`) to produce an incremental CSV (`-OutCsv`).
+4) run `group-prs-by-label.ps1` to generate `grouped_csv/`
 
-5) Summarize PRs into per‑label Markdown files in Agent mode (Don't generate any ps1)
-	- Group by the `Labels` column. For each unique label combination, create `{Label1}-{Label2}-Summary.md`.
-	  - If multiple labels exist, join with `-` in alphabetical order. Remove or replace invalid filename characters (e.g., `/` `:` `?`).
-	  - If a PR has no matching labels after filtering, put it in `Unlabeled-Summary.md`.
-	- Each file has two parts:
+5) Summarize PRs into per‑label Markdown files in Agent mode (MUST NOT generate or run any ps1)
+    - Read the the csv files in the folder grouped_csv one by one
+	- Generate the summary md file as the following instruciton in two parts:
 	  1. Markdown list: one concise, user‑facing line per PR (no deep technical jargon). Use `Title`, `Body`, and `CopilotSummary` as sources.
-		  - If `Author` is not in `MemberList.md`, append a "Thanks @handle!" per `SampleOutput.md`.
+		  - If `Author` is NOT in `MemberList.md`, append a "Thanks @handle!" per `SampleOutput.md`.
 		  - If confidence is < 70%, write: `Human Summary Needed: <PR full link>`.
 	  2. Three‑column table (in the same PR order):
 		  - Column 1: The concise, user‑facing summary (the "cut version")
@@ -47,7 +49,8 @@ This document describes how to collect pull requests for a milestone, request a 
 		  - Column 3: Confidence (e.g., `High/Medium/Low`) and the reason if < 70%
 
 ## Notes and conventions
-- Do NOT generate/add new ps1 until instruct or ask why it need to add new ps1.
+- Terminal usage: Disabled by default. Do NOT run terminal commands or ps1 scripts unless the user explicitly instructs you to.
+- Do NOT generate/add new ps1 until instructed (and explain why a new script is needed).
 - Label filtering in `dump-prs-information.ps1` currently keeps labels matching: `Product-*`, `Area-*`, `Github*`, `*Plugin`, `Issue-*`.
 - CSV columns are single‑line (line breaks removed) for easier processing.
 - Keep PRs in the same order as in `sorted_prs.csv` when building summaries.

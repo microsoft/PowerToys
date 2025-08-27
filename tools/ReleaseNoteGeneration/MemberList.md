@@ -1,25 +1,26 @@
-- [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
-- [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
-- [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
-- [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev Lead
-- [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev Lead
-- [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead
-- [@lei9444](https://github.com/lei9444) - Leilei Zhang - Dev
-- [@shuaiyuanxx](https://github.com/shuaiyuanxx) - Shawn Yuan - Dev
-- [@moooyo](https://github.com/moooyo) - Yu Leng - Dev
-- [@haoliuu](https://github.com/haoliuu) - Hao Liu - Dev
-- [@chenmy77](https://github.com/chenmy77) - Mengyuan Chen - Dev
-- [@chemwolf6922](https://github.com/chemwolf6922) - Feng Wang - Dev
-- [@yaqingmi](https://github.com/yaqingmi) - Yaqing Mi - Dev
-- [@zhaoqpcn](https://github.com/zhaoqpcn) - Qingpeng Zhao - Dev
-- [@urnotdfs](https://github.com/urnotdfs) - Xiaofeng Wang - Dev
-- [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
-- [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
-- [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
-- [@zadjii-msft](https://github.com/zadjii-msft) - Mike Griese - Dev
-- [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
-- [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
-- [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
-- [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
-- [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev
-- [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
+cinnamon-msft
+craigloewen-msft
+niels9001
+dhowett
+yeelam-gordon
+jamrobot
+lei9444
+shuaiyuanxx
+moooyo
+haoliuu
+chenmy77
+chemwolf6922
+yaqingmi
+zhaoqpcn
+urnotdfs
+zhaopy536
+wang563681252
+vanzue
+zadjii-msft
+khmyznikov
+chatasweetie
+MichaelJolley
+Jaylyn-Barbee
+zateutsch
+crutkas
+app/copilot-swe-agent
