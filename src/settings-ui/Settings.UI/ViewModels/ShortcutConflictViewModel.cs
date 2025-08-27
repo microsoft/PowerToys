@@ -145,6 +145,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     // Get current hotkey settings (fresh from file) using the accessor's getter
                     module.HotkeySettings = hotkeyAccessor.Value;
+                    module.HotkeySettings.ConflictDescription = isSystemConflict
+                        ? ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText")
+                        : ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
 
                     // Set header using localization key
                     module.Header = GetHotkeyLocalizationHeader(module.ModuleName, module.HotkeyID, hotkeyAccessor.LocalizationHeaderKey);

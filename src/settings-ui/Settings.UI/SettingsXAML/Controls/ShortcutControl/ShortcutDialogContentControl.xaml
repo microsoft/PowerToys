@@ -64,7 +64,7 @@
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                     Severity="Warning" />
                 <InfoBar
-                    Title="Hotkey Conflict"
+                    x:Uid="WarningShortcutConflict"
                     IsClosable="False"
                     IsOpen="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
