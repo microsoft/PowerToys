@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
 using Microsoft.CmdPal.Ext.WebSearch.Pages;
@@ -13,7 +12,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch;
 
-public partial class WebSearchTopLevelCommandItem : CommandItem, IFallbackHandler
+public partial class WebSearchTopLevelCommandItem : CommandItem, IFallbackHandler, IDisposable
 {
     private readonly SettingsManager _settingsManager;
 
@@ -27,17 +26,29 @@ public partial class WebSearchTopLevelCommandItem : CommandItem, IFallbackHandle
 
     private void SetDefaultTitle() => Title = Resources.command_item_title;
 
+    private void ReplaceCommand(ICommand newCommand)
+    {
+        (Command as IDisposable)?.Dispose();
+        Command = newCommand;
+    }
+
     public void UpdateQuery(string query)
     {
         if (string.IsNullOrEmpty(query))
         {
             SetDefaultTitle();
-            Command = new WebSearchListPage(_settingsManager);
+            ReplaceCommand(new WebSearchListPage(_settingsManager));
         }
         else
         {
             Title = query;
-            Command = new SearchWebCommand(query, _settingsManager);
+            ReplaceCommand(new SearchWebCommand(query, _settingsManager));
         }
+    }
+
+    public void Dispose()
+    {
+        (Command as IDisposable)?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

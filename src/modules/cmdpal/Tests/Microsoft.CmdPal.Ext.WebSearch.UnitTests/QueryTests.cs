@@ -45,7 +45,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task LoadHistoryReturnsExpectedItems()
+    public async Task HistoryReturnsExpectedItems()
     {
         // Setup
         var mockHistoryItems = new List<HistoryItem>
@@ -77,7 +77,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task LoadHistoryMoreThanLimitation()
+    public async Task HistoryExceedingLimitReturnsMaxItems()
     {
         // Setup
         var mockHistoryItems = new List<HistoryItem>
@@ -109,7 +109,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task LoadHistoryWithDisableSetting()
+    public async Task HistoryWhenSetToNoneReturnEmptyList()
     {
         // Setup
         var mockHistoryItems = new List<HistoryItem>
