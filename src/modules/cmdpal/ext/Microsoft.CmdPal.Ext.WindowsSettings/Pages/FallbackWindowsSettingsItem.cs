@@ -33,7 +33,6 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
         Command = new NoOpCommand();
         Title = string.Empty;
         Subtitle = string.Empty;
-        Icon = null;
         MoreCommands = null;
 
         if (string.IsNullOrWhiteSpace(query) ||
@@ -59,7 +58,6 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
 
             Title = setting.Name;
             Subtitle = setting.JoinedFullSettingsPath;
-            Icon = Icons.WindowsSettingsIcon;
             Command = new OpenSettingsCommand(setting)
             {
                 Icon = Icons.WindowsSettingsIcon,
@@ -80,10 +78,7 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
         // us to the Windows Settings search page, prepopulated with this search.
         var settingsPage = new WindowsSettingsListPage(_windowsSettings, query);
         Title = string.Format(CultureInfo.CurrentCulture, _title, query);
-        Icon = Icons.WindowsSettingsIcon;
         Subtitle = _subtitle;
         Command = settingsPage;
-
-        return;
     }
 }
