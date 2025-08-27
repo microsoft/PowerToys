@@ -25,6 +25,7 @@
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
 		<None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
+		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
 	</ItemGroup>
 	<ItemGroup>
 		<Page Remove="SettingsXAML\App.xaml" />
@@ -63,7 +64,6 @@
 		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
 		<PackageReference Include="CommunityToolkit.WinUI.Converters" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
-		<PackageReference Include="CommunityToolkit.Labs.WinUI.TitleBar" />
 		<PackageReference Include="System.Net.Http" />
 		<PackageReference Include="System.Private.Uri" />
 		<PackageReference Include="System.Text.RegularExpressions" />
@@ -156,7 +156,8 @@
 		</None>
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
+		</None>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+		</Page>
 		<Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
@@ -182,9 +183,6 @@
 
 	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
-		<MSBuild
-			Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj"
-			Targets="Build"
-			Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
+		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>
 </Project>
