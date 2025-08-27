@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class FileLocksmithPage : NavigatablePage, IRefreshablePage
+    public sealed partial class FileLocksmithPage : NavigablePage, IRefreshablePage
     {
         private FileLocksmithViewModel ViewModel { get; set; }
 
