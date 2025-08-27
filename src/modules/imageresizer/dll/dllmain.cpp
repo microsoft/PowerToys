@@ -48,7 +48,6 @@ private:
     {
         if (enabled)
         {
-            // Ensure registration when enabled
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
             ImageResizerRuntimeRegistration::EnsureRegistered();
             Logger::info(L"ImageResizer context menu registered");
@@ -56,7 +55,6 @@ private:
         }
         else
         {
-            // Ensure unregistration when disabled
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
             ImageResizerRuntimeRegistration::Unregister();
             Logger::info(L"ImageResizer context menu unregistered");

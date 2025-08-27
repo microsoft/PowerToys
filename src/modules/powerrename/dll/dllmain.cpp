@@ -173,7 +173,6 @@ private:
     {
         if (enabled)
         {
-            // Ensure registration when enabled
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
             PowerRenameRuntimeRegistration::EnsureRegistered()
             Logger::info(L"PowerRename context menu registered");
@@ -181,7 +180,6 @@ private:
         }
         else
         {
-            // Ensure unregistration when disabled
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
             PowerRenameRuntimeRegistration::Unregister();
             Logger::info(L"PowerRename context menu unregistered");

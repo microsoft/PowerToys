@@ -27,7 +27,6 @@ private:
     {
         if (enabled)
         {
-            // Ensure registration when enabled
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
             NewPlusRuntimeRegistration::EnsureRegisteredWin10();
             Logger::info(L"New+ context menu registered");
@@ -35,7 +34,6 @@ private:
         }
         else
         {
-            // Ensure unregistration when disabled
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
             NewPlusRuntimeRegistration::Unregister();
             Logger::info(L"New+ context menu unregistered");
