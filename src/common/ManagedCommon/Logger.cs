@@ -122,13 +122,13 @@ namespace ManagedCommon
             {
                 var exMessage =
                     message + Environment.NewLine +
-                    ex.GetType() + ": " + ex.Message + Environment.NewLine;
+                    ex.GetType() + " (" + ex.HResult + "): " + ex.Message + Environment.NewLine;
 
                 if (ex.InnerException != null)
                 {
                     exMessage +=
                         "Inner exception: " + Environment.NewLine +
-                        ex.InnerException.GetType() + ": " + ex.InnerException.Message + Environment.NewLine;
+                        ex.InnerException.GetType() + " (" + ex.HResult + "): " + ex.InnerException.Message + Environment.NewLine;
                 }
 
                 exMessage +=
