@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
@@ -11,7 +12,6 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.ViewModels"
-    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:views="using:Microsoft.PowerToys.Settings.UI.Views"
@@ -91,17 +91,17 @@
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <tkcontrols:TitleBar
+        <controls:TitleBar
             x:Name="AppTitleBar"
             AutoConfigureCustomTitleBar="True"
             PaneButtonClick="PaneToggleBtn_Click">
-            <tkcontrols:TitleBar.Resources>
+            <controls:TitleBar.Resources>
                 <x:Double x:Key="TitleBarContentMinWidth">516</x:Double>
-            </tkcontrols:TitleBar.Resources>
-            <tkcontrols:TitleBar.Icon>
+            </controls:TitleBar.Resources>
+            <controls:TitleBar.Icon>
                 <BitmapIcon ShowAsMonochrome="False" UriSource="/Assets/Settings/icon.ico" />
-            </tkcontrols:TitleBar.Icon>
-            <tkcontrols:TitleBar.Content>
+            </controls:TitleBar.Icon>
+            <controls:TitleBar.Content>
                 <AutoSuggestBox
                     x:Name="SearchBox"
                     x:Uid="Shell_SearchBox"
@@ -122,8 +122,8 @@
                             Modifiers="Control" />
                     </AutoSuggestBox.KeyboardAccelerators>
                 </AutoSuggestBox>
-            </tkcontrols:TitleBar.Content>
-        </tkcontrols:TitleBar>
+            </controls:TitleBar.Content>
+        </controls:TitleBar>
         <NavigationView
             x:Name="navigationView"
             Grid.Row="1"

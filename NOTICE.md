@@ -1499,7 +1499,6 @@ SOFTWARE.
 - CoenM.ImageSharp.ImageHash
 - CommunityToolkit.Common
 - CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock
-- CommunityToolkit.Labs.WinUI.TitleBar
 - CommunityToolkit.Mvvm
 - CommunityToolkit.WinUI.Animations
 - CommunityToolkit.WinUI.Collections

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Common.Search;
 using Common.Search.FuzzSearch;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -132,7 +133,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static bool IsUserAnAdmin { get; set; }
 
-        public CommunityToolkit.WinUI.Controls.TitleBar TitleBar => AppTitleBar;
+        public Controls.TitleBar TitleBar => AppTitleBar;
 
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
         private List<string> _searchSuggestions = [];
