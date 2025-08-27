@@ -548,18 +548,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                             }
                         }
 
-                        if (conflictingModules.Count > 0)
+                        var moduleNames = conflictingModules.ToArray();
+                        if (string.Equals(moduleNames[0], "System", StringComparison.OrdinalIgnoreCase))
                         {
-                            var moduleNames = conflictingModules.ToArray();
-                            var conflictMessage = moduleNames.Length == 1
-                                ? $"Conflict detected with {moduleNames[0]}"
-                                : $"Conflicts detected with: {string.Join(", ", moduleNames)}";
-
-                            c.ConflictMessage = conflictMessage;
+                            c.ConflictMessage = ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText");
                         }
                         else
                         {
-                            c.ConflictMessage = "Conflict detected with unknown module";
+                            c.ConflictMessage = ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
                         }
 
                         c.HasConflict = true;
