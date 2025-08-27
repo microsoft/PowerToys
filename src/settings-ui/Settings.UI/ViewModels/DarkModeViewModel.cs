@@ -4,19 +4,22 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Settings.UI.Library;
+using Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class DarkModeViewModel : Observable
     {
         private Func<string, int> SendConfigMSG { get; }
+
+        public ObservableCollection<City> Cities { get; } = new();
 
         public DarkModeViewModel(DarkModeSettings initialSettings = null, Func<string, int> ipcMSGCallBackFunc = null)
         {
@@ -30,7 +33,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             AvailableScheduleModes = new ObservableCollection<string>
             {
                 "FixedHours",
-                "SunsetToSunrise",
+                "SunsetToSunriseGeo",
+                "SunsetToSunriseUser",
             };
         }
 
@@ -263,6 +267,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private City _selectedCity;
+
+        public City SelectedCity
+        {
+            get => _selectedCity;
+            set
+            {
+                if (_selectedCity != value)
+                {
+                    _selectedCity = value;
+                    NotifyPropertyChanged();
+
+                    UpdateSunTimesForSelectedCity();
+                }
+            }
+        }
+
+        private string _cityTimesText = "Please select a city";
+
+        public string CityTimesText
+        {
+            get => _cityTimesText;
+            set
+            {
+                if (_cityTimesText != value)
+                {
+                    _cityTimesText = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             Logger.LogInfo($"Changed the property {propertyName}");
@@ -284,6 +320,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(Latitude));
             OnPropertyChanged(nameof(Longitude));
             OnPropertyChanged(nameof(ScheduleMode));
+        }
+
+        public void UpdateSunTimesForSelectedCity()
+        {
+            if (SelectedCity == null)
+            {
+                return;
+            }
+
+            SunTimes result = SunCalc.CalculateSunriseSunset(
+                SelectedCity.Latitude,
+                SelectedCity.Longitude,
+                DateTime.Now.Year,
+                DateTime.Now.Month,
+                DateTime.Now.Day);
+
+            LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
+            DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+            Latitude = SelectedCity.Latitude.ToString(CultureInfo.InvariantCulture);
+            Longitude = SelectedCity.Longitude.ToString(CultureInfo.InvariantCulture);
+
+            // If you want a ready-to-bind string
+            CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}  " +
+                            $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
         }
 
         private bool _enabledStateIsGPOConfigured;

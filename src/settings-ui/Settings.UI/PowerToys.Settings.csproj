@@ -19,6 +19,10 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Assets\world_cities.csv" />
+  </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
@@ -133,6 +137,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Settings\Scripts\DisableModule.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\world_cities.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Page Update="SettingsXAML\Views\DarkModePage.xaml">

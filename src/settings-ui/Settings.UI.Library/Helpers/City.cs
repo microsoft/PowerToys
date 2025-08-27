@@ -8,17 +8,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
+namespace Settings.UI.Library.Helpers
 {
-    public struct SunTimes
+    public sealed record City(string Name, string Country, double Latitude, double Longitude)
     {
-        public int SunriseHour;
-        public int SunriseMinute;
-        public int SunsetHour;
-        public int SunsetMinute;
-        public string Text;
-
-        public bool HasSunrise;
-        public bool HasSunset;
+        public string Display => string.IsNullOrWhiteSpace(Country)
+            ? Name
+            : $"{Name}, {Country}";
     }
 }

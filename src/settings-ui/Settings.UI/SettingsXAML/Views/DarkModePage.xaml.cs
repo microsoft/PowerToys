@@ -6,7 +6,9 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -72,9 +74,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void DarkModePage_Loaded(object sender, RoutedEventArgs e)
         {
+            if (ViewModel.Cities.Count == 0)
+            {
+                string csvPath = Path.Combine(AppContext.BaseDirectory, "Assets/world_cities.csv");
+                System.Diagnostics.Debug.WriteLine($"Looking for world_cities.csv at: {csvPath}");
+                if (File.Exists(csvPath))
+                {
+                    foreach (var city in CityLoader.LoadCities(csvPath))
+                    {
+                        ViewModel.Cities.Add(city);
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("world_cities.csv not found.");
+                }
+            }
+
+            if (ViewModel.ScheduleMode == "SunsetToSunriseUser" &&
+                double.TryParse(ViewModel.Latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLat) &&
+                double.TryParse(ViewModel.Longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLng))
+            {
+                var match = ViewModel.Cities.FirstOrDefault(c =>
+                    Math.Abs(c.Latitude - savedLat) < 0.0001 &&
+                    Math.Abs(c.Longitude - savedLng) < 0.0001);
+
+                if (match != null)
+                {
+                    ViewModel.SelectedCity = match;
+                }
+            }
+
             try
             {
-                if (ViewModel.ScheduleMode == "SunsetToSunrise")
+                if (ViewModel.ScheduleMode == "SunsetToSunriseGeo")
                 {
                     SunTimes.Text = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2} " +
                                     $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";

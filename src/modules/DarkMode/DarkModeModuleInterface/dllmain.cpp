@@ -36,7 +36,8 @@ const static wchar_t* MODULE_DESC = L"This is a module that allows you to contro
 enum class ScheduleMode
 {
     FixedHours,
-    SunsetToSunrise
+    SunsetToSunriseGeo,
+    SunsetToSunriseUser
     // add more later
 };
 
@@ -44,8 +45,10 @@ inline std::wstring ToString(ScheduleMode mode)
 {
     switch (mode)
     {
-    case ScheduleMode::SunsetToSunrise:
-        return L"SunsetToSunrise";
+    case ScheduleMode::SunsetToSunriseGeo:
+        return L"SunsetToSunriseGeo";
+    case ScheduleMode::SunsetToSunriseUser:
+        return L"SunsetToSunriseUser";
     case ScheduleMode::FixedHours:
     default:
         return L"FixedHours";
@@ -54,8 +57,10 @@ inline std::wstring ToString(ScheduleMode mode)
 
 inline ScheduleMode FromString(const std::wstring& str)
 {
-    if (str == L"SunsetToSunrise")
-        return ScheduleMode::SunsetToSunrise;
+    if (str == L"SunsetToSunriseGeo")
+        return ScheduleMode::SunsetToSunriseGeo;
+    if (str == L"SunsetToSunriseUser")
+        return ScheduleMode::SunsetToSunriseUser;
     return ScheduleMode::FixedHours;
 }
 
@@ -158,7 +163,8 @@ public:
             L"Theme schedule mode",
             ToString(g_settings.m_scheduleMode),
             { { L"FixedHours", L"Set hours manually" },
-              { L"SunsetToSunrise", L"Use sunrise/sunset times" } });
+              { L"SunsetToSunriseGeo", L"Use sunrise/sunset times (Geolocation)" },
+              { L"SunsetToSunriseUser", L"Use sunrise/sunset times (User selected)" } });
 
         // Integer spinners (for time in minutes since midnight)
         settings.add_int_spinner(
