@@ -38,6 +38,22 @@
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
+        <controls:SettingsGroup x:Uid="DarkMode_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+
+          <tkcontrols:SettingsCard x:Uid="DarkMode_ForceLightMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE706;}">
+            <controls:ShortcutControl
+            MinWidth="{StaticResource SettingActionControlMinWidth}"
+            AllowDisable="True"
+            HotkeySettings="{x:Bind Path=ViewModel.ForceLightModeActivationShortcut, Mode=TwoWay}" />
+          </tkcontrols:SettingsCard>
+          <tkcontrols:SettingsCard x:Uid="DarkMode_ForceDarkMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
+            <controls:ShortcutControl
+  MinWidth="{StaticResource SettingActionControlMinWidth}"
+  AllowDisable="True"
+  HotkeySettings="{x:Bind Path=ViewModel.ForceDarkModeActivationShortcut, Mode=TwoWay}" />
+          </tkcontrols:SettingsCard>
+        </controls:SettingsGroup>
+
         <controls:SettingsGroup x:Uid="DarkMode_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
           <tkcontrols:SettingsExpander
                         Description="Use time-based or location-based rules to turn on dark mode"

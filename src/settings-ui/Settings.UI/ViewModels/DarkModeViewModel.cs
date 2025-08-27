@@ -6,10 +6,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
 
@@ -36,6 +39,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 "SunsetToSunriseGeo",
                 "SunsetToSunriseUser",
             };
+
+            _forceLightModeHotkey = _moduleSettings.Properties.ForceLightModeHotkey.Value;
+            _forceDarkModeHotkey = _moduleSettings.Properties.ForceDarkModeHotkey.Value;
         }
 
         private void ForceLightNow()
@@ -299,6 +305,68 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings ForceLightModeActivationShortcut
+        {
+            get => _forceLightModeHotkey;
+
+            set
+            {
+                if (value != _forceLightModeHotkey)
+                {
+                    if (value == null)
+                    {
+                        _forceLightModeHotkey = DarkModeProperties.DefaultForceLightModeValue;
+                    }
+                    else
+                    {
+                        _forceLightModeHotkey = value;
+                    }
+
+                    _moduleSettings.Properties.ForceLightModeHotkey.Value = _forceLightModeHotkey;
+                    NotifyPropertyChanged();
+
+                    // Using InvariantCulture as this is an IPC message
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            DarkModeSettings.ModuleName,
+                            JsonSerializer.Serialize(_moduleSettings, SourceGenerationContextContext.Default.DarkModeSettings)));
+                }
+            }
+        }
+
+        public HotkeySettings ForceDarkModeActivationShortcut
+        {
+            get => _forceDarkModeHotkey;
+
+            set
+            {
+                if (value != _forceDarkModeHotkey)
+                {
+                    if (value == null)
+                    {
+                        _forceDarkModeHotkey = DarkModeProperties.DefaultForceDarkModeValue;
+                    }
+                    else
+                    {
+                        _forceDarkModeHotkey = value;
+                    }
+
+                    _moduleSettings.Properties.ForceDarkModeHotkey.Value = _forceDarkModeHotkey;
+                    NotifyPropertyChanged();
+
+                    // Using InvariantCulture as this is an IPC message
+                    SendConfigMSG(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                            DarkModeSettings.ModuleName,
+                            JsonSerializer.Serialize(_moduleSettings, SourceGenerationContextContext.Default.DarkModeSettings)));
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             Logger.LogInfo($"Changed the property {propertyName}");
@@ -350,6 +418,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledGPOConfiguration;
         private DarkModeSettings _moduleSettings;
         private bool _isEnabled;
+        private HotkeySettings _forceLightModeHotkey;
+        private HotkeySettings _forceDarkModeHotkey;
 
         public ICommand ForceLightCommand { get; }
 

@@ -11,6 +11,19 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+namespace
+{
+    const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
+    const wchar_t JSON_KEY_WIN[] = L"win";
+    const wchar_t JSON_KEY_ALT[] = L"alt";
+    const wchar_t JSON_KEY_CTRL[] = L"ctrl";
+    const wchar_t JSON_KEY_SHIFT[] = L"shift";
+    const wchar_t JSON_KEY_CODE[] = L"code";
+    const wchar_t JSON_KEY_FORCE_LIGHT_HOTKEY[] = L"force-light-mode-hotkey";
+    const wchar_t JSON_KEY_FORCE_DARK_HOTKEY[] = L"force-dark-mode-hotkey";
+    const wchar_t JSON_KEY_VALUE[] = L"value";
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
@@ -85,6 +98,13 @@ private:
     bool m_enabled = false;
 
     HANDLE m_process{ nullptr };
+    HANDLE m_force_light_event_handle;
+    HANDLE m_force_dark_event_handle;
+
+    static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
+
+    Hotkey m_force_light_mode_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'L' };
+    Hotkey m_force_dark_mode_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'D' };
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -94,6 +114,10 @@ public:
     DarkModeInterface()
     {
         LoggerHelpers::init_logger(L"DarkMode", L"ModuleInterface", LogSettings::darkModeLoggerName);
+
+        m_force_light_event_handle = CreateDefaultEvent(L"POWEROYS_DARKMODE_FORCE_LIGHT");
+        m_force_dark_event_handle = CreateDefaultEvent(L"POWEROYS_DARKMODE_FORCE_DARK");
+
         init_settings();
     };
 
@@ -215,6 +239,30 @@ public:
             L"Force Dark",
             L"{}");
 
+        PowerToysSettings::HotkeyObject lm_hk = PowerToysSettings::HotkeyObject::from_settings(
+            m_force_light_mode_hotkey.win,
+            m_force_light_mode_hotkey.ctrl,
+            m_force_light_mode_hotkey.alt,
+            m_force_light_mode_hotkey.shift,
+            m_force_light_mode_hotkey.key);
+
+        settings.add_hotkey(
+            L"force-light-hotkey",
+            L"Shortcut to force light theme immediately",
+            lm_hk);
+
+        PowerToysSettings::HotkeyObject dm_hk = PowerToysSettings::HotkeyObject::from_settings(
+            m_force_dark_mode_hotkey.win,
+            m_force_dark_mode_hotkey.ctrl,
+            m_force_dark_mode_hotkey.alt,
+            m_force_dark_mode_hotkey.shift,
+            m_force_dark_mode_hotkey.key);
+
+        settings.add_hotkey(
+            L"force-dark-hotkey",
+            L"Shortcut to force dark theme immediately",
+            dm_hk);
+
         // Serialize to buffer for the PowerToys runner
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
@@ -252,6 +300,8 @@ public:
         try
         {
             auto values = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
+
+            parse_hotkey(values);
 
             if (auto v = values.get_bool_value(L"changeSystem"))
             {
@@ -386,6 +436,92 @@ public:
         return m_enabled;
     }
 
+    void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
+    {
+        auto settingsObject = settings.get_raw_json();
+        if (settingsObject.GetView().Size())
+        {
+            try
+            {
+                Hotkey _temp_force_light;
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_FORCE_LIGHT_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
+                _temp_force_light.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                _temp_force_light.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                _temp_force_light.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                _temp_force_light.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                _temp_force_light.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                m_force_light_mode_hotkey = _temp_force_light;
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize DarkMode force light mode shortcut from settings. Value will keep unchanged.");
+            }
+            try
+            {
+                Hotkey _temp_force_dark;
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_FORCE_DARK_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
+                _temp_force_dark.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                _temp_force_dark.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                _temp_force_dark.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                _temp_force_dark.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                _temp_force_dark.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                m_force_dark_mode_hotkey = _temp_force_dark;
+            }
+            catch (...)
+            {
+                Logger::error("Failed to initialize DarkMode force dark mode shortcut from settings. Value will keep unchanged.");
+            }
+        }
+        else
+        {
+            Logger::info("DarkMode settings are empty");
+        }
+    }
+
+    virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
+    {
+        if (hotkeys && buffer_size >= 2)
+        {
+            hotkeys[0] = m_force_light_mode_hotkey;
+            hotkeys[1] = m_force_dark_mode_hotkey;
+        }
+        return 2;
+    }
+
+    virtual bool on_hotkey(size_t hotkeyId) override
+    {
+        if (m_enabled)
+        {
+            Logger::trace(L"DarkMode hotkey pressed");
+            if (!is_process_running())
+            {
+                enable();
+            }
+
+            if (hotkeyId == 0)
+            {
+                Logger::info(L"[DarkMode] Hotkey triggered: Force Light");
+                SetSystemTheme(true);
+                SetAppsTheme(true);
+            }
+            else if (hotkeyId == 1)
+            {
+                Logger::info(L"[DarkMode] Hotkey triggered: Force Dark");
+                SetSystemTheme(false);
+                SetAppsTheme(false);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    bool is_process_running()
+    {
+        return WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT;
+    }
+
     // Handle incoming event, data is event-specific
     //virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
     //{
@@ -450,6 +586,8 @@ void DarkModeInterface::init_settings()
     {
         PowerToysSettings::PowerToyValues settings =
             PowerToysSettings::PowerToyValues::load_from_settings_file(get_name());
+
+        parse_hotkey(settings);
 
         if (auto v = settings.get_bool_value(L"changeSystem"))
             g_settings.m_changeSystem = *v;
