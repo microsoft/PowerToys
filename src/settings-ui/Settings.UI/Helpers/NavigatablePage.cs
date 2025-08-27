@@ -92,15 +92,9 @@ public abstract partial class NavigatablePage : Page
         dropShadow.Offset = new Vector3(0, 0, 0);
 
         var spriteVisual = compositor.CreateSpriteVisual();
-<<<<<<< HEAD
         spriteVisual.Size = new Vector2((float)target.ActualWidth + 8, (float)target.ActualHeight + 8);
         spriteVisual.Shadow = dropShadow;
         spriteVisual.Offset = new Vector3(-4, -4, 0);
-=======
-        spriteVisual.Size = new Vector2((float)target.ActualWidth, (float)target.ActualHeight);
-        spriteVisual.Shadow = dropShadow;
-        spriteVisual.Offset = new Vector3(0, 0, 0);
->>>>>>> origin/main
 
         // Insert the shadow visual behind the target element
         ElementCompositionPreview.SetElementChildVisual(target, spriteVisual);
