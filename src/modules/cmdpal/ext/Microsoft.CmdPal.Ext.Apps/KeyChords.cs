@@ -5,7 +5,7 @@
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions;
 
-namespace Microsoft.CmdPal.Ext.Indexer;
+namespace Microsoft.CmdPal.Ext.Apps;
 
 internal static class KeyChords
 {
@@ -14,4 +14,10 @@ internal static class KeyChords
     internal static KeyChord CopyFilePath { get; } = WellKnownKeyChords.CopyFilePath;
 
     internal static KeyChord OpenInConsole { get; } = WellKnownKeyChords.OpenInConsole;
+
+    internal static KeyChord RunAsAdministrator { get; } = WellKnownKeyChords.RunAsAdministrator;
+
+    internal static KeyChord RunAsDifferentUser { get; } = WellKnownKeyChords.RunAsDifferentUser;
+
+    internal static KeyChord TogglePin { get; } = WellKnownKeyChords.TogglePin;
 }
