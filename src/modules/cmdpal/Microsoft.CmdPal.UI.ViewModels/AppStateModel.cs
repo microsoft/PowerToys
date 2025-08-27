@@ -84,7 +84,7 @@ public partial class AppStateModel : ObservableObject
             // validate JSON
             if (JsonNode.Parse(settingsJson) is not JsonObject newSettings)
             {
-                Logger.LogError("Failed to parse settings file as JsonObject.");
+                Logger.LogError("Failed to parse app state as a JsonObject.");
                 return;
             }
 
@@ -110,7 +110,7 @@ public partial class AppStateModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to saved application state:\n" + ex);
+            Logger.LogError($"Failed to save application state to {FilePath}:", ex);
         }
     }
 
@@ -136,14 +136,14 @@ public partial class AppStateModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Logger.LogWarning($"Failed to read state from {FilePath}:\n{ex}");
+            Logger.LogWarning($"Failed to read app state file {FilePath}:\n{ex}");
             return false;
         }
 
         // detect empty file, just for sake of logging
         if (string.IsNullOrWhiteSpace(oldContent))
         {
-            Logger.LogInfo($"State file {FilePath} was empty.");
+            Logger.LogInfo($"App state file is empty: {FilePath}");
             return false;
         }
 
