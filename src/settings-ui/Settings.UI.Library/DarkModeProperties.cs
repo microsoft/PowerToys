@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const bool DefaultChangeApps = false;
         public const int DefaultLightTime = 480;   // 08:00
         public const int DefaultDarkTime = 1200;   // 20:00
+        public const int DefaultOffset = 0;
         public const string DefaultLatitude = "0.0";
         public const string DefaultLongitude = "0.0";
         public const string DefaultScheduleMode = "FixedHours";
@@ -25,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DarkTime = new IntProperty(DefaultDarkTime);
             Latitude = new StringProperty(DefaultLatitude);
             Longitude = new StringProperty(DefaultLongitude);
+            Offset = new IntProperty(DefaultOffset);
             ScheduleMode = new StringProperty(DefaultScheduleMode);
         }
 
@@ -39,6 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("darkTime")]
         public IntProperty DarkTime { get; set; }
+
+        [JsonPropertyName("offset")]
+        public IntProperty Offset { get; set; }
 
         [JsonPropertyName("latitude")]
         public StringProperty Latitude { get; set; }

@@ -37,6 +37,7 @@ namespace Settings.UI.Library
                     ScheduleMode = new StringProperty(Properties.ScheduleMode.Value),
                     LightTime = new IntProperty((int)Properties.LightTime.Value),
                     DarkTime = new IntProperty((int)Properties.DarkTime.Value),
+                    Offset = new IntProperty((int)Properties.Offset.Value),
                     Latitude = new StringProperty(Properties.Latitude.Value),
                     Longitude = new StringProperty(Properties.Longitude.Value),
                 },

@@ -51,6 +51,8 @@ struct DarkModeConfig
     int lightTime = 8 * 60; // 08:00 default
     int darkTime = 20 * 60; // 20:00 default
 
+    int offset = 0; // offset in minutes to apply to calculated times
+
     bool changeSystem = false;
     bool changeApps = false;
 };

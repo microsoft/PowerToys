@@ -188,7 +188,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         DarkModeSettings::instance().LoadSettings();
         const auto& settings = DarkModeSettings::instance().settings();
 
-        applyTheme(nowMinutes, settings.lightTime, settings.darkTime, settings);
+        applyTheme(nowMinutes, settings.lightTime + settings.offset, settings.darkTime + settings.offset, settings);
     }
 
     // --- Main loop: wakes once per minute or stop/parent death ---
@@ -204,26 +204,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         DarkModeSettings::instance().LoadSettings();
         const auto& settings = DarkModeSettings::instance().settings();
 
-        //int lightMinutes = 0, darkMinutes = 0;
-
-        /*if (settings.scheduleMode == ScheduleMode::SunsetToSunrise)
-        {
-            SunTimes sun = CalculateSunriseSunset(
-                std::stod(settings.latitude),
-                std::stod(settings.longitude),
-                st.wYear,
-                st.wMonth,
-                st.wDay);
-
-            lightMinutes = sun.sunriseHour * 60 + sun.sunriseMinute;
-            darkMinutes = sun.sunsetHour * 60 + sun.sunsetMinute;
-        }
-        else
-        {
-            lightMinutes = settings.lightTime;
-            darkMinutes = settings.darkTime;
-        }*/
-
         // Debug print
         wchar_t msg[160];
         swprintf_s(msg,
@@ -237,7 +217,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         OutputDebugString(msg);
 
         // Apply theme logic
-        applyTheme(nowMinutes, settings.lightTime, settings.darkTime, settings);
+        applyTheme(nowMinutes, settings.lightTime + settings.offset, settings.darkTime + settings.offset, settings);
 
         // Sleep until next minute, wake early if stop/parent dies
         GetLocalTime(&st);

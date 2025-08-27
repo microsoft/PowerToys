@@ -111,6 +111,37 @@
                   </Button>
                 </StackPanel>
               </tkcontrols:SettingsCard>
+
+              <tkcontrols:SettingsCard
+                Header="Apply an offset in minutes"
+                Visibility="{x:Bind ViewModel.ScheduleMode,
+                      Mode=OneWay,
+                      Converter={StaticResource EnumToVisibilityConverter},
+                      ConverterParameter=SunsetToSunrise}">
+                <Grid VerticalAlignment="Center">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <Slider
+                    x:Name="offsetSlider"
+                    Grid.Column="0"
+                    TickFrequency="15"
+                    Minimum="-60"
+                    Maximum="60"
+                    TickPlacement="Outside"
+                    Value="{x:Bind ViewModel.Offset, Mode=TwoWay}"
+                    SnapsTo="StepValues" />
+                  <TextBlock
+                    x:Name="offsetValue"
+                    Grid.Column="1"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind ViewModel.Offset, Mode=OneWay}" />
+                </Grid>
+              </tkcontrols:SettingsCard>
             </tkcontrols:SettingsExpander.Items>
           </tkcontrols:SettingsExpander>
           <tkcontrols:SettingsExpander

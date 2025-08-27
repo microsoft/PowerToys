@@ -67,6 +67,7 @@ struct ModuleSettings
     ScheduleMode m_scheduleMode = ScheduleMode::FixedHours;
     int m_lightTime = 480;
     int m_darkTime = 1200;
+    int m_offset = 0;
     std::wstring m_latitude = L"0.0";
     std::wstring m_longitude = L"0.0";
 } g_settings;
@@ -176,6 +177,14 @@ public:
             1439,
             1);
 
+        settings.add_int_spinner(
+            L"offset",
+            L"Time to offset turning on your light/dark themes.",
+            g_settings.m_offset,
+            0,
+            1439,
+            1);
+
         // Strings for latitude and longitude
         settings.add_string(
             L"latitude",
@@ -263,15 +272,20 @@ public:
                 g_settings.m_darkTime = *v;
             }
 
+            if (auto v = values.get_int_value(L"offset"))
+            {
+                g_settings.m_offset = *v;
+            }
+
             if (auto v = values.get_string_value(L"latitude"))
             {
                 g_settings.m_latitude = *v;
             }
-
             if (auto v = values.get_string_value(L"longitude"))
             {
                 g_settings.m_longitude = *v;
             }
+            
 
             values.save_to_settings_file();
         }
@@ -441,6 +455,8 @@ void DarkModeInterface::init_settings()
             g_settings.m_lightTime = *v;
         if (auto v = settings.get_int_value(L"darkTime"))
             g_settings.m_darkTime = *v;
+        if (auto v = settings.get_int_value(L"offset"))
+            g_settings.m_offset = *v;
         if (auto v = settings.get_string_value(L"latitude"))
             g_settings.m_latitude = *v;
         if (auto v = settings.get_string_value(L"longitude"))

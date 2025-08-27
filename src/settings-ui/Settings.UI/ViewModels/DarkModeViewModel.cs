@@ -194,6 +194,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int Offset
+        {
+            get => ModuleSettings.Properties.Offset.Value;
+            set
+            {
+                if (ModuleSettings.Properties.Offset.Value != value)
+                {
+                    ModuleSettings.Properties.Offset.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public TimeSpan LightTimeTimeSpan
         {
             get => TimeSpan.FromMinutes(LightTime);
@@ -267,6 +280,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(ChangeApps));
             OnPropertyChanged(nameof(LightTime));
             OnPropertyChanged(nameof(DarkTime));
+            OnPropertyChanged(nameof(Offset));
             OnPropertyChanged(nameof(Latitude));
             OnPropertyChanged(nameof(Longitude));
             OnPropertyChanged(nameof(ScheduleMode));
