@@ -49,6 +49,7 @@ ALPHATYPE
 AModifier
 amr
 ANDSCANS
+animatedvisuals
 Animnate
 ANull
 AOC
@@ -1024,8 +1025,6 @@ MYICON
 NAMECHANGE
 namespaceanddescendants
 nao
-Navigatable
-NavigatablePage
 NCACTIVATE
 ncc
 NCCALCSIZE

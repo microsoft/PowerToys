@@ -8,7 +8,7 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class RegistryPreviewPage : NavigatablePage, IRefreshablePage
+    public sealed partial class RegistryPreviewPage : NavigablePage, IRefreshablePage
     {
         private RegistryPreviewViewModel ViewModel { get; set; }
 

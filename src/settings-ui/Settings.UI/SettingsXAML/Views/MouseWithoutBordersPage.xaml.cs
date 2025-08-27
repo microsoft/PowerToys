@@ -21,7 +21,7 @@ using static Microsoft.PowerToys.Settings.UI.ViewModels.MouseWithoutBordersViewM
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class MouseWithoutBordersPage : NavigatablePage, IRefreshablePage
+    public sealed partial class MouseWithoutBordersPage : NavigablePage, IRefreshablePage
     {
         private const string MouseWithoutBordersDragDropCheckString = "MWB Device Drag Drop";
 

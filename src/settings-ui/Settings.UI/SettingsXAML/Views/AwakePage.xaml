@@ -1,4 +1,4 @@
-﻿<local:NavigatablePage
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.AwakePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,9 +14,9 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <local:NavigatablePage.Resources>
+    <local:NavigablePage.Resources>
         <converters:AwakeModeToIntConverter x:Key="AwakeModeToIntConverter" />
-    </local:NavigatablePage.Resources>
+    </local:NavigablePage.Resources>
 
     <controls:SettingsPageControl
         x:Uid="Awake"
@@ -119,4 +119,4 @@
             <controls:PageLink x:Uid="SecondaryLink_Awake" Link="https://awake.den.dev" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
-</local:NavigatablePage>
+</local:NavigablePage>

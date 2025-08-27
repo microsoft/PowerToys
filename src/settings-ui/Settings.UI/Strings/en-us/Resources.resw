@@ -2691,6 +2691,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
+  <data name="WarningShortcutConflict.Title" xml:space="preserve">
+    <value>Shortcut conflict</value>
+  </data>
+  <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
+    <value>A conflict has been detected for this shortcut.</value>
+  </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
   </data>
@@ -2896,20 +2902,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_GlidingCursor.Description" xml:space="preserve">
     <value>An accessibility feature that lets you control the mouse with a single button using guided horizontal and vertical lines</value>
   </data>
-	<data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
     <value>Initial line speed</value>
   </data>
-	<data name="MouseUtils_GlidingCursor_InitialSpeed.Description" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor_InitialSpeed.Description" xml:space="preserve">
     <value>Speed of the horizontal or vertical line when it begins moving</value>
   </data>
-	<data name="MouseUtils_GlidingCursor_DelaySpeed.Header" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor_DelaySpeed.Header" xml:space="preserve">
     <value>Reduced line speed</value>
   </data>
-	<data name="MouseUtils_GlidingCursor_DelaySpeed.Description" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor_DelaySpeed.Description" xml:space="preserve">
     <value>Speed after slowing down the line with a second shortcut press</value>
   </data>
-
-	<data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
+  <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
   </data>
   <data name="FancyZones_Radio_Default_Theme.Content" xml:space="preserve">
@@ -5266,7 +5271,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>All shortcuts function correctly</value>
   </data>
   <data name="ResolveConflicts_Button.Content" xml:space="preserve">
-	<value>Resolve conflicts</value>
+    <value>Resolve conflicts</value>
   </data>
   <data name="ShortcutConflictControl_Title.Text" xml:space="preserve">
     <value>Shortcut conflicts</value>
@@ -5286,5 +5291,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Hosts_NoLeadingSpaces.Description" xml:space="preserve">
     <value>Do not prepend spaces to active lines when saving the hosts file</value>
+  </data>
+  <data name="Search_ResultsFor" xml:space="preserve">
+    <value>Results for</value>
+    <comment>Prefix for search string. E.g. "Results for 'shortcut'"</comment>
   </data>
 </root>
