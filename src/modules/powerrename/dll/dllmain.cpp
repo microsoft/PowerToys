@@ -174,7 +174,7 @@ private:
         if (enabled)
         {
 #if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            PowerRenameRuntimeRegistration::EnsureRegistered()
+            PowerRenameRuntimeRegistration::EnsureRegistered();
             Logger::info(L"PowerRename context menu registered");
 #endif
         }
