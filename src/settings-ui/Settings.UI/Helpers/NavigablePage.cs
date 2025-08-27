@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers;
 public abstract partial class NavigablePage : Page
 {
     private const int ExpandWaitDuration = 500;
-    private const int AnimationDuration = 2000;
+    private const int AnimationDuration = 1850;
 
     private NavigationParams _pendingNavigationParams;
 
@@ -92,9 +92,9 @@ public abstract partial class NavigablePage : Page
         dropShadow.Offset = new Vector3(0, 0, 0);
 
         var spriteVisual = compositor.CreateSpriteVisual();
-        spriteVisual.Size = new Vector2((float)target.ActualWidth, (float)target.ActualHeight);
+        spriteVisual.Size = new Vector2((float)target.ActualWidth + 8, (float)target.ActualHeight + 8);
         spriteVisual.Shadow = dropShadow;
-        spriteVisual.Offset = new Vector3(0, 0, 0);
+        spriteVisual.Offset = new Vector3(-4, -4, 0);
 
         // Insert the shadow visual behind the target element
         ElementCompositionPreview.SetElementChildVisual(target, spriteVisual);

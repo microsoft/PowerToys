@@ -57,12 +57,6 @@
         </DataTemplate>
         <DataTemplate x:Key="NoResultSearchResultTemplate" x:DataType="models:SuggestionItem">
             <Grid>
-                <Rectangle
-                    Height="1"
-                    Margin="0,-4,0,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Top"
-                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
                 <TextBlock
                     Margin="8"
                     HorizontalAlignment="Center"
@@ -71,10 +65,10 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="ShowAllSearchResultTemplate" x:DataType="models:SuggestionItem">
-            <Grid Padding="16,8">
+            <Grid>
                 <Rectangle
                     Height="1"
-                    Margin="0,-4,0,0"
+                    Margin="0,-12,0,0"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Top"
                     Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
@@ -92,7 +86,6 @@
             <ic:InvokeCommandAction Command="{x:Bind ViewModel.LoadedCommand}" />
         </ic:EventTriggerBehavior>
     </i:Interaction.Behaviors>
-
     <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
