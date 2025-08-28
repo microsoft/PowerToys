@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Streams;
@@ -16,9 +17,11 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 
 public class ClipboardItem
 {
-    public string? Content { get; set; }
+    public string? Content { get; init; }
 
-    public required ClipboardHistoryItem Item { get; set; }
+    public required ClipboardHistoryItem Item { get; init; }
+
+    public required ISettingOptions Settings { get; init; }
 
     public DateTimeOffset Timestamp => Item?.Timestamp ?? DateTimeOffset.MinValue;
 
@@ -103,7 +106,9 @@ public class ClipboardItem
                     Metadata = metadata.ToArray(),
                 },
                 MoreCommands = [
-                    new CommandContextItem(new PasteCommand(this, ClipboardFormat.Image))
+                    new CommandContextItem(new PasteCommand(this, ClipboardFormat.Image, Settings)),
+                    new Separator(),
+                    new CommandContextItem(new DeleteItemCommand(this)) { IsCritical = true, RequestedShortcut = KeyChords.DeleteEntry },
                 ],
             };
         }
@@ -126,7 +131,9 @@ public class ClipboardItem
                     Metadata = metadata.ToArray(),
                 },
                 MoreCommands = [
-                                new CommandContextItem(new PasteCommand(this, ClipboardFormat.Text)),
+                                new CommandContextItem(new PasteCommand(this, ClipboardFormat.Text, Settings)),
+                                new Separator(),
+                                new CommandContextItem(new DeleteItemCommand(this)) { IsCritical = true, RequestedShortcut = KeyChords.DeleteEntry },
                             ],
             };
         }

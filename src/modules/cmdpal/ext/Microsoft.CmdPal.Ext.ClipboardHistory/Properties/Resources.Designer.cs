@@ -97,6 +97,24 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete.
+        /// </summary>
+        public static string delete_command_name {
+            get {
+                return ResourceManager.GetString("delete_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deleted from clipboard history.
+        /// </summary>
+        public static string delete_toast_text {
+            get {
+                return ResourceManager.GetString("delete_toast_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy, paste, and search items on the clipboard.
         /// </summary>
         public static string list_item_subtitle {
@@ -138,6 +156,24 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         public static string provider_display_name {
             get {
                 return ResourceManager.GetString("provider_display_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep items in clipboard history even after you paste them..
+        /// </summary>
+        public static string settings_keepafterpaste_description {
+            get {
+                return ResourceManager.GetString("settings_keepafterpaste_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep after pasting.
+        /// </summary>
+        public static string settings_keepafterpaste_title {
+            get {
+                return ResourceManager.GetString("settings_keepafterpaste_title", resourceCulture);
             }
         }
     }

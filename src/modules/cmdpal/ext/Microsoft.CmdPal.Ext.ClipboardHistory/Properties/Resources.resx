@@ -144,4 +144,16 @@
   <data name="clipboard_failed_to_load" xml:space="preserve">
     <value>Loading clipboard history failed</value>
   </data>
+  <data name="delete_command_name" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="delete_toast_text" xml:space="preserve">
+    <value>Deleted from clipboard history</value>
+  </data>
+  <data name="settings_keepafterpaste_title" xml:space="preserve">
+    <value>Keep after pasting</value>
+  </data>
+  <data name="settings_keepafterpaste_description" xml:space="preserve">
+    <value>Keep items in clipboard history even after you paste them.</value>
+  </data>
 </root>
