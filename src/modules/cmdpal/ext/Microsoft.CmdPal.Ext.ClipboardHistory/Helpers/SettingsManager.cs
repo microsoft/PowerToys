@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 
 internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
 {
-    private const string Namespace = "clipboardmanager";
+    private const string Namespace = "clipboardHistory";
 
     private static string Namespaced(string propertyName) => $"{Namespace}.{propertyName}";
 
