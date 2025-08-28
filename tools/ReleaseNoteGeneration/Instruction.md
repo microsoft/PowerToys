@@ -2,7 +2,7 @@
 This document describes how to collect pull requests for a milestone, request a GitHub Copilot code review for each, and produce release‑notes summaries grouped by label.
 
 ## Agent‑mode execution policy (important)
-- By default, do NOT run terminal commands or PowerShell scripts. Perform all collection, parsing, grouping, and summarization entirely in Agent mode using available files and MCP capabilities.
+- By default, do NOT run terminal commands or PowerShell scripts beside the ps1 in this folder. Perform all collection, parsing, grouping, and summarization entirely in Agent mode using available files and MCP capabilities.
 - Only execute existing scripts if the user explicitly asks you to (opt‑in). Otherwise, assume the input artifacts (milestone_prs.json, sorted_prs.csv, grouped_csv/*) are present or will be provided.
 - Do NOT create new scripts unless requested and justified.
 
@@ -37,12 +37,13 @@ This document describes how to collect pull requests for a milestone, request a 
 
 4) run `group-prs-by-label.ps1` to generate `grouped_csv/`
 
-5) Summarize PRs into per‑label Markdown files in Agent mode (MUST NOT generate or run any ps1)
+5) Summarize PRs into per‑label Markdown files in Agent mode (MUST NOT generate or run any script in terminal nor ps1)
     - Read the the csv files in the folder grouped_csv one by one
 	- Generate the summary md file as the following instruciton in two parts:
-	  1. Markdown list: one concise, user‑facing line per PR (no deep technical jargon). Use `Title`, `Body`, and `CopilotSummary` as sources.
-		  - If `Author` is NOT in `MemberList.md`, append a "Thanks @handle!" per `SampleOutput.md`.
-		  - If confidence is < 70%, write: `Human Summary Needed: <PR full link>`.
+	  1. Markdown list: one concise, user‑facing line per PR (no deep technical jargon). Use "Verbed" + "Scenario" + "Impact" as setence structure. Use `Title`, `Body`, and `CopilotSummary` as sources.
+		  - If `Author` is NOT in `MemberList.md`, append a "Thanks @handle!" see `SampleOutput.md` as example.
+		  - Do NOT include PR numbers or IDs in the list line; keep the PR link only in the table mentioned in 2. below, please refer to `SampleOutput.md` as example.
+		  - If confidence to have enough information for summarization according to guideline above is < 70%, write: `Human Summary Needed: <PR full link>` on that line.
 	  2. Three‑column table (in the same PR order):
 		  - Column 1: The concise, user‑facing summary (the "cut version")
 		  - Column 2: PR link
