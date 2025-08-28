@@ -3164,11 +3164,11 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="DarkMode_ShortDescription" xml:space="preserve">
     <value>Control Dark Mode</value>
   </data>
-  <data name="DarkMode_ForceLightMode_Shortcut.Header" xml:space="preserve">
-    <value>Force Light Mode Hotkey</value>
-  </data>
   <data name="DarkMode_ForceDarkMode_Shortcut.Header" xml:space="preserve">
-    <value>Force Dark Mode Hotkey</value>
+    <value>Toggle theme shortcut</value>
+  </data>
+  <data name="DarkMode_ForceDarkMode_Shortcut.Description" xml:space="preserve">
+    <value>Switch between light and dark mode</value>
   </data>
   <data name="DarkMode_ForceLightMode" xml:space="preserve">
     <value>Force Light Mode</value>

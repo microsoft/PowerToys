@@ -29,6 +29,8 @@
     <None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
     <None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
     <None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
+    <None Remove="SettingsXAML\Controls\Timeline\Timeline.xaml" />
+    <None Remove="SettingsXAML\Controls\Timeline\TimelineStyles.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />
@@ -142,6 +144,12 @@
     <None Update="Assets\world_cities.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="SettingsXAML\Controls\Timeline\TimelineStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="SettingsXAML\Controls\Timeline\Timeline.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="SettingsXAML\Views\DarkModePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
