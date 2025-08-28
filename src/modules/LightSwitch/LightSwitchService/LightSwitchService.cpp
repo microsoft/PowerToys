@@ -4,7 +4,7 @@
 #include "ThemeHelper.h"
 #include <stdio.h>
 #include <string>
-#include <DarkModeSettings.h>
+#include <LightSwitchSettings.h>
 #include <common/utils/gpo.h>
 
 // Global service variables
@@ -40,7 +40,7 @@ int _tmain(int argc, TCHAR* argv[])
         freopen_s(&f, "CONOUT$", "w", stderr);
 
         // Optional: set a title so you can find it easily
-        SetConsoleTitle(L"DarkModeService Debug");
+        SetConsoleTitle(L"LightSwitchService Debug");
 
         // Console mode (debug)
         g_ServiceStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
@@ -55,7 +55,7 @@ int _tmain(int argc, TCHAR* argv[])
     }
 
     // Try to connect to SCM
-    wchar_t serviceName[] = L"DarkModeService";
+    wchar_t serviceName[] = L"LightSwitchService";
     SERVICE_TABLE_ENTRYW table[] = { { serviceName, ServiceMain }, { nullptr, nullptr } };
 
     if (!StartServiceCtrlDispatcherW(table))
@@ -82,7 +82,7 @@ int _tmain(int argc, TCHAR* argv[])
 // Called when the service is launched by Windows
 VOID WINAPI ServiceMain(DWORD, LPTSTR*)
 {
-    g_StatusHandle = RegisterServiceCtrlHandler(_T("DarkModeService"), ServiceCtrlHandler);
+    g_StatusHandle = RegisterServiceCtrlHandler(_T("LightSwitchService"), ServiceCtrlHandler);
     if (!g_StatusHandle)
         return;
 
@@ -144,10 +144,10 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     if (parentPid)
         hParent = OpenProcess(SYNCHRONIZE, FALSE, parentPid);
 
-    OutputDebugString(L"[DarkModeService] Worker thread starting...\n");
+    OutputDebugString(L"[LightSwitchService] Worker thread starting...\n");
 
     // Initialize settings system
-    DarkModeSettings::instance().InitFileWatcher();
+    LightSwitchSettings::instance().InitFileWatcher();
 
     auto applyTheme = [](int nowMinutes, int lightMinutes, int darkMinutes, const auto& settings) {
         bool isLightActive = false;
@@ -185,8 +185,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         GetLocalTime(&st);
         int nowMinutes = st.wHour * 60 + st.wMinute;
 
-        DarkModeSettings::instance().LoadSettings();
-        const auto& settings = DarkModeSettings::instance().settings();
+        LightSwitchSettings::instance().LoadSettings();
+        const auto& settings = LightSwitchSettings::instance().settings();
 
         applyTheme(nowMinutes, settings.lightTime + settings.offset, settings.darkTime + settings.offset, settings);
     }
@@ -201,13 +201,13 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         GetLocalTime(&st);
         int nowMinutes = st.wHour * 60 + st.wMinute;
 
-        DarkModeSettings::instance().LoadSettings();
-        const auto& settings = DarkModeSettings::instance().settings();
+        LightSwitchSettings::instance().LoadSettings();
+        const auto& settings = LightSwitchSettings::instance().settings();
 
         // Debug print
         wchar_t msg[160];
         swprintf_s(msg,
-                   L"[DarkModeService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d\n",
+                   L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d\n",
                    st.wHour,
                    st.wMinute,
                    settings.lightTime / 60,
@@ -240,7 +240,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
-    if (powertoys_gpo::getConfiguredDarkModeEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    if (powertoys_gpo::getConfiguredLightSwitchEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
     {
         wchar_t msg[160];
         swprintf_s(

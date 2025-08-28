@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Page
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.DarkModePage"
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.LightSwitchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ViewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
@@ -13,7 +13,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    d:DataContext="{d:DesignInstance Type=ViewModel:DarkModeViewModel}"
+    d:DataContext="{d:DesignInstance Type=ViewModel:LightSwitchViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <Page.Resources>
@@ -44,14 +44,14 @@
         </animations:ImplicitAnimationSet>
     </Page.Resources>
 
-    <controls:SettingsPageControl
-        x:Uid="DarkMode"
+  <controls:SettingsPageControl
+        x:Uid="LightSwitch"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/Awake.png">
-        <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
-                <tkcontrols:SettingsCard
-                    Header="Enable DarkMode"
+    <controls:SettingsPageControl.ModuleContent>
+      <StackPanel Orientation="Vertical">
+        <tkcontrols:SettingsCard
+                    Header="Enable Light Switch"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -66,32 +66,32 @@
 
                 <controls:SettingsGroup Header="Activation" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <!--<tkcontrols:SettingsCard x:Uid="DarkMode_ForceLightMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE706;}">
-                        <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AllowDisable="True"
-                            HotkeySettings="{x:Bind Path=ViewModel.ForceLightModeActivationShortcut, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>-->
-                    <tkcontrols:SettingsCard x:Uid="DarkMode_ForceDarkMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
-                        <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AllowDisable="True"
-                            HotkeySettings="{x:Bind Path=ViewModel.ForceDarkModeActivationShortcut, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
+          <tkcontrols:SettingsCard x:Uid="LightSwitch_ForceLightMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE706;}">
+            <controls:ShortcutControl
+            MinWidth="{StaticResource SettingActionControlMinWidth}"
+            AllowDisable="True"
+            HotkeySettings="{x:Bind Path=ViewModel.ForceLightModeActivationShortcut, Mode=TwoWay}" />
+          </tkcontrols:SettingsCard>
+          <tkcontrols:SettingsCard x:Uid="LightSwitch_ForceDarkMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
+            <controls:ShortcutControl
+  MinWidth="{StaticResource SettingActionControlMinWidth}"
+  AllowDisable="True"
+  HotkeySettings="{x:Bind Path=ViewModel.ForceDarkModeActivationShortcut, Mode=TwoWay}" />
+          </tkcontrols:SettingsCard>
+        </controls:SettingsGroup>
 
-                <controls:SettingsGroup Header="Schedule" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        HorizontalContentAlignment="Stretch"
-                        ContentAlignment="Vertical"
-                        Description="See when dark mode and light mode kick in"
-                        Header="Schedule preview">
-                        <controls:Timeline
-                            Margin="0,48,0,48"
-                            EndTime="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}"
-                            StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
-                            Sunrise="07:00"
-                            Sunset="21:00" />
+        <controls:SettingsGroup x:Uid="DarkMode_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+          <tkcontrols:SettingsExpander
+                        Description="Use time-based or location-based rules to turn on dark mode"
+                        Header="Schedule dark mode"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE823;}"
+                        IsExpanded="True">
+                        <ComboBox
+                            SelectedValue="{x:Bind ViewModel.ScheduleMode, Mode=TwoWay}"
+                            SelectedValuePath="Tag"
+                            SelectionChanged="ScheduleMode_SelectionChanged">
+                            <ComboBoxItem Content="Manual" Tag="FixedHours" />
+                            <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunriseGeo" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsExpander
@@ -325,8 +325,8 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_DarkMode" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
-        </controls:SettingsPageControl.PrimaryLinks>
-    </controls:SettingsPageControl>
+    <controls:SettingsPageControl.PrimaryLinks>
+      <controls:PageLink x:Uid="LearnMore_DarkMode" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
+    </controls:SettingsPageControl.PrimaryLinks>
+  </controls:SettingsPageControl>
 </Page>

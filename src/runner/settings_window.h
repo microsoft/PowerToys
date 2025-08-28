@@ -10,7 +10,7 @@ enum class ESettingsWindowNames
     Awake,
     ColorPicker,
     CmdNotFound,
-    DarkMode,
+    LightSwitch,
     FancyZones,
     FileLocksmith,
     Run,

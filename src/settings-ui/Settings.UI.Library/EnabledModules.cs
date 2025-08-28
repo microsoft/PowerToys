@@ -513,18 +513,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool darkMode;
+        private bool lightSwitch;
 
-        [JsonPropertyName("DarkMode")]
-        public bool DarkMode
+        [JsonPropertyName("LightSwitch")]
+        public bool LightSwitch
         {
-            get => darkMode;
+            get => lightSwitch;
             set
             {
-                if (darkMode != value)
+                if (lightSwitch != value)
                 {
                     LogTelemetryEvent(value);
-                    darkMode = value;
+                    lightSwitch = value;
                     NotifyChange();
                 }
             }

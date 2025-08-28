@@ -3161,19 +3161,19 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
     <value>Pin a window</value>
   </data>
-  <data name="DarkMode_ShortDescription" xml:space="preserve">
-    <value>Control Dark Mode</value>
+  <data name="LightSwitch_ForceDarkMode_Shortcut" xml:space="preserve">
+    <value>Control Light Switch</value>
   </data>
-  <data name="DarkMode_ForceDarkMode_Shortcut.Header" xml:space="preserve">
+  <data name="LightSwitch_ForceLightMode_Shortcut.Header" xml:space="preserve">
     <value>Toggle theme shortcut</value>
   </data>
-  <data name="DarkMode_ForceDarkMode_Shortcut.Description" xml:space="preserve">
+  <data name="LightSwitch_ForceDarkMode_Shortcut.Header" xml:space="preserve">
     <value>Switch between light and dark mode</value>
   </data>
-  <data name="DarkMode_ForceLightMode" xml:space="preserve">
+  <data name="LightSwitch_ForceLightMode" xml:space="preserve">
     <value>Force Light Mode</value>
   </data>
-  <data name="DarkMode_ForceDarkMode" xml:space="preserve">
+  <data name="LightSwitch_ForceDarkMode" xml:space="preserve">
     <value>Force Dark Mode</value>
   </data>
   <data name="ColorPicker_ShortDescription" xml:space="preserve">
@@ -5139,22 +5139,22 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
-  <data name="Shell_DarkMode.Content" xml:space="preserve">
-    <value>DarkMode</value>
+  <data name="Shell_LightSwitch.Content" xml:space="preserve">
+    <value>LightSwitch</value>
   </data>
-  <data name="DarkMode_EnableToggleControl_HeaderText.Header" xml:space="preserve">
-    <value>Enable DarkMode</value>
+  <data name="LightSwitch_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Light Switch</value>
   </data>
-  <data name="DarkMode.ModuleDescription" xml:space="preserve">
+  <data name="LightSwitch.ModuleDescription" xml:space="preserve">
     <value>This is a module that allows you to control light/dark theming via set times, sun rise, or directly invoking the change.</value>
   </data>
-  <data name="DarkMode.ModuleTitle" xml:space="preserve">
-    <value>DarkMode</value>
+  <data name="LightSwitch.ModuleTitle" xml:space="preserve">
+    <value>Light Switch</value>
   </data>
-  <data name="LearnMore_DarkMode.Text" xml:space="preserve">
-    <value>Learn more about DarkMode</value>
+  <data name="LearnMore_LightSwitch.Text" xml:space="preserve">
+    <value>Learn more about Light Switch</value>
   </data>
-  <data name="DarkMode_BehaviorSettingsGroup.Header" xml:space="preserve">
+  <data name="LightSwitch_BehaviorSettingsGroup.Header" xml:space="preserve">
     <value>Behavior</value>
     </data>
   <data name="KeyBack" xml:space="preserve">

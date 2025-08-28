@@ -171,20 +171,6 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                     }));
             }
 
-            if (GPOWrapper.GetConfiguredDarkModeEnabledValue() != GpoRuleConfigured.Disabled)
-            {
-                _utilities.Add(new Utility(
-                    UtilityKey.DarkMode,
-                    Resources.Dark_Mode,
-                    generalSettings.Enabled.DarkMode,
-                    (_) =>
-                    {
-                        using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowEnvironmentVariablesSharedEvent());
-                        eventHandle.Set();
-                        return true;
-                    }));
-            }
-
             if (GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue() != GpoRuleConfigured.Disabled)
             {
                 _utilities.Add(new Utility(

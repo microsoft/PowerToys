@@ -150,7 +150,7 @@
     <Page Update="SettingsXAML\Controls\Timeline\Timeline.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="SettingsXAML\Views\DarkModePage.xaml">
+    <Page Update="SettingsXAML\Views\LightSwitchPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">

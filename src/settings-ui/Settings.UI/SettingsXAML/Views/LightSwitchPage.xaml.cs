@@ -23,34 +23,34 @@ using Windows.Devices.Geolocation;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class DarkModePage : Page
+    public sealed partial class LightSwitchPage : Page
     {
-        private readonly string _appName = "DarkMode";
+        private readonly string _appName = "LightSwitch";
         private readonly SettingsUtils _settingsUtils;
         private readonly Func<string, int> _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
         private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
-        private readonly ISettingsRepository<DarkModeSettings> _moduleSettingsRepository;
+        private readonly ISettingsRepository<LightSwitchSettings> _moduleSettingsRepository;
 
         private readonly IFileSystem _fileSystem;
         private readonly IFileSystemWatcher _fileSystemWatcher;
         private readonly DispatcherQueue _dispatcherQueue;
 
-        private DarkModeViewModel ViewModel { get; set; }
+        private LightSwitchViewModel ViewModel { get; set; }
 
-        public DarkModePage()
+        public LightSwitchPage()
         {
             _settingsUtils = new SettingsUtils();
             _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
             _generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
-            _moduleSettingsRepository = SettingsRepository<DarkModeSettings>.GetInstance(_settingsUtils);
+            _moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(_settingsUtils);
 
             // Get settings from JSON (or defaults if JSON missing)
             var darkSettings = _moduleSettingsRepository.SettingsConfig;
 
             // Pass them into the ViewModel
-            ViewModel = new DarkModeViewModel(darkSettings, ShellPage.SendDefaultIPCMessage);
+            ViewModel = new LightSwitchViewModel(darkSettings, ShellPage.SendDefaultIPCMessage);
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
@@ -70,10 +70,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _fileSystemWatcher.EnableRaisingEvents = true;
 
             this.InitializeComponent();
-            this.Loaded += DarkModePage_Loaded;
+            this.Loaded += LightSwitchPage_Loaded;
         }
 
-        private void DarkModePage_Loaded(object sender, RoutedEventArgs e)
+        private void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
         {
             if (ViewModel.Cities.Count == 0)
             {
@@ -194,12 +194,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             if (e.PropertyName == "IsEnabled")
             {
-                if (ViewModel.IsEnabled != _generalSettingsRepository.SettingsConfig.Enabled.DarkMode)
+                if (ViewModel.IsEnabled != _generalSettingsRepository.SettingsConfig.Enabled.LightSwitch)
                 {
-                    _generalSettingsRepository.SettingsConfig.Enabled.DarkMode = ViewModel.IsEnabled;
+                    _generalSettingsRepository.SettingsConfig.Enabled.LightSwitch = ViewModel.IsEnabled;
 
                     var generalSettingsMessage = new OutGoingGeneralSettings(_generalSettingsRepository.SettingsConfig).ToString();
-                    Logger.LogInfo($"Saved general settings from DarkMode page.");
+                    Logger.LogInfo($"Saved general settings from Light Switch page.");
 
                     _sendConfigMsg?.Invoke(generalSettingsMessage);
                 }
@@ -208,18 +208,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 if (ViewModel.ModuleSettings != null)
                 {
-                    SndDarkModeSettings currentSettings = new(_moduleSettingsRepository.SettingsConfig);
-                    SndModuleSettings<SndDarkModeSettings> csIpcMessage = new(currentSettings);
+                    SndLightSwitchSettings currentSettings = new(_moduleSettingsRepository.SettingsConfig);
+                    SndModuleSettings<SndLightSwitchSettings> csIpcMessage = new(currentSettings);
 
-                    SndDarkModeSettings outSettings = new(ViewModel.ModuleSettings);
-                    SndModuleSettings<SndDarkModeSettings> outIpcMessage = new(outSettings);
+                    SndLightSwitchSettings outSettings = new(ViewModel.ModuleSettings);
+                    SndModuleSettings<SndLightSwitchSettings> outIpcMessage = new(outSettings);
 
                     string csMessage = csIpcMessage.ToJsonString();
                     string outMessage = outIpcMessage.ToJsonString();
 
                     if (!csMessage.Equals(outMessage, StringComparison.Ordinal))
                     {
-                        Logger.LogInfo($"Saved DarkMode settings from DarkMode page.");
+                        Logger.LogInfo($"Saved Light Switch settings from Light Switch page.");
 
                         _sendConfigMsg?.Invoke(outMessage);
                     }
@@ -227,7 +227,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void LoadSettings(ISettingsRepository<GeneralSettings> generalSettingsRepository, ISettingsRepository<DarkModeSettings> moduleSettingsRepository)
+        private void LoadSettings(ISettingsRepository<GeneralSettings> generalSettingsRepository, ISettingsRepository<LightSwitchSettings> moduleSettingsRepository)
         {
             if (generalSettingsRepository != null)
             {
@@ -246,16 +246,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void UpdateViewModelSettings(DarkModeSettings darkSettings, GeneralSettings generalSettings)
+        private void UpdateViewModelSettings(LightSwitchSettings darkSettings, GeneralSettings generalSettings)
         {
             if (darkSettings != null)
             {
                 if (generalSettings != null)
                 {
-                    ViewModel.IsEnabled = generalSettings.Enabled.DarkMode;
-                    ViewModel.ModuleSettings = (DarkModeSettings)darkSettings.Clone();
+                    ViewModel.IsEnabled = generalSettings.Enabled.LightSwitch;
+                    ViewModel.ModuleSettings = (LightSwitchSettings)darkSettings.Clone();
 
-                    UpdateEnabledState(generalSettings.Enabled.DarkMode);
+                    UpdateEnabledState(generalSettings.Enabled.LightSwitch);
                 }
                 else
                 {
@@ -279,7 +279,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void UpdateEnabledState(bool recommendedState)
         {
-            var enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredDarkModeEnabledValue();
+            var enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredLightSwitchEnabledValue();
 
             if (enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {

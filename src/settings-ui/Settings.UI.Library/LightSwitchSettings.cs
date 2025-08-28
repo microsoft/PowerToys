@@ -10,27 +10,27 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Settings.UI.Library
 {
-    public class DarkModeSettings : BasePTModuleSettings, ISettingsConfig, ICloneable
+    public class LightSwitchSettings : BasePTModuleSettings, ISettingsConfig, ICloneable
     {
-        public const string ModuleName = "DarkMode";
+        public const string ModuleName = "LightSwitch";
 
-        public DarkModeSettings()
+        public LightSwitchSettings()
         {
             Name = ModuleName;
             Version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            Properties = new DarkModeProperties();
+            Properties = new LightSwitchProperties();
         }
 
         [JsonPropertyName("properties")]
-        public DarkModeProperties Properties { get; set; }
+        public LightSwitchProperties Properties { get; set; }
 
         public object Clone()
         {
-            return new DarkModeSettings()
+            return new LightSwitchSettings()
             {
                 Name = Name,
                 Version = Version,
-                Properties = new DarkModeProperties()
+                Properties = new LightSwitchProperties()
                 {
                     ChangeSystem = new BoolProperty(Properties.ChangeSystem.Value),
                     ChangeApps = new BoolProperty(Properties.ChangeApps.Value),

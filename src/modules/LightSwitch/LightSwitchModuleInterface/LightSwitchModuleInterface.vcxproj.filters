@@ -40,7 +40,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DarkModeModuleInterface.rc">
+    <ResourceCompile Include="LightSwitchModuleInterface.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

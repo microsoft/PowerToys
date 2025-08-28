@@ -1195,15 +1195,6 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dark mode.
-        /// </summary>
-        internal static string DarkMode {
-            get {
-                return ResourceManager.GetString("DarkMode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Data usage.
         /// </summary>
         internal static string DataUsage {
@@ -2127,6 +2118,15 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         internal static string LightMode {
             get {
                 return ResourceManager.GetString("LightMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Light Switch.
+        /// </summary>
+        internal static string LightSwitch {
+            get {
+                return ResourceManager.GetString("LightSwitch", resourceCulture);
             }
         }
         

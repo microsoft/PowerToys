@@ -28,9 +28,9 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCropAndLockEnabledValue());
     }
-    GpoRuleConfigured GPOWrapper::GetConfiguredDarkModeEnabledValue()
+    GpoRuleConfigured GPOWrapper::GetConfiguredLightSwitchEnabledValue()
     {
-        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredDarkModeEnabledValue());
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredLightSwitchEnabledValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredFancyZonesEnabledValue()
     {

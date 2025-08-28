@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DarkModeService.cpp">
+    <ClCompile Include="LightSwitchService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ThemeScheduler.cpp">
@@ -33,7 +33,7 @@
     <ClCompile Include="..\..\..\common\SettingsAPI\FileWatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DarkModeSettings.cpp">
+    <ClCompile Include="LightSwitchSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SettingsConstants.cpp">
@@ -53,7 +53,7 @@
     <ClInclude Include="ThemeHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DarkModeSettings.h">
+    <ClInclude Include="LightSwitchSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SettingsConstants.h">

@@ -683,8 +683,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "ColorPicker";
     case ESettingsWindowNames::CmdNotFound:
         return "CmdNotFound";
-    case ESettingsWindowNames::DarkMode:
-        return "DarkMode";
+    case ESettingsWindowNames::LightSwitch:
+        return "LightSwitch";
     case ESettingsWindowNames::FancyZones:
         return "FancyZones";
     case ESettingsWindowNames::FileLocksmith:
@@ -770,9 +770,9 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     {
         return ESettingsWindowNames::CmdNotFound;
     }
-    else if (value == "DarkMode")
+    else if (value == "LightSwitch")
     {
-        return ESettingsWindowNames::DarkMode;
+        return ESettingsWindowNames::LightSwitch;
     }
     else if (value == "FancyZones")
     {

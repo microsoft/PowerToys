@@ -42,7 +42,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"DarkMode";
+const static wchar_t* MODULE_NAME = L"LightSwitch";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"This is a module that allows you to control light/dark theming via set times, sun rise, or directly invoking the change.";
 
@@ -91,7 +91,7 @@ struct ModuleSettings
 } g_settings;
 
 // Implement the PowerToy Module Interface and all the required methods.
-class DarkModeInterface : public PowertoyModuleIface
+class LightSwitchInterface : public PowertoyModuleIface
 {
 private:
     // The PowerToy state.
@@ -111,19 +111,19 @@ private:
 
 public:
     // Constructor
-    DarkModeInterface()
+    LightSwitchInterface()
     {
-        LoggerHelpers::init_logger(L"DarkMode", L"ModuleInterface", LogSettings::darkModeLoggerName);
+        LoggerHelpers::init_logger(L"LightSwitch", L"ModuleInterface", LogSettings::lightSwitchLoggerName);
 
-        m_force_light_event_handle = CreateDefaultEvent(L"POWEROYS_DARKMODE_FORCE_LIGHT");
-        m_force_dark_event_handle = CreateDefaultEvent(L"POWEROYS_DARKMODE_FORCE_DARK");
+        m_force_light_event_handle = CreateDefaultEvent(L"POWEROYS_LIGHTSWITCH_FORCE_LIGHT");
+        m_force_dark_event_handle = CreateDefaultEvent(L"POWEROYS_LIGHTSWITCH_FORCE_DARK");
 
         init_settings();
     };
 
     virtual const wchar_t* get_key() override
     {
-        return L"DarkMode"; // your unique key string
+        return L"LightSwitch"; // your unique key string
     }
 
     // Destroy the powertoy and free memory
@@ -141,7 +141,7 @@ public:
     // Return the configured status for the gpo policy for the module
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        return powertoys_gpo::getConfiguredDarkModeEnabledValue();
+        return powertoys_gpo::getConfiguredLightSwitchEnabledValue();
     }
 
     // Return array of the names of all events that this powertoy listens for, with
@@ -277,20 +277,20 @@ public:
 
             if (action_object.get_name() == L"forceLight")
             {
-                Logger::info(L"[DarkMode] Custom action triggered: Force Light");
+                Logger::info(L"[Light Switch] Custom action triggered: Force Light");
                 SetSystemTheme(true);
                 SetAppsTheme(true);
             }
             else if (action_object.get_name() == L"forceDark")
             {
-                Logger::info(L"[DarkMode] Custom action triggered: Force Dark");
+                Logger::info(L"[Light Switch] Custom action triggered: Force Dark");
                 SetSystemTheme(false);
                 SetAppsTheme(false);
             }
         }
         catch (...)
         {
-            Logger::error(L"[DarkMode] Invalid custom action JSON");
+            Logger::error(L"[Light Switch] Invalid custom action JSON");
         }
     }
 
@@ -347,18 +347,18 @@ public:
         }
         catch (const std::exception&)
         {
-            Logger::error("[DarkMode] set_config: Failed to parse or apply config.");
+            Logger::error("[Light Switch] set_config: Failed to parse or apply config.");
         }
     }
 
     virtual void enable()
     {
         m_enabled = true;
-        Logger::info(L"Enabling DarkMode module...");
+        Logger::info(L"Enabling Light Switch module...");
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
-        std::wstring exe_name = L"DarkModeService\\PowerToys.DarkModeService.exe";
+        std::wstring exe_name = L"LightSwitchService\\PowerToys.LightSwitchService.exe";
 
         // Resolve the executable path
         std::wstring resolved_path(MAX_PATH, L'\0');
@@ -372,7 +372,7 @@ public:
 
         if (result == 0 || result >= resolved_path.size())
         {
-            Logger::error(L"Failed to locate DarkMode executable: '{}'", exe_name);
+            Logger::error(L"Failed to locate Light Switch executable: '{}'", exe_name);
             return;
         }
 
@@ -396,11 +396,11 @@ public:
                 &si,
                 &pi))
         {
-            Logger::error(L"Failed to launch DarkMode process. {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Failed to launch Light Switch process. {}", get_last_error_or_default(GetLastError()));
             return;
         }
 
-        Logger::info(L"DarkMode process launched successfully (PID: {}).", pi.dwProcessId);
+        Logger::info(L"Light Switch process launched successfully (PID: {}).", pi.dwProcessId);
         m_process = pi.hProcess;
         CloseHandle(pi.hThread);
     }
@@ -408,7 +408,7 @@ public:
     // Disable the powertoy
     virtual void disable()
     {
-        Logger::info("DarkMode disabling");
+        Logger::info("Light Switch disabling");
         m_enabled = false;
 
         if (m_process)
@@ -420,7 +420,7 @@ public:
             if (result == WAIT_TIMEOUT)
             {
                 // Force kill if it didn’t exit in time
-                Logger::warn("DarkMode: Process didn't exit in time. Forcing termination.");
+                Logger::warn("Light Switch: Process didn't exit in time. Forcing termination.");
                 TerminateProcess(m_process, 0);
             }
 
@@ -454,7 +454,7 @@ public:
             }
             catch (...)
             {
-                Logger::error("Failed to initialize DarkMode force light mode shortcut from settings. Value will keep unchanged.");
+                Logger::error("Failed to initialize Light Switch force light mode shortcut from settings. Value will keep unchanged.");
             }
             try
             {
@@ -469,12 +469,12 @@ public:
             }
             catch (...)
             {
-                Logger::error("Failed to initialize DarkMode force dark mode shortcut from settings. Value will keep unchanged.");
+                Logger::error("Failed to initialize Light Switch force dark mode shortcut from settings. Value will keep unchanged.");
             }
         }
         else
         {
-            Logger::info("DarkMode settings are empty");
+            Logger::info("Light Switch settings are empty");
         }
     }
 
@@ -492,7 +492,7 @@ public:
     {
         if (m_enabled)
         {
-            Logger::trace(L"DarkMode hotkey pressed");
+            Logger::trace(L"Light Switch hotkey pressed");
             if (!is_process_running())
             {
                 enable();
@@ -500,13 +500,13 @@ public:
 
             if (hotkeyId == 0)
             {
-                Logger::info(L"[DarkMode] Hotkey triggered: Force Light");
+                Logger::info(L"[Light Switch] Hotkey triggered: Force Light");
                 SetSystemTheme(true);
                 SetAppsTheme(true);
             }
             else if (hotkeyId == 1)
             {
-                Logger::info(L"[DarkMode] Hotkey triggered: Force Dark");
+                Logger::info(L"[Light Switch] Hotkey triggered: Force Dark");
                 SetSystemTheme(false);
                 SetAppsTheme(false);
             }
@@ -578,9 +578,9 @@ std::wstring utf8_to_wstring(const std::string& str)
 }
 
 // Load the settings file.
-void DarkModeInterface::init_settings()
+void LightSwitchInterface::init_settings()
 {
-    Logger::info(L"[DarkMode] init_settings: starting to load settings for module");
+    Logger::info(L"[Light Switch] init_settings: starting to load settings for module");
 
     try
     {
@@ -606,20 +606,20 @@ void DarkModeInterface::init_settings()
         if (auto v = settings.get_string_value(L"longitude"))
             g_settings.m_longitude = *v;
 
-        Logger::info(L"[DarkMode] init_settings: loaded successfully");
+        Logger::info(L"[Light Switch] init_settings: loaded successfully");
     }
     catch (const winrt::hresult_error& e)
     {
-        Logger::error(L"[DarkMode] init_settings: hresult_error 0x{:08X} - {}", e.code(), e.message().c_str());
+        Logger::error(L"[Light Switch] init_settings: hresult_error 0x{:08X} - {}", e.code(), e.message().c_str());
     }
     catch (const std::exception& e)
     {
         std::wstring whatStr = utf8_to_wstring(e.what());
-        Logger::error(L"[DarkMode] init_settings: std::exception - {}", whatStr);
+        Logger::error(L"[Light Switch] init_settings: std::exception - {}", whatStr);
     }
     catch (...)
     {
-        Logger::error(L"[DarkMode] init_settings: unknown exception while loading settings");
+        Logger::error(L"[Light Switch] init_settings: unknown exception while loading settings");
     }
 }
 
@@ -665,5 +665,5 @@ void DarkModeInterface::init_settings()
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new DarkModeInterface();
+    return new LightSwitchInterface();
 }
