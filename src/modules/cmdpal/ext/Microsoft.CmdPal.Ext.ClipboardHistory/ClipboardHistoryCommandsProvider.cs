@@ -29,6 +29,8 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
         DisplayName = Properties.Resources.provider_display_name;
         Icon = Icons.ClipboardListIcon;
         Id = "Windows.ClipboardHistory";
+
+        Settings = _settingsManager.Settings;
     }
 
     public override IListItem[] TopLevelCommands()
