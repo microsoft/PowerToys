@@ -316,12 +316,21 @@ void start_enabled_powertoys()
             should_powertoy_be_enabled = false;
         }
 
+        bool module_currently_enabled = powertoy->is_enabled();
         if (should_powertoy_be_enabled)
         {
             Logger::info(L"start_enabled_powertoys: Enabling powertoy {}", name);
             powertoy->enable();
             auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
             hkmng.EnableHotkeyByModule(name);
+            powertoy.UpdateHotkeyEx();
+        }
+        else if (module_currently_enabled)
+        {
+            Logger::info(L"start_enabled_powertoys: Disabling powertoy {}", name);
+            powertoy->disable();
+            auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+            hkmng.DisableHotkeyByModule(name);
             powertoy.UpdateHotkeyEx();
         }
     }
