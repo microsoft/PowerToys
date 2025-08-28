@@ -222,7 +222,6 @@ For [v0.95][github-next-release-work], we'll work on the items below:
 
  - Continued Command Palette polish
  - Working on Shortcut Guide v2 (Thanks [@noraa-junker](https://github.com/noraa-junker)!)
- - Automatic window tiling with FancyZones
  - Upgrading Keyboard Manager's editor UI
  - UI tweaking utility with day/night theme switcher
  - DSC v3 support for top utilities
