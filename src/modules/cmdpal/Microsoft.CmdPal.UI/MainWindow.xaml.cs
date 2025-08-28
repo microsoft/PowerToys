@@ -513,6 +513,21 @@ public sealed partial class MainWindow : WindowEx,
                             WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
                             return;
                         }
+                        else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var settings = App.Current.Services.GetService<SettingsModel>();
+                            if (settings?.AllowExternalReload == true)
+                            {
+                                Logger.LogInfo("External Reload triggered");
+                                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+                            }
+                            else
+                            {
+                                Logger.LogInfo("External Reload is disabled");
+                            }
+
+                            return;
+                        }
                     }
                 }
             }
