@@ -8,7 +8,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 
-public class SettingsManager : JsonSettingsManager, ISettingOptions
+internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
 {
     private const string Namespace = "clipboardmanager";
 
