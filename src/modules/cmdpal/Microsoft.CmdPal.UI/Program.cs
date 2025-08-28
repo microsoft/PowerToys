@@ -145,13 +145,14 @@ internal sealed class Program
     {
         // If we already have a form, display the message now.
         // Otherwise, add it to the collection for displaying later.
-        if (App.Current is App thisApp)
+        if (App.Current?.AppWindow is MainWindow mainWindow)
         {
-            if (thisApp.AppWindow is not null and
-                MainWindow mainWindow)
-            {
-                uiContext?.Post(_ => mainWindow.HandleLaunch(args), null);
-            }
+            // LOAD BEARING
+            // This must be synchronous to ensure the method does not return
+            // before the activation is fully handled and the parameters are processed.
+            // The sending instance remains blocked until this returns; afterward it may quit,
+            // causing the activation arguments to be lost.
+            mainWindow.HandleLaunchNonUI(args);
         }
     }
 }
