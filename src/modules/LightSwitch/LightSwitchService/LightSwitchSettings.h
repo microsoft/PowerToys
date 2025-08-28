@@ -40,7 +40,7 @@ inline ScheduleMode FromString(const std::wstring& str)
         return ScheduleMode::FixedHours;
 }
 
-struct DarkModeConfig
+struct LightSwitchConfig
 {
     ScheduleMode scheduleMode = ScheduleMode::FixedHours;
 
@@ -57,12 +57,12 @@ struct DarkModeConfig
     bool changeApps = false;
 };
 
-class DarkModeSettings
+class LightSwitchSettings
 {
 public:
-    static DarkModeSettings& instance();
+    static LightSwitchSettings& instance();
 
-    static inline const DarkModeConfig& settings()
+    static inline const LightSwitchConfig& settings()
     {
         return instance().m_settings;
     }
@@ -76,10 +76,10 @@ public:
     void LoadSettings();
 
 private:
-    DarkModeSettings();
-    ~DarkModeSettings() = default;
+    LightSwitchSettings();
+    ~LightSwitchSettings() = default;
 
-    DarkModeConfig m_settings;
+    LightSwitchConfig m_settings;
     std::unique_ptr<FileWatcher> m_settingsFileWatcher;
     std::unordered_set<SettingsObserver*> m_observers;
 

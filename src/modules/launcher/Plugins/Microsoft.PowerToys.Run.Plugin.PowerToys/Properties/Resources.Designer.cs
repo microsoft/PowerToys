@@ -79,13 +79,13 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Color Picker.
+        ///   Looks up a localized string similar to Light Switch.
         /// </summary>
-        internal static string Dark_Mode
+        internal static string Light_Switch
         {
             get
             {
-                return ResourceManager.GetString("Dark_Mode", resourceCulture);
+                return ResourceManager.GetString("Light_Switch", resourceCulture);
             }
         }
 

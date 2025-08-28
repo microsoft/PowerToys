@@ -137,7 +137,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityDarkMode" class="Both" displayName="$(string.ConfigureEnabledUtilityDarkMode)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityDarkMode">
+    <policy name="ConfigureEnabledUtilityLightSwitch" class="Both" displayName="$(string.ConfigureEnabledUtilityLightSwitch)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityLightSwitch">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_90_0" />
       <enabledValue>

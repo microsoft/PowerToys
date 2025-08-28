@@ -8,16 +8,16 @@ using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class SndDarkModeSettings
+    public class SndLightSwitchSettings
     {
-        [JsonPropertyName("DarkMode")]
-        public DarkModeSettings Settings { get; set; }
+        [JsonPropertyName("LightSwitch")]
+        public LightSwitchSettings Settings { get; set; }
 
-        public SndDarkModeSettings()
+        public SndLightSwitchSettings()
         {
         }
 
-        public SndDarkModeSettings(DarkModeSettings settings)
+        public SndLightSwitchSettings(LightSwitchSettings settings)
         {
             Settings = settings;
         }

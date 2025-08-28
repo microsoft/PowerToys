@@ -18,15 +18,15 @@ using Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class DarkModeViewModel : Observable
+    public partial class LightSwitchViewModel : Observable
     {
         private Func<string, int> SendConfigMSG { get; }
 
         public ObservableCollection<City> Cities { get; } = new();
 
-        public DarkModeViewModel(DarkModeSettings initialSettings = null, Func<string, int> ipcMSGCallBackFunc = null)
+        public LightSwitchViewModel(LightSwitchSettings initialSettings = null, Func<string, int> ipcMSGCallBackFunc = null)
         {
-            _moduleSettings = initialSettings ?? new DarkModeSettings();
+            _moduleSettings = initialSettings ?? new LightSwitchSettings();
             SendConfigMSG = ipcMSGCallBackFunc;
 
             ForceLightCommand = new RelayCommand(ForceLightNow);
@@ -58,10 +58,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void SendCustomAction(string actionName)
         {
-            SendConfigMSG("{\"action\":{\"DarkMode\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+            SendConfigMSG("{\"action\":{\"LightSwitch\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
-        public DarkModeSettings ModuleSettings
+        public LightSwitchSettings ModuleSettings
         {
             get => _moduleSettings;
             set
@@ -315,7 +315,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     if (value == null)
                     {
-                        _forceLightModeHotkey = DarkModeProperties.DefaultForceLightModeValue;
+                        _forceLightModeHotkey = LightSwitchProperties.DefaultForceLightModeValue;
                     }
                     else
                     {
@@ -330,8 +330,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                            DarkModeSettings.ModuleName,
-                            JsonSerializer.Serialize(_moduleSettings, SourceGenerationContextContext.Default.DarkModeSettings)));
+                            LightSwitchSettings.ModuleName,
+                            JsonSerializer.Serialize(_moduleSettings, (System.Text.Json.Serialization.Metadata.JsonTypeInfo<LightSwitchSettings>)SourceGenerationContextContext.Default.LightSwitchSettings)));
                 }
             }
         }
@@ -346,7 +346,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     if (value == null)
                     {
-                        _forceDarkModeHotkey = DarkModeProperties.DefaultForceDarkModeValue;
+                        _forceDarkModeHotkey = LightSwitchProperties.DefaultForceDarkModeValue;
                     }
                     else
                     {
@@ -361,8 +361,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                            DarkModeSettings.ModuleName,
-                            JsonSerializer.Serialize(_moduleSettings, SourceGenerationContextContext.Default.DarkModeSettings)));
+                            LightSwitchSettings.ModuleName,
+                            JsonSerializer.Serialize(_moduleSettings, (System.Text.Json.Serialization.Metadata.JsonTypeInfo<LightSwitchSettings>)SourceGenerationContextContext.Default.LightSwitchSettings)));
                 }
             }
         }
@@ -416,7 +416,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private bool _enabledStateIsGPOConfigured;
         private bool _enabledGPOConfiguration;
-        private DarkModeSettings _moduleSettings;
+        private LightSwitchSettings _moduleSettings;
         private bool _isEnabled;
         private HotkeySettings _forceLightModeHotkey;
         private HotkeySettings _forceDarkModeHotkey;

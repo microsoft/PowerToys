@@ -171,7 +171,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.CmdPal => GetModuleItemsCmdPal(),
                 ModuleType.ColorPicker => GetModuleItemsColorPicker(),
                 ModuleType.CropAndLock => GetModuleItemsCropAndLock(),
-                ModuleType.DarkMode => GetModuleItemsDarkMode(),
+                ModuleType.LightSwitch => GetModuleItemsLightSwitch(),
                 ModuleType.EnvironmentVariables => GetModuleItemsEnvironmentVariables(),
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
@@ -224,14 +224,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
-        private ObservableCollection<DashboardModuleItem> GetModuleItemsDarkMode()
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsLightSwitch()
         {
-            ISettingsRepository<DarkModeSettings> moduleSettingsRepository = SettingsRepository<DarkModeSettings>.GetInstance(new SettingsUtils());
+            ISettingsRepository<LightSwitchSettings> moduleSettingsRepository = SettingsRepository<LightSwitchSettings>.GetInstance(new SettingsUtils());
             var settings = moduleSettingsRepository.SettingsConfig;
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("DarkMode_ForceLightMode"), Shortcut = settings.Properties.ForceLightModeHotkey.Value.GetKeysList() },
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("DarkMode_ForceDarkMode"), Shortcut = settings.Properties.ForceDarkModeHotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("LightSwitch_ForceLightMode"), Shortcut = settings.Properties.ForceLightModeHotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("LightSwitch_ForceDarkMode"), Shortcut = settings.Properties.ForceDarkModeHotkey.Value.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

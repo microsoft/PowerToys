@@ -1,4 +1,4 @@
-#include "DarkModeSettings.h"
+#include "LightSwitchSettings.h"
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include "SettingsObserver.h"
@@ -9,24 +9,24 @@
 
 using namespace std;
 
-DarkModeSettings& DarkModeSettings::instance()
+LightSwitchSettings& LightSwitchSettings::instance()
 {
-    static DarkModeSettings inst;
+    static LightSwitchSettings inst;
     return inst;
 }
 
-DarkModeSettings::DarkModeSettings()
+LightSwitchSettings::LightSwitchSettings()
 {
     LoadSettings();
 }
 
-std::wstring DarkModeSettings::GetSettingsFileName()
+std::wstring LightSwitchSettings::GetSettingsFileName()
 {
     // Mirrors AlwaysOnTop: <module name>.json
-    return PTSettingsHelper::get_module_save_file_location(L"DarkMode");
+    return PTSettingsHelper::get_module_save_file_location(L"LightSwitch");
 }
 
-void DarkModeSettings::InitFileWatcher()
+void LightSwitchSettings::InitFileWatcher()
 {
     const std::wstring& settingsFileName = GetSettingsFileName();
     m_settingsFileWatcher = std::make_unique<FileWatcher>(settingsFileName, [&]() {
@@ -34,17 +34,17 @@ void DarkModeSettings::InitFileWatcher()
     });
 }
 
-void DarkModeSettings::AddObserver(SettingsObserver& observer)
+void LightSwitchSettings::AddObserver(SettingsObserver& observer)
 {
     m_observers.insert(&observer);
 }
 
-void DarkModeSettings::RemoveObserver(SettingsObserver& observer)
+void LightSwitchSettings::RemoveObserver(SettingsObserver& observer)
 {
     m_observers.erase(&observer);
 }
 
-void DarkModeSettings::NotifyObservers(SettingId id) const
+void LightSwitchSettings::NotifyObservers(SettingId id) const
 {
     for (auto observer : m_observers)
     {
@@ -55,13 +55,12 @@ void DarkModeSettings::NotifyObservers(SettingId id) const
     }
 }
 
-void DarkModeSettings::LoadSettings()
+void LightSwitchSettings::LoadSettings()
 {
     try
     {
-        // Load values from DarkMode.json
         PowerToysSettings::PowerToyValues values =
-            PowerToysSettings::PowerToyValues::load_from_settings_file(L"DarkMode");
+            PowerToysSettings::PowerToyValues::load_from_settings_file(L"LightSwitch");
 
 
         if (const auto jsonVal = values.get_string_value(L"scheduleMode"))
@@ -143,7 +142,7 @@ void DarkModeSettings::LoadSettings()
     }
     catch (...)
     {
-        //Logger::error(L"[DarkModeSettings] Failed to read settings file");
+        //Logger::error(L"[LightSwitchSettings] Failed to read settings file");
         // Keeps defaults if load fails
     }
 }

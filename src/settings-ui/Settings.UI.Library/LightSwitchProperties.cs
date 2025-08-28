@@ -6,8 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    // Needs to stay in sync with src\modules\darkmode\DarkMode\DarkModeSettings.h
-    public class DarkModeProperties
+    public class LightSwitchProperties
     {
         public const bool DefaultChangeSystem = false;
         public const bool DefaultChangeApps = false;
@@ -20,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static readonly HotkeySettings DefaultForceLightModeValue = new HotkeySettings(true, true, false, true, 0x4C); // Ctrl+Win+Shift+L
         public static readonly HotkeySettings DefaultForceDarkModeValue = new HotkeySettings(true, true, false, true, 0x44); // Ctrl+Win+Shift+D
 
-        public DarkModeProperties()
+        public LightSwitchProperties()
         {
             ChangeSystem = new BoolProperty(DefaultChangeSystem);
             ChangeApps = new BoolProperty(DefaultChangeApps);

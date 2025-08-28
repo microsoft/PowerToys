@@ -173,8 +173,8 @@
                             helpers:NavHelper.NavigateTo="views:ZoomItPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
                         <NavigationViewItem
-                            x:Uid="Shell_DarkMode"
-                            helpers:NavHelper.NavigateTo="views:DarkModePage"
+                            x:Uid="Shell_LightSwitch"
+                            helpers:NavHelper.NavigateTo="views:LightSwitchPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />  
           </NavigationViewItem.MenuItems>
                 </NavigationViewItem>

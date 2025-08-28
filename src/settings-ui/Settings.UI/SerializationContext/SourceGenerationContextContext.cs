@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(AlwaysOnTopSettings))]
 [JsonSerializable(typeof(ColorPickerSettings))]
 [JsonSerializable(typeof(CropAndLockSettings))]
-[JsonSerializable(typeof(DarkModeSettings))]
+[JsonSerializable(typeof(LightSwitchSettings))]
 [JsonSerializable(typeof(FileLocksmithSettings))]
 [JsonSerializable(typeof(MeasureToolSettings))]
 [JsonSerializable(typeof(MouseWithoutBordersSettings))]

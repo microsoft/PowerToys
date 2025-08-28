@@ -23,10 +23,10 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{38177d56-6ad1-4adf-88c9-2843a7932166}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>DarkModeModuleInterface</RootNamespace>
+    <RootNamespace>LightSwitchModuleInterface</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>DarkModeModuleInterface</ProjectName>
-    <TargetName>PowerToys.DarkModeModuleInterface</TargetName>
+    <ProjectName>LightSwitchModuleInterface</ProjectName>
+    <TargetName>PowerToys.LightSwitchModuleInterface</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -198,7 +198,7 @@
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DarkModeModuleInterface.rc" />
+    <ResourceCompile Include="LightSwitchModuleInterface.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\logger\logger.vcxproj">

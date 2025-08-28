@@ -142,7 +142,7 @@
     <None Update="Assets\world_cities.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Page Update="SettingsXAML\Views\DarkModePage.xaml">
+    <Page Update="SettingsXAML\Views\LightSwitchPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">

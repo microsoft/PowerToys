@@ -31,8 +31,9 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{08e71c67-6a7e-4ca1-b04e-2fb336410bac}</ProjectGuid>
-    <RootNamespace>DarkModeService</RootNamespace>
+    <RootNamespace>LightSwitchService</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <ProjectName>LightSwitchService</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -101,7 +102,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <TargetName>PowerToys.DarkModeService</TargetName>
+    <TargetName>PowerToys.LightSwitchService</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -210,10 +211,10 @@
     <ClCompile Include="..\..\..\common\SettingsAPI\FileWatcher.cpp" />
     <ClCompile Include="..\..\..\common\SettingsAPI\settings_helpers.cpp" />
     <ClCompile Include="..\..\..\common\SettingsAPI\settings_objects.cpp" />
-    <ClCompile Include="DarkModeService.cpp">
+    <ClCompile Include="LightSwitchService.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="DarkModeSettings.cpp" />
+    <ClCompile Include="LightSwitchSettings.cpp" />
     <ClCompile Include="SettingsConstants.cpp" />
     <ClCompile Include="ThemeHelper.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">NotUsing</PrecompiledHeader>
@@ -227,7 +228,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DarkModeSettings.h" />
+    <ClInclude Include="LightSwitchSettings.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
     <ClInclude Include="ThemeHelper.h" />

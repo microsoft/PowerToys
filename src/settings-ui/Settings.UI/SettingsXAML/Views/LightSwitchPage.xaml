@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Page
-    x:Class="Microsoft.PowerToys.Settings.UI.Views.DarkModePage"
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.LightSwitchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ViewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
@@ -11,7 +11,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    d:DataContext="{d:DesignInstance Type=ViewModel:DarkModeViewModel}"
+    d:DataContext="{d:DesignInstance Type=ViewModel:LightSwitchViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
   <Page.Resources>
@@ -19,13 +19,13 @@
   </Page.Resources>
 
   <controls:SettingsPageControl
-        x:Uid="DarkMode"
+        x:Uid="LightSwitch"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/Awake.png">
     <controls:SettingsPageControl.ModuleContent>
       <StackPanel Orientation="Vertical">
         <tkcontrols:SettingsCard
-                    Header="Enable DarkMode"
+                    Header="Enable Light Switch"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
           <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -38,15 +38,15 @@
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-        <controls:SettingsGroup x:Uid="DarkMode_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+        <controls:SettingsGroup x:Uid="LightSwitch_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-          <tkcontrols:SettingsCard x:Uid="DarkMode_ForceLightMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE706;}">
+          <tkcontrols:SettingsCard x:Uid="LightSwitch_ForceLightMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE706;}">
             <controls:ShortcutControl
             MinWidth="{StaticResource SettingActionControlMinWidth}"
             AllowDisable="True"
             HotkeySettings="{x:Bind Path=ViewModel.ForceLightModeActivationShortcut, Mode=TwoWay}" />
           </tkcontrols:SettingsCard>
-          <tkcontrols:SettingsCard x:Uid="DarkMode_ForceDarkMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
+          <tkcontrols:SettingsCard x:Uid="LightSwitch_ForceDarkMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
             <controls:ShortcutControl
   MinWidth="{StaticResource SettingActionControlMinWidth}"
   AllowDisable="True"
@@ -54,7 +54,7 @@
           </tkcontrols:SettingsCard>
         </controls:SettingsGroup>
 
-        <controls:SettingsGroup x:Uid="DarkMode_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+        <controls:SettingsGroup x:Uid="LightSwitch_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
           <tkcontrols:SettingsExpander
                         Description="Use time-based or location-based rules to turn on dark mode"
                         Header="Schedule dark mode"
@@ -251,7 +251,7 @@ Visibility="{x:Bind ViewModel.ScheduleMode,
     </controls:SettingsPageControl.ModuleContent>
 
     <controls:SettingsPageControl.PrimaryLinks>
-      <controls:PageLink x:Uid="LearnMore_DarkMode" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
+      <controls:PageLink x:Uid="LearnMore_LightSwitch" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
     </controls:SettingsPageControl.PrimaryLinks>
   </controls:SettingsPageControl>
 </Page>

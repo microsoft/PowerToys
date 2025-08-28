@@ -1,0 +1,3632 @@
+[
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "",
+    "elementUid": "AdvancedPaste",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/AdvancedPaste.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "AdvancedPasteClipboardHistoryEnabledSettingsCard",
+    "elementUid": "AdvancedPaste_Clipboard_History_Enabled_SettingsCard",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uF0E3"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "AdvancedPasteCloseAfterLosingFocus",
+    "elementUid": "AdvancedPaste_CloseAfterLosingFocus",
+    "parentElementName": "",
+    "description": null,
+    "icon": "M 4 16.284 C 1 22.284 29 59.284 71 101.284 L 143 174.284 L 101 220.284 C 54 271.284 5 367.284 14 390.284 C 23 416.284 40 406.284 56 367.284 C 64 347.284 76 320.284 82 307.284 C 97 278.284 160 215.284 175 215.284 C 181 215.284 199 228.284 214 243.284 C 239 270.284 240 273.284 224 286.284 C 202 304.284 180 357.284 180 392.284 C 180 430.284 213 481.284 252 505.284 C 297 532.284 349 531.284 394 500.284 C 414 486.284 434 475.284 438 475.284 C 442 475.284 484 514.284 532 562.284 C 602 631.284 622 647.284 632 637.284 C 642 627.284 581 561.284 335 315.284 C 164 144.284 22 5.284 18 5.284 C 14 5.284 8 10.284 4 16.284 Z M 337 367.284 C 372 401.284 400 435.284 400 442.284 C 400 457.284 349 485.284 321 485.284 C 269 485.284 220 437.284 220 385.284 C 220 357.284 248 305.284 262 305.284 C 269 305.284 303 333.284 337 367.284 Z M 248 132.284 C 228 137.284 225 151.284 241 161.284 C 247 164.284 284 168.284 324 169.284 C 393 171.284 442 188.284 491 227.284 C 522 252.284 578 335.284 585 364.284 C 592 399.284 607 412.284 622 397.284 C 629 390.284 627 370.284 615 333.284 C 590 260.284 506 176.284 427 147.284 C 373 127.284 293 120.284 248 132.284 Z"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "AdvancedPasteEnableAdvancedAI",
+    "elementUid": "AdvancedPaste_EnableAdvancedAI",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/SemanticKernel.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "AdvancedPasteEnableAISettingsCard",
+    "elementUid": "AdvancedPaste_EnableAISettingsCard",
+    "parentElementName": "",
+    "description": null,
+    "icon": "M128 766q0-42 24-77t65-48l178-57q32-11 61-30t52-42q50-50 71-114l58-179q13-40 48-65t78-26q42 0 77 24t50 65l58 177q21 66 72 117 49 50 117 72l176 58q43 14 69 48t26 80q0 41-25 76t-64 49l-178 58q-66 21-117 72-32 32-51 73t-33 84-26 83-30 73-45 51-71 20q-42 0-77-24t-49-65l-58-178q-8-25-19-47t-28-43q-34-43-77-68t-89-41-89-27-78-29-55-45-21-75zm1149 7q-76-29-145-53t-129-60-104-88-73-138l-57-176-67 176q-18 48-42 89t-60 78q-34 34-76 61t-89 43l-177 57q75 29 144 53t127 60 103 89 73 137l57 176 67-176q37-97 103-168t168-103l177-57zm-125 759q0-31 20-57t49-36l99-32q34-11 53-34t30-51 20-59 20-54 33-41 58-16q32 0 59 19t38 50q6 20 11 40t13 40 17 38 25 34q16 17 39 26t48 18 49 16 44 20 31 32 12 50q0 33-18 60t-51 38q-19 6-39 11t-41 13-39 17-34 25q-24 25-35 62t-24 73-35 61-68 25q-32 0-59-19t-38-50q-6-18-11-39t-13-41-17-40-24-33q-18-17-41-27t-47-17-49-15-43-20-30-33-12-54zm583 4q-43-13-74-30t-55-41-40-55-32-74q-12 41-29 72t-42 55-55 42-71 31q81 23 128 71t71 129q15-43 31-74t40-54 53-40 75-32z"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "AdvancedPasteEnableToggleControlHeaderText",
+    "elementUid": "AdvancedPaste_EnableToggleControl_HeaderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/AdvancedPaste.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "AdvancedPasteShowCustomPreviewSettingsCard",
+    "elementUid": "AdvancedPaste_ShowCustomPreviewSettingsCard",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE71E"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "AdvancedPasteUIActions",
+    "elementUid": "AdvancedPasteUI_Actions",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE792"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "AdvancedPasteUIShortcut",
+    "elementUid": "AdvancedPasteUI_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "ImageToText",
+    "elementUid": "ImageToText",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "PasteAsFile",
+    "elementUid": "PasteAsFile",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEC50"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "PasteAsHtmlFile",
+    "elementUid": "PasteAsHtmlFile",
+    "parentElementName": "PasteAsFile",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "PasteAsJsonShortcut",
+    "elementUid": "PasteAsJson_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "PasteAsMarkdownShortcut",
+    "elementUid": "PasteAsMarkdown_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "PasteAsPlainTextShortcut",
+    "elementUid": "PasteAsPlainText_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "PasteAsPngFile",
+    "elementUid": "PasteAsPngFile",
+    "parentElementName": "PasteAsFile",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "PasteAsTxtFile",
+    "elementUid": "PasteAsTxtFile",
+    "parentElementName": "PasteAsFile",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "Transcode",
+    "elementUid": "Transcode",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEA69"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "TranscodeToMp3",
+    "elementUid": "TranscodeToMp3",
+    "parentElementName": "Transcode",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AdvancedPastePage",
+    "elementName": "TranscodeToMp4",
+    "elementUid": "TranscodeToMp4",
+    "parentElementName": "Transcode",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": null,
+    "elementUid": "AlwaysOnTop_Sound",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7F3"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": "",
+    "elementUid": "AlwaysOnTop",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/AlwaysOnTop.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": "AlwaysOnTopActivationShortcut",
+    "elementUid": "AlwaysOnTop_ActivationShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": "AlwaysOnTopEnableToggleControlHeaderText",
+    "elementUid": "AlwaysOnTop_EnableToggleControl_HeaderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/AlwaysOnTop.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": "AlwaysOnTopExcludedApps",
+    "elementUid": "AlwaysOnTop_ExcludedApps",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uECE4"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": "AlwaysOnTopFrameColor",
+    "elementUid": "AlwaysOnTop_FrameColor",
+    "parentElementName": "AlwaysOnTopFrameEnabled",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": "AlwaysOnTopFrameColorMode",
+    "elementUid": "AlwaysOnTop_FrameColor_Mode",
+    "parentElementName": "AlwaysOnTopFrameEnabled",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": "AlwaysOnTopFrameEnabled",
+    "elementUid": "AlwaysOnTop_FrameEnabled",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEB3C"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": "AlwaysOnTopFrameOpacity",
+    "elementUid": "AlwaysOnTop_FrameOpacity",
+    "parentElementName": "AlwaysOnTopFrameEnabled",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AlwaysOnTopPage",
+    "elementName": "AlwaysOnTopFrameThickness",
+    "elementUid": "AlwaysOnTop_FrameThickness",
+    "parentElementName": "AlwaysOnTopFrameEnabled",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AwakePage",
+    "elementName": null,
+    "elementUid": "Awake_DisplaySettingsCard",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7F4"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "AwakePage",
+    "elementName": "",
+    "elementUid": "Awake",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/Awake.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AwakePage",
+    "elementName": "AwakeEnableSettingsCard",
+    "elementUid": "Awake_EnableSettingsCard",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/Awake.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "AwakePage",
+    "elementName": "AwakeExpirationSettingsExpander",
+    "elementUid": "Awake_ExpirationSettingsExpander",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEC92"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AwakePage",
+    "elementName": "AwakeExpirationSettingsExpanderDate",
+    "elementUid": "Awake_ExpirationSettingsExpander_Date",
+    "parentElementName": "AwakeExpirationSettingsExpander",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AwakePage",
+    "elementName": "AwakeExpirationSettingsExpanderTime",
+    "elementUid": "Awake_ExpirationSettingsExpander_Time",
+    "parentElementName": "AwakeExpirationSettingsExpander",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AwakePage",
+    "elementName": "AwakeIntervalSettingsCard",
+    "elementUid": "Awake_IntervalSettingsCard",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE916"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "AwakePage",
+    "elementName": "AwakeModeSettingsCard",
+    "elementUid": "Awake_ModeSettingsCard",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE945"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "CmdNotFoundPage",
+    "elementName": "",
+    "elementUid": "CmdNotFound",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/CommandNotFound.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "CmdNotFoundPage",
+    "elementName": "CmdNotFoundEnable",
+    "elementUid": "CmdNotFound_Enable",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/CommandNotFound.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "CmdNotFoundPage",
+    "elementName": "CmdNotFoundPowerShellDetection",
+    "elementUid": "CmdNotFound_PowerShellDetection",
+    "parentElementName": "CmdNotFoundEnable",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "CmdNotFoundPage",
+    "elementName": "CmdNotFoundWinGetClientDetection",
+    "elementUid": "CmdNotFound_WinGetClientDetection",
+    "parentElementName": "CmdNotFoundEnable",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "CmdPalPage",
+    "elementName": "",
+    "elementUid": "CmdPal",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/CmdPal.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "CmdPalPage",
+    "elementName": "CmdPalActivationShortcut",
+    "elementUid": "CmdPal_ActivationShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "CmdPalPage",
+    "elementName": "CmdPalEnableCmdPal",
+    "elementUid": "CmdPal_Enable_CmdPal",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/CmdPal.png"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "",
+    "elementUid": "ColorPicker",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ColorPicker.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ActivationShortcut",
+    "elementUid": "Activation_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ColorFormatsSetting",
+    "elementUid": "ColorPicker_ColorFormats",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE762"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ColorPickerActivationAction",
+    "elementUid": "ColorPicker_ActivationAction",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEC4E"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ColorPickerCopiedColorRepresentation",
+    "elementUid": "ColorPicker_CopiedColorRepresentation",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uF0E3"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ColorPickerEnableColorPicker",
+    "elementUid": "ColorPicker_EnableColorPicker",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ColorPicker.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ColorPickerMiddleClick",
+    "elementUid": "ColorPicker_MiddleClick",
+    "parentElementName": "ColorPickerMouseActions",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ColorPickerMouseActions",
+    "elementUid": "ColorPicker_MouseActions",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE962"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ColorPickerPrimaryClick",
+    "elementUid": "ColorPicker_PrimaryClick",
+    "parentElementName": "ColorPickerMouseActions",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ColorPickerSecondaryClick",
+    "elementUid": "ColorPicker_SecondaryClick",
+    "parentElementName": "ColorPickerMouseActions",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ColorPickerPage",
+    "elementName": "ColorPickerShowColorName",
+    "elementUid": "ColorPicker_ShowColorName",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "CropAndLockPage",
+    "elementName": "",
+    "elementUid": "CropAndLock",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/CropAndLock.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "CropAndLockPage",
+    "elementName": "CropAndLockEnableToggleControlHeaderText",
+    "elementUid": "CropAndLock_EnableToggleControl_HeaderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/CropAndLock.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "CropAndLockPage",
+    "elementName": "CropAndLockReparentActivationShortcut",
+    "elementUid": "CropAndLock_ReparentActivation_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "CropAndLockPage",
+    "elementName": "CropAndLockThumbnailActivationShortcut",
+    "elementUid": "CropAndLock_ThumbnailActivation_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "EnvironmentVariablesPage",
+    "elementName": "",
+    "elementUid": "EnvironmentVariables",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/EnvironmentVariables.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "EnvironmentVariablesPage",
+    "elementName": "EnvironmentVariablesEnableToggleControlHeaderText",
+    "elementUid": "EnvironmentVariables_EnableToggleControl_HeaderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/EnvironmentVariables.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "EnvironmentVariablesPage",
+    "elementName": "EnvironmentVariablesLaunchButtonControl",
+    "elementUid": "EnvironmentVariables_LaunchButtonControl",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEA37"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "EnvironmentVariablesPage",
+    "elementName": "EnvironmentVariablesToggleLaunchAdministrator",
+    "elementUid": "EnvironmentVariables_Toggle_LaunchAdministrator",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7EF"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "",
+    "elementUid": "FancyZones",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/FancyZones.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "ActivationShortcut",
+    "elementUid": "Activation_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesAllowChildWindowSnap",
+    "elementUid": "FancyZones_AllowChildWindowSnap",
+    "parentElementName": "FancyZonesWindowBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesAppLastZoneMoveWindows",
+    "elementUid": "FancyZones_AppLastZoneMoveWindows",
+    "parentElementName": "FancyZonesWindowBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesBorderColor",
+    "elementUid": "FancyZones_BorderColor",
+    "parentElementName": "FancyZonesZoneAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesDisableRoundCornersOnWindowSnap",
+    "elementUid": "FancyZones_DisableRoundCornersOnWindowSnap",
+    "parentElementName": "FancyZonesWindowBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesDisplayOrWorkAreaChangeMoveWindowsCheckBoxControl",
+    "elementUid": "FancyZones_DisplayOrWorkAreaChangeMoveWindowsCheckBoxControl",
+    "parentElementName": "FancyZonesWindowBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesEnableToggleControlHeaderText",
+    "elementUid": "FancyZones_EnableToggleControl_HeaderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/FancyZones.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesExcludeApps",
+    "elementUid": "FancyZones_ExcludeApps",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uECE4"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesExcludeAppsTextBoxControl",
+    "elementUid": "FancyZones_ExcludeApps_TextBoxControl",
+    "parentElementName": "FancyZonesExcludeApps",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesFlashZonesOnQuickSwitch",
+    "elementUid": "FancyZones_FlashZonesOnQuickSwitch",
+    "parentElementName": "FancyZonesQuickLayoutSwitch",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesHighlightOpacity",
+    "elementUid": "FancyZones_HighlightOpacity",
+    "parentElementName": "FancyZonesZoneAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesHotkeyNextTabControl",
+    "elementUid": "FancyZones_HotkeyNextTabControl",
+    "parentElementName": "FancyZonesWindowSwitchingGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesHotkeyPrevTabControl",
+    "elementUid": "FancyZones_HotkeyPrevTabControl",
+    "parentElementName": "FancyZonesWindowSwitchingGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesInActiveColor",
+    "elementUid": "FancyZones_InActiveColor",
+    "parentElementName": "FancyZonesZoneAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesLaunchEditorButtonControl",
+    "elementUid": "FancyZones_LaunchEditorButtonControl",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEB3C"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesMakeDraggedWindowTransparentCheckBoxControl",
+    "elementUid": "FancyZones_MakeDraggedWindowTransparentCheckBoxControl",
+    "parentElementName": "FancyZonesWindowBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesMouseDragCheckBoxControlHeader",
+    "elementUid": "FancyZones_MouseDragCheckBoxControl_Header",
+    "parentElementName": "FancyZonesZoneBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesMouseMiddleClickSpanningMultipleZonesCheckBoxControlHeader",
+    "elementUid": "FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header",
+    "parentElementName": "FancyZonesZoneBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesMoveWindow",
+    "elementUid": "FancyZones_MoveWindow",
+    "parentElementName": "FancyZonesOverrideSnapHotkeys",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesMoveWindowsAcrossAllMonitorsCheckBoxControl",
+    "elementUid": "FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl",
+    "parentElementName": "FancyZonesOverrideSnapHotkeys",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesNumberColor",
+    "elementUid": "FancyZones_NumberColor",
+    "parentElementName": "FancyZonesZoneAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesOpenWindowOnActiveMonitor",
+    "elementUid": "FancyZones_OpenWindowOnActiveMonitor",
+    "parentElementName": "FancyZonesWindowBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesOverlappingZones",
+    "elementUid": "FancyZones_OverlappingZones",
+    "parentElementName": "FancyZonesZoneBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesOverrideSnapHotkeys",
+    "elementUid": "FancyZones_OverrideSnapHotkeys",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE90C"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesPreviewCard",
+    "elementUid": null,
+    "parentElementName": "FancyZonesZoneAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesQuickLayoutSwitch",
+    "elementUid": "FancyZones_QuickLayoutSwitch",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesRestoreSize",
+    "elementUid": "FancyZones_RestoreSize",
+    "parentElementName": "FancyZonesWindowBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesShiftDragCheckBoxControlHeader",
+    "elementUid": "FancyZones_ShiftDragCheckBoxControl_Header",
+    "parentElementName": "FancyZonesZoneBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesShowZoneNumberCheckBoxControl",
+    "elementUid": "FancyZones_ShowZoneNumberCheckBoxControl",
+    "parentElementName": "FancyZonesZoneAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesShowZonesOnAllMonitorsCheckBoxControl",
+    "elementUid": "FancyZones_ShowZonesOnAllMonitorsCheckBoxControl",
+    "parentElementName": "FancyZonesZoneBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesSpanZonesAcrossMonitors",
+    "elementUid": "FancyZones_SpanZonesAcrossMonitors",
+    "parentElementName": "FancyZonesZoneBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesUseCursorPosEditorStartupScreen",
+    "elementUid": "FancyZones_UseCursorPosEditorStartupScreen",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7B5"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesWindowBehaviorGroupSettings",
+    "elementUid": "FancyZones_WindowBehavior_GroupSettings",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesWindowSwitchingGroupSettings",
+    "elementUid": "FancyZones_WindowSwitching_GroupSettings",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesWindowSwitchingPlaceholder",
+    "elementUid": null,
+    "parentElementName": "FancyZonesWindowSwitchingGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesZoneAppearance",
+    "elementUid": "FancyZones_Zone_Appearance",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEB3C"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesZoneBehaviorGroupSettings",
+    "elementUid": "FancyZones_ZoneBehavior_GroupSettings",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesZoneHighlightColor",
+    "elementUid": "FancyZones_ZoneHighlightColor",
+    "parentElementName": "FancyZonesZoneAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FancyZonesPage",
+    "elementName": "FancyZonesZoneSetChangeMoveWindows",
+    "elementUid": "FancyZones_ZoneSetChangeMoveWindows",
+    "parentElementName": "FancyZonesWindowBehaviorGroupSettings",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "FileLocksmithPage",
+    "elementName": "",
+    "elementUid": "FileLocksmith",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/FileLocksmith.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FileLocksmithPage",
+    "elementName": "FileLocksmithEnableFileLocksmith",
+    "elementUid": "FileLocksmith_Enable_FileLocksmith",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/FileLocksmith.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "FileLocksmithPage",
+    "elementName": "FileLocksmithToggleContextMenu",
+    "elementUid": "FileLocksmith_Toggle_ContextMenu",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": null,
+    "elementUid": "ShowSystemTrayIcon",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": null,
+    "elementUid": "GeneralPage_EnableViewDiagnosticData",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": null,
+    "elementUid": "GeneralPage_ReportBugPackage",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEBE8"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": null,
+    "elementUid": "GeneralPage_EnableDataDiagnostics",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE9D9"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": "",
+    "elementUid": "General",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": "AdminModeRunningAs",
+    "elementUid": "Admin_Mode_Running_As",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7EF"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": "ColorModeHeader",
+    "elementUid": "ColorModeHeader",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE790"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": "GeneralPageEnableExperimentation",
+    "elementUid": "GeneralPage_EnableExperimentation",
+    "parentElementName": "",
+    "description": null,
+    "icon": "M1859 1758q14 23 21 47t7 51q0 40-15 75t-41 61-61 41-75 15H354q-40 0-75-15t-61-41-41-61-15-75q0-27 6-51t21-47l569-992q10-14 10-34V128H640V0h768v128h-128v604q0 19 10 35l569 991zM896 732q0 53-27 99l-331 577h972l-331-577q-27-46-27-99V128H896v604zm799 1188q26 0 44-19t19-45q0-10-2-17t-8-16l-164-287H464l-165 287q-9 15-9 33 0 26 18 45t46 19h1341z"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": "GeneralPageRunAtStartUp",
+    "elementUid": "GeneralPage_RunAtStartUp",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": "GeneralSettingsBackupAndRestore",
+    "elementUid": "General_SettingsBackupAndRestore",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE777"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": "GeneralSettingsBackupAndRestoreLocationText",
+    "elementUid": "General_SettingsBackupAndRestoreLocationText",
+    "parentElementName": "GeneralSettingsBackupAndRestore",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": "GeneralSettingsBackupAndRestoreStatusInfo",
+    "elementUid": "General_SettingsBackupAndRestoreStatusInfo",
+    "parentElementName": "GeneralSettingsBackupAndRestore",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "GeneralPage",
+    "elementName": "LanguageHeader",
+    "elementUid": "LanguageHeader",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uF2B7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "HostsPage",
+    "elementName": null,
+    "elementUid": "Hosts_NoLeadingSpaces",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE8A5"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "HostsPage",
+    "elementName": null,
+    "elementUid": "Hosts_Encoding",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "HostsPage",
+    "elementName": "",
+    "elementUid": "Hosts",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/Hosts.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "HostsPage",
+    "elementName": "HostsAdditionalLinesPosition",
+    "elementUid": "Hosts_AdditionalLinesPosition",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE8A5"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "HostsPage",
+    "elementName": "HostsEnableToggleControlHeaderText",
+    "elementUid": "Hosts_EnableToggleControl_HeaderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/Hosts.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "HostsPage",
+    "elementName": "HostsLaunchButtonControl",
+    "elementUid": "Hosts_LaunchButtonControl",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEA37"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "HostsPage",
+    "elementName": "HostsToggleLaunchAdministrator",
+    "elementUid": "Hosts_Toggle_LaunchAdministrator",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7EF"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "HostsPage",
+    "elementName": "HostsToggleLoopbackDuplicates",
+    "elementUid": "Hosts_Toggle_LoopbackDuplicates",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEC27"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "HostsPage",
+    "elementName": "HostsToggleShowStartupWarning",
+    "elementUid": "Hosts_Toggle_ShowStartupWarning",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7BA"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "ImageResizerPage",
+    "elementName": "",
+    "elementUid": "ImageResizer",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ImageResizer.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ImageResizerPage",
+    "elementName": "ImageResizerEnableToggle",
+    "elementUid": "ImageResizer_EnableToggle",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ImageResizer.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ImageResizerPage",
+    "elementName": "ImageResizerEncoding",
+    "elementUid": "ImageResizer_Encoding",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ImageResizerPage",
+    "elementName": "ImageResizerFallBackEncoderText",
+    "elementUid": "ImageResizer_FallBackEncoderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ImageResizerPage",
+    "elementName": "ImageResizerFileModifiedDate",
+    "elementUid": "ImageResizer_FileModifiedDate",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ImageResizerPage",
+    "elementName": "ImageResizerFilenameFormatHeader",
+    "elementUid": "ImageResizer_FilenameFormatHeader",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ImageResizerPage",
+    "elementName": "ImageResizerPNGInterlacing",
+    "elementUid": "ImageResizer_PNGInterlacing",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ImageResizerPage",
+    "elementName": "ImageResizerPresets",
+    "elementUid": "ImageResizer_Presets",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE792"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ImageResizerPage",
+    "elementName": "ImageResizerTIFFCompression",
+    "elementUid": "ImageResizer_TIFFCompression",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "KeyboardManagerPage",
+    "elementName": "",
+    "elementUid": "KeyboardManager",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/KeyboardManager.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "KeyboardManagerPage",
+    "elementName": "KeyboardManagerEnableToggle",
+    "elementUid": "KeyboardManager_EnableToggle",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/KeyboardManager.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "KeyboardManagerPage",
+    "elementName": "KeyboardManagerRemapKeyboardButton",
+    "elementUid": "KeyboardManager_RemapKeyboardButton",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE92E"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "KeyboardManagerPage",
+    "elementName": "KeyboardManagerRemapShortcutsButton",
+    "elementUid": "KeyboardManager_RemapShortcutsButton",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE713"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "",
+    "elementUid": "MeasureTool",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ScreenRuler.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "MeasureToolActivationShortcut",
+    "elementUid": "MeasureTool_ActivationShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "MeasureToolContinuousCapture",
+    "elementUid": "MeasureTool_ContinuousCapture",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7FB"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "MeasureToolDefaultMeasureStyle",
+    "elementUid": "MeasureTool_DefaultMeasureStyle",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "MeasureToolDrawFeetOnCross",
+    "elementUid": "MeasureTool_DrawFeetOnCross",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "MeasureToolEnableMeasureTool",
+    "elementUid": "MeasureTool_EnableMeasureTool",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ScreenRuler.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "MeasureToolMeasureCrossColor",
+    "elementUid": "MeasureTool_MeasureCrossColor",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "MeasureToolPerColorChannelEdgeDetection",
+    "elementUid": "MeasureTool_PerColorChannelEdgeDetection",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7FB"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "MeasureToolPixelTolerance",
+    "elementUid": "MeasureTool_PixelTolerance",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MeasureToolPage",
+    "elementName": "MeasureToolUnitsOfMeasure",
+    "elementUid": "MeasureTool_UnitsOfMeasure",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uECC6"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": null,
+    "elementUid": "MouseUtils_MouseHighlighter_PrimaryButtonClickColor",
+    "parentElementName": "MouseHighlighterAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": null,
+    "elementUid": "MouseUtils_MouseHighlighter_SecondaryButtonClickColor",
+    "parentElementName": "MouseHighlighterAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": null,
+    "elementUid": "HighlightMode",
+    "parentElementName": "MouseHighlighterAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": null,
+    "elementUid": "MouseUtils_MouseHighlighter_HighlightRadius",
+    "parentElementName": "MouseHighlighterAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": null,
+    "elementUid": "MouseUtils_GlidingCursor_InitialSpeed",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": null,
+    "elementUid": "MouseUtils_GlidingCursor_DelaySpeed",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": null,
+    "elementUid": "MouseUtils_GlidingCursor",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uECE7"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "",
+    "elementUid": "MouseUtils",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/FindMyMouse.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "FindMyMouseAppearanceBehavior",
+    "elementUid": "Appearance_Behavior",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEB3C"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseHighlighterAppearanceBehavior",
+    "elementUid": "Appearance_Behavior",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEB3C"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MousePointerCrosshairsAppearanceBehavior",
+    "elementUid": "Appearance_Behavior",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEB3C"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_BackgroundColor1",
+    "elementUid": "MouseUtils_MouseJump_BackgroundColor1",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_BackgroundColor2",
+    "elementUid": "MouseUtils_MouseJump_BackgroundColor2",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_Bezel3dDepth",
+    "elementUid": "MouseUtils_MouseJump_Bezel3dDepth",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_BezelColor",
+    "elementUid": "MouseUtils_MouseJump_BezelColor",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_BezelThickness",
+    "elementUid": "MouseUtils_MouseJump_BezelThickness",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_Border3dDepth",
+    "elementUid": "MouseUtils_MouseJump_Border3dDepth",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_BorderColor",
+    "elementUid": "MouseUtils_MouseJump_BorderColor",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_BorderPadding",
+    "elementUid": "MouseUtils_MouseJump_BorderPadding",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_BorderThickness",
+    "elementUid": "MouseUtils_MouseJump_BorderThickness",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_PreviewImage",
+    "elementUid": null,
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_PreviewType",
+    "elementUid": "MouseUtils_MouseJump_PreviewType",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_ScreenColor1",
+    "elementUid": "MouseUtils_MouseJump_ScreenColor1",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_ScreenColor2",
+    "elementUid": "MouseUtils_MouseJump_ScreenColor2",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_ScreenMargin",
+    "elementUid": "MouseUtils_MouseJump_ScreenMargin",
+    "parentElementName": "MouseUtilsMouseJumpAppearance",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtils_MouseJump_ThumbnailSize",
+    "elementUid": "MouseUtils_MouseJump_ThumbnailSize",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE740"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsEnableFindMyMouse",
+    "elementUid": "MouseUtils_Enable_FindMyMouse",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/FindMyMouse.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsEnableMouseHighlighter",
+    "elementUid": "MouseUtils_Enable_MouseHighlighter",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/MouseHighlighter.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsEnableMouseJump",
+    "elementUid": "MouseUtils_Enable_MouseJump",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/MouseJump.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsEnableMousePointerCrosshairs",
+    "elementUid": "MouseUtils_Enable_MousePointerCrosshairs",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/MouseCrosshairs.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseActivationMethod",
+    "elementUid": "MouseUtils_FindMyMouse_ActivationMethod",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE961"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseActivationShortcut",
+    "elementUid": "MouseUtils_FindMyMouse_ActivationShortcut",
+    "parentElementName": "MouseUtilsFindMyMouseActivationMethod",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseAnimationDurationMs",
+    "elementUid": "MouseUtils_FindMyMouse_AnimationDurationMs",
+    "parentElementName": "FindMyMouseAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseBackgroundColor",
+    "elementUid": "MouseUtils_FindMyMouse_BackgroundColor",
+    "parentElementName": "FindMyMouseAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseExcludedApps",
+    "elementUid": "MouseUtils_FindMyMouse_ExcludedApps",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uECE4"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseOverlayOpacity",
+    "elementUid": "MouseUtils_FindMyMouse_OverlayOpacity",
+    "parentElementName": "FindMyMouseAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseShakingFactor",
+    "elementUid": "MouseUtils_FindMyMouse_ShakingFactor",
+    "parentElementName": "MouseUtilsFindMyMouseActivationMethod",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseShakingIntervalMs",
+    "elementUid": "MouseUtils_FindMyMouse_ShakingIntervalMs",
+    "parentElementName": "MouseUtilsFindMyMouseActivationMethod",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseShakingMinimumDistance",
+    "elementUid": "MouseUtils_FindMyMouse_ShakingMinimumDistance",
+    "parentElementName": "MouseUtilsFindMyMouseActivationMethod",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseSpotlightColor",
+    "elementUid": "MouseUtils_FindMyMouse_SpotlightColor",
+    "parentElementName": "FindMyMouseAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseSpotlightInitialZoom",
+    "elementUid": "MouseUtils_FindMyMouse_SpotlightInitialZoom",
+    "parentElementName": "FindMyMouseAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsFindMyMouseSpotlightRadius",
+    "elementUid": "MouseUtils_FindMyMouse_SpotlightRadius",
+    "parentElementName": "FindMyMouseAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMouseHighlighterActivationShortcut",
+    "elementUid": "MouseUtils_MouseHighlighter_ActivationShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMouseHighlighterAlwaysColor",
+    "elementUid": "MouseUtils_MouseHighlighter_AlwaysColor",
+    "parentElementName": "MouseHighlighterAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMouseHighlighterFadeDelayMs",
+    "elementUid": "MouseUtils_MouseHighlighter_FadeDelayMs",
+    "parentElementName": "MouseHighlighterAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMouseHighlighterFadeDurationMs",
+    "elementUid": "MouseUtils_MouseHighlighter_FadeDurationMs",
+    "parentElementName": "MouseHighlighterAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMouseJumpActivationShortcut",
+    "elementUid": "MouseUtils_MouseJump_ActivationShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMouseJumpAppearance",
+    "elementUid": "MouseUtils_MouseJump_Appearance",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEB3C"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMousePointerCrosshairsActivationShortcut",
+    "elementUid": "MouseUtils_MousePointerCrosshairs_ActivationShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMousePointerCrosshairsCrosshairsBorderColor",
+    "elementUid": "MouseUtils_MousePointerCrosshairs_CrosshairsBorderColor",
+    "parentElementName": "MousePointerCrosshairsAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMousePointerCrosshairsCrosshairsBorderSize",
+    "elementUid": "MouseUtils_MousePointerCrosshairs_CrosshairsBorderSize",
+    "parentElementName": "MousePointerCrosshairsAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMousePointerCrosshairsCrosshairsColor",
+    "elementUid": "MouseUtils_MousePointerCrosshairs_CrosshairsColor",
+    "parentElementName": "MousePointerCrosshairsAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMousePointerCrosshairsCrosshairsFixedLength",
+    "elementUid": "MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength",
+    "parentElementName": "MousePointerCrosshairsAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMousePointerCrosshairsCrosshairsOpacity",
+    "elementUid": "MouseUtils_MousePointerCrosshairs_CrosshairsOpacity",
+    "parentElementName": "MousePointerCrosshairsAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMousePointerCrosshairsCrosshairsRadius",
+    "elementUid": "MouseUtils_MousePointerCrosshairs_CrosshairsRadius",
+    "parentElementName": "MousePointerCrosshairsAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMousePointerCrosshairsCrosshairsThickness",
+    "elementUid": "MouseUtils_MousePointerCrosshairs_CrosshairsThickness",
+    "parentElementName": "MousePointerCrosshairsAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseUtilsPage",
+    "elementName": "MouseUtilsMousePointerCrosshairsIsCrosshairsFixedLengthEnabled",
+    "elementUid": "MouseUtils_MousePointerCrosshairs_IsCrosshairsFixedLengthEnabled",
+    "parentElementName": "MousePointerCrosshairsAppearanceBehavior",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": null,
+    "elementUid": "MouseWithoutBorders_EasyMouseOption",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE962"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "",
+    "elementUid": "MouseWithoutBorders",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/MouseWithoutBorders.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersAddFirewallRuleButtonControl",
+    "elementUid": "MouseWithoutBorders_AddFirewallRuleButtonControl",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersBlockMouseAtScreenCorners",
+    "elementUid": "MouseWithoutBorders_BlockMouseAtScreenCorners",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersBlockScreenSaverOnOtherMachines",
+    "elementUid": "MouseWithoutBorders_BlockScreenSaverOnOtherMachines",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreen",
+    "elementUid": "MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE962"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreen_Expander",
+    "elementUid": "MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uECE4"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreenExcludedApps",
+    "elementUid": "MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps",
+    "parentElementName": "MouseWithoutBordersDisableEasyMouseWhenForegroundWindowIsFullscreen_Expander",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersDrawMouseCursor",
+    "elementUid": "MouseWithoutBorders_DrawMouseCursor",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersHideMouseAtScreenEdge",
+    "elementUid": "MouseWithoutBorders_HideMouseAtScreenEdge",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersIPAddressMapping",
+    "elementUid": "MouseWithoutBorders_IPAddressMapping",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersLockMachinesShortcut",
+    "elementUid": "MouseWithoutBorders_LockMachinesShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersMatrixOneRow",
+    "elementUid": "MouseWithoutBorders_MatrixOneRow",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersMoveMouseRelatively",
+    "elementUid": "MouseWithoutBorders_MoveMouseRelatively",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersReconnectShortcut",
+    "elementUid": "MouseWithoutBorders_ReconnectShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersSameSubnetOnly",
+    "elementUid": "MouseWithoutBorders_SameSubnetOnly",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersSecurityKey",
+    "elementUid": "MouseWithoutBorders_SecurityKey",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE8D7"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersShareClipboard",
+    "elementUid": "MouseWithoutBorders_ShareClipboard",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersShowClipboardAndNetworkStatusMessages",
+    "elementUid": "MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersShowOriginalUI",
+    "elementUid": "MouseWithoutBorders_ShowOriginalUI",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersSwitch2AllPcShortcut",
+    "elementUid": "MouseWithoutBorders_Switch2AllPcShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersSwitchBetweenMachineShortcut",
+    "elementUid": "MouseWithoutBorders_SwitchBetweenMachineShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersThisMachineNameLabel",
+    "elementUid": "MouseWithoutBorders_ThisMachineNameLabel",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersToggleEasyMouseShortcut",
+    "elementUid": "MouseWithoutBorders_ToggleEasyMouseShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersToggleEnable",
+    "elementUid": "MouseWithoutBorders_Toggle_Enable",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/MouseWithoutBorders.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersTransferFile",
+    "elementUid": "MouseWithoutBorders_TransferFile",
+    "parentElementName": "MouseWithoutBordersShareClipboard",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersUninstallService",
+    "elementUid": "MouseWithoutBorders_UninstallService",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersUseService",
+    "elementUid": "MouseWithoutBorders_UseService",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersValidateRemoteMachineIP",
+    "elementUid": "MouseWithoutBorders_ValidateRemoteMachineIP",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "MouseWithoutBordersPage",
+    "elementName": "MouseWithoutBordersWrapMouse",
+    "elementUid": "MouseWithoutBorders_WrapMouse",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "NewPlusPage",
+    "elementName": "",
+    "elementUid": "NewPlus",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/NewPlus.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "NewPlusPage",
+    "elementName": "NewPlusBehaviourReplaceVariablesToggle",
+    "elementUid": "NewPlus_Behaviour_Replace_Variables_Toggle",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "NewPlusPage",
+    "elementName": "NewPlusEnableToggle",
+    "elementUid": "NewPlus_Enable_Toggle",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/NewPlus.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "NewPlusPage",
+    "elementName": "NewPlusHideFileExtensionToggle",
+    "elementUid": "NewPlus_Hide_File_Extension_Toggle",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "NewPlusPage",
+    "elementName": "NewPlusHideStartingDigitsToggle",
+    "elementUid": "NewPlus_Hide_Starting_Digits_Toggle",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "NewPlusPage",
+    "elementName": "NewPlusTemplatesLocation",
+    "elementUid": "NewPlus_Templates_Location",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uF12B"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "OobeOverview",
+    "elementName": null,
+    "elementUid": "Oobe_Overview_EnableDataDiagnostics",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE9D9"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "OobeWhatsNew",
+    "elementName": "WhatsNewDataDiagnosticsInfoBar",
+    "elementUid": "Oobe_WhatsNew_DataDiagnostics_InfoBar",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uF167"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "PeekPage",
+    "elementName": "",
+    "elementUid": "Peek",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/Peek.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PeekPage",
+    "elementName": "ActivationShortcut",
+    "elementUid": "Activation_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PeekPage",
+    "elementName": "PeekAlwaysRunNotElevated",
+    "elementUid": "Peek_AlwaysRunNotElevated",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7EF"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PeekPage",
+    "elementName": "PeekCloseAfterLosingFocus",
+    "elementUid": "Peek_CloseAfterLosingFocus",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uED1A"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PeekPage",
+    "elementName": "PeekConfirmFileDelete",
+    "elementUid": "Peek_ConfirmFileDelete",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7BA"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PeekPage",
+    "elementName": "PeekEnablePeek",
+    "elementUid": "Peek_EnablePeek",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/Peek.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PeekPage",
+    "elementName": "PeekSourceCodeFontSize",
+    "elementUid": "Peek_SourceCode_FontSize",
+    "parentElementName": "PeekSourceCodeHeader",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PeekPage",
+    "elementName": "PeekSourceCodeHeader",
+    "elementUid": "Peek_SourceCode_Header",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE99A"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "",
+    "elementUid": "QuickAccent",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/QuickAccent.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "QuickAccentActivationShortcut",
+    "elementUid": "QuickAccent_Activation_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "QuickAccentDescriptionIndicator",
+    "elementUid": "QuickAccent_Description_Indicator",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE946"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "QuickAccentEnableQuickAccent",
+    "elementUid": "QuickAccent_EnableQuickAccent",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/QuickAccent.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "QuickAccentExcludedApps",
+    "elementUid": "QuickAccent_ExcludedApps",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uECE4"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "QuickAccentInputTimeMs",
+    "elementUid": "QuickAccent_InputTimeMs",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE916"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "QuickAccentSelectedLanguage",
+    "elementUid": "QuickAccent_SelectedLanguage",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uF2B7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "QuickAccentSortByUsageFrequencyIndicator",
+    "elementUid": "QuickAccent_SortByUsageFrequency_Indicator",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE8CB"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "QuickAccentStartSelectionFromTheLeftIndicator",
+    "elementUid": "QuickAccent_StartSelectionFromTheLeft_Indicator",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE974"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerAccentPage",
+    "elementName": "QuickAccentToolbarPosition",
+    "elementUid": "QuickAccent_ToolbarPosition",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEC12"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "",
+    "elementUid": "PowerLauncher",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/PowerToysRun.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "ActivationShortcut",
+    "elementUid": "Activation_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "ColorModeHeader",
+    "elementUid": "ColorModeHeader",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE790"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherActionKeyword",
+    "elementUid": "PowerLauncher_ActionKeyword",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherEnablePowerLauncher",
+    "elementUid": "PowerLauncher_EnablePowerLauncher",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/PowerToysRun.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherFastSearchInputDelayMs",
+    "elementUid": "PowerLauncher_FastSearchInputDelayMs",
+    "parentElementName": "PowerLauncherSearchQueryResultsWithDelay",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherGenerateThumbnailsFromFiles",
+    "elementUid": "PowerLauncher_GenerateThumbnailsFromFiles",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE91B"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherMaximumNumberOfResults",
+    "elementUid": "PowerLauncher_MaximumNumberOfResults",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEC8F"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherPluginWeightBoost",
+    "elementUid": "PowerLauncher_PluginWeightBoost",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherSearchClickedItemWeight",
+    "elementUid": "PowerLauncher_SearchClickedItemWeight",
+    "parentElementName": "PowerLauncherSearchQueryTuningEnabled",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherSearchQueryResultsWithDelay",
+    "elementUid": "PowerLauncher_SearchQueryResultsWithDelay",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEC48"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherSearchQueryTuningEnabled",
+    "elementUid": "PowerLauncher_SearchQueryTuningEnabled",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE8CB"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherShowPluginKeywords",
+    "elementUid": "PowerLauncher_ShowPluginKeywords",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE8FD"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherSlowSearchInputDelayMs",
+    "elementUid": "PowerLauncher_SlowSearchInputDelayMs",
+    "parentElementName": "PowerLauncherSearchQueryResultsWithDelay",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherTabSelectsContextButtons",
+    "elementUid": "PowerLauncher_TabSelectsContextButtons",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7FD"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherTitleFontSize",
+    "elementUid": "PowerLauncher_TitleFontSize",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE8E9"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "PowerLauncherUsePinyin",
+    "elementUid": "PowerLauncher_UsePinyin",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE98A"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "RunPluginUse",
+    "elementUid": "Run_PluginUse",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEA86"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerLauncherPage",
+    "elementName": "RunPositionHeader",
+    "elementUid": "Run_PositionHeader",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE78B"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "PowerOcrPage",
+    "elementName": "",
+    "elementUid": "TextExtractor",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/TextExtractor.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerOcrPage",
+    "elementName": "ActivationShortcut",
+    "elementUid": "Activation_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerOcrPage",
+    "elementName": "TextExtractorEnableToggleControlHeaderText",
+    "elementUid": "TextExtractor_EnableToggleControl_HeaderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/TextExtractor.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerOcrPage",
+    "elementName": "TextExtractorLanguages",
+    "elementUid": "TextExtractor_Languages",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": null,
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Preview_BGCODE",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE914"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": null,
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Preview_QOI",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE91B"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": null,
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE914"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": null,
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Thumbnail_QOI",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE91B"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "",
+    "elementUid": "FileExplorerPreview",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewColorThumbnailSTL",
+    "elementUid": "FileExplorerPreview_Color_Thumbnail_STL",
+    "parentElementName": "FileExplorerPreviewToggleSwitchThumbnailSTL",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewPreviewSVGBackgroundColor",
+    "elementUid": "FileExplorerPreview_Preview_SVG_Background_Color",
+    "parentElementName": "FileExplorerPreviewToggleSwitchPreviewSVG",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewPreviewSVGCheckeredShadeMode",
+    "elementUid": "FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode",
+    "parentElementName": "FileExplorerPreviewToggleSwitchPreviewSVG",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewPreviewSVGColorMode",
+    "elementUid": "FileExplorerPreview_Preview_SVG_Color_Mode",
+    "parentElementName": "FileExplorerPreviewToggleSwitchPreviewSVG",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleMonacoFontSize",
+    "elementUid": "FileExplorerPreview_Toggle_Monaco_Font_Size",
+    "parentElementName": "FileExplorerPreviewToggleSwitchPreviewMonaco",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleMonacoMaxFileSize",
+    "elementUid": "FileExplorerPreview_Toggle_Monaco_Max_File_Size",
+    "parentElementName": "FileExplorerPreviewToggleSwitchPreviewMonaco",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleSwitchPreviewGCODE",
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Preview_GCODE",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE914"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleSwitchPreviewMD",
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Preview_MD",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE943"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleSwitchPreviewMonaco",
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Preview_Monaco",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE99A"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleSwitchPreviewPDF",
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Preview_PDF",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEA90"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleSwitchPreviewSVG",
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Preview_SVG",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE91B"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleSwitchThumbnailGCODE",
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE914"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleSwitchThumbnailPDF",
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Thumbnail_PDF",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEA90"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleSwitchThumbnailSTL",
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Thumbnail_STL",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE914"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerPreviewPage",
+    "elementName": "FileExplorerPreviewToggleSwitchThumbnailSVG",
+    "elementUid": "FileExplorerPreview_ToggleSwitch_Thumbnail_SVG",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE91B"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "PowerRenamePage",
+    "elementName": "",
+    "elementUid": "PowerRename",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/PowerRename.png"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerRenamePage",
+    "elementName": "PowerRenameToggleAutoComplete",
+    "elementUid": "PowerRename_Toggle_AutoComplete",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "PowerRenamePage",
+    "elementName": "PowerRenameToggleContextMenu",
+    "elementUid": "PowerRename_Toggle_ContextMenu",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerRenamePage",
+    "elementName": "PowerRenameToggleEnable",
+    "elementUid": "PowerRename_Toggle_Enable",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/PowerRename.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerRenamePage",
+    "elementName": "PowerRenameToggleMaxDispListNum",
+    "elementUid": "PowerRename_Toggle_MaxDispListNum",
+    "parentElementName": "PowerRenameToggleAutoComplete",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerRenamePage",
+    "elementName": "PowerRenameToggleRestoreFlagsOnLaunch",
+    "elementUid": "PowerRename_Toggle_RestoreFlagsOnLaunch",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE81C"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "PowerRenamePage",
+    "elementName": "PowerRenameToggleUseBoostLib",
+    "elementUid": "PowerRename_Toggle_UseBoostLib",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "RegistryPreviewPage",
+    "elementName": "",
+    "elementUid": "RegistryPreview",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/RegistryPreview.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "RegistryPreviewPage",
+    "elementName": "RegistryPreviewDefaultRegApp",
+    "elementUid": "RegistryPreview_DefaultRegApp",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE7AC"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "RegistryPreviewPage",
+    "elementName": "RegistryPreviewEnableRegistryPreview",
+    "elementUid": "RegistryPreview_Enable_RegistryPreview",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/RegistryPreview.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "RegistryPreviewPage",
+    "elementName": "RegistryPreviewLaunchButtonControl",
+    "elementUid": "RegistryPreview_LaunchButtonControl",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEA37"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "SearchResultsPage",
+    "elementName": "",
+    "elementUid": "SearchResults_Title",
+    "parentElementName": "",
+    "description": null,
+    "icon": "{x:Bind Icon, Converter={StaticResource IconConverter}, ConverterParameter=\uE8B7}"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ShortcutConflictWindow",
+    "elementName": "SystemConflictCard",
+    "elementUid": "ShortcutConflictWindow_SystemCard",
+    "parentElementName": "",
+    "description": null,
+    "icon": "M9 20H0V11H9V20ZM20 20H11V11H20V20ZM9 9H0V0H9V9ZM20 9H11V0H20V9Z"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "ShortcutGuidePage",
+    "elementName": "",
+    "elementUid": "ShortcutGuide",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ShortcutGuide.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ShortcutGuidePage",
+    "elementName": "ActivationShortcut",
+    "elementUid": "Activation_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ShortcutGuidePage",
+    "elementName": "ColorModeHeader",
+    "elementUid": "ColorModeHeader",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE790"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ShortcutGuidePage",
+    "elementName": "ShortcutGuideActivationMethod",
+    "elementUid": "ShortcutGuide_ActivationMethod",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "ShortcutGuidePage",
+    "elementName": "ShortcutGuideDisabledApps",
+    "elementUid": "ShortcutGuide_DisabledApps",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uECE4"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ShortcutGuidePage",
+    "elementName": "ShortcutGuideEnable",
+    "elementUid": "ShortcutGuide_Enable",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ShortcutGuide.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ShortcutGuidePage",
+    "elementName": "ShortcutGuideOverlayOpacity",
+    "elementUid": "ShortcutGuide_OverlayOpacity",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ShortcutGuidePage",
+    "elementName": "ShortcutGuidePressTimeForGlobalWindowsShortcuts",
+    "elementUid": "ShortcutGuide_PressTimeForGlobalWindowsShortcuts",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE916"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ShortcutGuidePage",
+    "elementName": "ShortcutGuidePressTimeForTaskbarIconShortcuts",
+    "elementUid": "ShortcutGuide_PressTimeForTaskbarIconShortcuts",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE916"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "WorkspacesPage",
+    "elementName": "",
+    "elementUid": "Workspaces",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/Workspaces.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "WorkspacesPage",
+    "elementName": "WorkspacesActivationShortcut",
+    "elementUid": "Workspaces_ActivationShortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "WorkspacesPage",
+    "elementName": "WorkspacesEnableToggleControlHeaderText",
+    "elementUid": "Workspaces_EnableToggleControl_HeaderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/Workspaces.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "WorkspacesPage",
+    "elementName": "WorkspacesLaunchEditorButtonControl",
+    "elementUid": "Workspaces_LaunchEditorButtonControl",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEB3C"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "",
+    "elementUid": "ZoomIt",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ZoomIt.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakBackgroundFile",
+    "elementUid": "ZoomIt_Break_BackgroundFile",
+    "parentElementName": "ZoomItBreakShowBackgroundBitmap",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakBackgroundStretch",
+    "elementUid": "ZoomIt_Break_BackgroundStretch",
+    "parentElementName": "ZoomItBreakShowBackgroundBitmap",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakPlaySoundsFile",
+    "elementUid": "ZoomIt_Break_PlaySoundsFile",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakShortcut",
+    "elementUid": "ZoomIt_Break_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 2,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakShowBackgroundBitmap",
+    "elementUid": "ZoomIt_Break_ShowBackgroundBitmap",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakShowDesktopOrImageFile",
+    "elementUid": "ZoomIt_Break_ShowDesktopOrImageFile",
+    "parentElementName": "ZoomItBreakShowBackgroundBitmap",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakShowExpiredTime",
+    "elementUid": "ZoomIt_Break_ShowExpiredTime",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakSoundFile",
+    "elementUid": "ZoomIt_Break_SoundFile",
+    "parentElementName": "ZoomItBreakPlaySoundsFile",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakTimeout",
+    "elementUid": "ZoomIt_Break_Timeout",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakTimerOpacity",
+    "elementUid": "ZoomIt_Break_TimerOpacity",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItBreakTimerPosition",
+    "elementUid": "ZoomIt_Break_TimerPosition",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItDemoTypeFile",
+    "elementUid": "ZoomIt_DemoType_File",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItDemoTypeShortcut",
+    "elementUid": "ZoomIt_DemoType_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItDemoTypeSpeedSlider",
+    "elementUid": "ZoomIt_DemoType_SpeedSlider",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItDemoTypeToggleUserDrivenMode",
+    "elementUid": "ZoomIt_DemoType_Toggle_UserDrivenMode",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItDrawShortcut",
+    "elementUid": "ZoomIt_Draw_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItEnableToggleControlHeaderText",
+    "elementUid": "ZoomIt_EnableToggleControl_HeaderText",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/ZoomIt.png"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItLiveZoomShortcut",
+    "elementUid": "ZoomIt_LiveZoom_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItRecordCaptureAudio",
+    "elementUid": "ZoomIt_Record_CaptureAudio",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItRecordMicrophone",
+    "elementUid": "ZoomIt_Record_Microphone",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItRecordScaling",
+    "elementUid": "ZoomIt_Record_Scaling",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItRecordShortcut",
+    "elementUid": "ZoomIt_Record_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItSliderInitialMagnification",
+    "elementUid": "ZoomIt_Slider_InitialMagnification",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItSnipShortcut",
+    "elementUid": "ZoomIt_Snip_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItToggleAnimateZoom",
+    "elementUid": "ZoomIt_Toggle_AnimateZoom",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItToggleShowTrayIcon",
+    "elementUid": "ZoomIt_Toggle_ShowTrayIcon",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItTypeTextFont",
+    "elementUid": "ZoomIt_Type_TextFont",
+    "parentElementName": "",
+    "description": null,
+    "icon": null
+  },
+  {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "ZoomItPage",
+    "elementName": "ZoomItZoomShortcut",
+    "elementUid": "ZoomIt_Zoom_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uEDA7"
+  }
+]
