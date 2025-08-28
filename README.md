@@ -93,107 +93,128 @@ For guidance on developing for PowerToys, please read the [developer docs](./doc
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
-### 0.93 - Aug 2025 Update
+### 0.94 - Sep 2025 Update
 
 In this release, we focused on new features, stability, optimization improvements, and automation.
 
 **✨Highlights**
 
- - PowerToys settings debuts a modern, card-based dashboard with clearer descriptions and faster navigation for a streamlined user experience.
- - Command Palette had over 99 issues resolved, including bringing back Clipboard History, adding context menu shortcuts, pinning favorite apps, and supporting history in Run.
- - Command Palette reduced its startup memory usage by ~15%, load time by ~40%, built-in extensions loading time by ~70%, and installation size by ~55%—all due to using the full Ahead-of-Time (AOT) compilation mode in Windows App SDK.
- - Peek now supports instant previews and embedded thumbnails for Binary G-code (.bgcode) 3D printing files, making it easy to inspect models at a glance. Thanks [@pedrolamas](https://github.com/pedrolamas)!
- - Mouse Utilities introduces a new spotlight highlighting mode that dims the screen and draws attention to your cursor, perfect for presentations.
- - Test coverage improvements for multiple PowerToys modules including Command Palette, Advanced Paste, Peek, Text Extractor, and PowerRename — ensuring better reliability and quality, with over 600 new unit tests (mostly for Command Palette) and doubled UI automation coverage.
+ - The installer was upgraded to WiX 5 after WiX 3 reached end-of-life; this move improved installer security, reliability, and community support.
+ - PowerToys Settings added a Settings search with fuzzy matching, suggestions, a results page, and UX polish to make finding options faster.
+ - A comprehensive hotkey conflict detection system was introduced in Settings to surface and help resolve conflicting shortcuts.
+ - Command Palette received stability, accessibility, and UX improvements — fixed single‑click activation; added support for path shortcuts (~, /, \\) in file search; fixed race conditions and cancellation issues; and improved diagnostics to reduce memory leaks.
+ - Peek added XML syntax support for .shproj and .projitems in its Monaco preview. Thanks [@rezanid](https://github.com/rezanid)!
+ - Context menu registration was moved from the installer to runtime to avoid loading disabled modules (runtime registrations).
+ - Mouse Utilities added a “Gliding cursor” accessibility feature to Mouse Pointer Crosshairs for single‑button cursor movement and clicking. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+
+### Always On Top
+
+ - Fixes issue where wait cursor was incorrectly displayed when hovering over Always On Top window border, ensuring proper arrow cursor is shown. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Command Palette
 
- - Ensured screen readers are notified when the selected item in the list changes for better accessibility.
- - Fixed command title changes not being properly notified to screen readers. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Made icon controls excluded from keyboard navigation by default for better accessibility. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Improved UI design with better text sizing and alignment.
- - Fixed keyboard shortcuts to work better in text boxes and context menus.
- - Added right-click context menus with critical command styling and separators.
- - Improved various context menu issues, improving item selection, handling of long titles, search bar text scaling, initial item behavior, and primary button functionality.
- - Fixed context menu crashes with better type handling.
- - Fixed "Reload" command to work with both uppercase and lowercase letters.
- - Added mouse back button support for easier navigation. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed Alt+Left Arrow navigation not working when search box contains text. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Updated back button tooltip to show keyboard shortcut information. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed Command Palette window not appearing properly when activated. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed Command Palette window staying hidden from taskbar after File Explorer restarts. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed window focus not returning to previous app properly.
- - Fixed Command Palette window to always appear on top when shown and move to bottom when hidden. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed window hiding to properly work on UI thread. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Fixed crashes and improved stability with better synchronization of Command list updates. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Improved extension disposal with better error handling to prevent crashes. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Improved stability by fixing a UI threading issue when loading more results, preventing possible crashes and ensuring the loading state resets if loading fails. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Enhanced icon loading stability with better exception handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Added thread safety to recent commands to prevent crashes. Thanks [@MaoShengelia](https://github.com/MaoShengelia)!
- - Fixed acrylic (frosted glass) system backdrop display issues by ensuring proper UI thread handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Honors “Single-click activation” only for pointer clicks; keyboard always activates immediately. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Removed constraints that kept context menu flyout within window bounds, allowing proper positioning. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Improves error messages with timestamps, HRESULTs, and full exception details. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixes regression when updating a provider with no commands by appending items safely. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Brings the existing Settings window to the front after opening. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Replaces Clipboard History outline icon with a colorful Fluent icon. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Prevents duplicate parenting in ContentIcon with checks and a debug assert. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Uses pattern matching “is null/is not null” for safer null checks across the codebase.
+ - Makes the Activation Shortcut dialog focusable for screen readers. Thanks [@chatasweetie](https://github.com/chatasweetie)!
+ - Uses a stable Windows SDK for the extension toolkit and reorganizes message classes.
+ - Supports ~, /, and \ as path shortcuts in file search. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixes race condition by switching SetCanceled to TrySetCanceled. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Uses modern WinUI 3 brush for menu separators. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Adds ARM64 PDBs to the Extensions SDK package.
+ - Adds single‑select Filters to DynamicListPage and updates Windows Services sample.
+ - Changes main page filter placeholder to “Search for apps, files and commands…”. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Removes explicit WinAppSDK/WebView2 deps from toolkit and API so clients control versions. Thanks [@rluengen](https://github.com/rluengen)!
+ - Adds a local keyboard listener to handle the GoBack key. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Ensures alias changes propagate and resolve conflicts without crashes.
+ - Marks CommandProvider.Dispose as virtual.
+ - Cleans up ListItemViewModels to prevent leaks during updates and cancels.
+ - Sorts DateTime extension results by relevance.
+ - Fixed race condition causing search text to 'jiggle' or bounce during rapid updates.
+ - Moves accessibility announcements into a shared UIHelper and cleans up settings UI. Thanks [@chatasweetie](https://github.com/chatasweetie)!
+ - Preserves Adaptive Card action types during trimming using DynamicDependency.
+ - Adds acrylic backdrop and style tweaks to the context menu. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Prevents disposed ContentPage instances from handling messages; cleans up on close. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Paves the way for future API additions with new interfaces and type‑cache prepopulation.
+ - Adds “evil” samples to repro tricky behavior.
+ - Fixes WinGet issues in release builds by avoiding non‑trim‑safe LINQ.
+ - Cancels in-progress item fetches when a new one starts in CmdPal to prevent stale results.
 
 ### Command Palette extensions
 
- - Added settings to each provider to control which fallback commands are enabled. Thanks [@jiripolasek](https://github.com/jiripolasek)! for fixing a regression in this feature.
- - Added sample code showing how Command Palette extensions can track when their pages are loaded or unloaded. [Check it out here](./src/modules/cmdpal/ext/SamplePagesExtension/OnLoadPage.cs).
- - Fixed *Calculator* to accept regular spaces in numbers that use space separators. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Added a new setting to *Calculator* to make "Copy" the primary button (replacing “Save”) and enable "Close on Enter", streamlining the workflow. Thanks [@PesBandi](https://github.com/PesBandi)!
- - Improved *Apps* indexing error handling and removed obsolete code. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Prevented apps from showing in search when the *Apps* extension is disabled. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Added ability to pin/unpin *Apps* using Ctrl+P shortcut.
- - Added keyboard shortcuts to the *Apps* context menu items for faster access. 
- - Added all file context menu options to the *Apps* items context menu, making all file actions available there for better functionality.
- - Streamlined All *Apps* extension settings by removing redundant descriptions, making the UI clearer.
- - Added command history to the *Run* page for easier access to previous commands.
- - Fixed directory path handling in *Run* fallback for better file navigation.
- - Fixed URL fallback item hiding properly in *Web Search* extension when search query becomes invalid. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Added proper empty state message for *Web Search* extension when no results found. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Added fallback command to *Windows Settings* extension for better search results.
- - Re-enabled *Clipboard History* feature with proper window handling.
- - Improved *Add Bookmark* extension to automatically detect file, folder, or URL types without manual input.
- - Updated terminology from "Kill process" to "End task" in *Window Walker* for consistency with Windows.
- - Fixed minor grammar error in SamplePagesExtension code comments. Thanks [@purofle](https://github.com/purofle)!
+ - Adds helpful empty states for Window Walker, Windows Settings, and Windows Search. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Adds app icons to the “Run” command in All Apps when available.
+ - Fixes missing built‑in icons by centralizing extension dependencies.
+ - Adds WinAppSDK dependency to two sample extensions for local deployment.
+
+### Hosts File Editor
+
+ - Adds a “No leading spaces” option to keep active lines unindented when saving hosts; preserves current behavior by default. Thanks [@mohammed-saalim](https://github.com/mohammed-saalim)!
+
+### Image Resizer
+
+ - Fixes Image Resizer localization by installing satellite resource DLLs under the WinUI3Apps culture path expected at runtime.
 
 ### Mouse Utilities
 
- - Added a new spotlight highlighting mode that creates a large transparent circle around your cursor with a backdrop effect, providing an alternative to the traditional circle highlight. Perfect for presentations where you want to focus attention on a specific area while dimming the rest of the screen.
+- Adds a “Gliding cursor” accessibility feature to Mouse Pointer Crosshairs for single-button cursor movement and clicking. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+
+### Mouse Without Borders
+
+- Adds an option to block Easy Mouse from switching machines while a fullscreen app is active, with app allow‑list. Thanks [@dot-tb](https://github.com/dot-tb)!
 
 ### Peek
 
- - Added preview and thumbnail support for Binary G-code (.bgcode) files used in 3D printing. You can now see embedded thumbnails and preview these compressed 3D printing files directly in Peek and File Explorer. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+ - Adds XML syntax support for .shproj and .projitems in Peek’s Monaco preview. Thanks [@rezanid](https://github.com/rezanid)!
+ - Fixes bgcode preview handler registration and events for reliable previews. Thanks [@pedrolamas](https://github.com/pedrolamas)!
+
+### PowerRename
+
+ - Changes the Explorer context menu accelerator from W to E to avoid conflict with “New”. Thanks [@aaron-ni](https://github.com/aaron-ni)!
 
 ### Quick Accent
 
- - Added Vietnamese language support to Quick Accent, mappings for Vietnamese vowels (a, e, i, o, u, y) and the letter d. Thanks [@octastylos-pseudodipteros](https://github.com/octastylos-pseudodipteros)!
+ - Remembers character usage between sessions to keep your most-used accents first. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Adds Maltese language support with accented characters and € symbol. Thanks [@rovercoder](https://github.com/rovercoder)!
+ - Reduces hybrid‑graphics issues by only making the window Topmost while the picker is open. Thanks [@daverayment](https://github.com/daverayment)!
 
 ### Settings
 
- - Completely redesigned the Settings dashboard with a modern card-based layout featuring organized sections for quick actions and shortcuts overview, replacing the old module list.
- - Rewrote setting descriptions to be more concise and follow Windows writing style guidelines, making them easier to understand.
- - Improved formatting and readability of release notes in the "What's New" section with better typography and spacing.
- - Added missing deep link support for various settings pages (Peek, Quick Accent, PowerToys Run, etc.) so you can jump directly to specific settings.
- - Resolved an issue where the settings page header would drift away from its position when resizing the settings window.
- - Resolved a settings crash related to incompatible property names in ZoomIt configuration.
+ - Adds visual templates for Office and Copilot keys in key visuals.
+ - Moved the shutdown button from title bar to navigation view footer menu item. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Introduces comprehensive hotkey conflict detection.
+ - Adds settings search with fuzzy matching, suggestions, and results page, with follow‑up fixes and UX polish.
+ - Ensures product names like “Awake” remain untranslated across Spanish UI by adding explicit “do not localize” comments.
+ - Simplifies the Advanced Paste description in settings and fixes capitalization (Markdown/JSON). Thanks [@OldUser101](https://github.com/OldUser101)!
+
+### Installer
+
+ - Upgrades the installer to WiX 5 (side‑by‑side with WiX 3 during transition) with silent “Files in Use” handling for winget.
+ - Moves legacy context menu registration from installer to runtime on to avoid DLL loading when disabled.
 
 ### Documentation
 
- - Added detailed step-by-step instructions for first-time developers building the Command Palette module, including prerequisites and Visual Studio setup guidance. Thanks [@chatasweetie](https://github.com/chatasweetie)!
- - **Fixed Broken SDK Link**: Corrected a broken markdown link in the Command Palette SDK README that was pointing to an incorrect directory path. Thanks [@ChrisGuzak](https://github.com/ChrisGuzak)!
- - Added documentation for the "Open With Cursor" plugin that enables opening Visual Studio and VS Code recent files using Cursor AI. Thanks [@VictorNoxx](https://github.com/VictorNoxx)!
- - Added documentation for two new community plugins - Hotkeys plugin for creating custom keyboard shortcuts, and RandomGen plugin for generating random data like passwords, colors, and placeholder text. Thanks [@ruslanlap](https://github.com/ruslanlap)!
+ - Adds docs for building the installer locally and testing winget installs.
+ - Fixes broken link to the coding style guide in README. Thanks [@denizmaral](https://github.com/denizmaral)!
 
 ### Development
 
- - Updated .NET libraries to 9.0.8 for performance and security. Thanks [@snickler](https://github.com/snickler)!
- - Updated the spell check system to version 0.0.25 with better GitHub integration and SARIF reporting, plus fixed numerous spelling errors throughout the codebase including property names and documentation. Thanks [@jsoref](https://github.com/jsoref)!
- - Cleaned up spelling check configuration to eliminate false positives and excessive noise that was appearing in every pull request, making the development process smoother.
- - Replaced NuGet feed with Azure Artifacts for better package management.
- - Implemented configurable UI test pipeline that can use pre-built official releases instead of building everything from scratch, reducing test execution time from 2+ hours.
- - Replaced brittle pixel-by-pixel image comparison with perceptual hash (pHash) technology that's more robust to minor rendering differences - no more test failures due to anti-aliasing or compression artifacts.
- - Reduced CI/fuzzing/UI test timeouts from 4 hours to 90 minutes, dramatically improving developer feedback loops and preventing long waits when builds get stuck.
- - Standardized test project naming across the entire codebase and improved pipeline result identification by adding platform/install mode context to test run titles. Thanks [@khmyznikov](https://github.com/khmyznikov)!
- - Added comprehensive UI test suites for multiple PowerToys modules including Command Palette, Advanced Paste, Peek, Text Extractor, and PowerRename - ensuring better reliability and quality.
- - Enhanced UI test automation with command-line argument support, better session management, and improved element location methods using pattern matching to avoid failures from minor differences in exact matches.
+ - Configures BinSkim to skip tests and coverage DLLs to cut scans from 11k to 4.7k and reduce false positives.
+ - Simplifies NOTICE by removing versions and excluding Microsoft/System packages to avoid build breaks.
+ - Improves NuGet validation; bumps NLog to 5.2.8 and adds dotnet restore checks to catch downgrades.
+ - Updates UTF.Unknown to 2.6.0 for modern frameworks (non‑breaking). Thanks [@304NotModified](https://github.com/304NotModified)!
+ - Updates package catalog before installing gnome-keyring in CI to fix Linux package failures.
+ - Refactors CmdPal system command unit tests with interfaces and a shared test base for better isolation.
+ - Adds tests verifying Calculator “Close on Enter” swaps Copy/Save actions correctly. Thanks [@mohammed-saalim](https://github.com/mohammed-saalim)!
+ - Adds accessibility IDs to CmdPal UI controls to make UI tests reliable.
+ - Adds/migrates unit tests for WebSearch, Shell, Apps and Bookmarks with DI abstractions.
+ - Cleans up AI‑generated tests; adds meaningful query tests across extensions.
+ - Removes debug dialog; debug state is already shown in the titlebar.
 
 ### What is being planned over the next few releases
 
@@ -201,10 +222,10 @@ For [v0.94][github-next-release-work], we'll work on the items below:
 
  - Continued Command Palette polish
  - Working on Shortcut Guide v2 (Thanks [@noraa-junker](https://github.com/noraa-junker)!)
- - Working on upgrading the installer to WiX 5
- - Working on shortcut conflict detection
- - Working on setting search
+ - Automatic window tiling with FancyZones
  - Upgrading Keyboard Manager's editor UI
+ - UI tweaking utility with day/night theme switcher
+ - DSC v3 support for top utilities
  - New UI automation tests
  - Stability, bug fixes
 
