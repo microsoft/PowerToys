@@ -47,7 +47,6 @@ namespace RegistryPreview
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(windowHandle);
             SetTitleBar(titleBar);
             AppWindow.SetIcon("Assets\\RegistryPreview\\RegistryPreview.ico");
-            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
 
             // if have settings, update the location of the window
             if (jsonWindowPlacement != null)
