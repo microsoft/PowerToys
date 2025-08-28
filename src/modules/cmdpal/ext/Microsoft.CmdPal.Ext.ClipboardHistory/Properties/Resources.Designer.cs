@@ -160,20 +160,20 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep items in clipboard history even after you paste them..
+        ///   Looks up a localized string similar to .
         /// </summary>
-        public static string settings_keepafterpaste_description {
+        public static string settings_keep_after_paste_description {
             get {
-                return ResourceManager.GetString("settings_keepafterpaste_description", resourceCulture);
+                return ResourceManager.GetString("settings_keep_after_paste_description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Keep after pasting.
+        ///   Looks up a localized string similar to Keep items in clipboard history after pasting.
         /// </summary>
-        public static string settings_keepafterpaste_title {
+        public static string settings_keep_after_paste_title {
             get {
-                return ResourceManager.GetString("settings_keepafterpaste_title", resourceCulture);
+                return ResourceManager.GetString("settings_keep_after_paste_title", resourceCulture);
             }
         }
     }

@@ -150,10 +150,10 @@
   <data name="delete_toast_text" xml:space="preserve">
     <value>Deleted from clipboard history</value>
   </data>
-  <data name="settings_keepafterpaste_title" xml:space="preserve">
-    <value>Keep after pasting</value>
+  <data name="settings_keep_after_paste_description" xml:space="preserve">
+    <value />
   </data>
-  <data name="settings_keepafterpaste_description" xml:space="preserve">
-    <value>Keep items in clipboard history even after you paste them.</value>
+  <data name="settings_keep_after_paste_title" xml:space="preserve">
+    <value>Keep items in clipboard history after pasting</value>
   </data>
 </root>

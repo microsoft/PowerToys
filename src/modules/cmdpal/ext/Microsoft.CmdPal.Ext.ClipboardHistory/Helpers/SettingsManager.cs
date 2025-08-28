@@ -16,8 +16,8 @@ public class SettingsManager : JsonSettingsManager, ISettingOptions
 
     private readonly ToggleSetting _keepAfterPaste = new(
         Namespaced(nameof(KeepAfterPaste)),
-        Resources.settings_keepafterpaste_title!,
-        Resources.settings_keepafterpaste_description!,
+        Resources.settings_keep_after_paste_title!,
+        Resources.settings_keep_after_paste_description!,
         false);
 
     public bool KeepAfterPaste => _keepAfterPaste.Value;
