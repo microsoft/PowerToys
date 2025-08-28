@@ -106,6 +106,24 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete this item from clipboard history? This action cannot be undone..
+        /// </summary>
+        public static string delete_confirmation_message {
+            get {
+                return ResourceManager.GetString("delete_confirmation_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete Item?.
+        /// </summary>
+        public static string delete_confirmation_title {
+            get {
+                return ResourceManager.GetString("delete_confirmation_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Deleted from clipboard history.
         /// </summary>
         public static string delete_toast_text {
@@ -156,6 +174,24 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         public static string provider_display_name {
             get {
                 return ResourceManager.GetString("provider_display_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string settings_confirm_delete_description {
+            get {
+                return ResourceManager.GetString("settings_confirm_delete_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show a confirmation dialog when manually deleting an item.
+        /// </summary>
+        public static string settings_confirm_delete_title {
+            get {
+                return ResourceManager.GetString("settings_confirm_delete_title", resourceCulture);
             }
         }
         

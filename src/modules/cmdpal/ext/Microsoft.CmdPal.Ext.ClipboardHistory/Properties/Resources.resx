@@ -156,4 +156,16 @@
   <data name="settings_keep_after_paste_title" xml:space="preserve">
     <value>Keep items in clipboard history after pasting</value>
   </data>
+  <data name="settings_confirm_delete_title" xml:space="preserve">
+    <value>Show a confirmation dialog when manually deleting an item</value>
+  </data>
+  <data name="settings_confirm_delete_description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="delete_confirmation_title" xml:space="preserve">
+    <value>Delete Item?</value>
+  </data>
+  <data name="delete_confirmation_message" xml:space="preserve">
+    <value>Are you sure you want to delete this item from clipboard history? This action cannot be undone.</value>
+  </data>
 </root>

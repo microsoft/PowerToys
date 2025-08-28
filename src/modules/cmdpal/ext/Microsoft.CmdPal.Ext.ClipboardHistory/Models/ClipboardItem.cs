@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -90,6 +91,19 @@ public class ClipboardItem
             Data = new DetailsLink(Item.Timestamp.DateTime.ToString(DateTimeFormatInfo.CurrentInfo)),
         });
 
+        var deleteConfirmationCommand = new ConfirmableCommand()
+        {
+            Command = new DeleteItemCommand(this),
+            ConfirmationTitle = Properties.Resources.delete_confirmation_title!,
+            ConfirmationMessage = Properties.Resources.delete_confirmation_message!,
+            IsConfirmationRequired = () => Settings.DeleteFromHistoryRequiresConfirmation,
+        };
+        var deleteContextMenuItem = new CommandContextItem(deleteConfirmationCommand)
+        {
+            IsCritical = true,
+            RequestedShortcut = KeyChords.DeleteEntry,
+        };
+
         if (IsImage)
         {
             var iconData = new IconData(ImageData);
@@ -108,7 +122,7 @@ public class ClipboardItem
                 MoreCommands = [
                     new CommandContextItem(new PasteCommand(this, ClipboardFormat.Image, Settings)),
                     new Separator(),
-                    new CommandContextItem(new DeleteItemCommand(this)) { IsCritical = true, RequestedShortcut = KeyChords.DeleteEntry },
+                    deleteContextMenuItem,
                 ],
             };
         }
@@ -131,10 +145,10 @@ public class ClipboardItem
                     Metadata = metadata.ToArray(),
                 },
                 MoreCommands = [
-                                new CommandContextItem(new PasteCommand(this, ClipboardFormat.Text, Settings)),
-                                new Separator(),
-                                new CommandContextItem(new DeleteItemCommand(this)) { IsCritical = true, RequestedShortcut = KeyChords.DeleteEntry },
-                            ],
+                    new CommandContextItem(new PasteCommand(this, ClipboardFormat.Text, Settings)),
+                    new Separator(),
+                    deleteContextMenuItem,
+                ],
             };
         }
         else

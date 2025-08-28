@@ -20,7 +20,15 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
         Resources.settings_keep_after_paste_description!,
         false);
 
+    private readonly ToggleSetting _confirmDelete = new(
+        Namespaced(nameof(DeleteFromHistoryRequiresConfirmation)),
+        Resources.settings_confirm_delete_title!,
+        Resources.settings_confirm_delete_description!,
+        true);
+
     public bool KeepAfterPaste => _keepAfterPaste.Value;
+
+    public bool DeleteFromHistoryRequiresConfirmation => _confirmDelete.Value;
 
     private static string SettingsJsonPath()
     {
@@ -36,6 +44,7 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
         FilePath = SettingsJsonPath();
 
         Settings.Add(_keepAfterPaste);
+        Settings.Add(_confirmDelete);
 
         // Load settings from file upon initialization
         LoadSettings();

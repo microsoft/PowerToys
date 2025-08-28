@@ -7,4 +7,6 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 public interface ISettingOptions
 {
     bool KeepAfterPaste { get; }
+
+    bool DeleteFromHistoryRequiresConfirmation { get; }
 }
