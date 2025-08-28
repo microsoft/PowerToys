@@ -230,7 +230,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var settings = moduleSettingsRepository.SettingsConfig;
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("LightSwitch_ForceLightMode"), Shortcut = settings.Properties.ForceLightModeHotkey.Value.GetKeysList() },
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("LightSwitch_ForceDarkMode"), Shortcut = settings.Properties.ForceDarkModeHotkey.Value.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);

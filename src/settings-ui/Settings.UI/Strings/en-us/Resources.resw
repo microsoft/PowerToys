@@ -3167,12 +3167,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="LightSwitch_ForceLightMode_Shortcut.Header" xml:space="preserve">
     <value>Toggle theme shortcut</value>
   </data>
-  <data name="LightSwitch_ForceDarkMode_Shortcut.Header" xml:space="preserve">
-    <value>Switch between light and dark mode</value>
-  </data>
-  <data name="LightSwitch_ForceLightMode" xml:space="preserve">
-    <value>Force Light Mode</value>
-  </data>
   <data name="LightSwitch_ForceDarkMode" xml:space="preserve">
     <value>Force Dark Mode</value>
   </data>
@@ -5156,7 +5150,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="LightSwitch_BehaviorSettingsGroup.Header" xml:space="preserve">
     <value>Behavior</value>
-    </data>
+  </data>
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
   </data>

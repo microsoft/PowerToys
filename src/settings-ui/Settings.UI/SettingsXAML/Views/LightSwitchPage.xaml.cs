@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using CommunityToolkit.WinUI.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -246,14 +245,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void UpdateViewModelSettings(LightSwitchSettings darkSettings, GeneralSettings generalSettings)
+        private void UpdateViewModelSettings(LightSwitchSettings lightSwitchSettings, GeneralSettings generalSettings)
         {
-            if (darkSettings != null)
+            if (lightSwitchSettings != null)
             {
                 if (generalSettings != null)
                 {
                     ViewModel.IsEnabled = generalSettings.Enabled.LightSwitch;
-                    ViewModel.ModuleSettings = (LightSwitchSettings)darkSettings.Clone();
+                    ViewModel.ModuleSettings = (LightSwitchSettings)lightSwitchSettings.Clone();
 
                     UpdateEnabledState(generalSettings.Enabled.LightSwitch);
                 }
@@ -264,7 +263,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else
             {
-                throw new ArgumentNullException(nameof(darkSettings));
+                throw new ArgumentNullException(nameof(lightSwitchSettings));
             }
         }
 
