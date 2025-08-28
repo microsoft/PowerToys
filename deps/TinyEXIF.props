@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)TinyEXIF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TINYEXIF_NO_XMP_SUPPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- Disable all code analysis for TinyEXIF usage -->
+      <EnableCodeAnalysis>false</EnableCodeAnalysis>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

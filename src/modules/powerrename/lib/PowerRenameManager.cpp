@@ -480,7 +480,8 @@ HRESULT CPowerRenameManager::s_CreateInstance(_Outptr_ IPowerRenameManager** pps
 }
 
 CPowerRenameManager::CPowerRenameManager() :
-    m_refCount(1)
+    m_refCount(1),
+    m_metadataExtractor(std::make_unique<PowerRenameLib::MediaMetadataExtractor>())
 {
     InitializeCriticalSection(&m_critsecReentrancy);
 }
@@ -1179,4 +1180,87 @@ void CPowerRenameManager::_Cleanup()
     _ClearRegEx();
     _ClearEventHandlers();
     _ClearPowerRenameItems();
+}
+
+IFACEMETHODIMP CPowerRenameManager::ExtractMetadataForRename(_In_ PCWSTR filePath, _In_ PCWSTR pattern, _Out_ LPWSTR* result)
+{
+    HRESULT hr = E_FAIL;
+    *result = nullptr;
+
+    try
+    {
+        if (m_metadataExtractor && filePath && pattern)
+        {
+            std::wstring filePathStr(filePath);
+            std::wstring patternStr(pattern);
+
+            // Check if this is an image file (simple extension check)
+            std::wstring extension = filePathStr.substr(filePathStr.find_last_of(L".") + 1);
+            std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+
+            if (extension == L"jpg" || extension == L"jpeg" || extension == L"tiff" || 
+                extension == L"tif" || extension == L"png" || extension == L"bmp")
+            {
+                // Extract EXIF metadata
+                auto metadata = m_metadataExtractor->ExtractEXIFMetadata(filePathStr);
+
+                // Format the metadata according to the pattern
+                std::wstring formattedResult = m_metadataExtractor->FormatMetadataForRename(metadata, patternStr);
+
+                if (!formattedResult.empty())
+                {
+                    // Allocate and copy the result
+                    size_t resultLength = formattedResult.length() + 1;
+                    *result = static_cast<LPWSTR>(CoTaskMemAlloc(resultLength * sizeof(WCHAR)));
+                    if (*result)
+                    {
+                        wcscpy_s(*result, resultLength, formattedResult.c_str());
+                        hr = S_OK;
+                    }
+                    else
+                    {
+                        hr = E_OUTOFMEMORY;
+                    }
+                }
+                else
+                {
+                    // Return "Unknown" if no metadata found
+                    const wchar_t* unknownResult = L"Unknown";
+                    size_t resultLength = wcslen(unknownResult) + 1;
+                    *result = static_cast<LPWSTR>(CoTaskMemAlloc(resultLength * sizeof(WCHAR)));
+                    if (*result)
+                    {
+                        wcscpy_s(*result, resultLength, unknownResult);
+                        hr = S_OK;
+                    }
+                    else
+                    {
+                        hr = E_OUTOFMEMORY;
+                    }
+                }
+            }
+            else
+            {
+                // Not an image file
+                const wchar_t* notImageResult = L"NotImage";
+                size_t resultLength = wcslen(notImageResult) + 1;
+                *result = static_cast<LPWSTR>(CoTaskMemAlloc(resultLength * sizeof(WCHAR)));
+                if (*result)
+                {
+                    wcscpy_s(*result, resultLength, notImageResult);
+                    hr = S_OK;
+                }
+                else
+                {
+                    hr = E_OUTOFMEMORY;
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        hr = E_UNEXPECTED;
+    }
+
+    return hr;
 }

@@ -28,5 +28,8 @@
 #include <charconv>
 #include <string>
 #include <random>
+#include <map>
+#include <memory>
+#include <fstream>
 
 #include <winrt/base.h>

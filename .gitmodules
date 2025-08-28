@@ -7,3 +7,6 @@
 [submodule "deps/cziplib"]
 	path = deps/cziplib
 	url = https://github.com/kuba--/zip.git
+[submodule "deps/TinyEXIF"]
+	path = deps/TinyEXIF
+	url = https://github.com/cdcseacave/TinyEXIF

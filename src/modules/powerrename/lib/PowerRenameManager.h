@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include "srwlock.h"
+#include "MediaMetadataExtractor.h"
 
 #include <PowerRenameInterfaces.h>
 
@@ -42,6 +43,9 @@ public:
     IFACEMETHODIMP PutRenameRegEx(_In_ IPowerRenameRegEx* pRegEx);
     IFACEMETHODIMP GetRenameItemFactory(_COM_Outptr_ IPowerRenameItemFactory** ppItemFactory);
     IFACEMETHODIMP PutRenameItemFactory(_In_ IPowerRenameItemFactory* pItemFactory);
+    
+    // Metadata extraction methods (demonstration)
+    IFACEMETHODIMP ExtractMetadataForRename(_In_ PCWSTR filePath, _In_ PCWSTR pattern, _Out_ LPWSTR* result);
     
     uint32_t GetVisibleItemRealIndex(const uint32_t index) const override;
     
@@ -120,6 +124,9 @@ protected:
 
     CComPtr<IPowerRenameItemFactory> m_spItemFactory;
     CComPtr<IPowerRenameRegEx> m_spRegEx;
+
+    // Metadata extractor for image files
+    std::unique_ptr<PowerRenameLib::MediaMetadataExtractor> m_metadataExtractor;
 
     _Guarded_by_(m_lockEvents) std::vector<RENAME_MGR_EVENT> m_powerRenameManagerEvents;
     _Guarded_by_(m_lockItems) std::map<int, IPowerRenameItem*> m_renameItems;
