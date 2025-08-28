@@ -2,26 +2,32 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Common.Commands;
+using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation.Metadata;
+using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Data;
 
 internal sealed partial class IndexerListItem : ListItem
 {
+    // File extensions that are considered executable applications
+    private static readonly HashSet<string> ExecutableApplicationExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".exe", ".bat", ".cpl", ".msc", ".msi", ".cmd", ".ps1" };
     internal static readonly bool IsActionsFeatureEnabled = GetFeatureFlag();
 
     private static bool GetFeatureFlag()
     {
-        var env = System.Environment.GetEnvironmentVariable("CMDPAL_ENABLE_ACTIONS_LIST");
+        var env = Environment.GetEnvironmentVariable("CMDPAL_ENABLE_ACTIONS_LIST");
         return !string.IsNullOrEmpty(env) &&
-           (env == "1" || env.Equals("true", System.StringComparison.OrdinalIgnoreCase));
+           (env == "1" || env.Equals("true", StringComparison.OrdinalIgnoreCase));
     }
 
     internal string FilePath { get; private set; }
@@ -88,6 +94,22 @@ internal sealed partial class IndexerListItem : ListItem
         else
         {
             commands.Add(new CommandContextItem(openCommand));
+
+            var fileExtension = Path.GetExtension(fullPath).ToLower(CultureInfo.InvariantCulture);
+            if (ExecutableApplicationExtensions.Contains(fileExtension))
+            {
+                var parentDirectory = Path.GetDirectoryName(fullPath) ?? string.Empty;
+                commands.Add(new CommandContextItem(
+                new RunAsAdminCommand(fullPath, parentDirectory, false))
+                {
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter),
+                });
+                commands.Add(new CommandContextItem(
+                        new RunAsUserCommand(fullPath, parentDirectory))
+                {
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.U),
+                });
+            }
         }
 
         commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));
