@@ -7,7 +7,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -606,9 +605,24 @@ public class Win32Program : IProgram
     }
 
     private static IEnumerable<string> CustomProgramPaths(IEnumerable<ProgramSource> sources, IList<string> suffixes)
-        => sources?.Where(programSource => Directory.Exists(programSource.Location) && programSource.Enabled)
-            .SelectMany(programSource => ProgramPaths(programSource.Location, suffixes))
-            .ToList() ?? Enumerable.Empty<string>();
+    {
+        if (sources is not null)
+        {
+            var paths = new List<string>();
+
+            foreach (var programSource in sources)
+            {
+                if (Directory.Exists(programSource.Location) && programSource.Enabled)
+                {
+                    paths.AddRange(ProgramPaths(programSource.Location, suffixes));
+                }
+            }
+
+            return paths;
+        }
+
+        return [];
+    }
 
     // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
     private static List<string> PathEnvironmentProgramPaths(IList<string> suffixes)
@@ -637,9 +651,15 @@ public class Win32Program : IProgram
     }
 
     private static List<string> IndexPath(IList<string> suffixes, List<string> indexLocations)
-            => indexLocations
-            .SelectMany(indexLocation => ProgramPaths(indexLocation, suffixes))
-            .ToList();
+    {
+        var paths = new List<string>();
+        foreach (var indexLocation in indexLocations)
+        {
+            paths.AddRange(ProgramPaths(indexLocation, suffixes));
+        }
+
+        return paths;
+    }
 
     private static List<string> StartMenuProgramPaths(IList<string> suffixes)
     {
@@ -681,17 +701,51 @@ public class Win32Program : IProgram
             }
         }
 
-        return paths
-            .Where(path => suffixes.Any(suffix => path.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase)))
-            .Select(ExpandEnvironmentVariables)
-            .Where(path => path is not null)
-            .ToList();
+        var returnedPaths = new List<string>();
+        foreach (var path in paths)
+        {
+            var matchesSuffix = false;
+            foreach (var suffix in suffixes)
+            {
+                if (path.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    matchesSuffix = true;
+                    break;
+                }
+            }
+
+            if (matchesSuffix)
+            {
+                var expandedPath = ExpandEnvironmentVariables(path);
+                if (expandedPath is not null)
+                {
+                    returnedPaths.Add(expandedPath);
+                }
+            }
+        }
+
+        return returnedPaths;
     }
 
     private static IEnumerable<string> GetPathsFromRegistry(RegistryKey root)
-        => root
-            .GetSubKeyNames()
-            .Select(x => GetPathFromRegistrySubkey(root, x));
+    {
+        var result = new List<string>();
+
+        // Get all subkey names
+        var subKeyNames = root.GetSubKeyNames();
+
+        // Process each subkey to extract the path
+        foreach (var subkeyName in subKeyNames)
+        {
+            var path = GetPathFromRegistrySubkey(root, subkeyName);
+            if (!string.IsNullOrEmpty(path))
+            {
+                result.Add(path);
+            }
+        }
+
+        return result;
+    }
 
     private static string GetPathFromRegistrySubkey(RegistryKey root, string subkey)
     {
@@ -758,7 +812,28 @@ public class Win32Program : IProgram
     }
 
     public static List<Win32Program> DeduplicatePrograms(IEnumerable<Win32Program> programs)
-        => new HashSet<Win32Program>(programs, Win32ProgramEqualityComparer.Default).ToList();
+    {
+        // Create a HashSet with the custom equality comparer to automatically deduplicate programs
+        var uniquePrograms = new HashSet<Win32Program>(Win32ProgramEqualityComparer.Default);
+
+        // Filter out invalid programs and add valid ones to the HashSet
+        foreach (var program in programs)
+        {
+            if (program?.Valid == true)
+            {
+                uniquePrograms.Add(program);
+            }
+        }
+
+        // Convert the HashSet to a List for return
+        var result = new List<Win32Program>(uniquePrograms.Count);
+        foreach (var program in uniquePrograms)
+        {
+            result.Add(program);
+        }
+
+        return result;
+    }
 
     private static Win32Program GetProgramFromPath(string path)
     {
@@ -874,8 +949,22 @@ public class Win32Program : IProgram
 
                 foreach (var path in source.GetPaths())
                 {
-                    if (disabledProgramsList.All(x => x.UniqueIdentifier != path) &&
-                        !ExecutableApplicationExtensions.Contains(Extension(path)))
+                    if (ExecutableApplicationExtensions.Contains(Extension(path)))
+                    {
+                        continue;
+                    }
+
+                    var isDisabled = false;
+                    foreach (var disabledProgram in disabledProgramsList)
+                    {
+                        if (disabledProgram.UniqueIdentifier == path)
+                        {
+                            isDisabled = true;
+                            break;
+                        }
+                    }
+
+                    if (!isDisabled)
                     {
                         pathBag.Add(path);
                     }
@@ -895,7 +984,17 @@ public class Win32Program : IProgram
 
                 foreach (var path in source.GetPaths())
                 {
-                    if (disabledProgramsList.All(x => x.UniqueIdentifier != path))
+                    var isDisabled = false;
+                    foreach (var disabledProgram in disabledProgramsList)
+                    {
+                        if (disabledProgram.UniqueIdentifier == path)
+                        {
+                            isDisabled = true;
+                            break;
+                        }
+                    }
+
+                    if (!isDisabled)
                     {
                         runCommandPathBag.Add(path);
                     }
@@ -924,10 +1023,21 @@ public class Win32Program : IProgram
                 }
             });
 
-            var programs = programsList.ToList();
-            var runCommandPrograms = runCommandProgramsList.ToList();
+            var allPrograms = new List<Win32Program>();
 
-            return DeduplicatePrograms(programs.Concat(runCommandPrograms).Where(program => program?.Valid == true));
+            var programs = new List<Win32Program>();
+            foreach (var program in programsList)
+            {
+                allPrograms.Add(program);
+            }
+
+            var runCommandPrograms = new List<Win32Program>();
+            foreach (var program in runCommandProgramsList)
+            {
+                allPrograms.Add(program);
+            }
+
+            return DeduplicatePrograms(allPrograms);
         }
         catch (Exception e)
         {
