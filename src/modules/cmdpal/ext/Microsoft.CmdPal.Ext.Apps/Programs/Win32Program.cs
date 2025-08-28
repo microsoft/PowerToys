@@ -202,7 +202,7 @@ public class Win32Program : IProgram
         }
 
         commands.Add(new CommandContextItem(
-                    new Commands.CopyPathCommand(FullPath))
+                    new CopyTextCommand(FullPath) { Name = Resources.copy_path })
         {
             RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
         });

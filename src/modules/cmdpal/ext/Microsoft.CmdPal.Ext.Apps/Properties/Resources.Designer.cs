@@ -79,24 +79,6 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copied to clipboard!.
-        /// </summary>
-        internal static string copied_to_clipboard {
-            get {
-                return ResourceManager.GetString("copied_to_clipboard", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copy failed ({0}). Please try again..
-        /// </summary>
-        internal static string copy_failed {
-            get {
-                return ResourceManager.GetString("copy_failed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Copy path.
         /// </summary>
         internal static string copy_path {
@@ -174,6 +156,78 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string internet_shortcut_application {
             get {
                 return ResourceManager.GetString("internet_shortcut_application", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 0.
+        /// </summary>
+        internal static string limit_0 {
+            get {
+                return ResourceManager.GetString("limit_0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 1.
+        /// </summary>
+        internal static string limit_1 {
+            get {
+                return ResourceManager.GetString("limit_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 10.
+        /// </summary>
+        internal static string limit_10 {
+            get {
+                return ResourceManager.GetString("limit_10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 20.
+        /// </summary>
+        internal static string limit_20 {
+            get {
+                return ResourceManager.GetString("limit_20", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 5.
+        /// </summary>
+        internal static string limit_5 {
+            get {
+                return ResourceManager.GetString("limit_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Limit the number of applications returned from the top level.
+        /// </summary>
+        internal static string limit_fallback_results_source {
+            get {
+                return ResourceManager.GetString("limit_fallback_results_source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Limit fallback results to n apps.
+        /// </summary>
+        internal static string limit_fallback_results_source_description {
+            get {
+                return ResourceManager.GetString("limit_fallback_results_source_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        internal static string limit_none {
+            get {
+                return ResourceManager.GetString("limit_none", resourceCulture);
             }
         }
         

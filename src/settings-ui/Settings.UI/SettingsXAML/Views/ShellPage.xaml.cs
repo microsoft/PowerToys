@@ -1,11 +1,16 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Common.Search;
+using Common.Search.FuzzSearch;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -14,6 +19,8 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Settings.UI.Library;
 using Windows.Data.Json;
 using Windows.System;
 using WinRT.Interop;
@@ -23,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// Root page.
     /// </summary>
-    public sealed partial class ShellPage : UserControl
+    public sealed partial class ShellPage : UserControl, IDisposable
     {
         /// <summary>
         /// Declaration for the ipc callback function.
@@ -125,7 +132,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static bool IsUserAnAdmin { get; set; }
 
+        public Controls.TitleBar TitleBar => AppTitleBar;
+
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
+        private List<string> _searchSuggestions = [];
+
+        private CancellationTokenSource _searchDebounceCts;
+        private const int SearchDebounceMs = 500;
+        private bool _disposed;
+
+        // Removed trace id counter per cleanup
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -134,7 +150,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public ShellPage()
         {
             InitializeComponent();
-
+            SetWindowTitle();
             var settingsUtils = new SettingsUtils();
             ViewModel = new ShellViewModel(SettingsRepository<GeneralSettings>.GetInstance(settingsUtils));
             DataContext = ViewModel;
@@ -144,8 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // NL moved navigation to general page to the moment when the window is first activated (to not make flyout window disappear)
             // shellFrame.Navigate(typeof(GeneralPage));
             IPCResponseHandleList.Add(ReceiveMessage);
-            Services.IPCResponseService.Instance.RegisterForIPC();
-            SetTitleBar();
+            IPCResponseService.Instance.RegisterForIPC();
 
             if (_navViewParentLookup.Count > 0)
             {
@@ -159,6 +174,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 foreach (var child in parent.MenuItems.OfType<NavigationViewItem>())
                 {
                     _navViewParentLookup.TryAdd(child.GetValue(NavHelper.NavigateToProperty) as Type, parent);
+                    _searchSuggestions.Add(child.Content?.ToString());
                 }
             }
         }
@@ -293,11 +309,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void OobeButton_Click(object sender, RoutedEventArgs e)
-        {
-            OpenOobeWindowCallback();
-        }
-
         private bool navigationViewInitialStateProcessed; // avoid announcing initial state of the navigation pane.
 
         private void NavigationView_PaneOpened(NavigationView sender, object args)
@@ -350,17 +361,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void OOBEItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void OOBEItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
             OpenOobeWindowCallback();
         }
 
-        private async void FeedbackItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private async void FeedbackItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
             await Launcher.LaunchUriAsync(new Uri("https://aka.ms/powerToysGiveFeedback"));
         }
 
-        private void WhatIsNewItem_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
             OpenWhatIsNewWindowCallback();
         }
@@ -372,12 +383,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
 
-                if (_navViewParentLookup.TryGetValue(pageType, out var parentItem) && !parentItem.IsExpanded)
+                if (pageType != null && _navViewParentLookup.TryGetValue(pageType, out var parentItem) && !parentItem.IsExpanded)
                 {
                     parentItem.IsExpanded = true;
+                    ViewModel.Expanding = parentItem;
+                    NavigationService.Navigate(pageType);
                 }
-
-                NavigationService.Navigate(pageType);
             }
         }
 
@@ -419,43 +430,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             NavigationService.EnsurePageIsSelected(typeof(DashboardPage));
         }
 
-        private void SetTitleBar()
+        private void SetWindowTitle()
         {
-            var u = App.GetSettingsWindow();
-            if (u != null)
-            {
-                // A custom title bar is required for full window theme and Mica support.
-                // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
-                u.ExtendsContentIntoTitleBar = true;
-                u.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(u));
-                u.SetTitleBar(AppTitleBar);
-                var loader = ResourceLoaderInstance.ResourceLoader;
-                AppTitleBarText.Text = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            AppTitleBar.Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
 #if DEBUG
-                DebugMessage.Visibility = Visibility.Visible;
+            AppTitleBar.Subtitle = "Debug";
 #endif
-            }
         }
 
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
-            SetTitleBar();
+            Task.Run(() =>
+            {
+                SearchIndexService.BuildIndex();
+            })
+            .ContinueWith(_ => { });
         }
 
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
         {
             if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
             {
-                PaneToggleBtn.Visibility = Visibility.Visible;
-                AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
-                AppTitleBarText.Margin = new Thickness(12, 0, 0, 0);
+                AppTitleBar.IsPaneButtonVisible = true;
             }
             else
             {
-                PaneToggleBtn.Visibility = Visibility.Collapsed;
-                AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
-                AppTitleBarText.Margin = new Thickness(16, 0, 0, 0);
+                AppTitleBar.IsPaneButtonVisible = false;
             }
         }
 
@@ -480,6 +481,254 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Invoke the exit command from the tray icon
             IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
             NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_CLOSE_MENU_COMMAND, 0);
+        }
+
+        private List<SettingEntry> _lastSearchResults = new();
+        private string _lastQueryText = string.Empty;
+
+        private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            // Only respond to user input, not programmatic text changes
+            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                return;
+            }
+
+            var query = sender.Text?.Trim() ?? string.Empty;
+
+            // Debounce: cancel previous pending search
+            _searchDebounceCts?.Cancel();
+            _searchDebounceCts?.Dispose();
+            _searchDebounceCts = new CancellationTokenSource();
+            var token = _searchDebounceCts.Token;
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                sender.ItemsSource = null;
+                sender.IsSuggestionListOpen = false;
+                _lastSearchResults.Clear();
+                _lastQueryText = string.Empty;
+                return;
+            }
+
+            try
+            {
+                await Task.Delay(SearchDebounceMs, token);
+            }
+            catch (TaskCanceledException)
+            {
+                return; // debounce canceled
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // Query the index on a background thread to avoid blocking UI
+            List<SettingEntry> results = null;
+            try
+            {
+                // If the token is already canceled before scheduling, the task won't start.
+                results = await Task.Run(() => SearchIndexService.Search(query, token), token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            _lastSearchResults = results;
+            _lastQueryText = query;
+
+            var top = BuildSuggestionItems(query, results);
+
+            sender.ItemsSource = top;
+            sender.IsSuggestionListOpen = top.Count > 0;
+        }
+
+        private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            // Do not navigate on arrow navigation. Let QuerySubmitted handle commits (Enter/click).
+            // AutoSuggestBox will pass the chosen item via args.ChosenSuggestion to QuerySubmitted.
+            // No action required here.
+        }
+
+        private void NavigateFromSuggestion(SuggestionItem item)
+        {
+            var queryText = _lastQueryText;
+
+            if (item.IsShowAll)
+            {
+                // Navigate to full results page
+                var searchParams = new SearchResultsNavigationParams(queryText, _lastSearchResults);
+                NavigationService.Navigate<SearchResultsPage>(searchParams);
+
+                SearchBox.Text = string.Empty;
+                return;
+            }
+
+            // Navigate to the selected item
+            var pageType = GetPageTypeFromName(item.PageTypeName);
+            if (pageType != null)
+            {
+                if (string.IsNullOrEmpty(item.ElementName))
+                {
+                    NavigationService.Navigate(pageType);
+                }
+                else
+                {
+                    var navigationParams = new NavigationParams(item.ElementName, item.ParentElementName);
+                    NavigationService.Navigate(pageType, navigationParams);
+                }
+
+                // Clear the search box after navigation
+                SearchBox.Text = string.Empty;
+            }
+        }
+
+        private static Type GetPageTypeFromName(string pageTypeName)
+        {
+            if (string.IsNullOrEmpty(pageTypeName))
+            {
+                return null;
+            }
+
+            var assembly = typeof(GeneralPage).Assembly;
+            return assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{pageTypeName}");
+        }
+
+        private void CtrlF_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            SearchBox.Focus(FocusState.Programmatic);
+            args.Handled = true; // prevent further processing (e.g., unintended navigation)
+        }
+
+        private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var box = sender as AutoSuggestBox;
+            var current = box?.Text?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(current))
+            {
+                return; // nothing to restore
+            }
+
+            // If current text matches last query and we have results, reconstruct the suggestion list.
+            if (string.Equals(current, _lastQueryText, StringComparison.Ordinal) && _lastSearchResults?.Count > 0)
+            {
+                try
+                {
+                    var top = BuildSuggestionItems(current, _lastSearchResults);
+                    box.ItemsSource = top;
+                    box.IsSuggestionListOpen = top.Count > 0;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Error restoring suggestion list {ex.Message}");
+                }
+            }
+        }
+
+        // Centralized suggestion projection logic used by TextChanged & GotFocus restore.
+        private List<SuggestionItem> BuildSuggestionItems(string query, List<SettingEntry> results)
+        {
+            results ??= new();
+            if (results.Count == 0)
+            {
+                var rl = ResourceLoaderInstance.ResourceLoader;
+                var noResultsPrefix = rl.GetString("Shell_Search_NoResults");
+                if (string.IsNullOrEmpty(noResultsPrefix))
+                {
+                    noResultsPrefix = "No results for";
+                }
+
+                var headerText = $"{noResultsPrefix} '{query}'";
+                return new List<SuggestionItem>
+                {
+                    new()
+                    {
+                        Header = headerText,
+                        IsNoResults = true,
+                    },
+                };
+            }
+
+            var list = results.Take(5).Select(e =>
+            {
+                string subtitle = string.Empty;
+                if (e.Type != EntryType.SettingsPage)
+                {
+                    subtitle = SearchIndexService.GetLocalizedPageName(e.PageTypeName);
+                    if (string.IsNullOrEmpty(subtitle))
+                    {
+                        subtitle = SearchIndexService.Index
+                            .Where(x => x.Type == EntryType.SettingsPage && x.PageTypeName == e.PageTypeName)
+                            .Select(x => x.Header)
+                            .FirstOrDefault() ?? string.Empty;
+                    }
+                }
+
+                return new SuggestionItem
+                {
+                    Header = e.Header,
+                    Icon = e.Icon,
+                    PageTypeName = e.PageTypeName,
+                    ElementName = e.ElementName,
+                    ParentElementName = e.ParentElementName,
+                    Subtitle = subtitle,
+                    IsShowAll = false,
+                };
+            }).ToList();
+
+            if (results.Count > 5)
+            {
+                list.Add(new SuggestionItem { IsShowAll = true });
+            }
+
+            return list;
+        }
+
+        private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            // If a suggestion is selected, navigate directly
+            if (args.ChosenSuggestion is SuggestionItem chosen)
+            {
+                NavigateFromSuggestion(chosen);
+                return;
+            }
+
+            var queryText = (args.QueryText ?? _lastQueryText)?.Trim();
+            if (string.IsNullOrWhiteSpace(queryText))
+            {
+                NavigationService.Navigate<DashboardPage>();
+                return;
+            }
+
+            // Prefer cached results (from live search); if empty, perform a fresh search
+            var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
+                ? _lastSearchResults
+                : await Task.Run(() => SearchIndexService.Search(queryText));
+
+            var searchParams = new SearchResultsNavigationParams(queryText, matched);
+            NavigationService.Navigate<SearchResultsPage>(searchParams);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _searchDebounceCts?.Cancel();
+            _searchDebounceCts?.Dispose();
+            _searchDebounceCts = null;
+            _disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 }

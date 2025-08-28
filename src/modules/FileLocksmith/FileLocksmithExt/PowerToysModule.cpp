@@ -19,6 +19,26 @@
 
 class FileLocksmithModule : public PowertoyModuleIface
 {
+private:
+    // Update registration based on enabled state
+    void UpdateRegistration(bool enabled)
+    {
+        if (enabled)
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            FileLocksmithRuntimeRegistration::EnsureRegistered();
+            Logger::info(L"File Locksmith context menu registered");
+#endif
+        }
+        else
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            FileLocksmithRuntimeRegistration::Unregister();
+            Logger::info(L"File Locksmith context menu unregistered");
+#endif
+        }
+    }
+
 public:
     FileLocksmithModule()
     {
@@ -88,27 +108,16 @@ public:
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-        else
-        {
-#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            FileLocksmithRuntimeRegistration::EnsureRegistered();
-#endif
-        }
 
         m_enabled = true;
+        UpdateRegistration(m_enabled);
     }
 
     virtual void disable() override
     {
         Logger::info(L"File Locksmith disabled");
-        if (!package::IsWin11OrGreater())
-        {
-#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            FileLocksmithRuntimeRegistration::Unregister();
-            Logger::info(L"File Locksmith context menu unregistered (Win10)");
-#endif
-        }
         m_enabled = false;
+        UpdateRegistration(m_enabled);
     }
 
     virtual bool is_enabled() override
@@ -141,6 +150,7 @@ private:
     {
         m_enabled = FileLocksmithSettingsInstance().GetEnabled();
         m_extended_only = FileLocksmithSettingsInstance().GetShowInExtendedContextMenu();
+        UpdateRegistration(m_enabled);
         Trace::EnableFileLocksmith(m_enabled);
     }
 

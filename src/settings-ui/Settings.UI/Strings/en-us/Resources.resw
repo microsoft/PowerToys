@@ -151,6 +151,22 @@
     <value>Customize the shortcut to bring up the command bar</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
+  <data name="Shell_DebugLabel.Text" xml:space="preserve">
+    <value>Debug</value>
+    <comment>Debug label visible in title bar when debugging</comment>
+  </data>
+  <data name="Shell_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search for settings</value>
+    <comment>Placeholder in settings search box</comment>
+  </data>
+  <data name="Shell_Search_NoResults" xml:space="preserve">
+    <value>No results for</value>
+    <comment>Prefix used in the no-results row; the query is appended in code, e.g., "No results for 'abc'"</comment>
+  </data>
+  <data name="Shell_Search_ShowAll" xml:space="preserve">
+    <value>Show all results</value>
+    <comment>Tail item text to navigate to full results</comment>
+  </data>
   <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
     <value>Default mode</value>
   </data>
@@ -398,6 +414,9 @@
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
     <value>Advanced Settings</value>
   </data>
+  <data name="MouseWithoutBorders_EasyMouseSettings_Group.Header" xml:space="preserve">
+    <value>Easy Mouse</value>
+  </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
   </data>
@@ -418,6 +437,27 @@
   <data name="MouseWithoutBorders_EasyMouseOption_Shift.Content" xml:space="preserve">
     <value>Shift</value>
     <comment>This is the Shift keyboard key</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Header" xml:space="preserve">
+    <value>Disable Easy Mouse when an application is running in full screen.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
+    <value>Prevent Easy Mouse from moving to another machine when an application is in full-screen mode.</value>
+  </data>
+  <data name="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine.Title" xml:space="preserve">
+    <value>Disabling Easy Mouse in full-screen mode only affects the host PC. It won’t stop the mouse from moving away from remote machines.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>msedge.exe
+firefox.exe
+opera.exe</value>
+    <comment>Allow easy mouse when chrome is in fullscreen mode.</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Header" xml:space="preserve">
+    <value>Ignored fullscreen applications</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Description" xml:space="preserve">
+    <value>Allow Easy Mouse to move between machines even if one of these applications is running in full screen, separate each executable with a new line.</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
     <value>Shortcut to lock all machines.</value>
@@ -2651,6 +2691,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
+  <data name="WarningShortcutConflict.Title" xml:space="preserve">
+    <value>Shortcut conflict</value>
+  </data>
+  <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
+    <value>A conflict has been detected for this shortcut.</value>
+  </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
   </data>
@@ -2856,20 +2902,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_GlidingCursor.Description" xml:space="preserve">
     <value>An accessibility feature that lets you control the mouse with a single button using guided horizontal and vertical lines</value>
   </data>
-	<data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
     <value>Initial line speed</value>
   </data>
-	<data name="MouseUtils_GlidingCursor_InitialSpeed.Description" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor_InitialSpeed.Description" xml:space="preserve">
     <value>Speed of the horizontal or vertical line when it begins moving</value>
   </data>
-	<data name="MouseUtils_GlidingCursor_DelaySpeed.Header" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor_DelaySpeed.Header" xml:space="preserve">
     <value>Reduced line speed</value>
   </data>
-	<data name="MouseUtils_GlidingCursor_DelaySpeed.Description" xml:space="preserve">
+  <data name="MouseUtils_GlidingCursor_DelaySpeed.Description" xml:space="preserve">
     <value>Speed after slowing down the line with a second shortcut press</value>
   </data>
-
-	<data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
+  <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
   </data>
   <data name="FancyZones_Radio_Default_Theme.Content" xml:space="preserve">
@@ -5177,6 +5222,18 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
   </data>
+  <data name="SearchResults_Title.ModuleTitle" xml:space="preserve">
+    <value>Search results</value>
+  </data>
+  <data name="SearchResults_ModulesTitle.Header" xml:space="preserve">
+    <value>Modules</value>
+  </data>
+  <data name="SearchResults_NoResultsHeader.Text" xml:space="preserve">
+    <value>No results</value>
+  </data>
+  <data name="SearchResults_NoResultsDescription.Text" xml:space="preserve">
+    <value>Try a different search term</value>
+  </data>
   <data name="InAppHotkeyConflictTooltipText" xml:space="preserve">
     <value>This shortcut is already in use by another utility.</value>
   </data>
@@ -5214,7 +5271,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>All shortcuts function correctly</value>
   </data>
   <data name="ResolveConflicts_Button.Content" xml:space="preserve">
-	<value>Resolve conflicts</value>
+    <value>Resolve conflicts</value>
   </data>
   <data name="ShortcutConflictControl_Title.Text" xml:space="preserve">
     <value>Shortcut conflicts</value>
@@ -5234,5 +5291,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="Hosts_NoLeadingSpaces.Description" xml:space="preserve">
     <value>Do not prepend spaces to active lines when saving the hosts file</value>
+  </data>
+  <data name="Search_ResultsFor" xml:space="preserve">
+    <value>Results for</value>
+    <comment>Prefix for search string. E.g. "Results for 'shortcut'"</comment>
   </data>
 </root>
