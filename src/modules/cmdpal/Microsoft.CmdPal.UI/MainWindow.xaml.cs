@@ -611,6 +611,20 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HandleSummon(string commandId)
     {
+        if (_ignoreHotKeyWhenFullScreen)
+        {
+            // If we're in full screen mode, ignore the hotkey
+            if (WindowHelper.IsWindowFullscreen())
+            {
+                return;
+            }
+        }
+
+        HandleSummonCore(commandId);
+    }
+
+    private void HandleSummonCore(string commandId)
+    {
         var isRootHotkey = string.IsNullOrEmpty(commandId);
         PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
@@ -671,15 +685,6 @@ public sealed partial class MainWindow : WindowEx,
                     var hotkeyIndex = (int)wParam.Value;
                     if (hotkeyIndex < _hotkeys.Count)
                     {
-                        if (_ignoreHotKeyWhenFullScreen)
-                        {
-                            // If we're in full screen mode, ignore the hotkey
-                            if (WindowHelper.IsWindowFullscreen())
-                            {
-                                return (LRESULT)IntPtr.Zero;
-                            }
-                        }
-
                         var hotkey = _hotkeys[hotkeyIndex];
                         HandleSummon(hotkey.CommandId);
                     }
