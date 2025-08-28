@@ -22,6 +22,10 @@ internal sealed partial class DeleteItemCommand : InvokableCommand
     public override CommandResult Invoke()
     {
         Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
-        return CommandResult.ShowToast(Properties.Resources.delete_toast_text);
+        return CommandResult.ShowToast(new ToastArgs
+        {
+            Message = Properties.Resources.delete_toast_text,
+            Result = CommandResult.KeepOpen(),
+        });
     }
 }
