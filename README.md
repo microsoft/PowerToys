@@ -35,19 +35,19 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.94%22
-[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.93%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.93.0/PowerToysUserSetup-0.93.0-x64.exe 
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.93.0/PowerToysUserSetup-0.93.0-arm64.exe 
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.93.0/PowerToysSetup-0.93.0-x64.exe 
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.93.0/PowerToysSetup-0.93.0-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.95%22
+[github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.94%22
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysUserSetup-0.94.0-x64.exe 
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysUserSetup-0.94.0-arm64.exe 
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysSetup-0.94.0-x64.exe 
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysSetup-0.94.0-arm64.exe
  
 |  Description   | Filename |
 |----------------|----------|
-| Per user - x64       | [PowerToysUserSetup-0.93.0-x64.exe][ptUserX64] |
-| Per user - ARM64     | [PowerToysUserSetup-0.93.0-arm64.exe][ptUserArm64] |
-| Machine wide - x64   | [PowerToysSetup-0.93.0-x64.exe][ptMachineX64] |
-| Machine wide - ARM64 | [PowerToysSetup-0.93.0-arm64.exe][ptMachineArm64] |
+| Per user - x64       | [PowerToysUserSetup-0.94.0-x64.exe][ptUserX64] |
+| Per user - ARM64     | [PowerToysUserSetup-0.94.0-arm64.exe][ptUserArm64] |
+| Machine wide - x64   | [PowerToysSetup-0.94.0-x64.exe][ptMachineX64] |
+| Machine wide - ARM64 | [PowerToysSetup-0.94.0-arm64.exe][ptMachineArm64] |
 
 This is our preferred method.
 
@@ -218,7 +218,7 @@ In this release, we focused on new features, stability, optimization improvement
 
 ### What is being planned over the next few releases
 
-For [v0.94][github-next-release-work], we'll work on the items below:
+For [v0.95][github-next-release-work], we'll work on the items below:
 
  - Continued Command Palette polish
  - Working on Shortcut Guide v2 (Thanks [@noraa-junker](https://github.com/noraa-junker)!)
