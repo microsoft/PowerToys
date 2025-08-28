@@ -10,4 +10,15 @@
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>
+  
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)TinyEXIF\TinyEXIF.cpp">
+      <EnableCodeAnalysis>false</EnableCodeAnalysis>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level1</WarningLevel>
+      <DisableSpecificWarnings>26495;26451;26493;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemGroup>
 </Project>
