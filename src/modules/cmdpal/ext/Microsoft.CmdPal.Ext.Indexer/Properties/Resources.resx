@@ -186,4 +186,13 @@
   <data name="Indexer_NoResultsMessageTip" xml:space="preserve">
     <value>Tip: Refine your search using filters, just like in File Explorer (e.g., type:directory).</value>
   </data>
+  <data name="Indexer_Filter_All" xml:space="preserve">
+    <value>All files &amp; folders</value>
+  </data>
+  <data name="Indexer_Filter_Folders_Only" xml:space="preserve">
+    <value>Folders only</value>
+  </data>
+  <data name="Indexer_Filter_Files_Only" xml:space="preserve">
+    <value>Files only</value>
+  </data>
 </root>

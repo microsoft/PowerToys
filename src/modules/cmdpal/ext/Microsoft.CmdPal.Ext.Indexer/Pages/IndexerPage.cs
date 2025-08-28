@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -31,6 +32,10 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         PlaceholderText = Resources.Indexer_PlaceholderText;
         _searchEngine = new();
         _queryCookie = 10;
+
+        var filters = new SearchFilters();
+        filters.PropChanged += Filters_PropChanged;
+        Filters = filters;
     }
 
     public IndexerPage(string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
@@ -43,18 +48,28 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         initialQuery = query;
         SearchText = query;
         disposeSearchEngine = false;
+
+        var filters = new SearchFilters();
+        filters.PropChanged += Filters_PropChanged;
+        Filters = filters;
     }
 
     public override ICommandItem EmptyContent => GetEmptyContent();
+
+    private void Filters_PropChanged(object sender, IPropChangedEventArgs args)
+    {
+
+    }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         if (oldSearch != newSearch && newSearch != initialQuery)
         {
+            var actualSearch = FullSearchString(newSearch);
             _ = Task.Run(() =>
             {
-                _isEmptyQuery = string.IsNullOrWhiteSpace(newSearch);
-                Query(newSearch);
+                _isEmptyQuery = string.IsNullOrWhiteSpace(actualSearch);
+                Query(actualSearch);
                 LoadMore();
                 OnPropertyChanged(nameof(EmptyContent));
                 initialQuery = null;
@@ -63,6 +78,23 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
     }
 
     public override IListItem[] GetItems() => [.. _indexerListItems];
+
+
+    private string FullSearchString(string query)
+    {
+        switch (Filters.CurrentFilterId)
+        {
+            case "folders":
+                return $"{query} kind:folders";
+                break;
+            case "files":
+                return $"{query} kind:NOT folders";
+                break;
+            case "all"
+            default:
+                return query;
+        }
+    }
 
     public override void LoadMore()
     {

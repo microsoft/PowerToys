@@ -160,6 +160,33 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All files &amp; folders.
+        /// </summary>
+        internal static string Indexer_Filter_All {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Files only.
+        /// </summary>
+        internal static string Indexer_Filter_Files_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Files_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folders only.
+        /// </summary>
+        internal static string Indexer_Filter_Folders_Only {
+            get {
+                return ResourceManager.GetString("Indexer_Filter_Folders_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Find file from path.
         /// </summary>
         internal static string Indexer_Find_Path_fallback_display_title {
@@ -187,7 +214,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Tip: Improve your search result using filters like in Windows Explorer. (For example: type:directory).
+        ///   Looks up a localized string similar to Tip: Refine your search using filters, just like in File Explorer (e.g., type:directory)..
         /// </summary>
         internal static string Indexer_NoResultsMessageTip {
             get {

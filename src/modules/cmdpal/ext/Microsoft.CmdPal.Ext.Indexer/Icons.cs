@@ -19,4 +19,6 @@ internal sealed class Icons
     internal static IconInfo DocumentIcon { get; } = new("\uE8A5"); // Document
 
     internal static IconInfo FolderOpenIcon { get; } = new("\uE838"); // FolderOpen
+
+    internal static IconInfo FilesIcon { get; } = new("\uF571"); // PrintAllPages
 }
