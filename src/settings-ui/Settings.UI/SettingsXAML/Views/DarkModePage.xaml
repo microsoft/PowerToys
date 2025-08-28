@@ -4,9 +4,11 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ViewModel="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Settings.UI.Library.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
@@ -16,6 +18,30 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
+        <animations:ImplicitAnimationSet x:Name="ShowTransitions">
+            <animations:OffsetAnimation
+                EasingMode="EaseOut"
+                From="0,24,0"
+                To="0"
+                Duration="0:0:0.4" />
+            <animations:OpacityAnimation
+                EasingMode="EaseOut"
+                From="0"
+                To="1"
+                Duration="0:0:0.2" />
+        </animations:ImplicitAnimationSet>
+        <animations:ImplicitAnimationSet x:Name="HideTransitions">
+            <animations:OffsetAnimation
+                EasingMode="EaseOut"
+                From="0"
+                To="0,24,0"
+                Duration="0:0:0.2" />
+            <animations:OpacityAnimation
+                EasingMode="EaseOut"
+                From="1"
+                To="0"
+                Duration="0:0:0.1" />
+        </animations:ImplicitAnimationSet>
     </Page.Resources>
 
     <controls:SettingsPageControl
@@ -54,71 +80,48 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="DarkMode_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup Header="Schedule" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        HorizontalContentAlignment="Stretch"
+                        ContentAlignment="Vertical"
+                        Description="See when dark mode and light mode kick in"
+                        Header="Schedule preview">
+                        <controls:Timeline
+                            Margin="0,48,0,48"
+                            EndTime="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}"
+                            StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
+                            Sunrise="07:00"
+                            Sunset="21:00" />
+                    </tkcontrols:SettingsCard>
+
                     <tkcontrols:SettingsExpander
                         Description="Determine when dark mode should be turned on"
-                        Header="Schedule dark mode"
+                        Header="Set schedule"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE823;}"
                         IsExpanded="True">
                         <ComboBox
                             SelectedValue="{x:Bind ViewModel.ScheduleMode, Mode=TwoWay}"
                             SelectedValuePath="Tag"
                             SelectionChanged="ScheduleMode_SelectionChanged">
-                            <ComboBoxItem Content="Set hours" Tag="FixedHours" />
-                            <ComboBoxItem Content="Sunset to sunrise (Geolocation)" Tag="SunsetToSunriseGeo" />
-                            <ComboBoxItem Content="Sunset to sunrise (User selected)" Tag="SunsetToSunriseUser" />
+                            <ComboBoxItem Content="Manual" Tag="FixedHours" />
+                            <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunriseGeo" />
                         </ComboBox>
-
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
-                                <controls:Timeline
-                                    Margin="0,48,0,48"
-                                    EndTime="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}"
-                                    StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
-                                    Sunrise="07:00"
-                                    Sunset="21:00" />
-                            </tkcontrols:SettingsCard>
-
-                            <!--  Only show time pickers if FixedHours  -->
                             <tkcontrols:SettingsCard Header="Turn on darkmode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-
                                 <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.LightTimeTimeSpan, Mode=TwoWay}" />
-
                             </tkcontrols:SettingsCard>
-
                             <tkcontrols:SettingsCard Header="Turn off darkmode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
                                 <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-
-                            <!--  Only show location and offset if SunsetToSunriseGeo  -->
-                            <tkcontrols:SettingsCard
-                                Description="Use your location to calculate sunset and sunrise times"
-                                Header="Location"
-                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
+                            <tkcontrols:SettingsCard Header="Sunrise and sunset times" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <controls:IsEnabledTextBlock
-                                        x:Name="SunTimes"
+                                    <TextBlock
                                         VerticalAlignment="Center"
-                                        FontSize="12"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="Please Sync to update Sunrise/Sunset times" />
-                                    <Button
-                                        x:Name="SyncButton"
-                                        HorizontalAlignment="Right"
-                                        Click="GetLocation_Click">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <ProgressRing
-                                                x:Name="SyncLoader"
-                                                Width="16"
-                                                Height="16"
-                                                IsActive="False"
-                                                Visibility="Collapsed" />
-                                            <TextBlock Text="Sync" />
-                                        </StackPanel>
-                                    </Button>
+                                        Text="08:00 - 17:00" />
+                                    <Button Click="SyncLocationButton_Click" Content="Sync" />
                                 </StackPanel>
                             </tkcontrols:SettingsCard>
-
                             <tkcontrols:SettingsCard Header="Apply an offset in minutes" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
                                 <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
@@ -145,30 +148,6 @@
                                 </Grid>
                             </tkcontrols:SettingsCard>
 
-
-
-                            <!--  Only show user selected times if SunsetToSunriseUser  -->
-                            <tkcontrols:SettingsCard Header="Select location" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseUser}">
-                                <StackPanel Orientation="Vertical" Spacing="8">
-                                    <!--  Todo: City drop down  -->
-                                    <ComboBox
-                                        x:Name="CityComboBox"
-                                        Width="250"
-                                        DisplayMemberPath="Display"
-                                        ItemsSource="{x:Bind ViewModel.Cities, Mode=OneWay}"
-                                        PlaceholderText="Select city"
-                                        SelectedItem="{x:Bind ViewModel.SelectedCity, Mode=TwoWay}" />
-                                    <!--  Todo: Updated times from changing city  -->
-                                    <TextBlock
-                                        Margin="8,0,0,0"
-                                        VerticalAlignment="Center"
-                                        FontSize="12"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />
-                                    <!--  Todo: Option to add an offset  -->
-
-                                </StackPanel>
-                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Header="Apply an offset in minutes" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseUser}">
                                 <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
@@ -196,26 +175,29 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                    <tkcontrols:SettingsExpander
-                        Description="Pick which parts of your PC should follow dark mode"
-                        Header="Apply dark mode to"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
-                        IsExpanded="True">
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl
-                                    Description="Taskbar, Start, and other system UI"
-                                    Header="System"
-                                    IsChecked="{x:Bind ViewModel.ChangeSystem, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl
-                                    Description="Supported applications"
-                                    Header="Apps"
-                                    IsChecked="{x:Bind ViewModel.ChangeApps, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+
+                    <controls:SettingsGroup Header="Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander
+                            Description="Pick which parts of your PC should follow dark mode"
+                            Header="Apply dark mode to"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
+                            IsExpanded="True">
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
+                                    <controls:CheckBoxWithDescriptionControl
+                                        Description="Taskbar, Start, and other system UI"
+                                        Header="System"
+                                        IsChecked="{x:Bind ViewModel.ChangeSystem, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
+                                    <controls:CheckBoxWithDescriptionControl
+                                        Description="Supported applications"
+                                        Header="Apps"
+                                        IsChecked="{x:Bind ViewModel.ChangeApps, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+                    </controls:SettingsGroup>
                     <!--  Force mode buttons  -->
                     <!--<tkcontrols:SettingsCard
         Header="Force mode now"
@@ -230,6 +212,115 @@
         Command="{x:Bind ViewModel.ForceDarkCommand}" />
             </StackPanel>
           </tkcontrols:SettingsCard>-->
+
+                    <ContentDialog
+                        x:Name="LocationDialog"
+                        Title="Select a location"
+                        IsPrimaryButtonEnabled="True"
+                        IsSecondaryButtonEnabled="True"
+                        PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+                        PrimaryButtonText="Select"
+                        SecondaryButtonText="Cancel">
+                        <Grid MinHeight="268">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="To calculate the sunrise and sunset, enter a location to be used." />
+                            <tkcontrols:Segmented
+                                x:Name="locationSegmented"
+                                Grid.Row="1"
+                                Margin="0,16,0,12"
+                                HorizontalAlignment="Stretch"
+                                SelectedIndex="0">
+                                <tkcontrols:SegmentedItem Content="Find my location" Tag="Auto" />
+                                <tkcontrols:SegmentedItem Content="Select a city" Tag="Selection" />
+                            </tkcontrols:Segmented>
+                            <tkcontrols:SwitchPresenter Grid.Row="2" Value="{Binding SelectedItem.Tag, ElementName=locationSegmented}">
+                                <tkcontrols:Case Value="Auto">
+                                    <Grid animations:Implicit.HideAnimations="{StaticResource HideTransitions}" animations:Implicit.ShowAnimations="{StaticResource ShowTransitions}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid>
+                                            <TextBlock x:Name="SunTimes" VerticalAlignment="Center" />
+                                            <StackPanel
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal"
+                                                Spacing="8">
+                                                <ProgressRing
+                                                    x:Name="SyncLoader"
+                                                    Width="16"
+                                                    Height="16"
+                                                    IsActive="False"
+                                                    Visibility="Collapsed" />
+                                                <Button
+                                                    x:Name="SyncButton"
+                                                    HorizontalAlignment="Right"
+                                                    Click="GetLocation_Click"
+                                                    Content="Sync" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <TextBlock Grid.Row="1">
+                                            <Run Text="Sunrise:" />
+                                            <Run Text="{x:Bind ViewModel.LightTime}" />
+                                        </TextBlock>
+                                        <TextBlock Grid.Row="2">
+                                            <Run Text="Sunset:" />
+                                            <Run Text="{x:Bind ViewModel.DarkTime}" />
+                                        </TextBlock>
+                                    </Grid>
+                                </tkcontrols:Case>
+                                <tkcontrols:Case Value="Selection">
+                                    <Grid animations:Implicit.HideAnimations="{StaticResource HideTransitions}" animations:Implicit.ShowAnimations="{StaticResource ShowTransitions}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <ComboBox
+                                            x:Name="CityComboBox"
+                                            Margin="0,0,0,8"
+                                            HorizontalAlignment="Stretch"
+                                            DisplayMemberPath="Display"
+                                            Header="Search for a city"
+                                            ItemsSource="{x:Bind ViewModel.Cities, Mode=OneWay}"
+                                            PlaceholderText="Select city"
+                                            SelectedItem="{x:Bind ViewModel.SelectedCity, Mode=TwoWay}">
+                                            <!--<ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="helpers:City">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock Text="{x:Bind Name}" />
+                                                        <TextBlock
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                                            Text="{x:Bind Country}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>-->
+                                        </ComboBox>
+                                        <!--  Todo: Updated times from changing city  -->
+
+
+
+                                        <TextBlock Grid.Row="1">
+                                            <Run Text="Sunrise:" />
+                                            <Run Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />
+                                        </TextBlock>
+                                        <TextBlock Grid.Row="2">
+                                            <Run Text="Sunset:" />
+                                            <Run Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />
+                                        </TextBlock>
+                                        <!--  Todo: Option to add an offset  -->
+                                    </Grid>
+                                </tkcontrols:Case>
+                            </tkcontrols:SwitchPresenter>
+                        </Grid>
+                    </ContentDialog>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

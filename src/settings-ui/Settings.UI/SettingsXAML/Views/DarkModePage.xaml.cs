@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using CommunityToolkit.WinUI.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -290,6 +291,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 ViewModel.IsEnabled = recommendedState;
             }
+        }
+
+        private async void SyncLocationButton_Click(object sender, RoutedEventArgs e)
+        {
+            await LocationDialog.ShowAsync();
         }
     }
 }
