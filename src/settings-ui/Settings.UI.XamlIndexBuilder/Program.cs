@@ -288,9 +288,25 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
 
         public static string GetElementUid(XElement element, XNamespace x)
         {
-            // Try x:Uid
+            // Try x:Uid on the element itself
             var uid = element.Attribute(x + "Uid")?.Value;
-            return uid;
+            if (!string.IsNullOrWhiteSpace(uid))
+            {
+                return uid;
+            }
+
+            // Fallback: check the first direct child element's x:Uid
+            var firstChild = element.Elements().FirstOrDefault();
+            if (firstChild != null)
+            {
+                var childUid = firstChild.Attribute(x + "Uid")?.Value;
+                if (!string.IsNullOrWhiteSpace(childUid))
+                {
+                    return childUid;
+                }
+            }
+
+            return null;
         }
 
         public static string GetParentElementName(XElement element, XNamespace x)

@@ -170,7 +170,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             if (string.IsNullOrEmpty(header))
             {
-                Debug.WriteLine($"[SearchIndexService] WARNING: No header localization found for ElementUid: '{elementUid}'");
+                header = GetString(resourceLoader, $"{elementUid}/Content");
             }
 
             return (header, description);
