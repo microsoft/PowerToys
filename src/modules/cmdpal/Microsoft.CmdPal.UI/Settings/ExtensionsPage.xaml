@@ -14,19 +14,107 @@
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <converters:BoolNegationConverter x:Key="InvertedBoolConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <Page.KeyboardAccelerators>
+        <KeyboardAccelerator Modifiers="Control" Key="F" Invoked="OnFindInvoked"/>
+    </Page.KeyboardAccelerators>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ScrollViewer Grid.Row="1">
+
+        <ScrollViewer Grid.Row="1" x:Name="RootScrollViewer">
             <Grid Padding="16">
                 <StackPanel
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
-                    <ItemsRepeater ItemsSource="{x:Bind viewModel.CommandProviders, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
+                    <!-- toolbar 1 -->
+                    <Grid Padding="0,0,0,8">
+                        <AutoSuggestBox x:Uid="Settings_ExtensionsPage_SearchBox"
+                                        x:Name="SearchBox"
+                                        Width="320"
+                                        MaxWidth="320"
+                                        HorizontalAlignment="Left"
+                                        Text="{x:Bind viewModel.Extensions.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                            <AutoSuggestBox.QueryIcon>
+                                <SymbolIcon Symbol="Find" />
+                            </AutoSuggestBox.QueryIcon>
+                        </AutoSuggestBox>
+                    </Grid>
+
+                    <!-- toolbar 2 -->
+                    <Grid Padding="0,8,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="ItemCounterTextBlock"
+                                   Grid.Column="0"
+                                   VerticalAlignment="Center"
+                                   Style="{StaticResource BodyTextBlockStyle}"
+                                   Text="{x:Bind viewModel.Extensions.ItemCounterText, Mode=OneWay}" />
+
+                        <!-- Right actions: spinner + label (when reloading) then button -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                        Visibility="{x:Bind viewModel.Extensions.ShowManualReloadOverlay, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ProgressRing Width="16" Height="16" IsActive="True" />
+                                <TextBlock x:Uid="Settings_ExtensionsPage_Reloading_Text"
+                                           Style="{StaticResource BodyTextBlockStyle}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <Button x:Uid="Settings_ExtensionsPage_More_Button"
+                                    x:Name="MoreButton"
+                                    VerticalAlignment="Center">
+                                <Button.Flyout>
+                                    <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                        <MenuFlyoutItem x:Uid="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem"
+                                                        Command="{x:Bind viewModel.Extensions.ReloadExtensionsCommand}">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE777;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                                <FontIcon Glyph="&#xE10C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Empty state when no results match the current search -->
+                    <Grid x:Name="NoResultsPanel"
+                          x:Load="{x:Bind viewModel.Extensions.ShowNoResultsPanel, Mode=OneWay}"
+                          Padding="48"
+                          CornerRadius="4">
+                        <StackPanel Spacing="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <TextBlock x:Uid="Settings_ExtensionsPage_NoResults_Primary"
+                                       Style="{StaticResource BodyStrongTextBlockStyle}"
+                                       TextAlignment="Center" />
+                            <TextBlock x:Uid="Settings_ExtensionsPage_NoResults_Secondary"
+                                       Style="{StaticResource BodyTextBlockStyle}"
+                                       TextAlignment="Center" />
+                            <HyperlinkButton x:Uid="Settings_ExtensionsPage_NoResults_Hyperlink"
+                                             HorizontalAlignment="Center"
+                                             Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}"
+                                             Margin="0,16,0,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <ItemsRepeater x:Name="ProvidersRepeater"
+                                   x:Load="{x:Bind viewModel.Extensions.HasResults, Mode=OneWay}"
+                                   ItemsSource="{x:Bind viewModel.Extensions.FilteredProviders, Mode=OneWay}"
+                                   Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:ProviderSettingsViewModel">
                                 <controls:SettingsCard
@@ -54,6 +142,16 @@
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
+
+                    <TextBlock x:Uid="Settings_ExtensionsPage_RelatedItemsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard
+                        x:Uid="Settings_ExtensionsPage_ManageExtensions_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE719;}"
+                        IsClickEnabled="True"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}" />
+
                 </StackPanel>
             </Grid>
         </ScrollViewer>
