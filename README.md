@@ -140,7 +140,7 @@ In this release, we focused on new features, stability, optimization improvement
  - Preserves Adaptive Card action types during trimming using DynamicDependency.
  - Adds acrylic backdrop and style tweaks to the context menu. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Prevents disposed ContentPage instances from handling messages; cleans up on close. Thanks [@jiripolasek](https://github.com/jiripolasek)!
- - Paves the way for future API additions with new interfaces and type‑cache prepopulation.
+ - Paves the way for future API additions with new interfaces and type cache pre-loading mechanism.
  - Adds “evil” samples to repro tricky behavior.
  - Fixes WinGet issues in release builds by avoiding non‑trim‑safe LINQ.
  - Cancels in-progress item fetches when a new one starts in CmdPal to prevent stale results.

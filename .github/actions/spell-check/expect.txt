@@ -1315,6 +1315,7 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
+projitems
 PROPERTYKEY
 Propset
 PROPVARIANT
