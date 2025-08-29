@@ -507,7 +507,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         var announcement = string.Format(CultureInfo.CurrentCulture, _pageNavigatedAnnouncement.Format, pageTitle);
 
-        RootFrame.AnnounceActionForAccessibility(announcement, "CommandPalettePageNavigatedTo");
+        UIHelper.AnnounceActionForAccessibility(RootFrame, announcement, "CommandPalettePageNavigatedTo");
     }
 
     /// <summary>
