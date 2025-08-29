@@ -76,6 +76,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
+            // Update the GlobalHotkeyConflictManager with current settings
+            GlobalHotkeyConflictManager.Instance?.UpdateGeneralSettings(generalSettingsConfig);
+
             foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
                 AddDashboardListItem(moduleType);
@@ -126,6 +129,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
             }
 
+            // Update the GlobalHotkeyConflictManager with updated settings
+            GlobalHotkeyConflictManager.Instance?.UpdateGeneralSettings(generalSettingsConfig);
+
             // Request updated conflicts after module state change
             RequestConflictData();
         }
@@ -137,6 +143,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 GetShortcutModules();
 
                 OnPropertyChanged(nameof(ShortcutModules));
+
+                // Update the GlobalHotkeyConflictManager with updated settings
+                GlobalHotkeyConflictManager.Instance?.UpdateGeneralSettings(generalSettingsConfig);
 
                 // Request updated conflicts after module state change
                 RequestConflictData();

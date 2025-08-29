@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 
@@ -14,6 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
     public class GlobalHotkeyConflictManager
     {
         private readonly Func<string, int> _sendIPCMessage;
+        private GeneralSettings _generalSettings;
 
         private static GlobalHotkeyConflictManager _instance;
         private AllHotkeyConflictsData _currentConflicts = new AllHotkeyConflictsData();
@@ -34,6 +37,11 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         public event EventHandler<AllHotkeyConflictsEventArgs> ConflictsUpdated;
 
+        public void UpdateGeneralSettings(GeneralSettings generalSettings)
+        {
+            _generalSettings = generalSettings;
+        }
+
         public void RequestAllConflicts()
         {
             var requestMessage = "{\"get_all_hotkey_conflicts\":{}}";
@@ -42,8 +50,76 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         private void OnAllHotkeyConflictsReceived(object sender, AllHotkeyConflictsEventArgs e)
         {
-            _currentConflicts = e.Conflicts;
-            ConflictsUpdated?.Invoke(this, e);
+            _currentConflicts = FilterConflictsForDisabledModules(e.Conflicts);
+            ConflictsUpdated?.Invoke(this, new AllHotkeyConflictsEventArgs { Conflicts = _currentConflicts });
+        }
+
+        private AllHotkeyConflictsData FilterConflictsForDisabledModules(AllHotkeyConflictsData conflicts)
+        {
+            if (_generalSettings?.Enabled == null)
+            {
+                return conflicts;
+            }
+
+            var filteredConflicts = new AllHotkeyConflictsData();
+
+            // Filter InAppConflicts
+            if (conflicts.InAppConflicts != null)
+            {
+                filteredConflicts.InAppConflicts = new List<HotkeyConflictGroupData>();
+                foreach (var conflictGroup in conflicts.InAppConflicts)
+                {
+                    var enabledModules = conflictGroup.Modules
+                        .Where(module => IsModuleEnabled(module.ModuleType))
+                        .ToList();
+
+                    // Only include conflict groups that have conflicts between enabled modules
+                    if (enabledModules.Count > 1)
+                    {
+                        filteredConflicts.InAppConflicts.Add(new HotkeyConflictGroupData
+                        {
+                            Hotkey = conflictGroup.Hotkey,
+                            IsSystemConflict = conflictGroup.IsSystemConflict,
+                            Modules = enabledModules
+                        });
+                    }
+                }
+            }
+
+            // System conflicts should always be included regardless of module state
+            if (conflicts.SystemConflicts != null)
+            {
+                filteredConflicts.SystemConflicts = new List<HotkeyConflictGroupData>();
+                foreach (var conflictGroup in conflicts.SystemConflicts)
+                {
+                    var enabledModules = conflictGroup.Modules
+                        .Where(module => IsModuleEnabled(module.ModuleType))
+                        .ToList();
+
+                    // Include system conflicts if there are any enabled modules involved
+                    if (enabledModules.Count > 0)
+                    {
+                        filteredConflicts.SystemConflicts.Add(new HotkeyConflictGroupData
+                        {
+                            Hotkey = conflictGroup.Hotkey,
+                            IsSystemConflict = conflictGroup.IsSystemConflict,
+                            Modules = enabledModules
+                        });
+                    }
+                }
+            }
+
+            return filteredConflicts;
+        }
+
+        private bool IsModuleEnabled(ModuleType moduleType)
+        {
+            if (_generalSettings?.Enabled == null)
+            {
+                return true; // If we can't determine, assume enabled to be safe
+            }
+
+            return ModuleHelper.GetIsModuleEnabled(_generalSettings, moduleType);
         }
 
         public bool HasConflictForHotkey(HotkeySettings hotkey, string moduleName, int hotkeyID)
