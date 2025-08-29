@@ -623,6 +623,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(GridProperties):
                 IsGridView = model.GridProperties is not null;
                 GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
+                GridProperties?.InitializeProperties();
                 UpdateProperty(nameof(IsGridView));
                 break;
             case nameof(ShowDetails):
