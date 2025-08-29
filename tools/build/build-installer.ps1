@@ -58,6 +58,9 @@ param (
     [string]$InstallerSuffix = 'wix5'
 )
 
+# Ensure helpers are available
+. "$PSScriptRoot\build-common.ps1"
+
 # Find the PowerToys repository root automatically
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $repoRoot = $scriptDir
@@ -80,50 +83,7 @@ if (-not $repoRoot -or -not (Test-Path (Join-Path $repoRoot "PowerToys.sln"))) {
 }
 
 Write-Host "PowerToys repository root detected: $repoRoot"
-
-function RunMSBuild {
-    param (
-        [string]$Solution, 
-        [string]$ExtraArgs  
-    )
-
-    $base = @(
-        $Solution
-        "/p:Platform=$Platform"
-        "/p:Configuration=$Configuration"
-        "/p:CIBuild=true"
-        '/verbosity:normal'
-        '/clp:Summary;PerformanceSummary;ErrorsOnly;WarningsOnly'
-        '/nologo'
-    )
-
-    $cmd = $base + ($ExtraArgs -split ' ')
-    Write-Host ("[MSBUILD] {0} {1}" -f $Solution, ($cmd -join ' '))
-    
-    # Run MSBuild from the repository root directory
-    Push-Location $repoRoot
-    try {
-        & msbuild.exe @cmd
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error ("Build failed: {0}  {1}" -f $Solution, $ExtraArgs)
-            exit $LASTEXITCODE
-        }
-    } finally {
-        Pop-Location
-    }
-}
-
-function RestoreThenBuild {
-    param ([string]$Solution)
-
-    # 1) restore
-    RunMSBuild $Solution '/t:restore /p:RestorePackagesConfig=true'
-    # 2) build  -------------------------------------------------
-    RunMSBuild $Solution '/m'
-}
-
 # WiX v5 projects use WixToolset.Sdk via NuGet/MSBuild; a separate WiX 3 installation is not required here.
-
 Write-Host ("[PIPELINE] Start | Platform={0} Configuration={1} PerUser={2}" -f $Platform, $Configuration, $PerUser)
 Write-Host ''
 
@@ -134,7 +94,9 @@ if (Test-Path $cmdpalOutputPath) {
     Remove-Item $cmdpalOutputPath -Recurse -Force -ErrorAction Ignore
 }
 
-RestoreThenBuild 'PowerToys.sln'
+$commonArgs = '/p:CIBuild=true'
+# No local projects found (or continuing) - build full solution and tools
+RestoreThenBuild 'PowerToys.sln' $commonArgs $Platform $Configuration
 
 $msixSearchRoot = Join-Path $repoRoot "$Platform\$Configuration"
 $msixFiles = Get-ChildItem -Path $msixSearchRoot -Recurse -Filter *.msix |
@@ -148,8 +110,8 @@ else {
     Write-Warning "[SIGN] No .msix files found in $msixSearchRoot"
 }
 
-RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln'
-RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln'
+RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
+RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
 
 Write-Host '[CLEAN] installer (keep *.exe)'
 Push-Location $repoRoot
@@ -159,10 +121,10 @@ try {
     Pop-Location
 }
 
-RunMSBuild 'installer\PowerToysSetup.sln' '/t:restore /p:RestorePackagesConfig=true'
+RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /t:restore /p:RestorePackagesConfig=true" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "/m /t:PowerToysInstallerVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix"
+RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysInstallerVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix" $Platform $Configuration
 
-RunMSBuild 'installer\PowerToysSetup.sln' "/m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix"
+RunMSBuild 'installer\PowerToysSetup.sln' "$commonArgs /m /t:PowerToysBootstrapperVNext /p:PerUser=$PerUser /p:InstallerSuffix=$InstallerSuffix" $Platform $Configuration
 
 Write-Host '[PIPELINE] Completed'
