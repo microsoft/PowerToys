@@ -147,10 +147,16 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Uid="Shell_Dashboard"
+                    x:Name="DashboardNavigationItem"
+                    AutomationProperties.AutomationId="DashboardNavItem"
                     helpers:NavHelper.NavigateTo="views:DashboardPage"
                     Icon="{ui:FontIcon Glyph=&#xE80F;}" />
 
-                <NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
+                                <NavigationViewItem 
+                    x:Uid="Shell_General" 
+                    x:Name="GeneralNavigationItem"
+                    AutomationProperties.AutomationId="GeneralNavItem"
+                    helpers:NavHelper.NavigateTo="views:GeneralPage">
                     <NavigationViewItem.Icon>
                         <AnimatedIcon>
                             <AnimatedIcon.Source>
@@ -167,43 +173,63 @@
                 <!--  System Tools  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelSystemTools"
+                    x:Name="SystemToolsNavigationItem"
+                    AutomationProperties.AutomationId="SystemToolsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SystemTools.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_AdvancedPaste"
+                            x:Name="AdvancedPasteNavigationItem"
+                            AutomationProperties.AutomationId="AdvancedPasteNavItem"
                             helpers:NavHelper.NavigateTo="views:AdvancedPastePage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_Awake"
+                            x:Name="AwakeNavigationItem"
+                            AutomationProperties.AutomationId="AwakeNavItem"
                             helpers:NavHelper.NavigateTo="views:AwakePage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_CmdPal"
+                            x:Name="CmdPalNavigationItem"
+                            AutomationProperties.AutomationId="CmdPalNavItem"
                             helpers:NavHelper.NavigateTo="views:CmdPalPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_ColorPicker"
+                            x:Name="ColorPickerNavigationItem"
+                            AutomationProperties.AutomationId="ColorPickerNavItem"
                             helpers:NavHelper.NavigateTo="views:ColorPickerPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_PowerLauncher"
+                            x:Name="PowerLauncherNavigationItem"
+                            AutomationProperties.AutomationId="PowerLauncherNavItem"
                             helpers:NavHelper.NavigateTo="views:PowerLauncherPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_MeasureTool"
+                            x:Name="MeasureToolNavigationItem"
+                            AutomationProperties.AutomationId="MeasureToolNavItem"
                             helpers:NavHelper.NavigateTo="views:MeasureToolPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_ShortcutGuide"
+                            x:Name="ShortcutGuideNavigationItem"
+                            AutomationProperties.AutomationId="ShortcutGuideNavItem"
                             helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_TextExtractor"
+                            x:Name="TextExtractorNavigationItem"
+                            AutomationProperties.AutomationId="TextExtractorNavItem"
                             helpers:NavHelper.NavigateTo="views:PowerOcrPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_ZoomIt"
+                            x:Name="ZoomItNavigationItem"
+                            AutomationProperties.AutomationId="ZoomItNavItem"
                             helpers:NavHelper.NavigateTo="views:ZoomItPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
                     </NavigationViewItem.MenuItems>
@@ -212,23 +238,33 @@
                 <!--  Windowing & Layouts  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelWindowsAndLayouts "
+                    x:Name="WindowingAndLayoutsNavigationItem"
+                    AutomationProperties.AutomationId="WindowingAndLayoutsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_AlwaysOnTop"
+                            x:Name="AlwaysOnTopNavigationItem"
+                            AutomationProperties.AutomationId="AlwaysOnTopNavItem"
                             helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_CropAndLock"
+                            x:Name="CropAndLockNavigationItem"
+                            AutomationProperties.AutomationId="CropAndLockNavItem"
                             helpers:NavHelper.NavigateTo="views:CropAndLockPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_FancyZones"
+                            x:Name="FancyZonesNavigationItem"
+                            AutomationProperties.AutomationId="FancyZonesNavItem"
                             helpers:NavHelper.NavigateTo="views:FancyZonesPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_Workspaces"
+                            x:Name="WorkspacesNavigationItem"
+                            AutomationProperties.AutomationId="WorkspacesNavItem"
                             helpers:NavHelper.NavigateTo="views:WorkspacesPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
                     </NavigationViewItem.MenuItems>
@@ -237,25 +273,35 @@
                 <!--  Input / Output  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelInputOutput"
+                    x:Name="InputOutputNavigationItem"
+                    AutomationProperties.AutomationId="InputOutputNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/InputOutput.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_KeyboardManager"
+                            x:Name="KeyboardManagerNavigationItem"
+                            AutomationProperties.AutomationId="KeyboardManagerNavItem"
                             helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}" />
                         <!--  Find my mouse  -->
                         <!--  Mouse Highlighter  -->
                         <NavigationViewItem
                             x:Uid="Shell_MouseUtilities"
+                            x:Name="MouseUtilitiesNavigationItem"
+                            AutomationProperties.AutomationId="MouseUtilitiesNavItem"
                             helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_MouseWithoutBorders"
+                            x:Name="MouseWithoutBordersNavigationItem"
+                            AutomationProperties.AutomationId="MouseWithoutBordersNavItem"
                             helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_QuickAccent"
+                            x:Name="QuickAccentNavigationItem"
+                            AutomationProperties.AutomationId="QuickAccentNavItem"
                             helpers:NavHelper.NavigateTo="views:PowerAccentPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
                     </NavigationViewItem.MenuItems>
@@ -264,32 +310,46 @@
                 <!--  File Management  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelFileManagement"
+                    x:Name="FileManagementNavigationItem"
+                    AutomationProperties.AutomationId="FileManagementNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileManagement.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_PowerPreview"
+                            x:Name="PowerPreviewNavigationItem"
+                            AutomationProperties.AutomationId="PowerPreviewNavItem"
                             helpers:NavHelper.NavigateTo="views:PowerPreviewPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}" />
                         <!--  File Explorer Thumbnails  -->
                         <NavigationViewItem
                             x:Uid="Shell_FileLocksmith"
+                            x:Name="FileLocksmithNavigationItem"
+                            AutomationProperties.AutomationId="FileLocksmithNavItem"
                             helpers:NavHelper.NavigateTo="views:FileLocksmithPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_ImageResizer"
+                            x:Name="ImageResizerNavigationItem"
+                            AutomationProperties.AutomationId="ImageResizerNavItem"
                             helpers:NavHelper.NavigateTo="views:ImageResizerPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ImageResizer.png}" />
                         <NavigationViewItem
                             x:Uid="NewPlus_Product_Name"
+                            x:Name="NewPlusNavigationItem"
+                            AutomationProperties.AutomationId="NewPlusNavItem"
                             helpers:NavHelper.NavigateTo="views:NewPlusPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_Peek"
+                            x:Name="PeekNavigationItem"
+                            AutomationProperties.AutomationId="PeekNavItem"
                             helpers:NavHelper.NavigateTo="views:PeekPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_PowerRename"
+                            x:Name="PowerRenameNavigationItem"
+                            AutomationProperties.AutomationId="PowerRenameNavItem"
                             helpers:NavHelper.NavigateTo="views:PowerRenamePage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}" />
                     </NavigationViewItem.MenuItems>
@@ -298,23 +358,33 @@
                 <!--  Advanced  -->
                 <NavigationViewItem
                     x:Uid="Shell_TopLevelAdvanced"
+                    x:Name="AdvancedNavigationItem"
+                    AutomationProperties.AutomationId="AdvancedNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Advanced.png}"
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_CmdNotFound"
+                            x:Name="CmdNotFoundNavigationItem"
+                            AutomationProperties.AutomationId="CmdNotFoundNavItem"
                             helpers:NavHelper.NavigateTo="views:CmdNotFoundPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_EnvironmentVariables"
+                            x:Name="EnvironmentVariablesNavigationItem"
+                            AutomationProperties.AutomationId="EnvironmentVariablesNavItem"
                             helpers:NavHelper.NavigateTo="views:EnvironmentVariablesPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/EnvironmentVariables.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_Hosts"
+                            x:Name="HostsNavigationItem"
+                            AutomationProperties.AutomationId="HostsNavItem"
                             helpers:NavHelper.NavigateTo="views:HostsPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_RegistryPreview"
+                            x:Name="RegistryPreviewNavigationItem"
+                            AutomationProperties.AutomationId="RegistryPreviewNavItem"
                             helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}" />
                     </NavigationViewItem.MenuItems>
@@ -324,18 +394,26 @@
                 <StackPanel Orientation="Vertical">
                     <NavigationViewItem
                         x:Uid="OOBE_NavViewItem"
+                        x:Name="OOBENavigationItem"
+                        AutomationProperties.AutomationId="OOBENavItem"
                         Icon="{ui:FontIcon Glyph=&#xF133;}"
                         Tapped="OOBEItem_Tapped" />
                     <NavigationViewItem
                         x:Uid="WhatIsNew_NavViewItem"
+                        x:Name="WhatIsNewNavigationItem"
+                        AutomationProperties.AutomationId="WhatIsNewNavItem"
                         Icon="{ui:FontIcon Glyph=&#xE789;}"
                         Tapped="WhatIsNewItem_Tapped" />
                     <NavigationViewItem
                         x:Uid="Feedback_NavViewItem"
+                        x:Name="FeedbackNavigationItem"
+                        AutomationProperties.AutomationId="FeedbackNavItem"
                         Icon="{ui:FontIcon Glyph=&#xED15;}"
                         Tapped="FeedbackItem_Tapped" />
                     <NavigationViewItem
                         x:Uid="Close_NavViewItem"
+                        x:Name="CloseNavigationItem"
+                        AutomationProperties.AutomationId="CloseNavItem"
                         Icon="{ui:FontIcon Glyph=&#xE7E8;}"
                         Tapped="Close_Tapped"
                         Visibility="{x:Bind ViewModel.ShowCloseMenu, Mode=OneWay}" />
