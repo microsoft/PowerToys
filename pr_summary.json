@@ -1,0 +1,97 @@
+{
+  "generated_at": "2025-08-27 15:30:00",
+  "summary": "PowerToys Release Notes - Feature Changes Summary",
+  "total_analyzed_prs": 69,
+  "prs_with_ai_overview": 33,
+  "release_notes_format": {
+    "Settings": [
+      "Added comprehensive search functionality for PowerToys settings, enabling users to quickly find and navigate to specific settings and modules with live suggestions and dedicated search results page. Thanks [@vanzue](https://github.com/vanzue)! #41285",
+      "Moved the shutdown button from title bar to navigation view footer menu item, only visible when system tray icon is hidden, with confirmation dialog added. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! #40714",
+      "Simplified and fixed styling issues in the Advanced Paste module description. Thanks [@OldUser101](https://github.com/OldUser101)! #37563"
+    ],
+    "Installer": [
+      "Upgraded installer from deprecated WiX3 to WiX5, improving security, service quality, and community support while maintaining backward compatibility during the transition. Thanks [@zhaopy536](https://github.com/zhaopy536)! #40877",
+      "Refactored shell extension registration from static WiX installer registration to conditional runtime registration, addressing issues where DLLs load even when modules are disabled. Thanks [@lei9444](https://github.com/lei9444)! #41275",
+      "Fixed localization issues for ImageResizer component by correcting satellite resource DLL installation path to WinUI3Apps directory. Thanks [@lei9444](https://github.com/lei9444)! #41152",
+      "Ensured Windows 11 adds registry entries for the old context menu so that 'Show more options'/classic menu always includes them. Thanks [@lei9444](https://github.com/lei9444)! #41351"
+    ],
+    "Command Palette": [
+      "Fixed WinGet functionality issues in release builds by addressing trim-safety problems, replacing LINQ operations with manual iteration. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41183",
+      "Fixed missing icons by introducing shared dependency management to ensure all extensions include required dependencies. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41298",
+      "Added infrastructure to make it easier to extend Command Palette's WinRT APIs with type cache pre-loading mechanism. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41056",
+      "Fixed race condition causing search text to 'jiggle' or bounce during rapid updates. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41165",
+      "Added cancellation support to prevent race conditions when multiple fetch operations are triggered. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41166",
+      "Addressed memory leaks by ensuring proper cleanup of ListItemViewModel objects when no longer needed. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41169",
+      "Added support for special path prefixes, allowing users to search paths starting with ~ (home directory), / or \\\\ (system root directory). Thanks [@davidegiacometti](https://github.com/davidegiacometti)! #40887",
+      "Added comprehensive unit test coverage for WebSearch and Shell extensions with interface abstractions for better testability. Thanks [@moooyo](https://github.com/moooyo)! #41272",
+      "Added comprehensive unit test coverage for Apps and Bookmarks extensions with interface abstractions for better testability. Thanks [@moooyo](https://github.com/moooyo)! #41238",
+      "Added unit tests to verify 'Close on Enter' behavior in Calculator extension. Thanks [@mohammed-saalim](https://github.com/mohammed-saalim)! #41202",
+      "Added local keyboard listener to handle GoBack key that cannot be captured through standard WinUI input handling. Thanks [@jiripolasek](https://github.com/jiripolasek)! #41122",
+      "Improved page exception details for users with timestamp, HRESULT, and full exception information. Thanks [@jiripolasek](https://github.com/jiripolasek)! #41035",
+      "Honored 'Single-click activation' only for pointer clicks and not for keyboard activation. Thanks [@jiripolasek](https://github.com/jiripolasek)! #41119",
+      "Added acrylic backdrop to context menus and tweaked styling to match CmdPal aesthetics. Thanks [@jiripolasek](https://github.com/jiripolasek)! #41136",
+      "Removed constraints that kept context menu flyout within window bounds, allowing proper positioning. Thanks [@jiripolasek](https://github.com/jiripolasek)! #41133",
+      "Replaced brush used for menu item separator with WinUI 3 standard flyout menu brush. Thanks [@jiripolasek](https://github.com/jiripolasek)! #41130",
+      "Fixed race condition in cancellation handling to prevent InvalidOperationException. Thanks [@jiripolasek](https://github.com/jiripolasek)! #40983",
+      "Made it easier to add APIs in the future by working around metadata-based marshalling limitations. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41056",
+      "Used empty content for WindowWalker, Windows Settings, and Windows Search extensions when no results. Thanks [@htcfreek](https://github.com/htcfreek)! #40722",
+      "Modernized null checking patterns using 'is null' and 'is not null' expressions. Thanks [@michaeljolley](https://github.com/michaeljolley)! #40972",
+      "Added filters support for DynamicListPage functionality. Thanks [@michaeljolley](https://github.com/michaeljolley)! #40783",
+      "Ensured alias changes are propagated to related TopLevelViewModels. Thanks [@michaeljolley](https://github.com/michaeljolley)! #40970",
+      "Replaced Clipboard History extension outline icon with colorful Fluent UI System icon. Thanks [@jiripolasek](https://github.com/jiripolasek)! #41012",
+      "Brought existing Settings window to foreground when opened. Thanks [@jiripolasek](https://github.com/jiripolasek)! #41087",
+      "Fixed regression when updating command provider without commands. Thanks [@jiripolasek](https://github.com/jiripolasek)! #40984",
+      "Checked icon parent before adding in ContentIcon to prevent duplicate parenting issues. Thanks [@jiripolasek](https://github.com/jiripolasek)! #40931",
+      "Prevented disposed ContentPage from handling messages to avoid zombie processes. Thanks [@jiripolasek](https://github.com/jiripolasek)! #41083",
+      "Made CommandProvider.Dispose virtual for better extensibility. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41184",
+      "Added evil samples for testing edge cases. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41158",
+      "Setting activation shortcut now auto-focuses on window and delivers dialog for screen readers. Thanks [@chatasweetie](https://github.com/chatasweetie)! #40968",
+      "Added app icon to run context menu item in all apps extension. Thanks [@michaeljolley](https://github.com/michaeljolley)! #40991",
+      "Added WinAppSDK dependency in SamplePageExtension and ProcessMonitorExtension. Thanks [@moooyo](https://github.com/moooyo)! #41274",
+      "Removed all explicit dependencies from toolkit and extensions API on WinAppSDK. Thanks [@rluengen](https://github.com/rluengen)! #41261",
+      "Used DynamicDependency to preserve trimmed Adaptive Card action types. Thanks [@lei9444](https://github.com/lei9444)! #41027",
+      "Added the pdb's for Extensions too. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! #41306"
+    ],
+    "Mouse Utilities": [
+      "Added new feature to prevent Easy Mouse from switching machines when foreground application is running in fullscreen mode, including toggle and per-app exclusion list. Thanks [@dot-tb](https://github.com/dot-tb)! #39854",
+      "Implemented gliding cursor accessibility feature, extending Mouse Pointer Crosshairs functionality to enable single-button cursor control through guided horizontal and vertical lines. Thanks [@mikehall-ms](https://github.com/mikehall-ms)! #41221",
+      "Fixed GPU performance issues in Mouse Highlighter's spotlight mode by replacing GPU-intensive border-based spotlight with resource-friendly radial gradient mask implementation. Thanks [@vanzue](https://github.com/vanzue)! #41079"
+    ],
+    "QuickAccent": [
+      "Implemented persistence for character usage data, allowing frequently used characters to maintain sort order between application runs. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! #37577",
+      "Fixed hybrid graphics issue on laptops with Optimus technology by changing Topmost behavior from permanently enabled to conditionally applied only when selection window is displayed. Thanks [@daverayment](https://github.com/daverayment)! #41044",
+      "Added Maltese language support, enabling users to select Maltese and type its unique accented letters. Thanks [@rovercoder](https://github.com/rovercoder)! #39473"
+    ],
+    "UI and Accessibility": [
+      "Added accessibility IDs to FancyZones UI elements to improve reliability of UI tests by replacing text-based element selection with accessibility ID-based selection. Thanks [@lei9444](https://github.com/lei9444)! #41316",
+      "Added accessibility IDs to Command Palette UI components to make UI tests more reliable. Thanks [@lei9444](https://github.com/lei9444)! #41295",
+      "Moved automation notification functionality to UIHelper and implemented it in ListPage and SettingsWindow. Thanks [@chatasweetie](https://github.com/chatasweetie)! #41016",
+      "Fixed issue where wait cursor was incorrectly displayed when hovering over Always On Top window border, ensuring proper arrow cursor is shown. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! #41091"
+    ],
+    "Localization": [
+      "Fixed Spanish localization issues by preventing 'Awake' product name from being translated to 'Activo' throughout PowerToys Settings interface. Thanks [@Copilot](https://github.com/Copilot)! #41252",
+      "Changed PowerRename context menu accelerator key from 'W' to 'E' to resolve conflict with Windows Explorer 'New' command accelerator. Thanks [@aaron-ni](https://github.com/aaron-ni)! #39291"
+    ],
+    "Development and Testing": [
+      "Implemented comprehensive hotkey conflict detection and resolution system, providing real-time conflict checking and centralized management interface for resolving conflicts. Thanks [@shuaiyuanxx](https://github.com/shuaiyuanxx)! #41029",
+      "Added comprehensive telemetry tracking for shortcut conflict detection functionality, capturing user interactions and conflict resolution patterns. Thanks [@shuaiyuanxx](https://github.com/shuaiyuanxx)! #41271",
+      "Updated UTF.Unknown dependency from 2.5.1 to 2.6.0, fixing old framework targeting issues. Thanks [@304NotModified](https://github.com/304NotModified)! #41042",
+      "Improved NuGet dependency version validation process via dotnet restore. Thanks [@yeelam-gordon](https://github.com/yeelam-gordon)! #40646",
+      "Removed versions and MS/System packages from NOTICE. Thanks [@DHowett](https://github.com/DHowett)! #40620",
+      "Removed *tests* and all coverage/DIA DLLs from binskim. Thanks [@DHowett](https://github.com/DHowett)! #41108",
+      "Updated package catalog before running install for store submissions. Thanks [@DHowett](https://github.com/DHowett)! #41121",
+      "Refactored some CmdPal extension unit tests and improved test cases. Thanks [@moooyo](https://github.com/moooyo)! #40896"
+    ],
+    "File Handling": [
+      "Fixed registration of bgcode handlers by adding missing registry entries and correcting event handler references. Thanks [@pedrolamas](https://github.com/pedrolamas)! #40985",
+      "Added support for Microsoft Visual Studio Shared Project file extensions (.shproj and .projitems) for XML syntax highlighting. Thanks [@rezanid](https://github.com/rezanid)! #39246",
+      "Added 'No leading spaces' option to Hosts File Editor that prevents prepending spaces to active lines when saving hosts file, with comprehensive test coverage. Thanks [@mohammed-saalim](https://github.com/mohammed-saalim)! #41206"
+    ],
+    "Documentation": [
+      "Updated PowerToys README.md to prepare release notes for version 0.94, transitioning from current release information. Thanks [@yeelam-gordon](https://github.com/yeelam-gordon)! #41036",
+      "Fixed incorrect path for styling link in developer documentation. Thanks [@denizmaral](https://github.com/denizmaral)! #41150",
+      "Added Office/Copilot templates to KeyVisual. Thanks [@niels9001](https://github.com/niels9001)! #41167",
+      "Removed debug dialog components. Thanks [@niels9001](https://github.com/niels9001)! #41250"
+    ]
+  }
+}
