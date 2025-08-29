@@ -1405,6 +1405,7 @@ remoteip
 Removelnk
 renamable
 RENAMEONCOLLISION
+RENDERFULLCONTENT
 reparented
 reparenthotkey
 reparenting
