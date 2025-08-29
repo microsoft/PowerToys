@@ -79,8 +79,44 @@ namespace PowerToys.FileLocksmithUI.ViewModels
 
         public MainViewModel()
         {
-            paths = NativeMethods.ReadPathsFromFile();
-            Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
+            // Check if pipe name was passed as command line argument
+            string[] args = FileLocksmithUI.App.CommandLineArgs;
+            string pipeName = null;
+
+            // Look for pipe name in command line arguments
+            if (args != null && args.Length > 0)
+            {
+                foreach (string arg in args)
+                {
+                    if (arg.StartsWith(@"\\.\pipe\"))
+                    {
+                        pipeName = arg;
+                        break;
+                    }
+                }
+            }
+
+            // Try to read from pipe first, fall back to file if needed
+            if (!string.IsNullOrEmpty(pipeName))
+            {
+                try
+                {
+                    paths = NativeMethods.ReadPathsFromPipe(pipeName);
+                    Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files from pipe: {pipeName}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to read from pipe {pipeName}: {ex.Message}");
+                    paths = NativeMethods.ReadPathsFromFile();
+                    Logger.LogInfo($"Fallback: Starting FileLocksmith with {paths.Length} files from file.");
+                }
+            }
+            else
+            {
+                paths = NativeMethods.ReadPathsFromFile();
+                Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files from file.");
+            }
+            
             LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);
         }
 
