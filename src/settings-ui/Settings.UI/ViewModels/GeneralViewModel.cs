@@ -260,6 +260,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isNewVersionDownloading;
         private bool _isNewVersionChecked;
         private bool _isNoNetwork;
+        private bool _isInsufficientPermissions;
         private bool _isBugReportRunning;
 
         private bool _settingsBackupRestoreMessageVisible;
@@ -953,6 +954,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsInsufficientPermissions
+        {
+            get
+            {
+                return _isInsufficientPermissions;
+            }
+        }
+
         public bool IsBugReportRunning
         {
             get
@@ -1178,6 +1187,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void UpdateNowClick()
         {
+            // Check if user has admin permissions before starting update
+            if (!IsAdmin)
+            {
+                _isInsufficientPermissions = true;
+                NotifyPropertyChanged(nameof(IsInsufficientPermissions));
+                return;
+            }
+
+            // Clear any previous permission error
+            _isInsufficientPermissions = false;
+            NotifyPropertyChanged(nameof(IsInsufficientPermissions));
+
             IsNewVersionDownloading = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
             NotifyPropertyChanged(nameof(IsDownloadAllowed));
 
@@ -1299,6 +1320,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 _isNoNetwork = PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
                 NotifyPropertyChanged(nameof(IsNoNetwork));
+                
+                // Clear permission error when updating state changes
+                _isInsufficientPermissions = false;
+                NotifyPropertyChanged(nameof(IsInsufficientPermissions));
+                
                 NotifyPropertyChanged(nameof(IsNewVersionDownloading));
                 NotifyPropertyChanged(nameof(IsUpdatePanelVisible));
                 _isNewVersionChecked = PowerToysUpdatingState == UpdatingSettings.UpdatingState.UpToDate && !IsNewVersionDownloading;

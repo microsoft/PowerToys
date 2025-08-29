@@ -2414,6 +2414,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="General_CantCheck.Title" xml:space="preserve">
     <value>Network error. Please try again later</value>
   </data>
+  <data name="General_InsufficientPermissions.Title" xml:space="preserve">
+    <value>Administrator permissions required. Please restart PowerToys as administrator to install updates.</value>
+  </data>
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download &amp; install</value>
   </data>
