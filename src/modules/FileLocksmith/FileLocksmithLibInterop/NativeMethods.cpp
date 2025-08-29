@@ -137,21 +137,44 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
             return ReadPathsFromFile();
         }
 
-        // Read from pipe
+        // Set read timeout to prevent hanging
+        COMMTIMEOUTS timeouts = { 0 };
+        timeouts.ReadIntervalTimeout = 100;
+        timeouts.ReadTotalTimeoutConstant = 3000; // 3 second timeout
+        timeouts.ReadTotalTimeoutMultiplier = 0;
+        SetCommTimeouts(hPipe, &timeouts);
+
+        // Read from pipe - collect all data first
         const DWORD BUFSIZE = 4096;
+        std::wstring allData;
         WCHAR chBuf[BUFSIZE];
         DWORD dwRead;
         BOOL bSuccess;
+
+        // Read with timeout protection
+        int read_attempts = 0;
+        const int max_read_attempts = 30; // Maximum 30 read attempts
 
         for (;;)
         {
             bSuccess = ReadFile(hPipe, chBuf, BUFSIZE * sizeof(WCHAR), &dwRead, NULL);
             
-            if (!bSuccess || dwRead == 0)
+            if (!bSuccess || dwRead == 0 || ++read_attempts > max_read_attempts)
                 break;
 
-            std::wstring inputBatch{ chBuf, dwRead / sizeof(WCHAR) };
-            std::wstringstream ss(inputBatch);
+            // Append to accumulated data
+            allData.append(chBuf, dwRead / sizeof(WCHAR));
+
+            if (!bSuccess)
+                break;
+        }
+
+        CloseHandle(hPipe);
+
+        // Parse all data using delimiter
+        if (!allData.empty())
+        {
+            std::wstringstream ss(allData);
             std::wstring item;
             wchar_t delimiter = L'?';
             
@@ -162,12 +185,8 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
                     result_cpp.push_back(item);
                 }
             }
-
-            if (!bSuccess)
-                break;
         }
 
-        CloseHandle(hPipe);
         return com_array<hstring>{ result_cpp.begin(), result_cpp.end() };
     }
  

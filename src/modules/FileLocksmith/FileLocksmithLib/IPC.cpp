@@ -93,10 +93,16 @@ namespace ipc
         m_pipe_thread = std::thread([this]() {
             // This call blocks until a client process connects to the pipe
             BOOL connected = ConnectNamedPipe(m_pipe_handle, NULL);
-            if (!connected && GetLastError() != ERROR_PIPE_CONNECTED)
+            if (!connected)
             {
-                CloseHandle(m_pipe_handle);
-                m_pipe_handle = INVALID_HANDLE_VALUE;
+                DWORD error = GetLastError();
+                if (error != ERROR_PIPE_CONNECTED)
+                {
+                    // Connection failed
+                    CloseHandle(m_pipe_handle);
+                    m_pipe_handle = INVALID_HANDLE_VALUE;
+                }
+                // ERROR_PIPE_CONNECTED means client connected before ConnectNamedPipe was called
             }
         });
     }
@@ -113,13 +119,13 @@ namespace ipc
 
             if (m_pipe_handle != INVALID_HANDLE_VALUE)
             {
-                DWORD path_length_bytes = static_cast<DWORD>((wcslen(path) + 1) * sizeof(WCHAR)); // +1 for delimiter
-                WCHAR delimited_path[MAX_PATH + 1];
-                wcscpy_s(delimited_path, MAX_PATH, path);
-                wcscat_s(delimited_path, MAX_PATH, L"?"); // Use '?' as delimiter like PowerRename
+                // Create delimited path string
+                std::wstring delimited_path = path;
+                delimited_path += L"?"; // Use '?' as delimiter like PowerRename
                 
+                DWORD path_length_bytes = static_cast<DWORD>(delimited_path.length() * sizeof(WCHAR));
                 DWORD bytes_written;
-                BOOL result = WriteFile(m_pipe_handle, delimited_path, path_length_bytes, &bytes_written, NULL);
+                BOOL result = WriteFile(m_pipe_handle, delimited_path.c_str(), path_length_bytes, &bytes_written, NULL);
                 return result ? S_OK : E_FAIL;
             }
         }

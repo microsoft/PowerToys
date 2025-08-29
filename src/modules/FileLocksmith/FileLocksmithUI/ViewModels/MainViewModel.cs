@@ -101,20 +101,23 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             {
                 try
                 {
+                    Logger.LogInfo($"Attempting to read from pipe: {pipeName}");
                     paths = NativeMethods.ReadPathsFromPipe(pipeName);
-                    Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files from pipe: {pipeName}");
+                    Logger.LogInfo($"Successfully read {paths.Length} files from pipe.");
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError($"Failed to read from pipe {pipeName}: {ex.Message}");
+                    Logger.LogInfo("Falling back to file-based IPC.");
                     paths = NativeMethods.ReadPathsFromFile();
-                    Logger.LogInfo($"Fallback: Starting FileLocksmith with {paths.Length} files from file.");
+                    Logger.LogInfo($"Fallback: Read {paths.Length} files from file.");
                 }
             }
             else
             {
+                Logger.LogInfo("No pipe name provided, using file-based IPC.");
                 paths = NativeMethods.ReadPathsFromFile();
-                Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files from file.");
+                Logger.LogInfo($"Read {paths.Length} files from file.");
             }
             
             LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);
