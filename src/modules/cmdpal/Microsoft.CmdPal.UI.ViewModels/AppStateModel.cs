@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
@@ -39,7 +41,7 @@ public partial class AppStateModel : ObservableObject
     {
         if (string.IsNullOrEmpty(FilePath))
         {
-            throw new InvalidOperationException($"You must set a valid {nameof(SettingsModel.FilePath)} before calling {nameof(LoadState)}");
+            throw new InvalidOperationException($"You must set a valid {nameof(FilePath)} before calling {nameof(LoadState)}");
         }
 
         if (!File.Exists(FilePath))
@@ -77,43 +79,84 @@ public partial class AppStateModel : ObservableObject
         try
         {
             // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.AppStateModel);
+            var settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.AppStateModel!);
 
-            // Is it valid JSON?
-            if (JsonNode.Parse(settingsJson) is JsonObject newSettings)
+            // validate JSON
+            if (JsonNode.Parse(settingsJson) is not JsonObject newSettings)
             {
-                // Now, read the existing content from the file
-                var oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
+                Logger.LogError("Failed to parse app state as a JsonObject.");
+                return;
+            }
 
-                // Is it valid JSON?
-                if (JsonNode.Parse(oldContent) is JsonObject savedSettings)
-                {
-                    foreach (var item in newSettings)
-                    {
-                        savedSettings[item.Key] = item.Value?.DeepClone();
-                    }
+            // read previous settings
+            if (!TryReadSavedState(out var savedSettings))
+            {
+                savedSettings = new JsonObject();
+            }
 
-                    var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.AppStateModel.Options);
-                    File.WriteAllText(FilePath, serialized);
+            // merge new settings into old ones
+            foreach (var item in newSettings)
+            {
+                savedSettings[item.Key] = item.Value?.DeepClone();
+            }
 
-                    // TODO: Instead of just raising the event here, we should
-                    // have a file change watcher on the settings file, and
-                    // reload the settings then
-                    model.StateChanged?.Invoke(model, null);
-                }
-                else
-                {
-                    Debug.WriteLine("Failed to parse settings file as JsonObject.");
-                }
+            var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.AppStateModel!.Options);
+            File.WriteAllText(FilePath, serialized);
+
+            // TODO: Instead of just raising the event here, we should
+            // have a file change watcher on the settings file, and
+            // reload the settings then
+            model.StateChanged?.Invoke(model, null);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to save application state to {FilePath}:", ex);
+        }
+    }
+
+    private static bool TryReadSavedState([NotNullWhen(true)] out JsonObject? savedSettings)
+    {
+        savedSettings = null;
+
+        // read existing content from the file
+        string oldContent;
+        try
+        {
+            if (File.Exists(FilePath))
+            {
+                oldContent = File.ReadAllText(FilePath);
             }
             else
             {
-                Debug.WriteLine("Failed to parse settings file as JsonObject.");
+                // file doesn't exist (might not have been created yet), so consider this a success
+                // and return empty settings
+                savedSettings = new JsonObject();
+                return true;
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex.ToString());
+            Logger.LogWarning($"Failed to read app state file {FilePath}:\n{ex}");
+            return false;
+        }
+
+        // detect empty file, just for sake of logging
+        if (string.IsNullOrWhiteSpace(oldContent))
+        {
+            Logger.LogInfo($"App state file is empty: {FilePath}");
+            return false;
+        }
+
+        // is it valid JSON?
+        try
+        {
+            savedSettings = JsonNode.Parse(oldContent) as JsonObject;
+            return savedSettings != null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to parse app state from {FilePath}:\n{ex}");
+            return false;
         }
     }
 
