@@ -3165,7 +3165,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Toggle theme shortcut</value>
   </data>
   <data name="LightSwitch_ForceDarkMode" xml:space="preserve">
-    <value>Force Dark Mode</value>
+    <value>Toggle theme</value>
   </data>
   <data name="ColorPicker_ShortDescription" xml:space="preserve">
     <value>Pick a color</value>
