@@ -19,9 +19,9 @@
                     x:Uid="FancyZones_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch 
-                        x:Uid="ToggleSwitch" 
+                    <ToggleSwitch
                         x:Name="EnableFancyZonesToggleSwitch"
+                        x:Uid="ToggleSwitch"
                         AutomationProperties.AutomationId="EnableFancyZonesToggleSwitch"
                         IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
