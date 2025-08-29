@@ -327,7 +327,6 @@ public:
             {
                 g_settings.m_longitude = *v;
             }
-            
 
             values.save_to_settings_file();
         }
@@ -469,11 +468,16 @@ public:
             }
             else if (hotkeyId == 0)
             {
-              // get current will return true if in light mode, otherwise false
+                // get current will return true if in light mode, otherwise false
                 Logger::info(L"[Light Switch] Hotkey triggered: Toggle Theme");
-                SetSystemTheme(!GetCurrentSystemTheme());
-                SetAppsTheme(!GetCurrentAppsTheme());
-
+                if (g_settings.m_changeSystem)
+                {
+                    SetSystemTheme(!GetCurrentSystemTheme());
+                }
+                if (g_settings.m_changeApps)
+                {
+                    SetAppsTheme(!GetCurrentAppsTheme());
+                }
             }
 
             return true;
