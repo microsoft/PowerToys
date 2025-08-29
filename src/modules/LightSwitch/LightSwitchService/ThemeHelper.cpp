@@ -57,7 +57,7 @@ bool GetCurrentSystemTheme()
         RegCloseKey(hKey);
     }
 
-    return value == 0; // 0 = dark, 1 = light
+    return value == 1; // true = light, false = dark
 }
 
 bool GetCurrentAppsTheme()
@@ -72,9 +72,9 @@ bool GetCurrentAppsTheme()
                      KEY_READ,
                      &hKey) == ERROR_SUCCESS)
     {
-        RegQueryValueEx(hKey, L"SystemUsesLightTheme", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &size);
+        RegQueryValueEx(hKey, L"AppsUseLightTheme", nullptr, nullptr, reinterpret_cast<LPBYTE>(&value), &size);
         RegCloseKey(hKey);
     }
 
-    return value == 0;
+    return value == 1; // true = light, false = dark
 }

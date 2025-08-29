@@ -19,8 +19,7 @@ namespace
     const wchar_t JSON_KEY_CTRL[] = L"ctrl";
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
-    const wchar_t JSON_KEY_FORCE_LIGHT_HOTKEY[] = L"force-light-mode-hotkey";
-    const wchar_t JSON_KEY_FORCE_DARK_HOTKEY[] = L"force-dark-mode-hotkey";
+    const wchar_t JSON_KEY_TOGGLE_THEME_HOTKEY[] = L"toggle-theme-hotkey";
     const wchar_t JSON_KEY_VALUE[] = L"value";
 }
 
@@ -103,8 +102,7 @@ private:
 
     static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
-    Hotkey m_force_light_mode_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'L' };
-    Hotkey m_force_dark_mode_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'D' };
+    Hotkey m_toggle_theme_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'D' };
 
     // Load initial settings from the persisted values.
     void init_settings();
@@ -239,28 +237,16 @@ public:
             L"Force Dark",
             L"{}");
 
-        PowerToysSettings::HotkeyObject lm_hk = PowerToysSettings::HotkeyObject::from_settings(
-            m_force_light_mode_hotkey.win,
-            m_force_light_mode_hotkey.ctrl,
-            m_force_light_mode_hotkey.alt,
-            m_force_light_mode_hotkey.shift,
-            m_force_light_mode_hotkey.key);
-
-        settings.add_hotkey(
-            L"force-light-hotkey",
-            L"Shortcut to force light theme immediately",
-            lm_hk);
-
         PowerToysSettings::HotkeyObject dm_hk = PowerToysSettings::HotkeyObject::from_settings(
-            m_force_dark_mode_hotkey.win,
-            m_force_dark_mode_hotkey.ctrl,
-            m_force_dark_mode_hotkey.alt,
-            m_force_dark_mode_hotkey.shift,
-            m_force_dark_mode_hotkey.key);
+            m_toggle_theme_hotkey.win,
+            m_toggle_theme_hotkey.ctrl,
+            m_toggle_theme_hotkey.alt,
+            m_toggle_theme_hotkey.shift,
+            m_toggle_theme_hotkey.key);
 
         settings.add_hotkey(
-            L"force-dark-hotkey",
-            L"Shortcut to force dark theme immediately",
+            L"toggle-theme-hotkey",
+            L"Shortcut to toggle theme immediately",
             dm_hk);
 
         // Serialize to buffer for the PowerToys runner
@@ -443,29 +429,14 @@ public:
         {
             try
             {
-                Hotkey _temp_force_light;
-                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_FORCE_LIGHT_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
-                _temp_force_light.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-                _temp_force_light.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-                _temp_force_light.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-                _temp_force_light.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-                _temp_force_light.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
-                m_force_light_mode_hotkey = _temp_force_light;
-            }
-            catch (...)
-            {
-                Logger::error("Failed to initialize Light Switch force light mode shortcut from settings. Value will keep unchanged.");
-            }
-            try
-            {
-                Hotkey _temp_force_dark;
-                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_FORCE_DARK_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
-                _temp_force_dark.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
-                _temp_force_dark.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
-                _temp_force_dark.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
-                _temp_force_dark.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
-                _temp_force_dark.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
-                m_force_dark_mode_hotkey = _temp_force_dark;
+                Hotkey _temp_toggle_theme;
+                auto jsonHotkeyObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_TOGGLE_THEME_HOTKEY).GetNamedObject(JSON_KEY_VALUE);
+                _temp_toggle_theme.win = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_WIN);
+                _temp_toggle_theme.alt = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_ALT);
+                _temp_toggle_theme.shift = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_SHIFT);
+                _temp_toggle_theme.ctrl = jsonHotkeyObject.GetNamedBoolean(JSON_KEY_CTRL);
+                _temp_toggle_theme.key = static_cast<unsigned char>(jsonHotkeyObject.GetNamedNumber(JSON_KEY_CODE));
+                m_toggle_theme_hotkey = _temp_toggle_theme;
             }
             catch (...)
             {
@@ -480,12 +451,11 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
-        if (hotkeys && buffer_size >= 2)
+        if (hotkeys && buffer_size >= 1)
         {
-            hotkeys[0] = m_force_light_mode_hotkey;
-            hotkeys[1] = m_force_dark_mode_hotkey;
+            hotkeys[0] = m_toggle_theme_hotkey;
         }
-        return 2;
+        return 1;
     }
 
     virtual bool on_hotkey(size_t hotkeyId) override
@@ -497,18 +467,13 @@ public:
             {
                 enable();
             }
+            else if (hotkeyId == 0)
+            {
+              // get current will return true if in light mode, otherwise false
+                Logger::info(L"[Light Switch] Hotkey triggered: Toggle Theme");
+                SetSystemTheme(!GetCurrentSystemTheme());
+                SetAppsTheme(!GetCurrentAppsTheme());
 
-            if (hotkeyId == 0)
-            {
-                Logger::info(L"[Light Switch] Hotkey triggered: Force Light");
-                SetSystemTheme(true);
-                SetAppsTheme(true);
-            }
-            else if (hotkeyId == 1)
-            {
-                Logger::info(L"[Light Switch] Hotkey triggered: Force Dark");
-                SetSystemTheme(false);
-                SetAppsTheme(false);
             }
 
             return true;

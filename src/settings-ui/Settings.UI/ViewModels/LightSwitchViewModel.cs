@@ -40,8 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 "SunsetToSunriseUser",
             };
 
-            _forceLightModeHotkey = _moduleSettings.Properties.ForceLightModeHotkey.Value;
-            _forceDarkModeHotkey = _moduleSettings.Properties.ForceDarkModeHotkey.Value;
+            _toggleThemeHotkey = _moduleSettings.Properties.ToggleThemeHotkey.Value;
         }
 
         private void ForceLightNow()
@@ -305,55 +304,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public HotkeySettings ForceLightModeActivationShortcut
+        public HotkeySettings ToggleThemeActivationShortcut
         {
-            get => _forceLightModeHotkey;
+            get => _toggleThemeHotkey;
 
             set
             {
-                if (value != _forceLightModeHotkey)
+                if (value != _toggleThemeHotkey)
                 {
                     if (value == null)
                     {
-                        _forceLightModeHotkey = LightSwitchProperties.DefaultForceLightModeValue;
+                        _toggleThemeHotkey = LightSwitchProperties.DefaultToggleThemeHotkey;
                     }
                     else
                     {
-                        _forceLightModeHotkey = value;
+                        _toggleThemeHotkey = value;
                     }
 
-                    _moduleSettings.Properties.ForceLightModeHotkey.Value = _forceLightModeHotkey;
-                    NotifyPropertyChanged();
-
-                    // Using InvariantCulture as this is an IPC message
-                    SendConfigMSG(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                            LightSwitchSettings.ModuleName,
-                            JsonSerializer.Serialize(_moduleSettings, (System.Text.Json.Serialization.Metadata.JsonTypeInfo<LightSwitchSettings>)SourceGenerationContextContext.Default.LightSwitchSettings)));
-                }
-            }
-        }
-
-        public HotkeySettings ForceDarkModeActivationShortcut
-        {
-            get => _forceDarkModeHotkey;
-
-            set
-            {
-                if (value != _forceDarkModeHotkey)
-                {
-                    if (value == null)
-                    {
-                        _forceDarkModeHotkey = LightSwitchProperties.DefaultForceDarkModeValue;
-                    }
-                    else
-                    {
-                        _forceDarkModeHotkey = value;
-                    }
-
-                    _moduleSettings.Properties.ForceDarkModeHotkey.Value = _forceDarkModeHotkey;
+                    _moduleSettings.Properties.ToggleThemeHotkey.Value = _toggleThemeHotkey;
                     NotifyPropertyChanged();
 
                     // Using InvariantCulture as this is an IPC message
@@ -418,8 +386,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledGPOConfiguration;
         private LightSwitchSettings _moduleSettings;
         private bool _isEnabled;
-        private HotkeySettings _forceLightModeHotkey;
-        private HotkeySettings _forceDarkModeHotkey;
+        private HotkeySettings _toggleThemeHotkey;
 
         public ICommand ForceLightCommand { get; }
 

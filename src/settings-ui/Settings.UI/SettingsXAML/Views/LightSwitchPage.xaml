@@ -76,7 +76,7 @@
             <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
-                            HotkeySettings="{x:Bind Path=ViewModel.ForceDarkModeActivationShortcut, Mode=TwoWay}" />
+                            HotkeySettings="{x:Bind Path=ViewModel.ToggleThemeActivationShortcut, Mode=TwoWay}" />
           </tkcontrols:SettingsCard>
         </controls:SettingsGroup>
 
