@@ -31,7 +31,6 @@ namespace EnvironmentVariables
             AppWindow.SetIcon("Assets/EnvironmentVariables/EnvironmentVariables.ico");
             var loader = ResourceLoaderInstance.ResourceLoader;
             var title = App.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
-            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
 
             Title = title;
             titleBar.Title = title;
