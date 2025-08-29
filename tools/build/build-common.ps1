@@ -191,7 +191,7 @@ function Ensure-VsDevEnvironment {
         "$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe"
     )
     $vswhere = $vswhereCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-    if ($vswhere) { Write-Host "[VS] vswhere found: $vswhere" } else { Write-Host "[VSDEV] vswhere not found" }
+    if ($vswhere) { Write-Host "[VS] vswhere found: $vswhere" } else { Write-Host "[VS] vswhere not found" }
 
     $instPaths = @()
     if ($vswhere) {
