@@ -32,6 +32,9 @@ public partial class ShellViewModel : ObservableObject,
     [ObservableProperty]
     public partial bool IsDetailsVisible { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsSearchBoxVisible { get; set; } = true;
+
     private PageViewModel _currentPage;
 
     public PageViewModel CurrentPage
