@@ -48,12 +48,9 @@ Set-Variable -Name RepoRoot -Value $repoRoot -Scope Script -Force
 # Load shared helpers
 . "$PSScriptRoot\build-common.ps1"
 
-<<<<<<< HEAD
 # Initialize Visual Studio dev environment
 if (-not (Ensure-VsDevEnvironment)) { exit 1 }
 
-=======
->>>>>>> main
 # If platform not provided, auto-detect from host
 if (-not $Platform -or $Platform -eq '') {
     try {

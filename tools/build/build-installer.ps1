@@ -61,12 +61,9 @@ param (
 # Ensure helpers are available
 . "$PSScriptRoot\build-common.ps1"
 
-<<<<<<< HEAD
 # Initialize Visual Studio dev environment
 if (-not (Ensure-VsDevEnvironment)) { exit 1 }
 
-=======
->>>>>>> main
 # Auto-detect platform when not provided
 if (-not $Platform -or $Platform -eq '') {
     try {

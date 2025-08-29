@@ -8,19 +8,15 @@ This file provides reusable helper functions used by the build scripts:
 - RunMSBuild: wrapper around msbuild.exe (accepts optional Platform/Configuration)
 - RestoreThenBuild: performs restore and optionally builds the solution/project
 - BuildProjectsInDirectory: discovers and builds local .sln/.csproj/.vcxproj files
-<<<<<<< HEAD
 - Ensure-VsDevEnvironment: initializes the Visual Studio developer environment when possible.
   It prefers the DevShell PowerShell module (Microsoft.VisualStudio.DevShell.dll / Enter-VsDevShell),
   falls back to running VsDevCmd.bat and importing its environment into the current PowerShell session,
   and restores the caller's working directory after initialization.
-=======
->>>>>>> main
 
 USAGE
 Dot-source this file from a script to load helpers:
 . "$PSScriptRoot\build-common.ps1"
 
-<<<<<<< HEAD
 ERROR DETAILS
 When a build fails, check the logs written next to the solution/project folder:
 - build.<configuration>.<platform>.all.log — full MSBuild text log
@@ -28,8 +24,6 @@ When a build fails, check the logs written next to the solution/project folder:
 - build.<configuration>.<platform>.warnings.log — extracted warnings only
 - build.<configuration>.<platform>.trace.binlog — binary log (open with the MSBuild Structured Log Viewer)
 
-=======
->>>>>>> main
 .NOTES
 Do not execute this file directly; dot-source it from `build.ps1` or `build-installer.ps1` so helpers are available in your script scope.
 #>
@@ -76,11 +70,7 @@ function RunMSBuild {
     try {
         & msbuild.exe @cmd
         if ($LASTEXITCODE -ne 0) {
-<<<<<<< HEAD
             Write-Error (("Build failed: {0}  {1}`nSee logs:`n  All: {2}`n  Errors: {3}`n  Binlog: {4}" -f $Solution, $ExtraArgs, $allLog, $errorsLog, $binLog))
-=======
-            Write-Error (("Build failed: {0}  {1}" -f $Solution, $ExtraArgs))
->>>>>>> main
             exit $LASTEXITCODE
         }
     } finally {
@@ -185,14 +175,13 @@ function Get-DefaultPlatform {
 
     return 'x64'
 }
-<<<<<<< HEAD
 
 function Ensure-VsDevEnvironment {
     $OriginalLocationForVsInit = Get-Location
     try {
 
-    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR -or $env:VSCMD_ARG_TGT_ARCH) {
-        Write-Host "[VSDEV] VS developer environment already present"
+    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR) {
+        Write-Host "[VS] VS developer environment already present"
         return $true
     }
 
@@ -202,7 +191,7 @@ function Ensure-VsDevEnvironment {
         "$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe"
     )
     $vswhere = $vswhereCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-    if ($vswhere) { Write-Host "[VSDEV] vswhere found: $vswhere" } else { Write-Host "[VSDEV] vswhere not found" }
+    if ($vswhere) { Write-Host "[VS] vswhere found: $vswhere" } else { Write-Host "[VSDEV] vswhere not found" }
 
     $instPaths = @()
     if ($vswhere) {
@@ -218,7 +207,7 @@ function Ensure-VsDevEnvironment {
     if (-not $instPaths) {
         $root = "$env:ProgramFiles (x86)\Microsoft Visual Studio"
         if (Test-Path $root) {
-            Write-Host "[VSDEV] Scanning $root for installations..."
+            Write-Host "[VS] Scanning $root for installations..."
             try {
                 $dirs = Get-ChildItem -Path $root -Directory -ErrorAction SilentlyContinue
                 foreach ($d in $dirs) { $instPaths += $d.FullName }
@@ -240,14 +229,14 @@ function Ensure-VsDevEnvironment {
     }
 
     if (-not $instPaths -or $instPaths.Count -eq 0) {
-        Write-Warning "[VSDEV] Could not locate Visual Studio installation (no candidates found)"
+        Write-Warning "[VS] Could not locate Visual Studio installation (no candidates found)"
         return $false
     }
 
     # Try each candidate installation path until one works
     foreach ($inst in $instPaths) {
         if (-not $inst) { continue }
-        Write-Host "[VSDEV] Checking candidate: $inst"
+        Write-Host "[VS] Checking candidate: $inst"
 
         $devDll = Join-Path $inst 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll'
         if (Test-Path $devDll) {
@@ -257,19 +246,19 @@ function Ensure-VsDevEnvironment {
                 # Call Enter-VsDevShell using only the install path to avoid parameter name differences
                 try {
                     Enter-VsDevShell -VsInstallPath $inst -ErrorAction Stop
-                    Write-Host "[VSDEV] Entered Visual Studio DevShell at $inst"
+                    Write-Host "[VS] Entered Visual Studio DevShell at $inst"
                     return $true
                 } catch {
-                    Write-Warning ("[VSDEV] DevShell import/Enter-VsDevShell failed: {0}" -f $_)
+                    Write-Warning ("[VS] DevShell import/Enter-VsDevShell failed: {0}" -f $_)
                 }
             } catch {
-                Write-Warning ("[VSDEV] DevShell import failed: {0}" -f $_)
+                Write-Warning ("[VS] DevShell import failed: {0}" -f $_)
             }
         }
 
         $vsDevCmd = Join-Path $inst 'Common7\Tools\VsDevCmd.bat'
         if (Test-Path $vsDevCmd) {
-            Write-Host "[VSDEV] Running VsDevCmd.bat and importing environment from $vsDevCmd"
+            Write-Host "[VS] Running VsDevCmd.bat and importing environment from $vsDevCmd"
             try {
                 $cmdOut = cmd.exe /c "`"$vsDevCmd`" && set"
                 foreach ($line in $cmdOut) {
@@ -278,20 +267,18 @@ function Ensure-VsDevEnvironment {
                         try { [Environment]::SetEnvironmentVariable($parts[0], $parts[1], 'Process') } catch {}
                     }
                 }
-                Write-Host "[VSDEV] Imported environment from VsDevCmd.bat at $inst"
+                Write-Host "[VS] Imported environment from VsDevCmd.bat at $inst"
                 return $true
             } catch {
-                Write-Warning ("[VSDEV] Failed to run/import VsDevCmd.bat at {0}: {1}" -f $inst, $_)
+                Write-Warning ("[VS] Failed to run/import VsDevCmd.bat at {0}: {1}" -f $inst, $_)
             }
         }
     }
 
-    Write-Warning "[VSDEV] Neither DevShell module nor VsDevCmd.bat found in any candidate paths"
+    Write-Warning "[VS] Neither DevShell module nor VsDevCmd.bat found in any candidate paths"
     return $false
 
     } finally {
         try { Set-Location $OriginalLocationForVsInit } catch {}
     }
 }
-=======
->>>>>>> main
