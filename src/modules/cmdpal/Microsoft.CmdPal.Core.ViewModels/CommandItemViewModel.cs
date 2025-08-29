@@ -160,7 +160,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Initialized |= InitializedState.Initialized;
     }
 
-    public void SlowInitializeProperties()
+    public virtual void SlowInitializeProperties()
     {
         if (IsSelectedInitialized)
         {
