@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PowerRenameItem.h"
+#include <MediaMetadataExtractor.h>
 
 int CPowerRenameItem::s_id = 0;
 
@@ -71,10 +72,14 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
     {
         parsedTimeType = PowerRenameFlags::AccessTime;
     }
+    else if (flags & PowerRenameFlags::EXIFTime)
+    {
+        parsedTimeType = PowerRenameFlags::EXIFTime;
+    }
     else
     {
         // Default to modification time if no specific flag is set
-        parsedTimeType = PowerRenameFlags::CreationTime;
+        parsedTimeType = PowerRenameFlags::CreationTime;    
     }
 
     if (m_isTimeParsed && parsedTimeType == m_parsedTimeType)
@@ -83,47 +88,108 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
     }
     else
     {
-        HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-        if (hFile != INVALID_HANDLE_VALUE)
+        if (parsedTimeType == PowerRenameFlags::EXIFTime)
         {
-            FILETIME FileTime;
-            bool success = false;
-
-            // Get Time by PowerRenameFlags
-            switch (parsedTimeType)
+            // check if file is an media file which may contain EXIF metadata
+            std::wstring extension = PathFindExtensionW(m_path);
+            if (extension.empty())
             {
-            case PowerRenameFlags::CreationTime:
-                success = GetFileTime(hFile, &FileTime, NULL, NULL);
-                break;
-            case PowerRenameFlags::ModificationTime:
-                success = GetFileTime(hFile, NULL, NULL, &FileTime);
-                break;
-            case PowerRenameFlags::AccessTime:
-                success = GetFileTime(hFile, NULL, &FileTime, NULL);
-                break;
-            default:
-                // Default to modification time if no specific flag is set
-                success = GetFileTime(hFile, NULL, NULL, &FileTime);
-                break;
+                return E_FAIL;
+            }
+            std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+            if (extension != L".jpg" && extension != L".jpeg" && extension != L".tiff" && extension != L".heic" && extension != L".png")
+            {
+                // if file is not a supported image type, use 1900-01-01 00:00:00 as fallback
+                SYSTEMTIME exifTime = {};
+                exifTime.wYear = static_cast<WORD>(1900);
+                exifTime.wMonth = static_cast<WORD>(01);
+                exifTime.wDay = static_cast<WORD>(01);
+                exifTime.wHour = static_cast<WORD>(00);
+                exifTime.wMinute = static_cast<WORD>(00);
+                exifTime.wSecond = static_cast<WORD>(00);
+                m_time = exifTime;
+                m_isTimeParsed = true;
+                m_parsedTimeType = parsedTimeType;
+                hr = S_OK;
+
+                return S_OK;
             }
 
-            if (success)
+            // using MediaMetadataExtractor to extract EXIF metadata
+            PowerRenameLib::MediaMetadataExtractor extractor;
+            PowerRenameLib::MediaMetadataExtractor::ImageMetadata metadata = extractor.ExtractEXIFMetadata(m_path);
+            if (metadata.dateTaken.empty())
             {
-                SYSTEMTIME SystemTime, LocalTime;
-                if (FileTimeToSystemTime(&FileTime, &SystemTime))
+                hr = E_FAIL;
+            }
+            else
+            {
+                // EXIF date format: "YYYY:MM:DD HH:MM:SS"
+                int year, month, day, hour, minute, second;
+                if (swscanf_s(metadata.dateTaken.c_str(), L"%d:%d:%d %d:%d:%d", &year, &month, &day, &hour, &minute, &second) == 6)
                 {
-                    if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
-                    {
-                        m_time = LocalTime;
-                        m_isTimeParsed = true;
-                        m_parsedTimeType = parsedTimeType;
-                        hr = S_OK;
-                    }
+                    SYSTEMTIME exifTime = {};
+                    exifTime.wYear = static_cast<WORD>(year);
+                    exifTime.wMonth = static_cast<WORD>(month);
+                    exifTime.wDay = static_cast<WORD>(day);
+                    exifTime.wHour = static_cast<WORD>(hour);
+                    exifTime.wMinute = static_cast<WORD>(minute);
+                    exifTime.wSecond = static_cast<WORD>(second);
+                    m_time = exifTime;
+                    m_isTimeParsed = true;
+                    m_parsedTimeType = parsedTimeType;
+                    hr = S_OK;
+                }
+                else
+                {
+                    hr = E_FAIL;
                 }
             }
         }
+        else
+        {
+            HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+            if (hFile != INVALID_HANDLE_VALUE)
+            {
+                FILETIME FileTime;
+                bool success = false;
 
-        CloseHandle(hFile);
+                // Get Time by PowerRenameFlags
+                switch (parsedTimeType)
+                {
+                case PowerRenameFlags::CreationTime:
+                    success = GetFileTime(hFile, &FileTime, NULL, NULL);
+                    break;
+                case PowerRenameFlags::ModificationTime:
+                    success = GetFileTime(hFile, NULL, NULL, &FileTime);
+                    break;
+                case PowerRenameFlags::AccessTime:
+                    success = GetFileTime(hFile, NULL, &FileTime, NULL);
+                    break;
+                default:
+                    // Default to modification time if no specific flag is set
+                    success = GetFileTime(hFile, NULL, NULL, &FileTime);
+                    break;
+                }
+
+                if (success)
+                {
+                    SYSTEMTIME SystemTime, LocalTime;
+                    if (FileTimeToSystemTime(&FileTime, &SystemTime))
+                    {
+                        if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
+                        {
+                            m_time = LocalTime;
+                            m_isTimeParsed = true;
+                            m_parsedTimeType = parsedTimeType;
+                            hr = S_OK;
+                        }
+                    }
+                }
+            }
+
+            CloseHandle(hFile);
+        }
     }
     *time = m_time;
     return hr;

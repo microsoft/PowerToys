@@ -38,6 +38,7 @@ public:
 
         std::vector<uint8_t> buffer(size);
         file.read(reinterpret_cast<char*>(buffer.data()), size);
+        file.close();
         
         return buffer;
     }

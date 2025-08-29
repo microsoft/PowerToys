@@ -22,6 +22,7 @@ enum PowerRenameFlags
     CreationTime = 0x4000,
     ModificationTime = 0x8000,
     AccessTime = 0x10000,
+    EXIFTime = 0x20000,
 };
 
 enum PowerRenameFilters
