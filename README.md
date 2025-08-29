@@ -99,13 +99,14 @@ In this release, we focused on new features, stability, optimization improvement
 
 **✨Highlights**
 
- - The installer was upgraded to WiX 5 after WiX 3 reached end-of-life; this move improved installer security, reliability, and community support.
  - PowerToys Settings added a Settings search with fuzzy matching, suggestions, a results page, and UX polish to make finding options faster.
  - A comprehensive hotkey conflict detection system was introduced in Settings to surface and help resolve conflicting shortcuts.
- - Command Palette received stability, accessibility, and UX improvements — fixed single‑click activation; added support for path shortcuts (~, /, \\) in file search; fixed race conditions and cancellation issues; and improved diagnostics to reduce memory leaks.
- - Peek added XML syntax support for .shproj and .projitems in its Monaco preview. Thanks [@rezanid](https://github.com/rezanid)!
- - Context menu registration was moved from the installer to runtime to avoid loading disabled modules (runtime registrations).
  - Mouse Utilities added a “Gliding cursor” accessibility feature to Mouse Pointer Crosshairs for single‑button cursor movement and clicking. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+ - The installer was upgraded to WiX 5 after WiX 3 reached end-of-life; this move improved installer security, reliability, and community support.
+ - Tons of bug fixes and improvements for Command Palette, including visual updates and new support for filters on ListPages (handy for extension developers).
+ - Hosts Editor now has a “No leading spaces” option so active host entries can start at column 0 even if others are disabled. Thanks [@mohammed-saalim](https://github.com/mohammed-saalim)!
+ - Context menu registration was moved from the installer to runtime to avoid loading disabled modules (runtime registrations).
+ - Quick Accent now supports Maltese, and frequently used accents appear first (and are remembered across sessions). Thanks [@rovercoder](https://github.com/rovercoder)! [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Always On Top
 
