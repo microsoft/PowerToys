@@ -52,7 +52,7 @@
             <StackPanel Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     Header="Enable LightSwitch"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
