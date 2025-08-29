@@ -238,6 +238,9 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
 #else
 #define BUFSIZE 4096 * 4
 
+        // push test folder "C:\Users\yuleng\testcase"
+        g_files.push_back(L"C:\\Users\\yuleng\\testcase");
+
         BOOL bSuccess;
         WCHAR chBuf[BUFSIZE];
         DWORD dwRead;

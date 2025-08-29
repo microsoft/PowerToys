@@ -94,10 +94,23 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
             std::wstring extension = PathFindExtensionW(m_path);
             if (extension.empty())
             {
-                return E_FAIL;
+                // if file is not a supported image type, use 1900-01-01 00:00:00 as fallback
+                SYSTEMTIME exifTime = {};
+                exifTime.wYear = static_cast<WORD>(1900);
+                exifTime.wMonth = static_cast<WORD>(01);
+                exifTime.wDay = static_cast<WORD>(01);
+                exifTime.wHour = static_cast<WORD>(00);
+                exifTime.wMinute = static_cast<WORD>(00);
+                exifTime.wSecond = static_cast<WORD>(00);
+                m_time = exifTime;
+                m_isTimeParsed = true;
+                m_parsedTimeType = parsedTimeType;
+                hr = S_OK;
+
+                return S_OK;
             }
             std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
-            if (extension != L".jpg" && extension != L".jpeg" && extension != L".tiff" && extension != L".heic" && extension != L".png")
+            if (extension != L".jpg" && extension != L".jpeg")
             {
                 // if file is not a supported image type, use 1900-01-01 00:00:00 as fallback
                 SYSTEMTIME exifTime = {};
