@@ -9,10 +9,10 @@
  - [x] 2. Pin/unpin a window, verify the border appeared/disappeared.
  - [x] 3. Switch virtual desktop, verify border doesn't show up on another desktop.
  - [x] 4. Minimize and maximize pinned window, verify the border looks as usual.
- - [ ] 5. Change border color and thickness.
+ - [x] 5. Change border color and thickness.
  - [x] 6. Verify if sound is played according to the sound setting.
- - [ ] 7. Exclude app, try to pin it.
- - [ ] 8. Exclude already pinned app, verify it was unpinned.
+ - [x] 7. Exclude app, try to pin it.
+ - [x] 8. Exclude already pinned app, verify it was unpinned.
  - [ ] 9. Try to pin the app in the Game Mode.
 
 ## Awake
@@ -465,11 +465,11 @@ Mouse Pointer Crosshairs:
           - TestMethod("MouseUtils.MousePointerCrosshairs.MousePointerCrosshairsDifferentSettings")
     - [x] 33. Crosshairs color
           - TestMethod("MouseUtils.MousePointerCrosshairs.MousePointerCrosshairsDifferentSettings")
-    - [ ] 34. Crosshairs opacity
-    - [ ] 35. Crosshairs center radius
-    - [ ] 36. Crosshairs thickness
-    - [ ] 37. Crosshairs border color
-    - [ ] 38. Crosshairs border size
+    - [x] 34. Crosshairs opacity
+    - [x] 35. Crosshairs center radius
+    - [x] 36. Crosshairs thickness
+    - [x] 37. Crosshairs border color
+    - [x] 38. Crosshairs border size
 
 Mouse Jump:
   * Enable Mouse Jump. Then:
