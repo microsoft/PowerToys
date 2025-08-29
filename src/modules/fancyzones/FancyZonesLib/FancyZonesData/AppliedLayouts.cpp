@@ -20,10 +20,10 @@ namespace
     bool isLayoutDefault(const LayoutData& layout)
     {
         return layout.type == FancyZonesDataTypes::ZoneSetLayoutType::PriorityGrid &&
-               layout.zoneCount == 3 &&
-               layout.spacing == 16 &&
-               layout.showSpacing == true &&
-               layout.sensitivityRadius == 20;
+               layout.zoneCount == DefaultValues::ZoneCount &&
+               layout.spacing == DefaultValues::Spacing &&
+               layout.showSpacing == DefaultValues::ShowSpacing &&
+               layout.sensitivityRadius == DefaultValues::SensitivityRadius;
     }
 }
 
