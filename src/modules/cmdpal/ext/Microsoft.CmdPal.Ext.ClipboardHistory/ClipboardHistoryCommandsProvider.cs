@@ -12,6 +12,7 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory;
 public partial class ClipboardHistoryCommandsProvider : CommandProvider
 {
     private readonly ListItem _clipboardHistoryListItem;
+    private readonly ListItem _emojiListItem;
     private readonly SettingsManager _settingsManager = new();
 
     public ClipboardHistoryCommandsProvider()
@@ -25,6 +26,11 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
                 new CommandContextItem(_settingsManager.Settings.SettingsPage),
             ],
         };
+        _emojiListItem = new ListItem(new EmojiPage())
+        {
+            Title = "Emoji Picker",
+            Subtitle = "Browse and copy emojis",
+        };
 
         DisplayName = Properties.Resources.provider_display_name;
         Icon = Icons.ClipboardListIcon;
@@ -35,6 +41,6 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
 
     public override IListItem[] TopLevelCommands()
     {
-        return [_clipboardHistoryListItem];
+        return [_clipboardHistoryListItem, _emojiListItem];
     }
 }
