@@ -107,10 +107,10 @@
               <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunriseGeo" />
             </ComboBox>
             <tkcontrols:SettingsExpander.Items>
-              <tkcontrols:SettingsCard Header="Turn on darkmode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
+              <tkcontrols:SettingsCard Header="Turn on dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
                 <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.LightTimeTimeSpan, Mode=TwoWay}" />
               </tkcontrols:SettingsCard>
-              <tkcontrols:SettingsCard Header="Turn off darkmode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
+              <tkcontrols:SettingsCard Header="Turn off dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
                 <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=TwoWay}" />
               </tkcontrols:SettingsCard>
               <tkcontrols:SettingsCard Header="Sunrise and sunset times" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
