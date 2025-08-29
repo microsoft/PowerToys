@@ -102,6 +102,14 @@
                             IsTabStop="{x:Bind ViewModel.IsNoNetwork, Mode=OneWay}"
                             Severity="Error" />
 
+                        <!--  Insufficient permissions error  -->
+                        <InfoBar
+                            x:Uid="General_InsufficientPermissions"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsInsufficientPermissions, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsInsufficientPermissions, Mode=OneWay}"
+                            Severity="Error" />
+
                         <!--  New version available  -->
                         <InfoBar
                             x:Uid="General_NewVersionAvailable"
