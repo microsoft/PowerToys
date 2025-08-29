@@ -47,7 +47,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public bool IsGridView { get; private set; }
 
-    public IGridProperties? GridProperties { get; private set; }
+    public IGridPropertiesViewModel? GridProperties { get; private set; }
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -520,10 +520,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         _isDynamic = model is IDynamicListPage;
 
-        IsGridView = model.GridProperties != null;
+        IsGridView = model.GridProperties is not null;
         UpdateProperty(nameof(IsGridView));
 
-        GridProperties = model.GridProperties;
+        GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
+        GridProperties?.InitializeProperties();
         UpdateProperty(nameof(GridProperties));
 
         ShowDetails = model.ShowDetails;
@@ -545,6 +546,24 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         FetchItems();
         model.ItemsChanged += Model_ItemsChanged;
+    }
+
+    private IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
+    {
+        if (gridProperties is MediumGridLayout mediumGridLayout)
+        {
+            return new MediumGridPropertiesViewModel(mediumGridLayout);
+        }
+        else if (gridProperties is GalleryGridLayout galleryGridLayout)
+        {
+            return new GalleryGridPropertiesViewModel(galleryGridLayout);
+        }
+        else if (gridProperties is SmallGridLayout smallGridLayout)
+        {
+            return new SmallGridPropertiesViewModel(smallGridLayout);
+        }
+
+        return null;
     }
 
     public void LoadMoreIfNeeded()
@@ -601,11 +620,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         switch (propertyName)
         {
-            case nameof(IsGridView):
-                IsGridView = model.GridProperties != null;
-                break;
             case nameof(GridProperties):
-                GridProperties = model.GridProperties;
+                IsGridView = model.GridProperties is not null;
+                GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
+                UpdateProperty(nameof(IsGridView));
                 break;
             case nameof(ShowDetails):
                 ShowDetails = model.ShowDetails;

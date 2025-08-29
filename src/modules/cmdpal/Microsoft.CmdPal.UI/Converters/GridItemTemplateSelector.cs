@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CommandPalette.Extensions;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.UI;
 
 internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
 {
-    public IGridProperties? GridProperties { get; set; }
+    public IGridPropertiesViewModel? GridProperties { get; set; }
 
     public DataTemplate? Small { get; set; }
 
@@ -22,15 +22,15 @@ internal sealed partial class GridItemTemplateSelector : DataTemplateSelector
     {
         DataTemplate? dataTemplate = Medium;
 
-        if (GridProperties is ISmallGridLayout)
+        if (GridProperties is SmallGridPropertiesViewModel)
         {
             dataTemplate = Small;
         }
-        else if (GridProperties is IMediumGridLayout)
+        else if (GridProperties is MediumGridPropertiesViewModel)
         {
             dataTemplate = Medium;
         }
-        else if (GridProperties is IGalleryGridLayout)
+        else if (GridProperties is GalleryGridPropertiesViewModel)
         {
             dataTemplate = Gallery;
         }
