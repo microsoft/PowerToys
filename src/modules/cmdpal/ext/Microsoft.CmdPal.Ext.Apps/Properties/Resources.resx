@@ -198,6 +198,21 @@
   <data name="unpin_app" xml:space="preserve">
     <value>Unpin</value>
   </data>
+  <data name="uninstall_application" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="uninstall_application_successful" xml:space="preserve">
+    <value>'{0}' has been successfully uninstalled.</value>
+  </data>
+  <data name="uninstall_application_failed" xml:space="preserve">
+    <value>Error while uninstalling '{0}'</value>
+  </data>
+  <data name="uninstall_application_confirm_description" xml:space="preserve">
+    <value>This app and its related information will be removed.</value>
+  </data>
+  <data name="uninstall_application_confirm_title" xml:space="preserve">
+    <value>Uninstall "{0}"?</value>
+  </data>
   <data name="limit_1" xml:space="preserve">
     <value>1</value>
   </data>

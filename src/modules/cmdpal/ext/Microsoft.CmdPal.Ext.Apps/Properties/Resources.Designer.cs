@@ -331,6 +331,51 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Uninstall.
+        /// </summary>
+        internal static string uninstall_application {
+            get {
+                return ResourceManager.GetString("uninstall_application", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This app and its related information will be removed..
+        /// </summary>
+        internal static string uninstall_application_confirm_description {
+            get {
+                return ResourceManager.GetString("uninstall_application_confirm_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall &quot;{0}&quot;?.
+        /// </summary>
+        internal static string uninstall_application_confirm_title {
+            get {
+                return ResourceManager.GetString("uninstall_application_confirm_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error while uninstalling &apos;{0}&apos;.
+        /// </summary>
+        internal static string uninstall_application_failed {
+            get {
+                return ResourceManager.GetString("uninstall_application_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; has been successfully uninstalled..
+        /// </summary>
+        internal static string uninstall_application_successful {
+            get {
+                return ResourceManager.GetString("uninstall_application_successful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unpin.
         /// </summary>
         internal static string unpin_app {

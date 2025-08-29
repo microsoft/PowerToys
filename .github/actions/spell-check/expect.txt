@@ -70,6 +70,7 @@ APPMODEL
 APPNAME
 appref
 appsettings
+appsfeatures
 appwindow
 appwiz
 appxpackage

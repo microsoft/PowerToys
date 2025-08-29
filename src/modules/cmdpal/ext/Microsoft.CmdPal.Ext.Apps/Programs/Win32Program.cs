@@ -219,6 +219,16 @@ public class Win32Program : IProgram
             RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
         });
 
+        if (AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
+        {
+            commands.Add(new CommandContextItem(
+                new UninstallApplicationConfirmation(this))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
+                IsCritical = true,
+            });
+        }
+
         return commands;
     }
 
