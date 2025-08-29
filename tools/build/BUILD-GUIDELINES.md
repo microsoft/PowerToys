@@ -7,7 +7,7 @@ As the result of our recent changes, use the following guidance when working in 
 
 2. Use `build.ps1` from any folder
    - Purpose: lightweight local builder. It auto-discovers the target platform (x64/arm64/x86) and builds projects it finds in the current directory.
-   - Notes: you can pass additional MSBuild arguments positionally (e.g. `./tools/build/build.ps1 '/p:CIBuild=true'`) — the script will forward them to MSBuild.
+   - Notes: you can pass additional MSBuild arguments (e.g. `./tools/build/build.ps1 '/p:CIBuild=true'`) — the script will forward them to MSBuild.
    - Use `-RestoreOnly` to only restore packages for local projects.
 
 3. Use `build-installer.ps1` to create a local installer (use with caution)

@@ -48,7 +48,7 @@ param (
 
 . "$PSScriptRoot\build-common.ps1"
 
-# If user passed MSBuild-style args positionally (e.g. './build.ps1 /p:CIBuild=true'),
+# If user passed MSBuild-style args (e.g. './build.ps1 /p:CIBuild=true'),
 # those will bind to $Platform/$Configuration; detect those and move them to ExtraArgs.
 $positionalExtra = @()
 if ($Platform -and $Platform -match '^[\/-]') {

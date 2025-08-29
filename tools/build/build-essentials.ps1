@@ -59,7 +59,7 @@ if (-not $Platform -or $Platform -eq '') {
     }
 }
 
-# Ensure solution are restore nuget packages
+# Ensure solution packages are restored
 RestoreThenBuild 'PowerToys.sln' '' $Platform $Configuration $true
 
 # Build both runner and settings
