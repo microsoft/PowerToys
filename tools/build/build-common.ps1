@@ -43,6 +43,7 @@ function RunMSBuild {
         $Solution
         "/p:Platform=$Platform"
         "/p:Configuration=$Configuration"
+        "/verbosity:normal"
         '/clp:Summary;PerformanceSummary;ErrorsOnly;WarningsOnly'
         "/fileLoggerParameters:LogFile=$allLog;Verbosity=detailed"
         "/fileLoggerParameters1:LogFile=$warningLog;WarningsOnly"
