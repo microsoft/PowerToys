@@ -77,7 +77,6 @@
                     x:Name="NavigationBreadcrumbBar"
                     Grid.Row="0"
                     MaxWidth="1000"
-                    Margin="16,0,0,0"
                     ItemClicked="NavigationBreadcrumbBar_ItemClicked"
                     ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
                     <BreadcrumbBar.ItemTemplate>
