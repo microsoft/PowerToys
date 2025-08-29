@@ -1201,41 +1201,44 @@ IFACEMETHODIMP CPowerRenameManager::ExtractMetadataForRename(_In_ PCWSTR filePat
             if (extension == L"jpg" || extension == L"jpeg" || extension == L"tiff" || 
                 extension == L"tif" || extension == L"png" || extension == L"bmp")
             {
-                // Extract EXIF metadata
-                auto metadata = m_metadataExtractor->ExtractEXIFMetadata(filePathStr);
+                // Extract image metadata
+                auto imageInfo = m_metadataExtractor->ExtractImageInfo(filePathStr);
 
-                // Format the metadata according to the pattern
-                std::wstring formattedResult = m_metadataExtractor->FormatMetadataForRename(metadata, patternStr);
-
-                if (!formattedResult.empty())
+                if (imageInfo.has_value())
                 {
-                    // Allocate and copy the result
-                    size_t resultLength = formattedResult.length() + 1;
-                    *result = static_cast<LPWSTR>(CoTaskMemAlloc(resultLength * sizeof(WCHAR)));
-                    if (*result)
+                    // Use RenamePatternProvider to resolve pattern
+                    std::wstring formattedResult = PowerRenameLib::WICMetadataExtractor::RenamePatternProvider::ResolvePattern(patternStr, *imageInfo);
+
+                    if (!formattedResult.empty())
                     {
-                        wcscpy_s(*result, resultLength, formattedResult.c_str());
-                        hr = S_OK;
+                        // Allocate and copy the result
+                        size_t resultLength = formattedResult.length() + 1;
+                        *result = static_cast<LPWSTR>(CoTaskMemAlloc(resultLength * sizeof(WCHAR)));
+                        if (*result)
+                        {
+                            wcscpy_s(*result, resultLength, formattedResult.c_str());
+                            hr = S_OK;
+                        }
+                        else
+                        {
+                            hr = E_OUTOFMEMORY;
+                        }
                     }
                     else
                     {
-                        hr = E_OUTOFMEMORY;
-                    }
-                }
-                else
-                {
-                    // Return "Unknown" if no metadata found
-                    const wchar_t* unknownResult = L"Unknown";
-                    size_t resultLength = wcslen(unknownResult) + 1;
-                    *result = static_cast<LPWSTR>(CoTaskMemAlloc(resultLength * sizeof(WCHAR)));
-                    if (*result)
-                    {
-                        wcscpy_s(*result, resultLength, unknownResult);
-                        hr = S_OK;
-                    }
-                    else
-                    {
-                        hr = E_OUTOFMEMORY;
+                        // Return "Unknown" if no metadata found
+                        const wchar_t* unknownResult = L"Unknown";
+                        size_t resultLength = wcslen(unknownResult) + 1;
+                        *result = static_cast<LPWSTR>(CoTaskMemAlloc(resultLength * sizeof(WCHAR)));
+                        if (*result)
+                        {
+                            wcscpy_s(*result, resultLength, unknownResult);
+                            hr = S_OK;
+                        }
+                        else
+                        {
+                            hr = E_OUTOFMEMORY;
+                        }
                     }
                 }
             }

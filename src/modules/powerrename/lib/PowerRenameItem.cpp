@@ -129,29 +129,43 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
             }
 
             // using MediaMetadataExtractor to extract EXIF metadata
-            PowerRenameLib::MediaMetadataExtractor extractor;
-            PowerRenameLib::MediaMetadataExtractor::ImageMetadata metadata = extractor.ExtractEXIFMetadata(m_path);
-            if (metadata.dateTaken.empty())
+            PowerRenameLib::WICMetadataExtractor extractor;
+            auto imageInfo = extractor.ExtractImageInfo(m_path);
+            if (!imageInfo.has_value())
             {
                 hr = E_FAIL;
             }
             else
             {
-                // EXIF date format: "YYYY:MM:DD HH:MM:SS"
-                int year, month, day, hour, minute, second;
-                if (swscanf_s(metadata.dateTaken.c_str(), L"%d:%d:%d %d:%d:%d", &year, &month, &day, &hour, &minute, &second) == 6)
+                // Try to get date from EXIF data
+                auto it = imageInfo->exifData.find(L"DateTimeOriginal");
+                if (it == imageInfo->exifData.end()) {
+                    it = imageInfo->exifData.find(L"DateTime");
+                }
+                
+                if (it != imageInfo->exifData.end() && std::holds_alternative<std::wstring>(it->second))
                 {
-                    SYSTEMTIME exifTime = {};
-                    exifTime.wYear = static_cast<WORD>(year);
-                    exifTime.wMonth = static_cast<WORD>(month);
-                    exifTime.wDay = static_cast<WORD>(day);
-                    exifTime.wHour = static_cast<WORD>(hour);
-                    exifTime.wMinute = static_cast<WORD>(minute);
-                    exifTime.wSecond = static_cast<WORD>(second);
-                    m_time = exifTime;
-                    m_isTimeParsed = true;
-                    m_parsedTimeType = parsedTimeType;
-                    hr = S_OK;
+                    const auto& dateTaken = std::get<std::wstring>(it->second);
+                    // EXIF date format: "YYYY:MM:DD HH:MM:SS"
+                    int year, month, day, hour, minute, second;
+                    if (swscanf_s(dateTaken.c_str(), L"%d:%d:%d %d:%d:%d", &year, &month, &day, &hour, &minute, &second) == 6)
+                    {
+                        SYSTEMTIME exifTime = {};
+                        exifTime.wYear = static_cast<WORD>(year);
+                        exifTime.wMonth = static_cast<WORD>(month);
+                        exifTime.wDay = static_cast<WORD>(day);
+                        exifTime.wHour = static_cast<WORD>(hour);
+                        exifTime.wMinute = static_cast<WORD>(minute);
+                        exifTime.wSecond = static_cast<WORD>(second);
+                        m_time = exifTime;
+                        m_isTimeParsed = true;
+                        m_parsedTimeType = parsedTimeType;
+                        hr = S_OK;
+                    }
+                    else
+                    {
+                        hr = E_FAIL;
+                    }
                 }
                 else
                 {

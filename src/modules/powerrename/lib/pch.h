@@ -33,3 +33,9 @@
 #include <fstream>
 
 #include <winrt/base.h>
+
+// Windows Imaging Component (WIC) headers
+#include <wincodec.h>
+#include <wincodecsdk.h>
+#include <propkey.h>
+#include <propvarutil.h>

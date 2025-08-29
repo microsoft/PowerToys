@@ -24,7 +24,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <Import Project="$(DepsPath)\TinyEXIF.props" />
+  <!-- Removed TinyEXIF import as we now use Windows Imaging Component -->
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -32,6 +32,9 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\;$(ProjectDir)..\ui;$(ProjectDir)..\dll;$(ProjectDir)..\lib;$(ProjectDir)..\..\..\;$(ProjectDir)..\..\..\common\Telemetry;%(AdditionalIncludeDirectories);$(GeneratedFilesDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>windowscodecs.lib;propsys.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Enumerating.h" />
@@ -69,6 +72,8 @@
     </ClCompile>
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="MediaMetadataExtractor.cpp" />
+    <ClCompile Include="WICMetadataFormatter.cpp" />
+    <ClCompile Include="WICRenamePatternProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
