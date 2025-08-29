@@ -60,7 +60,17 @@ std::wstring template_item::get_target_filename(const bool include_starting_digi
 
 std::wstring template_item::remove_starting_digits_from_filename(std::wstring filename) const
 {
-    filename.erase(0, min(filename.find_first_not_of(L"0123456789"), filename.size()));
+    // Find first non-digit character
+    size_t first_non_digit = filename.find_first_not_of(L"0123456789");
+    
+    // If the string consists only of digits, don't remove anything
+    if (first_non_digit == std::wstring::npos)
+    {
+        return filename;
+    }
+    
+    // Otherwise, remove starting digits as before
+    filename.erase(0, first_non_digit);
     filename.erase(0, min(filename.find_first_not_of(L" ."), filename.size()));
 
     return filename;
