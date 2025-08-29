@@ -235,7 +235,7 @@ namespace MouseWithoutBorders.Class
                 _ = Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                Common.Init();
+                InitAndCleanup.Init();
                 Core.Helper.WndProcCounter++;
 
                 var formScreen = new FrmScreen();
@@ -314,7 +314,7 @@ namespace MouseWithoutBorders.Class
                 MachineStuff.UpdateMachinePoolStringSetting();
 
                 SocketStuff.InvalidKeyFound = false;
-                Common.ReopenSocketDueToReadError = true;
+                InitAndCleanup.ReopenSocketDueToReadError = true;
                 Common.ReopenSockets(true);
                 MachineStuff.SendMachineMatrix();
 
@@ -340,7 +340,7 @@ namespace MouseWithoutBorders.Class
             public void Reconnect()
             {
                 SocketStuff.InvalidKeyFound = false;
-                Common.ReopenSocketDueToReadError = true;
+                InitAndCleanup.ReopenSocketDueToReadError = true;
                 Common.ReopenSockets(true);
 
                 for (int i = 0; i < 10; i++)
@@ -397,7 +397,7 @@ namespace MouseWithoutBorders.Class
             using var asyncFlowControl = ExecutionContext.SuppressFlow();
 
             Common.InputCallbackThreadID = Thread.CurrentThread.ManagedThreadId;
-            while (!Common.InitDone)
+            while (!InitAndCleanup.InitDone)
             {
                 Thread.Sleep(100);
             }
