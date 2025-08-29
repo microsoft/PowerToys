@@ -16,8 +16,8 @@ Build configuration (for example: 'Debug' or 'Release'). Default is 'Debug'.
 Restores packages for the solution and builds the default set of native projects using the auto-detected platform and Debug configuration.
 
 .EXAMPLE
-.\tools\build\build-essentials.ps1 -Platform amd64 -Configuration Release
-Restores packages and builds the essentials in Release for amd64.
+.\tools\build\build-essentials.ps1 -Platform arm64 -Configuration Release
+Restores packages and builds the essentials in Release mode for ARM64, even if your machine is running on x64.
 
 .NOTES
 - This script dot-sources `build-common.ps1` and uses the shared helper `RunMSBuild`.
