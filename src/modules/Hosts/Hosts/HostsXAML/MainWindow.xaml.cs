@@ -29,7 +29,6 @@ namespace Hosts
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
             AppWindow.SetIcon("Assets/Hosts/Hosts.ico");
-            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
 
             var loader = new ResourceLoader("PowerToys.HostsUILib.pri", "PowerToys.HostsUILib/Resources");
 
