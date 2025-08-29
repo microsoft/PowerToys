@@ -8,15 +8,19 @@ This file provides reusable helper functions used by the build scripts:
 - RunMSBuild: wrapper around msbuild.exe (accepts optional Platform/Configuration)
 - RestoreThenBuild: performs restore and optionally builds the solution/project
 - BuildProjectsInDirectory: discovers and builds local .sln/.csproj/.vcxproj files
+<<<<<<< HEAD
 - Ensure-VsDevEnvironment: initializes the Visual Studio developer environment when possible.
   It prefers the DevShell PowerShell module (Microsoft.VisualStudio.DevShell.dll / Enter-VsDevShell),
   falls back to running VsDevCmd.bat and importing its environment into the current PowerShell session,
   and restores the caller's working directory after initialization.
+=======
+>>>>>>> main
 
 USAGE
 Dot-source this file from a script to load helpers:
 . "$PSScriptRoot\build-common.ps1"
 
+<<<<<<< HEAD
 ERROR DETAILS
 When a build fails, check the logs written next to the solution/project folder:
 - build.<configuration>.<platform>.all.log — full MSBuild text log
@@ -24,6 +28,8 @@ When a build fails, check the logs written next to the solution/project folder:
 - build.<configuration>.<platform>.warnings.log — extracted warnings only
 - build.<configuration>.<platform>.trace.binlog — binary log (open with the MSBuild Structured Log Viewer)
 
+=======
+>>>>>>> main
 .NOTES
 Do not execute this file directly; dot-source it from `build.ps1` or `build-installer.ps1` so helpers are available in your script scope.
 #>
@@ -70,7 +76,11 @@ function RunMSBuild {
     try {
         & msbuild.exe @cmd
         if ($LASTEXITCODE -ne 0) {
+<<<<<<< HEAD
             Write-Error (("Build failed: {0}  {1}`nSee logs:`n  All: {2}`n  Errors: {3}`n  Binlog: {4}" -f $Solution, $ExtraArgs, $allLog, $errorsLog, $binLog))
+=======
+            Write-Error (("Build failed: {0}  {1}" -f $Solution, $ExtraArgs))
+>>>>>>> main
             exit $LASTEXITCODE
         }
     } finally {
@@ -175,6 +185,7 @@ function Get-DefaultPlatform {
 
     return 'x64'
 }
+<<<<<<< HEAD
 
 function Ensure-VsDevEnvironment {
     $OriginalLocationForVsInit = Get-Location
@@ -282,3 +293,5 @@ function Ensure-VsDevEnvironment {
         try { Set-Location $OriginalLocationForVsInit } catch {}
     }
 }
+=======
+>>>>>>> main
