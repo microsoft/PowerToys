@@ -180,7 +180,7 @@ function Ensure-VsDevEnvironment {
     $OriginalLocationForVsInit = Get-Location
     try {
 
-    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR) {
+    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR -or $env:DevEnvDir -or $env:VCToolsInstallDir) {
         Write-Host "[VS] VS developer environment already present"
         return $true
     }
@@ -203,27 +203,15 @@ function Ensure-VsDevEnvironment {
         }
     }
 
-    # If still nothing, enumerate common install folders under Program Files(x86)\Microsoft Visual Studio
-    if (-not $instPaths) {
-        $root = "$env:ProgramFiles (x86)\Microsoft Visual Studio"
-        if (Test-Path $root) {
-            Write-Host "[VS] Scanning $root for installations..."
-            try {
-                $dirs = Get-ChildItem -Path $root -Directory -ErrorAction SilentlyContinue
-                foreach ($d in $dirs) { $instPaths += $d.FullName }
-            } catch {}
-        }
-    }
-
     # Add explicit common year-based candidates as a last resort
     if (-not $instPaths) {
         $explicit = @(
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Community",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Professional",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Enterprise",
-            "$env:ProgramFiles (x86)\Microsoft Visual Studio\2019\Community",
-            "$env:ProgramFiles (x86)\Microsoft Visual Studio\2019\Professional",
-            "$env:ProgramFiles (x86)\Microsoft Visual Studio\2019\Enterprise"
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Community",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Professional",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise"
         )
         foreach ($c in $explicit) { if (Test-Path $c) { $instPaths += $c } }
     }
