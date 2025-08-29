@@ -34,6 +34,8 @@
                   <RepositionThemeTransition IsStaggeringEnabled="False" />
               </StackPanel.ChildrenTransitions>-->
 
+                    <!-- 'Activation' section -->
+
                     <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <controls:SettingsExpander
@@ -66,6 +68,8 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <!-- 'Behavior' section -->
+
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
@@ -84,7 +88,16 @@
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <!--  Example 'About' section  -->
+                    <!-- 'For Developers' section -->
+
+                    <TextBlock x:Uid="ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_AllowExternalReload_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.AllowExternalReload, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <!--  'About' section  -->
+
                     <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <controls:SettingsExpander x:Uid="Settings_GeneralPage_About_SettingsExpander" HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
