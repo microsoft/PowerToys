@@ -107,12 +107,33 @@ internal sealed class Program
     {
         // Do the redirection on another thread, and use a non-blocking
         // wait method to wait for the redirection to complete.
-        var redirectSemaphore = new Semaphore(0, 1);
-        Task.Run(() =>
+        using var redirectSemaphore = new Semaphore(0, 1);
+        var redirectTimeout = TimeSpan.FromSeconds(32);
+
+        _ = Task.Run(() =>
         {
-            keyInstance.RedirectActivationToAsync(args).AsTask().Wait();
-            redirectSemaphore.Release();
+            using var cts = new CancellationTokenSource(redirectTimeout);
+            try
+            {
+                keyInstance.RedirectActivationToAsync(args)
+                    .AsTask(cts.Token)
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogError($"Failed to activate existing instance; timed out after {redirectTimeout}.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to activate existing instance", ex);
+            }
+            finally
+            {
+                redirectSemaphore.Release();
+            }
         });
+
         _ = PInvoke.CoWaitForMultipleObjects(
             (uint)CWMO_FLAGS.CWMO_DEFAULT,
             PInvoke.INFINITE,
@@ -124,13 +145,14 @@ internal sealed class Program
     {
         // If we already have a form, display the message now.
         // Otherwise, add it to the collection for displaying later.
-        if (App.Current is App thisApp)
+        if (App.Current?.AppWindow is MainWindow mainWindow)
         {
-            if (thisApp.AppWindow is not null and
-                MainWindow mainWindow)
-            {
-                uiContext?.Post(_ => mainWindow.HandleLaunch(args), null);
-            }
+            // LOAD BEARING
+            // This must be synchronous to ensure the method does not return
+            // before the activation is fully handled and the parameters are processed.
+            // The sending instance remains blocked until this returns; afterward it may quit,
+            // causing the activation arguments to be lost.
+            mainWindow.HandleLaunchNonUI(args);
         }
     }
 }
