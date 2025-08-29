@@ -583,6 +583,7 @@
                         <ComboBoxItem x:Uid="FileTimeParts_CreationTime" />
                         <ComboBoxItem x:Uid="FileTimeParts_ModificationTime" />
                         <ComboBoxItem x:Uid="FileTimeParts_AccessTime" />
+                        <ComboBoxItem x:Uid="FileTimeParts_EXIFTime" />
                     </ComboBox>
                 </StackPanel>
 

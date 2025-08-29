@@ -423,4 +423,7 @@
   <data name="FileTimeParts_AccessTime.Content" xml:space="preserve">
     <value>Access Time</value>
   </data>
+  <data name="FileTimeParts_EXIFTime.Content" xml:space="preserve">
+    <value>Media EXIF Time</value>
+  </data>
 </root>

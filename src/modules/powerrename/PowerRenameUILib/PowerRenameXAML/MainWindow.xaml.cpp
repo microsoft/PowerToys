@@ -802,6 +802,7 @@ namespace winrt::PowerRenameUI::implementation
                 UpdateFlag(CreationTime, UpdateFlagCommand::Set);
                 UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
                 UpdateFlag(AccessTime, UpdateFlagCommand::Reset);
+                UpdateFlag(EXIFTime, UpdateFlagCommand::Reset);
             }
             else if (selectedIndex == 1)
             {
@@ -809,6 +810,7 @@ namespace winrt::PowerRenameUI::implementation
                 UpdateFlag(ModificationTime, UpdateFlagCommand::Set);
                 UpdateFlag(CreationTime, UpdateFlagCommand::Reset);
                 UpdateFlag(AccessTime, UpdateFlagCommand::Reset);
+                UpdateFlag(EXIFTime, UpdateFlagCommand::Reset);
             }
             else if (selectedIndex == 2)
             {
@@ -816,6 +818,15 @@ namespace winrt::PowerRenameUI::implementation
                 UpdateFlag(AccessTime, UpdateFlagCommand::Set);
                 UpdateFlag(CreationTime, UpdateFlagCommand::Reset);
                 UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(EXIFTime, UpdateFlagCommand::Reset);
+            }
+            else if (selectedIndex == 3)
+            {
+                // EXIF time
+                UpdateFlag(AccessTime, UpdateFlagCommand::Reset);
+                UpdateFlag(CreationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(EXIFTime, UpdateFlagCommand::Set);
             }
         });
     }
