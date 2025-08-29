@@ -3161,10 +3161,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
     <value>Pin a window</value>
   </data>
-  <data name="LightSwitch_ForceDarkMode_Shortcut" xml:space="preserve">
-    <value>Control Light Switch</value>
-  </data>
-  <data name="LightSwitch_ForceLightMode_Shortcut.Header" xml:space="preserve">
+  <data name="LightSwitch_ForceDarkMode_Shortcut.Header" xml:space="preserve">
     <value>Toggle theme shortcut</value>
   </data>
   <data name="LightSwitch_ForceDarkMode" xml:space="preserve">
