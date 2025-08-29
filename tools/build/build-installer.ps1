@@ -52,7 +52,7 @@ Runs the pipeline for x64 Release with 'vnext' suffix.
 #>
 
 param (
-    [string]$Platform = 'x64',
+    [string]$Platform = '',
     [string]$Configuration = 'Release',
     [string]$PerUser = 'true',
     [string]$InstallerSuffix = 'wix5'
@@ -60,6 +60,17 @@ param (
 
 # Ensure helpers are available
 . "$PSScriptRoot\build-common.ps1"
+
+# Auto-detect platform when not provided
+if (-not $Platform -or $Platform -eq '') {
+    try {
+        $Platform = Get-DefaultPlatform
+        Write-Host ("[AUTO-PLATFORM] Detected platform: {0}" -f $Platform)
+    } catch {
+        Write-Warning "Failed to auto-detect platform; defaulting to x64"
+        $Platform = 'x64'
+    }
+}
 
 # Find the PowerToys repository root automatically
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition

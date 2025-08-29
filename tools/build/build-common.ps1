@@ -130,3 +130,37 @@ function BuildProjectsInDirectory {
 
     return $true
 }
+
+function Get-DefaultPlatform {
+    <#
+    Returns a default target platform string based on the host machine (x64, arm64, x86).
+    #>
+    try {
+        $envArch = $env:PROCESSOR_ARCHITECTURE
+        if ($envArch) { $envArch = $envArch.ToLower() }
+        if ($envArch -eq 'amd64' -or $envArch -eq 'x86_64') { return 'x64' }
+        if ($envArch -match 'arm64') { return 'arm64' }
+        if ($envArch -eq 'x86') { return 'x86' }
+
+        if ($env:PROCESSOR_ARCHITEW6432) {
+            $envArch2 = $env:PROCESSOR_ARCHITEW6432.ToLower()
+            if ($envArch2 -eq 'amd64') { return 'x64' }
+            if ($envArch2 -match 'arm64') { return 'arm64' }
+        }
+
+        try {
+            $osArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+            switch ($osArch.ToString().ToLower()) {
+                'x64' { return 'x64' }
+                'arm64' { return 'arm64' }
+                'x86' { return 'x86' }
+            }
+        } catch {
+            # ignore - RuntimeInformation may not be available
+        }
+    } catch {
+        # ignore any errors and fall back
+    }
+
+    return 'x64'
+}
