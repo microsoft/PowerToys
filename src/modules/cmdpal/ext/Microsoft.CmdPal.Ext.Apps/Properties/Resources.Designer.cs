@@ -223,7 +223,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to None.
+        ///   Looks up a localized string similar to Unlimited.
         /// </summary>
         internal static string limit_none {
             get {
