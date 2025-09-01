@@ -1,3 +1,4 @@
+// ReSharper disable CppInconsistentNaming
 #include "pch.h"
 #include "FontIconGlyphClassifier.h"
 #include "FontIconGlyphClassifier.g.cpp"
@@ -14,19 +15,6 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         static constexpr uint32_t PRIVATE_USE_AREA_END = 0xF8FF;
     }
 
-    namespace UnicodeChars
-    {
-        static constexpr int32_t VARIATION_SELECTOR_16 = 0xFE0F;
-        static constexpr int32_t ZERO_WIDTH_JOINER = 0x200D;
-        static constexpr int32_t COMBINING_ENCLOSING_KEYCAP = 0x20E3;
-
-        static constexpr int32_t TONES_START = 0x1F3FB;
-        static constexpr int32_t TONES_END = 0x1F3FF;
-
-        static constexpr int32_t REGIONAL_INDICATOR_START = 0x1F1E6;
-        static constexpr int32_t REGIONAL_INDICATOR_END = 0x1F1FF;
-    }
-
     namespace
     {
         // Helper to check if a code point is within a range
@@ -35,72 +23,152 @@ namespace winrt::Microsoft::Terminal::UI::implementation
             return value >= lo && value <= hi;
         }
 
-        // Internal implementation: determine if a sequence is likely an emoji-like grapheme
-        bool _isEmojiLike(const UChar* p, const int32_t length)
+        constexpr bool _isRegionalIndicator(uint32_t cp) noexcept
         {
-            bool sawRegional = false;
-            int32_t index = 0;
-            UChar32 cp;
-            while (index < length)
+            static constexpr int32_t REGIONAL_INDICATOR_START = 0x1F1E6;
+            static constexpr int32_t REGIONAL_INDICATOR_END = 0x1F1FF;
+            return cp >= REGIONAL_INDICATOR_START && cp <= REGIONAL_INDICATOR_END;
+        }
+
+        constexpr bool _isEmojiModifier(uint32_t cp) noexcept
+        {
+            static constexpr int32_t TONES_START = 0x1F3FB;
+            static constexpr int32_t TONES_END = 0x1F3FF;
+            return cp >= TONES_START && cp <= TONES_END; // skin tones
+        }
+
+        bool _isEmojiLike(const UChar* p, const int32_t length) noexcept
+        {
+            if (length < 1)
             {
-                U16_NEXT(p, index, length, cp);
+                return false;
+            }
 
-                // ICU properties
-                if (u_hasBinaryProperty(cp, UCHAR_EXTENDED_PICTOGRAPHIC)) // will match ♡ or ⌨︎
+            constexpr uint32_t VS15 = 0xFE0E; // text presentation
+            constexpr uint32_t VS16 = 0xFE0F; // emoji presentation
+            constexpr uint32_t BLACKFLAG = 0x1F3F4; // base for tag flags
+            constexpr uint32_t CANCELTAG = 0xE007F; // end of tag sequences
+
+            bool hasVS15 = false;
+            bool hasVS16 = false;
+            bool endsWithCancelTag = false;
+            int regionalCount = 0;
+
+            uint32_t first = 0;
+            bool haveFirst = false;
+
+            for (int32_t i = 0; i < length;)
+            {
+                uint32_t cp = 0;
+                U16_NEXT(p, i, length, cp);
+
+                if (!haveFirst)
                 {
-                    return true;
+                    first = cp;
+                    haveFirst = true;
                 }
 
-                if (u_hasBinaryProperty(cp, UCHAR_EMOJI_PRESENTATION)) // matches emoji that default to emoji presentation
+                if (cp == VS15)
                 {
-                    return true;
+                    hasVS15 = true;
                 }
-
-                if (u_hasBinaryProperty(cp, UCHAR_EMOJI_COMPONENT))
+                else if (cp == VS16)
                 {
-                    return true;
+                    hasVS16 = true;
                 }
-
-                // Please render me as emoji variation selector
-                if (cp == UnicodeChars::VARIATION_SELECTOR_16)
+                else if (_isRegionalIndicator(cp))
                 {
-                    return true;
+                    ++regionalCount;
                 }
-
-                /*
-                There seems to be a legitimate use case for ZWJ sequences that are not emoji, e.g. Bengali \u0995\u09CD\u200D  →  ক্‌
-                if (cp == UnicodeChars::ZERO_WIDTH_JOINER)
+                else if (cp == CANCELTAG)
                 {
-                    return true;
-                }
-                */
-
-                // Skin tone modifiers
-                if (_inRange(cp, UnicodeChars::TONES_START, UnicodeChars::TONES_END))
-                {
-                    return true;
-                }
-
-                // Regional indicator pairs -> flag
-                if (_inRange(cp, UnicodeChars::REGIONAL_INDICATOR_START, UnicodeChars::REGIONAL_INDICATOR_END))
-                {
-                    if (sawRegional)
-                        return true;
-                    sawRegional = true;
+                    endsWithCancelTag = true;
                 }
             }
+
+            // Regional-indicator flags require at least a pair within this grapheme
+            if (regionalCount >= 2)
+            {
+                return true;
+            }
+
+            // Tag flags: U+1F3F4 + TAG letters … + CANCEL TAG
+            if (haveFirst && first == BLACKFLAG && endsWithCancelTag)
+            {
+                return true;
+            }
+
+            // Emoji modifier sequences: base + skin tone (stick to ICU property)
+            {
+                for (int32_t i = 0; i < length;)
+                {
+                    uint32_t base = 0;
+                    const int32_t start = i;
+                    U16_NEXT(p, i, length, base);
+
+                    // Skip immediate variation selectors after base
+                    int32_t j = i;
+                    while (j < length)
+                    {
+                        uint32_t v = 0;
+                        int32_t k = j;
+                        U16_NEXT(p, k, length, v);
+                        if (v == VS15 || v == VS16)
+                        {
+                            j = k;
+                            continue;
+                        }
+                        break;
+                    }
+
+                    if (j < length)
+                    {
+                        uint32_t mod = 0;
+                        U16_NEXT(p, j, length, mod);
+                        if (_isEmojiModifier(mod) && u_hasBinaryProperty(base, UCHAR_EMOJI_MODIFIER_BASE))
+                            return true;
+                    }
+
+                    if (i <= start)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            // Presentation selectors decide explicitly
+            if (hasVS16)
+            {
+                return true; // force emoji
+            }
+
+            if (hasVS15)
+            {
+                return false; // force text
+            }
+
+            // Single-codepoint default: emoji by default iff Emoji_Presentation
+            if (haveFirst && u_hasBinaryProperty(first, UCHAR_EMOJI_PRESENTATION))
+                return true;
+
+           /*
+            * https://www.unicode.org/reports/tr51/#Emoji_Properties
+            * This causes us to classify text-default symbols (©, ®, ™, ⌨, …) as emoji by default:
+            *
+            *  if (haveFirst && u_hasBinaryProperty(first, UCHAR_EXTENDED_PICTOGRAPHIC))
+            *       return true;
+            */
+
+            // Ambiguous text-default symbols (©, ®, ™, ⌨, …) are NOT emoji without VS16
             return false;
         }
 
         // Note: Fluent/MDL2 PUA lives in BMP. It's sufficient to check the first UTF-16 code unit.
         bool _isLikelyInFluentPUA(const UChar* p) noexcept
         {
-            if (!p)
-            {
-                return false;
-            }
-            const auto cu = static_cast<uint32_t>(static_cast<uint16_t>(*p));
-            return _inRange(cu, FluentIconRanges::PRIVATE_USE_AREA_START, FluentIconRanges::PRIVATE_USE_AREA_END);
+            return p
+                && p[0] >= FluentIconRanges::PRIVATE_USE_AREA_START
+                && p[0] <= FluentIconRanges::PRIVATE_USE_AREA_END;
         }
     }
 
@@ -170,7 +238,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         // Fast path 1: Single UTF-16 code unit (most common case)
         if (textSize == 1)
         {
-            const UChar ch = buffer[0];
+            const UChar ch{ buffer[0] };
 
             // High surrogate without low surrogate = invalid UTF-16
             if (IS_HIGH_SURROGATE(ch))
@@ -185,7 +253,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
             }
 
             // Check basic emoji properties (Note: some emoji need variation selectors)
-            if (u_hasBinaryProperty(ch, UCHAR_EXTENDED_PICTOGRAPHIC) || u_hasBinaryProperty(ch, UCHAR_EMOJI_PRESENTATION))
+            if (_isEmojiLike(&ch, 1))
             {
                 return FontIconGlyphKind::Emoji;
             }
@@ -206,7 +274,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         UBreakIterator* bi{ ubrk_open(UBRK_CHARACTER,
                                       nullptr,
                                       buffer,
-                                      static_cast<int32_t>(text.size()),
+                                      static_cast<int32_t>(textSize),
                                       &status) };
 
         if (U_FAILURE(status) || !bi)
@@ -214,18 +282,18 @@ namespace winrt::Microsoft::Terminal::UI::implementation
             return FontIconGlyphKind::None;
         }
 
-        const int32_t start = ubrk_first(bi);
-        const int32_t end1 = ubrk_next(bi); // end of first grapheme
+        const int32_t start{ ubrk_first(bi) };
+        const int32_t end1{ ubrk_next(bi) }; // end of first grapheme
+        ubrk_close(bi);
+
+        // No graphemes found
         if (end1 == UBRK_DONE || end1 <= start)
         {
-            ubrk_close(bi);
             return FontIconGlyphKind::None;
         }
 
-        // See if there's more than one grapheme
-        const int32_t end2 = ubrk_next(bi);
-        ubrk_close(bi);
-        if (end2 != UBRK_DONE)
+        // If there's more than one grapheme, it's not a valid icon glyph
+        if (std::cmp_not_equal(end1, textSize))
         {
             return FontIconGlyphKind::Invalid;
         }

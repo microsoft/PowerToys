@@ -149,21 +149,20 @@ public partial class IconBox : ContentControl
                             _ => null,
                         };
 
-                        var iconIconGlyphKind = iconData is not null && @this.Source is FontIconSource
-                            ? FontIconGlyphClassifier.Classify(iconData.Icon)
-                            : FontIconGlyphKind.None;
-                        var useNegativePadding = iconIconGlyphKind is FontIconGlyphKind.Emoji or FontIconGlyphKind.Invalid;
+                        if (iconData?.Icon is not null && @this.Source is FontIconSource)
+                        {
+                            var iconSize =
+                                !double.IsNaN(@this.Width) ? @this.Width :
+                                !double.IsNaN(@this.Height) ? @this.Height :
+                                @this.ActualWidth > 0 ? @this.ActualWidth :
+                                @this.ActualHeight;
 
-                        var iconSize =
-                            !double.IsNaN(@this.Width) ? @this.Width :
-                            !double.IsNaN(@this.Height) ? @this.Height :
-                            @this.ActualWidth > 0 ? @this.ActualWidth :
-                            @this.ActualHeight;
-                        var paddingValue = useNegativePadding ? Math.Round(iconSize * -0.2) : 0;
-                        @this.Padding = new Thickness(paddingValue);
-
-                        // If we got back an invalid icon, make it look subtle in case extension dev didn't fix it
-                        @this.Opacity = iconIconGlyphKind == FontIconGlyphKind.Invalid ? 0.33 : 1;
+                            @this.Padding = new Thickness(Math.Round(iconSize * -0.2));
+                        }
+                        else
+                        {
+                            @this.Padding = default;
+                        }
                     }
                     catch (Exception ex)
                     {

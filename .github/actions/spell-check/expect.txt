@@ -306,6 +306,7 @@ CXVIRTUALSCREEN
 CYSCREEN
 CYSMICON
 CYVIRTUALSCREEN
+Czechia
 cziplib
 Dac
 dacl
@@ -435,6 +436,7 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 ekus
+emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
 ENABLETAB
@@ -799,6 +801,7 @@ KEYBOARDMANAGEREDITORLIBRARYWRAPPER
 keyboardmanagerstate
 keyboardmanagerui
 keyboardtester
+keycap
 KEYEVENTF
 KEYIMAGE
 keynum
@@ -1778,10 +1781,13 @@ UACUI
 UAL
 uap
 UBR
+UBreak
+ubrk
 UCallback
 ucrt
 ucrtd
 uefi
+UError
 uesc
 UFlags
 UHash
@@ -1851,6 +1857,7 @@ VFT
 vget
 vgetq
 viewmodels
+virama
 VIRTKEY
 VIRTUALDESK
 VISEGRADRELAY
@@ -2021,7 +2028,9 @@ xstyler
 XTimer
 XUP
 XVIRTUALSCREEN
+xxxx
 xxxxxx
+xxxxxxxx
 YAxis
 ycombinator
 YIncrement

@@ -53,18 +53,24 @@ internal sealed partial class SampleIconPage : ListPage
         BuildIconItem("A", "Simple text character as icon", "Basic letter character used as an icon demonstration"),
 
         // Letter 1
+        // Unicode: \U00000031
         BuildIconItem("1", "Simple text character as icon", "Basic letter character used as an icon demonstration"),
 
         // Emoji Keycap Digit Two ... 2️⃣
-        // Unicode: \U00000032\U0000FE0F\U000020E3
-        // This is a sequence of three code points: the digit '2' (U+0032), a variation selector (U+FE0F) to specify emoji presentation, and a combining enclosing keycap (U+20E3).
-        BuildIconItem("2️⃣", "Emoji with variation selector", "Emoji character using a variation selector to specify emoji presentation"),
+        // Unicode: \U00000032\U000020E3
+        // This is a sequence of three code points: the digit '2' (U+0032), and a combining enclosing keycap (U+20E3). No variation selector is used here.
+        BuildIconItem("\U00000032\U000020E3", "Emoji without variation selector", "Emoji character doesn't have VS16 variation selector to render as text"),
+
+        // Emoji Keycap Digit Three ... 3️⃣
+        // Unicode: \U00000033\U0000FE0F\U000020E3
+        // This is a sequence of three code points: the digit '3' (U+0033), a variation selector (U+FE0F) to specify emoji presentation, and a combining enclosing keycap (U+20E3).
+        BuildIconItem("3️⃣", "Emoji with variation selector", "Emoji character using a variation selector to specify emoji presentation"),
 
         // Symbol #
         // Unicode: \u0023
         BuildIconItem("#", "Simple text character as icon", "Basic letter character used as an icon demonstration"),
 
-        // Symbol #
+        // Symbol # keycap
         // Unicode: \u0023\ufe0f\u20e3
         // Sequence of 3 code points: symbol #, a variation selector (U+FE0F) to specify emoji presentation, and a combining enclosing keycap (U+20E3).
         BuildIconItem("\u0023\ufe0f\u20e3", "Simple text character as icon", "Basic letter character used as an icon demonstration"),
@@ -116,10 +122,26 @@ internal sealed partial class SampleIconPage : ListPage
         // Unicode: \U0001F004
         BuildIconItem("\U0001F004", "Mahjong tile emoji (red dragon)", "Mahjong tile red dragon emoji character using Unicode escape sequence"),
 
-        // mahjong tile 🀙 (non-emoji)
+        // mahjong tile green dragon (non-emoji)
         // https://en.wikipedia.org/wiki/Mahjong_Tiles_(Unicode_block)
-        // Unicode: \U0001F019
-        BuildIconItem("\U0001F019", "Mahjong tile non-emoji", "Mahjong tile character that is not classified as an emoji"),
+        // Unicode: \U0001F005
+        BuildIconItem("\U0001F005", "Mahjong tile non-emoji (green dragon)", "Mahjong tile character that is not classified as an emoji"),
+
+        // Play, PlayPause, Stop
+        BuildIconItem("\u25B6", "Play symbol (standalone)", "Play symbol"),
+        BuildIconItem("\u25B6\uFE0E", "Play symbol + VS15 (request text)", "Play symbol with variation specifier requesting rendering as text"),
+        BuildIconItem("\u25B6\uFE0F", "Play symbol + VS16 (request emoji)", "Play symbol with variation specifier requesting rendering as emoji "),
+        BuildIconItem("⏯️", "Play/Pause keycap emoji", "Play/Pause keycap emoji doesn't have plain text variant"),
+        BuildIconItem("⏸️", "Pause keycap emoji", "Pause keycap emoji doesn't have plain text variant"),
+
+        // Copyright and emoji copyright:
+        BuildIconItem("\u00a9", "Copyright symbol (standalone)", "Copyright symbol that is not classified as an emoji"),
+        BuildIconItem("\u00a9\uFE0E", "Copyright symbol + VS15 (request text)", "Copyright symbol that is not classified as an emoji"),
+        BuildIconItem("\u00a9\uFE0F", "Copyright symbol + VS16 (request emoji)", "Copyright symbol that is not classified as an emoji"),
+
+        // Tag flags
+        BuildIconItem("🏳️", "White Flag", "White Flag"),
+        BuildIconItem("\U0001F3F4\u200D\u2620\uFE0F", "Pirate Flag", "Pirate Flag"),
     ];
 
     public SampleIconPage()

@@ -174,31 +174,33 @@ namespace winrt::Microsoft::Terminal::UI::implementation
                 try
                 {
                     const auto glyph_kind = FontIconGlyphClassifier::Classify(iconPath);
-                    typename FontIconSource<TIconSource>::type icon;
 
+                    winrt::hstring family;
                     if (glyph_kind == FontIconGlyphKind::Invalid)
                     {
-                        icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ L"Segoe UI" });
+                        family = L"Segoe UI";
                     }
                     else if (!fontFamily.empty())
                     {
-                        icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ fontFamily });
+                        family = fontFamily;
                     }
                     else if (glyph_kind == FontIconGlyphKind::FluentSymbol)
                     {
-                        icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ L"Segoe Fluent Icons, Segoe MDL2 Assets" });
+                        family = L"Segoe Fluent Icons, Segoe MDL2 Assets";
                     }
                     else if (glyph_kind == FontIconGlyphKind::Emoji)
                     {
-                        // Emoji and other symbols go in the Segoe UI Emoji font. Some emojis (e.g. 2️⃣) would be rendered as emoji glyphs otherwise
-                        icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ L"Segoe UI Emoji, Segoe UI" });
+                        // Emoji and other symbols go in the Segoe UI Emoji font.
+                        // Some emojis (e.g. 2️⃣) would be rendered as emoji glyphs otherwise.
+                        family = L"Segoe UI Emoji, Segoe UI";
                     }
                     else
                     {
-                        // Note: you _do_ need to manually set the font here.
-                        icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ L"Segoe UI" });
+                        family = L"Segoe UI";
                     }
 
+                    typename FontIconSource<TIconSource>::type icon;
+                    icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ family });
                     icon.FontSize(targetSize);
                     icon.Glyph(glyph_kind == FontIconGlyphKind::Invalid ? L"\u25CC" : iconPath);
                     iconSource = icon;
