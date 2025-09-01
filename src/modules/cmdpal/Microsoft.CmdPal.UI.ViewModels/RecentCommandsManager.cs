@@ -30,7 +30,7 @@ public partial class RecentCommandsManager : ObservableObject
             // These numbers are vaguely scaled so that "VS" will make "Visual Studio" the
             // match after one use.
             // Usually it has a weight of 84, compared to 109 for the VS cmd prompt
-            if (entry.Item != null)
+            if (entry.Item is not null)
             {
                 var index = entry.Index;
 
@@ -61,7 +61,7 @@ public partial class RecentCommandsManager : ObservableObject
             var entry = History
             .Where(item => item.CommandId == commandId)
             .FirstOrDefault();
-            if (entry == null)
+            if (entry is null)
             {
                 var newitem = new HistoryItem() { CommandId = commandId, Uses = 1 };
                 History.Insert(0, newitem);

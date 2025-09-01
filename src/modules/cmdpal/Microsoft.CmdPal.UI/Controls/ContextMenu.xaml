@@ -108,11 +108,11 @@
             </DataTemplate>
 
             <!--  Template for context item separators  -->
-            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="coreViewModels:SeparatorContextItemViewModel">
+            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="coreViewModels:SeparatorViewModel">
                 <Rectangle
                     Height="1"
                     Margin="-16,-12,-12,-12"
-                    Fill="{ThemeResource MenuFlyoutSeparatorThemeBrush}" />
+                    Fill="{ThemeResource MenuFlyoutSeparatorBackground}" />
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>

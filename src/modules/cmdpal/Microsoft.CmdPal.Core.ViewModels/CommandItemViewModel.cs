@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -68,7 +69,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         get
         {
-            List<IContextItemViewModel> l = _defaultCommandContextItem == null ?
+            List<IContextItemViewModel> l = _defaultCommandContextItem is null ?
                 new() :
                 [_defaultCommandContextItem];
 
@@ -100,7 +101,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var model = _commandItemModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
@@ -128,7 +129,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var model = _commandItemModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
@@ -136,7 +137,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Command.InitializeProperties();
 
         var listIcon = model.Icon;
-        if (listIcon != null)
+        if (listIcon is not null)
         {
             _listItemIcon = new(listIcon);
             _listItemIcon.InitializeProperties();
@@ -172,24 +173,24 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         var model = _commandItemModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
         var more = model.MoreCommands;
-        if (more != null)
+        if (more is not null)
         {
             MoreCommands = more
-                .Select(item =>
+                .Select<IContextItem, IContextItemViewModel>(item =>
                 {
                     if (item is ICommandContextItem contextItem)
                     {
-                        return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
+                        return new CommandContextItemViewModel(contextItem, PageContext);
                     }
                     else
                     {
-                        return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                        return new SeparatorViewModel();
                     }
                 })
                 .ToList();
@@ -237,8 +238,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             FastInitializeProperties();
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError("error fast initializing CommandItemViewModel", ex);
             Command = new(null, PageContext);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
@@ -257,9 +259,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             SlowInitializeProperties();
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             Initialized |= InitializedState.Error;
+            Logger.LogError("error slow initializing CommandItemViewModel", ex);
         }
 
         return false;
@@ -272,8 +275,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             InitializeProperties();
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError("error initializing CommandItemViewModel", ex);
             Command = new(null, PageContext);
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
@@ -300,7 +304,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     protected virtual void FetchProperty(string propertyName)
     {
         var model = this._commandItemModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -308,7 +312,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         switch (propertyName)
         {
             case nameof(Command):
-                if (Command != null)
+                if (Command is not null)
                 {
                     Command.PropertyChanged -= Command_PropertyChanged;
                 }
@@ -339,18 +343,18 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
             case nameof(model.MoreCommands):
                 var more = model.MoreCommands;
-                if (more != null)
+                if (more is not null)
                 {
                     var newContextMenu = more
-                        .Select(item =>
+                        .Select<IContextItem, IContextItemViewModel>(item =>
                         {
                             if (item is ICommandContextItem contextItem)
                             {
-                                return new CommandContextItemViewModel(contextItem, PageContext) as IContextItemViewModel;
+                                return new CommandContextItemViewModel(contextItem, PageContext);
                             }
                             else
                             {
-                                return new SeparatorContextItemViewModel() as IContextItemViewModel;
+                                return new SeparatorViewModel();
                             }
                         })
                         .ToList();
@@ -394,7 +398,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
                 var model = _commandItemModel.Unsafe;
-                if (model != null)
+                if (model is not null)
                 {
                     _itemTitle = model.Title;
                 }
@@ -430,7 +434,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Command.SafeCleanup();
 
         var model = _commandItemModel.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.PropChanged -= Model_PropChanged;
         }

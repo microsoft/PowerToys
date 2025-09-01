@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
@@ -27,7 +26,7 @@ public static class ComFreeHelper
     public static unsafe void ComObjectRelease<T>(T* comPtr)
         where T : unmanaged
     {
-        if (comPtr != null)
+        if (comPtr is not null)
         {
             ((IUnknown*)comPtr)->Release();
         }

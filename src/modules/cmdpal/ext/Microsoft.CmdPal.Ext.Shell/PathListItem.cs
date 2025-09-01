@@ -72,7 +72,7 @@ internal sealed partial class PathListItem : ListItem
         _icon = new Lazy<IconInfo>(() =>
         {
             var iconStream = ThumbnailHelper.GetThumbnail(path).Result;
-            var icon = iconStream != null ? IconInfo.FromStream(iconStream) :
+            var icon = iconStream is not null ? IconInfo.FromStream(iconStream) :
              _isDirectory ? Icons.FolderIcon : Icons.RunV2Icon;
             return icon;
         });
