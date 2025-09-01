@@ -2028,9 +2028,7 @@ xstyler
 XTimer
 XUP
 XVIRTUALSCREEN
-xxxx
 xxxxxx
-xxxxxxxx
 YAxis
 ycombinator
 YIncrement

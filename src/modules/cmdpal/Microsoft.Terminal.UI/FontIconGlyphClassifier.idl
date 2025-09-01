@@ -11,7 +11,7 @@ namespace Microsoft.Terminal.UI
     enum FontIconGlyphKind
     {
         /// <summary>
-        /// Input contains more than one grapheme cluster and therefore cannot be
+        /// Input is invalid or contains more than one grapheme cluster and therefore cannot be
         /// treated as a single symbol. Typical for multi-character text like file paths
         /// or composed strings that include separators.
         /// </summary>
@@ -53,11 +53,6 @@ namespace Microsoft.Terminal.UI
         /// <param name="text">Text to analyze</param>
         /// <returns>True if single grapheme cluster, false for multi-character text or paths</returns>
         static Boolean IsLikelyToBeEmojiOrSymbolIcon(String text);
-
-        /// <summary>
-        /// Determines if the input is likely to render with emoji presentation.
-        /// </summary>
-        static Boolean IsEmojiLike(String text);
 
         /// <summary>
         /// Classifies the input into a glyph kind suitable for icon or text rendering.

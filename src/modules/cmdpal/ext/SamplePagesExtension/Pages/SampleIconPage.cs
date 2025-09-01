@@ -15,8 +15,8 @@ internal sealed partial class SampleIconPage : ListPage
         /*
          * Quick intro to Unicode in source code:
          * - Every character has a code point (e.g., U+0041 = 'A').
-         * - Code points up to U+FFFF use \uXXXX (4 hex digits and lowercase u).
-         * - Code points above that (up to U+10FFFF) use \UXXXXXXXX (8 hex digits and capital letter U).
+         * - Code points up to U+FFFF use \u1234 (4 hex digits and lowercase u).
+         * - Code points above that (up to U+10FFFF) use \U12345678 (8 hex digits and capital letter U).
          * - If your source file is UTF-8, you can type the character directly, but it may not display properly in editors,
          *   and it's harder to see the actual code point.
          * - Some symbols (like many emojis) are built from multiple code points
