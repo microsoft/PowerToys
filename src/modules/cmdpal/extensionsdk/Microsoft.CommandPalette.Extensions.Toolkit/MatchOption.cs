@@ -22,4 +22,9 @@ public partial class MatchOption
     public string Suffix { get; set; } = string.Empty;
 
     public bool IgnoreCase { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether to support Chinese PinYin
+    /// </summary>
+    public bool ChinesePinYinSupport { get; set; }
 }
