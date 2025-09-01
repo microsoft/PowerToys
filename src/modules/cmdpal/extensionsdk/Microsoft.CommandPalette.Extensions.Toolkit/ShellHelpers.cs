@@ -125,7 +125,7 @@ public static class ShellHelpers
         else
         {
             var values = Environment.GetEnvironmentVariable("PATH");
-            if (values != null)
+            if (values is not null)
             {
                 foreach (var path in values.Split(';'))
                 {

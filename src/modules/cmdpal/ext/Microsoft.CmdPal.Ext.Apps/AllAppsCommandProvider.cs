@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
@@ -19,16 +17,23 @@ public partial class AllAppsCommandProvider : CommandProvider
 
     public static readonly AllAppsPage Page = new();
 
+    private readonly AllAppsPage _page;
     private readonly CommandItem _listItem;
 
     public AllAppsCommandProvider()
+        : this(Page)
     {
+    }
+
+    public AllAppsCommandProvider(AllAppsPage page)
+    {
+        _page = page ?? throw new ArgumentNullException(nameof(page));
         Id = WellKnownId;
         DisplayName = Resources.installed_apps;
         Icon = Icons.AllAppsIcon;
         Settings = AllAppsSettings.Instance.Settings;
 
-        _listItem = new(Page)
+        _listItem = new(_page)
         {
             Subtitle = Resources.search_installed_apps,
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
@@ -38,11 +43,33 @@ public partial class AllAppsCommandProvider : CommandProvider
         PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem, ..Page.GetPinnedApps()];
+    public static int TopLevelResultLimit
+    {
+        get
+        {
+            var limitSetting = AllAppsSettings.Instance.SearchResultLimit;
+
+            if (limitSetting is null)
+            {
+                return -1;
+            }
+
+            var quantity = -1;
+
+            if (int.TryParse(limitSetting, out var result))
+            {
+                quantity = result;
+            }
+
+            return quantity;
+        }
+    }
+
+    public override ICommandItem[] TopLevelCommands() => [_listItem, .._page.GetPinnedApps()];
 
     public ICommandItem? LookupApp(string displayName)
     {
-        var items = Page.GetItems();
+        var items = _page.GetItems();
 
         // We're going to do this search in two directions:
         // First, is this name a substring of any app...

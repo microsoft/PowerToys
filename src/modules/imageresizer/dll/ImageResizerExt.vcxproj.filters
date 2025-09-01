@@ -54,6 +54,9 @@
     <ClInclude Include="Generated Files/resource.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="RuntimeRegistration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ImageResizerExt.rgs">

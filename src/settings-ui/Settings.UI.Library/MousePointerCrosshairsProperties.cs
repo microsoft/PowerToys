@@ -13,8 +13,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, true, false, 0x50); // Win + Alt + P
 
+        [CmdConfigureIgnore]
+        public HotkeySettings DefaultGlidingCursorActivationShortcut => new HotkeySettings(true, false, true, false, 0xBE); // Win + Alt + .
+
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }
+
+        [JsonPropertyName("gliding_cursor_activation_shortcut")]
+        public HotkeySettings GlidingCursorActivationShortcut { get; set; }
 
         [JsonPropertyName("crosshairs_color")]
         public StringProperty CrosshairsColor { get; set; }
@@ -46,9 +52,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("auto_activate")]
         public BoolProperty AutoActivate { get; set; }
 
+        [JsonPropertyName("gliding_travel_speed")]
+        public IntProperty GlidingTravelSpeed { get; set; }
+
+        [JsonPropertyName("gliding_delay_speed")]
+        public IntProperty GlidingDelaySpeed { get; set; }
+
         public MousePointerCrosshairsProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
+            GlidingCursorActivationShortcut = DefaultGlidingCursorActivationShortcut;
             CrosshairsColor = new StringProperty("#FF0000");
             CrosshairsOpacity = new IntProperty(75);
             CrosshairsRadius = new IntProperty(20);
@@ -59,6 +72,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CrosshairsIsFixedLengthEnabled = new BoolProperty(false);
             CrosshairsFixedLength = new IntProperty(1);
             AutoActivate = new BoolProperty(false);
+            GlidingTravelSpeed = new IntProperty(25);
+            GlidingDelaySpeed = new IntProperty(5);
         }
     }
 }

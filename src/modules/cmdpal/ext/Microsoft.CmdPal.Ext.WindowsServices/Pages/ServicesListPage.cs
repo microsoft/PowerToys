@@ -16,13 +16,19 @@ internal sealed partial class ServicesListPage : DynamicListPage
     {
         Icon = Icons.ServicesIcon;
         Name = "Windows Services";
+
+        var filters = new ServiceFilters();
+        filters.PropChanged += Filters_PropChanged;
+        Filters = filters;
     }
+
+    private void Filters_PropChanged(object sender, IPropChangedEventArgs args) => RaiseItemsChanged();
 
     public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged(0);
 
     public override IListItem[] GetItems()
     {
-        var items = ServiceHelper.Search(SearchText).ToArray();
+        var items = ServiceHelper.Search(SearchText, Filters.CurrentFilterId).ToArray();
 
         return items;
     }

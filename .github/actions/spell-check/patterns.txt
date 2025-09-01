@@ -260,3 +260,7 @@ Process Process
 # ZoomIt menu items with accelerator keys
 E&xit
 St&yle
+
+# This matches a relative clause where the relative pronoun "that" is omitted.
+# Example: "Gets or sets the window the TitleBar should configure."
+\bthe\s+\w+\s+the\b

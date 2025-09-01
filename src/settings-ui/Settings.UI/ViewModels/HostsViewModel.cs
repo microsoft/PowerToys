@@ -105,6 +105,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool NoLeadingSpaces
+        {
+            get => Settings.Properties.NoLeadingSpaces;
+            set
+            {
+                if (value != Settings.Properties.NoLeadingSpaces)
+                {
+                    Settings.Properties.NoLeadingSpaces = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public int AdditionalLinesPosition
         {
             get => (int)Settings.Properties.AdditionalLinesPosition;

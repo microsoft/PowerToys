@@ -25,7 +25,7 @@ using MouseJump.Common.Models.Styles;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class MouseUtilsViewModel : Observable
+    public partial class MouseUtilsViewModel : PageViewModelBase
     {
         private GpoRuleConfigured _jumpEnabledGpoRuleConfiguration;
         private bool _jumpEnabledStateIsGPOConfigured;
@@ -37,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ArgumentNullException.ThrowIfNull(mouseJumpSettingsRepository);
             this.MouseJumpSettingsConfig = mouseJumpSettingsRepository.SettingsConfig;
+
             this.MouseJumpSettingsConfig.Properties.ThumbnailSize.PropertyChanged += this.MouseJumpThumbnailSizePropertyChanged;
         }
 
@@ -125,14 +126,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyName = new AssemblyName(assembly.FullName ?? throw new InvalidOperationException());
+
+            // Build the fully-qualified manifest resource name. Historically, subtle casing differences
+            // (e.g. folder names or the assembly name) caused exact (case-sensitive) lookup failures on
+            // some developer machines when the embedded resource's actual name differed only by case.
+            // Manifest resource name comparison here does not need to be case-sensitive, so we resolve
+            // the actual name using an OrdinalIgnoreCase match, then use the real casing for the stream.
             var resourceName = $"Microsoft.{assemblyName.Name}.{filename.Replace("/", ".")}";
             var resourceNames = assembly.GetManifestResourceNames();
-            if (!resourceNames.Contains(resourceName))
+            var actualResourceName = resourceNames.FirstOrDefault(n => string.Equals(n, resourceName, StringComparison.OrdinalIgnoreCase));
+            if (actualResourceName is null)
             {
-                throw new InvalidOperationException($"Embedded resource '{resourceName}' does not exist.");
+                throw new InvalidOperationException($"Embedded resource '{resourceName}' (case-insensitive) does not exist.");
             }
 
-            var stream = assembly.GetManifestResourceStream(resourceName)
+            var stream = assembly.GetManifestResourceStream(actualResourceName)
                 ?? throw new InvalidOperationException();
             var image = (Bitmap)Image.FromStream(stream);
             return image;

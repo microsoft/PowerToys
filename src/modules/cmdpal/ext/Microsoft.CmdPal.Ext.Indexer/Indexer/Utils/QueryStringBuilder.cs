@@ -5,8 +5,6 @@
 using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
 using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
@@ -28,7 +26,7 @@ internal sealed partial class QueryStringBuilder
 
     public static string GenerateQuery(string searchText, uint whereId)
     {
-        if (queryHelper == null)
+        if (queryHelper is null)
         {
             ISearchManager searchManager;
 
@@ -43,13 +41,13 @@ internal sealed partial class QueryStringBuilder
             }
 
             ISearchCatalogManager catalogManager = searchManager.GetCatalog(SystemIndex);
-            if (catalogManager == null)
+            if (catalogManager is null)
             {
                 throw new ArgumentException($"Failed to get catalog manager for {SystemIndex}");
             }
 
             queryHelper = catalogManager.GetQueryHelper();
-            if (queryHelper == null)
+            if (queryHelper is null)
             {
                 throw new ArgumentException("Failed to get query helper from catalog manager");
             }

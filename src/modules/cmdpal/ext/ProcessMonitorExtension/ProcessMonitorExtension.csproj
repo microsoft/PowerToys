@@ -31,6 +31,10 @@
     </ProjectReference>
   </ItemGroup>
 
+  <ItemGroup>
+	<PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
   <!--
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
     Tools extension to be activated for this project even if the Windows App SDK Nuget

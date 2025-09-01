@@ -4,17 +4,29 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Serialization;
-
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public record HotkeySettings : ICmdLineRepresentable
+    public record HotkeySettings : ICmdLineRepresentable, INotifyPropertyChanged
     {
         private const int VKTAB = 0x09;
+        private bool _hasConflict;
+        private string _conflictDescription;
+        private bool _isSystemConflict;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public HotkeySettings()
         {
@@ -23,6 +35,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Alt = false;
             Shift = false;
             Code = 0;
+
+            HasConflict = false;
         }
 
         /// <summary>
@@ -40,6 +54,51 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Alt = alt;
             Shift = shift;
             Code = code;
+            HasConflict = false;
+        }
+
+        public bool HasConflict
+        {
+            get => _hasConflict;
+            set
+            {
+                if (_hasConflict != value)
+                {
+                    _hasConflict = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string ConflictDescription
+        {
+            get => _conflictDescription ?? string.Empty;
+            set
+            {
+                if (_conflictDescription != value)
+                {
+                    _conflictDescription = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsSystemConflict
+        {
+            get => _isSystemConflict;
+            set
+            {
+                if (_isSystemConflict != value)
+                {
+                    _isSystemConflict = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public virtual void UpdateConflictStatus()
+        {
+            Logger.LogInfo($"{this.ToString()}");
         }
 
         [JsonPropertyName("win")]
