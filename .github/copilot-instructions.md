@@ -12,7 +12,7 @@ Repo map (1‑line per area)
 - Build tools/docs: `tools/**`, `doc/devdocs/**`
 
 Build and test (defaults)
-- Prereqs: Visual Studio 2022 17.4+, Windows 10 1803+. Initialize submodules once.
+- Prerequisites: Visual Studio 2022 17.4+, minimal Windows 10 1803+.
 - Use scripts: `tools/build/build.ps1|.cmd` (current folder), `build-essentials.*` (once per clone), `build-installer.ps1` (full pipeline, slow).
 - Execution discipline:
   - One terminal per operation (restore → build → test). Don’t switch/open new ones mid-flow.
