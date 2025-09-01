@@ -1,0 +1,358 @@
+PR #40915 [MERGED]
+Title: CmdPal: Added settings for limiting apps on top level searches
+Author: michaeljolley
+Created: 2025-07-31 22:15:00
+Base: main | Head: dev/mjolley/top-level-apps-limit
+URL: https://github.com/microsoft/PowerToys/pull/40915
+
+Description:
+Closes #40062
+
+Adds a setting to limit the number of apps returned on top level searches.
+
+Can limit to none, 1, 5, 10, or 20.
+
+https://github.com/user-attachments/assets/de60111f-fb02-4db6-9ae9-2f636c171b5b
+================================================================================
+
+PR #41251 [MERGED]
+Title: CmdPal: Make debugging extension load errors easier
+Author: zadjii-msft
+Created: 2025-08-19 10:43:37
+Base: main | Head: dev/migrie/b/more-extension-logging
+URL: https://github.com/microsoft/PowerToys/pull/41251
+
+Description:
+Turns out we didn't log all the HRESULTs for failing to load an extension. This adds more logging.
+
+It also adds a context command on the log command to make it easier to get to the log files
+================================================================================
+
+PR #41347 [MERGED]
+Title: [CmdPal] Eliminate `CopyTextCommand` duplicates
+Author: PesBandi
+Created: 2025-08-24 21:00:49
+Base: main | Head: cmdpal-copycommand
+URL: https://github.com/microsoft/PowerToys/pull/41347
+
+Description:
+## Summary of the Pull Request
+Removes redundant CopyCommands and replaces their usage with `CopyTextCommand` from the toolkit. This is actually recommend by the [docs](https://learn.microsoft.com/en-us/windows/powertoys/command-palette/command-results#showtoast-command-result), we should probably lead by example ≡ƒÿä
+> Consider the CopyTextCommand in the helpers - this command will show a toast with the text "Copied to clipboard", then dismiss the palette.
+
+Only functionality change is that they now display *Copied to clipboard!* after copying.
+## PR Checklist
+
+- [x] Closes: #41346
+- [ ] **Communication:** I've discussed this with core contributors already. If the work hasn't been agreed, this work might be rejected
+- [x] **Tests:** All pass
+- [x] **Localization:** All end-user-facing strings can be localized
+- [x] **Dev docs:** No need
+- [x] **New binaries:** None
+- [x] **Documentation updated:** No need
+## Detailed Description of the Pull Request / Additional comments
+Custom command names (e.g. *Copy path* instead of *Copy*) are preserved.
+Strings put out of use have been deleted.
+CopyCommands from the Registry and Clipboard plugins are left untouched, as they contain special logic.
+The error handling in `CopyPathCommand` from Apps was unnecessary, since it's already taken care of by `ClipboardHelper`.
+## Validation Steps Performed
+Manual testing
+================================================================================
+
+PR #41361 [MERGED]
+Title: CmdPal: Fix resource key name NavigationPaneClosed to match literal in code and prevent crash
+Author: jiripolasek
+Created: 2025-08-25 18:40:35
+Base: main | Head: feature/fix-typo-in-resource-key-navigationpaneclosed
+URL: https://github.com/microsoft/PowerToys/pull/41361
+
+Description:
+## Summary of the Pull Request
+
+Corrects a mismatch between the resource key and the actual literal used in code. The key was incorrectly named `NavigationPageOpened`; it now correctly uses `NavigationPaneClosed`. Introduced in #41016.
+
+
+## PR Checklist
+
+- [x] Closes: #41362
+- [ ] **Communication:** I've discussed this with core contributors already. If the work hasn't been agreed, this work might be rejected
+- [ ] **Tests:** Added/updated and all pass
+- [ ] **Localization:** All end-user-facing strings can be localized
+- [ ] **Dev docs:** Added/updated
+- [ ] **New binaries:** Added on the required places
+   - [ ] [JSON for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ESRPSigning_core.json) for new binaries
+   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries and localization folder
+   - [ ] [YML for CI pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ci/templates/build-powertoys-steps.yml) for new test projects
+   - [ ] [YML for signed pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/release.yml)
+- [ ] **Documentation updated:** If checked, please file a pull request on [our docs repo](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) and link it here: #xxx
+
+<!-- Provide a more detailed description of the PR, other things fixed, or any additional comments/features here -->
+## Detailed Description of the Pull Request / Additional comments
+
+<!-- Describe how you validated the behavior. Add automated tests wherever possible, but list manual validation steps taken as well -->
+## Validation Steps Performed
+================================================================================
+
+PR #41378 [MERGED]
+Title: Fix localization issue for shortcut conflict window
+Author: shuaiyuanxx
+Created: 2025-08-26 06:43:09
+Base: main | Head: shawn/fixConflictMessage
+URL: https://github.com/microsoft/PowerToys/pull/41378
+
+Description:
+<!-- Enter a brief description/summary of your PR here. What does it fix/what does it change/how was it tested (even manually, if necessary)? -->
+## Summary of the Pull Request
+Added localization for conflict message shown in shortcut conflict window and shortcut dialog.
+
+<!-- Please review the items on the PR checklist before submitting-->
+## PR Checklist
+
+- [x] Closes: #41373 
+- [ ] **Communication:** I've discussed this with core contributors already. If the work hasn't been agreed, this work might be rejected
+- [x] **Tests:** Added/updated and all pass
+- [ ] **Localization:** All end-user-facing strings can be localized
+- [ ] **Dev docs:** Added/updated
+- [ ] **New binaries:** Added on the required places
+   - [ ] [JSON for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ESRPSigning_core.json) for new binaries
+   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries and localization folder
+   - [ ] [YML for CI pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ci/templates/build-powertoys-steps.yml) for new test projects
+   - [ ] [YML for signed pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/release.yml)
+- [ ] **Documentation updated:** If checked, please file a pull request on [our docs repo](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) and link it here: #xxx
+
+<!-- Provide a more detailed description of the PR, other things fixed, or any additional comments/features here -->
+## Detailed Description of the Pull Request / Additional comments
+
+<!-- Describe how you validated the behavior. Add automated tests wherever possible, but list manual validation steps taken as well -->
+## Validation Steps Performed
+================================================================================
+
+PR #41381 [MERGED]
+Title: Settings: Settings search fixes
+Author: vanzue
+Created: 2025-08-26 07:41:01
+Base: main | Head: dev/vanzue/search-fix
+URL: https://github.com/microsoft/PowerToys/pull/41381
+
+Description:
+<!-- Enter a brief description/summary of your PR here. What does it fix/what does it change/how was it tested (even manually, if necessary)? -->
+## Summary of the Pull Request
+Fix 3 issues
+
+<!-- Please review the items on the PR checklist before submitting-->
+## PR Checklist
+
+- [x] Closes: #41369, #41374, #41380
+- [ ] **Communication:** I've discussed this with core contributors already. If the work hasn't been agreed, this work might be rejected
+- [ ] **Tests:** Added/updated and all pass
+- [ ] **Localization:** All end-user-facing strings can be localized
+- [ ] **Dev docs:** Added/updated
+- [ ] **New binaries:** Added on the required places
+   - [ ] [JSON for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ESRPSigning_core.json) for new binaries
+   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries and localization folder
+   - [ ] [YML for CI pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ci/templates/build-powertoys-steps.yml) for new test projects
+   - [ ] [YML for signed pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/release.yml)
+- [ ] **Documentation updated:** If checked, please file a pull request on [our docs repo](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) and link it here: #xxx
+
+<!-- Provide a more detailed description of the PR, other things fixed, or any additional comments/features here -->
+## Detailed Description of the Pull Request / Additional comments
+
+<!-- Describe how you validated the behavior. Add automated tests wherever possible, but list manual validation steps taken as well -->
+## Validation Steps Performed
+
+https://github.com/user-attachments/assets/0e0df9fb-5aca-4b26-9d53-e6ddc49cab04
+================================================================================
+
+PR #41383 [MERGED]
+Title: [Fix] Adding Toolkit's TitleBar manually
+Author: niels9001
+Created: 2025-08-26 12:30:44
+Base: main | Head: niels9001/removing-titlebar-package
+URL: https://github.com/microsoft/PowerToys/pull/41383
+
+Description:
+Temp fix for a VS bug when building the `PowerToys.Settings` project. 
+
+There seems to be something wrong with the Labs TitleBar package, so following up with the team to get it resolved. Meanwhile, I've moved the Toolkit's source code for TitleBar to Settings as a custom control.
+
+Once the package is fixed we can revert this change.
+================================================================================
+
+PR #41386 [MERGED]
+Title: Search UX improvements
+Author: niels9001
+Created: 2025-08-26 13:57:58
+Base: main | Head: niels9001/search-UX-improvements
+URL: https://github.com/microsoft/PowerToys/pull/41386
+
+Description:
+### Fixing visual glitch in the 'Show all results' template:
+
+Before
+<img width="588" height="103" alt="image" src="https://github.com/user-attachments/assets/00da60ea-d0ab-4ffe-8f69-75be7e537d63" />
+
+After
+<img width="598" height="70" alt="image" src="https://github.com/user-attachments/assets/dc859731-8783-494a-b561-ea6396ca69b3" />
+
+
+### Displaying "Show results for * search term *" on search results page
+Before
+<img width="716" height="239" alt="image" src="https://github.com/user-attachments/assets/a80e6e58-df88-47b2-85ab-c39cbdc88690" />
+
+After
+<img width="349" height="264" alt="image" src="https://github.com/user-attachments/assets/99029ee6-94f7-4454-a443-640c22f9e6f3" />
+
+
+### Using Accent Color for the search highlight for better visibility and fixing a bug
+Before
+![highlight-bug](https://github.com/user-attachments/assets/2d4c0f5b-4030-4c10-a4ec-c7c5023034f0)
+
+
+After
+
+![fix-accent](https://github.com/user-attachments/assets/62a223a9-9360-4297-9127-5aaef82c162f)
+================================================================================
+
+PR #41389 [MERGED]
+Title: Adding sort to DateTime extension results
+Author: michaeljolley
+Created: 2025-08-26 15:28:38
+Base: main | Head: dev/mjolley/datetime-sort
+URL: https://github.com/microsoft/PowerToys/pull/41389
+
+Description:
+Closes #41385
+
+Adds a sort to the DateTime extension results.
+
+<img width="1001" height="602" alt="image" src="https://github.com/user-attachments/assets/ccccae6a-c4a4-460f-a6d3-3325ecfc53da" />
+
+<img width="992" height="606" alt="image" src="https://github.com/user-attachments/assets/b8af51bd-cbd0-4341-ac46-0fb3e97ec2ac" />
+================================================================================
+
+PR #41403 [MERGED]
+Title: Settings UI: Fix spelling error and make spell checker happy
+Author: jiripolasek
+Created: 2025-08-27 00:17:17
+Base: main | Head: feature/make-spellchecker-happy
+URL: https://github.com/microsoft/PowerToys/pull/41403
+
+Description:
+## Summary of the Pull Request
+
+- Renames `NavigatablePage` to `NavigablePage` to fix a spelling error.  
+- Reverts related entries in `exclude.txt` that triggered a forbidden pattern error in the spell checker.  
+  - The spell checker does not allow PascalCase words like `NavigatablePage` in `exclude.txt` because of its automatic casing rules.  
+
+ 
+Regression: #41285
+================================================================================
+
+PR #41411 [MERGED]
+Title: fix: Context menu registry entries are not cleaned up when disabled via GPO
+Author: lei9444
+Created: 2025-08-27 09:56:36
+Base: main | Head: leilzh/gpofix
+URL: https://github.com/microsoft/PowerToys/pull/41411
+
+Description:
+<!-- Enter a brief description/summary of your PR here. What does it fix/what does it change/how was it tested (even manually, if necessary)? -->
+## Summary of the Pull Request
+This PR fixes an issue where context menu runtime registration wasn't properly cleaned up when GPO (Group Policy Object) policies disabled the module. The problem occurred because the module constructor didn't consider GPO policies when determining its initial enabled state.
+
+<!-- Please review the items on the PR checklist before submitting-->
+## PR Checklist
+
+- [x] Closes: #41387 
+- [ ] **Communication:** I've discussed this with core contributors already. If the work hasn't been agreed, this work might be rejected
+- [ ] **Tests:** Added/updated and all pass
+- [ ] **Localization:** All end-user-facing strings can be localized
+- [ ] **Dev docs:** Added/updated
+- [ ] **New binaries:** Added on the required places
+   - [ ] [JSON for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ESRPSigning_core.json) for new binaries
+   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries and localization folder
+   - [ ] [YML for CI pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ci/templates/build-powertoys-steps.yml) for new test projects
+   - [ ] [YML for signed pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/release.yml)
+- [ ] **Documentation updated:** If checked, please file a pull request on [our docs repo](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) and link it here: #xxx
+
+<!-- Provide a more detailed description of the PR, other things fixed, or any additional comments/features here -->
+## Detailed Description of the Pull Request / Additional comments
+
+<!-- Describe how you validated the behavior. Add automated tests wherever possible, but list manual validation steps taken as well -->
+## Validation Steps Performed
+
+This pull request refactors how context menu registration and unregistration are handled across several PowerToys modules. The main improvement is the introduction of a new `UpdateRegistration` helper method in each module, which centralizes and simplifies the logic for registering or unregistering context menus when the module is enabled or disabled. This reduces code duplication and ensures consistent behavior.
+
+**Context menu registration logic refactor:**
+
+* Added a private `UpdateRegistration` method to each of the following modules to handle context menu registration and unregistration based on the enabled state:
+  - `FileLocksmithModule` in `PowerToysModule.cpp`
+  - `NewModule` in `powertoys_module.cpp`
+  - `ImageResizerModule` in `dllmain.cpp`
+  - `PowerRenameModule` in `dllmain.cpp`
+
+* Replaced direct calls to registration/unregistration functions in `enable`, `disable`, and `init_settings` methods with calls to the new `UpdateRegistration` method in all affected modules, ensuring consistent and centralized handling [[1]](diffhunk://#diff-256ed936dafec1bf6ff17849b4797dd276f5b07bebe2e483bc1580c8f06e92d9L91-R122) [[2]](diffhunk://#diff-256ed936dafec1bf6ff17849b4797dd276f5b07bebe2e483bc1580c8f06e92d9R155) [[3]](diffhunk://#diff-4a3942d548f3daec02a833983ed9b2b69f75e2cd1b74a8ce1b874f3fd33fde55L101-R125) [[4]](diffhunk://#diff-4a3942d548f3daec02a833983ed9b2b69f75e2cd1b74a8ce1b874f3fd33fde55L153-R177) [[5]](diffhunk://#diff-0c0a89e812ff4625d165417da14f1c3f203e5ac7907555ae4fde122f3dddcf7aL115-L130) [[6]](diffhunk://#diff-34581ec47c37b0d2e1d9b59696225c47342930694e732db06cbdf653ceb2c2d7L205-R234) [[7]](diffhunk://#diff-34581ec47c37b0d2e1d9b59696225c47342930694e732db06cbdf653ceb2c2d7R334).
+
+These changes improve maintainability and reduce the risk of inconsistent registration behavior across modules.
+================================================================================
+
+PR #41437 [MERGED]
+Title: Settings: Search fancy zone settings and swallow the ctrl+f event
+Author: vanzue
+Created: 2025-08-28 01:59:14
+Base: main | Head: dev/vanzue/fancy-zone-search
+URL: https://github.com/microsoft/PowerToys/pull/41437
+
+Description:
+<!-- Enter a brief description/summary of your PR here. What does it fix/what does it change/how was it tested (even manually, if necessary)? -->
+## Summary of the Pull Request
+This pull request primarily improves the maintainability and robustness of the FancyZones settings UI by assigning unique `Name` attributes to `SettingsCard` controls in the `FancyZonesPage.xaml` file. Additionally, it enhances the logic for retrieving element UIDs and improves fallback behavior for missing localizations. There is also a minor usability fix in the shell page to prevent unintended navigation when focusing the search box.
+
+**FancyZones settings UI improvements:**
+
+* Added unique `Name` attributes to all `tkcontrols:SettingsCard` elements in `FancyZonesPage.xaml` to facilitate easier referencing and future maintainability. This affects all relevant settings groups and controls in the file. [[1]](diffhunk://#diff-93623d4db1d295dde0ef793053c9db0d9f673d753b787ad12fd71b8e9e40a79fL73-R85) [[2]](diffhunk://#diff-93623d4db1d295dde0ef793053c9db0d9f673d753b787ad12fd71b8e9e40a79fL109-R109) [[3]](diffhunk://#diff-93623d4db1d295dde0ef793053c9db0d9f673d753b787ad12fd71b8e9e40a79fL121-R121) [[4]](diffhunk://#diff-93623d4db1d295dde0ef793053c9db0d9f673d753b787ad12fd71b8e9e40a79fL167-R188) [[5]](diffhunk://#diff-93623d4db1d295dde0ef793053c9db0d9f673d753b787ad12fd71b8e9e40a79fL202-R202) [[6]](diffhunk://#diff-93623d4db1d295dde0ef793053c9db0d9f673d753b787ad12fd71b8e9e40a79fL251-R251) [[7]](diffhunk://#diff-93623d4db1d295dde0ef793053c9db0d9f673d753b787ad12fd71b8e9e40a79fL265-R265) [[8]](diffhunk://#diff-93623d4db1d295dde0ef793053c9db0d9f673d753b787ad12fd71b8e9e40a79fL280-R280)
+
+**Element UID retrieval and localization:**
+
+* Improved `GetElementUid` in `Program.cs` to fall back to the first child's `x:Uid` if the element itself lacks one, increasing robustness when parsing XAML.
+* Updated `GetLocalizedSettingHeaderAndD` in `SearchIndexService.cs` to provide a fallback for missing localizations by trying the `"{elementUid}/Content"` resource key.
+
+**Shell page usability:**
+
+* Modified `CtrlF_Invoked` in `ShellPage.xaml.cs` to mark the event as handled, preventing unintended navigation when the search box is focused with Ctrl+F.
+<!-- Please review the items on the PR checklist before submitting-->
+## PR Checklist
+
+- [ ] Closes: #xxx
+- [ ] **Communication:** I've discussed this with core contributors already. If the work hasn't been agreed, this work might be rejected
+- [x] **Tests:** Added/updated and all pass
+- [ ] **Localization:** All end-user-facing strings can be localized
+- [ ] **Dev docs:** Added/updated
+- [ ] **New binaries:** Added on the required places
+   - [ ] [JSON for signing](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ESRPSigning_core.json) for new binaries
+   - [ ] [WXS for installer](https://github.com/microsoft/PowerToys/blob/main/installer/PowerToysSetup/Product.wxs) for new binaries and localization folder
+   - [ ] [YML for CI pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/ci/templates/build-powertoys-steps.yml) for new test projects
+   - [ ] [YML for signed pipeline](https://github.com/microsoft/PowerToys/blob/main/.pipelines/release.yml)
+- [ ] **Documentation updated:** If checked, please file a pull request on [our docs repo](https://github.com/MicrosoftDocs/windows-uwp/tree/docs/hub/powertoys) and link it here: #xxx
+
+<!-- Provide a more detailed description of the PR, other things fixed, or any additional comments/features here -->
+## Detailed Description of the Pull Request / Additional comments
+
+<!-- Describe how you validated the behavior. Add automated tests wherever possible, but list manual validation steps taken as well -->
+## Validation Steps Performed
+
+https://github.com/user-attachments/assets/9cf15605-1114-4c6d-923c-d05c2733a274
+================================================================================
+
+PR #41442 [MERGED]
+Title: CmdPal: Bump version to 0.5
+Author: zadjii-msft
+Created: 2025-08-28 11:06:55
+Base: main | Head: dev/migrie/bump-05
+URL: https://github.com/microsoft/PowerToys/pull/41442
+
+Description:
+title
+================================================================================
+
+

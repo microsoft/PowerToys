@@ -123,8 +123,6 @@ foreach ($block in $prBlocks) {
             URL = $url
             Description = $description
             AIOverview = $null
-            AIReviewer = $null
-            AIReviewDate = $null
             HasAIOverview = $false
         }
         
@@ -132,8 +130,6 @@ foreach ($block in $prBlocks) {
         if ($prOverviews.ContainsKey($prNumber)) {
             $overview = $prOverviews[$prNumber]
             $prInfo.AIOverview = $overview.Content
-            $prInfo.AIReviewer = $overview.Reviewer
-            $prInfo.AIReviewDate = if ($overview.SubmittedAt) { $overview.SubmittedAt } else { $overview.CreatedAt }
             $prInfo.HasAIOverview = $true
         }
         
