@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Import common props to satisfy repo audit; override problematic bits below for this console tool. -->
+	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<OutputType>Exe</OutputType>
+	<RootNamespace>Microsoft.PowerToys.Tools.XamlIndexBuilder</RootNamespace>
+		<AssemblyName>XamlIndexBuilder</AssemblyName>
+		<!-- Platform-agnostic: framework-dependent DLL executed via dotnet -->
+		<SelfContained>false</SelfContained>
+		<UseAppHost>false</UseAppHost>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<RuntimeIdentifier></RuntimeIdentifier>
+		<!-- Keep tool output out of product scan paths to avoid deps.json audit conflicts -->
+		<OutputPath>$(MSBuildProjectDirectory)\obj\XamlIndexBuilder\$(Configuration)\</OutputPath>
+	</PropertyGroup>
+
+	<!-- Remove CsWinRT package introduced by common props; not needed for this tool and causes Windows metadata errors -->
+	<ItemGroup>
+		<PackageReference Remove="Microsoft.Windows.CsWinRT" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Text.Json" />
+		<PackageReference Include="System.CommandLine" />
+	</ItemGroup>
+
+	<!-- Remove UI library reference to avoid pulling WindowsDesktop runtime (WindowsBase) -->
+
+	<PropertyGroup>
+		<DotNetExe Condition="'$(DotNetExe)' == ''">dotnet</DotNetExe>
+		<XamlRootDir Condition="'$(XamlRootDir)' == ''">$(MSBuildProjectDirectory)\..\Settings.UI\SettingsXAML</XamlRootDir>
+		<XamlRootDir Condition="'$(XamlViewsDir)' != ''">$([System.IO.Path]::GetDirectoryName('$(XamlViewsDir)'))</XamlRootDir>
+		<GeneratedJsonFile Condition="'$(GeneratedJsonFile)' == ''">$(MSBuildProjectDirectory)\..\Settings.UI\Assets\Settings\search.index.json</GeneratedJsonFile>
+	</PropertyGroup>
+	<Target Name="GenerateSearchIndexSelf" AfterTargets="Build">
+		<RemoveDir Directories="$(MSBuildProjectDirectory)\obj\ARM64;$(MSBuildProjectDirectory)\obj\x64;$(MSBuildProjectDirectory)\bin" />
+		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
+		<Message Importance="high" Text="[XamlIndexBuilder] Generating search index. Root='$(XamlRootDir)'; Out='$(GeneratedJsonFile)'; Tool='$(TargetPath)'; DotNet='$(DotNetExe)'." />
+		<Exec Command="&quot;$(DotNetExe)&quot; &quot;$(TargetPath)&quot; &quot;$(XamlRootDir)&quot; &quot;$(GeneratedJsonFile)&quot;" />
+	</Target>
+</Project>

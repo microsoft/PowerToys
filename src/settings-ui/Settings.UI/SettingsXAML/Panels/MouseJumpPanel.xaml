@@ -23,12 +23,13 @@
 
     <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
         <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}">
-            <tkcontrols:SettingsCard x:Uid="MouseUtils_Enable_MouseJump" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}">
+            <tkcontrols:SettingsCard x:Name="MouseUtilsEnableMouseJump" x:Uid="MouseUtils_Enable_MouseJump" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}">
                 <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
             </tkcontrols:SettingsCard>
         </controls:GPOInfoControl>
 
         <tkcontrols:SettingsCard
+            x:Name="MouseUtilsMouseJumpActivationShortcut"
             x:Uid="MouseUtils_MouseJump_ActivationShortcut"
             HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
             IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}">
@@ -113,6 +114,7 @@
         </tkcontrols:SettingsCard>
 
         <tkcontrols:SettingsExpander
+            x:Name="MouseUtilsMouseJumpAppearance"
             x:Uid="MouseUtils_MouseJump_Appearance"
             HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
             IsEnabled="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=OneWay}"

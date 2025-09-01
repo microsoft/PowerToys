@@ -168,6 +168,25 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
+    // Update registration based on enabled state
+    void UpdateRegistration(bool enabled)
+    {
+        if (enabled)
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            PowerRenameRuntimeRegistration::EnsureRegistered();
+            Logger::info(L"PowerRename context menu registered");
+#endif
+        }
+        else
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            PowerRenameRuntimeRegistration::Unregister();
+            Logger::info(L"PowerRename context menu unregistered");
+#endif
+        }
+    }
+
 public:
     // Return the localized display name of the powertoy
     virtual PCWSTR get_name() override
@@ -202,12 +221,7 @@ public:
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-        else
-        {
-#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            PowerRenameRuntimeRegistration::EnsureRegistered();
-#endif
-        }
+        UpdateRegistration(m_enabled);
     }
 
     // Disable the powertoy
@@ -215,13 +229,7 @@ public:
     {
         m_enabled = false;
         Logger::info(L"PowerRename disabled");
-        if (!package::IsWin11OrGreater())
-        {
-#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
-            PowerRenameRuntimeRegistration::Unregister();
-            Logger::info(L"PowerRename context menu unregistered (Win10)");
-#endif
-        }
+        UpdateRegistration(m_enabled);
     }
 
     // Returns if the powertoy is enabled
@@ -321,6 +329,7 @@ public:
     void init_settings()
     {
         m_enabled = CSettingsInstance().GetEnabled();
+        UpdateRegistration(m_enabled);
         Trace::EnablePowerRename(m_enabled);
     }
 
