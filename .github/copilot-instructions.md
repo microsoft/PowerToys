@@ -17,10 +17,9 @@ Use this as a quick-start map for working effectively in this codebase. Keep edi
 - Foreground by default: run commands synchronously and wait for completion.
 - One terminal per operation (restore → build → test); don’t switch/open new terminals mid-flow.
 - Don’t chain unrelated steps with `&&`. Execute each step separately and only proceed on success.
-- After each step, verify status (MSBuild summary and `%ERRORLEVEL%`) and provide a brief PASS/FAIL summary.
 - Tests: build the specific test project first, then run `vstest.console.exe` with filters; avoid `dotnet test` in this repo.
 
-## Build and run (local)
+## Build and test (local)
 - Prereqs: VS 2022 17.4+, Win10 1803+; init submodules once: `git submodule update --init --recursive`.
 
 - Quick build scripts (preferred) — see `tools/build/BUILD-GUIDELINES.md`:
@@ -28,18 +27,12 @@ Use this as a quick-start map for working effectively in this codebase. Keep edi
   - `tools/build/build.ps1` or `tools/build/build.cmd`: run from any folder to build projects in the current directory; auto-detects platform (x64/ARM64). For restore-only, use `-RestoreOnly`. Additional MSBuild args are forwarded.
   - `tools/build/build-installer.ps1`: builds the full installer pipeline (restore, full build, signing, MSI/bootstrapper). Use with caution—may clean and remove untracked files under `installer/`.
 
-- Run locally:
-  - Most modules can be smoked by launching the Runner: `x64\\Debug\\PowerToys.exe`.
-  - Explorer shell extensions (PowerRename, ImageResizer, File Explorer add-ons) require installing via the MSI to validate, which is out of scope for you.
-- Installer build is also out of scope for you please suggest back according to `tools/build/BUILD-GUIDELINES.md` for how to run it with caution.
-  
 Execution discipline (wait for completion):
 - Use one terminal session per operation (restore → build → test). Don’t switch terminals mid-run and don’t open a new terminal mid-flow.
-- Run foreground commands and wait for completion; verify the build.*.*.errors.log to see if any build error.
-- Avoid chaining unrelated steps with `&&`. Build, then (only if build succeeded) run tests as separate commands.
-- Don’t start the next step (tests or launching Runner) until the previous step succeeded. For tests, build the specific test project first, then run `vstest.console.exe` with a filter.
+- After making changes, navigate to the specific project folder that contains the changed `.csproj`/`.vcxproj` and build there first (then build from the repo root if needed).
+- Run foreground commands and wait for completion; only after the build finishes, check the build*error.log in the build folder (e.g., build.*.*.errors.log) for any errors.
+- Don’t start the next step (tests or launching Runner) until the previous step succeeded. For how to run tests, refer to the Testing section below.
 - Building from the project folder (`cd` into the .vcxproj/.csproj directory) often reduces path/env issues.
-  
 
 ## Key runtime patterns to follow
 - Module loading: `src/runner/main.cpp` enumerates known DLLs and calls each module’s exported `powertoy_create` to get a `PowertoyModuleIface`. Add new modules under `src/modules/<name>` and make sure they are included in Runner’s known set.
@@ -54,13 +47,16 @@ Execution discipline (wait for completion):
 - Wire into Runner (known modules in `src/runner/main.cpp`) and provide a settings page via Settings API.
 - Example code and patterns are documented in `tools/project_template/README.md`.
 
-## Command Palette specifics
-- Source under `src/modules/cmdpal/**`.
-- Extensions implement WinRT interfaces from `Microsoft.CommandPalette.Extensions` (use the C# toolkit in `Microsoft.CommandPalette.Extensions.Toolkit`).
-- Fast path: use the in-app “Create extension” command to scaffold; build the produced solution and deploy.
+## Testing
 
-## Testing, logging, diagnostics
-- Tests live across multiple projects; run via VS Test Explorer after building the solution. UI tests and fuzz tests are documented under `doc/devdocs/development/ui-tests.md` and `doc/devdocs/tools/fuzzingtesting.md`.
+### Finding and running the right tests for your change
+- Identify the product code you modified (usually the project/folder name, e.g., FancyZones, AdvancedPaste, Microsoft.CmdPal.Ext.Apps).
+- Find the matching test project by name. Test projects and folders are prefixed with the product code and typically end with `UnitTests` or `UITests` (for example, `FancyZones*UnitTests`, `AdvancedPaste*UnitTests`, `Microsoft.CmdPal.Ext.Apps*UnitTests`).
+- Where to look:
+  - Sibling to the product project folder (same level), or
+  - One or two levels up under a shared `tests` directory near the product, depending on the module.
+- Build the specific test project first; then run only those tests. See the guidance below in this Testing section for how to run tests (VS Test Explorer or `vstest.console.exe` with filters). Avoid `dotnet test` in this repo.
+
 - Testing guidelines:
   - Always design code to be unit-testable (pure functions where possible, inject services, avoid hidden globals; add seams around OS/IPC calls).
   - Before adding UI automation, add or extend unit tests to cover the logic; only add new UI automation when coverage can’t be achieved via unit tests.
@@ -71,7 +67,18 @@ Execution discipline (wait for completion):
     ```
   - Avoid `dotnet test` for this repo: many projects depend on Visual Studio–installed C++ build/test components that aren’t available via dotnet CLI alone.
   - If you change public behavior, update or add tests accordingly; consider fuzz tests for modules that support them.
-- Logging: C++ uses spdlog via `src/common/logging/**`; prefer existing categories and don’t spam the global keyboard path.
-- Bug report: `tools/BugReportTool` collects logs, system info, and installer logs; Runner can launch it (`src/runner/bug_report.cpp`).
+  - UI tests and fuzz tests are documented under `doc/devdocs/development/ui-tests.md` and `doc/devdocs/tools/fuzzingtesting.md`.
 
-References: `doc/devdocs/core/architecture.md`, `core/runner.md`, `core/settings/readme.md`, `modules/readme.md`, `tools/project_template/README.md`, `tools/build/BUILD-GUIDELINES.md`.
+## Logging
+- C++: use the shared Logger wrapper over spdlog under `src/common/logger/**`. Typical calls: `Logger::info`, `Logger::warn`, `Logger::error`, `Logger::debug`. Examples: `src/runner/main.cpp` (startup/info). Keep logs concise.
+- C#: use the existing logging helpers instead of introducing new frameworks:
+  - C# modules: `ManagedCommon.Logger` static methods (`LogInfo`, `LogWarning`, `LogError`, `LogDebug`, `LogTrace`). Example: `src/settings-ui/Settings.UI/SettingsXAML/App.xaml.cs`. Initialization via `ManagedCommon.Logger.InitializeLogger(...)` when for logging file location.
+  - Some UIs inject an `ILogger` via helpers like `LoggerInstance.Logger`. Examples: `src/modules/EnvironmentVariables/EnvironmentVariablesUILib/Helpers/LoggerInstance.cs`, and usages in `.../ViewModels/MainViewModel.cs`.
+  Prefer reusing the existing logger wiring; avoid duplicating messages already logged by native components.
+
+## Command Palette specifics
+- Source under `src/modules/cmdpal/**`.
+- Extensions implement WinRT interfaces from `Microsoft.CommandPalette.Extensions` (use the C# toolkit in `Microsoft.CommandPalette.Extensions.Toolkit`).
+- Fast path: use the in-app “Create extension” command to scaffold; build the produced solution and deploy.
+
+References: `tools/build/BUILD-GUIDELINES.md`, `doc/devdocs/core/architecture.md`, `core/runner.md`, `core/settings/readme.md`, `modules/readme.md`, `tools/project_template/README.md`.
