@@ -9,8 +9,6 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class StringMatcher
 {
-    private readonly MatchOption _defaultMatchOption = new();
-
     public SearchPrecisionScore UserSettingSearchPrecision { get; set; }
 
     // private readonly IAlphabet _alphabet;
@@ -43,7 +41,7 @@ public partial class StringMatcher
     {
         try
         {
-            return FuzzyMatch(query, stringToCompare, _defaultMatchOption);
+            return FuzzyMatch(query, stringToCompare, MatchOption.Default);
         }
         catch (IndexOutOfRangeException)
         {

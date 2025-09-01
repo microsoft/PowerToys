@@ -10,6 +10,11 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 public partial class MatchOption
 {
     /// <summary>
+    /// Gets the default match option
+    /// </summary>
+    public static MatchOption Default { get; } = new();
+
+    /// <summary>
     /// Gets or sets prefix of match char, use for highlight
     /// </summary>
     [Obsolete("this is never used")]
@@ -24,7 +29,7 @@ public partial class MatchOption
     public bool IgnoreCase { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets whether to support Chinese PinYin
+    /// Gets or sets a value indicating whether support Chinese PinYin
     /// </summary>
     public bool ChinesePinYinSupport { get; set; }
 }

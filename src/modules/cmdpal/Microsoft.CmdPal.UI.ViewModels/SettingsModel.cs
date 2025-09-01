@@ -6,9 +6,12 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+
 using CommunityToolkit.Mvvm.ComponentModel;
+
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -42,7 +45,17 @@ public partial class SettingsModel : ObservableObject
 
     public bool IgnoreShortcutWhenFullscreen { get; set; }
 
-    public bool EnableChinesePinYinSupport { get; set; }
+    public bool EnableChinesePinYinSupport
+    {
+        get => field;
+        set
+        {
+            if (SetProperty(ref field, value))
+            {
+                MatchOption.Default.ChinesePinYinSupport = value;
+            }
+        }
+    }
 
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
