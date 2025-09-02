@@ -33,7 +33,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage
         _allItems = [];
         Id = "com.microsoft.cmdpal.websearch";
         _settingsManager = settingsManager;
-        _historyItems = _settingsManager.ShowHistory != Resources.history_none ? _settingsManager.LoadHistory() : null;
+        _historyItems = _settingsManager.HistoryItemCount != 0 ? _settingsManager.LoadHistory() : null;
         if (_historyItems is not null)
         {
             _allItems.AddRange(_historyItems);
@@ -57,7 +57,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage
 
         if (_historyItems is not null)
         {
-            filteredHistoryItems = _settingsManager.ShowHistory != Resources.history_none ? ListHelpers.FilterList(_historyItems, query).OfType<ListItem>() : null;
+            filteredHistoryItems = _settingsManager.HistoryItemCount != 0 ? ListHelpers.FilterList(_historyItems, query).OfType<ListItem>() : null;
         }
 
         var results = new List<ListItem>();
