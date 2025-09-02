@@ -190,7 +190,7 @@
                 TextWrapping="Wrap" />
         </ContentDialog>
         <ContentDialog x:Name="ProcessFilesListDialog" x:Uid="ProcessFilesListDialog">
-            <ScrollViewer Padding="15" HorizontalScrollBarVisibility="Auto">
+            <ScrollViewer Padding="16" HorizontalScrollBarVisibility="Auto">
                 <TextBlock
                     x:Name="ProcessFilesListDialogTextBlock"
                     x:Uid="ProcessFilesListDialogTextBlock"

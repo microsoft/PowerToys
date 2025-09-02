@@ -70,6 +70,7 @@ APPMODEL
 APPNAME
 appref
 appsettings
+appsfeatures
 appwindow
 appwiz
 appxpackage
@@ -1315,6 +1316,7 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
+projitems
 PROPERTYKEY
 Propset
 PROPVARIANT
@@ -1394,6 +1396,7 @@ regkey
 regroot
 regsvr
 REINSTALLMODE
+releaseblog
 reloadable
 Relogger
 remappings
