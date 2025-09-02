@@ -123,6 +123,9 @@ public sealed partial class MainWindow : WindowEx,
         _localKeyboardListener = new LocalKeyboardListener();
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
+
+        // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
+        HideWindow();
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -233,9 +236,6 @@ public sealed partial class MainWindow : WindowEx,
     {
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
-        // Make sure our HWND is cloaked before any possible window manipulations
-        Cloak();
-
         // Remember, IsIconic == "minimized", which is entirely different state
         // from "show/hide"
         // If we're currently minimized, restore us first, before we reveal
@@ -243,6 +243,9 @@ public sealed partial class MainWindow : WindowEx,
         // which would remain not visible to the user.
         if (PInvoke.IsIconic(hwnd))
         {
+            // Make sure our HWND is cloaked before any possible window manipulations
+            Cloak();
+
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
@@ -634,8 +637,6 @@ public sealed partial class MainWindow : WindowEx,
         // so that we can bind hotkeys to individual commands
         if (!isVisible || !isRootHotkey)
         {
-            Activate();
-
             Summon(commandId);
         }
         else if (isRootHotkey)
