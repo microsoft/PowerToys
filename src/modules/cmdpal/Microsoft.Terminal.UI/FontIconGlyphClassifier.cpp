@@ -1,4 +1,3 @@
-// ReSharper disable CppInconsistentNaming
 #include "pch.h"
 #include "FontIconGlyphClassifier.h"
 #include "FontIconGlyphClassifier.g.cpp"
@@ -10,34 +9,12 @@ namespace winrt::Microsoft::Terminal::UI::implementation
 {
     namespace
     {
-        // Helper to determine if a value is in a given inclusive range.
-        [[nodiscard]] constexpr inline bool _inRange(const UChar32 value, const UChar32 lo, const UChar32 hi) noexcept
-        {
-            return value >= lo && value <= hi;
-        }
-
         // Check if the code point is in the Private Use Area range used by Fluent UI icons.
         [[nodiscard]] constexpr bool _isFluentIconPua(const UChar32 cp) noexcept
         {
             static constexpr UChar32 _fluentIconsPrivateUseAreaStart = 0xE700;
             static constexpr UChar32 _fluentIconsPrivateUseAreaEnd = 0xF8FF;
-            return _inRange(cp, _fluentIconsPrivateUseAreaStart, _fluentIconsPrivateUseAreaEnd);
-        }
-
-        // Check if the code point is a Regional Indicator symbol (used in pairs for flag emojis).
-        [[nodiscard]] constexpr bool _isRegionalIndicator(const UChar32 cp) noexcept
-        {
-            static constexpr UChar32 regionalIndicatorCodePointStart = 0x1F1E6;
-            static constexpr UChar32 regionalIndicatorCodePointEnd = 0x1F1FF;
-            return _inRange(cp, regionalIndicatorCodePointStart, regionalIndicatorCodePointEnd);
-        }
-
-        // Check if the code point is an Emoji Modifier (skin tone).
-        [[nodiscard]] constexpr bool _isEmojiModifier(const UChar32 cp) noexcept
-        {
-            static constexpr UChar32 skinTonesCodePointStart = 0x1F3FB;
-            static constexpr UChar32 skinTonesCodePointEnd = 0x1F3FF;
-            return _inRange(cp, skinTonesCodePointStart, skinTonesCodePointEnd);
+            return cp >= _fluentIconsPrivateUseAreaStart && cp <= _fluentIconsPrivateUseAreaEnd;
         }
 
         // Determine if the given text (as a sequence of UChar code units) is emoji
@@ -48,93 +25,25 @@ namespace winrt::Microsoft::Terminal::UI::implementation
                 return false;
             }
 
-            constexpr UChar32 vs15CodePoint = 0xFE0E; // text presentation
-            constexpr UChar32 vs16CodePoint = 0xFE0F; // emoji presentation
-            constexpr UChar32 blackFlagCodePoint = 0x1F3F4; // base for tag flags
-            constexpr UChar32 cancelTagCodePoint = 0xE007F; // end of tag sequences
+            // https://www.unicode.org/reports/tr51/#Emoji_Variation_Selector_Notes
+            constexpr UChar32 vs15CodePoint = 0xFE0E; // Variation Selectors 15: text variation selector
+            constexpr UChar32 vs16CodePoint = 0xFE0F; // Variation Selectors: 16 emoji variation selector
 
-            UChar32 previousNonVS = 0;
-            UChar32 first = 0;
-            UChar32 last = 0;
-            bool sawBlackFlag = false;
-            bool sawVS15 = false;
-            bool wasRegionalIndicator = false;
-            bool haveFirst = false;
+            // Decode the first code point correctly (surrogate-safe)
+            int32_t i0{ 0 };
+            UChar32 first{ 0 };
+            U16_NEXT(p, i0, length, first);
 
             for (int32_t i = 0; i < length;)
             {
-                UChar32 cp = 0;
+                UChar32 cp{ 0 };
                 U16_NEXT(p, i, length, cp);
 
-                if (!haveFirst)
-                {
-                    first = cp;
-                    haveFirst = true;
-                }
-                last = cp;
-
-                if (cp == vs16CodePoint)
-                {
-                    return true;
-                }
-
-                if (cp == vs15CodePoint)
-                {
-                    sawVS15 = true;
-                    continue;
-                }
-
-                const bool isRegionalIndicator = _isRegionalIndicator(cp);
-                if (isRegionalIndicator && wasRegionalIndicator)
-                {
-                    return true;
-                }
-                wasRegionalIndicator = isRegionalIndicator;
-
-                if (cp == blackFlagCodePoint)
-                {
-                    sawBlackFlag = true;
-                }
-
-                // Emoji modifier sequence: <base> [VS]? <modifier>
-                // If current cp is a modifier and previous non-VS was a valid base -> emoji.
-                if (_isEmojiModifier(cp) && u_hasBinaryProperty(previousNonVS, UCHAR_EMOJI_MODIFIER_BASE))
-                {
-                    return true;
-                }
-
-                previousNonVS = cp;
+                if (cp == vs16CodePoint) { return true; }
+                if (cp == vs15CodePoint) { return false; }
             }
 
-            // Tag flags: BLACK FLAG + TAG letters … + CANCEL TAG
-            if (sawBlackFlag && last == cancelTagCodePoint)
-            {
-                return true;
-            }
-
-            // Presentation selectors decide explicitly
-            // VS15 can be overridden by VS16, so check it last
-            if (sawVS15)
-            {
-                return false; // force text
-            }
-
-            // Single-codepoint default: emoji by default iff Emoji_Presentation
-            if (haveFirst && u_hasBinaryProperty(first, UCHAR_EMOJI_PRESENTATION))
-            {
-                return true;
-            }
-
-            /*
-             * https://www.unicode.org/reports/tr51/#Emoji_Properties
-             * This causes us to classify text-default symbols (©, ®, ™, ⌨, …) as emoji by default:
-             *
-             *  if (haveFirst && u_hasBinaryProperty(first, UCHAR_EXTENDED_PICTOGRAPHIC))
-             *       return true;
-             */
-
-            // Ambiguous text-default symbols (©, ®, ™, ⌨, …) are NOT emoji without VS16
-            return false;
+            return !U_IS_SURROGATE(first) && u_hasBinaryProperty(first, UCHAR_EMOJI_PRESENTATION);
         }
     }
 
@@ -253,7 +162,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         const UChar* grapheme = buffer + start;
         const int32_t graphemeLength = end - start;
 
-        if (_isFluentIconPua(grapheme[0]))
+        if (graphemeLength == 1 && _isFluentIconPua(grapheme[0]))
         {
             return FontIconGlyphKind::FluentSymbol;
         }
