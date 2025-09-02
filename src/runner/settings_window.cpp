@@ -148,7 +148,7 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
     return result;
 }
 
-void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings, bool hotkeyUpdated = true)
+void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings, bool hotkeyUpdated)
 {
     auto moduleIt = modules().find(module_key);
     if (moduleIt != modules().end())
