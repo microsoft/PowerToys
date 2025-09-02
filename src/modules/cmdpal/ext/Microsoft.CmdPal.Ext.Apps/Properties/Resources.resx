@@ -198,4 +198,43 @@
   <data name="unpin_app" xml:space="preserve">
     <value>Unpin</value>
   </data>
+  <data name="uninstall_application" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
+  <data name="uninstall_application_successful" xml:space="preserve">
+    <value>'{0}' has been successfully uninstalled.</value>
+  </data>
+  <data name="uninstall_application_failed" xml:space="preserve">
+    <value>Error while uninstalling '{0}'</value>
+  </data>
+  <data name="uninstall_application_confirm_description" xml:space="preserve">
+    <value>This app and its related information will be removed.</value>
+  </data>
+  <data name="uninstall_application_confirm_title" xml:space="preserve">
+    <value>Uninstall "{0}"?</value>
+  </data>
+  <data name="limit_1" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="limit_5" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="limit_10" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="limit_20" xml:space="preserve">
+    <value>20</value>
+  </data>
+  <data name="limit_fallback_results_source" xml:space="preserve">
+    <value>Limit the number of applications returned from the top level</value>
+  </data>
+  <data name="limit_fallback_results_source_description" xml:space="preserve">
+    <value>Limit fallback results to n apps</value>
+  </data>
+  <data name="limit_0" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="limit_none" xml:space="preserve">
+    <value>Unlimited</value>
+  </data>
 </root>

@@ -1,4 +1,4 @@
-﻿<local:NavigatablePage
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerAccentPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -11,7 +11,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    <local:NavigatablePage.Resources>
+    <local:NavigablePage.Resources>
         <CollectionViewSource
             x:Name="LanguagesCustomViewSource"
             IsSourceGrouped="True"
@@ -19,7 +19,7 @@
         <DataTemplate x:Key="LanguageViewTemplate" x:DataType="Lib:PowerAccentLanguageModel">
             <TextBlock Text="{x:Bind Language}" />
         </DataTemplate>
-    </local:NavigatablePage.Resources>
+    </local:NavigablePage.Resources>
 
     <controls:SettingsPageControl
         x:Uid="QuickAccent"
@@ -241,4 +241,4 @@
             <controls:PageLink Link="https://github.com/damienleroy/PowerAccent" Text="Damien Leroy's PowerAccent" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
-</local:NavigatablePage>
+</local:NavigablePage>
