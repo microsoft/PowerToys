@@ -105,22 +105,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
 
-            try
-            {
-                if (ViewModel.ScheduleMode == "SunsetToSunriseGeo")
-                {
-                    SunTimes.Text = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2} " +
-                                    $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
-                    return;
-                }
+            // try
+            // {
+            //    if (ViewModel.ScheduleMode == "SunsetToSunriseGeo")
+            //    {
+            //        SunTimes.Text = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2} " +
+            //                        $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
+            //        return;
+            //    }
 
-                // fallback text
-                SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
-            }
-            catch
-            {
-                SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
-            }
+            // fallback text
+            //    SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
+            // }
+            // catch
+            // {
+            //    SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
+            // }
         }
 
         private async void GetLocation_Click(object sender, RoutedEventArgs e)
@@ -128,7 +128,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             SyncButton.IsEnabled = false;
             SyncLoader.IsActive = true;
             SyncLoader.Visibility = Visibility.Visible;
-            SunTimes.Text = "Loading...";
 
             try
             {
@@ -155,11 +154,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     DateTime.Now.Month,
                     DateTime.Now.Day);
 
-                SunTimes.Text = "Sunrise: " + result.SunriseHour + ":" + result.SunriseMinute + " " +
-                                "Sunset: " + result.SunsetHour + ":" + result.SunsetMinute;
-
+                // SunTimes.Text = "Sunrise: " + result.SunriseHour + ":" + result.SunriseMinute + " " +
+                // "Sunset: " + result.SunsetHour + ":" + result.SunsetMinute;
                 ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
                 ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+
+                ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" +
+                            $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
 
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
@@ -185,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             else if (selectedTag == "SunsetToSunrise")
             {
-                SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
+                // SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
             }
         }
 

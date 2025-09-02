@@ -34,11 +34,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // populate the list of modes for dropdown binding
             AvailableScheduleModes = new ObservableCollection<string>
-            {
-                "FixedHours",
-                "SunsetToSunriseGeo",
-                "SunsetToSunriseUser",
-            };
+        {
+            "FixedHours",
+            "SunsetToSunriseGeo",
+            "SunsetToSunriseUser",
+        };
 
             _toggleThemeHotkey = _moduleSettings.Properties.ToggleThemeHotkey.Value;
         }
@@ -289,7 +289,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private string _cityTimesText = "Please select a city";
+        private string _cityTimesText = "Please sync your location";
 
         public string CityTimesText
         {
@@ -378,7 +378,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Longitude = SelectedCity.Longitude.ToString(CultureInfo.InvariantCulture);
 
             // If you want a ready-to-bind string
-            CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}  " +
+            CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" +
                             $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
         }
 

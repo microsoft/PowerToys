@@ -16,48 +16,48 @@
     d:DataContext="{d:DesignInstance Type=ViewModel:LightSwitchViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    <Page.Resources>
-        <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
-        <animations:ImplicitAnimationSet x:Name="ShowTransitions">
-            <animations:OffsetAnimation
+  <Page.Resources>
+    <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
+    <animations:ImplicitAnimationSet x:Name="ShowTransitions">
+      <animations:OffsetAnimation
                 EasingMode="EaseOut"
                 From="0,24,0"
                 To="0"
                 Duration="0:0:0.4" />
-            <animations:OpacityAnimation
+      <animations:OpacityAnimation
                 EasingMode="EaseOut"
                 From="0"
                 To="1"
                 Duration="0:0:0.2" />
-        </animations:ImplicitAnimationSet>
-        <animations:ImplicitAnimationSet x:Name="HideTransitions">
-            <animations:OffsetAnimation
+    </animations:ImplicitAnimationSet>
+    <animations:ImplicitAnimationSet x:Name="HideTransitions">
+      <animations:OffsetAnimation
                 EasingMode="EaseOut"
                 From="0"
                 To="0,24,0"
                 Duration="0:0:0.2" />
-            <animations:OpacityAnimation
+      <animations:OpacityAnimation
                 EasingMode="EaseOut"
                 From="1"
                 To="0"
                 Duration="0:0:0.1" />
-        </animations:ImplicitAnimationSet>
-    </Page.Resources>
+    </animations:ImplicitAnimationSet>
+  </Page.Resources>
 
-    <controls:SettingsPageControl
+  <controls:SettingsPageControl
         x:Uid="LightSwitch"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/Awake.png">
-        <controls:SettingsPageControl.ModuleContent>
-            <StackPanel Orientation="Vertical">
-                <tkcontrols:SettingsCard
+    <controls:SettingsPageControl.ModuleContent>
+      <StackPanel Orientation="Vertical">
+        <tkcontrols:SettingsCard
                     Header="Enable LightSwitch"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-                </tkcontrols:SettingsCard>
+          <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+        </tkcontrols:SettingsCard>
 
-                <InfoBar
+        <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -111,7 +111,7 @@
                   <TextBlock
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="08:00 - 17:00" />
+                                        Text="Please sync your location" />
                   <Button Click="SyncLocationButton_Click" Content="Sync" />
                 </StackPanel>
               </tkcontrols:SettingsCard>
@@ -242,35 +242,27 @@
                     <Grid.RowDefinitions>
                       <RowDefinition Height="*" />
                       <RowDefinition Height="Auto" />
-                      <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Grid>
-                      <TextBlock x:Name="SunTimes" VerticalAlignment="Center" />
-                      <StackPanel
-                                                HorizontalAlignment="Right"
+                    <StackPanel
+                      Grid.Row="0"
+                                                HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
                                                 Orientation="Horizontal"
                                                 Spacing="8">
-                        <ProgressRing
+                      <ProgressRing
                                                     x:Name="SyncLoader"
                                                     Width="16"
                                                     Height="16"
                                                     IsActive="False"
                                                     Visibility="Collapsed" />
-                        <Button
+                      <Button
                                                     x:Name="SyncButton"
                                                     HorizontalAlignment="Right"
                                                     Click="GetLocation_Click"
                                                     Content="Sync" />
-                      </StackPanel>
-                    </Grid>
+                    </StackPanel>
                     <TextBlock Grid.Row="1">
-                                            <Run Text="Sunrise:" />
-                                            <Run Text="{x:Bind ViewModel.LightTime}" />
-                    </TextBlock>
-                    <TextBlock Grid.Row="2">
-                                            <Run Text="Sunset:" />
-                                            <Run Text="{x:Bind ViewModel.DarkTime}" />
+                      <Run Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />
                     </TextBlock>
                   </Grid>
                 </tkcontrols:Case>
@@ -278,7 +270,6 @@
                   <Grid animations:Implicit.HideAnimations="{StaticResource HideTransitions}" animations:Implicit.ShowAnimations="{StaticResource ShowTransitions}">
                     <Grid.RowDefinitions>
                       <RowDefinition Height="*" />
-                      <RowDefinition Height="Auto" />
                       <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <ComboBox
@@ -290,31 +281,10 @@
                                             ItemsSource="{x:Bind ViewModel.Cities, Mode=OneWay}"
                                             PlaceholderText="Select city"
                                             SelectedItem="{x:Bind ViewModel.SelectedCity, Mode=TwoWay}">
-                      <!--<ComboBox.ItemTemplate>
-                                                <DataTemplate x:DataType="helpers:City">
-                                                    <StackPanel Orientation="Vertical">
-                                                        <TextBlock Text="{x:Bind Name}" />
-                                                        <TextBlock
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Style="{StaticResource CaptionTextBlockStyle}"
-                                                            Text="{x:Bind Country}" />
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>-->
                     </ComboBox>
-                    <!--  Todo: Updated times from changing city  -->
-
-
-
                     <TextBlock Grid.Row="1">
-                                            <Run Text="Sunrise:" />
-                                            <Run Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />
+                      <Run Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />
                     </TextBlock>
-                    <TextBlock Grid.Row="2">
-                                            <Run Text="Sunset:" />
-                                            <Run Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />
-                    </TextBlock>
-                    <!--  Todo: Option to add an offset  -->
                   </Grid>
                 </tkcontrols:Case>
               </tkcontrols:SwitchPresenter>
@@ -322,10 +292,10 @@
           </ContentDialog>
         </controls:SettingsGroup>
       </StackPanel>
-        </controls:SettingsPageControl.ModuleContent>
+    </controls:SettingsPageControl.ModuleContent>
 
-        <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_LightSwitch" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
-        </controls:SettingsPageControl.PrimaryLinks>
-    </controls:SettingsPageControl>
+    <controls:SettingsPageControl.PrimaryLinks>
+      <controls:PageLink x:Uid="LearnMore_LightSwitch" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
+    </controls:SettingsPageControl.PrimaryLinks>
+  </controls:SettingsPageControl>
 </Page>
