@@ -54,10 +54,12 @@
         <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="4" />
+        <Setter Property="ToolTipService.ToolTip" Value="Dark mode" />
     </Style>
 
     <Style x:Key="LightBandStyle" TargetType="Border">
         <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+        <Setter Property="ToolTipService.ToolTip" Value="Light mode" />
     </Style>
 
     <Style x:Key="DarkBandIconStyle" TargetType="FontIcon">

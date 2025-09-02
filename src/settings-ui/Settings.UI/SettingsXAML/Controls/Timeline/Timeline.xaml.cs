@@ -213,9 +213,19 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private Border MakeBandRect(bool isDark)
         {
-            var r = new Border { Style = isDark ? (Style)Application.Current.Resources["DarkBandStyle"] : (Style)Application.Current.Resources["LightBandStyle"] };
-            FontIcon icon = new FontIcon() { Style = isDark ? (Style)Application.Current.Resources["DarkBandIconStyle"] : (Style)Application.Current.Resources["LightBandIconStyle"] };
-            r.Child = icon;
+            var r = new Border();
+            if (isDark)
+            {
+                r.Style = (Style)Application.Current.Resources["DarkBandStyle"];
+                FontIcon icon = new FontIcon();
+                icon.Style = (Style)Application.Current.Resources["DarkBandIconStyle"];
+                r.Child = icon;
+            }
+            else
+            {
+                r.Style = (Style)Application.Current.Resources["LightBandStyle"];
+            }
+
             Canvas.SetZIndex(r, 5); // below ticks/labels
             TimelineCanvas.Children.Add(r);
             return r;

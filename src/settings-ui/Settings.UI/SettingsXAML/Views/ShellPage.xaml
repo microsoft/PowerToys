@@ -153,6 +153,10 @@
                             helpers:NavHelper.NavigateTo="views:ColorPickerPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}" />
                         <NavigationViewItem
+                            x:Uid="Shell_LightSwitch"
+                            helpers:NavHelper.NavigateTo="views:LightSwitchPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}" />
+                        <NavigationViewItem
                             x:Uid="Shell_PowerLauncher"
                             helpers:NavHelper.NavigateTo="views:PowerLauncherPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}" />
@@ -172,11 +176,7 @@
                             x:Uid="Shell_ZoomIt"
                             helpers:NavHelper.NavigateTo="views:ZoomItPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
-                        <NavigationViewItem
-                            x:Uid="Shell_LightSwitch"
-                            helpers:NavHelper.NavigateTo="views:LightSwitchPage"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />  
-          </NavigationViewItem.MenuItems>
+                    </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
                 <!--  Windowing & Layouts  -->

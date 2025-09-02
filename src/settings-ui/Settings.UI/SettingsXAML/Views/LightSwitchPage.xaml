@@ -16,67 +16,60 @@
     d:DataContext="{d:DesignInstance Type=ViewModel:LightSwitchViewModel}"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-  <Page.Resources>
-    <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
-    <animations:ImplicitAnimationSet x:Name="ShowTransitions">
-      <animations:OffsetAnimation
+    <Page.Resources>
+        <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
+        <animations:ImplicitAnimationSet x:Name="ShowTransitions">
+            <animations:OffsetAnimation
                 EasingMode="EaseOut"
                 From="0,24,0"
                 To="0"
                 Duration="0:0:0.4" />
-      <animations:OpacityAnimation
+            <animations:OpacityAnimation
                 EasingMode="EaseOut"
                 From="0"
                 To="1"
                 Duration="0:0:0.2" />
-    </animations:ImplicitAnimationSet>
-    <animations:ImplicitAnimationSet x:Name="HideTransitions">
-      <animations:OffsetAnimation
+        </animations:ImplicitAnimationSet>
+        <animations:ImplicitAnimationSet x:Name="HideTransitions">
+            <animations:OffsetAnimation
                 EasingMode="EaseOut"
                 From="0"
                 To="0,24,0"
                 Duration="0:0:0.2" />
-      <animations:OpacityAnimation
+            <animations:OpacityAnimation
                 EasingMode="EaseOut"
                 From="1"
                 To="0"
                 Duration="0:0:0.1" />
-    </animations:ImplicitAnimationSet>
-  </Page.Resources>
+        </animations:ImplicitAnimationSet>
+    </Page.Resources>
 
-  <controls:SettingsPageControl
+    <controls:SettingsPageControl
         x:Uid="LightSwitch"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/Awake.png">
-    <controls:SettingsPageControl.ModuleContent>
-      <StackPanel Orientation="Vertical">
-        <tkcontrols:SettingsCard
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel Orientation="Vertical">
+                <tkcontrols:SettingsCard
                     Header="Enable LightSwitch"
-                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-          <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
-        </tkcontrols:SettingsCard>
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
 
-        <InfoBar
+                <InfoBar
                     x:Uid="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-        <controls:SettingsGroup Header="Activation" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-
-          <!--<tkcontrols:SettingsCard x:Uid="LightSwitch_ForceLightMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE706;}">
-                        <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AllowDisable="True"
-                            HotkeySettings="{x:Bind Path=ViewModel.ForceLightModeActivationShortcut, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>-->
-          <tkcontrols:SettingsCard x:Uid="LightSwitch_ForceDarkMode_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
+        <controls:SettingsGroup Header="Shortcuts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+          <tkcontrols:SettingsCard x:Uid="LightSwitch_ThemeToggle_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
             <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AllowDisable="True"
-                            HotkeySettings="{x:Bind Path=ViewModel.ToggleThemeActivationShortcut, Mode=TwoWay}" />
+             MinWidth="{StaticResource SettingActionControlMinWidth}"
+             AllowDisable="True"
+             HotkeySettings="{x:Bind Path=ViewModel.ToggleThemeActivationShortcut, Mode=TwoWay}" />
           </tkcontrols:SettingsCard>
         </controls:SettingsGroup>
 
@@ -113,7 +106,7 @@
               <tkcontrols:SettingsCard Header="Turn on dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
                 <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=TwoWay}" />
               </tkcontrols:SettingsCard>
-              <tkcontrols:SettingsCard Header="Sunrise and sunset times" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
+              <tkcontrols:SettingsCard Header="Sunrise and sunset times" Description="Calculated by the selected location" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <TextBlock
                                         VerticalAlignment="Center"
@@ -122,29 +115,35 @@
                   <Button Click="SyncLocationButton_Click" Content="Sync" />
                 </StackPanel>
               </tkcontrols:SettingsCard>
-              <tkcontrols:SettingsCard Header="Apply an offset in minutes" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
-                <Grid VerticalAlignment="Center">
+              <tkcontrols:SettingsCard
+                                Description="Adjust the trigger time by starting earlier or later than the actual sunrise or sunset"
+                                Header="Sunrise or sunset offset"
+                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
+                <Grid VerticalAlignment="Center" ColumnSpacing="8">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
                   <Slider
                                         x:Name="geoOffsetSlider"
-                                        Grid.Column="0"
+                                        MinWidth="132"
                                         Maximum="60"
                                         Minimum="-60"
                                         SnapsTo="StepValues"
                                         TickFrequency="15"
                                         TickPlacement="Outside"
                                         Value="{x:Bind ViewModel.Offset, Mode=TwoWay}" />
+
                   <TextBlock
-                                        x:Name="geoOffsetValue"
                                         Grid.Column="1"
-                                        Margin="10,0,0,0"
+                                        MinWidth="78"
                                         VerticalAlignment="Center"
-                                        FontSize="12"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind ViewModel.Offset, Mode=OneWay}" />
+                                        TextAlignment="Right">
+                                        <Run x:Name="geoOffsetValue" Text="{x:Bind ViewModel.Offset, Mode=OneWay}" />
+                                        <Run Text="minutes" />
+                  </TextBlock>
+
                 </Grid>
               </tkcontrols:SettingsCard>
 
@@ -178,7 +177,7 @@
 
           <controls:SettingsGroup Header="Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
             <tkcontrols:SettingsExpander
-                            Description="Pick which parts of your PC should follow dark mode"
+                            Description="Pick which parts of your PC should follow Light Switch"
                             Header="Apply dark mode to"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
                             IsExpanded="True">
@@ -323,10 +322,10 @@
           </ContentDialog>
         </controls:SettingsGroup>
       </StackPanel>
-    </controls:SettingsPageControl.ModuleContent>
+        </controls:SettingsPageControl.ModuleContent>
 
-    <controls:SettingsPageControl.PrimaryLinks>
-      <controls:PageLink x:Uid="LearnMore_LightSwitch" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
-    </controls:SettingsPageControl.PrimaryLinks>
-  </controls:SettingsPageControl>
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_LightSwitch" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
 </Page>
