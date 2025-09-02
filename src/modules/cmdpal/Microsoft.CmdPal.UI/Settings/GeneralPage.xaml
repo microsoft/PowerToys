@@ -34,7 +34,7 @@
                   <RepositionThemeTransition IsStaggeringEnabled="False" />
               </StackPanel.ChildrenTransitions>-->
 
-                    <!-- 'Activation' section -->
+                    <!--  'Activation' section  -->
 
                     <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
@@ -68,7 +68,7 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
-                    <!-- 'Behavior' section -->
+                    <!--  'Behavior' section  -->
 
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
@@ -88,7 +88,7 @@
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <!-- 'For Developers' section -->
+                    <!--  'For Developers' section  -->
 
                     <TextBlock x:Uid="ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
