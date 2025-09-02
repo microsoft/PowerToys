@@ -1,4 +1,4 @@
-﻿<local:NavigatablePage
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.AdvancedPastePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,7 +12,7 @@
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    <local:NavigatablePage.Resources>
+    <local:NavigablePage.Resources>
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
@@ -38,7 +38,7 @@
                 </StackPanel>
             </DataTemplate>
         </ResourceDictionary>
-    </local:NavigatablePage.Resources>
+    </local:NavigablePage.Resources>
     <Grid>
         <controls:SettingsPageControl x:Uid="AdvancedPaste" ModuleImageSource="ms-appx:///Assets/Settings/Modules/AdvancedPaste.png">
             <controls:SettingsPageControl.ModuleContent>
@@ -425,4 +425,4 @@
             </StackPanel>
         </ContentDialog>
     </Grid>
-</local:NavigatablePage>
+</local:NavigablePage>

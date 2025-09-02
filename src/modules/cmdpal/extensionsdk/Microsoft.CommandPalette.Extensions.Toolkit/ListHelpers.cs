@@ -44,12 +44,17 @@ public partial class ListHelpers
 
     public static IEnumerable<T> FilterList<T>(IEnumerable<T> items, string query, Func<string, T, int> scoreFunction)
     {
+        return FilterListWithScores<T>(items, query, scoreFunction)
+                .Select(score => score.Item);
+    }
+
+    public static IEnumerable<Scored<T>> FilterListWithScores<T>(IEnumerable<T> items, string query, Func<string, T, int> scoreFunction)
+    {
         var scores = items
             .Select(li => new Scored<T>() { Item = li, Score = scoreFunction(query, li) })
             .Where(score => score.Score > 0)
             .OrderByDescending(score => score.Score);
-        return scores
-            .Select(score => score.Item);
+        return scores;
     }
 
     /// <summary>

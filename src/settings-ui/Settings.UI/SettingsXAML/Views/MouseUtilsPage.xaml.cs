@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class MouseUtilsPage : NavigatablePage, IRefreshablePage
+    public sealed partial class MouseUtilsPage : NavigablePage, IRefreshablePage
     {
         private MouseUtilsViewModel ViewModel { get; set; }
 

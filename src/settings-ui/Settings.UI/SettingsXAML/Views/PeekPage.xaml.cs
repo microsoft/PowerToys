@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PeekPage : NavigatablePage, IRefreshablePage
+    public sealed partial class PeekPage : NavigablePage, IRefreshablePage
     {
         private PeekViewModel ViewModel { get; set; }
 
