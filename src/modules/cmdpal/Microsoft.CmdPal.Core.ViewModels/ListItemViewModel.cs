@@ -71,6 +71,8 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
             UpdateProperty(nameof(HasDetails));
         }
 
+        AddShowDetailsCommands();
+
         TextToSuggest = model.TextToSuggest;
         UpdateProperty(nameof(TextToSuggest));
     }
@@ -121,18 +123,6 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
     public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
 
     public override int GetHashCode() => Model.GetHashCode();
-
-    public override void SlowInitializeProperties()
-    {
-        if (IsSelectedInitialized)
-        {
-            return;
-        }
-
-        base.SlowInitializeProperties();
-
-        AddShowDetailsCommands();
-    }
 
     private void AddShowDetailsCommands()
     {
