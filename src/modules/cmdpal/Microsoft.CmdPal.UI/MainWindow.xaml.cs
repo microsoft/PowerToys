@@ -484,8 +484,13 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    public void HandleLaunch(AppActivationArguments? activatedEventArgs)
+    public void HandleLaunchNonUI(AppActivationArguments? activatedEventArgs)
     {
+        // LOAD BEARING
+        // Any reading and processing of the activation arguments must be done
+        // synchronously in this method, before it returns. The sending instance
+        // remains blocked until this returns; afterward it may quit, causing
+        // the activation arguments to be lost.
         if (activatedEventArgs is null)
         {
             Summon(string.Empty);
@@ -522,9 +527,26 @@ public sealed partial class MainWindow : WindowEx,
         }
         catch (COMException ex)
         {
+            // https://learn.microsoft.com/en-us/windows/win32/rpc/rpc-return-values
+            const int RPC_S_SERVER_UNAVAILABLE = -2147023174;
+            const int RPC_S_CALL_FAILED = 2147023170;
+
             // Accessing properties activatedEventArgs.Kind and activatedEventArgs.Data might cause COMException
             // if the args are not valid or not passed correctly.
-            Logger.LogError("COM exception when activating the application", ex);
+            if (ex.HResult is RPC_S_SERVER_UNAVAILABLE or RPC_S_CALL_FAILED)
+            {
+                Logger.LogWarning(
+                    $"COM exception (HRESULT {ex.HResult}) when accessing activation arguments. " +
+                    $"This might be due to the calling application not passing them correctly or exiting before we could read them. " +
+                    $"The application will continue running and fall back to showing the Command Palette window.");
+            }
+            else
+            {
+                Logger.LogError(
+                    $"COM exception (HRESULT {ex.HResult}) when activating the application. " +
+                    $"The application will continue running and fall back to showing the Command Palette window.",
+                    ex);
+            }
         }
 
         Summon(string.Empty);
