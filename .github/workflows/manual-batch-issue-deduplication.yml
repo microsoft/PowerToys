@@ -1,0 +1,19 @@
+name: Manual Batch Issue Deduplication
+
+on:
+  workflow_dispatch: # Only runs when manually triggered
+
+jobs:
+  batch-deduplicate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Batch Deduplicate Issues
+        uses: pelikhan/action-genai-issue-dedup@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          label-duplicate: "potential duplicate"
+          comment-duplicate: false
+          close-duplicate: false
+          batch-size: 100 # Adjust if supported by the action
+          since: '2019-01-01T00:00:00Z' # Process issues dating back to 2019, if supported
+          # Add other action-specific inputs if needed
