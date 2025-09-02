@@ -32,7 +32,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ForceLightCommand = new RelayCommand(ForceLightNow);
             ForceDarkCommand = new RelayCommand(ForceDarkNow);
 
-            // populate the list of modes for dropdown binding
             AvailableScheduleModes = new ObservableCollection<string>
         {
             "FixedHours",
@@ -148,7 +147,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        // available values for the dropdown
         public ObservableCollection<string> AvailableScheduleModes { get; }
 
         public bool ChangeSystem
@@ -324,7 +322,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _moduleSettings.Properties.ToggleThemeHotkey.Value = _toggleThemeHotkey;
                     NotifyPropertyChanged();
 
-                    // Using InvariantCulture as this is an IPC message
                     SendConfigMSG(
                         string.Format(
                             CultureInfo.InvariantCulture,
@@ -377,7 +374,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Latitude = SelectedCity.Latitude.ToString(CultureInfo.InvariantCulture);
             Longitude = SelectedCity.Longitude.ToString(CultureInfo.InvariantCulture);
 
-            // If you want a ready-to-bind string
             CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" +
                             $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
         }

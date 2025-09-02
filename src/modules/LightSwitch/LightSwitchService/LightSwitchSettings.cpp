@@ -22,7 +22,6 @@ LightSwitchSettings::LightSwitchSettings()
 
 std::wstring LightSwitchSettings::GetSettingsFileName()
 {
-    // Mirrors AlwaysOnTop: <module name>.json
     return PTSettingsHelper::get_module_save_file_location(L"LightSwitch");
 }
 
@@ -118,6 +117,17 @@ void LightSwitchSettings::LoadSettings()
             }
         }
 
+        // Offset
+        if (const auto jsonVal = values.get_int_value(L"offset")) 
+        {
+            auto val = *jsonVal;
+            if (m_settings.offset != val)
+            {
+                m_settings.offset = val;
+                NotifyObservers(SettingId::Offset);
+            }
+        }
+
         // ChangeSystem
         if (const auto jsonVal = values.get_bool_value(L"changeSystem"))
         {
@@ -142,7 +152,6 @@ void LightSwitchSettings::LoadSettings()
     }
     catch (...)
     {
-        //Logger::error(L"[LightSwitchSettings] Failed to read settings file");
         // Keeps defaults if load fails
     }
 }

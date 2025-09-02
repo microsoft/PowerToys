@@ -104,23 +104,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     ViewModel.SelectedCity = match;
                 }
             }
-
-            // try
-            // {
-            //    if (ViewModel.ScheduleMode == "SunsetToSunriseGeo")
-            //    {
-            //        SunTimes.Text = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2} " +
-            //                        $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
-            //        return;
-            //    }
-
-            // fallback text
-            //    SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
-            // }
-            // catch
-            // {
-            //    SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
-            // }
         }
 
         private async void GetLocation_Click(object sender, RoutedEventArgs e)
@@ -141,7 +124,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 var geolocator = new Geolocator { DesiredAccuracy = PositionAccuracy.Default };
 
-                // Get the position
                 Geoposition pos = await geolocator.GetGeopositionAsync();
 
                 double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
@@ -154,8 +136,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     DateTime.Now.Month,
                     DateTime.Now.Day);
 
-                // SunTimes.Text = "Sunrise: " + result.SunriseHour + ":" + result.SunriseMinute + " " +
-                // "Sunset: " + result.SunsetHour + ":" + result.SunsetMinute;
                 ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
                 ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
 
@@ -183,10 +163,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 ViewModel.LightTime = 360;
                 ViewModel.DarkTime = 1080;
-            }
-            else if (selectedTag == "SunsetToSunrise")
-            {
-                // SunTimes.Text = "Please Sync to update Sunrise/Sunset times";
             }
         }
 

@@ -20,7 +20,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam);
 // Entry point for the executable
 int _tmain(int argc, TCHAR* argv[])
 {
-    // Parse args
     DWORD parentPid = 0;
     bool debug = false;
     for (int i = 1; i < argc; ++i)
@@ -39,16 +38,12 @@ int _tmain(int argc, TCHAR* argv[])
         freopen_s(&f, "CONOUT$", "w", stdout);
         freopen_s(&f, "CONOUT$", "w", stderr);
 
-        // Optional: set a title so you can find it easily
         SetConsoleTitle(L"LightSwitchService Debug");
 
         // Console mode (debug)
         g_ServiceStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
         ServiceWorkerThread(reinterpret_cast<void*>(static_cast<ULONG_PTR>(parentPid)));
         CloseHandle(g_ServiceStopEvent);
-
-        // Keep window open until a key is pressed (optional)
-        // system("pause");
 
         FreeConsole();
         return 0;

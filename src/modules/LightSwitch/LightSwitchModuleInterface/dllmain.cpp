@@ -89,11 +89,9 @@ struct ModuleSettings
     std::wstring m_longitude = L"0.0";
 } g_settings;
 
-// Implement the PowerToy Module Interface and all the required methods.
 class LightSwitchInterface : public PowertoyModuleIface
 {
 private:
-    // The PowerToy state.
     bool m_enabled = false;
 
     HANDLE m_process{ nullptr };
@@ -104,11 +102,9 @@ private:
 
     Hotkey m_toggle_theme_hotkey = { .win = true, .ctrl = true, .shift = true, .alt = false, .key = 'D' };
 
-    // Load initial settings from the persisted values.
     void init_settings();
 
 public:
-    // Constructor
     LightSwitchInterface()
     {
         LoggerHelpers::init_logger(L"LightSwitch", L"ModuleInterface", LogSettings::lightSwitchLoggerName);
@@ -121,7 +117,7 @@ public:
 
     virtual const wchar_t* get_key() override
     {
-        return L"LightSwitch"; // your unique key string
+        return L"LightSwitch";
     }
 
     // Destroy the powertoy and free memory
@@ -141,23 +137,6 @@ public:
     {
         return powertoys_gpo::getConfiguredLightSwitchEnabledValue();
     }
-
-    // Return array of the names of all events that this powertoy listens for, with
-    // nullptr as the last element of the array. Nullptr can also be retured for empty
-    // list.
-    //virtual const wchar_t** get_events() override
-    //{
-    //    static const wchar_t* events[] = { nullptr };
-    //    // Available events:
-    //    // - ll_keyboard
-    //    // - win_hook_event
-    //    //
-    //    // static const wchar_t* events[] = { ll_keyboard,
-    //    //                                   win_hook_event,
-    //    //                                   nullptr };
-
-    //    return events;
-    //}
 
     // Return JSON with the configuration options.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
@@ -188,7 +167,7 @@ public:
               { L"SunsetToSunriseGeo", L"Use sunrise/sunset times (Geolocation)" },
               { L"SunsetToSunriseUser", L"Use sunrise/sunset times (User selected)" } });
 
-        // Integer spinners (for time in minutes since midnight)
+        // Integer spinners
         settings.add_int_spinner(
             L"lightTime",
             L"Time to switch to light theme (minutes after midnight).",
@@ -237,6 +216,7 @@ public:
             L"Force Dark",
             L"{}");
 
+        // Hotkeys
         PowerToysSettings::HotkeyObject dm_hk = PowerToysSettings::HotkeyObject::from_settings(
             m_toggle_theme_hotkey.win,
             m_toggle_theme_hotkey.ctrl,
@@ -345,7 +325,6 @@ public:
         std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
         std::wstring exe_name = L"LightSwitchService\\PowerToys.LightSwitchService.exe";
 
-        // Resolve the executable path
         std::wstring resolved_path(MAX_PATH, L'\0');
         DWORD result = SearchPathW(
             nullptr,
@@ -370,8 +349,8 @@ public:
         PROCESS_INFORMATION pi;
 
         if (!CreateProcessW(
-                resolved_path.c_str(), // lpApplicationName
-                command_line.data(), // lpCommandLine (must be mutable)
+                resolved_path.c_str(),
+                command_line.data(),
                 nullptr,
                 nullptr,
                 TRUE,
@@ -398,18 +377,15 @@ public:
 
         if (m_process)
         {
-            // Try waiting briefly to allow graceful exit, if needed
             constexpr DWORD timeout_ms = 1500;
             DWORD result = WaitForSingleObject(m_process, timeout_ms);
 
             if (result == WAIT_TIMEOUT)
             {
-                // Force kill if it didn’t exit in time
                 Logger::warn("Light Switch: Process didn't exit in time. Forcing termination.");
                 TerminateProcess(m_process, 0);
             }
 
-            // Always clean up the handle
             CloseHandle(m_process);
             m_process = nullptr;
         }
@@ -490,34 +466,6 @@ public:
     {
         return WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT;
     }
-
-    // Handle incoming event, data is event-specific
-    //virtual intptr_t signal_event(const wchar_t* name, intptr_t data) override
-    //{
-    //    if (wcscmp(name, ll_keyboard) == 0)
-    //    {
-    //        auto& event = *(reinterpret_cast<LowlevelKeyboardEvent*>(data));
-    //        // Return 1 if the keypress is to be suppressed (not forwarded to Windows),
-    //        // otherwise return 0.
-    //        return 0;
-    //    }
-    //    else if (wcscmp(name, win_hook_event) == 0)
-    //    {
-    //        auto& event = *(reinterpret_cast<WinHookEvent*>(data));
-    //        // Return value is ignored
-    //        return 0;
-    //    }
-    //    return 0;
-    //}
-
-    //// This methods are part of an experimental features not fully supported yet
-    //virtual void register_system_menu_helper(PowertoySystemMenuIface* helper) override
-    //{
-    //}
-
-    //virtual void signal_system_menu_action(const wchar_t* name) override
-    //{
-    //}
 };
 
 std::wstring utf8_to_wstring(const std::string& str)
@@ -591,46 +539,6 @@ void LightSwitchInterface::init_settings()
         Logger::error(L"[Light Switch] init_settings: unknown exception while loading settings");
     }
 }
-
-// This method of saving the module settings is only required if you need to do any
-// custom processing of the settings before saving them to disk.
-//void $projectname$::save_settings() {
-//  try {
-//    // Create a PowerToyValues object for this PowerToy
-//    PowerToysSettings::PowerToyValues values(get_name());
-//
-//    // Save a bool property.
-//    //values.add_property(
-//    //  L"bool_toggle_1", // property name
-//    //  g_settings.bool_prop // property value
-//    //  g_settings.bool_prop // property value
-//    //);
-//
-//    // Save an int property.
-//    //values.add_property(
-//    //  L"int_spinner_1", // property name
-//    //  g_settings.int_prop // property value
-//    //);
-//
-//    // Save a string property.
-//    //values.add_property(
-//    //  L"string_text_1", // property name
-//    //  g_settings.string_prop // property value
-//    );
-//
-//    // Save a color property.
-//    //values.add_property(
-//    //  L"color_picker_1", // property name
-//    //  g_settings.color_prop // property value
-//    //);
-//
-//    // Save the PowerToyValues JSON to the power toy settings file.
-//    values.save_to_settings_file();
-//  }
-//  catch (std::exception ex) {
-//    // Couldn't save the settings.
-//  }
-//}
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {

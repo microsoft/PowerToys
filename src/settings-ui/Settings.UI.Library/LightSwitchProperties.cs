@@ -10,8 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const bool DefaultChangeSystem = false;
         public const bool DefaultChangeApps = false;
-        public const int DefaultLightTime = 480;   // 08:00
-        public const int DefaultDarkTime = 1200;   // 20:001
+        public const int DefaultLightTime = 480;
+        public const int DefaultDarkTime = 1200;
         public const int DefaultOffset = 0;
         public const string DefaultLatitude = "0.0";
         public const string DefaultLongitude = "0.0";
