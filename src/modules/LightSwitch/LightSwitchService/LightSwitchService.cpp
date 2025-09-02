@@ -7,12 +7,10 @@
 #include <LightSwitchSettings.h>
 #include <common/utils/gpo.h>
 
-// Global service variables
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
 
-// Forward declarations of service functions (we’ll define them later)
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam);
