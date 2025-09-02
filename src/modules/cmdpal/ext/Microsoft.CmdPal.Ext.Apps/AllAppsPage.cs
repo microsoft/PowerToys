@@ -62,7 +62,9 @@ public sealed partial class AllAppsPage : ListPage
     {
         // Build or update the list if needed
         BuildListItems();
-        return pinnedApps.Concat(unpinnedApps).ToArray();
+
+        AppListItem[] allApps = [.. pinnedApps, .. unpinnedApps];
+        return allApps;
     }
 
     private void BuildListItems()
@@ -93,16 +95,25 @@ public sealed partial class AllAppsPage : ListPage
 
     private AppItem[] GetAllApps()
     {
-        var uwpResults = _appCache.UWPs
-           .Where((application) => application.Enabled)
-           .Select(app => app.ToAppItem());
+        List<AppItem> allApps = [];
 
-        var win32Results = _appCache.Win32s
-            .Where((application) => application.Enabled && application.Valid)
-            .Select(app => app.ToAppItem());
+        foreach (var uwpApp in _appCache.UWPs)
+        {
+            if (uwpApp.Enabled)
+            {
+                allApps.Add(uwpApp.ToAppItem());
+            }
+        }
 
-        var allApps = uwpResults.Concat(win32Results).ToArray();
-        return allApps;
+        foreach (var win32App in _appCache.Win32s)
+        {
+            if (win32App.Enabled && win32App.Valid)
+            {
+                allApps.Add(win32App.ToAppItem());
+            }
+        }
+
+        return allApps.ToArray();
     }
 
     internal (AppItem[] AllApps, AppListItem[] PinnedItems, AppListItem[] UnpinnedItems) GetPrograms()
@@ -118,9 +129,7 @@ public sealed partial class AllAppsPage : ListPage
 
             if (isPinned)
             {
-                appListItem.Tags = appListItem.Tags
-                                            .Concat([new Tag() { Icon = Icons.PinIcon }])
-                                            .ToArray();
+                appListItem.Tags = [.. appListItem.Tags, new Tag() { Icon = Icons.PinIcon }];
                 pinned.Add(appListItem);
             }
             else
@@ -129,15 +138,14 @@ public sealed partial class AllAppsPage : ListPage
             }
         }
 
+        pinned.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.Ordinal));
+        unpinned.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.Ordinal));
+
         return (
-                allApps
-                    .ToArray(),
-                pinned
-                    .OrderBy(app => app.Title)
-                    .ToArray(),
-                unpinned
-                    .OrderBy(app => app.Title)
-                    .ToArray());
+                allApps.ToArray(),
+                pinned.ToArray(),
+                unpinned.ToArray()
+        );
     }
 
     private void OnPinStateChanged(object? sender, PinStateChangedEventArgs e)

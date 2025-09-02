@@ -6,7 +6,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
@@ -20,7 +19,16 @@ public class ListRepository<T> : IRepository<T>, IEnumerable<T>
 {
     public IList<T> Items
     {
-        get { return _items.Values.ToList(); }
+        get
+        {
+            var items = new List<T>();
+            foreach (var item in _items.Values)
+            {
+                items.Add(item);
+            }
+
+            return items;
+        }
     }
 
     private ConcurrentDictionary<int, T> _items = new ConcurrentDictionary<int, T>();
@@ -34,9 +42,16 @@ public class ListRepository<T> : IRepository<T>, IEnumerable<T>
         // enforce that internal representation
         try
         {
+            var result = new ConcurrentDictionary<int, T>();
+
+            foreach (var item in list)
+            {
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-            _items = new ConcurrentDictionary<int, T>(list.ToDictionary(i => i.GetHashCode()));
+                result.TryAdd(item.GetHashCode(), item);
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
+            }
+
+            _items = result;
         }
         catch (ArgumentException ex)
         {
