@@ -2,8 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
 using Windows.System;
 using Windows.Win32;
 
@@ -169,6 +172,61 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "Get the name of the Foreground window",
             },
+
+            new ListItem(new CommandWithProperties())
+            {
+                Title = "I have properties",
+            },
+            new ListItem(new OtherCommandWithProperties())
+            {
+                Title = "I also have properties",
+            },
         ];
+    }
+
+    internal sealed partial class CommandWithProperties : InvokableCommand, IExtendedAttributesProvider
+    {
+        private FontIconData _icon = new("\u0026", "Wingdings");
+
+        public override IconInfo Icon => new(_icon, _icon);
+
+        public override string Name => "Whatever";
+
+        // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
+        // backing store for Properties. A regular `Dictionary<string, object>`
+        // will not work across the ABI
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
+        {
+            { "Foo", "bar" },
+            { "Secret", 42 },
+            { "hmm?", null },
+        };
+    }
+
+    internal sealed partial class OtherCommandWithProperties : IExtendedAttributesProvider, IInvokableCommand
+    {
+        public string Name => "Whatever 2";
+
+        public IIconInfo Icon => new IconInfo("\uF146");
+
+        public string Id => string.Empty;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged;
+
+        public ICommandResult Invoke(object sender)
+        {
+            PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Name)));
+            return CommandResult.ShowToast("whoop");
+        }
+
+        // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
+        // backing store for Properties. A regular `Dictionary<string, object>`
+        // will not work across the ABI
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
+        {
+            { "yo", "dog" },
+            { "Secret", 12345 },
+            { "hmm?", null },
+        };
     }
 }

@@ -34,7 +34,7 @@ internal sealed partial class SearchWebCommand : InvokableCommand
             return CommandResult.KeepOpen();
         }
 
-        if (_settingsManager.ShowHistory != Resources.history_none)
+        if (_settingsManager.HistoryItemCount != 0)
         {
             _settingsManager.AddHistoryItem(new HistoryItem(Arguments, DateTime.Now));
         }

@@ -5,8 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -14,22 +14,23 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Helpers;
 
 public class SettingsManager : JsonSettingsManager, ISettingsInterface
 {
+    private const string HistoryItemCountLegacySettingsKey = "ShowHistory";
+    private static readonly string _namespace = "websearch";
+
     public event EventHandler? HistoryChanged;
 
     private readonly string _historyPath;
     private readonly List<HistoryItem> _historyItems = [];
 
-    private static readonly string _namespace = "websearch";
-
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
     private static readonly List<ChoiceSetSetting.Choice> _choices =
     [
-        new ChoiceSetSetting.Choice(Resources.history_none, Resources.history_none),
-        new ChoiceSetSetting.Choice(Resources.history_1, Resources.history_1),
-        new ChoiceSetSetting.Choice(Resources.history_5, Resources.history_5),
-        new ChoiceSetSetting.Choice(Resources.history_10, Resources.history_10),
-        new ChoiceSetSetting.Choice(Resources.history_20, Resources.history_20),
+        new ChoiceSetSetting.Choice(Resources.history_none, "None"),
+        new ChoiceSetSetting.Choice(Resources.history_1, "1"),
+        new ChoiceSetSetting.Choice(Resources.history_5, "5"),
+        new ChoiceSetSetting.Choice(Resources.history_10, "10"),
+        new ChoiceSetSetting.Choice(Resources.history_20, "20"),
     ];
 
     private readonly ToggleSetting _globalIfURI = new(
@@ -38,17 +39,33 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.plugin_global_if_uri,
         false);
 
-    private readonly ChoiceSetSetting _showHistory = new(
-        Namespaced(nameof(ShowHistory)),
-        Resources.plugin_show_history,
-        Resources.plugin_show_history,
+    private readonly ChoiceSetSetting _historyItemCount = new(
+        Namespaced(HistoryItemCountLegacySettingsKey),
+        Resources.plugin_history_item_count,
+        Resources.plugin_history_item_count,
         _choices);
 
     public bool GlobalIfURI => _globalIfURI.Value;
 
-    public string ShowHistory => _showHistory.Value ?? string.Empty;
+    public uint HistoryItemCount => uint.TryParse(_historyItemCount.Value, out var value) ? value : 0;
 
     public IReadOnlyList<HistoryItem> HistoryItems => _historyItems;
+
+    public SettingsManager()
+    {
+        FilePath = SettingsJsonPath();
+        _historyPath = HistoryStateJsonPath();
+
+        Settings.Add(_globalIfURI);
+        Settings.Add(_historyItemCount);
+
+        // Load settings from file upon initialization
+        LoadSettings();
+
+        _historyItems.AddRange(LoadHistoryFromDisk());
+
+        Settings.SettingsChanged += (_, _) => SaveSettings();
+    }
 
     private static string SettingsJsonPath()
     {
@@ -70,42 +87,34 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public void AddHistoryItem(HistoryItem historyItem)
     {
-        if (historyItem is null)
-        {
-            return;
-        }
-
-        var added = false;
+        ArgumentNullException.ThrowIfNull(historyItem);
 
         try
         {
             _historyItems.Add(historyItem);
-
-            // Determine the maximum number of items to keep based on ShowHistory
-            if (int.TryParse(ShowHistory, out var maxHistoryItems) && maxHistoryItems > 0)
-            {
-                // Keep only the most recent `maxHistoryItems` items
-                while (_historyItems.Count > maxHistoryItems)
-                {
-                    _historyItems.RemoveAt(0); // Remove the oldest item
-                }
-            }
-
-            added = true;
-
-            // Serialize the updated list back to JSON and save it
-            var historyJson = JsonSerializer.Serialize(_historyItems, WebSearchJsonSerializationContext.Default.ListHistoryItem);
-            File.WriteAllText(_historyPath, historyJson);
+            TrimHistory();
+            SaveHistory();
         }
         catch (Exception ex)
         {
+            Logger.LogError("Failed to add item to the search history", ex);
             ExtensionHost.LogMessage(new LogMessage() { Message = ex.ToString() });
         }
 
-        if (added)
+        HistoryChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private bool TrimHistory()
+    {
+        var max = HistoryItemCount;
+
+        if (_historyItems.Count > max)
         {
-            HistoryChanged?.Invoke(this, EventArgs.Empty);
+            _historyItems.RemoveRange(0, (int)(_historyItems.Count - max));
+            return true;
         }
+
+        return false;
     }
 
     private List<HistoryItem> LoadHistoryFromDisk()
@@ -125,89 +134,35 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         }
         catch (Exception ex)
         {
+            Logger.LogError("Failed to load the search history", ex);
             ExtensionHost.LogMessage(new LogMessage() { Message = ex.ToString() });
             return [];
-        }
-    }
-
-    public SettingsManager()
-    {
-        FilePath = SettingsJsonPath();
-        _historyPath = HistoryStateJsonPath();
-
-        Settings.Add(_globalIfURI);
-        Settings.Add(_showHistory);
-
-        // Load settings from file upon initialization
-        LoadSettings();
-
-        _historyItems.Clear();
-        _historyItems.AddRange(LoadHistoryFromDisk());
-
-        Settings.SettingsChanged += (s, a) => this.SaveSettings();
-    }
-
-    private void ClearHistory()
-    {
-        try
-        {
-            _historyItems.Clear();
-
-            if (File.Exists(_historyPath))
-            {
-                // Delete the history file
-                File.Delete(_historyPath);
-
-                // Log that the history was successfully cleared
-                ExtensionHost.LogMessage(new LogMessage() { Message = "History cleared successfully." });
-            }
-            else
-            {
-                // Log that there was no history file to delete
-                ExtensionHost.LogMessage(new LogMessage() { Message = "No history file found to clear." });
-            }
-        }
-        catch (Exception ex)
-        {
-            // Log any exception that occurs
-            ExtensionHost.LogMessage(new LogMessage() { Message = $"Failed to clear history: {ex}" });
-        }
-        finally
-        {
-            HistoryChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 
     public override void SaveSettings()
     {
         base.SaveSettings();
+
         try
         {
-            if (ShowHistory == Resources.history_none)
+            var trimmed = TrimHistory();
+            if (trimmed)
             {
-                ClearHistory();
-            }
-            else if (int.TryParse(ShowHistory, out var maxHistoryItems) && maxHistoryItems > 0)
-            {
-                // Trim the in-memory history if there are more items than the new limit
-                if (_historyItems.Count > maxHistoryItems)
-                {
-                    // Trim the list to keep only the most recent `maxHistoryItems` items
-                    var trimmed = _historyItems.Skip(Math.Max(0, _historyItems.Count - maxHistoryItems)).ToList();
-                    _historyItems.Clear();
-                    _historyItems.AddRange(trimmed);
-
-                    // Save the trimmed history back to the file
-                    var trimmedHistoryJson = JsonSerializer.Serialize(_historyItems, WebSearchJsonSerializationContext.Default.ListHistoryItem);
-                    File.WriteAllText(_historyPath, trimmedHistoryJson);
-
-                    HistoryChanged?.Invoke(this, EventArgs.Empty);
-                }
+                SaveHistory();
+                HistoryChanged?.Invoke(this, EventArgs.Empty);
             }
         }
         catch (Exception ex)
         {
+            Logger.LogError("Failed to save the search history", ex);
             ExtensionHost.LogMessage(new LogMessage() { Message = ex.ToString() });
         }
+    }
+
+    private void SaveHistory()
+    {
+        var historyJson = JsonSerializer.Serialize(_historyItems, WebSearchJsonSerializationContext.Default.ListHistoryItem);
+        File.WriteAllText(_historyPath, historyJson);
     }
 }

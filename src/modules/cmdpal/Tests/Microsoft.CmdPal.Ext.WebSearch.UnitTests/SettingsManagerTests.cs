@@ -19,7 +19,7 @@ public class SettingsManagerTests : CommandPaletteUnitTestBase
     public async Task HistoryChangedEventIsRaisedWhenItemIsAdded()
     {
         // Setup
-        var settings = new MockSettingsInterface(showHistory: "5");
+        var settings = new MockSettingsInterface(historyItemCount: 5);
         var page = new WebSearchListPage(settings);
 
         var eventRaised = false;

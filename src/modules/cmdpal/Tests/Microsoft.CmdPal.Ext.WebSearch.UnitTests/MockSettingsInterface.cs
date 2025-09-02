@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.UnitTests;
 
@@ -17,15 +16,15 @@ public class MockSettingsInterface : ISettingsInterface
 
     public bool GlobalIfURI { get; set; }
 
-    public string ShowHistory { get; set; }
+    public uint HistoryItemCount { get; set; }
 
     public IReadOnlyList<HistoryItem> HistoryItems => _historyItems;
 
-    public MockSettingsInterface(string showHistory = "none", bool globalIfUri = true, List<HistoryItem> mockHistory = null)
+    public MockSettingsInterface(uint historyItemCount = 0, bool globalIfUri = true, List<HistoryItem> mockHistory = null)
     {
         _historyItems = mockHistory ?? new List<HistoryItem>();
         GlobalIfURI = globalIfUri;
-        ShowHistory = showHistory;
+        HistoryItemCount = historyItemCount;
     }
 
     public void AddHistoryItem(HistoryItem historyItem)
@@ -37,9 +36,10 @@ public class MockSettingsInterface : ISettingsInterface
 
         _historyItems.Add(historyItem);
 
-        if (int.TryParse(ShowHistory, out var maxHistoryItems) && maxHistoryItems > 0)
+        // Simulate the same logic as SettingsManager
+        if (HistoryItemCount > 0)
         {
-            while (_historyItems.Count > maxHistoryItems)
+            while (_historyItems.Count > HistoryItemCount)
             {
                 _historyItems.RemoveAt(0);
             }

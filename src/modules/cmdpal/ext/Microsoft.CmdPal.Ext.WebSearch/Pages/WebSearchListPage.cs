@@ -35,6 +35,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
         Title = Resources.command_item_title;
         Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
         Id = "com.microsoft.cmdpal.websearch";
+
         _settingsManager = settingsManager;
         _settingsManager.HistoryChanged += SettingsManagerOnHistoryChanged;
 
@@ -60,10 +61,9 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
 
     private void UpdateHistory()
     {
-        var showHistory = _settingsManager.ShowHistory;
         List<ListItem> history = [];
 
-        if (showHistory != Resources.history_none)
+        if (_settingsManager.HistoryItemCount > 0)
         {
             var items = _settingsManager.HistoryItems;
             for (var index = items.Count - 1; index >= 0; index--)
@@ -87,7 +87,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var filteredHistoryItems = settingsManager.ShowHistory != Resources.history_none
+        var filteredHistoryItems = settingsManager.HistoryItemCount > 0
             ? ListHelpers.FilterList(historySnapshot, query).OfType<ListItem>()
             : [];
 

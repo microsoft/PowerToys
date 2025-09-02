@@ -34,6 +34,7 @@
     <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll" target="runtimes\win-x64\native\"/>
     <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.pdb" target="runtimes\win-x64\native\"/>
     <file src="..\Microsoft.CommandPalette.Extensions\arm64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll" target="runtimes\win-arm64\native\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions\arm64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.pdb" target="runtimes\win-arm64\native\"/>
 
     <!-- Not putting the following into the lib folder because we don't want plugin project to directly reference the winmd -->
     <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" target="winmd\"/>

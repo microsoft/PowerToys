@@ -24,29 +24,15 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <!--  TO DO: Replace this with WinUI TitleBar once that ships.  -->
-        <Button
-            x:Name="PaneToggleBtn"
-            Width="48"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Click="PaneToggleBtn_Click"
-            Style="{StaticResource PaneToggleButtonStyle}" />
-        <StackPanel
-            x:Name="AppTitleBar"
-            Grid.Row="0"
-            Height="48"
-            Orientation="Horizontal">
-            <Image
-                Width="16"
-                Height="16"
-                Source="ms-appx:///Assets/icon.svg" />
-            <TextBlock
-                x:Uid="CmdPalSettingsHeader"
-                Margin="12,0,0,0"
-                VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}" />
-        </StackPanel>
+        <TitleBar x:Name="TitleBar">
+            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
+            <TitleBar.LeftHeader>
+                <ImageIcon
+                    Height="16"
+                    Margin="16,0,0,0"
+                    Source="ms-appx:///Assets/icon.svg" />
+            </TitleBar.LeftHeader>
+        </TitleBar>
         <NavigationView
             x:Name="NavView"
             Grid.Row="1"
@@ -83,7 +69,6 @@
                     x:Name="NavigationBreadcrumbBar"
                     Grid.Row="0"
                     MaxWidth="1000"
-                    Margin="16,0,0,0"
                     ItemClicked="NavigationBreadcrumbBar_ItemClicked"
                     ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
                     <BreadcrumbBar.ItemTemplate>
