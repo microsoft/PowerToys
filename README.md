@@ -97,6 +97,8 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 In this release, we focused on new features, stability, optimization improvements, and automation.
 
+For an in-depth look at the latest changes, visit the [release blog](https://aka.ms/powertoys-releaseblog).
+
 **✨Highlights**
 
  - PowerToys Settings added a Settings search with fuzzy matching, suggestions, a results page, and UX polish to make finding options faster.
