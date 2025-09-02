@@ -118,6 +118,8 @@
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
+      <!-- Broadcast environment change so PATH updates take effect for new processes -->
+      <Custom Action="Wix4BroadcastEnvironmentChange_$(sys.BUILDARCHSHORT)" After="InstallFinalize" />
       <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />

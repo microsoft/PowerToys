@@ -87,7 +87,7 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
     /// <summary>
     /// Saves the settings configuration to the settings utils for a specific module.
     /// </summary>
-    /// <param name="settings"></param>
+    /// <param name="settings">Settings of a specific module</param>
     private static void SaveSettings(TSettingsConfig settings)
     {
         var inputJson = JsonSerializer.Serialize(settings);
