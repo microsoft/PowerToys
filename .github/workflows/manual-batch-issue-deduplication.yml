@@ -12,8 +12,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           label-duplicate: "potential duplicate"
-          comment-duplicate: false
+          comment-duplicate: true
           close-duplicate: false
-          batch-size: 100 # Adjust if supported by the action
+          batch-size: 100 
           since: '2019-05-05T00:00:00Z' # Process issues dating back to 2019, if supported
+          duplicate-comment-template: "This issue appears to be a duplicate of #{duplicate_issue_number}."
           # Add other action-specific inputs if needed
