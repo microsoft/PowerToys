@@ -798,6 +798,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerToys.DSC", "src\dsc\v3\PowerToys.DSC\PowerToys.DSC.csproj", "{94CDC147-6137-45E9-AEDE-17FF809607C0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerToys.DSC.UnitTests", "src\dsc\v3\PowerToys.DSC.UnitTests\PowerToys.DSC.UnitTests.csproj", "{A24BF1AF-79AA-4896-BAE3-CCBBE0380A78}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Apps.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.Apps.UnitTests\Microsoft.CmdPal.Ext.Apps.UnitTests.csproj", "{E816D7B1-4688-4ECB-97CC-3D8E798F3830}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Bookmarks.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.Bookmarks.UnitTests\Microsoft.CmdPal.Ext.Bookmarks.UnitTests.csproj", "{E816D7B3-4688-4ECB-97CC-3D8E798F3832}"
