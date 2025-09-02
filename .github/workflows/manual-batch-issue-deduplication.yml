@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Batch Deduplicate Issues
-        uses: pelikhan/action-genai-issue-dedup@v1
+        uses: pelikhan/action-genai-issue-dedup@v0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           label-duplicate: "potential duplicate"
