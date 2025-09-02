@@ -95,7 +95,7 @@ public class UWPApplication : IUWPApplication
 
         commands.Add(
             new CommandContextItem(
-                new Commands.CopyPathCommand(Location))
+                new CopyTextCommand(Location) { Name = Resources.copy_path })
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
             });
@@ -116,6 +116,14 @@ public class UWPApplication : IUWPApplication
         {
             RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
         });
+
+        commands.Add(
+            new CommandContextItem(
+                new UninstallApplicationConfirmation(this))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
+                IsCritical = true,
+            });
 
         return commands;
     }

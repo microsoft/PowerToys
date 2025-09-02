@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class WorkspacesPage : Page, IRefreshablePage
+    public sealed partial class WorkspacesPage : NavigablePage, IRefreshablePage
     {
         private WorkspacesViewModel ViewModel { get; set; }
 

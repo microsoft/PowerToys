@@ -27,7 +27,9 @@ public partial class MainListPage : DynamicListPage,
     private readonly IServiceProvider _serviceProvider;
 
     private readonly TopLevelCommandManager _tlcManager;
-    private IEnumerable<IListItem>? _filteredItems;
+    private IEnumerable<Scored<IListItem>>? _filteredItems;
+    private IEnumerable<Scored<IListItem>>? _filteredApps;
+    private IEnumerable<IListItem>? _allApps;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
 
@@ -83,7 +85,7 @@ public partial class MainListPage : DynamicListPage,
         }
         else
         {
-            RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
+            RaiseItemsChanged();
         }
     }
 
@@ -148,7 +150,13 @@ public partial class MainListPage : DynamicListPage,
         {
             lock (_tlcManager.TopLevelCommands)
             {
-                return _filteredItems?.ToArray() ?? [];
+                var items = Enumerable.Empty<Scored<IListItem>>()
+                                .Concat(_filteredItems is not null ? _filteredItems : [])
+                                .Concat(_filteredApps is not null ? _filteredApps : [])
+                                .OrderByDescending(o => o.Score)
+                                .Select(s => s.Item)
+                                .ToArray();
+                return items;
             }
         }
     }
@@ -167,6 +175,8 @@ public partial class MainListPage : DynamicListPage,
                     {
                         _filteredItemsIncludesApps = _includeApps;
                         _filteredItems = null;
+                        _filteredApps = null;
+                        _allApps = null;
                     }
                 }
 
@@ -184,6 +194,8 @@ public partial class MainListPage : DynamicListPage,
             {
                 _filteredItemsIncludesApps = _includeApps;
                 _filteredItems = null;
+                _filteredApps = null;
+                _allApps = null;
                 RaiseItemsChanged(commands.Count);
                 return;
             }
@@ -193,35 +205,49 @@ public partial class MainListPage : DynamicListPage,
             if (!newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase))
             {
                 _filteredItems = null;
+                _filteredApps = null;
+                _allApps = null;
             }
 
             // If the internal state has changed, reset _filteredItems to reset the list.
             if (_filteredItemsIncludesApps != _includeApps)
             {
                 _filteredItems = null;
+                _filteredApps = null;
+                _allApps = null;
             }
+
+            var newFilteredItems = _filteredItems?.Select(s => s.Item);
 
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
-            if (_filteredItems is null)
+            if (newFilteredItems is null && _filteredApps is null)
             {
-                _filteredItems = commands;
+                newFilteredItems = commands;
                 _filteredItemsIncludesApps = _includeApps;
+
                 if (_includeApps)
                 {
-                    IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
-                    var appIds = apps.Select(app => app.Command.Id).ToArray();
-
-                    // Remove any top level pinned apps and use the apps from AllAppsCommandProvider.Page.GetItems()
-                    // since they contain details.
-                    _filteredItems = _filteredItems.Where(item => item.Command is not AppCommand);
-                    _filteredItems = _filteredItems.Concat(apps);
+                    _allApps = AllAppsCommandProvider.Page.GetItems();
                 }
             }
 
             // Produce a list of everything that matches the current filter.
-            _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
-            RaiseItemsChanged(_filteredItems.Count());
+            _filteredItems = ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem);
+
+            // Produce a list of filtered apps with the appropriate limit
+            if (_allApps is not null)
+            {
+                _filteredApps = ListHelpers.FilterListWithScores<IListItem>(_allApps, SearchText, ScoreTopLevelItem);
+
+                var appResultLimit = AllAppsCommandProvider.TopLevelResultLimit;
+                if (appResultLimit >= 0)
+                {
+                    _filteredApps = _filteredApps.Take(appResultLimit);
+                }
+            }
+
+            RaiseItemsChanged();
         }
     }
 

@@ -49,7 +49,9 @@ namespace Awake.Core
 
         private static DateTimeOffset ExpireAt { get; set; }
 
+        private static readonly CompositeFormat AwakeMinute = CompositeFormat.Parse(Resources.AWAKE_MINUTE);
         private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Resources.AWAKE_MINUTES);
+        private static readonly CompositeFormat AwakeHour = CompositeFormat.Parse(Resources.AWAKE_HOUR);
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
         private static CancellationTokenSource _tokenSource;
@@ -451,7 +453,7 @@ namespace Awake.Core
             Dictionary<string, uint> optionsList = new()
             {
                 { string.Format(CultureInfo.InvariantCulture, AwakeMinutes, 30), 1800 },
-                { string.Format(CultureInfo.InvariantCulture, AwakeHours, 1), 3600 },
+                { string.Format(CultureInfo.InvariantCulture, AwakeHour, 1), 3600 },
                 { string.Format(CultureInfo.InvariantCulture, AwakeHours, 2), 7200 },
             };
             return optionsList;

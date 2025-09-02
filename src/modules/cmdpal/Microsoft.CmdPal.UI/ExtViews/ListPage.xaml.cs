@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -162,11 +163,11 @@ public sealed partial class ListPage : Page,
             if (listViewPeer is not null && li is not null)
             {
                 var notificationText = li.Title;
-                listViewPeer.RaiseNotificationEvent(
-                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.Other,
-                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.MostRecent,
-                    notificationText,
-                    "CommandPaletteSelectedItemChanged");
+
+                UIHelper.AnnounceActionForAccessibility(
+                     ItemsList,
+                     notificationText,
+                     "CommandPaletteSelectedItemChanged");
             }
         }
     }

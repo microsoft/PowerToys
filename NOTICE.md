@@ -1491,6 +1491,7 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
+<<<<<<< HEAD
 - AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
 - AdaptiveCards.Rendering.WinUI3 2.1.0-beta
 - AdaptiveCards.Templating 2.0.5
@@ -1581,3 +1582,52 @@ SOFTWARE.
 - WinUIEx 2.2.0
 - WPF-UI 3.0.5
 - WyHash 1.0.5
+=======
+- AdaptiveCards.ObjectModel.WinUI3
+- AdaptiveCards.Rendering.WinUI3
+- AdaptiveCards.Templating
+- Appium.WebDriver
+- Azure.AI.OpenAI
+- CoenM.ImageSharp.ImageHash
+- CommunityToolkit.Common
+- CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock
+- CommunityToolkit.Mvvm
+- CommunityToolkit.WinUI.Animations
+- CommunityToolkit.WinUI.Collections
+- CommunityToolkit.WinUI.Controls.Primitives
+- CommunityToolkit.WinUI.Controls.Segmented
+- CommunityToolkit.WinUI.Controls.SettingsControls
+- CommunityToolkit.WinUI.Controls.Sizers
+- CommunityToolkit.WinUI.Converters
+- CommunityToolkit.WinUI.Extensions
+- CommunityToolkit.WinUI.UI.Controls.DataGrid
+- CommunityToolkit.WinUI.UI.Controls.Markdown
+- ControlzEx
+- HelixToolkit
+- HelixToolkit.Core.Wpf
+- hyjiacan.pinyin4net
+- Interop.Microsoft.Office.Interop.OneNote
+- LazyCache
+- Mages
+- Markdig.Signed
+- MessagePack
+- ModernWpfUI
+- Moq
+- MSTest
+- NLog
+- NLog.Extensions.Logging
+- NLog.Schema
+- OpenAI
+- ReverseMarkdown
+- ScipBe.Common.Office.OneNote
+- SharpCompress
+- SkiaSharp.Views.WinUI
+- StreamJsonRpc
+- StyleCop.Analyzers
+- UnicodeInformation
+- UnitsNet
+- UTF.Unknown
+- WinUIEx
+- WPF-UI
+- WyHash
+>>>>>>> main
