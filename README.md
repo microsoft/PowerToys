@@ -37,17 +37,17 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.95%22
 [github-current-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.94%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysUserSetup-0.94.0-wix5-x64.exe 
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysUserSetup-0.94.0-wix5-arm64.exe 
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysSetup-0.94.0-wix5-x64.exe 
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysSetup-0.94.0-wix5-arm64.exe
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysUserSetup-0.94.0-x64.exe 
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysUserSetup-0.94.0-arm64.exe 
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysSetup-0.94.0-x64.exe 
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.94.0/PowerToysSetup-0.94.0-arm64.exe
  
 |  Description   | Filename |
 |----------------|----------|
-| Per user - x64       | [PowerToysUserSetup-0.94.0-wix5-x64.exe][ptUserX64] |
-| Per user - ARM64     | [PowerToysUserSetup-0.94.0-wix5-arm64.exe][ptUserArm64] |
-| Machine wide - x64   | [PowerToysSetup-0.94.0-wix5-x64.exe][ptMachineX64] |
-| Machine wide - ARM64 | [PowerToysSetup-0.94.0-wix5-arm64.exe][ptMachineArm64] |
+| Per user - x64       | [PowerToysUserSetup-0.94.0-x64.exe][ptUserX64] |
+| Per user - ARM64     | [PowerToysUserSetup-0.94.0-arm64.exe][ptUserArm64] |
+| Machine wide - x64   | [PowerToysSetup-0.94.0-x64.exe][ptMachineX64] |
+| Machine wide - ARM64 | [PowerToysSetup-0.94.0-arm64.exe][ptMachineArm64] |
 
 This is our preferred method.
 
@@ -102,7 +102,7 @@ For an in-depth look at the latest changes, visit the [release blog](https://aka
 **✨Highlights**
 
  - PowerToys Settings added a Settings search with fuzzy matching, suggestions, a results page, and UX polish to make finding options faster.
- - A comprehensive hotkey conflict detection system was introduced in Settings to surface and help resolve conflicting shortcuts.
+ - A comprehensive hotkey conflict detection system was introduced in Settings to surface and help resolve conflicting shortcuts. Note that the default hotkey settings (Win+Ctrl+Shift+T, Win+Ctrl+V, Win+Ctrl+T, Win+Shift+T) may overlap with existing Windows system shortcuts. This is expected. You can resolve the conflict by assigning different hotkeys.
  - Mouse Utilities added a “Gliding cursor” accessibility feature to Mouse Pointer Crosshairs for single‑button cursor movement and clicking. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
  - The installer was upgraded to WiX 5 after WiX 3 reached end-of-life; this move improved installer security, reliability, and community support.
  - Tons of bug fixes and improvements for Command Palette, including visual updates and new support for filters on ListPages (handy for extension developers).

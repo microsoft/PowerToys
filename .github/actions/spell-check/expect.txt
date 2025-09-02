@@ -1395,6 +1395,7 @@ regkey
 regroot
 regsvr
 REINSTALLMODE
+releaseblog
 reloadable
 Relogger
 remappings
