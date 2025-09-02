@@ -48,9 +48,4 @@ public static class WellKnownKeyChords
     /// Gets the well-known key chord for toggling the pin state. Shortcut: Ctrl+P.
     /// </summary>
     public static KeyChord TogglePin { get; } = KeyChordHelpers.FromModifiers(ctrl: true, vkey: (int)VirtualKey.P);
-
-    /// <summary>
-    /// Gets the well-known key chord for printing. Shortcut: Ctrl+P.
-    /// </summary>
-    public static KeyChord Print { get; } = KeyChordHelpers.FromModifiers(ctrl: true, vkey: (int)VirtualKey.P);
 }
