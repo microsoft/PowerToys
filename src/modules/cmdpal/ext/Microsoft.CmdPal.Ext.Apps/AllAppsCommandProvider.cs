@@ -102,7 +102,7 @@ public partial class AllAppsCommandProvider : CommandProvider
         }
 
         // ... Now, combine those two
-        List<ICommandItem> both = [bestAppMatch, .. nameMatches];
+        List<ICommandItem> both = bestAppMatch is null ? nameMatches : [.. nameMatches, bestAppMatch];
 
         if (both.Count == 1)
         {
