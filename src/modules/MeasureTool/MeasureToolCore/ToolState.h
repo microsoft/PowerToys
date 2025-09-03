@@ -31,7 +31,11 @@ struct CommonState
 
     Measurement::Unit units = Measurement::Unit::Pixel;
 
-    POINT cursorPosSystemSpace = {}; // updated atomically
+    #pragma warning(push)
+    #pragma warning(disable : 4324)
+    alignas(8) POINT cursorPosSystemSpace = {}; // updated atomically
+    #pragma warning(pop)
+    
     std::atomic_bool closeOnOtherMonitors = false;
 
     float GetPhysicalPx2MmRatio(HWND window) const
