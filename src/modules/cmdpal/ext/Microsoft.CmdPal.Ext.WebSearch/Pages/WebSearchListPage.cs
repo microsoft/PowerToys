@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
@@ -88,10 +87,10 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
         ArgumentNullException.ThrowIfNull(query);
 
         var filteredHistoryItems = settingsManager.HistoryItemCount > 0
-            ? ListHelpers.FilterList(historySnapshot, query).OfType<ListItem>()
+            ? ListHelpers.FilterList(historySnapshot, query)
             : [];
 
-        var results = new List<ListItem>();
+        var results = new List<IListItem>();
 
         if (!string.IsNullOrEmpty(query))
         {
