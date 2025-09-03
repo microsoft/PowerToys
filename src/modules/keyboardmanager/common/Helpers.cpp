@@ -136,6 +136,9 @@ namespace Helpers
         {
         case VK_RCONTROL:
         case VK_RMENU:
+        case VK_LWIN:
+        case VK_RWIN:
+        case VK_APPS:
         case VK_NUMLOCK:
         case VK_SNAPSHOT:
         case VK_CANCEL:
