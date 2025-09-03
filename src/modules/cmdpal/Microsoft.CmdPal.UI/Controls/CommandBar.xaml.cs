@@ -10,7 +10,6 @@ using Microsoft.CmdPal.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Input;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -50,7 +49,7 @@ public sealed partial class CommandBar : UserControl,
             return;
         }
 
-        if (message.Element == null)
+        if (message.Element is null)
         {
             _ = DispatcherQueue.TryEnqueue(
                 () =>
@@ -133,6 +132,15 @@ public sealed partial class CommandBar : UserControl,
     private void MoreCommandsButton_Clicked(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
+    }
+
+    /// <summary>
+    /// Sets focus to the "More" button after closing the context menu,
+    /// keeping keyboard navigation intuitive.
+    /// </summary>
+    public void FocusMoreCommandsButton()
+    {
+        MoreCommandsButton?.Focus(FocusState.Programmatic);
     }
 
     private void ContextMenuFlyout_Opened(object sender, object e)

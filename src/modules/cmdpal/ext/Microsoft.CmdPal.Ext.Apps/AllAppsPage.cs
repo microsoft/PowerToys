@@ -6,12 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.State;
@@ -23,13 +20,20 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public sealed partial class AllAppsPage : ListPage
 {
     private readonly Lock _listLock = new();
+    private readonly IAppCache _appCache;
 
     private AppItem[] allApps = [];
     private AppListItem[] unpinnedApps = [];
     private AppListItem[] pinnedApps = [];
 
     public AllAppsPage()
+        : this(AppCache.Instance.Value)
     {
+    }
+
+    public AllAppsPage(IAppCache appCache)
+    {
+        _appCache = appCache ?? throw new ArgumentNullException(nameof(appCache));
         this.Name = Resources.all_apps;
         this.Icon = Icons.AllAppsIcon;
         this.ShowDetails = true;
@@ -63,7 +67,7 @@ public sealed partial class AllAppsPage : ListPage
 
     private void BuildListItems()
     {
-        if (allApps.Length == 0 || AppCache.Instance.Value.ShouldReload())
+        if (allApps.Length == 0 || _appCache.ShouldReload())
         {
             lock (_listLock)
             {
@@ -79,7 +83,7 @@ public sealed partial class AllAppsPage : ListPage
 
                 this.IsLoading = false;
 
-                AppCache.Instance.Value.ResetReloadFlag();
+                _appCache.ResetReloadFlag();
 
                 stopwatch.Stop();
                 Logger.LogTrace($"{nameof(AllAppsPage)}.{nameof(BuildListItems)} took: {stopwatch.ElapsedMilliseconds} ms");
@@ -89,11 +93,11 @@ public sealed partial class AllAppsPage : ListPage
 
     private AppItem[] GetAllApps()
     {
-        var uwpResults = AppCache.Instance.Value.UWPs
+        var uwpResults = _appCache.UWPs
            .Where((application) => application.Enabled)
            .Select(app => app.ToAppItem());
 
-        var win32Results = AppCache.Instance.Value.Win32s
+        var win32Results = _appCache.Win32s
             .Where((application) => application.Enabled && application.Valid)
             .Select(app => app.ToAppItem());
 
@@ -145,7 +149,7 @@ public sealed partial class AllAppsPage : ListPage
         */
         var existingAppItem = allApps.FirstOrDefault(f => f.AppIdentifier == e.AppIdentifier);
 
-        if (existingAppItem != null)
+        if (existingAppItem is not null)
         {
             var appListItem = new AppListItem(existingAppItem, true, e.IsPinned);
 

@@ -17,6 +17,7 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
     {
         Title = string.Empty;
         Subtitle = string.Empty;
+        Icon = Icons.LockIcon;
 
         var isBootedInUefiMode = settings.GetSystemFirmwareType() == FirmwareType.Uefi;
         var hideEmptyRB = settings.HideEmptyRecycleBin();
@@ -57,7 +58,7 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
             }
         }
 
-        if (result == null)
+        if (result is null)
         {
             Command = null;
             Title = string.Empty;

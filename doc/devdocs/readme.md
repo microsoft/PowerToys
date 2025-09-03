@@ -52,7 +52,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 ## Rules
 
 - **Follow the pattern of what you already see in the code.**
-- [Coding style](development/style.md).
+- [Coding style](style.md).
 - Try to package new functionality/components into libraries that have nicely defined interfaces.
 - Package new functionality into classes or refactor existing functionality into a class as you extend the code.
 - When adding new classes/methods/changing existing code, add new unit tests or update the existing tests.
@@ -76,6 +76,7 @@ Once you've discussed your proposed feature/fix/etc. with a team member, and an 
 1. Windows 10 April 2018 Update (version 1803) or newer
 1. Visual Studio Community/Professional/Enterprise 2022 17.4 or newer
 1. A local clone of the PowerToys repository
+1. Enable long paths in Windows (see [Enable Long Paths](https://docs.microsoft.com/windows/win32/fileio/maximum-file-path-limitation#enabling-long-paths-in-windows-10-version-1607-and-later) for details)
 
 ### Install Visual Studio dependencies
 

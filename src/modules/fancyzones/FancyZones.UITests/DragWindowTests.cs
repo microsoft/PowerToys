@@ -372,20 +372,17 @@ namespace UITests_FancyZones
         // launch FancyZones settings page
         private void LaunchFancyZones()
         {
-            if (this.FindAll<NavigationViewItem>("FancyZones").Count == 0)
-            {
-                this.Find<NavigationViewItem>("Windowing & Layouts").Click();
-            }
+            this.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem")).Click();
 
-            this.Find<NavigationViewItem>("FancyZones").Click();
-            this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
+            this.Find<NavigationViewItem>(By.AccessibilityId("FancyZonesNavItem")).Click();
+            this.Find<ToggleSwitch>(By.AccessibilityId("EnableFancyZonesToggleSwitch")).Toggle(true);
 
             this.Session.SetMainWindowSize(WindowSize.Large);
             Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
             this.Scroll(6, "Down"); // Pull the settings page up to make sure the settings are visible
             ZoneBehaviourSettings(TestContext.TestName);
 
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 10000);
+            this.Find<Microsoft.PowerToys.UITest.Button>(By.AccessibilityId("LaunchLayoutEditorButton")).Click(false, 500, 10000);
             this.Session.Attach(PowerToysModule.FancyZone);
 
             // pipeline machine may have an unstable delays, causing the custom layout to be unavailable as we set. then A retry is required.
@@ -403,7 +400,7 @@ namespace UITests_FancyZones
                 this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
                 this.Session.Attach(PowerToysModule.PowerToysSettings);
                 SetupCustomLayouts();
-                this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 5000, 5000);
+                this.Find<Microsoft.PowerToys.UITest.Button>(By.AccessibilityId("LaunchLayoutEditorButton")).Click(false, 5000, 5000);
                 this.Session.Attach(PowerToysModule.FancyZone);
                 this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
 

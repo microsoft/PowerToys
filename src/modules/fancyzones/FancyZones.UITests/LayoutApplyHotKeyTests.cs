@@ -283,8 +283,7 @@ namespace UITests_FancyZones
 
             // Set Hotkey
             this.AttachFancyZonesEditor();
-            var layout = "Grid custom layout";
-            Session.Find<Element>(layout).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            Session.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard)).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             const string key = "0";
             var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
@@ -299,7 +298,7 @@ namespace UITests_FancyZones
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
             Task.Delay(3000).Wait();
             this.AttachFancyZonesEditor();
-            var element = this.Find<Element>(layout);
+            var element = this.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard));
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
@@ -307,7 +306,7 @@ namespace UITests_FancyZones
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
             Task.Delay(3000).Wait();
             this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Grid-9");
+            element = this.Find<Element>(By.AccessibilityId(AccessibilityId.Grid9LayoutCard));
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid-9 is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
@@ -315,7 +314,7 @@ namespace UITests_FancyZones
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
             Task.Delay(3000).Wait();
             this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Canvas custom layout");
+            element = this.Find<Element>(By.AccessibilityId(AccessibilityId.CanvasCustomLayoutCard));
             Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
@@ -424,21 +423,21 @@ namespace UITests_FancyZones
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
             this.AttachFancyZonesEditor();
-            var element = this.Find<Element>("Grid custom layout");
+            var element = this.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard));
             Assert.IsFalse(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
             this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Grid-9");
+            element = this.Find<Element>(By.AccessibilityId(AccessibilityId.Grid9LayoutCard));
             Assert.IsFalse(element.Selected, $"{element.Selected} Grid-9 is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
             this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Canvas custom layout");
+            element = this.Find<Element>(By.AccessibilityId(AccessibilityId.CanvasCustomLayoutCard));
             Assert.IsFalse(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
@@ -453,7 +452,7 @@ namespace UITests_FancyZones
             this.OpenFancyZonesPanel();
 
             this.AttachFancyZonesEditor();
-            var element = this.Find<Element>("Grid custom layout");
+            var element = this.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard));
             element.Click();
             this.CloseFancyZonesEditor();
             this.ExitScopeExe();
@@ -463,8 +462,8 @@ namespace UITests_FancyZones
             this.RestartScopeExe();
             this.OpenFancyZonesPanel();
             this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Grid custom layout");
-            Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
+            element = this.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard));
+            Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
 
             // close the virtual desktop
@@ -483,7 +482,7 @@ namespace UITests_FancyZones
             this.OpenFancyZonesPanel();
 
             this.AttachFancyZonesEditor();
-            var element = this.Find<Element>("Grid custom layout");
+            var element = this.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard));
             element.Click();
             this.CloseFancyZonesEditor();
             this.ExitScopeExe();
@@ -493,7 +492,7 @@ namespace UITests_FancyZones
             this.RestartScopeExe();
             this.OpenFancyZonesPanel();
             this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Grid-9");
+            element = this.Find<Element>(By.AccessibilityId(AccessibilityId.Grid9LayoutCard));
             element.Click();
             this.CloseFancyZonesEditor();
             this.ExitScopeExe();
@@ -502,7 +501,7 @@ namespace UITests_FancyZones
             this.RestartScopeExe();
             this.OpenFancyZonesPanel();
             this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Grid custom layout");
+            element = this.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard));
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.ExitScopeExe();
@@ -523,8 +522,8 @@ namespace UITests_FancyZones
             this.OpenFancyZonesPanel();
 
             this.AttachFancyZonesEditor();
-            this.Find<Element>("Grid custom layout").Click();
-            this.Find<Element>("Grid custom layout").Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            this.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard)).Click();
+            this.Find<Element>(By.AccessibilityId(AccessibilityId.GridCustomLayoutCard)).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             Session.Find<Button>(By.AccessibilityId(AccessibilityId.DeleteLayoutButton)).Click();
             Session.SendKeySequence(Key.Tab, Key.Enter);
 
@@ -619,7 +618,7 @@ namespace UITests_FancyZones
         private void AttachFancyZonesEditor()
         {
             Task.Delay(4000).Wait();
-            this.Find<Button>("Launch layout editor").Click();
+            this.Find<Button>(By.AccessibilityId(AccessibilityId.LaunchLayoutEditorButton)).Click();
 
             Task.Delay(3000).Wait();
             this.Session.Attach(PowerToysModule.FancyZone);

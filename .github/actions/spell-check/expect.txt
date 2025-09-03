@@ -25,11 +25,14 @@ ADMINS
 adml
 admx
 advancedpaste
+advancedpasteui
+advancedpasteuishortcut
 advfirewall
 AFeature
 affordances
 AFX
 AGGREGATABLE
+AHK
 AHybrid
 akv
 ALarger
@@ -40,11 +43,13 @@ ALLINPUT
 Allman
 Allmodule
 ALLOWUNDO
+allpc
 ALLVIEW
 ALPHATYPE
 AModifier
 amr
 ANDSCANS
+animatedvisuals
 Animnate
 ANull
 AOC
@@ -65,6 +70,7 @@ APPMODEL
 APPNAME
 appref
 appsettings
+appsfeatures
 appwindow
 appwiz
 appxpackage
@@ -115,6 +121,7 @@ bigbar
 bigobj
 binlog
 binres
+binskim
 BITMAPFILEHEADER
 bitmapimage
 BITMAPINFO
@@ -163,6 +170,7 @@ callbackptr
 calpwstr
 Cangjie
 CANRENAME
+Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
@@ -255,6 +263,7 @@ Corpor
 cotaskmem
 COULDNOT
 countof
+covrun
 cpcontrols
 cph
 cplusplus
@@ -393,6 +402,7 @@ DString
 DSVG
 DTo
 DUMMYUNIONNAME
+dutil
 DVASPECT
 DVASPECTINFO
 DVD
@@ -568,6 +578,7 @@ GPOCA
 gpp
 gpu
 gradians
+Gridcustomlayout
 GSM
 gtm
 guiddata
@@ -627,6 +638,7 @@ HKCU
 hkey
 HKLM
 HKM
+hkmng
 HKPD
 HKU
 HMD
@@ -635,6 +647,7 @@ hmodule
 hmonitor
 homies
 homljgmgpmcbpjbnjpfijnhipfkiclkd
+HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
@@ -643,7 +656,11 @@ Hostx
 hotfixes
 hotkeycontrol
 HOTKEYF
+hotkeylockmachine
+hotkeyreconnect
 hotkeys
+hotkeyswitch
+hotkeytoggleeasymouse
 hotlight
 hotspot
 HPAINTBUFFER
@@ -656,6 +673,7 @@ HROW
 hsb
 HSCROLL
 hsi
+HSpeed
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -701,9 +719,12 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
+imagetotext
+imagetotextshortcut
 imagingdevices
 ime
 imgflip
+inapp
 inbox
 INCONTACT
 Indo
@@ -757,6 +778,7 @@ istep
 ith
 ITHUMBNAIL
 IUI
+IUWP
 IWIC
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
@@ -786,6 +808,7 @@ keyvault
 KILLFOCUS
 killrunner
 kmph
+kvp
 Kybd
 lastcodeanalysissucceeded
 LASTEXITCODE
@@ -824,6 +847,7 @@ localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
+LOCKMACHINE
 LOCKTYPE
 LOGFONT
 LOGFONTW
@@ -909,6 +933,7 @@ MDL
 mdtext
 mdtxt
 mdwn
+measuretool
 meme
 memicmp
 MENUITEMINFO
@@ -958,6 +983,7 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
+mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -969,6 +995,7 @@ msc
 mscorlib
 msctls
 msdata
+msdia
 MSDL
 MSGFLT
 MSHCTX
@@ -986,6 +1013,7 @@ Mso
 msrc
 msstore
 msvcp
+MT
 MTND
 MULTIPLEUSE
 multizone
@@ -1096,6 +1124,7 @@ NOTSRCCOPY
 NOTSRCERASE
 notwindows
 NOTXORPEN
+nowarn
 NOZORDER
 NPH
 npmjs
@@ -1157,6 +1186,18 @@ PARENTRELATIVEFORADDRESSBAR
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
+pasteashtmlfile
+pasteashtmlfileshortcut
+pasteasjson
+pasteasjsonshortcut
+pasteasmarkdown
+pasteasmarkdownshortcut
+pasteasplaintext
+pasteasplaintextshortcut
+pasteaspngfile
+pasteaspngfileshortcut
+pasteastxtfile
+pasteastxtfileshortcut
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
@@ -1224,6 +1265,7 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1274,6 +1316,7 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
+projitems
 PROPERTYKEY
 Propset
 PROPVARIANT
@@ -1353,6 +1396,7 @@ regkey
 regroot
 regsvr
 REINSTALLMODE
+releaseblog
 reloadable
 Relogger
 remappings
@@ -1364,6 +1408,7 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 reparented
+reparenthotkey
 reparenting
 reportfileaccesses
 requery
@@ -1460,6 +1505,7 @@ SETRULES
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
+settingscard
 SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
@@ -1613,6 +1659,7 @@ STYLECHANGED
 STYLECHANGING
 subkeys
 sublang
+Subdomain
 SUBMODULEUPDATE
 subresource
 Superbar
@@ -1683,6 +1730,7 @@ THH
 THICKFRAME
 THISCOMPONENT
 throughs
+thumbnailhotkey
 TILEDWINDOW
 TILLSON
 timedate
@@ -1697,6 +1745,7 @@ tlb
 tlbimp
 tlc
 TNP
+TOGGLEEASYMOUSE
 Toolhelp
 toolkitconverters
 toolwindow
@@ -1710,14 +1759,17 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
+transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
+Tru
 trl
 trx
 tsa
 tskill
 tstoi
+tweakable
 TWF
 tymed
 TYPEKEYBOARD
@@ -1745,6 +1797,7 @@ uncompilable
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
+unins
 uninstalls
 Uniquifies
 unitconverter
@@ -1824,6 +1877,7 @@ VSINSTALLDIR
 VSM
 vso
 vsonline
+VSpeed
 vstemplate
 vstest
 VSTHRD
@@ -1960,10 +2014,13 @@ XNamespace
 Xoshiro
 XPels
 XPixel
+XPos
 XResource
 xsi
+XSpeed
 XStr
 xstyler
+XTimer
 XUP
 XVIRTUALSCREEN
 xxxxxx
@@ -1973,7 +2030,10 @@ YIncrement
 yinle
 yinyue
 YPels
+YPos
 YResolution
+YSpeed
+YTimer
 YStr
 YVIRTUALSCREEN
 ZEROINIT
