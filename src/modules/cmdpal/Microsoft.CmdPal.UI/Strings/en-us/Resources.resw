@@ -438,7 +438,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="NavigationPaneClosed" xml:space="preserve">
     <value>Navigation pane closed</value>
   </data>
-  <data name="NavigationPageOpened" xml:space="preserve">
+  <data name="NavigationPaneOpened" xml:space="preserve">
     <value>Navigation page opened</value>
   </data>
 </root>

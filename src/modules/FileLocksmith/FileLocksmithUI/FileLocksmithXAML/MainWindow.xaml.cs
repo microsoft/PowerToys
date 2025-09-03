@@ -18,30 +18,16 @@ namespace FileLocksmithUI
         {
             InitializeComponent();
             mainPage.ViewModel.IsElevated = isElevated;
+            SetTitleBar(titleBar);
             ExtendsContentIntoTitleBar = true;
-            SetTitleBar(AppTitleBar);
-            Activated += MainWindow_Activated;
+            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
             AppWindow.SetIcon("Assets/FileLocksmith/Icon.ico");
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             var title = isElevated ? loader.GetString("AppAdminTitle") : loader.GetString("AppTitle");
             Title = title;
-            AppTitleTextBlock.Text = title;
-        }
-
-        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
-        {
-            if (args.WindowActivationState == WindowActivationState.Deactivated)
-            {
-                AppTitleTextBlock.Foreground =
-                    (SolidColorBrush)App.Current.Resources["WindowCaptionForegroundDisabled"];
-            }
-            else
-            {
-                AppTitleTextBlock.Foreground =
-                    (SolidColorBrush)App.Current.Resources["WindowCaptionForeground"];
-            }
+            titleBar.Title = title;
         }
 
         public void Dispose()

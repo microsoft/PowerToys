@@ -123,6 +123,9 @@ public sealed partial class MainWindow : WindowEx,
         _localKeyboardListener = new LocalKeyboardListener();
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
+
+        // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
+        HideWindow();
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -233,9 +236,6 @@ public sealed partial class MainWindow : WindowEx,
     {
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
 
-        // Make sure our HWND is cloaked before any possible window manipulations
-        Cloak();
-
         // Remember, IsIconic == "minimized", which is entirely different state
         // from "show/hide"
         // If we're currently minimized, restore us first, before we reveal
@@ -243,6 +243,9 @@ public sealed partial class MainWindow : WindowEx,
         // which would remain not visible to the user.
         if (PInvoke.IsIconic(hwnd))
         {
+            // Make sure our HWND is cloaked before any possible window manipulations
+            Cloak();
+
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
@@ -481,8 +484,13 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    public void HandleLaunch(AppActivationArguments? activatedEventArgs)
+    public void HandleLaunchNonUI(AppActivationArguments? activatedEventArgs)
     {
+        // LOAD BEARING
+        // Any reading and processing of the activation arguments must be done
+        // synchronously in this method, before it returns. The sending instance
+        // remains blocked until this returns; afterward it may quit, causing
+        // the activation arguments to be lost.
         if (activatedEventArgs is null)
         {
             Summon(string.Empty);
@@ -519,9 +527,26 @@ public sealed partial class MainWindow : WindowEx,
         }
         catch (COMException ex)
         {
+            // https://learn.microsoft.com/en-us/windows/win32/rpc/rpc-return-values
+            const int RPC_S_SERVER_UNAVAILABLE = -2147023174;
+            const int RPC_S_CALL_FAILED = 2147023170;
+
             // Accessing properties activatedEventArgs.Kind and activatedEventArgs.Data might cause COMException
             // if the args are not valid or not passed correctly.
-            Logger.LogError("COM exception when activating the application", ex);
+            if (ex.HResult is RPC_S_SERVER_UNAVAILABLE or RPC_S_CALL_FAILED)
+            {
+                Logger.LogWarning(
+                    $"COM exception (HRESULT {ex.HResult}) when accessing activation arguments. " +
+                    $"This might be due to the calling application not passing them correctly or exiting before we could read them. " +
+                    $"The application will continue running and fall back to showing the Command Palette window.");
+            }
+            else
+            {
+                Logger.LogError(
+                    $"COM exception (HRESULT {ex.HResult}) when activating the application. " +
+                    $"The application will continue running and fall back to showing the Command Palette window.",
+                    ex);
+            }
         }
 
         Summon(string.Empty);
@@ -611,6 +636,20 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HandleSummon(string commandId)
     {
+        if (_ignoreHotKeyWhenFullScreen)
+        {
+            // If we're in full screen mode, ignore the hotkey
+            if (WindowHelper.IsWindowFullscreen())
+            {
+                return;
+            }
+        }
+
+        HandleSummonCore(commandId);
+    }
+
+    private void HandleSummonCore(string commandId)
+    {
         var isRootHotkey = string.IsNullOrEmpty(commandId);
         PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
@@ -634,8 +673,6 @@ public sealed partial class MainWindow : WindowEx,
         // so that we can bind hotkeys to individual commands
         if (!isVisible || !isRootHotkey)
         {
-            Activate();
-
             Summon(commandId);
         }
         else if (isRootHotkey)
@@ -671,15 +708,6 @@ public sealed partial class MainWindow : WindowEx,
                     var hotkeyIndex = (int)wParam.Value;
                     if (hotkeyIndex < _hotkeys.Count)
                     {
-                        if (_ignoreHotKeyWhenFullScreen)
-                        {
-                            // If we're in full screen mode, ignore the hotkey
-                            if (WindowHelper.IsWindowFullscreen())
-                            {
-                                return (LRESULT)IntPtr.Zero;
-                            }
-                        }
-
                         var hotkey = _hotkeys[hotkeyIndex];
                         HandleSummon(hotkey.CommandId);
                     }

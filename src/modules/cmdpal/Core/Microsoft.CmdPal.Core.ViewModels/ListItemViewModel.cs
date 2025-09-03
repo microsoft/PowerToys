@@ -49,13 +49,23 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
         UpdateTags(li.Tags);
 
-        TextToSuggest = li.TextToSuggest;
-        UpdateProperty(nameof(TextToSuggest));
-
         Section = li.Section ?? string.Empty;
+
         UpdateProperty(nameof(Section));
 
-        var extensionDetails = li.Details;
+        UpdateAccessibleName();
+    }
+
+    public override void SlowInitializeProperties()
+    {
+        base.SlowInitializeProperties();
+        var model = Model.Unsafe;
+        if (model is null)
+        {
+            return;
+        }
+
+        var extensionDetails = model.Details;
         if (extensionDetails is not null)
         {
             Details = new(extensionDetails, PageContext);
@@ -64,7 +74,8 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
             UpdateProperty(nameof(HasDetails));
         }
 
-        UpdateAccessibleName();
+        TextToSuggest = model.TextToSuggest;
+        UpdateProperty(nameof(TextToSuggest));
     }
 
     protected override void FetchProperty(string propertyName)

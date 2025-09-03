@@ -91,7 +91,7 @@ public partial class App : Application
         AppWindow = new MainWindow();
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
-        ((MainWindow)AppWindow).HandleLaunch(activatedEventArgs);
+        ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
     }
 
     /// <summary>
