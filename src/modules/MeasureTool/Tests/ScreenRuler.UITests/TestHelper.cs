@@ -69,14 +69,14 @@ namespace ScreenRuler.UITests
         /// </summary>
         public static void LaunchFromSetting(UITestBase testBase)
         {
-            var screenRulers = testBase.Session.FindAll<NavigationViewItem>(By.AccessibilityId("Shell_Nav_ScreenRuler"));
+            var screenRulers = testBase.Session.FindAll<NavigationViewItem>(By.AccessibilityId("ScreenRulerNavItem"));
 
             if (screenRulers.Count == 0)
             {
-                testBase.Session.Find<NavigationViewItem>(By.AccessibilityId("Shell_Nav_TopLevelSystemTools"), 5000).Click(msPostAction: 500);
+                testBase.Session.Find<NavigationViewItem>(By.AccessibilityId("SystemToolsNavItem"), 5000).Click(msPostAction: 500);
             }
 
-            testBase.Session.Find<NavigationViewItem>(By.AccessibilityId("Shell_Nav_ScreenRuler"), 5000).Click(msPostAction: 500);
+            testBase.Session.Find<NavigationViewItem>(By.AccessibilityId("ScreenRulerNavItem"), 5000).Click(msPostAction: 500);
         }
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace ScreenRuler.UITests
 
             return spacingType switch
             {
-                "Spacing" => Regex.IsMatch(clipboardText, @"\d+\s*[×x]\s*\d+"),
+                "Spacing" => Regex.IsMatch(clipboardText, @"\d+\s*[ï¿½x]\s*\d+"),
                 "Horizontal Spacing" or "Vertical Spacing" => Regex.IsMatch(clipboardText, @"^\d+$"),
                 _ => false,
             };
@@ -420,8 +420,8 @@ namespace ScreenRuler.UITests
             string clipboardText = GetClipboardText();
             Assert.IsFalse(string.IsNullOrEmpty(clipboardText), "Clipboard should contain measurement data");
             Assert.IsTrue(
-                clipboardText.Contains("100 × 100"),
-                $"Clipboard should contain '100 × 100', but contained: '{clipboardText}'");
+                clipboardText.Contains("100 ï¿½ 100"),
+                $"Clipboard should contain '100 ï¿½ 100', but contained: '{clipboardText}'");
 
             // Cleanup - this will handle session attachment properly
             CloseScreenRulerUI(testBase);
