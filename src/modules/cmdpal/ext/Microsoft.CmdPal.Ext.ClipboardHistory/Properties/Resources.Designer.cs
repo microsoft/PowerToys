@@ -115,7 +115,7 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Delete Item?.
+        ///   Looks up a localized string similar to Delete item?.
         /// </summary>
         public static string delete_confirmation_title {
             get {
