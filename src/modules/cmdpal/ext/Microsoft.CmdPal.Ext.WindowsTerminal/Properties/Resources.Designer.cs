@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All channels.
+        /// </summary>
+        internal static string all_channels {
+            get {
+                return ResourceManager.GetString("all_channels", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows Terminal Profiles.
         /// </summary>
         internal static string extension_name {
@@ -133,6 +142,24 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Preferred channel.
+        /// </summary>
+        internal static string preferred_channel {
+            get {
+                return ResourceManager.GetString("preferred_channel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preferred channel.
+        /// </summary>
+        internal static string preferred_channel_description {
+            get {
+                return ResourceManager.GetString("preferred_channel_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows Terminal Profiles.
         /// </summary>
         internal static string profiles_list_page_name {
@@ -156,6 +183,24 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         internal static string run_terminal_failed {
             get {
                 return ResourceManager.GetString("run_terminal_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use last selected channel.
+        /// </summary>
+        internal static string save_last_selected_channel {
+            get {
+                return ResourceManager.GetString("save_last_selected_channel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Synchronize preferred terminal with the filter.
+        /// </summary>
+        internal static string save_last_selected_channel_description {
+            get {
+                return ResourceManager.GetString("save_last_selected_channel_description", resourceCulture);
             }
         }
         

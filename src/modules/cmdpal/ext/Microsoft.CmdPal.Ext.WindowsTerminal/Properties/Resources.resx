@@ -158,4 +158,19 @@
   <data name="list_item_title" xml:space="preserve">
     <value>Open Windows Terminal Profiles</value>
   </data>
+  <data name="preferred_channel" xml:space="preserve">
+    <value>Preferred channel</value>
+  </data>
+  <data name="preferred_channel_description" xml:space="preserve">
+    <value>Preferred channel</value>
+  </data>
+  <data name="all_channels" xml:space="preserve">
+    <value>All channels</value>
+  </data>
+  <data name="save_last_selected_channel" xml:space="preserve">
+    <value>Use last selected channel</value>
+  </data>
+  <data name="save_last_selected_channel_description" xml:space="preserve">
+    <value>Synchronize preferred terminal with the filter</value>
+  </data>
 </root>

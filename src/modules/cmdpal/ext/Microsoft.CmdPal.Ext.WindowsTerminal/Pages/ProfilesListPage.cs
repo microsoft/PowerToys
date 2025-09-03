@@ -3,22 +3,44 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Pages;
 
-internal sealed partial class ProfilesListPage : ListPage
+internal sealed partial class ProfilesListPage : ListPage, INotifyItemsChanged
 {
+    event TypedEventHandler<object, IItemsChangedEventArgs> INotifyItemsChanged.ItemsChanged
+    {
+        add
+        {
+            // Invoked every time a page is loaded
+            ItemsChanged += value;
+            if (!initialized)
+            {
+                Initialize();
+            }
+
+            // Ensure the correct filter is selected
+            SelectTerminalFilter();
+        }
+        remove => ItemsChanged -= value;
+    }
+
     private readonly TerminalQuery _terminalQuery = new();
     private readonly SettingsManager _terminalSettings;
 
     private bool showHiddenProfiles;
     private bool openNewTab;
     private bool openQuake;
+
+    private bool initialized;
+    private TerminalChannelFilters _terminalFilters;
 
     public ProfilesListPage(SettingsManager terminalSettings)
     {
@@ -27,14 +49,23 @@ internal sealed partial class ProfilesListPage : ListPage
         _terminalSettings = terminalSettings;
     }
 
-#pragma warning disable SA1108
-    public List<ListItem> Query()
+    private List<ListItem> Query()
     {
+        if (!initialized)
+        {
+            Initialize();
+        }
+
         showHiddenProfiles = _terminalSettings.ShowHiddenProfiles;
         openNewTab = _terminalSettings.OpenNewTab;
         openQuake = _terminalSettings.OpenQuake;
 
         var profiles = _terminalQuery.GetProfiles();
+
+        if (!_terminalFilters.IsAllSelected)
+        {
+            profiles = profiles.Where(profile => profile.Terminal.AppUserModelId == Filters.CurrentFilterId);
+        }
 
         var result = new List<ListItem>();
 
@@ -52,12 +83,49 @@ internal sealed partial class ProfilesListPage : ListPage
                 MoreCommands = [
                     new CommandContextItem(new LaunchProfileAsAdminCommand(profile.Terminal.AppUserModelId, profile.Name, openNewTab, openQuake)),
                 ],
-#pragma warning restore SA1108
             });
         }
 
         return result;
     }
 
-    public override IListItem[] GetItems() => Query().ToArray();
+    private void Initialize()
+    {
+        var terminals = _terminalQuery.GetTerminals().ToList();
+
+        _terminalFilters = new TerminalChannelFilters(terminals);
+        _terminalFilters.PropChanged += TerminalFiltersOnPropChanged;
+        SelectTerminalFilter();
+        Filters = _terminalFilters;
+        initialized = true;
+    }
+
+    private void SelectTerminalFilter()
+    {
+        // Select the preferred channel if it exists; we always select the preferred channel,
+        // but user have an option to save the preferred channel when he changes the filter
+        if (!string.IsNullOrWhiteSpace(_terminalSettings.PreferredChannelAppId))
+        {
+            if (_terminalFilters.ContainsFilter(_terminalSettings.PreferredChannelAppId))
+            {
+                _terminalFilters.CurrentFilterId = _terminalSettings.PreferredChannelAppId;
+            }
+        }
+        else
+        {
+            _terminalFilters.CurrentFilterId = TerminalChannelFilters.AllTerminalsFilterId;
+        }
+    }
+
+    private void TerminalFiltersOnPropChanged(object sender, IPropChangedEventArgs args)
+    {
+        RaiseItemsChanged();
+        if (_terminalSettings.SaveLastSelectedChannel)
+        {
+            _terminalSettings.PreferredChannelAppId = _terminalFilters.CurrentFilterId;
+            _terminalSettings.SaveSettings();
+        }
+    }
+
+    public override IListItem[] GetItems() => [.. Query()];
 }
