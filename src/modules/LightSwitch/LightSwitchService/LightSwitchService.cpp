@@ -142,6 +142,9 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     // Initialize settings system
     LightSwitchSettings::instance().InitFileWatcher();
 
+    // Open the manual override event created by the module interface
+    HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWEROYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+
     auto applyTheme = [](int nowMinutes, int lightMinutes, int darkMinutes, const auto& settings) {
         bool isLightActive = false;
 
@@ -166,7 +169,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             if (settings.changeApps && !isAppsCurrentlyLight)
                 SetAppsTheme(true);
         }
-        else if (!isLightActive)
+        else
         {
             if (settings.changeSystem && isSystemCurrentlyLight)
                 SetSystemTheme(false);
@@ -212,10 +215,34 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                    settings.darkTime % 60);
         OutputDebugString(msg);
 
-        // Apply theme logic
+        // --- Manual override check ---
+        bool manualOverrideActive = false;
+        if (hManualOverride)
+        {
+            manualOverrideActive = (WaitForSingleObject(hManualOverride, 0) == WAIT_OBJECT_0);
+        }
+
+        if (manualOverrideActive)
+        {
+            // Did we hit a scheduled boundary? (reset override at boundary)
+            if (nowMinutes == (settings.lightTime + settings.offset) % 1440 ||
+                nowMinutes == (settings.darkTime + settings.offset) % 1440)
+            {
+                ResetEvent(hManualOverride);
+                OutputDebugString(L"[LightSwitchService] Manual override cleared at boundary\n");
+            }
+            else
+            {
+                OutputDebugString(L"[LightSwitchService] Skipping schedule due to manual override\n");
+                goto sleep_until_next_minute;
+            }
+        }
+
+        // Apply theme logic (only runs if no manual override or override just cleared)
         applyTheme(nowMinutes, settings.lightTime + settings.offset, settings.darkTime + settings.offset, settings);
 
         // Sleep until next minute, wake early if stop/parent dies
+    sleep_until_next_minute:
         GetLocalTime(&st);
         int msToNextMinute = (60 - st.wSecond) * 1000 - st.wMilliseconds;
         if (msToNextMinute < 50)
@@ -228,11 +255,14 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             break;
     }
 
+    if (hManualOverride)
+        CloseHandle(hManualOverride);
     if (hParent)
         CloseHandle(hParent);
 
     return 0;
 }
+
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {

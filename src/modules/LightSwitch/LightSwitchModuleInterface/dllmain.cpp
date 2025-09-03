@@ -97,6 +97,7 @@ private:
     HANDLE m_process{ nullptr };
     HANDLE m_force_light_event_handle;
     HANDLE m_force_dark_event_handle;
+    HANDLE m_manual_override_event_handle;
 
     static const constexpr int NUM_DEFAULT_HOTKEYS = 4;
 
@@ -111,6 +112,7 @@ public:
 
         m_force_light_event_handle = CreateDefaultEvent(L"POWEROYS_LIGHTSWITCH_FORCE_LIGHT");
         m_force_dark_event_handle = CreateDefaultEvent(L"POWEROYS_LIGHTSWITCH_FORCE_DARK");
+        m_manual_override_event_handle = CreateDefaultEvent(L"POWEROYS_LIGHTSWITCH_MANUAL_OVERRIDE");
 
         init_settings();
     };
@@ -386,6 +388,9 @@ public:
                 TerminateProcess(m_process, 0);
             }
 
+            CloseHandle(m_manual_override_event_handle);
+            m_manual_override_event_handle = nullptr;
+
             CloseHandle(m_process);
             m_process = nullptr;
         }
@@ -453,6 +458,12 @@ public:
                 if (g_settings.m_changeApps)
                 {
                     SetAppsTheme(!GetCurrentAppsTheme());
+                }
+
+                if (m_manual_override_event_handle)
+                {
+                    SetEvent(m_manual_override_event_handle);
+                    Logger::debug(L"[Light Switch] Manual override event set");
                 }
             }
 
