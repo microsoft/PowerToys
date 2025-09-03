@@ -41,6 +41,7 @@ void SetSystemTheme(bool mode)
     }
 }
 
+// Can think of this as "is the current theme light?"
 bool GetCurrentSystemTheme()
 {
     HKEY hKey;

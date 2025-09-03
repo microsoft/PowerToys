@@ -156,18 +156,21 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             isLightActive = (nowMinutes >= lightMinutes || nowMinutes < darkMinutes);
         }
 
+        bool isSystemCurrentlyLight = GetCurrentSystemTheme();
+        bool isAppsCurrentlyLight = GetCurrentAppsTheme();
+
         if (isLightActive)
         {
-            if (settings.changeSystem)
+            if (settings.changeSystem && !isSystemCurrentlyLight)
                 SetSystemTheme(true);
-            if (settings.changeApps)
+            if (settings.changeApps && !isAppsCurrentlyLight)
                 SetAppsTheme(true);
         }
-        else
+        else if (!isLightActive)
         {
-            if (settings.changeSystem)
+            if (settings.changeSystem && isSystemCurrentlyLight)
                 SetSystemTheme(false);
-            if (settings.changeApps)
+            if (settings.changeApps && isAppsCurrentlyLight)
                 SetAppsTheme(false);
         }
     };
