@@ -14,13 +14,13 @@
 namespace winrt
 {
     using namespace winrt::Windows::System;
-    using namespace winrt::Windows::UI::Composition;
+    using namespace winrt::Microsoft::UI::Composition;
 }
 
 namespace ABI
 {
     using namespace ABI::Windows::System;
-    using namespace ABI::Windows::UI::Composition::Desktop;
+    using namespace ABI::Microsoft::UI::Composition::Desktop;
 }
 #endif
 
@@ -844,8 +844,8 @@ private:
     winrt::CompositionCommitBatch m_batch{ nullptr };
     winrt::SpriteVisual m_backdrop{ nullptr };
     winrt::CompositionSpriteShape m_circleShape{ nullptr };
-    winrt::Windows::UI::Color m_backgroundColor = FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR;
-    winrt::Windows::UI::Color m_spotlightColor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR;
+    winrt::Microsoft::UI::Color m_backgroundColor = FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR;
+    winrt::Microsoft::UI::Color m_spotlightColor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR;
     winrt::ScalarKeyFrameAnimation m_animation{ nullptr };
 };
 

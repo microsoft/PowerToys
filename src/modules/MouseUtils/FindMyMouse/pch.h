@@ -7,11 +7,12 @@
 #include <hIdUsage.h>
 
 #ifdef COMPOSITION
-#include <windows.ui.composition.interop.h>
+#include <microsoft.ui.composition.interop.h>
 #include <DispatcherQueue.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.UI.Composition.Desktop.h>
+#include <winrt/Microsoft.UI.Composition.h>
+#include <winrt/Microsoft.UI.h>
 #endif
 
 #include <winrt/Windows.Foundation.Collections.h>
