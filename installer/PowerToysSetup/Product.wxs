@@ -191,6 +191,11 @@
       <Custom Action="UnRegisterCmdPalPackage" Before="RemoveFiles">
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
+      <!-- Delete *.dsc.json files during uninstall (best-effort) -->
+      <Custom Action="SetDeleteDscJsonFilesParam" Before="DeleteDscJsonFiles" />
+      <Custom Action="DeleteDscJsonFiles" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
       <Custom Action="UnsetAdvancedPasteAPIKey" Before="RemoveFiles">
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
@@ -251,6 +256,11 @@
     <CustomAction Id="SetUnApplyModulesRegistryChangeSetsParam"
                     Property="UnApplyModulesRegistryChangeSets"
                     Value="[INSTALLFOLDER]" />
+
+  <!-- Pass install folder to deferred delete action -->
+  <CustomAction Id="SetDeleteDscJsonFilesParam"
+          Property="DeleteDscJsonFiles"
+          Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetInstallDSCModuleParam"
                     Property="InstallDSCModule"
@@ -324,6 +334,15 @@
                   BinaryKey="PTCustomActions"
                   DllEntry="UninstallDSCModuleCA"
                    />
+
+  <!-- Best-effort delete of *.dsc.json during uninstall -->
+  <CustomAction Id="DeleteDscJsonFiles"
+          Return="ignore"
+          Impersonate="yes"
+          Execute="deferred"
+          BinaryKey="PTCustomActions"
+          DllEntry="DeleteDscJsonFilesCA"
+           />
 
       <CustomAction Id="UninstallServicesTask"
                     Return="ignore"
