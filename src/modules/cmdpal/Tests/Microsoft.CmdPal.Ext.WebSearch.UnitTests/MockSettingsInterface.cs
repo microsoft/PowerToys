@@ -16,11 +16,11 @@ public class MockSettingsInterface : ISettingsInterface
 
     public bool GlobalIfURI { get; set; }
 
-    public uint HistoryItemCount { get; set; }
+    public int HistoryItemCount { get; set; }
 
     public IReadOnlyList<HistoryItem> HistoryItems => _historyItems;
 
-    public MockSettingsInterface(uint historyItemCount = 0, bool globalIfUri = true, List<HistoryItem> mockHistory = null)
+    public MockSettingsInterface(int historyItemCount = 0, bool globalIfUri = true, List<HistoryItem> mockHistory = null)
     {
         _historyItems = mockHistory ?? new List<HistoryItem>();
         GlobalIfURI = globalIfUri;

@@ -18,12 +18,15 @@ internal sealed class HistoryStore
     private readonly List<HistoryItem> _items = [];
     private readonly Lock _lock = new();
 
-    private uint _capacity;
+    private int _capacity;
 
     public event EventHandler? Changed;
 
-    public HistoryStore(string filePath, uint capacity)
+    public HistoryStore(string filePath, int capacity)
     {
+        ArgumentNullException.ThrowIfNull(filePath);
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
+
         _filePath = filePath;
         _capacity = capacity;
 
@@ -56,8 +59,10 @@ internal sealed class HistoryStore
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    public void SetCapacity(uint capacity)
+    public void SetCapacity(int capacity)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
+
         bool trimmed;
         lock (_lock)
         {
@@ -80,7 +85,7 @@ internal sealed class HistoryStore
         var max = _capacity;
         if (_items.Count > max)
         {
-            _items.RemoveRange(0, (int)(_items.Count - max));
+            _items.RemoveRange(0, _items.Count - max);
             return true;
         }
 

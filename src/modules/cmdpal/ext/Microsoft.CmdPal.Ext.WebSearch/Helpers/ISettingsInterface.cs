@@ -14,7 +14,7 @@ public interface ISettingsInterface
 
     public bool GlobalIfURI { get; }
 
-    public uint HistoryItemCount { get; }
+    public int HistoryItemCount { get; }
 
     public IReadOnlyList<HistoryItem> HistoryItems { get; }
 

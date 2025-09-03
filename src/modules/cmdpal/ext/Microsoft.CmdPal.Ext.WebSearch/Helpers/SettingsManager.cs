@@ -49,7 +49,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool GlobalIfURI => _globalIfURI.Value;
 
-    public uint HistoryItemCount => uint.TryParse(_historyItemCount.Value, out var value) ? value : 0;
+    public int HistoryItemCount => int.TryParse(_historyItemCount.Value, out var value) && value >= 0 ? value : 0;
 
     public IReadOnlyList<HistoryItem> HistoryItems => _history.HistoryItems;
 
