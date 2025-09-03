@@ -39,7 +39,10 @@
                         Name="MeasureToolActivationShortcut"
                         x:Uid="MeasureTool_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl AutomationProperties.AutomationId="Shortcut_ScreenRuler" MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="Shortcut_ScreenRuler"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="MeasureToolDefaultMeasureStyle" x:Uid="MeasureTool_DefaultMeasureStyle">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.DefaultMeasureStyle, Mode=TwoWay}">
