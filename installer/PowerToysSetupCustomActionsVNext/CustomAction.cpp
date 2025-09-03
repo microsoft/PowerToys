@@ -3,6 +3,7 @@
 #include "RcResource.h"
 #include <ProjectTelemetry.h>
 #include <spdlog/sinks/base_sink.h>
+#include <filesystem>
 
 #include "../../src/common/logger/logger.h"
 #include "../../src/common/utils/gpo.h"
@@ -232,7 +233,9 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
         auto action = [&commandLine](HANDLE userToken)
         {
-            STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
+            STARTUPINFO startupInfo = { 0 };
+            startupInfo.cb = sizeof(STARTUPINFO);
+            startupInfo.wShowWindow = SW_SHOWNORMAL;
             PROCESS_INFORMATION processInformation;
 
             PVOID lpEnvironment = NULL;
@@ -271,7 +274,9 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     }
     else
     {
-        STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
+        STARTUPINFO startupInfo = { 0 };
+        startupInfo.cb = sizeof(STARTUPINFO);
+        startupInfo.wShowWindow = SW_SHOWNORMAL;
 
         PROCESS_INFORMATION processInformation;
 
@@ -404,6 +409,12 @@ UINT __stdcall GenerateDscManifestCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
     std::wstring installationFolder;
+    std::wstring exePath;
+    std::wstring args;
+    std::wstring commandLine;
+    STARTUPINFO startupInfo = { 0 };
+    PROCESS_INFORMATION processInformation = { 0 };
+    DWORD exitCode = 0;
 
     hr = WcaInitialize(hInstall, "GenerateDscManifest");
     ExitOnFailure(hr, "Failed to initialize");
@@ -412,15 +423,15 @@ UINT __stdcall GenerateDscManifestCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Failed to get installFolder.");
 
     // Build executable path: <INSTALLFOLDER>\PowerToys.DSC.exe
-    std::wstring exePath = installationFolder + L"\\PowerToys.DSC.exe";
+    exePath = installationFolder + L"\\PowerToys.DSC.exe";
 
     // Build args: manifest --resource settings --outputDir "<INSTALLFOLDER>"
-    std::wstring args = L"manifest --resource settings --outputDir \"" + installationFolder + L"\"";
-    std::wstring commandLine = L"\"" + exePath + L"\" " + args;
+    args = L"manifest --resource settings --outputDir \"" + installationFolder + L"\"";
+    commandLine = L"\"" + exePath + L"\" " + args;
 
     // Try to start the process and wait for it to finish; ignore failures (best-effort)
-    STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO), .wShowWindow = SW_HIDE };
-    PROCESS_INFORMATION processInformation{};
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.wShowWindow = SW_HIDE;
 
     if (!CreateProcess(
             nullptr,
@@ -442,7 +453,6 @@ UINT __stdcall GenerateDscManifestCA(MSIHANDLE hInstall)
     // Wait for completion
     WaitForSingleObject(processInformation.hProcess, INFINITE);
 
-    DWORD exitCode = 0;
     if (GetExitCodeProcess(processInformation.hProcess, &exitCode))
     {
         if (exitCode != 0)
@@ -543,7 +553,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
         const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / (get_product_version(false) + L".0");
 
         std::error_code errorCode;
-        fs::create_directories(modulesPath, errorCode);
+        std::filesystem::create_directories(modulesPath, errorCode);
         if (errorCode)
         {
             hr = E_FAIL;
@@ -552,7 +562,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
-            fs::copy_file(fs::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, fs::copy_options::overwrite_existing, errorCode);
+            std::filesystem::copy_file(std::filesystem::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, std::filesystem::copy_options::overwrite_existing, errorCode);
 
             if (errorCode)
             {
@@ -600,7 +610,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
-            fs::remove(versionedModulePath / filename, errorCode);
+            std::filesystem::remove(versionedModulePath / filename, errorCode);
 
             if (errorCode)
             {
@@ -611,7 +621,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *modulePath : {&versionedModulePath, &powerToysModulePath})
         {
-            fs::remove(*modulePath, errorCode);
+            std::filesystem::remove(*modulePath, errorCode);
 
             if (errorCode)
             {
