@@ -270,20 +270,19 @@
                 <tkcontrols:Case Value="Selection">
                   <Grid animations:Implicit.HideAnimations="{StaticResource HideTransitions}" animations:Implicit.ShowAnimations="{StaticResource ShowTransitions}">
                     <Grid.RowDefinitions>
-                      <RowDefinition Height="*" />
                       <RowDefinition Height="Auto" />
+                      <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <ComboBox
-                                            x:Name="CityComboBox"
-                                            Margin="0,0,0,8"
-                                            HorizontalAlignment="Stretch"
-                                            DisplayMemberPath="Display"
-                                            Header="Search for a city"
-                                            ItemsSource="{x:Bind ViewModel.Cities, Mode=OneWay}"
-                                            PlaceholderText="Select city"
-                                            SelectedItem="{x:Bind ViewModel.SelectedCity, Mode=TwoWay}">
-                    </ComboBox>
-                    <TextBlock Grid.Row="1">
+                    <AutoSuggestBox x:Name="CityAutoSuggestBox"
+                      Header="Search for a city"
+                      PlaceholderText="Type to search for a city"
+                      Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}"
+                      ItemsSource="{x:Bind ViewModel.Cities, Mode=OneWay}"
+                      TextMemberPath="Display"
+                      DisplayMemberPath="Display"
+                      TextChanged="CityAutoSuggestBox_TextChanged"
+                      SuggestionChosen="CityAutoSuggestBox_SuggestionChosen" />
+                    <TextBlock Grid.Row="1" VerticalAlignment="Bottom">
                       <Run Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />
                     </TextBlock>
                   </Grid>

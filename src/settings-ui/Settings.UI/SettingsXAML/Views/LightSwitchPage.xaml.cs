@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PowerToys.GPOWrapper;
 using Settings.UI.Library;
+using Settings.UI.Library.Helpers;
 using Windows.Devices.Geolocation;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -294,6 +295,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void SyncLocationButton_Click(object sender, RoutedEventArgs e)
         {
             await LocationDialog.ShowAsync();
+        }
+
+        private void CityAutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                string query = sender.Text.ToLower(CultureInfo.CurrentCulture);
+
+                // Filter your cities (assuming ViewModel.Cities is a List<City>)
+                var filtered = ViewModel.Cities
+                    .Where(c => c.Display.Contains(query, StringComparison.CurrentCultureIgnoreCase))
+                    .ToList();
+
+                sender.ItemsSource = filtered;
+            }
+        }
+
+        private void CityAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            if (args.SelectedItem is City city)
+            {
+                ViewModel.SelectedCity = city;
+            }
         }
     }
 }

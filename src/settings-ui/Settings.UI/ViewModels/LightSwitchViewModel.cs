@@ -289,6 +289,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private string _searchText = string.Empty;
+
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (_searchText != value)
+                {
+                    _searchText = value;
+                    NotifyPropertyChanged();
+
+                    // optional: clear SelectedCity if text no longer matches
+                    if (SelectedCity != null && !SelectedCity.Display.Equals(_searchText, StringComparison.OrdinalIgnoreCase))
+                    {
+                        SelectedCity = null;
+                    }
+                }
+            }
+        }
+
         private string _cityTimesText = "Please sync your location";
 
         public string CityTimesText
