@@ -60,6 +60,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await ShowEnableDialogAsync();
         }
 
+        private void SaveAIConfigButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Force save the current AI service configuration
+            ViewModel.SaveAIConfiguration();
+        }
+
         private async Task ShowEnableDialogAsync()
         {
             await EnableAIDialog.ShowAsync();

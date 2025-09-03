@@ -49,6 +49,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _onlineAIModelsGpoRuleConfiguration;
         private bool _onlineAIModelsDisallowedByGPO;
         private bool _isEnabled;
+        private ObservableCollection<AdvancedPasteAIServiceOption> _aiServiceOptions;
+        private AdvancedPasteAIServiceOption _selectedAIService;
+        private ObservableCollection<AdvancedPasteAIServiceParameter> _currentAIServiceParameters;
 
         private Func<string, int> SendConfigMSG { get; }
 
@@ -76,6 +79,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
 
             InitializeEnabledValue();
+
+            LoadAIServiceOptionsAndDefaults();
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -183,6 +188,457 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<AdvancedPasteCustomAction> CustomActions => _customActions;
 
         public AdvancedPasteAdditionalActions AdditionalActions => _additionalActions;
+
+        public bool IsAIServiceEnabled => SelectedAIService?.Id != "Disabled";
+
+        public ObservableCollection<AdvancedPasteAIServiceOption> AIServiceOptions
+        {
+            get => _aiServiceOptions;
+            set
+            {
+                if (_aiServiceOptions != value)
+                {
+                    _aiServiceOptions = value;
+                    OnPropertyChanged(nameof(AIServiceOptions));
+                }
+            }
+        }
+
+        public AdvancedPasteAIServiceOption SelectedAIService
+        {
+            get => _selectedAIService;
+            set
+            {
+                if (_selectedAIService != value)
+                {
+                    _selectedAIService = value;
+                    OnPropertyChanged(nameof(SelectedAIService));
+                    OnPropertyChanged(nameof(IsAIServiceEnabled));
+                    UpdateCurrentAIServiceParameters();
+                }
+            }
+        }
+
+        public ObservableCollection<AdvancedPasteAIServiceParameter> CurrentAIServiceParameters
+        {
+            get => _currentAIServiceParameters;
+            set
+            {
+                if (_currentAIServiceParameters != value)
+                {
+                    _currentAIServiceParameters = value;
+                    OnPropertyChanged(nameof(CurrentAIServiceParameters));
+                }
+            }
+        }
+
+        private void LoadAIServiceOptionsAndDefaults()
+        {
+            AIServiceOptions = new ObservableCollection<AdvancedPasteAIServiceOption>
+            {
+                new AdvancedPasteAIServiceOption { Id = "AzureOpenAI", DisplayName = "Azure OpenAI" },
+                new AdvancedPasteAIServiceOption { Id = "OpenAI", DisplayName = "OpenAI" },
+                new AdvancedPasteAIServiceOption { Id = "Mistral", DisplayName = "Mistral" },
+                new AdvancedPasteAIServiceOption { Id = "GoogleGemini", DisplayName = "Google Gemini" },
+                new AdvancedPasteAIServiceOption { Id = "HuggingFace", DisplayName = "Hugging Face" },
+                new AdvancedPasteAIServiceOption { Id = "AzureAIInference", DisplayName = "Azure AI Inference" },
+                new AdvancedPasteAIServiceOption { Id = "Ollama", DisplayName = "Ollama" },
+                new AdvancedPasteAIServiceOption { Id = "Anthropic", DisplayName = "Anthropic Claude" },
+                new AdvancedPasteAIServiceOption { Id = "AmazonBedrock", DisplayName = "Amazon Bedrock" },
+                new AdvancedPasteAIServiceOption { Id = "ONNX", DisplayName = "Hugging Face" },
+                new AdvancedPasteAIServiceOption { Id = "Other", DisplayName = "Other" },
+            };
+            SelectedAIService = AIServiceOptions.First();
+            UpdateCurrentAIServiceParameters();
+        }
+
+        private void UpdateCurrentAIServiceParameters()
+        {
+            var parameters = new ObservableCollection<AdvancedPasteAIServiceParameter>();
+            switch (SelectedAIService?.Id)
+            {
+                case "Disabled":
+                    // No parameters needed for disabled state
+                    break;
+
+                case "OpenAI":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "apiKey",
+                        DisplayName = "API Key",
+                        Type = "password",
+                        Description = "Your OpenAI API key from https://platform.openai.com/api-keys",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model",
+                        Type = "text",
+                        Description = "OpenAI model (e.g., gpt-4o, gpt-4-turbo, gpt-3.5-turbo)",
+                    });
+                    break;
+
+                case "AzureOpenAI":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "endpoint",
+                        DisplayName = "Endpoint",
+                        Type = "text",
+                        Description = "Azure OpenAI endpoint URL (e.g., https://your-resource.openai.azure.com/)",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "apiKey",
+                        DisplayName = "API Key",
+                        Type = "password",
+                        Description = "Azure OpenAI API key",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "deploymentName",
+                        DisplayName = "Deployment Name",
+                        Type = "text",
+                        Description = "Azure OpenAI deployment name",
+                    });
+                    break;
+
+                case "AzureAIInference":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "apiKey",
+                        DisplayName = "API Key",
+                        Type = "password",
+                        Description = "Azure AI Inference API key",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model ID",
+                        Type = "text",
+                        Description = "Model identifier",
+                    });
+                    break;
+
+                case "Anthropic":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model",
+                        Type = "text",
+                        Description = "Claude model (e.g., claude-3-5-sonnet-20241022, claude-3-haiku-20240307)",
+                    });
+                    break;
+
+                case "GoogleGemini":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "apiKey",
+                        DisplayName = "API Key",
+                        Type = "password",
+                        Description = "Google AI Studio API key",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model",
+                        Type = "text",
+                        Description = "Gemini model (e.g., gemini-1.5-pro, gemini-1.5-flash)",
+                    });
+                    break;
+
+                case "Mistral":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "apiKey",
+                        DisplayName = "API Key",
+                        Type = "password",
+                        Description = "Mistral AI API key from https://console.mistral.ai/",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model",
+                        Type = "text",
+                        Description = "Mistral model (e.g., mistral-large-latest, mistral-small-latest)",
+                    });
+                    break;
+
+                case "HuggingFace":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "apiKey",
+                        DisplayName = "API Key",
+                        Type = "password",
+                        Description = "Hugging Face API token",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model ID",
+                        Type = "text",
+                        Description = "Hugging Face model identifier",
+                    });
+                    break;
+
+                case "Ollama":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "endpoint",
+                        DisplayName = "Endpoint",
+                        Type = "text",
+                        Description = "Ollama server endpoint",
+                        Value = "http://localhost:11434",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model",
+                        Type = "text",
+                        Description = "Ollama model name (e.g., llama3.2, mistral, codellama)",
+                    });
+                    break;
+
+                case "AmazonBedrock":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model ID",
+                        Type = "text",
+                        Description = "Bedrock model identifier",
+                    });
+                    break;
+
+                case "ONNX":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelPath",
+                        DisplayName = "Model Path",
+                        Type = "text",
+                        Description = "Path to ONNX model file",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model ID",
+                        Type = "text",
+                        Description = "Bedrock model identifier",
+                    });
+                    break;
+
+                case "Other":
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "endpoint",
+                        DisplayName = "Endpoint",
+                        Type = "text",
+                        Description = "Custom API endpoint URL",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "apiKey",
+                        DisplayName = "API Key",
+                        Type = "password",
+                        Description = "API key for authentication",
+                    });
+                    parameters.Add(new AdvancedPasteAIServiceParameter
+                    {
+                        Name = "modelId",
+                        DisplayName = "Model ID",
+                        Type = "text",
+                        Description = "Model identifier",
+                    });
+                    break;
+
+                default:
+                    break;
+            }
+
+            CurrentAIServiceParameters = parameters;
+        }
+
+        public void SaveAIConfiguration()
+        {
+            if (SelectedAIService == null || CurrentAIServiceParameters == null)
+            {
+                return;
+            }
+
+            var sensitiveParameters = new HashSet<string> { "endpoint", "apiKey" };
+            var serviceId = SelectedAIService.Id;
+
+            var credentialParameters = new Dictionary<string, object>();
+            var settingsParameters = new Dictionary<string, object>();
+
+            foreach (var param in CurrentAIServiceParameters)
+            {
+                var value = param.Value ?? string.Empty;
+
+                if (sensitiveParameters.Contains(param.Name))
+                {
+                    credentialParameters[param.Name] = value;
+                }
+                else
+                {
+                    settingsParameters[param.Name] = value;
+                }
+            }
+
+            SaveCredentialParameters(serviceId, credentialParameters);
+
+            var aiConfiguration = new Dictionary<string, object>
+            {
+                ["ServiceId"] = serviceId,
+                ["ServiceDisplayName"] = SelectedAIService.DisplayName,
+                ["Parameters"] = settingsParameters,
+            };
+
+            _advancedPasteSettings.Properties.AIServiceConfiguration = aiConfiguration;
+
+            SaveAndNotifySettings();
+        }
+
+        private void SaveCredentialParameters(string serviceId, Dictionary<string, object> credentialParameters)
+        {
+            try
+            {
+                PasswordVault vault = new PasswordVault();
+
+                foreach (var parameter in credentialParameters)
+                {
+                    if (string.IsNullOrEmpty(parameter.Value?.ToString()))
+                    {
+                        RemoveCredential(vault, serviceId, parameter.Key);
+                        continue;
+                    }
+
+                    var resourceName = $"PowerToys.AdvancedPaste.{serviceId}";
+                    var userName = $"{serviceId}_{parameter.Key}";
+                    var password = parameter.Value.ToString();
+
+                    RemoveCredential(vault, resourceName, userName);
+
+                    var credential = new PasswordCredential(resourceName, userName, password);
+                    vault.Add(credential);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to save credentials: {ex.Message}");
+            }
+        }
+
+        private void RemoveCredential(PasswordVault vault, string resourceName, string userName)
+        {
+            try
+            {
+                var existingCredential = vault.Retrieve(resourceName, userName);
+                if (existingCredential != null)
+                {
+                    vault.Remove(existingCredential);
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private Dictionary<string, string> LoadCredentialParameters(string serviceId)
+        {
+            var credentials = new Dictionary<string, string>();
+            var sensitiveParameters = new HashSet<string> { "endpoint", "apiKey" };
+
+            try
+            {
+                PasswordVault vault = new PasswordVault();
+                var resourceName = $"PowerToys.AdvancedPaste.{serviceId}";
+
+                foreach (var parameterName in sensitiveParameters)
+                {
+                    try
+                    {
+                        var userName = $"{serviceId}_{parameterName}";
+                        var credential = vault.Retrieve(resourceName, userName);
+                        if (credential != null)
+                        {
+                            credential.RetrievePassword();
+                            credentials[parameterName] = credential.Password;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to load credentials: {ex.Message}");
+            }
+
+            return credentials;
+        }
+
+        private void LoadAIConfigurationFromSettings()
+        {
+            if (_advancedPasteSettings.Properties.AIServiceConfiguration != null)
+            {
+                var config = _advancedPasteSettings.Properties.AIServiceConfiguration;
+
+                if (config.TryGetValue("ServiceId", out var serviceId))
+                {
+                    var savedService = AIServiceOptions.FirstOrDefault(s => s.Id == serviceId?.ToString());
+                    if (savedService != null)
+                    {
+                        SelectedAIService = savedService;
+
+                        LoadParameterValues(config, serviceId.ToString());
+                    }
+                }
+            }
+        }
+
+        private void LoadParameterValues(Dictionary<string, object> config, string serviceId)
+        {
+            var settingsParameters = new Dictionary<string, object>();
+            if (config.TryGetValue("Parameters", out var parameters) &&
+                parameters is Dictionary<string, object> paramDict)
+            {
+                settingsParameters = paramDict;
+            }
+
+            var credentialParameters = LoadCredentialParameters(serviceId);
+
+            foreach (var parameter in CurrentAIServiceParameters)
+            {
+                if (credentialParameters.TryGetValue(parameter.Name, out var credentialValue))
+                {
+                    parameter.Value = credentialValue;
+                }
+                else if (settingsParameters.TryGetValue(parameter.Name, out var settingsValue))
+                {
+                    parameter.Value = settingsValue;
+                }
+            }
+        }
+
+        private void ClearServiceCredentials(string serviceId)
+        {
+            try
+            {
+                PasswordVault vault = new PasswordVault();
+                var resourceName = $"PowerToys.AdvancedPaste.{serviceId}";
+                var sensitiveParameters = new HashSet<string> { "endpoint", "apiKey" };
+
+                foreach (var parameterName in sensitiveParameters)
+                {
+                    var userName = $"{serviceId}_{parameterName}";
+                    RemoveCredential(vault, resourceName, userName);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to clear service credentials: {ex.Message}");
+            }
+        }
 
         private bool OpenAIKeyExists()
         {
