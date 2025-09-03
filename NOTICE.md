@@ -1525,6 +1525,7 @@ SOFTWARE.
 - NLog
 - NLog.Extensions.Logging
 - NLog.Schema
+- NJsonSchema
 - OpenAI
 - ReverseMarkdown
 - ScipBe.Common.Office.OneNote
