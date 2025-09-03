@@ -9,14 +9,14 @@
 
   <Identity
     Name="d4d0f157-5c12-4390-9689-152b0c86a582"
-    Publisher="CN=gkhmyznikov"
+    Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="d4d0f157-5c12-4390-9689-152b0c86a582" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>ScreenRuler.UITests</DisplayName>
-    <PublisherDisplayName>gkhmyznikov</PublisherDisplayName>
+    <PublisherDisplayName>Microsoft</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
