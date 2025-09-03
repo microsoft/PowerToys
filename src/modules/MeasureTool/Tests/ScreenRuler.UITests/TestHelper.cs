@@ -330,7 +330,7 @@ namespace ScreenRuler.UITests
 
             return spacingType switch
             {
-                "Spacing" => Regex.IsMatch(clipboardText, @"\d+\s*[�x]\s*\d+"),
+                "Spacing" => Regex.IsMatch(clipboardText, @"\d+\s*[�x×]\s*\d+"),
                 "Horizontal Spacing" or "Vertical Spacing" => Regex.IsMatch(clipboardText, @"^\d+$"),
                 _ => false,
             };
@@ -420,8 +420,8 @@ namespace ScreenRuler.UITests
             string clipboardText = GetClipboardText();
             Assert.IsFalse(string.IsNullOrEmpty(clipboardText), "Clipboard should contain measurement data");
             Assert.IsTrue(
-                clipboardText.Contains("100 � 100"),
-                $"Clipboard should contain '100 � 100', but contained: '{clipboardText}'");
+                clipboardText.Contains("100 × 100") || clipboardText.Contains("100 x 100"),
+                $"Clipboard should contain '100 x 100', but contained: '{clipboardText}'");
 
             // Cleanup - this will handle session attachment properly
             CloseScreenRulerUI(testBase);
