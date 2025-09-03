@@ -12,6 +12,8 @@
     <AssemblyDescription>PowerToys DSC</AssemblyDescription>
     <RootNamespace>PowerToys.DSC</RootNamespace>
     <Nullable>enable</Nullable>
+    <!-- Ensure WindowsDesktop runtime pack is included for consistent WindowsBase.dll version -->
+    <UseWPF>true</UseWPF>
     </PropertyGroup>
 
   <ItemGroup>
