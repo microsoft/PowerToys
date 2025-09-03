@@ -41,14 +41,18 @@
                 <Style.Setters>
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="Padding" Value="0" />
+                    <Setter Property="Background" Value="{ThemeResource DesktopAcrylicTransparentBrush}" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource DividerStrokeColorDefaultBrush}" />
                 </Style.Setters>
             </Style>
 
+            <!--  Backdrop requires ShouldConstrainToRootBounds="False"  -->
             <Flyout
                 x:Name="ContextMenuFlyout"
                 FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
                 Opened="ContextMenuFlyout_Opened"
-                ShouldConstrainToRootBounds="False">
+                ShouldConstrainToRootBounds="False"
+                SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
                 <cpcontrols:ContextMenu x:Name="ContextControl" />
             </Flyout>
 
@@ -161,6 +165,7 @@
                 x:Name="PrimaryButton"
                 Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.AutomationId="PrimaryCommandButton"
                 AutomationProperties.Name="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
                 Background="Transparent"
                 Click="PrimaryButton_Clicked"
@@ -180,6 +185,7 @@
                 x:Name="SecondaryButton"
                 Padding="6,4,4,4"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.AutomationId="SecondaryCommandButton"
                 AutomationProperties.Name="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
                 Click="SecondaryButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
@@ -203,6 +209,7 @@
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
                 Padding="6,4,4,4"
+                AutomationProperties.AutomationId="MoreContextMenuButton"
                 Click="MoreCommandsButton_Clicked"
                 Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="Ctrl+K"

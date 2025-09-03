@@ -32,6 +32,7 @@ AFeature
 affordances
 AFX
 AGGREGATABLE
+AHK
 AHybrid
 akv
 ALarger
@@ -48,6 +49,7 @@ ALPHATYPE
 AModifier
 amr
 ANDSCANS
+animatedvisuals
 Animnate
 ANull
 AOC
@@ -68,6 +70,7 @@ APPMODEL
 APPNAME
 appref
 appsettings
+appsfeatures
 appwindow
 appwiz
 appxpackage
@@ -167,6 +170,7 @@ callbackptr
 calpwstr
 Cangjie
 CANRENAME
+Canvascustomlayout
 CAPTUREBLT
 CAPTURECHANGED
 CARETBLINKING
@@ -398,6 +402,7 @@ DString
 DSVG
 DTo
 DUMMYUNIONNAME
+dutil
 DVASPECT
 DVASPECTINFO
 DVD
@@ -573,6 +578,7 @@ GPOCA
 gpp
 gpu
 gradians
+Gridcustomlayout
 GSM
 gtm
 guiddata
@@ -667,6 +673,7 @@ HROW
 hsb
 HSCROLL
 hsi
+HSpeed
 HTCLIENT
 hthumbnail
 HTOUCHINPUT
@@ -1006,6 +1013,7 @@ Mso
 msrc
 msstore
 msvcp
+MT
 MTND
 MULTIPLEUSE
 multizone
@@ -1116,6 +1124,7 @@ NOTSRCCOPY
 NOTSRCERASE
 notwindows
 NOTXORPEN
+nowarn
 NOZORDER
 NPH
 npmjs
@@ -1307,6 +1316,7 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
+projitems
 PROPERTYKEY
 Propset
 PROPVARIANT
@@ -1386,6 +1396,7 @@ regkey
 regroot
 regsvr
 REINSTALLMODE
+releaseblog
 reloadable
 Relogger
 remappings
@@ -1494,6 +1505,7 @@ SETRULES
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
+settingscard
 SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
@@ -1751,11 +1763,13 @@ transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
+Tru
 trl
 trx
 tsa
 tskill
 tstoi
+tweakable
 TWF
 tymed
 TYPEKEYBOARD
@@ -1783,6 +1797,7 @@ uncompilable
 UNCPRIORITY
 UNDNAME
 UNICODETEXT
+unins
 uninstalls
 Uniquifies
 unitconverter
@@ -1862,6 +1877,7 @@ VSINSTALLDIR
 VSM
 vso
 vsonline
+VSpeed
 vstemplate
 vstest
 VSTHRD
@@ -1998,10 +2014,13 @@ XNamespace
 Xoshiro
 XPels
 XPixel
+XPos
 XResource
 xsi
+XSpeed
 XStr
 xstyler
+XTimer
 XUP
 XVIRTUALSCREEN
 xxxxxx
@@ -2011,7 +2030,10 @@ YIncrement
 yinle
 yinyue
 YPels
+YPos
 YResolution
+YSpeed
+YTimer
 YStr
 YVIRTUALSCREEN
 ZEROINIT

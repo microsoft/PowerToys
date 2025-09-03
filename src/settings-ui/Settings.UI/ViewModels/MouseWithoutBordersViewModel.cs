@@ -29,7 +29,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class MouseWithoutBordersViewModel : PageViewModelBase, IDisposable
+    public partial class MouseWithoutBordersViewModel : PageViewModelBase
     {
         protected override string ModuleName => MouseWithoutBordersSettings.ModuleName;
 
@@ -42,6 +42,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         };
 
         private readonly Lock _machineMatrixStringLock = new();
+
+        private bool _disposed;
 
         private static readonly Dictionary<SocketStatus, Brush> StatusColors = new Dictionary<SocketStatus, Brush>()
         {
@@ -902,6 +904,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private string _easyMouseIgnoredFullscreenAppsString;
+
+        public string EasyMouseFullscreenSwitchBlockExcludedApps
+        {
+            // Convert the list of excluded apps retrieved from the settings
+            // to a single string that can be displayed in the bound textbox
+            get
+            {
+                if (_easyMouseIgnoredFullscreenAppsString == null)
+                {
+                    var excludedApps = Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
+                    _easyMouseIgnoredFullscreenAppsString = excludedApps.Count == 0 ? string.Empty : string.Join('\r', excludedApps);
+                }
+
+                return _easyMouseIgnoredFullscreenAppsString;
+            }
+
+            set
+            {
+                if (EasyMouseFullscreenSwitchBlockExcludedApps == value)
+                {
+                    return;
+                }
+
+                _easyMouseIgnoredFullscreenAppsString = value;
+
+                var ignoredAppsSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (value != string.Empty)
+                {
+                    ignoredAppsSet.UnionWith(value.Split('\r', StringSplitOptions.RemoveEmptyEntries));
+                }
+
+                Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = ignoredAppsSet;
+                NotifyPropertyChanged();
+            }
+        }
+
         public bool CardForName2IpSettingIsEnabled => _disableUserDefinedIpMappingRulesIsGPOConfigured == false;
 
         public bool ShowPolicyConfiguredInfoForName2IPSetting => _disableUserDefinedIpMappingRulesIsGPOConfigured && IsEnabled;
@@ -1000,6 +1039,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.EasyMouse.Value = value;
                     NotifyPropertyChanged(nameof(EasyMouseOptionIndex));
                 }
+            }
+        }
+
+        public bool EasyMouseEnabled => (EasyMouseOption)EasyMouseOptionIndex != EasyMouseOption.Disable;
+
+        public bool IsEasyMouseBlockingOnFullscreenEnabled =>
+            EasyMouseEnabled && DisableEasyMouseWhenForegroundWindowIsFullscreen;
+
+        public bool DisableEasyMouseWhenForegroundWindowIsFullscreen
+        {
+            get
+            {
+                return Settings.Properties.DisableEasyMouseWhenForegroundWindowIsFullscreen;
+            }
+
+            set
+            {
+                if (Settings.Properties.DisableEasyMouseWhenForegroundWindowIsFullscreen == value)
+                {
+                    return;
+                }
+
+                Settings.Properties.DisableEasyMouseWhenForegroundWindowIsFullscreen = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -1262,38 +1325,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!_disposed)
             {
-                // Cancel the cancellation token source
-                _cancellationTokenSource?.Cancel();
-                _cancellationTokenSource?.Dispose();
+                if (disposing)
+                {
+                    // Cancel the cancellation token source
+                    _cancellationTokenSource?.Cancel();
+                    _cancellationTokenSource?.Dispose();
 
-                // Wait for the machine polling task to complete
-                try
-                {
-                    _machinePollingThreadTask?.Wait(TimeSpan.FromSeconds(1));
-                }
-                catch (AggregateException)
-                {
-                    // Task was cancelled, which is expected
+                    // Wait for the machine polling task to complete
+                    try
+                    {
+                        _machinePollingThreadTask?.Wait(TimeSpan.FromSeconds(1));
+                    }
+                    catch (AggregateException)
+                    {
+                        // Task was cancelled, which is expected
+                    }
+
+                    // Dispose the named pipe stream
+                    try
+                    {
+                        syncHelperStream?.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Error disposing sync helper stream: {ex}");
+                    }
+                    finally
+                    {
+                        syncHelperStream = null;
+                    }
+
+                    // Dispose the semaphore
+                    _ipcSemaphore?.Dispose();
                 }
 
-                // Dispose the named pipe stream
-                try
-                {
-                    syncHelperStream?.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Error disposing sync helper stream: {ex}");
-                }
-                finally
-                {
-                    syncHelperStream = null;
-                }
-
-                // Dispose the semaphore
-                _ipcSemaphore?.Dispose();
+                _disposed = true;
             }
 
             base.Dispose(disposing);
