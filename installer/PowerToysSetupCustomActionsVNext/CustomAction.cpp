@@ -398,6 +398,125 @@ LExit:
     return WcaFinalize(er);
 }
 
+// Generate DSC manifests during install by invoking PowerToys.DSC.exe
+UINT __stdcall GenerateDscManifestCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "GenerateDscManifest");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    // Build executable path: <INSTALLFOLDER>\PowerToys.DSC.exe
+    std::wstring exePath = installationFolder + L"\\PowerToys.DSC.exe";
+
+    // Build args: manifest --resource settings --outputDir "<INSTALLFOLDER>"
+    std::wstring args = L"manifest --resource settings --outputDir \"" + installationFolder + L"\"";
+    std::wstring commandLine = L"\"" + exePath + L"\" " + args;
+
+    // Try to start the process and wait for it to finish; ignore failures (best-effort)
+    STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO), .wShowWindow = SW_HIDE };
+    PROCESS_INFORMATION processInformation{};
+
+    if (!CreateProcess(
+            nullptr,
+            commandLine.data(),
+            nullptr,
+            nullptr,
+            FALSE,
+            CREATE_DEFAULT_ERROR_MODE,
+            nullptr,
+            nullptr,
+            &startupInfo,
+            &processInformation))
+    {
+        Logger::error(L"GenerateDscManifestCA: failed to launch DSC manifest generator");
+        // Don't fail installation on error
+        goto LExit;
+    }
+
+    // Wait for completion
+    WaitForSingleObject(processInformation.hProcess, INFINITE);
+
+    DWORD exitCode = 0;
+    if (GetExitCodeProcess(processInformation.hProcess, &exitCode))
+    {
+        if (exitCode != 0)
+        {
+            Logger::warn(L"GenerateDscManifestCA: manifest generator exited with non-zero code");
+        }
+        else
+        {
+            Logger::info(L"GenerateDscManifestCA: manifests generated successfully");
+        }
+    }
+
+    if (!CloseHandle(processInformation.hProcess))
+    {
+        Logger::warn(L"GenerateDscManifestCA: failed to close process handle");
+    }
+    if (!CloseHandle(processInformation.hThread))
+    {
+        Logger::warn(L"GenerateDscManifestCA: failed to close thread handle");
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+// Delete any *.dsc.json files under the install folder on uninstall
+UINT __stdcall DeleteDscJsonFilesCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "DeleteDscJsonFiles");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    try
+    {
+        std::filesystem::path root{ installationFolder };
+        if (std::filesystem::exists(root) && std::filesystem::is_directory(root))
+        {
+            for (auto const &entry : std::filesystem::recursive_directory_iterator(root, std::filesystem::directory_options::skip_permission_denied))
+            {
+                if (!entry.is_regular_file()) continue;
+                const auto &p = entry.path();
+                if (p.has_extension() && _wcsicmp(p.extension().c_str(), L".json") == 0)
+                {
+                    auto name = p.filename().wstring();
+                    if (name.size() >= 9 && _wcsicmp(name.c_str() + (name.size() - 9), L".dsc.json") == 0)
+                    {
+                        std::error_code ec;
+                        std::filesystem::remove(p, ec);
+                        if (ec)
+                        {
+                            Logger::warn(L"DeleteDscJsonFilesCA: failed to delete %s", p.c_str());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        Logger::warn(L"DeleteDscJsonFilesCA: exception while deleting files");
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 const wchar_t *DSC_CONFIGURE_PSD1_NAME = L"Microsoft.PowerToys.Configure.psd1";
 const wchar_t *DSC_CONFIGURE_PSM1_NAME = L"Microsoft.PowerToys.Configure.psm1";
 

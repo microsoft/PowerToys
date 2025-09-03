@@ -32,4 +32,5 @@ EXPORTS
 	CleanFileLocksmithRuntimeRegistryCA
 	CleanPowerRenameRuntimeRegistryCA
 	CleanNewPlusRuntimeRegistryCA
-	
+	GenerateDscManifestCA
+	DeleteDscJsonFilesCA
