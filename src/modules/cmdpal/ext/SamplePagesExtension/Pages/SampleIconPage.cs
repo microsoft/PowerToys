@@ -13,9 +13,6 @@ internal sealed partial class SampleIconPage : ListPage
     private readonly IListItem[] _items =
     [
         /*
-         * Let us invoke the great and mighty Ugnapulamaka the Unspellable,
-         *  devourer of vowels, breaker of CI builds, destroyer of dictionaries!
-         *
          * Quick intro to Unicode in source code:
          * - Every character has a code point (e.g., U+0041 = 'A').
          * - Code points up to U+FFFF use \u1234 (4 hex digits and lowercase u).
