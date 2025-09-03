@@ -1,20 +1,38 @@
 name: Manual Batch Issue Deduplication
 
 on:
-  workflow_dispatch: # Only runs when manually triggered
+  workflow_dispatch:
+    inputs:
+      issue_numbers:
+        description: "JSON array of issue numbers to deduplicate (e.g. [101,102,103])"
+        required: true
+      since:
+        description: "Only compare against issues created after this date (ISO 8601, e.g. 2019-05-05T00:00:00Z)"
+        required: false
+        default: "2019-05-05T00:00:00Z"
+      label_as_duplicate:
+        description: "Apply duplicate label if duplicates are found (true/false)"
+        required: false
+        default: "true"
+
+permissions:
+  models: read
+  issues: write
 
 jobs:
-  batch-deduplicate:
+  deduplicate:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        issue: ${{ fromJson(github.event.inputs.issue_numbers) }}
     steps:
-      - name: Batch Deduplicate Issues
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run GenAI Issue Deduplicator
         uses: pelikhan/action-genai-issue-dedup@v0
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          label-duplicate: "potential duplicate"
-          comment-duplicate: true
-          close-duplicate: false
-          batch-size: 100 
-          since: '2019-05-05T00:00:00Z' # Process issues dating back to 2019
-          duplicate-comment-template: "This issue appears to be a duplicate of #{duplicate_issue_number}."
-          # Add other action-specific inputs if needed
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_issue: ${{ matrix.issue }}
+          label_as_duplicate: ${{ github.event.inputs.label_as_duplicate }}
+          
