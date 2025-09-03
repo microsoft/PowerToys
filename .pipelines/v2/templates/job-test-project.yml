@@ -147,10 +147,10 @@ jobs:
           & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine"
         displayName: Install PowerToys (Machine-Level)
 
-  # - ${{ if ne(parameters.platform, 'arm64') }}:
-  #   - task: ScreenResolutionUtility@1
-  #     inputs:
-  #       displaySettings: 'optimal'
+  - ${{ if ne(parameters.platform, 'arm64') }}:
+    - task: ScreenResolutionUtility@1
+      inputs:
+        displaySettings: 'optimal'
 
   - ${{ if eq(length(parameters.uiTestModules), 0) }}:
     - task: VSTest@3
