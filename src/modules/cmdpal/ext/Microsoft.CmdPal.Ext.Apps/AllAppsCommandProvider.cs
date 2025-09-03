@@ -71,25 +71,27 @@ public partial class AllAppsCommandProvider : CommandProvider
     {
         var items = _page.GetItems();
 
-        // We're going to do this search in two directions:
-        // First, is this name a substring of any app...
         var nameMatches = new List<ICommandItem>();
-        foreach (var item in items)
-        {
-            if (item.Title is not null && item.Title.Contains(displayName))
-            {
-                nameMatches.Add(item);
-            }
-        }
-
-        // ... Then, does any app have this name as a substring ...
-        // Only get one of these - "Terminal Preview" contains both "Terminal" and "Terminal Preview", so just take the best one
         ICommandItem? bestAppMatch = null;
         var bestLength = -1;
 
         foreach (var item in items)
         {
-            if (item.Title is not null && displayName.Contains(item.Title))
+            if (item.Title is null)
+            {
+                continue;
+            }
+
+            // We're going to do this search in two directions:
+            // First, is this name a substring of any app...
+            if (item.Title.Contains(displayName))
+            {
+                nameMatches.Add(item);
+            }
+
+            // ... Then, does any app have this name as a substring ...
+            // Only get one of these - "Terminal Preview" contains both "Terminal" and "Terminal Preview", so just take the best one
+            if (displayName.Contains(item.Title))
             {
                 if (item.Title.Length > bestLength)
                 {
