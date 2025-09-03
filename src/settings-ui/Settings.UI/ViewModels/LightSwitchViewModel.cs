@@ -184,6 +184,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.LightTime.Value = value;
                     NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(LightTimeTimeSpan));
                 }
             }
         }
@@ -197,6 +198,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.DarkTime.Value = value;
                     NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(DarkTimeTimeSpan));
                 }
             }
         }
@@ -302,6 +304,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private string _syncButtonInformation = "Please sync your location";
+
+        public string SyncButtonInformation
+        {
+            get => _syncButtonInformation;
+            set
+            {
+                if (_syncButtonInformation != value)
+                {
+                    _syncButtonInformation = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public HotkeySettings ToggleThemeActivationShortcut
         {
             get => _toggleThemeHotkey;
@@ -376,6 +393,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" +
                             $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
+            SyncButtonInformation = SelectedCity.Name;
+            NotifyPropertyChanged();
         }
 
         private bool _enabledStateIsGPOConfigured;

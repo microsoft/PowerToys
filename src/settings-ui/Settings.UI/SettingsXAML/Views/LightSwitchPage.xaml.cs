@@ -103,6 +103,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     ViewModel.SelectedCity = match;
                 }
+
+                ViewModel.CityTimesText = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2}\n" +
+                            $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
+                ViewModel.SyncButtonInformation = ViewModel.SelectedCity.Name;
+            }
+            else if (ViewModel.ScheduleMode == "SunsetToSunriseGeo")
+            {
+                ViewModel.CityTimesText = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2}\n" +
+                            $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
+                ViewModel.SyncButtonInformation = ViewModel.Latitude + "/" + ViewModel.Longitude;
             }
         }
 
@@ -151,6 +161,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
                 System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
+            }
+        }
+
+        private void LocationDialog_PrimaryButtonClick(object sender, ContentDialogButtonClickEventArgs args)
+        {
+            if (ViewModel.ScheduleMode == "SunriseToSunsetUser")
+            {
+                ViewModel.SyncButtonInformation = ViewModel.SelectedCity.Name;
+            }
+            else if (ViewModel.ScheduleMode == "SunriseToSunsetGeo")
+            {
+                ViewModel.SyncButtonInformation = ViewModel.Latitude + "/" + ViewModel.Longitude;
             }
         }
 

@@ -111,7 +111,7 @@
                   <TextBlock
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="Please sync your location" />
+                                        Text="{x:Bind ViewModel.SyncButtonInformation, Mode=OneWay}" />
                   <Button Click="SyncLocationButton_Click" Content="Sync" />
                 </StackPanel>
               </tkcontrols:SettingsCard>
@@ -219,6 +219,7 @@
                         IsSecondaryButtonEnabled="True"
                         PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
                         PrimaryButtonText="Select"
+                        PrimaryButtonClick="LocationDialog_PrimaryButtonClick"
                         SecondaryButtonText="Cancel">
             <Grid MinHeight="268">
               <Grid.RowDefinitions>
