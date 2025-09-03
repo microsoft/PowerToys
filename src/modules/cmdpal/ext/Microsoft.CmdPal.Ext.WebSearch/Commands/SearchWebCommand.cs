@@ -13,11 +13,11 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Commands;
 
 internal sealed partial class SearchWebCommand : InvokableCommand
 {
-    private readonly SettingsManager _settingsManager;
+    private readonly ISettingsInterface _settingsManager;
 
     public string Arguments { get; internal set; } = string.Empty;
 
-    internal SearchWebCommand(string arguments, SettingsManager settingsManager)
+    internal SearchWebCommand(string arguments, ISettingsInterface settingsManager)
     {
         Arguments = arguments;
         BrowserInfo.UpdateIfTimePassed();
@@ -34,7 +34,7 @@ internal sealed partial class SearchWebCommand : InvokableCommand
             return CommandResult.KeepOpen();
         }
 
-        if (_settingsManager.ShowHistory != Resources.history_none)
+        if (_settingsManager.HistoryItemCount != 0)
         {
             _settingsManager.SaveHistory(new HistoryItem(Arguments, DateTime.Now));
         }

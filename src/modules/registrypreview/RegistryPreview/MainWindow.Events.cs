@@ -15,10 +15,10 @@ namespace RegistryPreview
         /// </summary>
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
-            jsonWindowPlacement.SetNamedValue("appWindow.Position.X", JsonValue.CreateNumberValue(appWindow.Position.X));
-            jsonWindowPlacement.SetNamedValue("appWindow.Position.Y", JsonValue.CreateNumberValue(appWindow.Position.Y));
-            jsonWindowPlacement.SetNamedValue("appWindow.Size.Width", JsonValue.CreateNumberValue(appWindow.Size.Width));
-            jsonWindowPlacement.SetNamedValue("appWindow.Size.Height", JsonValue.CreateNumberValue(appWindow.Size.Height));
+            jsonWindowPlacement.SetNamedValue("appWindow.Position.X", JsonValue.CreateNumberValue(AppWindow.Position.X));
+            jsonWindowPlacement.SetNamedValue("appWindow.Position.Y", JsonValue.CreateNumberValue(AppWindow.Position.Y));
+            jsonWindowPlacement.SetNamedValue("appWindow.Size.Width", JsonValue.CreateNumberValue(AppWindow.Size.Width));
+            jsonWindowPlacement.SetNamedValue("appWindow.Size.Height", JsonValue.CreateNumberValue(AppWindow.Size.Height));
         }
 
         /// <summary>
