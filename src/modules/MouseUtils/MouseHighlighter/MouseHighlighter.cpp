@@ -27,6 +27,7 @@ struct Highlighter
     static Highlighter* instance;
     void Terminate();
     void SwitchActivationMode();
+    void SwitchHighlightMode();
     void ApplySettings(MouseHighlighterSettings settings);
 
 private:
@@ -60,6 +61,7 @@ private:
     HWND m_hwnd = NULL;
     HINSTANCE m_hinstance = NULL;
     static constexpr DWORD WM_SWITCH_ACTIVATION_MODE = WM_APP;
+    static constexpr DWORD WM_SWITCH_HIGHLIGHT_MODE = WM_APP + 1;
 
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
     winrt::Compositor m_compositor{ nullptr };
@@ -466,6 +468,11 @@ void Highlighter::SwitchActivationMode()
     PostMessage(m_hwnd, WM_SWITCH_ACTIVATION_MODE, 0, 0);
 }
 
+void Highlighter::SwitchHighlightMode()
+{
+    PostMessage(m_hwnd, WM_SWITCH_HIGHLIGHT_MODE, 0, 0);
+}
+
 void Highlighter::ApplySettings(MouseHighlighterSettings settings)
 {
     m_radius = static_cast<float>(settings.radius);
@@ -532,6 +539,15 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
         }
         else
         {
+            instance->StartDrawing();
+        }
+        break;
+    case WM_SWITCH_HIGHLIGHT_MODE:
+        // Toggle spotlight mode
+        instance->m_spotlightMode = !instance->m_spotlightMode;
+        if (instance->m_visible)
+        {
+            instance->StopDrawing();
             instance->StartDrawing();
         }
         break;
@@ -660,6 +676,15 @@ void MouseHighlighterSwitch()
     {
         Logger::info("Switching activation mode.");
         Highlighter::instance->SwitchActivationMode();
+    }
+}
+
+void MouseHighlighterSwitchMode()
+{
+    if (Highlighter::instance != nullptr)
+    {
+        Logger::info("Switching highlight mode.");
+        Highlighter::instance->SwitchHighlightMode();
     }
 }
 

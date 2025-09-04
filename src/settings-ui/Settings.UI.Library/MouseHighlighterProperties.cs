@@ -44,6 +44,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("spotlight_mode")]
         public BoolProperty SpotlightMode { get; set; }
 
+        [JsonPropertyName("mode_switch_shortcut")]
+        public HotkeySettings ModeSwitchShortcut { get; set; }
+
+        [CmdConfigureIgnore]
+        public HotkeySettings DefaultModeSwitchShortcut => new HotkeySettings(true, false, false, true, 0x4D);
+
         public MouseHighlighterProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
@@ -56,6 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HighlightFadeDurationMs = new IntProperty(250);
             AutoActivate = new BoolProperty(false);
             SpotlightMode = new BoolProperty(false);
+            ModeSwitchShortcut = DefaultModeSwitchShortcut;
         }
     }
 }

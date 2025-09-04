@@ -4,12 +4,15 @@
 #include "trace.h"
 #include "MouseHighlighter.h"
 #include "common/utils/color.h"
+#include <algorithm>
+#include <vector>
 
 namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_VALUE[] = L"value";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
+    const wchar_t JSON_KEY_MODE_SWITCH_SHORTCUT[] = L"mode_switch_shortcut";
     const wchar_t JSON_KEY_LEFT_BUTTON_CLICK_COLOR[] = L"left_button_click_color";
     const wchar_t JSON_KEY_RIGHT_BUTTON_CLICK_COLOR[] = L"right_button_click_color";
     const wchar_t JSON_KEY_HIGHLIGHT_OPACITY[] = L"highlight_opacity";
@@ -55,8 +58,8 @@ private:
     // The PowerToy state.
     bool m_enabled = false;
 
-    // Hotkey to invoke the module
-    HotkeyEx m_hotkey;
+    // Hotkeys to invoke the module
+    std::vector<PowertoyModuleIface::Hotkey> m_hotkeys;
 
     // Mouse Highlighter specific settings
     MouseHighlighterSettings m_highlightSettings;
@@ -148,14 +151,29 @@ public:
         return m_enabled;
     }
 
-    virtual std::optional<HotkeyEx> GetHotkeyEx() override
+    virtual size_t get_hotkeys(Hotkey* buffer, size_t buffer_size) override
     {
-        return m_hotkey;
+        if (buffer == nullptr || buffer_size == 0)
+        {
+            return m_hotkeys.size();
+        }
+
+        size_t copied = std::min(buffer_size, m_hotkeys.size());
+        std::copy_n(m_hotkeys.begin(), copied, buffer);
+        return copied;
     }
 
-    virtual void OnHotkeyEx() override
+    virtual bool on_hotkey(size_t hotkeyId) override
     {
-        MouseHighlighterSwitch();
+        if (hotkeyId == 0)
+        {
+            MouseHighlighterSwitch();
+        }
+        else if (hotkeyId == 1)
+        {
+            MouseHighlighterSwitchMode();
+        }
+        return true;
     }
 
     // Load the settings file.
@@ -183,35 +201,42 @@ public:
         {
             try
             {
-                // Parse HotKey
+                // Initialize hotkeys vector
+                m_hotkeys.clear();
+                m_hotkeys.resize(2); // Activation and Mode Switch hotkeys
+
+                // Parse Activation HotKey
                 auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
                 auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
-                m_hotkey = HotkeyEx();
-                if (hotkey.win_pressed())
-                {
-                    m_hotkey.modifiersMask |= MOD_WIN;
-                }
-
-                if (hotkey.ctrl_pressed())
-                {
-                    m_hotkey.modifiersMask |= MOD_CONTROL;
-                }
-
-                if (hotkey.shift_pressed())
-                {
-                    m_hotkey.modifiersMask |= MOD_SHIFT;
-                }
-
-                if (hotkey.alt_pressed())
-                {
-                    m_hotkey.modifiersMask |= MOD_ALT;
-                }
-
-                m_hotkey.vkCode = hotkey.get_code();
+                
+                m_hotkeys[0].win = hotkey.win_pressed();
+                m_hotkeys[0].ctrl = hotkey.ctrl_pressed();
+                m_hotkeys[0].shift = hotkey.shift_pressed();
+                m_hotkeys[0].alt = hotkey.alt_pressed();
+                m_hotkeys[0].key = hotkey.get_code();
+                m_hotkeys[0].id = 0;
             }
             catch (...)
             {
                 Logger::warn("Failed to initialize Mouse Highlighter activation shortcut");
+            }
+
+            try
+            {
+                // Parse Mode Switch HotKey
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_MODE_SWITCH_SHORTCUT);
+                auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
+                
+                m_hotkeys[1].win = hotkey.win_pressed();
+                m_hotkeys[1].ctrl = hotkey.ctrl_pressed();
+                m_hotkeys[1].shift = hotkey.shift_pressed();
+                m_hotkeys[1].alt = hotkey.alt_pressed();
+                m_hotkeys[1].key = hotkey.get_code();
+                m_hotkeys[1].id = 1;
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Mouse Highlighter mode switch shortcut");
             }
             // Migration from <=1.1
             auto version = (std::wstring)settingsObject.GetNamedString(L"version");
@@ -383,12 +408,47 @@ public:
         {
             Logger::info("Mouse Highlighter settings are empty");
         }
-        if (!m_hotkey.modifiersMask)
+        
+        // Set default hotkeys if not configured
+        if (m_hotkeys.empty() || m_hotkeys.size() < 2)
         {
-            Logger::info("Mouse Highlighter is going to use default shortcut");
-            m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
-            m_hotkey.vkCode = 0x48; // H key
+            Logger::info("Mouse Highlighter is going to use default shortcuts");
+            m_hotkeys.clear();
+            m_hotkeys.resize(2);
+            
+            // Default activation shortcut: Win + Shift + H
+            m_hotkeys[0].win = true;
+            m_hotkeys[0].shift = true;
+            m_hotkeys[0].key = 0x48; // H key
+            m_hotkeys[0].id = 0;
+            
+            // Default mode switch shortcut: Win + Shift + M
+            m_hotkeys[1].win = true;
+            m_hotkeys[1].shift = true;
+            m_hotkeys[1].key = 0x4D; // M key
+            m_hotkeys[1].id = 1;
         }
+        else
+        {
+            // Check if activation hotkey is empty and set default
+            if (!m_hotkeys[0].win && !m_hotkeys[0].ctrl && !m_hotkeys[0].shift && !m_hotkeys[0].alt && m_hotkeys[0].key == 0)
+            {
+                m_hotkeys[0].win = true;
+                m_hotkeys[0].shift = true;
+                m_hotkeys[0].key = 0x48; // H key
+                m_hotkeys[0].id = 0;
+            }
+            
+            // Check if mode switch hotkey is empty and set default
+            if (!m_hotkeys[1].win && !m_hotkeys[1].ctrl && !m_hotkeys[1].shift && !m_hotkeys[1].alt && m_hotkeys[1].key == 0)
+            {
+                m_hotkeys[1].win = true;
+                m_hotkeys[1].shift = true;
+                m_hotkeys[1].key = 0x4D; // M key
+                m_hotkeys[1].id = 1;
+            }
+        }
+        
         m_highlightSettings = highlightSettings;
     }
 };
