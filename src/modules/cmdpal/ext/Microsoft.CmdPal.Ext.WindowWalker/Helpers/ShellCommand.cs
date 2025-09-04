@@ -20,7 +20,25 @@ public static class ShellCommand
         ArgumentNullException.ThrowIfNull(processStartInfo);
 
         processStartInfo.Verb = "RunAsUser";
-        var process = Process.Start(processStartInfo);
+            var parts = command.Split('' '', 2);
+            var fileName = parts[0];
+            var arguments = parts.Length > 1 ? parts[1] : string.Empty;
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            Process.Start(startInfo);
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = "/c " + command;
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+            startInfo.CreateNoWindow = true;
+            Process.Start(startInfo);
 
         containsSecurityWindow = false;
 
