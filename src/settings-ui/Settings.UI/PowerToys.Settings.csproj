@@ -161,6 +161,9 @@
 		<Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
+		<Page Update="SettingsXAML\Controls\GPOInfoControl.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
