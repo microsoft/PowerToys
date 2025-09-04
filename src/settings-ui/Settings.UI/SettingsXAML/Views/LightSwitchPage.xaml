@@ -72,7 +72,7 @@
                             SelectedValuePath="Tag"
                             SelectionChanged="ScheduleMode_SelectionChanged">
                             <ComboBoxItem Content="Manual" Tag="FixedHours" />
-                            <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunriseGeo" />
+                            <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunrise" />
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Header="Turn off dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
@@ -84,7 +84,7 @@
                             <tkcontrols:SettingsCard
                                 Description="Choose a location to automatically calculate accurate sunrise and sunset times"
                                 Header="Location"
-                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
+                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock
                                         VerticalAlignment="Center"
@@ -96,7 +96,7 @@
                             <tkcontrols:SettingsCard
                                 Description="Adjust the trigger time by starting earlier or later than the actual sunrise or sunset"
                                 Header="Sunrise or sunset offset"
-                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseGeo}">
+                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
                                 <Grid VerticalAlignment="Center" ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -122,32 +122,6 @@
                                         <Run Text="minutes" />
                                     </TextBlock>
 
-                                </Grid>
-                            </tkcontrols:SettingsCard>
-
-                            <tkcontrols:SettingsCard Header="Apply an offset in minutes" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunriseUser}">
-                                <Grid VerticalAlignment="Center">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Slider
-                                        x:Name="useroffsetSlider"
-                                        Grid.Column="0"
-                                        Maximum="60"
-                                        Minimum="-60"
-                                        SnapsTo="StepValues"
-                                        TickFrequency="15"
-                                        TickPlacement="Outside"
-                                        Value="{x:Bind ViewModel.Offset, Mode=TwoWay}" />
-                                    <TextBlock
-                                        x:Name="userOffsetValue"
-                                        Grid.Column="1"
-                                        Margin="10,0,0,0"
-                                        VerticalAlignment="Center"
-                                        FontSize="12"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind ViewModel.Offset, Mode=OneWay}" />
                                 </Grid>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -267,15 +241,15 @@
                                     Grid.Row="1"
                                     Grid.Column="1"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{x:Bind ViewModel.LightTime, Mode=OneWay}" />
+                                    Text="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}" />
                                 <TextBlock Grid.Row="2" Text="Sunset" />
                                 <TextBlock
                                     Grid.Row="2"
                                     Grid.Column="1"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{x:Bind ViewModel.DarkTime, Mode=OneWay}" />
+                                    Text="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}" />
 
-                                <TextBlock Grid.Row="3" Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />
+                                <!--<TextBlock Grid.Row="3" Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />-->
                                 <!--  TO DO: REMOVE, JUST FOR DEBUG  -->
                             </Grid>
                         </Grid>

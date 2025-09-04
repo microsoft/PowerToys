@@ -20,6 +20,7 @@ using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
 using Windows.Devices.Geolocation;
+using Windows.Services.Maps;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -92,7 +93,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
 
-            if (ViewModel.ScheduleMode == "SunsetToSunriseUser" &&
+            if (ViewModel.ScheduleMode == "SunsetToSunrise" &&
                 double.TryParse(ViewModel.Latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLat) &&
                 double.TryParse(ViewModel.Longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLng))
             {
@@ -107,13 +108,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 ViewModel.CityTimesText = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2}\n" +
                             $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
-                ViewModel.SyncButtonInformation = ViewModel.SelectedCity.Name;
-            }
-            else if (ViewModel.ScheduleMode == "SunsetToSunriseGeo")
-            {
-                ViewModel.CityTimesText = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2}\n" +
-                            $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
-                ViewModel.SyncButtonInformation = ViewModel.Latitude + "/" + ViewModel.Longitude;
+                ViewModel.SyncButtonInformation = ViewModel.SelectedCity != null ? ViewModel.SelectedCity.Name : $"{ViewModel.Latitude}/{ViewModel.Longitude}";
             }
         }
 
@@ -149,10 +144,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 ViewModel.LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
                 ViewModel.DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
+                ViewModel.Latitude = latitude.ToString(CultureInfo.InvariantCulture);
+                ViewModel.Longitude = longitude.ToString(CultureInfo.InvariantCulture);
 
-                ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" +
-                            $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
+                // Since we use this mode, we can remove the selected city data.
+                ViewModel.SelectedCity = null;
 
+                ViewModel.SyncButtonInformation = latitude + "/" + longitude;
+
+                // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
                 SyncLoader.Visibility = Visibility.Collapsed;

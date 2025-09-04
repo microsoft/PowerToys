@@ -35,8 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             AvailableScheduleModes = new ObservableCollection<string>
         {
             "FixedHours",
-            "SunsetToSunriseGeo",
-            "SunsetToSunriseUser",
+            "SunsetToSunrise",
         };
 
             _toggleThemeHotkey = _moduleSettings.Properties.ToggleThemeHotkey.Value;
@@ -412,8 +411,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Latitude = SelectedCity.Latitude.ToString(CultureInfo.InvariantCulture);
             Longitude = SelectedCity.Longitude.ToString(CultureInfo.InvariantCulture);
 
-            CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" +
-                            $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
+            // CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
             SyncButtonInformation = SelectedCity.Name;
             NotifyPropertyChanged();
         }
