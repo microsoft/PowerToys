@@ -20,7 +20,6 @@ namespace winrt
 namespace ABI
 {
     using namespace ABI::Windows::System;
-    using namespace ABI::Microsoft::UI::Composition::Desktop;
 }
 #endif
 

@@ -5,9 +5,11 @@
 #include <windows.h>
 #include <strsafe.h>
 #include <hIdUsage.h>
+// Required for IUnknown and DECLARE_INTERFACE_* used by interop headers
+#include <Unknwn.h>
 
 #ifdef COMPOSITION
-#include <microsoft.ui.composition.interop.h>
+#include <winrt/Microsoft.UI.Composition.Interop.h>
 #include <DispatcherQueue.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.Foundation.h>
