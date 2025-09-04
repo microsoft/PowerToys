@@ -200,14 +200,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             if (_darkRects.Count == 0)
             {
-                _darkRects.Add(MakeBandRect(isDark: true));
-                _darkRects.Add(MakeBandRect(isDark: true));
+                _darkRects.Add(MakeBandRect(isDark: false));
+                _darkRects.Add(MakeBandRect(isDark: false));
             }
 
             if (_lightRects.Count == 0)
             {
-                _lightRects.Add(MakeBandRect(isDark: false));
-                _lightRects.Add(MakeBandRect(isDark: false));
+                _lightRects.Add(MakeBandRect(isDark: true));
+                _lightRects.Add(MakeBandRect(isDark: true));
             }
         }
 
