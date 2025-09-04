@@ -1062,6 +1062,7 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
+NJson
 NLog
 NLSTEXT
 NMAKE
