@@ -30,7 +30,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
     public IconInfoViewModel Icon { get; private set; }
 
     // UNDER NO CIRCUMSTANCES MAY SOMEONE WRITE TO THIS DICTIONARY.
-    // This is oour copy of the data from the extension.
+    // This is our copy of the data from the extension.
     // Adding values to it does not add to the extension.
     // Modifying it will not modify the extension
     // (except it might, if the dictionary was passed by ref)
@@ -53,7 +53,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         }
 
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
@@ -76,13 +76,13 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         }
 
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
         var ico = model.Icon;
-        if (ico != null)
+        if (ico is not null)
         {
             Icon = new(ico);
             Icon.InitializeProperties();
@@ -112,7 +112,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
     protected void FetchProperty(string propertyName)
     {
         var model = Model.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return; // throw?
         }
@@ -143,7 +143,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         Icon = new(null); // necessary?
 
         var model = Model.Unsafe;
-        if (model != null)
+        if (model is not null)
         {
             model.PropChanged -= Model_PropChanged;
         }

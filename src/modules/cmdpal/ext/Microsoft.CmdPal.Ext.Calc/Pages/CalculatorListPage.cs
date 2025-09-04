@@ -82,7 +82,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
         {
             this._items.Clear();
 
-            if (result != null)
+            if (result is not null)
             {
                 this._items.Add(result);
             }

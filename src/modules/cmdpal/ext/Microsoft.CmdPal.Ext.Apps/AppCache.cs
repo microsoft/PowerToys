@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -13,7 +12,7 @@ using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public sealed partial class AppCache : IDisposable
+public sealed partial class AppCache : IAppCache, IDisposable
 {
     private Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
 
@@ -25,7 +24,7 @@ public sealed partial class AppCache : IDisposable
 
     public IList<Win32Program> Win32s => _win32ProgramRepository.Items;
 
-    public IList<UWPApplication> UWPs => _packageRepository.Items;
+    public IList<IUWPApplication> UWPs => _packageRepository.Items;
 
     public static readonly Lazy<AppCache> Instance = new(() => new());
 
@@ -66,7 +65,7 @@ public sealed partial class AppCache : IDisposable
 
     private void UpdateUWPIconPath(Theme theme)
     {
-        if (_packageRepository != null)
+        if (_packageRepository is not null)
         {
             foreach (UWPApplication app in _packageRepository)
             {

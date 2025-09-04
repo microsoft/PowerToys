@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -150,6 +150,22 @@
   <data name="MeasureTool_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to bring up the command bar</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
+  </data>
+  <data name="Shell_DebugLabel.Text" xml:space="preserve">
+    <value>Debug</value>
+    <comment>Debug label visible in title bar when debugging</comment>
+  </data>
+  <data name="Shell_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search for settings</value>
+    <comment>Placeholder in settings search box</comment>
+  </data>
+  <data name="Shell_Search_NoResults" xml:space="preserve">
+    <value>No results for</value>
+    <comment>Prefix used in the no-results row; the query is appended in code, e.g., "No results for 'abc'"</comment>
+  </data>
+  <data name="Shell_Search_ShowAll" xml:space="preserve">
+    <value>Show all results</value>
+    <comment>Tail item text to navigate to full results</comment>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
     <value>Default mode</value>
@@ -398,6 +414,9 @@
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
     <value>Advanced Settings</value>
   </data>
+  <data name="MouseWithoutBorders_EasyMouseSettings_Group.Header" xml:space="preserve">
+    <value>Easy Mouse</value>
+  </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
   </data>
@@ -418,6 +437,27 @@
   <data name="MouseWithoutBorders_EasyMouseOption_Shift.Content" xml:space="preserve">
     <value>Shift</value>
     <comment>This is the Shift keyboard key</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Header" xml:space="preserve">
+    <value>Disable Easy Mouse when an application is running in full screen.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
+    <value>Prevent Easy Mouse from moving to another machine when an application is in full-screen mode.</value>
+  </data>
+  <data name="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine.Title" xml:space="preserve">
+    <value>Disabling Easy Mouse in full-screen mode only affects the host PC. It won’t stop the mouse from moving away from remote machines.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>msedge.exe
+firefox.exe
+opera.exe</value>
+    <comment>Allow easy mouse when chrome is in fullscreen mode.</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Header" xml:space="preserve">
+    <value>Ignored fullscreen applications</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Description" xml:space="preserve">
+    <value>Allow Easy Mouse to move between machines even if one of these applications is running in full screen, separate each executable with a new line.</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
     <value>Shortcut to lock all machines.</value>
@@ -485,7 +525,7 @@
   </data>
   <data name="Shell_Awake.Content" xml:space="preserve">
     <value>Awake</value>
-    <comment>Product name: Navigation view item name for Awake</comment>
+    <comment>{Locked}</comment>
   </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
@@ -599,17 +639,17 @@
     <value>Additional actions</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Current Key Remappings</value>
+    <value>Current key remappings</value>
   </data>
   <data name="RemapShortcutsList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Current Shortcut Remappings</value>
+    <value>Current shortcut remappings</value>
   </data>
   <data name="KeyboardManager_RemappedKeysListItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Key Remapping</value>
+    <value>Key remapping</value>
     <comment>key as in keyboard key</comment>
   </data>
   <data name="KeyboardManager_RemappedShortcutsListItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Shortcut Remapping</value>
+    <value>Shortcut remapping</value>
   </data>
   <data name="KeyboardManager_RemappedTo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remapped to</value>
@@ -618,7 +658,7 @@
     <value>Remapped to</value>
   </data>
   <data name="KeyboardManager_TargetApp.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>For Target Application</value>
+    <value>For target application</value>
     <comment>What computer application would this be for</comment>
   </data>
   <data name="KeyboardManager_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -2049,17 +2089,26 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
     <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected.</value>
   </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Title.Text" xml:space="preserve">
+    <value>Shortcut conflict detection</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Card.Text" xml:space="preserve">
+    <value>Shortcuts configured by PowerToys are conflicting.</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_Conflict_Card_Description.Header" xml:space="preserve">
+    <value>Shortcuts configured by PowerToys are conflicting</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Header" xml:space="preserve">
+    <value>No conflicts found</value>
+  </data>
+  <data name="Oobe_Overview_Hotkey_NoConflict_Card_Description" xml:space="preserve">
+    <value>All shortcuts function correctly</value>
+  </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link.Content" xml:space="preserve">
     <value>View more diagnostic data settings</value>
   </data>
   <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
     <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
-  </data>
-  <data name="Oobe_Overview_EnableDataDiagnostics.Header" xml:space="preserve">
-    <value>Diagnostic data</value>
-  </data>
-  <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
-    <value>Helps us make PowerToys faster, more stable, and better over time</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
     <value>Turn on diagnostic data to help us improve PowerToys?</value>
@@ -2271,6 +2320,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake.ModuleTitle" xml:space="preserve">
     <value>Awake</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Awake.ModuleDescription" xml:space="preserve">
     <value>A convenient way to keep your PC awake on-demand.</value>
@@ -2324,12 +2374,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_Awake.Description" xml:space="preserve">
     <value>Awake is a Windows tool designed to keep your PC awake on-demand without having to manage its power settings. This behavior can be helpful when running time-consuming tasks while ensuring that your PC does not go to sleep or turn off its screens.</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Oobe_Awake_HowToUse.Text" xml:space="preserve">
     <value>Open **PowerToys Settings** and enable Awake</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="Oobe_Awake_TipsAndTricks.Text" xml:space="preserve">
     <value>You can always change modes quickly by **right-clicking the Awake icon** in the system tray.</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="General_FailedToDownloadTheNewVersion.Title" xml:space="preserve">
     <value>An error occurred trying to install this update:</value>
@@ -2424,6 +2477,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_ModeSettingsCard.Description" xml:space="preserve">
     <value>Manage the state of your device when Awake is active</value>
+    <comment>Awake is a product name, do not localize</comment>
   </data>
   <data name="ExcludedApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
@@ -2637,6 +2691,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
+  <data name="WarningShortcutConflict.Title" xml:space="preserve">
+    <value>Shortcut conflict</value>
+  </data>
+  <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
+    <value>A conflict has been detected for this shortcut.</value>
+  </data>
   <data name="FancyZones_SpanZonesAcrossMonitors.Description" xml:space="preserve">
     <value>All monitors must have the same DPI scaling and will be treated as one large combined rectangle which contains all monitors</value>
   </data>
@@ -2835,6 +2895,24 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength.Header" xml:space="preserve">
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_GlidingCursor.Header" xml:space="preserve">
+    <value>Gliding cursor</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor.Description" xml:space="preserve">
+    <value>An accessibility feature that lets you control the mouse with a single button using guided horizontal and vertical lines</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
+    <value>Initial line speed</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor_InitialSpeed.Description" xml:space="preserve">
+    <value>Speed of the horizontal or vertical line when it begins moving</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor_DelaySpeed.Header" xml:space="preserve">
+    <value>Reduced line speed</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor_DelaySpeed.Description" xml:space="preserve">
+    <value>Speed after slowing down the line with a second shortcut press</value>
   </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
@@ -3536,6 +3614,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Macedonian" xml:space="preserve">
     <value>Macedonian</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Maltese" xml:space="preserve">
+    <value>Maltese</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Maori" xml:space="preserve">
     <value>Maori</value>
   </data>
@@ -3808,7 +3889,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Product name: Navigation view item name for Advanced Paste</comment>
   </data>
   <data name="AdvancedPaste.ModuleDescription" xml:space="preserve">
-    <value>Advanced Paste is a tool to put your clipboard content into any format you need. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key.</value>
+    <value>A tool to quickly format clipboard content into plain text, Markdown, JSON, and more. An AI-powered option requiring an OpenAI API key is available for advanced formatting.</value>
   </data>
   <data name="AdvancedPaste.ModuleTitle" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -4324,7 +4405,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Show minimap</value>
   </data>
   <data name="PrivacyLink.Text" xml:space="preserve">
-    <value>OpenAI Privacy</value>
+    <value>OpenAI privacy</value>
   </data>
   <data name="TermsLink.Text" xml:space="preserve">
     <value>OpenAI Terms</value>
@@ -4545,7 +4626,7 @@ Activate by holding the key for the character you want to add an accent to, then
 Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
   </data>
   <data name="ZoomIt_Zoom_Shortcut.Header" xml:space="preserve">
-    <value>Zoom Toggle Hotkey</value>
+    <value>Zoom hotkey</value>
   </data>
   <data name="ZoomIt_Toggle_AnimateZoom.Header" xml:space="preserve">
     <value>Animate zoom in and zoom out</value>
@@ -4566,7 +4647,7 @@ Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter 
 To enter and exit LiveZoom, enter the hotkey specified below.</value>
   </data>
   <data name="ZoomIt_LiveZoom_Shortcut.Header" xml:space="preserve">
-    <value>Live Zoom Toggle Hotkey</value>
+    <value>Live Zoom hotkey</value>
   </data>
   <data name="ZoomIt_DrawGroup.Header" xml:space="preserve">
     <value>Draw</value>
@@ -4585,7 +4666,7 @@ Shapes - Draw a line by holding down the Shift key, a rectangle with the Ctrl ke
 Screen - Clear the screen for a sketch pad by pressing W (white) or K (black). Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
   </data>
   <data name="ZoomIt_Draw_Shortcut.Header" xml:space="preserve">
-    <value>Draw without Zoom Hotkey</value>
+    <value>Draw without zoom hotkey</value>
   </data>
   <data name="ZoomIt_TypeGroup.Header" xml:space="preserve">
     <value>Type</value>
@@ -4599,11 +4680,11 @@ The text color is the current drawing color.</value>
     <value>Text font</value>
   </data>
   <data name="ZoomIt_Type_Font_Button.Content" xml:space="preserve">
-    <value>Choose Font</value>
+    <value>Choose font</value>
     <comment>Font refers to text font</comment>
   </data>
   <data name="ZoomIt_DemoTypeGroup.Header" xml:space="preserve">
-    <value>Demo Type</value>
+    <value>DemoType</value>
   </data>
   <data name="ZoomIt_DemoTypeGroup.Description" xml:space="preserve">
     <value>Use DemoType to have ZoomIt type text specified in the input file when you enter the DemoType toggle. You can also pull input from the clipboard if it is prefixed with the [start] keyword.
@@ -4617,7 +4698,7 @@ When driving input, hit the space bar to unblock keyboard input at the end of a 
 When you reach the end of the file, ZoomIt will reload the file and start at the beginning. Enter the hotkey with the Shift key in the opposite mode to step back to the last [end].</value>
   </data>
   <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
-    <value>Demo Type Toggle Hotkey</value>
+    <value>DemoType toggle hotkey</value>
   </data>
   <data name="ZoomIt_DemoType_File.Header" xml:space="preserve">
     <value>Input file</value>
@@ -4626,7 +4707,7 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
     <value>Browse</value>
   </data>
   <data name="ZoomIt_DemoType_File_Picker_Dialog_Title" xml:space="preserve">
-    <value>Specify DemoType file...</value>
+    <value>Specify DemoType file..</value>
   </data>
   <data name="FilePicker_AllFilesFilter" xml:space="preserve">
     <value>All Files</value>
@@ -4649,19 +4730,19 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
 Change the break timer color using the same keys that the drawing color. The break timer font is the same as text font.</value>
   </data>
   <data name="ZoomIt_Break_Shortcut.Header" xml:space="preserve">
-    <value>Start Break Timer Hotkey</value>
+    <value>Start break timer hotkey</value>
   </data>
   <data name="ZoomIt_Break_Timeout.Header" xml:space="preserve">
     <value>Timer (minutes)</value>
   </data>
   <data name="ZoomIt_Break_ShowExpiredTime.Header" xml:space="preserve">
-    <value>Show Time Elapsed After Expiration</value>
+    <value>Show time elapsed after expiration</value>
   </data>
   <data name="ZoomIt_Break_PlaySoundsFile.Header" xml:space="preserve">
-    <value>Play Sound on Expiration</value>
+    <value>Play sound on expiration</value>
   </data>
   <data name="ZoomIt_Break_SoundFile.Header" xml:space="preserve">
-    <value>Alarm Sound File</value>
+    <value>Alarm sound file</value>
   </data>
   <data name="ZoomIt_Break_SoundFile_BrowseButton.Content" xml:space="preserve">
     <value>Browse</value>
@@ -4673,7 +4754,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Sounds</value>
   </data>
   <data name="ZoomIt_Break_TimerOpacity.Header" xml:space="preserve">
-    <value>Timer Opacity</value>
+    <value>Timer opacity</value>
   </data>
   <data name="ZoomIt_Break_TimerOpacity_10Percent.Content" xml:space="preserve">
     <value>10%</value>
@@ -4706,7 +4787,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>100%</value>
   </data>
   <data name="ZoomIt_Break_TimerPosition.Header" xml:space="preserve">
-    <value>Timer Position</value>
+    <value>Timer position</value>
   </data>
   <data name="ZoomIt_Break_TimerPosition_TopLeftCorner.Content" xml:space="preserve">
     <value>Top left corner</value>
@@ -4736,7 +4817,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Bottom right corner</value>
   </data>
   <data name="ZoomIt_Break_ShowBackgroundBitmap.Header" xml:space="preserve">
-    <value>Show Background Bitmap</value>
+    <value>Show background bitmap</value>
   </data>
   <data name="ZoomIt_Break_ShowFadedDesktop.Content" xml:space="preserve">
     <value>Use faded desktop as background</value>
@@ -4745,7 +4826,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Use image file as background</value>
   </data>
   <data name="ZoomIt_Break_BackgroundFile.Header" xml:space="preserve">
-    <value>Background Image File</value>
+    <value>Background image file</value>
   </data>
   <data name="ZoomIt_Break_BackgroundFile_BrowseButton.Content" xml:space="preserve">
     <value>Browse</value>
@@ -4766,14 +4847,14 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Record</value>
   </data>
   <data name="ZoomIt_RecordGroup.Description" xml:space="preserve">
-    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hot key and finish the recording by entering it again.
+    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hotkey and finish the recording by entering it again.
 
 To crop the portion of the screen that will be recorded, enter the hotkey with the Shift key in the opposite mode.
 
 To record a specific window, enter the hotkey with the Alt key in the opposite mode.</value>
   </data>
   <data name="ZoomIt_Record_Shortcut.Header" xml:space="preserve">
-    <value>Record Toggle Hotkey</value>
+    <value>Record hotkey</value>
   </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
@@ -4794,7 +4875,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file.</value>
   </data>
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
-    <value>Snip Toggle Hotkey</value>
+    <value>Snip hotkey</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
@@ -4911,7 +4992,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>File Management</value>
   </data>
   <data name="Shell_TopLevelInputOutput.Content" xml:space="preserve">
-    <value>Input / Output</value>
+    <value>Input &amp; Output</value>
   </data>
   <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
     <value>Windowing &amp; Layouts</value>
@@ -5027,9 +5108,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
     <value>Generate package</value>
   </data>
-  <data name="AppTitleBarShutDown_Tooltip.Text" xml:space="preserve">
-    <value>Shut down</value>
-  </data>
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
   </data>
@@ -5067,7 +5145,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Quick access</value>
   </data>
   <data name="ShortcutsOverview.Title" xml:space="preserve">
-    <value>Shortcuts overview</value>
+    <value>Shortcuts</value>
   </data>
   <data name="NoActionsToShow.Text" xml:space="preserve">
     <value>No actions to show..</value>
@@ -5124,7 +5202,101 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
+  <data name="Close_NavViewItem.Content" xml:space="preserve">
+    <value>Close PowerToys</value>
+    <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="CloseDialog.Content" xml:space="preserve">
+    <value>Closing PowerToys will stop all active utilities.</value>
+    <comment>Don't loc "PowerToys"</comment>
+  </data>
+  <data name="CloseDialog.Title" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
+  <data name="CloseDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="CloseDialog.SecondaryButtonText" xml:space="preserve">
+    <value>No</value>
+  </data>
   <data name="KeyBack" xml:space="preserve">
     <value>Back key</value>
+  </data>
+  <data name="SearchResults_Title.ModuleTitle" xml:space="preserve">
+    <value>Search results</value>
+  </data>
+  <data name="SearchResults_ModulesTitle.Header" xml:space="preserve">
+    <value>Modules</value>
+  </data>
+  <data name="SearchResults_NoResultsHeader.Text" xml:space="preserve">
+    <value>No results</value>
+  </data>
+  <data name="SearchResults_NoResultsDescription.Text" xml:space="preserve">
+    <value>Try a different search term</value>
+  </data>
+  <data name="InAppHotkeyConflictTooltipText" xml:space="preserve">
+    <value>This shortcut is already in use by another utility.</value>
+  </data>
+  <data name="SysHotkeyConflictTooltipText" xml:space="preserve">
+    <value>This shortcut is already in use by a default system shortcut.</value>
+  </data>
+  <data name="ShortcutConflictWindow_Title" xml:space="preserve">
+    <value>PowerToys shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictWindow_TitleTxt.Text" xml:space="preserve">
+    <value>PowerToys shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictWindow_Description.Text" xml:space="preserve">
+    <value>Conflicting shortcuts may cause unexpected behavior. Edit them here or go to the module settings to update them.</value>
+  </data>
+  <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
+    <value>Conflicts found for</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemCard.Description" xml:space="preserve">
+    <value>Windows system shortcut</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemShortcutMessage.Text" xml:space="preserve">
+    <value>This shortcut can't be changed.</value>
+  </data>
+  <data name="ShortcutConflictWindow_SystemShortcutTooltip.Content" xml:space="preserve">
+    <value>This shortcut is used by Windows and can't be changed.</value>
+  </data>
+  <data name="ShortcutConflictWindow_NoConflictsTitle.Text" xml:space="preserve">
+    <value>No conflicts detected</value>
+  </data>
+  <data name="ShortcutConflictWindow_NoConflictsDescription.Text" xml:space="preserve">
+    <value>All shortcuts function correctly</value>
+  </data>
+  <data name="ResolveConflicts_Button.Content" xml:space="preserve">
+    <value>Resolve conflicts</value>
+  </data>
+  <data name="ShortcutConflictControl_Title.Text" xml:space="preserve">
+    <value>Shortcut conflicts</value>
+  </data>
+  <data name="ShortcutConflictControl_NoConflictsFound" xml:space="preserve">
+    <value>No conflicts found</value>
+  </data>
+  <data name="ShortcutConflictControl_SingleConflictFound" xml:space="preserve">
+    <value>1 conflict found</value>
+  </data>
+  <data name="ShortcutConflictControl_MultipleConflictsFound" xml:space="preserve">
+    <value>{0} conflicts found</value>
+    <comment>{0} is replaced with the number of conflicts</comment>
+  </data>
+  <data name="Hosts_NoLeadingSpaces.Header" xml:space="preserve">
+    <value>No leading spaces</value>
+  </data>
+  <data name="Hosts_NoLeadingSpaces.Description" xml:space="preserve">
+    <value>Do not prepend spaces to active lines when saving the hosts file</value>
+  </data>
+  <data name="Search_ResultsFor" xml:space="preserve">
+    <value>Results for</value>
+    <comment>Prefix for search string. E.g. "Results for 'shortcut'"</comment>
+  </data>
+  <data name="UtilitiesHeader.Title" xml:space="preserve">
+    <value>Utilities</value>
   </data>
 </root>

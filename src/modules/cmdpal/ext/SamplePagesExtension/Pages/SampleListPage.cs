@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -83,7 +84,7 @@ internal sealed partial class SampleListPage : ListPage
                         Title = "I'm a second command",
                         RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
                     },
-                    new SeparatorContextItem(),
+                    new Separator(),
                     new CommandContextItem(
                         new ToastCommand("Third command invoked", MessageState.Error) { Name = "Do 3", Icon = new IconInfo("\uF148") }) // dial 3
                     {
@@ -187,11 +188,14 @@ internal sealed partial class SampleListPage : ListPage
     {
         private FontIconData _icon = new("\u0026", "Wingdings");
 
-        public override IconInfo Icon => new IconInfo(_icon, _icon);
+        public override IconInfo Icon => new(_icon, _icon);
 
         public override string Name => "Whatever";
 
-        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
+        // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
+        // backing store for Properties. A regular `Dictionary<string, object>`
+        // will not work across the ABI
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
         {
             { "Foo", "bar" },
             { "Secret", 42 },
@@ -215,7 +219,10 @@ internal sealed partial class SampleListPage : ListPage
             return CommandResult.ShowToast("whoop");
         }
 
-        public IDictionary<string, object> GetProperties() => new Dictionary<string, object>()
+        // LOAD-BEARING: Use a Windows.Foundation.Collections.ValueSet as the
+        // backing store for Properties. A regular `Dictionary<string, object>`
+        // will not work across the ABI
+        public IDictionary<string, object> GetProperties() => new Windows.Foundation.Collections.ValueSet()
         {
             { "yo", "dog" },
             { "Secret", 12345 },

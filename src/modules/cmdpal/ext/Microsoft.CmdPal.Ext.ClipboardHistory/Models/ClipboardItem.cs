@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Streams;
@@ -16,9 +18,11 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 
 public class ClipboardItem
 {
-    public string? Content { get; set; }
+    public string? Content { get; init; }
 
-    public required ClipboardHistoryItem Item { get; set; }
+    public required ClipboardHistoryItem Item { get; init; }
+
+    public required ISettingOptions Settings { get; init; }
 
     public DateTimeOffset Timestamp => Item?.Timestamp ?? DateTimeOffset.MinValue;
 
@@ -37,7 +41,7 @@ public class ClipboardItem
     }
 
     [MemberNotNullWhen(true, nameof(ImageData))]
-    private bool IsImage => ImageData != null;
+    private bool IsImage => ImageData is not null;
 
     [MemberNotNullWhen(true, nameof(Content))]
     private bool IsText => !string.IsNullOrEmpty(Content);
@@ -87,6 +91,19 @@ public class ClipboardItem
             Data = new DetailsLink(Item.Timestamp.DateTime.ToString(DateTimeFormatInfo.CurrentInfo)),
         });
 
+        var deleteConfirmationCommand = new ConfirmableCommand()
+        {
+            Command = new DeleteItemCommand(this),
+            ConfirmationTitle = Properties.Resources.delete_confirmation_title!,
+            ConfirmationMessage = Properties.Resources.delete_confirmation_message!,
+            IsConfirmationRequired = () => Settings.DeleteFromHistoryRequiresConfirmation,
+        };
+        var deleteContextMenuItem = new CommandContextItem(deleteConfirmationCommand)
+        {
+            IsCritical = true,
+            RequestedShortcut = KeyChords.DeleteEntry,
+        };
+
         if (IsImage)
         {
             var iconData = new IconData(ImageData);
@@ -103,7 +120,9 @@ public class ClipboardItem
                     Metadata = metadata.ToArray(),
                 },
                 MoreCommands = [
-                    new CommandContextItem(new PasteCommand(this, ClipboardFormat.Image))
+                    new CommandContextItem(new PasteCommand(this, ClipboardFormat.Image, Settings)),
+                    new Separator(),
+                    deleteContextMenuItem,
                 ],
             };
         }
@@ -126,8 +145,10 @@ public class ClipboardItem
                     Metadata = metadata.ToArray(),
                 },
                 MoreCommands = [
-                                new CommandContextItem(new PasteCommand(this, ClipboardFormat.Text)),
-                            ],
+                    new CommandContextItem(new PasteCommand(this, ClipboardFormat.Text, Settings)),
+                    new Separator(),
+                    deleteContextMenuItem,
+                ],
             };
         }
         else

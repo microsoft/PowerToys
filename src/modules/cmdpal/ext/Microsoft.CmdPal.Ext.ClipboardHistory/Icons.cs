@@ -14,5 +14,7 @@ internal sealed class Icons
 
     internal static IconInfo PasteIcon { get; } = new("\uE77F");
 
-    internal static IconInfo ClipboardListIcon { get; } = new("\uF0E3");
+    internal static IconInfo DeleteIcon { get; } = new("\uE74D");
+
+    internal static IconInfo ClipboardListIcon { get; } = IconHelpers.FromRelativePath("Assets\\ClipboardHistory.svg");
 }

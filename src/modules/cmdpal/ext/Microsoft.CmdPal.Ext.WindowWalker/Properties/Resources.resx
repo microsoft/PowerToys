@@ -232,4 +232,7 @@
   <data name="windowwalker_PlaceholderText" xml:space="preserve">
     <value>Search open windows...</value>
   </data>
+  <data name="windowwalker_NoResultsMessage" xml:space="preserve">
+    <value>No open windows found</value>
+  </data>
 </root>

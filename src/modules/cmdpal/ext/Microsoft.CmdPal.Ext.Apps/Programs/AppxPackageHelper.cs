@@ -6,9 +6,7 @@ using System;
 using System.Collections.Generic;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Utils;
-using Microsoft.UI.Xaml.Controls;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.Storage.Packaging.Appx;
 using Windows.Win32.System.Com;
 
@@ -51,14 +49,14 @@ public static class AppxPackageHelper
                 {
                     result.Add((IntPtr)manifestApp);
                 }
-                else if (manifestApp != null)
+                else if (manifestApp is not null)
                 {
                     manifestApp->Release();
                 }
             }
             catch (Exception ex)
             {
-                if (manifestApp != null)
+                if (manifestApp is not null)
                 {
                     manifestApp->Release();
                 }

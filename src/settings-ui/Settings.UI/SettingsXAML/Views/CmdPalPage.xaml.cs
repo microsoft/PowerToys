@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class CmdPalPage : Page, IRefreshablePage
+    public sealed partial class CmdPalPage : NavigablePage, IRefreshablePage
     {
         private CmdPalViewModel ViewModel { get; set; }
 
@@ -26,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ShellPage.SendDefaultIPCMessage,
                 DispatcherQueue);
             DataContext = ViewModel;
+            Loaded += (s, e) => ViewModel.OnPageLoaded();
             InitializeComponent();
         }
 

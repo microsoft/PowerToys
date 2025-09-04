@@ -84,6 +84,9 @@
     <ClInclude Include="helpers_variables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RuntimeRegistration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
