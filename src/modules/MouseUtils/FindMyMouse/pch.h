@@ -9,14 +9,18 @@
 #include <Unknwn.h>
 
 #ifdef COMPOSITION
-#include <winrt/Microsoft.UI.Composition.Interop.h>
 #include <DispatcherQueue.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Microsoft.UI.Composition.h>
 #include <winrt/Microsoft.UI.h>
+#include <winrt/Windows.UI.h>
 #endif
 
 #include <winrt/Windows.Foundation.Collections.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
+
+#ifdef GetCurrentTime
+#undef GetCurrentTime
+#endif

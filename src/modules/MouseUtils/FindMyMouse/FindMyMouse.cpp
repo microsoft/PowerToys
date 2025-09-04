@@ -8,20 +8,39 @@
 #include "common/utils/process_path.h"
 #include "common/utils/excluded_apps.h"
 #include "common/utils/MsWindowsSettings.h"
+
+// Some Windows headers define GetCurrentTime() as a macro, which collides with
+// WinRT's IStoryboard::GetCurrentTime(TimeSpan*) signature in generated headers.
+// Guard against that by temporarily undefining the macro around WinRT includes.
+#ifdef GetCurrentTime
+#  pragma push_macro("GetCurrentTime")
+#  undef GetCurrentTime
+#  define PT_RESTORE_GetCurrentTime_MACRO 1
+#endif
+
+#include <winrt/Microsoft.UI.Composition.Interop.h>
+#include <winrt/Microsoft.UI.Dispatching.h>
+#include <winrt/Microsoft.UI.Xaml.h>
+#include <winrt/Microsoft.UI.Xaml.Controls.h>
+#include <winrt/Microsoft.UI.Xaml.Media.h>
+#include <winrt/Microsoft.UI.Xaml.Hosting.h>
+#include <winrt/Microsoft.UI.Interop.h>
+
+#ifdef PT_RESTORE_GetCurrentTime_MACRO
+#  pragma pop_macro("GetCurrentTime")
+#  undef PT_RESTORE_GetCurrentTime_MACRO
+#endif
 #include <vector>
 
-#ifdef COMPOSITION
 namespace winrt
 {
     using namespace winrt::Windows::System;
-    using namespace winrt::Microsoft::UI::Composition;
 }
 
-namespace ABI
-{
-    using namespace ABI::Windows::System;
-}
-#endif
+namespace muxc = winrt::Microsoft::UI::Composition;
+namespace muxx = winrt::Microsoft::UI::Xaml;
+namespace muxxc = winrt::Microsoft::UI::Xaml::Controls;
+namespace muxxh = winrt::Microsoft::UI::Xaml::Hosting;
 
 #pragma region Super_Sonar_Base_Code
 
@@ -73,7 +92,7 @@ protected:
     std::vector<std::wstring> m_excludedApps;
     int m_shakeMinimumDistance = FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE;
     static constexpr int FinalAlphaDenominator = 100;
-    winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
+    winrt::Microsoft::UI::Dispatching::DispatcherQueueController m_dispatcherQueueController{ nullptr };
 
     // Don't consider movements started past these milliseconds to detect shaking.
     int m_shakeIntervalMs = FIND_MY_MOUSE_DEFAULT_SHAKE_INTERVAL_MS;
@@ -81,7 +100,6 @@ protected:
     int m_shakeFactor = FIND_MY_MOUSE_DEFAULT_SHAKE_FACTOR;
 
 private:
-
     // Save the mouse movement that occurred in any direction.
     struct PointerRecentMovement
     {
@@ -225,7 +243,8 @@ LRESULT SuperSonar<D>::BaseWndProc(UINT message, WPARAM wParam, LPARAM lParam) n
     switch (message)
     {
     case WM_CREATE:
-        if(!OnSonarCreate()) return -1;
+        if (!OnSonarCreate())
+            return -1;
         UpdateMouseSnooping();
         return 0;
 
@@ -313,8 +332,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
         return;
     }
 
-    if ((m_activationMethod != FindMyMouseActivationMethod::DoubleRightControlKey && m_activationMethod != FindMyMouseActivationMethod::DoubleLeftControlKey)
-        || input.data.keyboard.VKey != VK_CONTROL)
+    if ((m_activationMethod != FindMyMouseActivationMethod::DoubleRightControlKey && m_activationMethod != FindMyMouseActivationMethod::DoubleLeftControlKey) || input.data.keyboard.VKey != VK_CONTROL)
     {
         StopSonar();
         return;
@@ -325,8 +343,7 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
     bool leftCtrlPressed = (input.data.keyboard.Flags & RI_KEY_E0) == 0;
     bool rightCtrlPressed = (input.data.keyboard.Flags & RI_KEY_E0) != 0;
 
-    if ((m_activationMethod == FindMyMouseActivationMethod::DoubleRightControlKey && !rightCtrlPressed)
-        || (m_activationMethod == FindMyMouseActivationMethod::DoubleLeftControlKey && !leftCtrlPressed))
+    if ((m_activationMethod == FindMyMouseActivationMethod::DoubleRightControlKey && !rightCtrlPressed) || (m_activationMethod == FindMyMouseActivationMethod::DoubleLeftControlKey && !leftCtrlPressed))
     {
         StopSonar();
         return;
@@ -401,14 +418,13 @@ template<typename D>
 void SuperSonar<D>::DetectShake()
 {
     ULONGLONG shakeStartTick = GetTickCount64() - m_shakeIntervalMs;
-    
+
     // Prune the story of movements for those movements that started too long ago.
     std::erase_if(m_movementHistory, [shakeStartTick](const PointerRecentMovement& movement) { return movement.tick < shakeStartTick; });
-    
-    
+
     double distanceTravelled = 0;
-    LONGLONG currentX=0, minX=0, maxX=0;
-    LONGLONG currentY=0, minY=0, maxY=0;
+    LONGLONG currentX = 0, minX = 0, maxX = 0;
+    LONGLONG currentY = 0, minY = 0, maxY = 0;
 
     for (const PointerRecentMovement& movement : m_movementHistory)
     {
@@ -420,23 +436,22 @@ void SuperSonar<D>::DetectShake()
         minY = min(currentY, minY);
         maxY = max(currentY, maxY);
     }
-    
+
     if (distanceTravelled < m_shakeMinimumDistance)
     {
         return;
     }
 
     // Size of the rectangle that the pointer moved in.
-    double rectangleWidth =  static_cast<double>(maxX) - minX;
-    double rectangleHeight =  static_cast<double>(maxY) - minY;
+    double rectangleWidth = static_cast<double>(maxX) - minX;
+    double rectangleHeight = static_cast<double>(maxY) - minY;
 
     double diagonal = sqrt(rectangleWidth * rectangleWidth + rectangleHeight * rectangleHeight);
-    if (diagonal > 0 && distanceTravelled / diagonal > (m_shakeFactor/100.f))
+    if (diagonal > 0 && distanceTravelled / diagonal > (m_shakeFactor / 100.f))
     {
         m_movementHistory.clear();
         StartSonar();
     }
-
 }
 
 template<typename D>
@@ -452,7 +467,7 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
     {
         LONG relativeX = 0;
         LONG relativeY = 0;
-        if ((input.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE && (input.data.mouse.lLastX!=0 || input.data.mouse.lLastY!=0))
+        if ((input.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE && (input.data.mouse.lLastX != 0 || input.data.mouse.lLastY != 0))
         {
             // Getting absolute mouse coordinates. Likely inside a VM / RDP session.
             if (m_seenAnAbsoluteMousePosition)
@@ -481,7 +496,7 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
             }
             else
             {
-                m_movementHistory.push_back({ .diff = { .x=relativeX, .y=relativeY }, .tick = GetTickCount64() });
+                m_movementHistory.push_back({ .diff = { .x = relativeX, .y = relativeY }, .tick = GetTickCount64() });
                 // Mouse movement changed directions. Take the opportunity do detect shake.
                 DetectShake();
             }
@@ -490,7 +505,6 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
         {
             m_movementHistory.push_back({ .diff = { .x = relativeX, .y = relativeY }, .tick = GetTickCount64() });
         }
-    
     }
 
     if (input.data.mouse.usButtonFlags)
@@ -656,7 +670,7 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
 
     void SetSonarVisibility(bool visible)
     {
-        m_batch = m_compositor.GetCommitBatch(winrt::CompositionBatchTypes::Animation);
+        m_batch = m_compositor.GetCommitBatch(muxc::CompositionBatchTypes::Animation);
         BOOL isEnabledAnimations = GetAnimationsEnabled();
         m_animation.Duration(std::chrono::milliseconds{ isEnabledAnimations ? m_fadeDuration : 1 });
         m_batch.Completed([hwnd = m_hwnd](auto&&, auto&&) {
@@ -678,54 +692,66 @@ private:
     bool OnCompositionCreate()
     try
     {
-        // We need a dispatcher queue.
-        DispatcherQueueOptions options = {
-            sizeof(options),
-            DQTYPE_THREAD_CURRENT,
-            DQTAT_COM_ASTA,
-        };
-        ABI::IDispatcherQueueController* controller;
-        winrt::check_hresult(CreateDispatcherQueueController(options, &controller));
-        *winrt::put_abi(m_dispatcherQueueController) = controller;
+        // Ensure a DispatcherQueue bound to this thread (required by WinAppSDK composition/XAML)
+        if (!m_dispatcherQueueController)
+        {
+            m_dispatcherQueueController =
+                winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
+        }
 
-        // Create the compositor for our window.
-        m_compositor = winrt::Compositor();
-        ABI::IDesktopWindowTarget* target;
-        winrt::check_hresult(m_compositor.as<ABI::ICompositorDesktopInterop>()->CreateDesktopWindowTarget(m_hwnd, false, &target));
-        *winrt::put_abi(m_target) = target;
+        // 1) Create a XAML island and attach it to this HWND
+        m_island = winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource{};
+        auto windowId = winrt::Microsoft::UI::GetWindowIdFromWindow(m_hwnd);
+        m_island.Initialize(windowId);
 
-        // Our composition tree:
+        // 2) Create a XAML container to host the Composition child visual
+        m_surface = winrt::Microsoft::UI::Xaml::Controls::Grid{};
+        // A transparent background keeps hit-testing consistent vs. null brush
+        m_surface.Background(winrt::Microsoft::UI::Xaml::Media::SolidColorBrush{
+            winrt::Microsoft::UI::Colors::Transparent() });
+        m_island.Content(m_surface);
+
+        // 3) Get the compositor from the XAML visual tree (pure MUXC path)
+        auto elementVisual =
+            winrt::Microsoft::UI::Xaml::Hosting::ElementCompositionPreview::GetElementVisual(m_surface);
+        m_compositor = elementVisual.Compositor();
+
+        // 4) Build the composition tree
         //
-        // [root] ContainerVisual
+        // [root] ContainerVisual (fills host)
         // \ LayerVisual
-        //   \[gray backdrop]
-        //    [spotlight]
+        //   \ [gray backdrop]
+        //     [spotlight]
         m_root = m_compositor.CreateContainerVisual();
-        m_root.RelativeSizeAdjustment({ 1.0f, 1.0f }); // fill the parent
+        m_root.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_root.Opacity(0.0f);
-        m_target.Root(m_root);
+
+        // Insert our root as a hand-in Visual under the XAML element
+        winrt::Microsoft::UI::Xaml::Hosting::ElementCompositionPreview::SetElementChildVisual(m_surface, m_root);
 
         auto layer = m_compositor.CreateLayerVisual();
-        layer.RelativeSizeAdjustment({ 1.0f, 1.0f }); // fill the parent
+        layer.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_root.Children().InsertAtTop(layer);
 
         m_backdrop = m_compositor.CreateSpriteVisual();
-        m_backdrop.RelativeSizeAdjustment({ 1.0f, 1.0f }); // fill the parent
+        m_backdrop.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_backdrop.Brush(m_compositor.CreateColorBrush(m_backgroundColor));
         layer.Children().InsertAtTop(m_backdrop);
 
-        m_circleGeometry = m_compositor.CreateEllipseGeometry(); // radius set via expression animation
+        m_circleGeometry = m_compositor.CreateEllipseGeometry(); // radius animated via expression
         m_circleShape = m_compositor.CreateSpriteShape(m_circleGeometry);
         m_circleShape.FillBrush(m_compositor.CreateColorBrush(m_spotlightColor));
-        m_circleShape.Offset({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
+        m_circleShape.Offset(
+            { m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
+
         m_spotlight = m_compositor.CreateShapeVisual();
-        m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
+        m_spotlight.Size(
+            { m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
         m_spotlight.AnchorPoint({ 0.5f, 0.5f });
         m_spotlight.Shapes().Append(m_circleShape);
-
         layer.Children().InsertAtTop(m_spotlight);
 
-        // Implicitly animate the alpha.
+        // 5) Implicit opacity animation on the root
         m_animation = m_compositor.CreateScalarKeyFrameAnimation();
         m_animation.Target(L"Opacity");
         m_animation.InsertExpressionKeyFrame(1.0f, L"this.FinalValue");
@@ -734,13 +760,14 @@ private:
         collection.Insert(L"Opacity", m_animation);
         m_root.ImplicitAnimations(collection);
 
-        // Radius of spotlight shrinks as opacity increases.
-        // At opacity zero, it is m_sonarRadius * SonarZoomFactor.
-        // At maximum opacity, it is m_sonarRadius.
+        // 6) Spotlight radius shrinks as opacity increases (expression animation)
         auto radiusExpression = m_compositor.CreateExpressionAnimation();
         radiusExpression.SetReferenceParameter(L"Root", m_root);
+
         wchar_t expressionText[256];
-        winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
+        winrt::check_hresult(StringCchPrintfW(
+            expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
+
         radiusExpression.Expression(expressionText);
         m_circleGeometry.StartAnimation(L"Radius", radiusExpression);
 
@@ -760,7 +787,8 @@ private:
     }
 
 public:
-    void ApplySettings(const FindMyMouseSettings& settings, bool applyToRuntimeObjects) {
+    void ApplySettings(const FindMyMouseSettings& settings, bool applyToRuntimeObjects)
+    {
         if (!applyToRuntimeObjects)
         {
             // Runtime objects not created yet. Just update fields.
@@ -811,8 +839,8 @@ public:
                     UpdateMouseSnooping(); // For the shake mouse activation method
 
                     // Apply new settings to runtime composition objects.
-                    m_backdrop.Brush().as<winrt::CompositionColorBrush>().Color(m_backgroundColor);
-                    m_circleShape.FillBrush().as<winrt::CompositionColorBrush>().Color(m_spotlightColor);
+                    m_backdrop.Brush().as<muxc::CompositionColorBrush>().Color(m_backgroundColor);
+                    m_circleShape.FillBrush().as<muxc::CompositionColorBrush>().Color(m_spotlightColor);
                     m_circleShape.Offset({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
                     m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
                     m_animation.Duration(std::chrono::milliseconds{ m_fadeDuration });
@@ -835,17 +863,19 @@ public:
     }
 
 private:
-    winrt::Compositor m_compositor{ nullptr };
-    winrt::Desktop::DesktopWindowTarget m_target{ nullptr };
-    winrt::ContainerVisual m_root{ nullptr };
-    winrt::CompositionEllipseGeometry m_circleGeometry{ nullptr };
-    winrt::ShapeVisual m_spotlight{ nullptr };
-    winrt::CompositionCommitBatch m_batch{ nullptr };
-    winrt::SpriteVisual m_backdrop{ nullptr };
-    winrt::CompositionSpriteShape m_circleShape{ nullptr };
-    winrt::Microsoft::UI::Color m_backgroundColor = FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR;
-    winrt::Microsoft::UI::Color m_spotlightColor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR;
-    winrt::ScalarKeyFrameAnimation m_animation{ nullptr };
+    muxc::Compositor m_compositor{ nullptr };
+    muxxh::DesktopWindowXamlSource m_island{ nullptr };
+    muxxc::Grid m_surface{ nullptr };
+
+    muxc::ContainerVisual m_root{ nullptr };
+    muxc::CompositionEllipseGeometry m_circleGeometry{ nullptr };
+    muxc::ShapeVisual m_spotlight{ nullptr };
+    muxc::CompositionCommitBatch m_batch{ nullptr };
+    muxc::SpriteVisual m_backdrop{ nullptr };
+    muxc::CompositionSpriteShape m_circleShape{ nullptr };
+    winrt::Windows::UI::Color m_backgroundColor = FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR;
+    winrt::Windows::UI::Color m_spotlightColor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR;
+    muxc::ScalarKeyFrameAnimation m_animation{ nullptr };
 };
 
 template<typename D>
@@ -1045,7 +1075,6 @@ struct GdiCrosshairs : GdiSonar<GdiCrosshairs>
 };
 
 #pragma endregion Super_Sonar_Base_Code
-
 
 #pragma region Super_Sonar_API
 
