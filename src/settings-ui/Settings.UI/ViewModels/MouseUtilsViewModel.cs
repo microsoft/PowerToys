@@ -29,13 +29,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private MousePointerCrosshairsSettings MousePointerCrosshairsSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private DwellCursorSettings DwellCursorSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(
+            ISettingsUtils settingsUtils,
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository,
+            ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository,
+            ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository,
+            ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository,
+            ISettingsRepository<DwellCursorSettings> dwellCursorSettingsRepository,
+            Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
-
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             InitializeEnabledValues();
@@ -43,7 +52,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // To obtain the find my mouse settings, if the file exists.
             // If not, to create a file with the default settings and to return the default configurations.
             ArgumentNullException.ThrowIfNull(findMyMouseSettingsRepository);
-
             FindMyMouseSettingsConfig = findMyMouseSettingsRepository.SettingsConfig;
             _findMyMouseActivationMethod = FindMyMouseSettingsConfig.Properties.ActivationMethod.Value < 4 ? FindMyMouseSettingsConfig.Properties.ActivationMethod.Value : 0;
             _findMyMouseIncludeWinKey = FindMyMouseSettingsConfig.Properties.IncludeWinKey.Value;
@@ -65,7 +73,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _findMyMouseShakingFactor = FindMyMouseSettingsConfig.Properties.ShakingFactor.Value;
 
             ArgumentNullException.ThrowIfNull(mouseHighlighterSettingsRepository);
-
             MouseHighlighterSettingsConfig = mouseHighlighterSettingsRepository.SettingsConfig;
             string leftClickColor = MouseHighlighterSettingsConfig.Properties.LeftButtonClickColor.Value;
             _highlighterLeftButtonClickColor = !string.IsNullOrEmpty(leftClickColor) ? leftClickColor : "#a6FFFF00";
@@ -85,7 +92,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             this.InitializeMouseJumpSettings(mouseJumpSettingsRepository);
 
             ArgumentNullException.ThrowIfNull(mousePointerCrosshairsSettingsRepository);
-
             MousePointerCrosshairsSettingsConfig = mousePointerCrosshairsSettingsRepository.SettingsConfig;
 
             string crosshairsColor = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsColor.Value;
@@ -103,8 +109,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
 
-            int isEnabled = 0;
+            // Dwell Cursor
+            ArgumentNullException.ThrowIfNull(dwellCursorSettingsRepository);
+            DwellCursorSettingsConfig = dwellCursorSettingsRepository.SettingsConfig;
+            _dwellCursorDelayTimeSeconds = DwellCursorSettingsConfig.Properties.DelayTimeMs.Value / 1000;
 
+            int isEnabled = 0;
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
             _isAnimationEnabledBySystem = isEnabled != 0;
 
@@ -151,6 +161,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _isMousePointerCrosshairsEnabled = GeneralSettingsConfig.Enabled.MousePointerCrosshairs;
             }
+
+            // Dwell Cursor enabled state
+            _isDwellCursorEnabled = GeneralSettingsConfig.Enabled.DwellCursor;
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
@@ -163,6 +176,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     MousePointerCrosshairsActivationShortcut,
                     GlidingCursorActivationShortcut],
                 [MouseJumpSettings.ModuleName] = [MouseJumpActivationShortcut],
+                [DwellCursorSettings.ModuleName] = [DwellCursorActivationShortcut],
             };
 
             return hotkeysDict;
@@ -959,6 +973,69 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(MousePointerCrosshairsSettingsConfig.ToJsonString(), MousePointerCrosshairsSettings.ModuleName);
         }
 
+        // Dwell Cursor properties
+        private bool _isDwellCursorEnabled;
+        private int _dwellCursorDelayTimeSeconds;
+
+        public bool IsDwellCursorEnabled
+        {
+            get => _isDwellCursorEnabled;
+            set
+            {
+                if (_isDwellCursorEnabled != value)
+                {
+                    _isDwellCursorEnabled = value;
+
+                    GeneralSettingsConfig.Enabled.DwellCursor = value;
+                    OnPropertyChanged(nameof(IsDwellCursorEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
+                    NotifyDwellCursorPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings DwellCursorActivationShortcut
+        {
+            get => DwellCursorSettingsConfig.Properties.ActivationShortcut;
+            set
+            {
+                if (DwellCursorSettingsConfig.Properties.ActivationShortcut != value)
+                {
+                    DwellCursorSettingsConfig.Properties.ActivationShortcut = value ?? DwellCursorSettingsProperties.DefaultActivationShortcut;
+                    NotifyDwellCursorPropertyChanged();
+                }
+            }
+        }
+
+        public int DwellCursorDelayTimeSeconds
+        {
+            get => _dwellCursorDelayTimeSeconds;
+            set
+            {
+                if (value != _dwellCursorDelayTimeSeconds)
+                {
+                    _dwellCursorDelayTimeSeconds = value;
+
+                    // Convert seconds to milliseconds for storage
+                    DwellCursorSettingsConfig.Properties.DelayTimeMs.Value = value * 1000;
+                    NotifyDwellCursorPropertyChanged();
+                }
+            }
+        }
+
+        public void NotifyDwellCursorPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            var outsettings = new SndDwellCursorSettings(DwellCursorSettingsConfig);
+            var ipcMessage = new SndModuleSettings<SndDwellCursorSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(DwellCursorSettingsConfig.ToJsonString(), DwellCursorSettings.ModuleName);
+        }
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValues();
@@ -966,6 +1043,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsMouseHighlighterEnabled));
             OnPropertyChanged(nameof(IsMouseJumpEnabled));
             OnPropertyChanged(nameof(IsMousePointerCrosshairsEnabled));
+            OnPropertyChanged(nameof(IsDwellCursorEnabled));
         }
 
         private Func<string, int> SendConfigMSG { get; }

@@ -1,0 +1,14 @@
+#pragma once
+#include <windows.h>
+#include <windowsx.h>
+#include <ShellScalingApi.h>
+#include <stdint.h>
+#include <atomic>
+#include <thread>
+#include <chrono>
+#include <optional>
+#include <string>
+#include <common/SettingsAPI/settings_objects.h>
+#include <interface/powertoy_module_interface.h>
+#include <common/logger/logger.h>
+#include <common/utils/logger_helper.h>

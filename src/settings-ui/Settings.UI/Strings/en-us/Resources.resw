@@ -5299,4 +5299,27 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="UtilitiesHeader.Title" xml:space="preserve">
     <value>Utilities</value>
   </data>
+  <data name="MouseUtils_DwellCursor.Header" xml:space="preserve">
+    <value>Dwell Cursor (placeholder)</value>
+    <comment>Dwell Cursor description</comment>
+  </data>
+  <data name="MouseUtils_Enable_DwellCursor.Header" xml:space="preserve">
+    <value>Enable Dwell Cursor</value>
+    <comment>"Dwell Cursor" is the name of the utility.</comment>
+  </data>
+	<data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
+    <value>Initial line speed</value>
+  </data>
+	<data name="MouseUtils_DwellCursor_DelayMs.Header" xml:space="preserve">
+    <value>Dwell Cursor Delay time (seconds)</value>
+  </data>
+  <data name="MouseUtils_DwellCursor_DelayMs.Description" xml:space="preserve">
+    <value>Time to wait before automatically clicking when cursor stops moving (1-10 seconds)</value>
+  </data>	
+  <data name="MouseUtils_DwellCursor_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_DwellCursor_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to turn on or off this mode</value>
+  </data>	
 </root>

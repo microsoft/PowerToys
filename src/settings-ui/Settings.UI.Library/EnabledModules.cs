@@ -282,6 +282,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool dwellCursor; // defaulting to off
+
+        [JsonPropertyName("DwellCursor")]
+        public bool DwellCursor
+        {
+            get => dwellCursor;
+            set
+            {
+                if (dwellCursor != value)
+                {
+                    LogTelemetryEvent(value);
+                    dwellCursor = value;
+                }
+            }
+        }
+
         private bool powerAccent; // defaulting to off
 
         [JsonPropertyName("QuickAccent")]

@@ -1,0 +1,7 @@
+#include <windows.h>
+#include "resource.h"
+
+STRINGTABLE
+BEGIN
+    IDS_MODULE_NAME "DwellCursor"
+END

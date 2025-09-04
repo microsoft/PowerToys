@@ -169,7 +169,7 @@
                         Severity="Informational"
                         Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <InfoBar.ActionButton>
-                            <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
+                            <HyperlinkButton x:Uid="OpenAnimationsSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>
                     </InfoBar>
                     <tkcontrols:SettingsExpander
@@ -413,6 +413,43 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
+
+                <!-- Dwell Cursor -->
+                <controls:SettingsGroup x:Uid="MouseUtils_DwellCursor">
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsEnableDwellCursor"
+                        x:Uid="MouseUtils_Enable_DwellCursor"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrosshairs.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsDwellCursorEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsDwellCursorActivationShortcut"
+                        x:Uid="MouseUtils_DwellCursor_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsDwellCursorEnabled, Mode=OneWay}"
+                        IsExpanded="True">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DwellCursorActivationShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Name="DwellCursorAppearanceBehavior"
+                        x:Uid="Appearance_Behavior"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        IsEnabled="{x:Bind ViewModel.IsDwellCursorEnabled, Mode=OneWay}"
+                        IsExpanded="False">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="MouseUtilsDwellCursorDelayMs" x:Uid="MouseUtils_DwellCursor_DelayMs">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="10"
+                                    Minimum="1"
+                                    Value="{x:Bind ViewModel.DwellCursorDelayTimeSeconds, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
