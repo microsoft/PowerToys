@@ -158,7 +158,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
                 [FindMyMouseSettings.ModuleName] = [FindMyMouseActivationShortcut],
-                [MouseHighlighterSettings.ModuleName] = [MouseHighlighterActivationShortcut],
+                [MouseHighlighterSettings.ModuleName] = [MouseHighlighterActivationShortcut, MouseHighlighterModeSwitchShortcut],
                 [MousePointerCrosshairsSettings.ModuleName] = [
                     MousePointerCrosshairsActivationShortcut,
                     GlidingCursorActivationShortcut],
@@ -518,6 +518,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (MouseHighlighterSettingsConfig.Properties.ActivationShortcut != value)
                 {
                     MouseHighlighterSettingsConfig.Properties.ActivationShortcut = value ?? MouseHighlighterSettingsConfig.Properties.DefaultActivationShortcut;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings MouseHighlighterModeSwitchShortcut
+        {
+            get
+            {
+                return MouseHighlighterSettingsConfig.Properties.ModeSwitchShortcut;
+            }
+
+            set
+            {
+                if (MouseHighlighterSettingsConfig.Properties.ModeSwitchShortcut != value)
+                {
+                    MouseHighlighterSettingsConfig.Properties.ModeSwitchShortcut = value ?? MouseHighlighterSettingsConfig.Properties.DefaultModeSwitchShortcut;
                     NotifyMouseHighlighterPropertyChanged();
                 }
             }

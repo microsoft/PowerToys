@@ -2824,6 +2824,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Customize the shortcut to turn on or off this mode</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
+  <data name="MouseUtils_MouseHighlighter_ModeSwitchShortcut.Header" xml:space="preserve">
+    <value>Mode switch shortcut</value>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_ModeSwitchShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to switch between spotlight and circle highlight modes</value>
+    <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
+  </data>
   <data name="MouseUtils_MouseHighlighter_PrimaryButtonClickColor.Header" xml:space="preserve">
     <value>Primary button highlight color</value>
   </data>
