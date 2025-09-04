@@ -2,6 +2,8 @@
 #include <tchar.h>
 #include "ThemeScheduler.h"
 #include "ThemeHelper.h"
+#include <common/SettingsAPI/settings_objects.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include <stdio.h>
 #include <string>
 #include <LightSwitchSettings.h>
@@ -10,6 +12,7 @@
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
 HANDLE g_ServiceStopEvent = nullptr;
+static int g_lastUpdatedDay = -1;
 
 VOID WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl);
@@ -130,6 +133,27 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
     }
 }
 
+static void update_sun_times(auto& settings)
+{
+    double latitude = std::stod(settings.latitude);
+    double longitude = std::stod(settings.longitude);
+
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+
+    SunTimes newTimes = CalculateSunriseSunset(latitude, longitude, st.wYear, st.wMonth, st.wDay);
+
+    int newLightTime = newTimes.sunriseHour * 60 + newTimes.sunriseMinute;
+    int newDarkTime = newTimes.sunsetHour * 60 + newTimes.sunsetMinute;
+
+    auto values = PowerToysSettings::PowerToyValues::load_from_settings_file(L"LightSwitch");
+    values.add_property(L"lightTime", newLightTime);
+    values.add_property(L"darkTime", newDarkTime);
+    values.save_to_settings_file();
+
+    OutputDebugString(L"[LightSwitchService] Updated sun times and saved to config.\n");
+}
+
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 {
     DWORD parentPid = static_cast<DWORD>(reinterpret_cast<ULONG_PTR>(lpParam));
@@ -203,7 +227,15 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         LightSwitchSettings::instance().LoadSettings();
         const auto& settings = LightSwitchSettings::instance().settings();
 
-        // Debug print
+        // Refresh suntimes at day boundary
+        if (g_lastUpdatedDay != st.wDay)
+        {
+            update_sun_times(settings);
+            g_lastUpdatedDay = st.wDay;
+
+            OutputDebugString(L"[LightSwitchService] Recalculated sun times at new day boundary.\n");
+        }
+
         wchar_t msg[160];
         swprintf_s(msg,
                    L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d\n",
@@ -241,7 +273,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         // Apply theme logic (only runs if no manual override or override just cleared)
         applyTheme(nowMinutes, settings.lightTime + settings.offset, settings.darkTime + settings.offset, settings);
 
-        // Sleep until next minute, wake early if stop/parent dies
     sleep_until_next_minute:
         GetLocalTime(&st);
         int msToNextMinute = (60 - st.wSecond) * 1000 - st.wMilliseconds;
@@ -262,7 +293,6 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 
     return 0;
 }
-
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
