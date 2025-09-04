@@ -106,8 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     ViewModel.SelectedCity = match;
                 }
 
-                ViewModel.CityTimesText = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2}\n" +
-                            $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
+                // ViewModel.CityTimesText = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2}\n" + $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
                 ViewModel.SyncButtonInformation = ViewModel.SelectedCity != null ? ViewModel.SelectedCity.Name : $"{ViewModel.Latitude}/{ViewModel.Longitude}";
             }
         }
@@ -149,6 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 // Since we use this mode, we can remove the selected city data.
                 ViewModel.SelectedCity = null;
+                CityAutoSuggestBox.Text = string.Empty;
 
                 ViewModel.SyncButtonInformation = latitude + "/" + longitude;
 

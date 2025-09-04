@@ -233,8 +233,8 @@
                                 </Grid.RowDefinitions>
                                 <TextBlock Text="Lat/lon" />
                                 <TextBlock Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                    <Run Text="{x:Bind ViewModel.Latitude}" /><Run Text=", " />
-                                    <Run Text="{x:Bind ViewModel.Longitude}" />
+                                    <Run Text="{Binding Latitude, Mode=OneWay}" /><Run Text=", " />
+                                    <Run Text="{Binding Longitude, Mode=OneWay}" />
                                 </TextBlock>
                                 <TextBlock Grid.Row="1" Text="Sunrise" />
                                 <TextBlock

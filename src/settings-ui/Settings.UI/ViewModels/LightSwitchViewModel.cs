@@ -413,7 +413,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
             SyncButtonInformation = SelectedCity.Name;
-            NotifyPropertyChanged();
         }
 
         private bool _enabledStateIsGPOConfigured;
