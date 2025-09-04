@@ -1,50 +1,50 @@
 #include "ZipFolder.h"
-#include "..\..\..\..\deps\cziplib\src\zip.h"
 #include <common/utils/timeutil.h>
+
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 
 void ZipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
 {
     std::string reportFilename{ "PowerToysReport_" };
     reportFilename += timeutil::format_as_local("%F-%H-%M-%S", timeutil::now());
     reportFilename += ".zip";
+    auto finalReportFullPath{ zipPath / reportFilename };
 
-    auto tmpZipPath = std::filesystem::temp_directory_path();
-    tmpZipPath /= reportFilename;
+    std::string tempReportFilename{ reportFilename + ".tmp" };
+    auto tempReportFullPath{ zipPath / tempReportFilename };
 
-    struct zip_t* zip = zip_open(tmpZipPath.string().c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
-    if (!zip)
+    // tar -c --format=zip -f "reportzipfile" *
+    const std::string executable{ R"(c:\windows\system32\tar.exe)" };
+    std::string commandline{ executable + R"( -c --format=zip -f ")" };
+    commandline += tempReportFullPath.string();
+    commandline += R"(" *)";
+
+    const auto folderPathAsString{ folderPath.lexically_normal().string() };
+
+    PROCESS_INFORMATION pi{};
+    STARTUPINFOA si{ .cb = sizeof(STARTUPINFOA) };
+    if (!CreateProcessA(executable.c_str(),
+                        commandline.data() /* must be mutable */,
+                        nullptr,
+                        nullptr,
+                        FALSE,
+                        DETACHED_PROCESS,
+                        nullptr,
+                        folderPathAsString.c_str(),
+                        &si,
+                        &pi))
     {
         printf("Cannot open zip.");
         throw -1;
     }
 
-    using recursive_directory_iterator = std::filesystem::recursive_directory_iterator;
-    const size_t rootSize = folderPath.wstring().size();
-    for (const auto& dirEntry : recursive_directory_iterator(folderPath))
-    {
-        if (dirEntry.is_regular_file())
-        {
-            auto path = dirEntry.path().string();
-            auto relativePath = path.substr(rootSize, path.size());
-            zip_entry_open(zip, relativePath.c_str());
-            zip_entry_fwrite(zip, path.c_str());
-            zip_entry_close(zip);
-        }
-    }
+    WaitForSingleObject(pi.hProcess, INFINITE);
 
-    zip_close(zip);
-
-    std::error_code err;
-    std::filesystem::copy(tmpZipPath, zipPath, err);
+    std::error_code err{};
+    std::filesystem::rename(tempReportFullPath, finalReportFullPath, err);
     if (err.value() != 0)
     {
-        wprintf_s(L"Failed to copy %s. Error code: %d\n", tmpZipPath.c_str(), err.value());
-    }
-
-    err = {};
-    std::filesystem::remove_all(tmpZipPath, err);
-    if (err.value() != 0)
-    {
-        wprintf_s(L"Failed to delete %s. Error code: %d\n", tmpZipPath.c_str(), err.value());
+        wprintf_s(L"Failed to rename %s. Error code: %d\n", tempReportFullPath.native().c_str(), err.value());
     }
 }
