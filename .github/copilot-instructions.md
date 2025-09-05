@@ -3,7 +3,7 @@
 This is the top-level guide for AI changes. Keep edits small, follow existing patterns, and cite exact paths in PRs.
 
 Before you start
-- Open copilot-instructions.md in the target folder (or the nearest parent). Follow that folder’s rules first. If none exists, use the defaults below.
+- Open copilot-instructions.md in the target folder (or the nearest parent). Follow that folder’s rules first, and then follow this default.
 
 Repo map (1‑line per area)
 - Core apps: `src/runner/**` (tray/loader), `src/settings-ui/**` (Settings app)
@@ -26,10 +26,6 @@ Build and test (defaults)
 Logging (use existing stacks)
 - C++: `src/common/logger/**` (`Logger::info|warn|error|debug`). Keep hot paths quiet (hooks, tight loops).
 - C#: `ManagedCommon.Logger` (`LogInfo|LogWarning|LogError|LogDebug|LogTrace`). Some UIs use injected `ILogger` via `LoggerInstance.Logger`.
-
-Where folder rules live (do this first)
-- Each area should include a short `copilot-instructions.md` at its root with: how to build just this area, which tests to run, logging expectations, perf/UX guideline, and acceptance checks.
-- If the folder has one, follow it over this top-level guide. If it’s a new project, create a minimal one based on the template in `tools/project_template/`.
 
 Docs to consult
 - `tools/build/BUILD-GUIDELINES.md`
