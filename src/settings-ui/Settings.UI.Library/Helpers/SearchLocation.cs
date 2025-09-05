@@ -10,10 +10,14 @@ using System.Threading.Tasks;
 
 namespace Settings.UI.Library.Helpers
 {
-    public sealed record City(string Name, string Country, double Latitude, double Longitude)
+    public class SearchLocation()
     {
-        public string Display => string.IsNullOrWhiteSpace(Country)
-            ? Name
-            : $"{Name}, {Country}";
+        public string City { get; set; }
+
+        public string Country { get; set; }
+
+        public double Latitude { get; set; }
+
+        public double Longitude { get; set; }
     }
 }

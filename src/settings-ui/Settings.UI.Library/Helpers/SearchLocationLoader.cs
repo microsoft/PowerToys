@@ -7,17 +7,18 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Microsoft.VisualBasic.Logging;
 using Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
-    public static class CityLoader
+    public static class SearchLocationLoader
     {
         /// <summary>
         /// Loads all cities from a world_cities.csv file.
         /// Expected columns: city, city_ascii, lat, lng, country
         /// </summary>
-        public static IEnumerable<City> LoadCities(string path)
+        public static IEnumerable<SearchLocation> LoadCities(string path)
         {
             using StreamReader reader = new(path);
 
@@ -70,7 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                     continue;
                 }
 
-                yield return new City(cityName, country, lat, lng);
+                yield return new SearchLocation() { City = cityName, Country = country, Latitude = lat, Longitude = lng };
             }
         }
 

@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private Func<string, int> SendConfigMSG { get; }
 
-        public ObservableCollection<City> Cities { get; } = new();
+        public ObservableCollection<SearchLocation> SearchLocations { get; } = new();
 
         public LightSwitchViewModel(LightSwitchSettings initialSettings = null, Func<string, int> ipcMSGCallBackFunc = null)
         {
@@ -271,40 +271,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private City _selectedCity;
+        private SearchLocation _selectedSearchLocation;
 
-        public City SelectedCity
+        public SearchLocation SelectedCity
         {
-            get => _selectedCity;
+            get => _selectedSearchLocation;
             set
             {
-                if (_selectedCity != value)
+                if (_selectedSearchLocation != value)
                 {
-                    _selectedCity = value;
+                    _selectedSearchLocation = value;
                     NotifyPropertyChanged();
 
                     UpdateSunTimesForSelectedCity();
-                }
-            }
-        }
-
-        private string _searchText = string.Empty;
-
-        public string SearchText
-        {
-            get => _searchText;
-            set
-            {
-                if (_searchText != value)
-                {
-                    _searchText = value;
-                    NotifyPropertyChanged();
-
-                    // optional: clear SelectedCity if text no longer matches
-                    if (SelectedCity != null && !SelectedCity.Display.Equals(_searchText, StringComparison.OrdinalIgnoreCase))
-                    {
-                        SelectedCity = null;
-                    }
                 }
             }
         }
@@ -412,7 +391,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Longitude = SelectedCity.Longitude.ToString(CultureInfo.InvariantCulture);
 
             // CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
-            SyncButtonInformation = SelectedCity.Name;
+            SyncButtonInformation = SelectedCity.City;
         }
 
         private bool _enabledStateIsGPOConfigured;

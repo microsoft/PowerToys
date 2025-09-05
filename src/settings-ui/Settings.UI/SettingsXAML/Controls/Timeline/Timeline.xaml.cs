@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
@@ -362,8 +363,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 return;
             }
 
-            _startEdgeLabel.Text = FormatTime(StartTime);
-            _endEdgeLabel.Text = FormatTime(EndTime);
+            _startEdgeLabel.Text = TimeSpanHelper.Convert(StartTime);
+            _endEdgeLabel.Text = TimeSpanHelper.Convert(EndTime);
 
             PlaceTopLabelAtTime(_startEdgeLabel, StartTime, w);
             PlaceTopLabelAtTime(_endEdgeLabel, EndTime, w);
@@ -494,7 +495,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (Sunrise.HasValue)
                 {
-                    ToolTipService.SetToolTip(_sunrisePanel, $"Sunrise: {FormatTime(Sunrise.Value)}");
+                    ToolTipService.SetToolTip(_sunrisePanel, $"Sunrise: {TimeSpanHelper.Convert(Sunrise.Value)}");
                     _sunrisePanel.Visibility = Visibility.Visible;
                     Place(_sunrisePanel, Sunrise.Value);
                 }
@@ -509,7 +510,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 if (Sunset.HasValue)
                 {
-                    ToolTipService.SetToolTip(_sunsetPanel, $"Sunset: {FormatTime(Sunset.Value)}");
+                    ToolTipService.SetToolTip(_sunsetPanel, $"Sunset: {TimeSpanHelper.Convert(Sunset.Value)}");
                     _sunsetPanel.Visibility = Visibility.Visible;
                     Place(_sunsetPanel, Sunset.Value);
                 }
@@ -560,7 +561,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 var tb = _majorTickBottomLabels[i];
                 var t = TimeSpan.FromHours(hours[i]);
-                tb.Text = FormatTime(t);
+                tb.Text = TimeSpanHelper.Convert(t);
 
                 double xTimeline = Math.Round((t.TotalHours / 24.0) * timelineW);
                 double textW = MeasureTextWidth(tb);
@@ -614,25 +615,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         // ===== Utilities =====
-        private string FormatTime(TimeSpan ts)
-        {
-            var dt = DateTime.Today.Add(ts);
-            if (_is24h)
-            {
-                if (ts.TotalHours >= 24)
-                {
-                    dt = DateTime.Today; // show 24:00 as 00:00
-                }
-
-                return dt.ToString("HH:mm", CultureInfo.CurrentCulture);
-            }
-            else
-            {
-                return dt.ToString("h:mm", CultureInfo.CurrentCulture)
-                       + dt.ToString("tt", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture);
-            }
-        }
-
         private static double Clamp(double v, double min, double max) => Math.Max(min, Math.Min(max, v));
 
         private static double MeasureElementWidth(FrameworkElement el)

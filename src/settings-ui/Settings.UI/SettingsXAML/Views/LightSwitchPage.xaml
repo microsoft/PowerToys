@@ -18,6 +18,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
+        <converters:TimeSpanToFriendlyTimeConverter x:Key="TimeSpanToFriendlyTimeConverter" />
     </Page.Resources>
     <controls:SettingsPageControl
         x:Uid="LightSwitch"
@@ -185,14 +186,28 @@
                                 x:Name="CityAutoSuggestBox"
                                 Grid.Row="1"
                                 Margin="0,16,0,8"
-                                DisplayMemberPath="Display"
-                                ItemsSource="{x:Bind ViewModel.Cities, Mode=OneWay}"
-                                PlaceholderText="Search for a city near you"
+                                ItemsSource="{x:Bind ViewModel.SearchLocations, Mode=OneWay}"
+                                PlaceholderText="Search for a city near you.."
+                                QueryIcon="Find"
                                 SuggestionChosen="CityAutoSuggestBox_SuggestionChosen"
-                                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}"
-                                TextChanged="CityAutoSuggestBox_TextChanged"
-                                TextMemberPath="Display" />
-
+                                TextChanged="CityAutoSuggestBox_TextChanged">
+                                <AutoSuggestBox.ItemTemplate>
+                                    <DataTemplate x:DataType="helpers:SearchLocation">
+                                        <Grid Padding="12,8,0,8">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{x:Bind City}" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind Country}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </AutoSuggestBox.ItemTemplate>
+                            </AutoSuggestBox>
                             <StackPanel
                                 Grid.Row="2"
                                 Orientation="Horizontal"
@@ -220,34 +235,45 @@
                                 x:Name="OutputPanel"
                                 Grid.Row="3"
                                 VerticalAlignment="Bottom"
-                                ColumnSpacing="16">
+                                ColumnSpacing="16"
+                                RowSpacing="12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <TextBlock Text="Lat/lon" />
+                                <FontIcon
+                                    FontSize="16"
+                                    Glyph="&#xECAF;"
+                                    ToolTipService.ToolTip="Location" />
                                 <TextBlock Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                    <Run Text="{Binding Latitude, Mode=OneWay}" /><Run Text=", " />
-                                    <Run Text="{Binding Longitude, Mode=OneWay}" />
+                                    <Run Text="{x:Bind ViewModel.Latitude, Mode=OneWay}" /><Run Text="°, " />
+                                    <Run Text="{x:Bind ViewModel.Longitude, Mode=OneWay}" /><Run Text="°" />
                                 </TextBlock>
-                                <TextBlock Grid.Row="1" Text="Sunrise" />
+                                <FontIcon
+                                    Grid.Row="1"
+                                    FontSize="20"
+                                    Glyph="&#xED39;"
+                                    ToolTipService.ToolTip="Sunrise" />
                                 <TextBlock
                                     Grid.Row="1"
                                     Grid.Column="1"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}" />
-                                <TextBlock Grid.Row="2" Text="Sunset" />
+                                    Text="{x:Bind ViewModel.LightTimeTimeSpan, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}" />
+                                <FontIcon
+                                    Grid.Row="2"
+                                    FontSize="20"
+                                    Glyph="&#xED3A;"
+                                    ToolTipService.ToolTip="Sunset" />
                                 <TextBlock
                                     Grid.Row="2"
                                     Grid.Column="1"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}" />
+                                    Text="{x:Bind ViewModel.DarkTimeTimeSpan, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}" />
 
                                 <!--<TextBlock Grid.Row="3" Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />-->
                                 <!--  TO DO: REMOVE, JUST FOR DEBUG  -->
@@ -257,7 +283,6 @@
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
-
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="LearnMore_LightSwitch" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
         </controls:SettingsPageControl.PrimaryLinks>

@@ -76,15 +76,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void LightSwitchPage_Loaded(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.Cities.Count == 0)
+            if (ViewModel.SearchLocations.Count == 0)
             {
                 string csvPath = Path.Combine(AppContext.BaseDirectory, "Assets/world_cities.csv");
                 System.Diagnostics.Debug.WriteLine($"Looking for world_cities.csv at: {csvPath}");
                 if (File.Exists(csvPath))
                 {
-                    foreach (var city in CityLoader.LoadCities(csvPath))
+                    foreach (var city in SearchLocationLoader.LoadCities(csvPath))
                     {
-                        ViewModel.Cities.Add(city);
+                        ViewModel.SearchLocations.Add(city);
                     }
                 }
                 else
@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 double.TryParse(ViewModel.Latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLat) &&
                 double.TryParse(ViewModel.Longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLng))
             {
-                var match = ViewModel.Cities.FirstOrDefault(c =>
+                var match = ViewModel.SearchLocations.FirstOrDefault(c =>
                     Math.Abs(c.Latitude - savedLat) < 0.0001 &&
                     Math.Abs(c.Longitude - savedLng) < 0.0001);
 
@@ -107,7 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
 
                 // ViewModel.CityTimesText = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2}\n" + $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
-                ViewModel.SyncButtonInformation = ViewModel.SelectedCity != null ? ViewModel.SelectedCity.Name : $"{ViewModel.Latitude}/{ViewModel.Longitude}";
+                ViewModel.SyncButtonInformation = ViewModel.SelectedCity != null ? ViewModel.SelectedCity.City : $"{ViewModel.Latitude},{ViewModel.Longitude}";
             }
         }
 
@@ -150,18 +150,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.SelectedCity = null;
                 CityAutoSuggestBox.Text = string.Empty;
 
-                ViewModel.SyncButtonInformation = latitude + "/" + longitude;
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
 
                 // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
                 SyncLoader.Visibility = Visibility.Collapsed;
+                LocationDialog.IsPrimaryButtonEnabled = true;
             }
             catch (Exception ex)
             {
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
                 System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
+                LocationDialog.IsPrimaryButtonEnabled = false;
             }
         }
 
@@ -169,11 +171,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             if (ViewModel.ScheduleMode == "SunriseToSunsetUser")
             {
-                ViewModel.SyncButtonInformation = ViewModel.SelectedCity.Name;
+                ViewModel.SyncButtonInformation = ViewModel.SelectedCity.City;
             }
             else if (ViewModel.ScheduleMode == "SunriseToSunsetGeo")
             {
-                ViewModel.SyncButtonInformation = ViewModel.Latitude + "/" + ViewModel.Longitude;
+                ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
             }
         }
 
@@ -294,18 +296,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void SyncLocationButton_Click(object sender, RoutedEventArgs e)
         {
+            LocationDialog.IsPrimaryButtonEnabled = false;
             await LocationDialog.ShowAsync();
         }
 
         private void CityAutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput && !string.IsNullOrWhiteSpace(sender.Text))
             {
                 string query = sender.Text.ToLower(CultureInfo.CurrentCulture);
 
                 // Filter your cities (assuming ViewModel.Cities is a List<City>)
-                var filtered = ViewModel.Cities
-                    .Where(c => c.Display.Contains(query, StringComparison.CurrentCultureIgnoreCase))
+                var filtered = ViewModel.SearchLocations
+                    .Where(c =>
+                        (c.City?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false) ||
+                        (c.Country?.Contains(query, StringComparison.CurrentCultureIgnoreCase) ?? false))
                     .ToList();
 
                 sender.ItemsSource = filtered;
@@ -314,9 +319,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void CityAutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
-            if (args.SelectedItem is City city)
+            if (args.SelectedItem is SearchLocation location)
             {
-                ViewModel.SelectedCity = city;
+                ViewModel.SelectedCity = location;
+                CityAutoSuggestBox.Text = $"{location.City}, {location.Country}";
+                LocationDialog.IsPrimaryButtonEnabled = true;
             }
         }
     }
