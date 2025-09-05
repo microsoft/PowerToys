@@ -9,9 +9,9 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public class SmallGridPropertiesViewModel : IGridPropertiesViewModel
 {
-    private readonly ExtensionObject<SmallGridLayout> _model;
+    private readonly ExtensionObject<ISmallGridLayout> _model;
 
-    public SmallGridPropertiesViewModel(SmallGridLayout smallGridLayout)
+    public SmallGridPropertiesViewModel(ISmallGridLayout smallGridLayout)
     {
         _model = new(smallGridLayout);
     }
