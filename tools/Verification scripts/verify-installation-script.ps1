@@ -202,12 +202,13 @@ function Test-PowerToysInstallation {
         if ($powerToysEntry) {
             Add-CheckResult -Category "Registry" -CheckName "Uninstall Registry Entry ($Scope)" -Status 'Pass' -Message "PowerToys uninstall entry found with DisplayName: $($powerToysEntry.DisplayName)"
             
-            # Note: InstallLocation may or may not be set in the uninstall registry
-            # This is normal behavior as PowerToys uses direct file references for system bindings
+            # Check for InstallLocation registry value
             if ($powerToysEntry.InstallLocation) {
                 Add-CheckResult -Category "Registry" -CheckName "Install Location Registry ($Scope)" -Status 'Pass' -Message "InstallLocation found: $($powerToysEntry.InstallLocation)"
             }
-            # No need to report missing InstallLocation as it's not required
+            else {
+                Add-CheckResult -Category "Registry" -CheckName "Install Location Registry ($Scope)" -Status 'Fail' -Message "InstallLocation missing in uninstall registry entry"
+            }
         }
         else {
             Add-CheckResult -Category "Registry" -CheckName "Uninstall Registry Entry ($Scope)" -Status 'Fail' -Message "PowerToys uninstall entry not found in Windows uninstall registry"
@@ -246,8 +247,8 @@ function Get-PowerToysInstallPath {
         return $InstallPath
     }
     
-    # Since InstallLocation may not be reliably set in the uninstall registry,
-    # we'll use the default installation paths based on scope
+    # Try to get the installation path from the registry first, fall back to default paths
+    # if InstallLocation is not available
     if ($Scope -eq 'PerMachine') {
         $defaultPath = "${env:ProgramFiles}\PowerToys"
     }
@@ -255,12 +256,7 @@ function Get-PowerToysInstallPath {
         $defaultPath = "${env:LOCALAPPDATA}\PowerToys"
     }
     
-    # Verify the path exists before returning it
-    if (Test-Path $defaultPath) {
-        return $defaultPath
-    }
-    
-    # If default path doesn't exist, try to get it from uninstall registry as fallback
+    # Try to get path from uninstall registry first
     $uninstallKey = if ($Scope -eq 'PerMachine') {
         "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"
     }
@@ -273,7 +269,7 @@ function Get-PowerToysInstallPath {
             $_.DisplayName -like "*PowerToys*" 
         } | Select-Object -First 1
         
-        # Check for InstallLocation first, but it may not exist
+        # Check for InstallLocation first
         if ($powerToysEntry -and $powerToysEntry.InstallLocation) {
             return $powerToysEntry.InstallLocation.TrimEnd('\')
         }
@@ -289,7 +285,12 @@ function Get-PowerToysInstallPath {
         }
     }
     catch {
-        # If registry read fails, fall back to null
+        # If registry read fails, fall back to default path
+    }
+    
+    # Verify the default path exists before returning it
+    if (Test-Path $defaultPath) {
+        return $defaultPath
     }
     
     # If we can't determine the install path, return null
