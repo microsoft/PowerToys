@@ -31,10 +31,6 @@ When to ask for clarification
 - Cross-module impact (shared enum/struct) not clear.
 - Security / elevation / installer changes.
 
-Do / Don’t quick list
-- Do: verify paths & APIs before editing; keep diffs minimal; add tests for logic.
-- Don’t: reformat unrelated code; introduce global singletons; add logging in tight loops.
-
 Logging (use existing stacks)
 - C++: `src/common/logger/**` (`Logger::info|warn|error|debug`). Keep hot paths quiet (hooks, tight loops).
 - C#: `ManagedCommon.Logger` (`LogInfo|LogWarning|LogError|LogDebug|LogTrace`). Some UIs use injected `ILogger` via `LoggerInstance.Logger`.
