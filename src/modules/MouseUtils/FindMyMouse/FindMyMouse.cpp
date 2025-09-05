@@ -658,10 +658,10 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
 
     void AfterMoveSonar()
     {
-        if (m_spotlight)
-        {
-            m_spotlight.Offset({ static_cast<float>(m_sonarPos.x), static_cast<float>(m_sonarPos.y), 0.0f });
-        }
+        const float scale = static_cast<float>(m_surface.XamlRoot().RasterizationScale());
+        m_spotlight.Offset({ static_cast<float>(m_sonarPos.x) / scale,
+                             static_cast<float>(m_sonarPos.y) / scale,
+                             0.0f });
     }
 
     LRESULT WndProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept
@@ -731,7 +731,7 @@ private:
         m_island.Initialize(windowId);
 
         UpdateIslandSize();
-        
+
         // 2) Create a XAML container to host the Composition child visual
         m_surface = winrt::Microsoft::UI::Xaml::Controls::Grid{};
 
@@ -743,7 +743,6 @@ private:
         m_surface.VerticalAlignment(muxx::VerticalAlignment::Stretch);
 
         m_island.Content(m_surface);
-
 
         // 3) Get the compositor from the XAML visual tree (pure MUXC path)
         auto elementVisual =
@@ -775,12 +774,15 @@ private:
         m_circleGeometry = m_compositor.CreateEllipseGeometry(); // radius animated via expression
         m_circleShape = m_compositor.CreateSpriteShape(m_circleGeometry);
         m_circleShape.FillBrush(m_compositor.CreateColorBrush(m_spotlightColor));
-        m_circleShape.Offset(
-            { m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
+
+        const float scale = static_cast<float>(m_surface.XamlRoot().RasterizationScale());
+        const float rDip = m_sonarRadiusFloat / scale;
+        const float zoom = static_cast<float>(m_sonarZoomFactor);
+
+        m_circleShape.Offset({ rDip * zoom, rDip * zoom });
 
         m_spotlight = m_compositor.CreateShapeVisual();
-        m_spotlight.Size(
-            { m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
+        m_spotlight.Size({ rDip * 2 * zoom, rDip * 2 * zoom });
         m_spotlight.AnchorPoint({ 0.5f, 0.5f });
         m_spotlight.Shapes().Append(m_circleShape);
         layer.Children().InsertAtTop(m_spotlight);
@@ -823,12 +825,14 @@ private:
 
     void UpdateIslandSize()
     {
-        if (!m_island) return;
+        if (!m_island)
+            return;
 
         RECT rc{};
-        if (!GetClientRect(m_hwnd, &rc)) return;
+        if (!GetClientRect(m_hwnd, &rc))
+            return;
 
-        const int width  = rc.right  - rc.left;
+        const int width = rc.right - rc.left;
         const int height = rc.bottom - rc.top;
 
         auto bridge = m_island.SiteBridge();
@@ -890,8 +894,13 @@ public:
                     // Apply new settings to runtime composition objects.
                     m_backdrop.Brush().as<muxc::CompositionColorBrush>().Color(m_backgroundColor);
                     m_circleShape.FillBrush().as<muxc::CompositionColorBrush>().Color(m_spotlightColor);
-                    m_circleShape.Offset({ m_sonarRadiusFloat * m_sonarZoomFactor, m_sonarRadiusFloat * m_sonarZoomFactor });
-                    m_spotlight.Size({ m_sonarRadiusFloat * 2 * m_sonarZoomFactor, m_sonarRadiusFloat * 2 * m_sonarZoomFactor });
+
+                    const float scale = static_cast<float>(m_surface.XamlRoot().RasterizationScale());
+                    const float rDip = m_sonarRadiusFloat / scale;
+                    const float zoom = static_cast<float>(m_sonarZoomFactor);
+
+                    m_circleShape.Offset({ rDip * zoom, rDip * zoom });
+                    m_spotlight.Size({ rDip * 2 * zoom, rDip * 2 * zoom });
                     m_animation.Duration(std::chrono::milliseconds{ m_fadeDuration });
                     m_circleGeometry.StopAnimation(L"Radius");
 
