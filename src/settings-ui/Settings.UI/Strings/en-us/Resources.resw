@@ -5321,5 +5321,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="MouseUtils_DwellCursor_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to turn on or off this mode</value>
-  </data>	
+  </data>
+  <data name="MouseUtils_DwellCursor_SettleTimeSeconds.Header" xml:space="preserve">
+    <value>Cursor settle time (seconds)</value>
+  </data>
+  <data name="MouseUtils_DwellCursor_SettleTimeSeconds.Description" xml:space="preserve">
+    <value>Settle time for the cursor before the countdown timer starts</value>
+  </data>
 </root>

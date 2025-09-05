@@ -113,6 +113,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(dwellCursorSettingsRepository);
             DwellCursorSettingsConfig = dwellCursorSettingsRepository.SettingsConfig;
             _dwellCursorDelayTimeSeconds = DwellCursorSettingsConfig.Properties.DelayTimeMs.Value / 1000;
+            _dwellCursorSettleTimeSeconds = DwellCursorSettingsConfig.Properties.SettleTimeSeconds.Value;
 
             int isEnabled = 0;
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -976,6 +977,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Dwell Cursor properties
         private bool _isDwellCursorEnabled;
         private int _dwellCursorDelayTimeSeconds;
+        private int _dwellCursorSettleTimeSeconds;
 
         public bool IsDwellCursorEnabled
         {
@@ -1021,6 +1023,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     // Convert seconds to milliseconds for storage
                     DwellCursorSettingsConfig.Properties.DelayTimeMs.Value = value * 1000;
+                    NotifyDwellCursorPropertyChanged();
+                }
+            }
+        }
+
+        public int DwellCursorSettleTimeSeconds
+        {
+            get => _dwellCursorSettleTimeSeconds;
+            set
+            {
+                if (value != _dwellCursorSettleTimeSeconds)
+                {
+                    _dwellCursorSettleTimeSeconds = value;
+                    DwellCursorSettingsConfig.Properties.SettleTimeSeconds.Value = value;
                     NotifyDwellCursorPropertyChanged();
                 }
             }

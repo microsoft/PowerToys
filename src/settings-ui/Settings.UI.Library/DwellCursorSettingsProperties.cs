@@ -15,5 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("delay_time_ms")]
         public IntProperty DelayTimeMs { get; set; } = new IntProperty() { Value = 1000 }; // 0.5s-10s
+
+        [JsonPropertyName("settle_time_seconds")]
+        public IntProperty SettleTimeSeconds { get; set; } = new IntProperty() { Value = 1 }; // 1-5 seconds
     }
 }

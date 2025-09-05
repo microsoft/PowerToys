@@ -446,6 +446,13 @@
                                     Minimum="1"
                                     Value="{x:Bind ViewModel.DwellCursorDelayTimeSeconds, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsDwellCursorSettleTimeSeconds" x:Uid="MouseUtils_DwellCursor_SettleTimeSeconds">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="5"
+                                    Minimum="1"
+                                    Value="{x:Bind ViewModel.DwellCursorSettleTimeSeconds, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
