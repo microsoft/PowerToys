@@ -230,13 +230,13 @@
                                     Visibility="Collapsed" />
                             </StackPanel>
 
-                            <!--  TO DO: Only show OutputPanel when the location was selected / found  -->
                             <Grid
-                                x:Name="OutputPanel"
+                                x:Name="LocationResultPanel"
                                 Grid.Row="3"
                                 VerticalAlignment="Bottom"
                                 ColumnSpacing="16"
-                                RowSpacing="12">
+                                RowSpacing="12"
+                                Visibility="Collapsed">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
@@ -278,6 +278,7 @@
                                 <!--<TextBlock Grid.Row="3" Text="{x:Bind ViewModel.CityTimesText, Mode=OneWay}" />-->
                                 <!--  TO DO: REMOVE, JUST FOR DEBUG  -->
                             </Grid>
+
                         </Grid>
                     </ContentDialog>
                 </controls:SettingsGroup>

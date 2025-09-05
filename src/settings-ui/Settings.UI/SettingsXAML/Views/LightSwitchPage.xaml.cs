@@ -157,13 +157,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SyncLoader.IsActive = false;
                 SyncLoader.Visibility = Visibility.Collapsed;
                 LocationDialog.IsPrimaryButtonEnabled = true;
+                LocationResultPanel.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
                 System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
-                LocationDialog.IsPrimaryButtonEnabled = false;
+                VisualStateManager.GoToState(this, "DisabledLocationState", true);
             }
         }
 
@@ -297,6 +298,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void SyncLocationButton_Click(object sender, RoutedEventArgs e)
         {
             LocationDialog.IsPrimaryButtonEnabled = false;
+            LocationResultPanel.Visibility = Visibility.Collapsed;
             await LocationDialog.ShowAsync();
         }
 
@@ -324,6 +326,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.SelectedCity = location;
                 CityAutoSuggestBox.Text = $"{location.City}, {location.Country}";
                 LocationDialog.IsPrimaryButtonEnabled = true;
+                LocationResultPanel.Visibility = Visibility.Visible;
             }
         }
     }
