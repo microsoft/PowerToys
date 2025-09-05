@@ -9,9 +9,9 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public class GalleryGridPropertiesViewModel : IGridPropertiesViewModel
 {
-    private readonly ExtensionObject<GalleryGridLayout> _model;
+    private readonly ExtensionObject<IGalleryGridLayout> _model;
 
-    public GalleryGridPropertiesViewModel(GalleryGridLayout galleryGridLayout)
+    public GalleryGridPropertiesViewModel(IGalleryGridLayout galleryGridLayout)
     {
         _model = new(galleryGridLayout);
     }
