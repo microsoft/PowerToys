@@ -8,6 +8,7 @@
 #include "common/utils/process_path.h"
 #include "common/utils/excluded_apps.h"
 #include "common/utils/MsWindowsSettings.h"
+#include <winrt/Windows.Graphics.h>
 
 // Some Windows headers define GetCurrentTime() as a macro, which collides with
 // WinRT's IStoryboard::GetCurrentTime(TimeSpan*) signature in generated headers.
@@ -25,6 +26,7 @@
 #include <winrt/Microsoft.UI.Xaml.Media.h>
 #include <winrt/Microsoft.UI.Xaml.Hosting.h>
 #include <winrt/Microsoft.UI.Interop.h>
+#include <winrt/Microsoft.UI.Content.h>
 
 #ifdef PT_RESTORE_GetCurrentTime_MACRO
 #pragma pop_macro("GetCurrentTime")
@@ -667,10 +669,15 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
         switch (message)
         {
         case WM_CREATE:
-            return OnCompositionCreate() && BaseWndProc(message, wParam, lParam);
+            if (!OnCompositionCreate())
+                return -1;
+            return BaseWndProc(message, wParam, lParam);
 
         case WM_OPACITY_ANIMATION_COMPLETED:
             OnOpacityAnimationCompleted();
+            break;
+        case WM_SIZE:
+            UpdateIslandSize();
             break;
         }
         return BaseWndProc(message, wParam, lParam);
@@ -723,12 +730,20 @@ private:
         auto windowId = winrt::Microsoft::UI::GetWindowIdFromWindow(m_hwnd);
         m_island.Initialize(windowId);
 
+        UpdateIslandSize();
+        
         // 2) Create a XAML container to host the Composition child visual
         m_surface = winrt::Microsoft::UI::Xaml::Controls::Grid{};
+
         // A transparent background keeps hit-testing consistent vs. null brush
         m_surface.Background(winrt::Microsoft::UI::Xaml::Media::SolidColorBrush{
             winrt::Microsoft::UI::Colors::Transparent() });
+        // m_surface.Background(muxx::Media::SolidColorBrush{ winrt::Microsoft::UI::Colors::Red() });
+        m_surface.HorizontalAlignment(muxx::HorizontalAlignment::Stretch);
+        m_surface.VerticalAlignment(muxx::VerticalAlignment::Stretch);
+
         m_island.Content(m_surface);
+
 
         // 3) Get the compositor from the XAML visual tree (pure MUXC path)
         auto elementVisual =
@@ -804,6 +819,20 @@ private:
         {
             ShowWindow(m_hwnd, SW_HIDE);
         }
+    }
+
+    void UpdateIslandSize()
+    {
+        if (!m_island) return;
+
+        RECT rc{};
+        if (!GetClientRect(m_hwnd, &rc)) return;
+
+        const int width  = rc.right  - rc.left;
+        const int height = rc.bottom - rc.top;
+
+        auto bridge = m_island.SiteBridge();
+        bridge.MoveAndResize(winrt::Windows::Graphics::RectInt32{ 0, 0, width, height });
     }
 
 public:
