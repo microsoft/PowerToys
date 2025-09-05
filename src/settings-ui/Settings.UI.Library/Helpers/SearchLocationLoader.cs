@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Microsoft.VisualBasic.Logging;
 using Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
