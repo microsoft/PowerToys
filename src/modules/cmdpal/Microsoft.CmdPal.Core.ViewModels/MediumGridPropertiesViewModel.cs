@@ -9,9 +9,9 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public class MediumGridPropertiesViewModel : IGridPropertiesViewModel
 {
-    private readonly ExtensionObject<MediumGridLayout> _model;
+    private readonly ExtensionObject<IMediumGridLayout> _model;
 
-    public MediumGridPropertiesViewModel(MediumGridLayout mediumGridLayout)
+    public MediumGridPropertiesViewModel(IMediumGridLayout mediumGridLayout)
     {
         _model = new(mediumGridLayout);
     }
