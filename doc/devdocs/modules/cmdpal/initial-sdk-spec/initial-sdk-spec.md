@@ -2085,6 +2085,7 @@ Fortunately, we can put all of that (`GetApiExtensionStubs`,
 developers won't have to do anything. The toolkit will just do the right thing
 for them.
 
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 ## Addenda IV: Dock bands
 
 The "dock" is another way to surface commands to the user. This is a
@@ -2099,6 +2100,38 @@ bands via the new `DockBand` property on `ICommandProvider3`.
 interface ICommandProvider3 requires ICommandProvider2
 {
     ICommandItem[] GetDockBands();
+=======
+## Addenda II: Rich Search
+
+This addenda is broken into multiple draft specs currently. These represent different approaches to the same goals. 
+
+* [RichSearchBox](./RichSearchBox-draft-A.md)
+
+### Commands with parameters
+
+We've also long experimented with the idea of commands having parameters that
+can be filled in by the user. These would be commands that take a couple
+lightweight inputs, so that the use can input them more natively than an
+adaptive card. 
+
+Previous drafts included a new type of `ICommand` ala
+`IInvokableWithParameters`. However, these ran into edge cases:
+* Where are the parameters displayed? In the search box? On the item?
+* What happens if a context menu command needs parameters? 
+* Does the _page_ have parameters?
+
+none of which were trivially solvable by having the parameters on the command.
+
+Instead, we can leverage the concept of a "rich search" experience to provide
+that lightweight parameter input method.
+
+We'll add a new type of page, called a `RichSearchPage`. It's a list page, but
+with a rich search box at the top.
+
+```c#
+interface IRichSearchPage requires IListPage {
+    IRichSearch Search { get; };
+>>>>>>> e55bc8c3d (this feels like i'm getting somewhere):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 };
 ```
 
