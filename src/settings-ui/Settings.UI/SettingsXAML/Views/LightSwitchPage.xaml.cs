@@ -184,12 +184,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             var combo = (ComboBox)sender;
             var selectedTag = (combo.SelectedItem as ComboBoxItem)?.Tag?.ToString();
-
-            if (selectedTag == "FixedHours")
-            {
-                ViewModel.LightTime = 360;
-                ViewModel.DarkTime = 1080;
-            }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

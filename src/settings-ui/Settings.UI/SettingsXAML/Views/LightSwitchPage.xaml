@@ -77,10 +77,10 @@
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Header="Turn off dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                                <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.LightTimeTimeSpan, Mode=TwoWay}" />
+                              <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Header="Turn on dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                                <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=TwoWay}" />
+                              <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Description="Choose a location to automatically calculate accurate sunrise and sunset times"
@@ -109,6 +109,7 @@
                                         Maximum="60"
                                         Minimum="-60"
                                         SnapsTo="StepValues"
+                                        StepFrequency="5"
                                         TickFrequency="15"
                                         TickPlacement="Outside"
                                         Value="{x:Bind ViewModel.Offset, Mode=TwoWay}" />

@@ -143,6 +143,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ModuleSettings.Properties.ScheduleMode.Value = value;
                     OnPropertyChanged(nameof(ScheduleMode));
                 }
+
+                if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours")
+                {
+                    Offset = 0;
+                    LightTime = 360;
+                    DarkTime = 1080;
+
+                    OnPropertyChanged(nameof(LightTimePickerValue));
+                    OnPropertyChanged(nameof(DarkTimePickerValue));
+                }
             }
         }
 
@@ -183,7 +193,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.LightTime.Value = value;
                     NotifyPropertyChanged();
+
                     OnPropertyChanged(nameof(LightTimeTimeSpan));
+                    OnPropertyChanged(nameof(LightTimePickerValue));
                 }
             }
         }
@@ -197,7 +209,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     ModuleSettings.Properties.DarkTime.Value = value;
                     NotifyPropertyChanged();
+
                     OnPropertyChanged(nameof(DarkTimeTimeSpan));
+                    OnPropertyChanged(nameof(DarkTimePickerValue));
                 }
             }
         }
@@ -210,39 +224,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (ModuleSettings.Properties.Offset.Value != value)
                 {
                     ModuleSettings.Properties.Offset.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
 
-        public TimeSpan LightTimeTimeSpan
-        {
-            get => TimeSpan.FromMinutes(LightTime);
-            set
-            {
-                int minutes = (int)value.TotalMinutes;
-                if (LightTime != minutes)
-                {
-                    LightTime = minutes;
-                    NotifyPropertyChanged();
                     OnPropertyChanged(nameof(LightTimeTimeSpan));
-                }
-            }
-        }
-
-        public TimeSpan DarkTimeTimeSpan
-        {
-            get => TimeSpan.FromMinutes(DarkTime);
-            set
-            {
-                int minutes = (int)value.TotalMinutes;
-                if (DarkTime != minutes)
-                {
-                    DarkTime = minutes;
-                    NotifyPropertyChanged();
                     OnPropertyChanged(nameof(DarkTimeTimeSpan));
                 }
             }
+        }
+
+        // === Computed projections (OneWay bindings only) ===
+        public TimeSpan LightTimeTimeSpan => TimeSpan.FromMinutes(LightTime + Offset);
+
+        public TimeSpan DarkTimeTimeSpan => TimeSpan.FromMinutes(DarkTime + Offset);
+
+        // === Picker values (TwoWay binding targets for TimePickers) ===
+        public TimeSpan LightTimePickerValue
+        {
+            get => TimeSpan.FromMinutes(LightTime);
+            set => LightTime = (int)value.TotalMinutes;
+        }
+
+        public TimeSpan DarkTimePickerValue
+        {
+            get => TimeSpan.FromMinutes(DarkTime);
+            set => DarkTime = (int)value.TotalMinutes;
         }
 
         public string Latitude
