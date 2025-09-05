@@ -450,4 +450,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ForDevelopersSettingsHeader.Text" xml:space="preserve">
     <value>For Developers</value>
   </data>
+  <data name="UntitledPageTitle" xml:space="preserve">
+    <value>an untitled</value>
+  </data>
+  <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
+    <value>Navigated to {0} page</value>
+  </data>
 </root>
