@@ -9,6 +9,31 @@
 
 #include <common/logger/logger.h>
 
+namespace
+{
+    int AdjustSpacingForRegistry(int originalSpacing)
+    {
+        // Check Windows DWM ColorPrevalence setting
+        // When ColorPrevalence = 0 (accent color not shown), subtract 1 from spacing
+        HKEY hKey;
+        DWORD dwValue = 1; // Default to 1 (accent color shown)
+        DWORD dwSize = sizeof(DWORD);
+        
+        if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\DWM", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+        {
+            RegQueryValueExW(hKey, L"ColorPrevalence", nullptr, nullptr, reinterpret_cast<LPBYTE>(&dwValue), &dwSize);
+            RegCloseKey(hKey);
+        }
+        
+        // Apply -1 margin when ColorPrevalence = 0 (accent color not shown)
+        if (dwValue == 0)
+        {
+            return originalSpacing - 1;
+        }
+        return originalSpacing;
+    }
+}
+
 namespace ZoneSelectionAlgorithms
 {
     constexpr int OVERLAPPING_CENTERS_SENSITIVITY = 75;
@@ -128,6 +153,7 @@ bool Layout::Init(const FancyZonesUtils::Rect& workArea, HMONITOR monitor) noexc
     }
 
     auto spacing = m_data.showSpacing ? m_data.spacing : 0; 
+    spacing = AdjustSpacingForRegistry(spacing); 
 
     switch (m_data.type)
     {
