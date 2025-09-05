@@ -639,17 +639,17 @@ opera.exe</value>
     <value>Additional actions</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Current Key Remappings</value>
+    <value>Current key remappings</value>
   </data>
   <data name="RemapShortcutsList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Current Shortcut Remappings</value>
+    <value>Current shortcut remappings</value>
   </data>
   <data name="KeyboardManager_RemappedKeysListItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Key Remapping</value>
+    <value>Key remapping</value>
     <comment>key as in keyboard key</comment>
   </data>
   <data name="KeyboardManager_RemappedShortcutsListItem.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Shortcut Remapping</value>
+    <value>Shortcut remapping</value>
   </data>
   <data name="KeyboardManager_RemappedTo.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Remapped to</value>
@@ -658,7 +658,7 @@ opera.exe</value>
     <value>Remapped to</value>
   </data>
   <data name="KeyboardManager_TargetApp.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>For Target Application</value>
+    <value>For target application</value>
     <comment>What computer application would this be for</comment>
   </data>
   <data name="KeyboardManager_Image.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
@@ -4405,7 +4405,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Show minimap</value>
   </data>
   <data name="PrivacyLink.Text" xml:space="preserve">
-    <value>OpenAI Privacy</value>
+    <value>OpenAI privacy</value>
   </data>
   <data name="TermsLink.Text" xml:space="preserve">
     <value>OpenAI Terms</value>
@@ -4626,7 +4626,7 @@ Activate by holding the key for the character you want to add an accent to, then
 Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
   </data>
   <data name="ZoomIt_Zoom_Shortcut.Header" xml:space="preserve">
-    <value>Zoom Toggle Hotkey</value>
+    <value>Zoom hotkey</value>
   </data>
   <data name="ZoomIt_Toggle_AnimateZoom.Header" xml:space="preserve">
     <value>Animate zoom in and zoom out</value>
@@ -4647,7 +4647,7 @@ Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter 
 To enter and exit LiveZoom, enter the hotkey specified below.</value>
   </data>
   <data name="ZoomIt_LiveZoom_Shortcut.Header" xml:space="preserve">
-    <value>Live Zoom Toggle Hotkey</value>
+    <value>Live Zoom hotkey</value>
   </data>
   <data name="ZoomIt_DrawGroup.Header" xml:space="preserve">
     <value>Draw</value>
@@ -4666,7 +4666,7 @@ Shapes - Draw a line by holding down the Shift key, a rectangle with the Ctrl ke
 Screen - Clear the screen for a sketch pad by pressing W (white) or K (black). Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
   </data>
   <data name="ZoomIt_Draw_Shortcut.Header" xml:space="preserve">
-    <value>Draw without Zoom Hotkey</value>
+    <value>Draw without zoom hotkey</value>
   </data>
   <data name="ZoomIt_TypeGroup.Header" xml:space="preserve">
     <value>Type</value>
@@ -4680,11 +4680,11 @@ The text color is the current drawing color.</value>
     <value>Text font</value>
   </data>
   <data name="ZoomIt_Type_Font_Button.Content" xml:space="preserve">
-    <value>Choose Font</value>
+    <value>Choose font</value>
     <comment>Font refers to text font</comment>
   </data>
   <data name="ZoomIt_DemoTypeGroup.Header" xml:space="preserve">
-    <value>Demo Type</value>
+    <value>DemoType</value>
   </data>
   <data name="ZoomIt_DemoTypeGroup.Description" xml:space="preserve">
     <value>Use DemoType to have ZoomIt type text specified in the input file when you enter the DemoType toggle. You can also pull input from the clipboard if it is prefixed with the [start] keyword.
@@ -4698,7 +4698,7 @@ When driving input, hit the space bar to unblock keyboard input at the end of a 
 When you reach the end of the file, ZoomIt will reload the file and start at the beginning. Enter the hotkey with the Shift key in the opposite mode to step back to the last [end].</value>
   </data>
   <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
-    <value>Demo Type Toggle Hotkey</value>
+    <value>DemoType toggle hotkey</value>
   </data>
   <data name="ZoomIt_DemoType_File.Header" xml:space="preserve">
     <value>Input file</value>
@@ -4707,7 +4707,7 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
     <value>Browse</value>
   </data>
   <data name="ZoomIt_DemoType_File_Picker_Dialog_Title" xml:space="preserve">
-    <value>Specify DemoType file...</value>
+    <value>Specify DemoType file..</value>
   </data>
   <data name="FilePicker_AllFilesFilter" xml:space="preserve">
     <value>All Files</value>
@@ -4730,19 +4730,19 @@ When you reach the end of the file, ZoomIt will reload the file and start at the
 Change the break timer color using the same keys that the drawing color. The break timer font is the same as text font.</value>
   </data>
   <data name="ZoomIt_Break_Shortcut.Header" xml:space="preserve">
-    <value>Start Break Timer Hotkey</value>
+    <value>Start break timer hotkey</value>
   </data>
   <data name="ZoomIt_Break_Timeout.Header" xml:space="preserve">
     <value>Timer (minutes)</value>
   </data>
   <data name="ZoomIt_Break_ShowExpiredTime.Header" xml:space="preserve">
-    <value>Show Time Elapsed After Expiration</value>
+    <value>Show time elapsed after expiration</value>
   </data>
   <data name="ZoomIt_Break_PlaySoundsFile.Header" xml:space="preserve">
-    <value>Play Sound on Expiration</value>
+    <value>Play sound on expiration</value>
   </data>
   <data name="ZoomIt_Break_SoundFile.Header" xml:space="preserve">
-    <value>Alarm Sound File</value>
+    <value>Alarm sound file</value>
   </data>
   <data name="ZoomIt_Break_SoundFile_BrowseButton.Content" xml:space="preserve">
     <value>Browse</value>
@@ -4754,7 +4754,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Sounds</value>
   </data>
   <data name="ZoomIt_Break_TimerOpacity.Header" xml:space="preserve">
-    <value>Timer Opacity</value>
+    <value>Timer opacity</value>
   </data>
   <data name="ZoomIt_Break_TimerOpacity_10Percent.Content" xml:space="preserve">
     <value>10%</value>
@@ -4787,7 +4787,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>100%</value>
   </data>
   <data name="ZoomIt_Break_TimerPosition.Header" xml:space="preserve">
-    <value>Timer Position</value>
+    <value>Timer position</value>
   </data>
   <data name="ZoomIt_Break_TimerPosition_TopLeftCorner.Content" xml:space="preserve">
     <value>Top left corner</value>
@@ -4817,7 +4817,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Bottom right corner</value>
   </data>
   <data name="ZoomIt_Break_ShowBackgroundBitmap.Header" xml:space="preserve">
-    <value>Show Background Bitmap</value>
+    <value>Show background bitmap</value>
   </data>
   <data name="ZoomIt_Break_ShowFadedDesktop.Content" xml:space="preserve">
     <value>Use faded desktop as background</value>
@@ -4826,7 +4826,7 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Use image file as background</value>
   </data>
   <data name="ZoomIt_Break_BackgroundFile.Header" xml:space="preserve">
-    <value>Background Image File</value>
+    <value>Background image file</value>
   </data>
   <data name="ZoomIt_Break_BackgroundFile_BrowseButton.Content" xml:space="preserve">
     <value>Browse</value>
@@ -4847,14 +4847,14 @@ Change the break timer color using the same keys that the drawing color. The bre
     <value>Record</value>
   </data>
   <data name="ZoomIt_RecordGroup.Description" xml:space="preserve">
-    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hot key and finish the recording by entering it again.
+    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hotkey and finish the recording by entering it again.
 
 To crop the portion of the screen that will be recorded, enter the hotkey with the Shift key in the opposite mode.
 
 To record a specific window, enter the hotkey with the Alt key in the opposite mode.</value>
   </data>
   <data name="ZoomIt_Record_Shortcut.Header" xml:space="preserve">
-    <value>Record Toggle Hotkey</value>
+    <value>Record hotkey</value>
   </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
@@ -4875,7 +4875,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file.</value>
   </data>
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
-    <value>Snip Toggle Hotkey</value>
+    <value>Snip hotkey</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
@@ -4992,7 +4992,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>File Management</value>
   </data>
   <data name="Shell_TopLevelInputOutput.Content" xml:space="preserve">
-    <value>Input / Output</value>
+    <value>Input &amp; Output</value>
   </data>
   <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
     <value>Windowing &amp; Layouts</value>
@@ -5145,7 +5145,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Quick access</value>
   </data>
   <data name="ShortcutsOverview.Title" xml:space="preserve">
-    <value>Shortcuts overview</value>
+    <value>Shortcuts</value>
   </data>
   <data name="NoActionsToShow.Text" xml:space="preserve">
     <value>No actions to show..</value>
@@ -5295,5 +5295,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Search_ResultsFor" xml:space="preserve">
     <value>Results for</value>
     <comment>Prefix for search string. E.g. "Results for 'shortcut'"</comment>
+  </data>
+  <data name="UtilitiesHeader.Title" xml:space="preserve">
+    <value>Utilities</value>
   </data>
 </root>

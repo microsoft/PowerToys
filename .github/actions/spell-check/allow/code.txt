@@ -94,6 +94,7 @@ onefuzzingestionpreparationtool
 OTP
 Yubi
 Yubico
+Perplexity
 svgl
 
 # KEYS

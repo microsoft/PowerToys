@@ -48,6 +48,9 @@ param (
 
 . "$PSScriptRoot\build-common.ps1"
 
+# Initialize Visual Studio dev environment
+if (-not (Ensure-VsDevEnvironment)) { exit 1 }
+
 # If user passed MSBuild-style args (e.g. './build.ps1 /p:CIBuild=true'),
 # those will bind to $Platform/$Configuration; detect those and move them to ExtraArgs.
 $positionalExtra = @()
@@ -79,7 +82,8 @@ $cwd = (Get-Location).ProviderPath
 $extraArgsString = $null
 if ($ExtraArgs -and $ExtraArgs.Count -gt 0) { $extraArgsString = ($ExtraArgs -join ' ') }
 
-if (BuildProjectsInDirectory -DirectoryPath $cwd -ExtraArgs $extraArgsString -Platform $Platform -Configuration $Configuration -RestoreOnly:$RestoreOnly) {
+$built = BuildProjectsInDirectory -DirectoryPath $cwd -ExtraArgs $extraArgsString -Platform $Platform -Configuration $Configuration -RestoreOnly:$RestoreOnly
+if ($built) {
     Write-Host "[BUILD] Local projects built; exiting."
     exit 0
 } else {
