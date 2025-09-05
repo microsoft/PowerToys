@@ -13,9 +13,9 @@
 // WinRT's IStoryboard::GetCurrentTime(TimeSpan*) signature in generated headers.
 // Guard against that by temporarily undefining the macro around WinRT includes.
 #ifdef GetCurrentTime
-#  pragma push_macro("GetCurrentTime")
-#  undef GetCurrentTime
-#  define PT_RESTORE_GetCurrentTime_MACRO 1
+#pragma push_macro("GetCurrentTime")
+#undef GetCurrentTime
+#define PT_RESTORE_GetCurrentTime_MACRO 1
 #endif
 
 #include <winrt/Microsoft.UI.Composition.Interop.h>
@@ -27,10 +27,14 @@
 #include <winrt/Microsoft.UI.Interop.h>
 
 #ifdef PT_RESTORE_GetCurrentTime_MACRO
-#  pragma pop_macro("GetCurrentTime")
-#  undef PT_RESTORE_GetCurrentTime_MACRO
+#pragma pop_macro("GetCurrentTime")
+#undef PT_RESTORE_GetCurrentTime_MACRO
 #endif
 #include <vector>
+
+// Ensure Windows App SDK runtime is bootstrapped for unpackaged apps
+#include <WindowsAppSDK-VersionInfo.h>
+#include <MddBootstrap.h>
 
 namespace winrt
 {
@@ -194,7 +198,7 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
 
     m_hwndOwner = CreateWindow(L"static", nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
 
-    DWORD exStyle = WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
+    DWORD exStyle = WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
     return CreateWindowExW(exStyle, className, windowTitle, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hinst, this) != nullptr;
 }
 
@@ -646,12 +650,16 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
 
     DWORD GetExtendedStyle()
     {
-        return WS_EX_NOREDIRECTIONBITMAP;
+        // Remove WS_EX_NOREDIRECTIONBITMAP for Composition/XAML to allow DWM redirection.
+        return 0;
     }
 
     void AfterMoveSonar()
     {
-        m_spotlight.Offset({ static_cast<float>(m_sonarPos.x), static_cast<float>(m_sonarPos.y), 0.0f });
+        if (m_spotlight)
+        {
+            m_spotlight.Offset({ static_cast<float>(m_sonarPos.x), static_cast<float>(m_sonarPos.y), 0.0f });
+        }
     }
 
     LRESULT WndProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept
@@ -692,9 +700,20 @@ private:
     bool OnCompositionCreate()
     try
     {
+        // Log effective extended style to validate window flags for XAML/Composition.
+        auto ex = static_cast<DWORD>(GetWindowLongPtr(m_hwnd, GWL_EXSTYLE));
+        Logger::info(
+            "FindMyMouse HWND ex-style: 0x{:08X} (layered={}, noRedirect={})",
+            ex,
+            (ex & WS_EX_LAYERED) != 0,
+            (ex & WS_EX_NOREDIRECTIONBITMAP) != 0);
+
         // Ensure a DispatcherQueue bound to this thread (required by WinAppSDK composition/XAML)
         if (!m_dispatcherQueueController)
         {
+            // Ensure COM is initialized
+            winrt::init_apartment(winrt::apartment_type::single_threaded);
+
             m_dispatcherQueueController =
                 winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
         }
@@ -773,8 +792,9 @@ private:
 
         return true;
     }
-    catch (...)
+    catch (const winrt::hresult_error& e)
     {
+        Logger::error("Failed to create FindMyMouse visual: {}", winrt::to_string(e.message()));
         return false;
     }
 
@@ -1079,6 +1099,7 @@ struct GdiCrosshairs : GdiSonar<GdiCrosshairs>
 #pragma region Super_Sonar_API
 
 CompositionSpotlight* m_sonar = nullptr;
+static bool g_winAppSdkBootstrapped = false;
 void FindMyMouseApplySettings(const FindMyMouseSettings& settings)
 {
     if (m_sonar != nullptr)
@@ -1105,6 +1126,21 @@ bool FindMyMouseIsEnabled()
 // Based on SuperSonar's original wWinMain.
 int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
 {
+    // Bootstrap Windows App SDK so WinAppSDK classes (DispatcherQueue, WinUI, Composition) can be activated
+    if (!g_winAppSdkBootstrapped)
+    {
+        const UINT32 majorMinor = WINDOWSAPPSDK_RELEASE_MAJORMINOR;
+        PCWSTR versionTag = WINDOWSAPPSDK_RELEASE_VERSION_TAG_W;
+        PACKAGE_VERSION minVersion{}; // accept any installed runtime version matching major/minor
+        const HRESULT hr = MddBootstrapInitialize(majorMinor, versionTag, minVersion);
+        if (FAILED(hr))
+        {
+            Logger::error("Windows App SDK Bootstrap failed: 0x{:08X}", static_cast<unsigned int>(hr));
+            return 0;
+        }
+        g_winAppSdkBootstrapped = true;
+    }
+
     Logger::info("Starting a sonar instance.");
     if (m_sonar != nullptr)
     {
@@ -1135,6 +1171,13 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
 
     Logger::info("Sonar message loop ended.");
     m_sonar = nullptr;
+
+    // Shutdown Windows App SDK bootstrap when we're done
+    if (g_winAppSdkBootstrapped)
+    {
+        MddBootstrapShutdown();
+        g_winAppSdkBootstrapped = false;
+    }
 
     return (int)msg.wParam;
 }
