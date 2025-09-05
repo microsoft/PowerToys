@@ -45,6 +45,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         (!_isFetching) &&
         IsLoading == false;
 
+    public bool IsGridView { get; private set; }
+
+    public IGridPropertiesViewModel? GridProperties { get; private set; }
+
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
     public bool ShowDetails { get; private set; }
@@ -516,6 +520,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         _isDynamic = model is IDynamicListPage;
 
+        IsGridView = model.GridProperties is not null;
+        UpdateProperty(nameof(IsGridView));
+
+        GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
+        GridProperties?.InitializeProperties();
+        UpdateProperty(nameof(GridProperties));
+
         ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
 
@@ -537,9 +548,27 @@ public partial class ListViewModel : PageViewModel, IDisposable
         model.ItemsChanged += Model_ItemsChanged;
     }
 
+    private IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
+    {
+        if (gridProperties is IMediumGridLayout mediumGridLayout)
+        {
+            return new MediumGridPropertiesViewModel(mediumGridLayout);
+        }
+        else if (gridProperties is IGalleryGridLayout galleryGridLayout)
+        {
+            return new GalleryGridPropertiesViewModel(galleryGridLayout);
+        }
+        else if (gridProperties is ISmallGridLayout smallGridLayout)
+        {
+            return new SmallGridPropertiesViewModel(smallGridLayout);
+        }
+
+        return null;
+    }
+
     public void LoadMoreIfNeeded()
     {
-        var model = this._model.Unsafe;
+        var model = _model.Unsafe;
         if (model is null)
         {
             return;
@@ -583,7 +612,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         base.FetchProperty(propertyName);
 
-        var model = this._model.Unsafe;
+        var model = _model.Unsafe;
         if (model is null)
         {
             return; // throw?
@@ -591,14 +620,20 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         switch (propertyName)
         {
+            case nameof(GridProperties):
+                IsGridView = model.GridProperties is not null;
+                GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
+                GridProperties?.InitializeProperties();
+                UpdateProperty(nameof(IsGridView));
+                break;
             case nameof(ShowDetails):
-                this.ShowDetails = model.ShowDetails;
+                ShowDetails = model.ShowDetails;
                 break;
             case nameof(PlaceholderText):
-                this._modelPlaceholderText = model.PlaceholderText;
+                _modelPlaceholderText = model.PlaceholderText;
                 break;
             case nameof(SearchText):
-                this.SearchText = model.SearchText;
+                SearchText = model.SearchText;
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);
