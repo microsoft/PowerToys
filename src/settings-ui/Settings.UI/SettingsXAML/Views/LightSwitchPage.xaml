@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.LightSwitchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -77,10 +77,10 @@
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Header="Turn off dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                              <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
+                                <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Header="Turn on dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                              <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
+                                <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Description="Choose a location to automatically calculate accurate sunrise and sunset times"
