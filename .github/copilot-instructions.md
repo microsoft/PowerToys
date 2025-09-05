@@ -2,9 +2,6 @@
 
 This is the top-level guide for AI changes. Keep edits small, follow existing patterns, and cite exact paths in PRs.
 
-Before you start
-- Open copilot-instructions.md in the target folder (or the nearest parent). Follow that folder’s rules first, and then follow this default.
-
 Repo map (1‑line per area)
 - Core apps: `src/runner/**` (tray/loader), `src/settings-ui/**` (Settings app)
 - Shared libs: `src/common/**`
@@ -22,6 +19,21 @@ Build and test (defaults)
 - Tests (fast + targeted):
   - Find the test project by product code prefix (e.g., FancyZones, AdvancedPaste). Look for a sibling folder or 1–2 levels up named like `<Product>*UnitTests` or `<Product>*UITests`.
   - Build the test project, wait for **exit**, then run only those tests via VS Test Explorer or `vstest.console.exe` with filters. Avoid `dotnet test` in this repo.
+  - Add/adjust tests when changing behavior; if skipped, state why (e.g., comment-only, string rename).
+
+Pull requests (expectations)
+- Atomic: one logical change; no drive‑by refactors.
+- Describe: problem / approach / risk / test evidence.
+- List: touched paths if not obvious.
+
+When to ask for clarification
+- Ambiguous spec after scanning relevant docs (see below).
+- Cross-module impact (shared enum/struct) not clear.
+- Security / elevation / installer changes.
+
+Do / Don’t quick list
+- Do: verify paths & APIs before editing; keep diffs minimal; add tests for logic.
+- Don’t: reformat unrelated code; introduce global singletons; add logging in tight loops.
 
 Logging (use existing stacks)
 - C++: `src/common/logger/**` (`Logger::info|warn|error|debug`). Keep hot paths quiet (hooks, tight loops).
@@ -30,3 +42,6 @@ Logging (use existing stacks)
 Docs to consult
 - `tools/build/BUILD-GUIDELINES.md`
 - `doc/devdocs/core/architecture.md`, `doc/devdocs/core/runner.md`, `doc/devdocs/core/settings/readme.md`, `doc/devdocs/modules/readme.md`
+
+Done checklist (self review before finishing)
+- Build clean? Tests updated/passed? No unintended formatting? Any new dependency? Documented skips?
