@@ -550,15 +550,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
     {
-        if (gridProperties is MediumGridLayout mediumGridLayout)
+        if (gridProperties is IMediumGridLayout mediumGridLayout)
         {
             return new MediumGridPropertiesViewModel(mediumGridLayout);
         }
-        else if (gridProperties is GalleryGridLayout galleryGridLayout)
+        else if (gridProperties is IGalleryGridLayout galleryGridLayout)
         {
             return new GalleryGridPropertiesViewModel(galleryGridLayout);
         }
-        else if (gridProperties is SmallGridLayout smallGridLayout)
+        else if (gridProperties is ISmallGridLayout smallGridLayout)
         {
             return new SmallGridPropertiesViewModel(smallGridLayout);
         }
