@@ -414,7 +414,7 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <!-- Dwell Cursor -->
+                <!--  Dwell Cursor  -->
                 <controls:SettingsGroup x:Uid="MouseUtils_DwellCursor">
                     <tkcontrols:SettingsCard
                         Name="MouseUtilsEnableDwellCursor"
@@ -430,14 +430,6 @@
                         IsEnabled="{x:Bind ViewModel.IsDwellCursorEnabled, Mode=OneWay}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.DwellCursorActivationShortcut, Mode=TwoWay}" />
-                    </tkcontrols:SettingsExpander>
-
-                    <tkcontrols:SettingsExpander
-                        Name="DwellCursorAppearanceBehavior"
-                        x:Uid="Appearance_Behavior"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
-                        IsEnabled="{x:Bind ViewModel.IsDwellCursorEnabled, Mode=OneWay}"
-                        IsExpanded="False">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="MouseUtilsDwellCursorDelayMs" x:Uid="MouseUtils_DwellCursor_DelayMs">
                                 <Slider

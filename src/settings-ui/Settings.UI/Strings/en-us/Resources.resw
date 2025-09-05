@@ -5311,10 +5311,10 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Initial line speed</value>
   </data>
 	<data name="MouseUtils_DwellCursor_DelayMs.Header" xml:space="preserve">
-    <value>Dwell Cursor Delay time (seconds)</value>
+    <value>Delay time (in seconds)</value>
   </data>
   <data name="MouseUtils_DwellCursor_DelayMs.Description" xml:space="preserve">
-    <value>Time to wait before automatically clicking when cursor stops moving (1-10 seconds)</value>
+    <value>Seconds to wait before automatically clicking when the cursor is still (1–10)</value>
   </data>	
   <data name="MouseUtils_DwellCursor_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -5326,6 +5326,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Cursor settle time (seconds)</value>
   </data>
   <data name="MouseUtils_DwellCursor_SettleTimeSeconds.Description" xml:space="preserve">
-    <value>Settle time for the cursor before the countdown timer starts</value>
+    <value>Time the cursor must remain still before the countdown starts</value>
   </data>
 </root>
