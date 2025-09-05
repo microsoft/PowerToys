@@ -202,12 +202,13 @@ function Test-PowerToysInstallation {
         if ($powerToysEntry) {
             Add-CheckResult -Category "Registry" -CheckName "Uninstall Registry Entry ($Scope)" -Status 'Pass' -Message "PowerToys uninstall entry found with DisplayName: $($powerToysEntry.DisplayName)"
             
-            # Note: InstallLocation may or may not be set in the uninstall registry
-            # This is normal behavior as PowerToys uses direct file references for system bindings
+            # InstallLocation should be set in the uninstall registry as of installer version fixing issue #41638
             if ($powerToysEntry.InstallLocation) {
                 Add-CheckResult -Category "Registry" -CheckName "Install Location Registry ($Scope)" -Status 'Pass' -Message "InstallLocation found: $($powerToysEntry.InstallLocation)"
             }
-            # No need to report missing InstallLocation as it's not required
+            else {
+                Add-CheckResult -Category "Registry" -CheckName "Install Location Registry ($Scope)" -Status 'Fail' -Message "InstallLocation is missing from uninstall registry entry. This may indicate an installer issue."
+            }
         }
         else {
             Add-CheckResult -Category "Registry" -CheckName "Uninstall Registry Entry ($Scope)" -Status 'Fail' -Message "PowerToys uninstall entry not found in Windows uninstall registry"
@@ -246,8 +247,8 @@ function Get-PowerToysInstallPath {
         return $InstallPath
     }
     
-    # Since InstallLocation may not be reliably set in the uninstall registry,
-    # we'll use the default installation paths based on scope
+    # Try to get path from registry first, fall back to default paths if needed
+    # InstallLocation should be reliably set as of installer version fixing issue #41638
     if ($Scope -eq 'PerMachine') {
         $defaultPath = "${env:ProgramFiles}\PowerToys"
     }

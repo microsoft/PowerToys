@@ -80,6 +80,7 @@
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
       <ComponentGroupRef Id="CmdPalComponentGroup" />
+      <ComponentRef Id="UninstallRegistryComponent" />
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
@@ -511,6 +512,15 @@
 
   <Fragment>
     <Binary Id="PTCustomActions" SourceFile="$(var.PowerToysSetupCustomActions.TargetPath)" />
+  </Fragment>
+
+  <!-- Ensure InstallLocation is set in uninstall registry -->
+  <Fragment>
+    <Component Id="UninstallRegistryComponent" Guid="*" Directory="INSTALLFOLDER">
+      <RegistryKey Root="$(var.RegistryScope)" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductCode]">
+        <RegistryValue Name="InstallLocation" Type="string" Value="[INSTALLFOLDER]" />
+      </RegistryKey>
+    </Component>
   </Fragment>
 
   <!-- Installation directory structure -->
