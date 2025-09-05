@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -31,7 +29,7 @@ public sealed class PinnedAppsManager
 
     public bool IsAppPinned(string appIdentifier)
     {
-        return _pinnedApps.PinnedAppIdentifiers.Contains(appIdentifier, StringComparer.OrdinalIgnoreCase);
+        return _pinnedApps.PinnedAppIdentifiers.IndexOf(appIdentifier) >= 0;
     }
 
     public void PinApp(string appIdentifier)
