@@ -212,7 +212,7 @@
                             x:Name="MeasureToolNavigationItem"
                             x:Uid="Shell_MeasureTool"
                             helpers:NavHelper.NavigateTo="views:MeasureToolPage"
-                            AutomationProperties.AutomationId="MeasureToolNavItem"
+                            AutomationProperties.AutomationId="ScreenRulerNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}" />
                         <NavigationViewItem
                             x:Name="ShortcutGuideNavigationItem"

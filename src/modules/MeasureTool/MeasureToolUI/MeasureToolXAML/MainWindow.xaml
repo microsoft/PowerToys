@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
+    Title="PowerToys.ScreenRuler"
     IsAlwaysOnTop="True"
     IsMaximizable="False"
     IsMinimizable="False"
@@ -250,6 +251,7 @@
             <ToggleButton
                 Name="btnBounds"
                 x:Uid="BtnBounds"
+                AutomationProperties.AutomationId="Button_Bounds"
                 Click="BoundsTool_Click"
                 Content="&#xEF20;"
                 KeyboardAcceleratorPlacementMode="Auto"
@@ -267,6 +269,7 @@
             <ToggleButton
                 Name="btnSpacing"
                 x:Uid="BtnSpacing"
+                AutomationProperties.AutomationId="Button_Spacing"
                 Click="MeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}">
                 <ToolTipService.ToolTip>
@@ -284,6 +287,7 @@
             <ToggleButton
                 Name="btnHorizontalSpacing"
                 x:Uid="BtnHorizontalSpacing"
+                AutomationProperties.AutomationId="Button_SpacingHorizontal"
                 Click="HorizontalMeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}">
                 <ToolTipService.ToolTip>
@@ -304,6 +308,7 @@
             <ToggleButton
                 Name="btnVerticalSpacing"
                 x:Uid="BtnVerticalSpacing"
+                AutomationProperties.AutomationId="Button_SpacingVertical"
                 Click="VerticalMeasureTool_Click"
                 Style="{StaticResource ToggleButtonRadioButtonStyle}">
                 <ToolTipService.ToolTip>
@@ -324,6 +329,7 @@
             <AppBarSeparator />
             <Button
                 x:Uid="BtnClosePanel"
+                AutomationProperties.AutomationId="Button_Close"
                 Click="ClosePanelTool_Click"
                 Content="&#xE8BB;"
                 Foreground="{StaticResource CloseButtonBackgroundPointerOver}">
