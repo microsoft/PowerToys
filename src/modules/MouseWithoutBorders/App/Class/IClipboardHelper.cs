@@ -28,6 +28,7 @@ using MouseWithoutBorders.Core;
 
 using SystemClipboard = System.Windows.Forms.Clipboard;
 #if !MM_HELPER
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Thread = MouseWithoutBorders.Core.Thread;
 #endif
 
@@ -159,7 +160,7 @@ namespace MouseWithoutBorders
 
         public void SendClipboardData(ByteArrayOrString data, bool isFilePath)
         {
-            _ = Common.CheckClipboardEx(data, isFilePath);
+            _ = Clipboard.CheckClipboardEx(data, isFilePath);
         }
     }
 #endif
