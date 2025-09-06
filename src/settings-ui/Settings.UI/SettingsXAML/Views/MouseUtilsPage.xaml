@@ -226,6 +226,13 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsMouseHighlighterModeSwitchShortcut"
+                        x:Uid="MouseUtils_MouseHighlighter_ModeSwitchShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterModeSwitchShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsExpander
                         Name="MouseHighlighterAppearanceBehavior"
                         x:Uid="Appearance_Behavior"
