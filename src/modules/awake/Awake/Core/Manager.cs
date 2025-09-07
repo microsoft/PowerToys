@@ -356,7 +356,7 @@ namespace Awake.Core
 
         /// <summary>
         /// Handles the common logic that should execute when a keep-awake timer completes. Resets
-        /// the application state to Passive if configured, otherwise it exits.
+        /// the application state to Passive if configured; otherwise it exits.
         /// </summary>
         private static void HandleTimerCompletion(string timerType)
         {
