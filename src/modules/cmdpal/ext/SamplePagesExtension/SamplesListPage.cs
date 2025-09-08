@@ -48,6 +48,11 @@ public partial class SamplesListPage : ListPage
             Title = "Sample Icon Page",
             Subtitle = "A demo of using icons in various ways",
         },
+        new ListItem(new SampleSuggestionsPage())
+        {
+            Title = "Sample Prefix Suggestions",
+            Subtitle = "A demo of using 'nested' pages to provide 'suggestions' as the user types",
+        },
 
         // Content pages
         new ListItem(new SampleContentPage())

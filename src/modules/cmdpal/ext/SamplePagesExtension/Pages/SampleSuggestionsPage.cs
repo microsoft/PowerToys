@@ -1,0 +1,262 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
+using System.Globalization;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+
+namespace SamplePagesExtension.Pages;
+
+#nullable enable
+
+#pragma warning disable SA1402 // File may only contain a single type
+internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtendedAttributesProvider
+{
+    private PeopleSearchPage _peopleSearchPage = new();
+    private CommandsListPage _commandsListPage = new();
+    private DynamicListPage? _suggestionPage;
+    private List<MyTokenType> _pickedTokens = new();
+
+    // private int _lastCaretPosition = 0;
+    private string _searchText = string.Empty;
+
+    public override string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            var oldSearch = _searchText;
+            if (value != oldSearch)
+            {
+                _searchText = value;
+                UpdateSearch(new SearchUpdateArgs(value, null));
+            }
+        }
+    }
+
+    internal SampleSuggestionsPage()
+    {
+        _peopleSearchPage.SuggestionPicked += OnSuggestionPicked;
+        _commandsListPage.SuggestionPicked += OnSuggestionPicked;
+        Name = "Open";
+        Title = "Sample prefixed search";
+        PlaceholderText = "Type a query, and use '@' to add a person";
+    }
+
+    public override IListItem[] GetItems()
+    {
+        return _suggestionPage?.GetItems() ?? [];
+    }
+
+    public void UpdateSearch(ISearchUpdateArgs args)
+    {
+        // if (args.GetProperties() is IDictionary<string, object> props)
+        // {
+        //     if (props.TryGetValue("CaretPosition", out var caretPosObj) && caretPosObj is int caretPos)
+        //     {
+        //         _lastCaretPosition = caretPos;
+        //     }
+        // }
+        var oldSearchText = this.SearchText;
+        var newSearchText = args.NewSearchText;
+        if (newSearchText.Length < oldSearchText.Length)
+        {
+            // HandleDeletion(oldSearchText, newSearchText);
+            return;
+        }
+
+        this.SearchText = newSearchText;
+
+        // We're not doing caret tracking in this sample.
+        // Just assume caret is at end of text.
+        var lastCaretPosition = newSearchText.Length;
+
+        if (_suggestionPage == null)
+        {
+            var lastChar = newSearchText.Length > 0 && lastCaretPosition > 0 ?
+                newSearchText[lastCaretPosition - 1] :
+                '\0';
+
+            if (lastChar == '@')
+            {
+                // User typed '@', switch to people suggestion page
+                UpdateSuggestionPage(_peopleSearchPage);
+            }
+            else if (lastChar == '#')
+            {
+                // User typed '#', switch to commands suggestion page
+                UpdateSuggestionPage(_commandsListPage);
+            }
+        }
+        else if (_suggestionPage != null)
+        {
+            // figure out what part of the text applies to the current suggestion page
+            var subString = /* omitted */string.Empty;
+            _suggestionPage.SearchText = subString;
+
+            // When the suggestion page updates its items, it should raise ItemsChanged event, which we will bubble through
+        }
+    }
+
+    private void OnSuggestionPicked(object sender, MyTokenType suggestion)
+    {
+        _pickedTokens.Add(suggestion);
+        UpdateSuggestionPage(null); // Clear suggestion page
+
+        var displayText = suggestion.DisplayName;
+        var tokenText = $"\u200B{displayText}\u200B "; // Add ZWSP before and after token, and a trailing space
+
+        // this.SearchText = this.SearchText.Insert(_lastCaretPosition, tokenText);
+        this.SearchText = _searchText + tokenText;
+        OnPropertyChanged(nameof(SearchText));
+    }
+
+    private void UpdateSuggestionPage(DynamicListPage? page)
+    {
+        if (_suggestionPage != null)
+        {
+            _suggestionPage.ItemsChanged -= OnSuggestedItemsChanged;
+        }
+
+        _suggestionPage = page;
+        if (_suggestionPage != null)
+        {
+            _suggestionPage.SearchText = string.Empty; // reset search text
+            _suggestionPage.ItemsChanged += OnSuggestedItemsChanged;
+        }
+
+        RaiseItemsChanged();
+    }
+
+    private void OnSuggestedItemsChanged(object sender, IItemsChangedEventArgs e)
+    {
+        RaiseItemsChanged();
+    }
+
+    public override void UpdateSearchText(string oldSearch, string newSearch)
+    {
+    }
+
+    public IDictionary<string, object> GetProperties()
+    {
+        return new ValueSet()
+        {
+            { "TokenSearch", true },
+        };
+    }
+}
+
+internal interface ISearchUpdateArgs
+{
+    string NewSearchText { get; }
+}
+
+internal sealed partial class SearchUpdateArgs : ISearchUpdateArgs, IExtendedAttributesProvider
+{
+    public string NewSearchText { get; }
+
+    private IDictionary<string, object> _properties;
+
+    public SearchUpdateArgs(string newSearchText, IDictionary<string, object>? properties)
+    {
+        NewSearchText = newSearchText;
+        _properties = properties ?? new Dictionary<string, object>();
+    }
+
+    public IDictionary<string, object> GetProperties() => _properties;
+}
+
+internal sealed partial class PeopleSearchPage : DynamicListPage
+{
+    internal event TypedEventHandler<object, MyTokenType>? SuggestionPicked;
+
+    public override void UpdateSearchText(string oldSearch, string newSearch)
+    {
+        // do nothing
+    }
+
+    public override IListItem[] GetItems()
+    {
+        var items = new List<IListItem>();
+        for (var i = 1; i <= 5; i++)
+        {
+            var name = $"Person {i}";
+            var suggestion = new MyTokenType
+            {
+                DisplayName = name,
+                Id = i.ToString(CultureInfo.InvariantCulture),
+                Value = name,
+            };
+            items.Add(new ListItem(new PickSuggestionCommand(suggestion, SuggestionPicked))
+            {
+                Title = name,
+                Subtitle = $"Email: person{i}@example.com",
+            });
+        }
+
+        return items.ToArray();
+    }
+}
+
+internal sealed partial class CommandsListPage : DynamicListPage
+{
+    internal event TypedEventHandler<object, MyTokenType>? SuggestionPicked;
+
+    public override void UpdateSearchText(string oldSearch, string newSearch)
+    {
+        // do nothing
+    }
+
+    public override IListItem[] GetItems()
+    {
+        var items = new List<IListItem>();
+        items.Add(new ListItem(new PickSuggestionCommand(new() { DisplayName = "Chat", Id = "chat" }, SuggestionPicked))
+        {
+            Title = "/chat",
+            Subtitle = $"send a message",
+        });
+        items.Add(new ListItem(new PickSuggestionCommand(new() { DisplayName = "Status", Id = "status" }, SuggestionPicked))
+        {
+            Title = "/status",
+            Subtitle = $"set your status",
+        });
+
+        return items.ToArray();
+    }
+}
+
+internal sealed partial class MyTokenType
+{
+    public required string DisplayName { get; set; }
+
+    public string Id { get; set; } = string.Empty;
+
+    public object? Value { get; set; }
+}
+
+internal sealed partial class PickSuggestionCommand : InvokableCommand
+{
+    internal MyTokenType Suggestion { get; private set; }
+
+    private TypedEventHandler<object, MyTokenType>? _pickedHandler;
+
+    public PickSuggestionCommand(MyTokenType suggestion, TypedEventHandler<object, MyTokenType>? pickedHandler)
+    {
+        Suggestion = suggestion;
+        _pickedHandler = pickedHandler;
+        Name = $"Select";
+    }
+
+    public override CommandResult Invoke()
+    {
+        _pickedHandler?.Invoke(this, Suggestion);
+        return CommandResult.KeepOpen();
+    }
+}
+
+#pragma warning restore SA1402 // File may only contain a single type
+#nullable disable
