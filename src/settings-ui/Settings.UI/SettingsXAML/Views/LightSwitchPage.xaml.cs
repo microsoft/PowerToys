@@ -78,7 +78,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             if (ViewModel.SearchLocations.Count == 0)
             {
-                string csvPath = Path.Combine(AppContext.BaseDirectory, "Assets/world_cities.csv");
+                string csvPath = Path.Combine(AppContext.BaseDirectory, "Data/world_cities.csv");
                 System.Diagnostics.Debug.WriteLine($"Looking for world_cities.csv at: {csvPath}");
                 if (File.Exists(csvPath))
                 {

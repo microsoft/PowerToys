@@ -19,14 +19,11 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Remove="Assets\world_cities.csv" />
-  </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Settings\Icons\LightSwitch.png" />
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
+    <None Remove="Data\world_cities.csv" />
     <None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
     <None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
     <None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
@@ -56,6 +53,9 @@
     <Content Include="Assets\Settings\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Settings\StoreLogo.png" />
     <Content Include="Assets\Settings\Wide310x150Logo.scale-200.png" />
+    <Content Include="Data\world_cities.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -140,9 +140,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Assets\Settings\Scripts\DisableModule.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\world_cities.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Page Update="SettingsXAML\Controls\Timeline\TimelineStyles.xaml">
