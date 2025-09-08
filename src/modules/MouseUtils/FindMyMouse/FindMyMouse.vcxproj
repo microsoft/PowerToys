@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\Microsoft.WindowsAppSDK.props')" />
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{e94fd11c-0591-456f-899f-efc0ca548336}</ProjectGuid>
@@ -16,6 +14,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <!-- PackageReference + Central Package Management mode -->
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -23,6 +22,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <!-- Core VC++ property sheet (provided by Visual Studio toolset) -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -32,6 +32,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <!-- Provide a NuGet target moniker for native PackageReference restore to avoid empty TargetMonikers -->
+  <PropertyGroup Label="NuGet">
+    <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
+  </PropertyGroup>
   <PropertyGroup>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>PowerToys.FindMyMouse</TargetName>
@@ -111,23 +115,17 @@
     <ResourceCompile Include="FindMyMouse.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <!-- Versions provided by Directory.Packages.props -->
+    <PackageReference Include="Microsoft.Windows.CppWinRT" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Win2D winmd for C++/WinRT projection (Pkg id normalized with dots to underscores) -->
+    <WinMDReference Include="$(PkgMicrosoft_Graphics_Win2D)\winmd\Microsoft.Graphics.Canvas.winmd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
-  <Import Project="..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\Microsoft.WindowsAppSDK.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-  <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2903.40\build\native\Microsoft.Web.WebView2.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\Microsoft.WindowsAppSDK.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\Microsoft.WindowsAppSDK.targets'))" />
-  </Target>
+  <!-- ExtensionTargets import group not needed; native targets pulled in automatically by PackageReference restore -->
 </Project>
