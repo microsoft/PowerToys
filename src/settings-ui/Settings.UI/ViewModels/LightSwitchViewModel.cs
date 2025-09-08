@@ -146,7 +146,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours")
                 {
-                    Offset = 0;
+                    SunriseOffset = 0;
+                    SunsetOffset = 0;
                     LightTime = 360;
                     DarkTime = 1080;
 
@@ -216,25 +217,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int Offset
+        public int SunriseOffset
         {
-            get => ModuleSettings.Properties.Offset.Value;
+            get => ModuleSettings.Properties.SunriseOffset.Value;
             set
             {
-                if (ModuleSettings.Properties.Offset.Value != value)
+                if (ModuleSettings.Properties.SunriseOffset.Value != value)
                 {
-                    ModuleSettings.Properties.Offset.Value = value;
-
+                    ModuleSettings.Properties.SunriseOffset.Value = value;
                     OnPropertyChanged(nameof(LightTimeTimeSpan));
+                }
+            }
+        }
+
+        public int SunsetOffset
+        {
+            get => ModuleSettings.Properties.SunsetOffset.Value;
+            set
+            {
+                if (ModuleSettings.Properties.SunsetOffset.Value != value)
+                {
+                    ModuleSettings.Properties.SunsetOffset.Value = value;
                     OnPropertyChanged(nameof(DarkTimeTimeSpan));
                 }
             }
         }
 
         // === Computed projections (OneWay bindings only) ===
-        public TimeSpan LightTimeTimeSpan => TimeSpan.FromMinutes(LightTime + Offset);
+        public TimeSpan LightTimeTimeSpan => TimeSpan.FromMinutes(LightTime + SunriseOffset);
 
-        public TimeSpan DarkTimeTimeSpan => TimeSpan.FromMinutes(DarkTime + Offset);
+        public TimeSpan DarkTimeTimeSpan => TimeSpan.FromMinutes(DarkTime + SunsetOffset);
 
         // === Picker values (TwoWay binding targets for TimePickers) ===
         public TimeSpan LightTimePickerValue
@@ -369,7 +381,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(ChangeApps));
             OnPropertyChanged(nameof(LightTime));
             OnPropertyChanged(nameof(DarkTime));
-            OnPropertyChanged(nameof(Offset));
+            OnPropertyChanged(nameof(SunriseOffset));
+            OnPropertyChanged(nameof(SunsetOffset));
             OnPropertyChanged(nameof(Latitude));
             OnPropertyChanged(nameof(Longitude));
             OnPropertyChanged(nameof(ScheduleMode));

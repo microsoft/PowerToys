@@ -79,7 +79,8 @@ struct ModuleSettings
     ScheduleMode m_scheduleMode = ScheduleMode::FixedHours;
     int m_lightTime = 480;
     int m_darkTime = 1200;
-    int m_offset = 0;
+    int m_sunrise_offset = 0;
+    int m_sunset_offset = 0;
     std::wstring m_latitude = L"0.0";
     std::wstring m_longitude = L"0.0";
 } g_settings;
@@ -181,9 +182,17 @@ public:
             1);
 
         settings.add_int_spinner(
-            L"offset",
-            L"Time to offset turning on your light/dark themes.",
-            g_settings.m_offset,
+            L"sunrise_offset",
+            L"Time to offset turning on your light theme.",
+            g_settings.m_sunrise_offset,
+            0,
+            1439,
+            1);
+
+        settings.add_int_spinner(
+            L"sunset_offset",
+            L"Time to offset turning on your dark theme.",
+            g_settings.m_sunset_offset,
             0,
             1439,
             1);
@@ -290,9 +299,14 @@ public:
                 g_settings.m_darkTime = *v;
             }
 
-            if (auto v = values.get_int_value(L"offset"))
+            if (auto v = values.get_int_value(L"sunrise_offset"))
             {
-                g_settings.m_offset = *v;
+                g_settings.m_sunrise_offset = *v;
+            }
+
+            if (auto v = values.get_int_value(L"m_sunset_offset"))
+            {
+                g_settings.m_sunset_offset = *v;
             }
 
             if (auto v = values.get_string_value(L"latitude"))
@@ -521,8 +535,10 @@ void LightSwitchInterface::init_settings()
             g_settings.m_lightTime = *v;
         if (auto v = settings.get_int_value(L"darkTime"))
             g_settings.m_darkTime = *v;
-        if (auto v = settings.get_int_value(L"offset"))
-            g_settings.m_offset = *v;
+        if (auto v = settings.get_int_value(L"sunrise_offset"))
+            g_settings.m_sunrise_offset = *v;
+        if (auto v = settings.get_int_value(L"sunset_offset"))
+            g_settings.m_sunset_offset = *v;
         if (auto v = settings.get_string_value(L"latitude"))
             g_settings.m_latitude = *v;
         if (auto v = settings.get_string_value(L"longitude"))
