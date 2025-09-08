@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2025-08-08
+last updated: 2025-09-04
 issue id: n/a
 ---
 
@@ -2050,7 +2050,9 @@ for them.
 
 This addenda is broken into multiple draft specs currently. These represent different approaches to the same goals. 
 
-* [RichSearchBox](./RichSearchBox-draft-A.md)
+* [Rich Search Box](./RichSearchBox-draft-A.md)
+* [Prefix Search](./PrefixSearch-draft-B.md)
+* [ZWSP tokens](./PlainRichSearch-draft-C.md)
 
 ### Commands with parameters
 

@@ -1,14 +1,11 @@
 ---
 author: Mike Griese
-created on: 2025-08-15
-last updated: 2025-09-04
+created on: 2025-09-04
+last updated: 2025-09-08
 issue id: n/a
 ---
 
-## Addenda II-A: Prefix Search 
-
-
-
+## Addenda II-B: Prefix Search 
 
 
 > [!INFO] 
