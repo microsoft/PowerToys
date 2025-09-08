@@ -659,9 +659,19 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
     void AfterMoveSonar()
     {
         const float scale = static_cast<float>(m_surface.XamlRoot().RasterizationScale());
-        m_spotlight.Offset({ static_cast<float>(m_sonarPos.x) / scale,
-                             static_cast<float>(m_sonarPos.y) / scale,
-                             0.0f });
+        // Move gradient center
+        if (m_spotlightMaskGradient)
+        {
+            m_spotlightMaskGradient.EllipseCenter({ static_cast<float>(m_sonarPos.x) / scale,
+                                                    static_cast<float>(m_sonarPos.y) / scale });
+        }
+        // Move spotlight visual (color fill) below masked backdrop
+        if (m_spotlight)
+        {
+            m_spotlight.Offset({ static_cast<float>(m_sonarPos.x) / scale,
+                                 static_cast<float>(m_sonarPos.y) / scale,
+                                 0.0f });
+        }
     }
 
     LRESULT WndProc(UINT message, WPARAM wParam, LPARAM lParam) noexcept
@@ -752,9 +762,8 @@ private:
         // 4) Build the composition tree
         //
         // [root] ContainerVisual (fills host)
-        // \ LayerVisual
-        //   \ [gray backdrop]
-        //     [spotlight]
+        //  \ LayerVisual
+        //     \ [backdrop dim * radial gradient mask (hole)]
         m_root = m_compositor.CreateContainerVisual();
         m_root.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_root.Opacity(0.0f);
@@ -766,26 +775,49 @@ private:
         layer.RelativeSizeAdjustment({ 1.0f, 1.0f });
         m_root.Children().InsertAtTop(layer);
 
-        m_backdrop = m_compositor.CreateSpriteVisual();
-        m_backdrop.RelativeSizeAdjustment({ 1.0f, 1.0f });
-        m_backdrop.Brush(m_compositor.CreateColorBrush(m_backgroundColor));
-        layer.Children().InsertAtTop(m_backdrop);
-
-        m_circleGeometry = m_compositor.CreateEllipseGeometry(); // radius animated via expression
-        m_circleShape = m_compositor.CreateSpriteShape(m_circleGeometry);
-        m_circleShape.FillBrush(m_compositor.CreateColorBrush(m_spotlightColor));
-
         const float scale = static_cast<float>(m_surface.XamlRoot().RasterizationScale());
         const float rDip = m_sonarRadiusFloat / scale;
         const float zoom = static_cast<float>(m_sonarZoomFactor);
 
+        // Spotlight shape (below backdrop, visible through hole)
+        m_circleGeometry = m_compositor.CreateEllipseGeometry();
+        m_circleShape = m_compositor.CreateSpriteShape(m_circleGeometry);
+        m_circleShape.FillBrush(m_compositor.CreateColorBrush(m_spotlightColor));
         m_circleShape.Offset({ rDip * zoom, rDip * zoom });
-
         m_spotlight = m_compositor.CreateShapeVisual();
         m_spotlight.Size({ rDip * 2 * zoom, rDip * 2 * zoom });
         m_spotlight.AnchorPoint({ 0.5f, 0.5f });
         m_spotlight.Shapes().Append(m_circleShape);
         layer.Children().InsertAtTop(m_spotlight);
+
+        // Dim color (source)
+        m_dimColorBrush = m_compositor.CreateColorBrush(m_backgroundColor);
+        // Radial gradient mask (center transparent, outer opaque)
+        m_spotlightMaskGradient = m_compositor.CreateRadialGradientBrush();
+        m_spotlightMaskGradient.MappingMode(muxc::CompositionMappingMode::Absolute);
+        m_maskStopCenter = m_compositor.CreateColorGradientStop();
+        m_maskStopCenter.Offset(0.0f);
+        m_maskStopCenter.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        m_maskStopInner = m_compositor.CreateColorGradientStop();
+        m_maskStopInner.Offset(0.995f);
+        m_maskStopInner.Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        m_maskStopOuter = m_compositor.CreateColorGradientStop();
+        m_maskStopOuter.Offset(1.0f);
+        m_maskStopOuter.Color(winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 255, 255));
+        m_spotlightMaskGradient.ColorStops().Append(m_maskStopCenter);
+        m_spotlightMaskGradient.ColorStops().Append(m_maskStopInner);
+        m_spotlightMaskGradient.ColorStops().Append(m_maskStopOuter);
+        m_spotlightMaskGradient.EllipseCenter({ rDip * zoom, rDip * zoom });
+        m_spotlightMaskGradient.EllipseRadius({ rDip * zoom, rDip * zoom });
+
+        m_maskBrush = m_compositor.CreateMaskBrush();
+        m_maskBrush.Source(m_dimColorBrush);
+        m_maskBrush.Mask(m_spotlightMaskGradient);
+
+        m_backdrop = m_compositor.CreateSpriteVisual();
+        m_backdrop.RelativeSizeAdjustment({ 1.0f, 1.0f });
+        m_backdrop.Brush(m_maskBrush);
+        layer.Children().InsertAtTop(m_backdrop);
 
         // 5) Implicit opacity animation on the root
         m_animation = m_compositor.CreateScalarKeyFrameAnimation();
@@ -805,7 +837,15 @@ private:
             expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
 
         radiusExpression.Expression(expressionText);
-        m_circleGeometry.StartAnimation(L"Radius", radiusExpression);
+        m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", radiusExpression);
+        // Also animate spotlight geometry radius for visual consistency
+        if (m_circleGeometry)
+        {
+            auto radiusExpression2 = m_compositor.CreateExpressionAnimation();
+            radiusExpression2.SetReferenceParameter(L"Root", m_root);
+            radiusExpression2.Expression(expressionText);
+            m_circleGeometry.StartAnimation(L"Radius", radiusExpression2);
+        }
 
         return true;
     }
@@ -892,25 +932,41 @@ public:
                     UpdateMouseSnooping(); // For the shake mouse activation method
 
                     // Apply new settings to runtime composition objects.
-                    m_backdrop.Brush().as<muxc::CompositionColorBrush>().Color(m_backgroundColor);
-                    m_circleShape.FillBrush().as<muxc::CompositionColorBrush>().Color(m_spotlightColor);
-
+                    if (m_dimColorBrush)
+                    {
+                        m_dimColorBrush.Color(m_backgroundColor);
+                    }
+                    if (m_circleShape)
+                    {
+                        if (auto brush = m_circleShape.FillBrush().try_as<muxc::CompositionColorBrush>())
+                        {
+                            brush.Color(m_spotlightColor);
+                        }
+                    }
                     const float scale = static_cast<float>(m_surface.XamlRoot().RasterizationScale());
                     const float rDip = m_sonarRadiusFloat / scale;
                     const float zoom = static_cast<float>(m_sonarZoomFactor);
-
-                    m_circleShape.Offset({ rDip * zoom, rDip * zoom });
-                    m_spotlight.Size({ rDip * 2 * zoom, rDip * 2 * zoom });
-                    m_animation.Duration(std::chrono::milliseconds{ m_fadeDuration });
-                    m_circleGeometry.StopAnimation(L"Radius");
-
-                    // Update animation
+                    m_spotlightMaskGradient.StopAnimation(L"EllipseRadius");
+                    m_spotlightMaskGradient.EllipseCenter({ rDip * zoom, rDip * zoom });
+                    if (m_spotlight)
+                    {
+                        m_spotlight.Size({ rDip * 2 * zoom, rDip * 2 * zoom });
+                        m_circleShape.Offset({ rDip * zoom, rDip * zoom });
+                    }
                     auto radiusExpression = m_compositor.CreateExpressionAnimation();
                     radiusExpression.SetReferenceParameter(L"Root", m_root);
                     wchar_t expressionText[256];
                     winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
                     radiusExpression.Expression(expressionText);
-                    m_circleGeometry.StartAnimation(L"Radius", radiusExpression);
+                    m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", radiusExpression);
+                    if (m_circleGeometry)
+                    {
+                        m_circleGeometry.StopAnimation(L"Radius");
+                        auto radiusExpression2 = m_compositor.CreateExpressionAnimation();
+                        radiusExpression2.SetReferenceParameter(L"Root", m_root);
+                        radiusExpression2.Expression(expressionText);
+                        m_circleGeometry.StartAnimation(L"Radius", radiusExpression2);
+                    }
                 }
             });
             if (!enqueueSucceeded)
@@ -926,11 +982,19 @@ private:
     muxxc::Grid m_surface{ nullptr };
 
     muxc::ContainerVisual m_root{ nullptr };
-    muxc::CompositionEllipseGeometry m_circleGeometry{ nullptr };
-    muxc::ShapeVisual m_spotlight{ nullptr };
     muxc::CompositionCommitBatch m_batch{ nullptr };
     muxc::SpriteVisual m_backdrop{ nullptr };
+    // Spotlight shape visuals
+    muxc::CompositionEllipseGeometry m_circleGeometry{ nullptr };
+    muxc::ShapeVisual m_spotlight{ nullptr };
     muxc::CompositionSpriteShape m_circleShape{ nullptr };
+    // Radial gradient mask components
+    muxc::CompositionMaskBrush m_maskBrush{ nullptr };
+    muxc::CompositionColorBrush m_dimColorBrush{ nullptr };
+    muxc::CompositionRadialGradientBrush m_spotlightMaskGradient{ nullptr };
+    muxc::CompositionColorGradientStop m_maskStopCenter{ nullptr };
+    muxc::CompositionColorGradientStop m_maskStopInner{ nullptr };
+    muxc::CompositionColorGradientStop m_maskStopOuter{ nullptr };
     winrt::Windows::UI::Color m_backgroundColor = FIND_MY_MOUSE_DEFAULT_BACKGROUND_COLOR;
     winrt::Windows::UI::Color m_spotlightColor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_COLOR;
     muxc::ScalarKeyFrameAnimation m_animation{ nullptr };
