@@ -1420,6 +1420,26 @@
     "icon": "\uE713"
   },
   {
+    "type": 1,
+    "header": null,
+    "pageTypeName": "LightSwitchPage",
+    "elementName": null,
+    "elementUid": "LightSwitch_ThemeToggle_Shortcut",
+    "parentElementName": "",
+    "description": null,
+    "icon": "\uE708"
+  },
+  {
+    "type": 0,
+    "header": null,
+    "pageTypeName": "LightSwitchPage",
+    "elementName": "",
+    "elementUid": "LightSwitch",
+    "parentElementName": "",
+    "description": null,
+    "icon": "/Assets/Settings/Icons/LightSwitch.png"
+  },
+  {
     "type": 0,
     "header": null,
     "pageTypeName": "MeasureToolPage",

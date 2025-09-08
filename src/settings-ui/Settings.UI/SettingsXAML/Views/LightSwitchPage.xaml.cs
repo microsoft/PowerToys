@@ -78,18 +78,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             if (ViewModel.SearchLocations.Count == 0)
             {
-                string csvPath = Path.Combine(AppContext.BaseDirectory, "Data/world_cities.csv");
-                System.Diagnostics.Debug.WriteLine($"Looking for world_cities.csv at: {csvPath}");
-                if (File.Exists(csvPath))
+                foreach (var city in SearchLocationLoader.GetAll())
                 {
-                    foreach (var city in SearchLocationLoader.LoadCities(csvPath))
-                    {
-                        ViewModel.SearchLocations.Add(city);
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("world_cities.csv not found.");
+                    ViewModel.SearchLocations.Add(city);
                 }
             }
 

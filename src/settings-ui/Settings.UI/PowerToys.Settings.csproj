@@ -50,10 +50,6 @@
 		<Content Include="Assets\Settings\Square44x44Logo.targetsize-24_altform-unplated.png" />
 		<Content Include="Assets\Settings\StoreLogo.png" />
 		<Content Include="Assets\Settings\Wide310x150Logo.scale-200.png" />
-		<Content Include="Data\world_cities.csv">
-      		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      		<CopyToPublishDirectory>Always</CopyToPublishDirectory>
-    	</Content>
 	</ItemGroup>
 
 	<ItemGroup>

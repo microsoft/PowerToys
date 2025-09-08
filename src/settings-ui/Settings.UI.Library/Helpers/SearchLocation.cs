@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Settings.UI.Library.Helpers
 {
-    public class SearchLocation()
+    public class SearchLocation
     {
         public string City { get; set; }
 
@@ -19,5 +19,13 @@ namespace Settings.UI.Library.Helpers
         public double Latitude { get; set; }
 
         public double Longitude { get; set; }
+
+        public SearchLocation(string city, string country, double latitude, double longitude)
+        {
+            City = city;
+            Country = country;
+            Latitude = latitude;
+            Longitude = longitude;
+        }
     }
 }
