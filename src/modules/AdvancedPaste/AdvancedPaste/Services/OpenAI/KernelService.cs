@@ -5,7 +5,6 @@
 using System.Collections.Generic;
 
 using AdvancedPaste.Models;
-using Azure.AI.OpenAI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 

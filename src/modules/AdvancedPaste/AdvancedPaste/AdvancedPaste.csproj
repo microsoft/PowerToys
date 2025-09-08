@@ -49,7 +49,6 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
-    <PackageReference Include="Azure.AI.OpenAI" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />

@@ -11,7 +11,6 @@ using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Telemetry;
 using Azure;
-using Azure.AI.OpenAI;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 
