@@ -1797,6 +1797,7 @@ UIA
 UIEx
 uild
 uitests
+UITo
 ULONGLONG
 ums
 uncompilable

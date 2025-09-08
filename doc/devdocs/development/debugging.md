@@ -18,8 +18,8 @@ You can build the entire solution from the command line, which is sometimes fast
 1. Open Developer Command Prompt for VS 2022
 2. Navigate to the repository root directory
 3. Run the following command(don't forget to set the correct platform):
-   ```
-   msbuild -restore -p:RestorePackagesConfig=true -p:Platform=ARM64 -m PowerToys.sln
+   ```pwsh
+   msbuild -restore -p:RestorePackagesConfig=true -p:Platform=ARM64 -m PowerToys.sln /tl /p:NuGetInteractive="true"
    ```
 4. This process should complete in approximately 13-14 minutes for a full build
 
