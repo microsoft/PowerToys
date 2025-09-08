@@ -39,7 +39,8 @@ interface IAddTokenArgs
 interface IPrefixProvider requires IListPage // this definitely needs at least IPage
 {
     IDictionary<String, String> PrefixCommands { get; }
-    event Windows.Foundation.TypedEventHandler<Object, IAddTokenArgs> RequestAddToken;
+    // event Windows.Foundation.TypedEventHandler<Object, IAddTokenArgs> RequestAddToken;
+    void UpdateSearch(ISearchUpdateArgs args);
 }
 
 ```
@@ -215,7 +216,7 @@ interface ITokenPostitions
     Int64 Position { get; }; // default -1 for "end"
 }
 
-interface ISeachTextChangedArgs
+interface ISearchTextChangedArgs
 {
     String NewSearchText { get; } // The text that the user has typed into the search box.
     ITokenPostitions[] CurrentTokens { get; } // The tokens that are currently in the search box.
@@ -244,11 +245,17 @@ interface IReadOnlyTextRun : ISearchRun
 {
     String Text { get; };
 }
-// interface ISearchTextChangedArgs
-// {
-//     ISearchRun[] SearchRuns { get; } 
-// }
-// And just use a PropChanged(Page.SearchRuns) to notify of changes
+interface ISearchTextChangedArgs
+{
+    ISearchRun[] SearchRuns { get; } 
+}
+
+interface IPrefixProvider requires IListPage // this definitely needs at least IPage
+{
+    IDictionary<String, String> PrefixCommands { get; }
+    void UpdateSearch(ISearchTextChangedArgs args);
+}
+// And just use a PropChanged(Page.SearchRuns) to notify of changes -> host
 ```
 
 Then, when the user picks a suggestion, the page itself would have to:
@@ -318,6 +325,9 @@ public class PrefixSearchPage : ListPage, IPrefixProvider
 
     public event Windows.Foundation.TypedEventHandler<Object, ITokenPickedEventArgs> TokenAdded;
 
+    public ISearchRun[] SearchRuns => _currentRuns.ToArray();
+    private IList<ISearchRun> _currentRuns = new List<ISearchRun>();
+
     public PrefixSearchPage()
     {
         _peopleCommand = new PeopleDynamicListPage(HandleTokenPicked);
@@ -345,19 +355,39 @@ public class PrefixSearchPage : ListPage, IPrefixProvider
 
     public void HandleTokenPicked(ITokenPickedEventArgs args)
     {
+        var token = args.Token;
+
+        _currentRuns.Add(new TokenRun { Token = token });
+        _currentRuns.Add(new TextRun(" ")); // add a space after the token
+
         // Raise the event to notify CmdPal of the picked token
-        TokenAdded?.Invoke(this, args);
+        RaisePropertyChanged(nameof(SearchRuns));
+
     }
 
-    public void SendQuery(ISearchUpdateArgs args)
+    public void UpdateSearch(ISearchTextChangedArgs args)
     {
-        // Handle the search update, possibly updating the list of items based on the new search text
-        var searchText = args.NewSearchText;
-        var properties = args.GetProperties();
-        var tokens = properties.TryLookup<object>("tokens") as ITokenPositions[];
+        var searchTokens = args.CurrentTokens;
+        _currentRuns = searchTokens.ToList();
 
-        // Here you could use these tokens to update the commands in our own search results
-        // Or just save them, and plumb them into the InvokableCommand the user eventually picks
+        // For example: you could grab all the text from the runs like this
+        var newText = "";
+        foreach (var run in args.SearchRuns)
+        {
+            if (run is IInputTextRun inputRun)
+            {
+                newText += inputRun.Text;
+            }
+            else if (run is ITokenRun tokenRun)
+            {
+                newText += tokenRun.Token.DisplayText;
+            }
+            else if (run is IReadOnlyTextRun readOnlyRun)
+            {
+                newText += readOnlyRun.Text;
+            }
+        }
+        
     }
 
     // Other ListPage members...
@@ -366,8 +396,28 @@ public class PrefixSearchPage : ListPage, IPrefixProvider
 ```
 
 Then the prefix page can own the suggestion pages, and wire their events directly to itself. 
+
+Does this mean that the `ISearchTextChangedArgs` coming into the extension are something instantiated by the host? yea. That would force the extension to safely deal with the args. Unless we definitely had OSS MBV, we can't be sure that what the extension sees is safe to handle. 
+
+It would be a weird mismash where the set of tokens is half owned by the extension (tokens) and half owned by the host (text). And I don't know how having a token roundtrip across the ABI both ways would translate. Probably fine. 
+
+```cs
+page.UpdateSearch(new SearchTextChangedArgs(){SearchRuns=[new InputTextRun("h")]});
+page.UpdateSearch(new SearchTextChangedArgs(){SearchRuns=[new InputTextRun("he")]});
+page.UpdateSearch(new SearchTextChangedArgs(){SearchRuns=[new InputTextRun("hel")]});
+page.UpdateSearch(new SearchTextChangedArgs(){SearchRuns=[new InputTextRun("hell")]});
+page.UpdateSearch(new SearchTextChangedArgs(){SearchRuns=[new InputTextRun("hello")]});
+page.UpdateSearch(new SearchTextChangedArgs(){SearchRuns=[new InputTextRun("hello ")]});
+// user types '@'
+// user picks "Alice" from people page
+// page itself raises a PropChanged(SearchRuns)
+page.UpdateSearch(new SearchTextChangedArgs(){SearchRuns=[
+    new InputTextRun("hello "), // created by host
+    new TokenRun(Alice), // created by page
+    new InputTextRun(" "), // created by page
+]});
 ```
- 
+
 
 
 -----------------------
@@ -454,3 +504,16 @@ class MyPrefixCommandProvider : ICommandProvider, IPrefixProvider
 ```
 
 This is a little gross in my opinion. The `GetCommand` implementation is close to the list of prefixes, which is nice. But picking the tokens doesn't make sense on the command provider. It should be on the Page. 
+
+ 
+~~I don't know if this compiles:~~ This DOESN'T compile, a struct field can't be a pointer type.
+
+```cs
+struct TokenRun
+{
+    String Text;
+    Boolean IsReadOnly;
+    Object Value;
+}
+```
+~~That boxes us into those three properties and never more, but would ensure that we'd always cleanly transit the ABI~~
