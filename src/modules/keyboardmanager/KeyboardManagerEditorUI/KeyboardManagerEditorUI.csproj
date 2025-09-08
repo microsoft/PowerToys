@@ -15,7 +15,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <AssemblyName>PowerToys.KeyboardManagerEditorUI</AssemblyName>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\$(MSBuildProjectName)</OutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\$(MSBuildProjectName)</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
