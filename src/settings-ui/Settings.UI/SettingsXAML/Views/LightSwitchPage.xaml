@@ -96,35 +96,14 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Description="Adjust the trigger time by starting earlier or later than the actual sunrise or sunset"
-                                Header="Sunrise or sunset offset"
+                                Header="Sunrise or sunset offset (in minutes)"
                                 Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
-                                <Grid VerticalAlignment="Center" ColumnSpacing="8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Slider
-                                        x:Name="geoOffsetSlider"
-                                        MinWidth="132"
-                                        Maximum="60"
-                                        Minimum="-60"
-                                        SnapsTo="StepValues"
-                                        StepFrequency="5"
-                                        TickFrequency="15"
-                                        TickPlacement="Outside"
-                                        Value="{x:Bind ViewModel.Offset, Mode=TwoWay}" />
-
-                                    <TextBlock
-                                        Grid.Column="1"
-                                        MinWidth="78"
-                                        VerticalAlignment="Center"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        TextAlignment="Right">
-                                        <Run x:Name="geoOffsetValue" Text="{x:Bind ViewModel.Offset, Mode=OneWay}" />
-                                        <Run Text="minutes" />
-                                    </TextBlock>
-
-                                </Grid>
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="60"
+                                    Minimum="-60"
+                                    SpinButtonPlacementMode="Inline"
+                                    Value="{x:Bind ViewModel.Offset, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
