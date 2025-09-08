@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-
 using AdvancedPaste.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -26,8 +25,33 @@ public sealed class KernelService(IKernelQueryCacheService queryCacheService, IA
 
     protected override void AddChatCompletionService(IKernelBuilder kernelBuilder) => kernelBuilder.AddOpenAIChatCompletion(ModelName, _aiCredentialsProvider.Key);
 
-    protected override AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage) =>
-        chatMessage.Metadata?.GetValueOrDefault("Usage") is CompletionsUsage completionsUsage
-            ? new(PromptTokens: completionsUsage.PromptTokens, CompletionTokens: completionsUsage.CompletionTokens)
-            : AIServiceUsage.None;
+    protected override AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage)
+    {
+        // Try to get usage information from metadata
+        if (chatMessage.Metadata?.TryGetValue("Usage", out var usageObj) == true)
+        {
+            // Handle different possible usage types through reflection to be version-agnostic
+            var usageType = usageObj.GetType();
+
+            try
+            {
+                // Try common property names for prompt tokens
+                var promptTokensProp = usageType.GetProperty("PromptTokens") ?? usageType.GetProperty("InputTokens") ?? usageType.GetProperty("InputTokenCount");
+                var completionTokensProp = usageType.GetProperty("CompletionTokens") ?? usageType.GetProperty("OutputTokens") ?? usageType.GetProperty("OutputTokenCount");
+
+                if (promptTokensProp != null && completionTokensProp != null)
+                {
+                    var promptTokens = (int)(promptTokensProp.GetValue(usageObj) ?? 0);
+                    var completionTokens = (int)(completionTokensProp.GetValue(usageObj) ?? 0);
+                    return new AIServiceUsage(promptTokens, completionTokens);
+                }
+            }
+            catch
+            {
+                // If reflection fails, fall back to no usage
+            }
+        }
+
+        return AIServiceUsage.None;
+    }
 }

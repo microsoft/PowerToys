@@ -3,53 +3,56 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Text.Json;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Telemetry;
 using Azure;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using OpenAI;
+using OpenAI.Chat;
 
 namespace AdvancedPaste.Services.OpenAI;
 
 public sealed class CustomTextTransformService(IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService) : ICustomTextTransformService
 {
-    private const string ModelName = "gpt-3.5-turbo-instruct";
+    private const string ModelName = "gpt-3.5-turbo";
 
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
     private readonly IPromptModerationService _promptModerationService = promptModerationService;
 
-    private async Task<Completions> GetAICompletionAsync(string systemInstructions, string userMessage, CancellationToken cancellationToken)
+    private async Task<ChatCompletion> GetAICompletionAsync(string systemInstructions, string userMessage, CancellationToken cancellationToken)
     {
         var fullPrompt = systemInstructions + "\n\n" + userMessage;
 
         await _promptModerationService.ValidateAsync(fullPrompt, cancellationToken);
 
-        OpenAIClient azureAIClient = new(_aiCredentialsProvider.Key);
+        ChatClient chatClient = new(ModelName, _aiCredentialsProvider.Key);
 
-        var response = await azureAIClient.GetCompletionsAsync(
-            new()
+        var messages = new List<ChatMessage>
+        {
+            ChatMessage.CreateSystemMessage(systemInstructions),
+            ChatMessage.CreateUserMessage(userMessage),
+        };
+
+        var response = await chatClient.CompleteChatAsync(
+            messages,
+            new ChatCompletionOptions
             {
-                DeploymentName = ModelName,
-                Prompts =
-                {
-                    fullPrompt,
-                },
-                Temperature = 0.01F,
-                MaxTokens = 2000,
+                Temperature = 0.01f,
+                MaxOutputTokenCount = 2000,
             },
             cancellationToken);
 
-        if (response.Value.Choices[0].FinishReason == "length")
+        if (response.Value.FinishReason == ChatFinishReason.Length)
         {
             Logger.LogDebug("Cut off due to length constraints");
         }
 
-        return response;
+        return response.Value;
     }
 
     public async Task<string> TransformTextAsync(string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress)
@@ -84,13 +87,13 @@ Output:
             var response = await GetAICompletionAsync(systemInstructions, userMessage, cancellationToken);
 
             var usage = response.Usage;
-            AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.PromptTokens, usage.CompletionTokens, ModelName);
+            AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.InputTokenCount, usage.OutputTokenCount, ModelName);
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
             var logEvent = new AIServiceFormatEvent(telemetryEvent);
 
             Logger.LogDebug($"{nameof(TransformTextAsync)} complete; {logEvent.ToJsonString()}");
 
-            return response.Choices[0].Text;
+            return response.Content[0].Text;
         }
         catch (Exception ex)
         {
