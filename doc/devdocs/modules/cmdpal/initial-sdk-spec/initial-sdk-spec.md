@@ -1,7 +1,11 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 last updated: 2026-02-05
+=======
+last updated: 2025-09-04
+>>>>>>> 2970fc5d8 (I kinda like this?):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 issue id: n/a
 ---
 
@@ -2105,7 +2109,9 @@ interface ICommandProvider3 requires ICommandProvider2
 
 This addenda is broken into multiple draft specs currently. These represent different approaches to the same goals. 
 
-* [RichSearchBox](./RichSearchBox-draft-A.md)
+* [Rich Search Box](./RichSearchBox-draft-A.md)
+* [Prefix Search](./PrefixSearch-draft-B.md)
+* [ZWSP tokens](./PlainRichSearch-draft-C.md)
 
 ### Commands with parameters
 
