@@ -19,7 +19,7 @@ public sealed class KernelService(IKernelQueryCacheService queryCacheService, IA
     protected override PromptExecutionSettings PromptExecutionSettings =>
         new OpenAIPromptExecutionSettings()
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
             Temperature = 0.01,
         };
 
