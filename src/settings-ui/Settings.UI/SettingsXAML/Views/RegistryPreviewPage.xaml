@@ -41,7 +41,10 @@
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
-                    <tkcontrols:SettingsCard Name="RegistryPreviewDefaultRegApp" x:Uid="RegistryPreview_DefaultRegApp" HeaderIcon="{ui:FontIcon Glyph=&#xE7AC;}">
+                    <tkcontrols:SettingsCard
+                        Name="RegistryPreviewDefaultRegApp"
+                        x:Uid="RegistryPreview_DefaultRegApp"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7AC;}">
                         <ToggleSwitch x:Uid="RegistryPreview_DefaultRegApp_ToggleSwitch" IsOn="{x:Bind ViewModel.IsRegistryPreviewDefaultRegApp, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>

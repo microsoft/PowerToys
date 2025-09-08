@@ -98,25 +98,25 @@
                                 Description="Adjust the trigger time by starting earlier or later than the actual sunrise"
                                 Header="Sunrise offset (in minutes)"
                                 Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
-                                  <NumberBox
+                                <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="60"
                                     Minimum="-60"
                                     SpinButtonPlacementMode="Inline"
                                     Value="{x:Bind ViewModel.SunriseOffset, Mode=TwoWay}" />
-              </tkcontrols:SettingsCard>
-              <tkcontrols:SettingsCard
-                  Description="Adjust the trigger time by starting earlier or later than the actual sunset"
-                  Header="Sunset offset (in minutes)"
-                  Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
-                <NumberBox
-                      MinWidth="{StaticResource SettingActionControlMinWidth}"
-                      Maximum="60"
-                      Minimum="-60"
-                      SpinButtonPlacementMode="Inline"
-                      Value="{x:Bind ViewModel.SunsetOffset, Mode=TwoWay}" />
-              </tkcontrols:SettingsCard>
-            </tkcontrols:SettingsExpander.Items>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Description="Adjust the trigger time by starting earlier or later than the actual sunset"
+                                Header="Sunset offset (in minutes)"
+                                Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="60"
+                                    Minimum="-60"
+                                    SpinButtonPlacementMode="Inline"
+                                    Value="{x:Bind ViewModel.SunsetOffset, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
                     <controls:SettingsGroup Header="Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
