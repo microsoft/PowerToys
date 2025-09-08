@@ -134,6 +134,15 @@ public sealed partial class CommandBar : UserControl,
         WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
     }
 
+    /// <summary>
+    /// Sets focus to the "More" button after closing the context menu,
+    /// keeping keyboard navigation intuitive.
+    /// </summary>
+    public void FocusMoreCommandsButton()
+    {
+        MoreCommandsButton?.Focus(FocusState.Programmatic);
+    }
+
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
         // We need to wait until our flyout is opened to try and toss focus

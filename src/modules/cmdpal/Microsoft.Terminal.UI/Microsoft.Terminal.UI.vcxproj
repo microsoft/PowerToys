@@ -159,6 +159,9 @@
     <ClInclude Include="ResourceString.h">
       <DependentUpon>ResourceString.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="FontIconGlyphClassifier.h">
+      <DependentUpon>FontIconGlyphClassifier.idl</DependentUpon>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp" />
@@ -178,6 +181,9 @@
       <DependentUpon>ResourceString.idl</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="FontIconGlyphClassifier.cpp">
+      <DependentUpon>FontIconGlyphClassifier.idl</DependentUpon>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Converters.idl" />
@@ -185,6 +191,7 @@
     <Midl Include="RunHistory.idl" />
     <Midl Include="IDirectKeyListener.idl" />
     <Midl Include="ResourceString.idl" />
+    <Midl Include="FontIconGlyphClassifier.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

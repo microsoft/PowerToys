@@ -38,6 +38,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool AllowExternalReload
+    {
+        get => _settings.AllowExternalReload;
+        set
+        {
+            _settings.AllowExternalReload = value;
+            Save();
+        }
+    }
+
     public bool ShowAppDetails
     {
         get => _settings.ShowAppDetails;

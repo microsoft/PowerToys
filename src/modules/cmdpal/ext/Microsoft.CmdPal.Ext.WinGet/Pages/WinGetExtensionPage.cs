@@ -65,6 +65,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
             if (_results is not null && _results.Count != 0)
             {
+                var stopwatch = Stopwatch.StartNew();
                 var count = _results.Count;
                 var results = new ListItem[count];
                 var next = 0;
@@ -82,6 +83,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                     }
                 }
 
+                stopwatch.Stop();
+                Logger.LogDebug($"Building ListItems took {stopwatch.ElapsedMilliseconds}ms", memberName: nameof(GetItems));
                 IsLoading = false;
                 return results;
             }
@@ -244,14 +247,21 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         // foreach (var catalog in connections)
         {
+            Stopwatch findPackages_stopwatch = new();
+            findPackages_stopwatch.Start();
             Logger.LogDebug($"  Searching {catalog.Info.Name} ({query})", memberName: nameof(DoSearchAsync));
 
             ct.ThrowIfCancellationRequested();
+
+            Logger.LogDebug($"Preface for \"{searchDebugText}\" took {stopwatch.ElapsedMilliseconds}ms", memberName: nameof(DoSearchAsync));
 
             // BODGY, re: microsoft/winget-cli#5151
             // FindPackagesAsync isn't actually async.
             var internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
             var searchResults = await internalSearchTask;
+
+            findPackages_stopwatch.Stop();
+            Logger.LogDebug($"FindPackages for \"{searchDebugText}\" took {findPackages_stopwatch.ElapsedMilliseconds}ms", memberName: nameof(DoSearchAsync));
 
             // TODO more error handling like this:
             if (searchResults.Status != FindPackagesResultStatus.Ok)
@@ -260,6 +270,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                 WinGetExtensionHost.Instance.ShowStatus(_errorMessage, StatusContext.Page);
                 return [];
             }
+
+            ct.ThrowIfCancellationRequested();
 
             Logger.LogDebug($"    got results for ({query})", memberName: nameof(DoSearchAsync));
 

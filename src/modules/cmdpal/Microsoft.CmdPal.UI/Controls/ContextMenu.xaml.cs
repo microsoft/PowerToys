@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Messages;
@@ -112,6 +113,24 @@ public sealed partial class ContextMenu : UserControl,
         else if (result == ContextKeybindingResult.Unhandled)
         {
             e.Handled = false;
+        }
+    }
+
+    /// <summary>
+    /// Handles Escape to close the context menu and return focus to the "More" button.
+    /// </summary>
+    private void UserControl_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape)
+        {
+            // Close the context menu (if not already handled)
+            WeakReferenceMessenger.Default.Send(new CloseContextMenuMessage());
+
+            // Find the parent CommandBar and set focus to MoreCommandsButton
+            var parent = this.FindParent<CommandBar>();
+            parent?.FocusMoreCommandsButton();
+
+            e.Handled = true;
         }
     }
 

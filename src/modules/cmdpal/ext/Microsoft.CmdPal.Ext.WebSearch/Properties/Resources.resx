@@ -172,7 +172,7 @@
   <data name="plugin_search_failed" xml:space="preserve">
     <value>Failed to open {0}.</value>
   </data>
-  <data name="plugin_show_history" xml:space="preserve">
+  <data name="plugin_history_item_count" xml:space="preserve">
     <value>Determines the number of history items to show from previous searches</value>
   </data>
   <data name="settings_page_name" xml:space="preserve">
