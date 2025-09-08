@@ -17,7 +17,7 @@ using PowerToys.GPOWrapper;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class AwakePage : Page, IRefreshablePage
+    public sealed partial class AwakePage : NavigablePage, IRefreshablePage
     {
         private readonly string _appName = "Awake";
         private readonly SettingsUtils _settingsUtils;

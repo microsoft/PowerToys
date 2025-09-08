@@ -131,11 +131,7 @@ internal sealed partial class AppListItem : ListItem
         var newCommands = new List<IContextItem>();
         newCommands.AddRange(commands);
 
-        newCommands.Add(new SeparatorContextItem());
-
-        // 0x50 = P
-        // Full key chord would be Ctrl+P
-        var pinKeyChord = KeyChordHelpers.FromModifiers(true, false, false, false, 0x50, 0);
+        newCommands.Add(new Separator());
 
         if (isPinned)
         {
@@ -143,7 +139,7 @@ internal sealed partial class AppListItem : ListItem
                 new CommandContextItem(
                     new UnpinAppCommand(this.AppIdentifier))
                 {
-                    RequestedShortcut = pinKeyChord,
+                    RequestedShortcut = KeyChords.TogglePin,
                 });
         }
         else
@@ -152,7 +148,7 @@ internal sealed partial class AppListItem : ListItem
                 new CommandContextItem(
                     new PinAppCommand(this.AppIdentifier))
                 {
-                    RequestedShortcut = pinKeyChord,
+                    RequestedShortcut = KeyChords.TogglePin,
                 });
         }
 

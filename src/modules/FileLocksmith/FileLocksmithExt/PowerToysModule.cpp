@@ -12,12 +12,33 @@
 #include "FileLocksmithLib/Constants.h"
 #include "FileLocksmithLib/Settings.h"
 #include "FileLocksmithLib/Trace.h"
+#include "RuntimeRegistration.h"
 
 #include "dllmain.h"
 #include "Generated Files/resource.h"
 
 class FileLocksmithModule : public PowertoyModuleIface
 {
+private:
+    // Update registration based on enabled state
+    void UpdateRegistration(bool enabled)
+    {
+        if (enabled)
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            FileLocksmithRuntimeRegistration::EnsureRegistered();
+            Logger::info(L"File Locksmith context menu registered");
+#endif
+        }
+        else
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            FileLocksmithRuntimeRegistration::Unregister();
+            Logger::info(L"File Locksmith context menu unregistered");
+#endif
+        }
+    }
+
 public:
     FileLocksmithModule()
     {
@@ -82,7 +103,6 @@ public:
         {
             std::wstring path = get_module_folderpath(globals::instance);
             std::wstring packageUri = path + L"\\FileLocksmithContextMenuPackage.msix";
-
             if (!package::IsPackageRegisteredWithPowerToysVersion(constants::nonlocalizable::ContextMenuPackageName))
             {
                 package::RegisterSparsePackage(path, packageUri);
@@ -90,12 +110,14 @@ public:
         }
 
         m_enabled = true;
+        UpdateRegistration(m_enabled);
     }
 
     virtual void disable() override
     {
         Logger::info(L"File Locksmith disabled");
         m_enabled = false;
+        UpdateRegistration(m_enabled);
     }
 
     virtual bool is_enabled() override
@@ -128,6 +150,7 @@ private:
     {
         m_enabled = FileLocksmithSettingsInstance().GetEnabled();
         m_extended_only = FileLocksmithSettingsInstance().GetShowInExtendedContextMenu();
+        UpdateRegistration(m_enabled);
         Trace::EnableFileLocksmith(m_enabled);
     }
 

@@ -22,7 +22,7 @@ using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Serializable]
-public class UWPApplication : IProgram
+public class UWPApplication : IUWPApplication
 {
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly IPath Path = FileSystem.Path;
@@ -87,7 +87,7 @@ public class UWPApplication : IProgram
                 new CommandContextItem(
                     new RunAsAdminCommand(UniqueIdentifier, string.Empty, true))
                 {
-                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter),
+                    RequestedShortcut = KeyChords.RunAsAdministrator,
                 });
 
             // We don't add context menu to 'run as different user', because UWP applications normally installed per user and not for all users.
@@ -95,9 +95,9 @@ public class UWPApplication : IProgram
 
         commands.Add(
             new CommandContextItem(
-                new Commands.CopyPathCommand(Location))
+                new CopyTextCommand(Location) { Name = Resources.copy_path })
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
+                RequestedShortcut = KeyChords.CopyFilePath,
             });
 
         commands.Add(
@@ -107,15 +107,23 @@ public class UWPApplication : IProgram
                     Name = Resources.open_containing_folder,
                 })
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E),
+                RequestedShortcut = KeyChords.OpenFileLocation,
             });
 
         commands.Add(
         new CommandContextItem(
             new OpenInConsoleCommand(Package.Location))
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
+            RequestedShortcut = KeyChords.OpenInConsole,
         });
+
+        commands.Add(
+            new CommandContextItem(
+                new UninstallApplicationConfirmation(this))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
+                IsCritical = true,
+            });
 
         return commands;
     }
@@ -517,7 +525,7 @@ public class UWPApplication : IProgram
         }
     }
 
-    internal AppItem ToAppItem()
+    public AppItem ToAppItem()
     {
         var app = this;
         var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;

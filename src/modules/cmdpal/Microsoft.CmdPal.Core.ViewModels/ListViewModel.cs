@@ -26,6 +26,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [ObservableProperty]
     public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
+    public FiltersViewModel? Filters { get; set; }
+
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
     private readonly ExtensionObject<IListPage> _model;
@@ -42,6 +44,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
         FilteredItems.Count == 0 &&
         (!_isFetching) &&
         IsLoading == false;
+
+    public bool IsGridView { get; private set; }
+
+    public IGridPropertiesViewModel? GridProperties { get; private set; }
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -86,7 +92,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
 
-    protected override void OnFilterUpdated(string filter)
+    protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
         //// TODO: Just temp testing, need to think about where we want to filter, as AdvancedCollectionView in View could be done, but then grouping need CollectionViewSource, maybe we do grouping in view
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
@@ -104,7 +110,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     if (_model.Unsafe is IDynamicListPage dynamic)
                     {
-                        dynamic.SearchText = filter;
+                        dynamic.SearchText = searchTextBox;
                     }
                 }
                 catch (Exception ex)
@@ -127,6 +133,26 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
+    public void UpdateCurrentFilter(string currentFilterId)
+    {
+        // We're getting called on the UI thread.
+        // Hop off to a BG thread to update the extension.
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                if (_model.Unsafe is IListPage listPage)
+                {
+                    listPage.Filters?.CurrentFilterId = currentFilterId;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowException(ex, _model?.Unsafe?.Name);
+            }
+        });
+    }
+
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
     private void FetchItems()
     {
@@ -141,6 +167,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // see 9806fe5d8 for the last commit that had this with sections
         _isFetching = true;
 
+        // Collect all the items into new viewmodels
+        Collection<ListItemViewModel> newViewModels = [];
+
         try
         {
             // Check for cancellation before starting expensive operations
@@ -150,9 +179,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             // Check for cancellation after getting items from extension
             cancellationToken.ThrowIfCancellationRequested();
-
-            // Collect all the items into new viewmodels
-            Collection<ListItemViewModel> newViewModels = [];
 
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
@@ -187,11 +213,22 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // Check for cancellation before updating the list
             cancellationToken.ThrowIfCancellationRequested();
 
+            List<ListItemViewModel> removedItems = [];
             lock (_listLock)
             {
                 // Now that we have new ViewModels for everything from the
                 // extension, smartly update our list of VMs
-                ListHelpers.InPlaceUpdateList(Items, newViewModels);
+                ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
+
+                // DO NOT ThrowIfCancellationRequested AFTER THIS! If you do,
+                // you'll clean up list items that we've now transferred into
+                // .Items
+            }
+
+            // If we removed items, we need to clean them up, to remove our event handlers
+            foreach (var removedItem in removedItems)
+            {
+                removedItem.SafeCleanup();
             }
 
             // TODO: Iterate over everything in Items, and prune items from the
@@ -200,6 +237,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
         catch (OperationCanceledException)
         {
             // Cancellation is expected, don't treat as error
+
+            // However, if we were cancelled, we didn't actually add these items to
+            // our Items list. Before we release them to the GC, make sure we clean
+            // them up
+            foreach (var vm in newViewModels)
+            {
+                vm.SafeCleanup();
+            }
+
             return;
         }
         catch (Exception ex)
@@ -285,7 +331,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// Apply our current filter text to the list of items, and update
     /// FilteredItems to match the results.
     /// </summary>
-    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, Filter));
+    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, SearchTextBox));
 
     /// <summary>
     /// Helper to generate a weighting for a given list item, based on title,
@@ -474,6 +520,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         _isDynamic = model is IDynamicListPage;
 
+        IsGridView = model.GridProperties is not null;
+        UpdateProperty(nameof(IsGridView));
+
+        GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
+        GridProperties?.InitializeProperties();
+        UpdateProperty(nameof(GridProperties));
+
         ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
 
@@ -487,13 +540,35 @@ public partial class ListViewModel : PageViewModel, IDisposable
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
 
+        Filters = new(new(model.Filters), PageContext);
+        Filters.InitializeProperties();
+        UpdateProperty(nameof(Filters));
+
         FetchItems();
         model.ItemsChanged += Model_ItemsChanged;
     }
 
+    private IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)
+    {
+        if (gridProperties is IMediumGridLayout mediumGridLayout)
+        {
+            return new MediumGridPropertiesViewModel(mediumGridLayout);
+        }
+        else if (gridProperties is IGalleryGridLayout galleryGridLayout)
+        {
+            return new GalleryGridPropertiesViewModel(galleryGridLayout);
+        }
+        else if (gridProperties is ISmallGridLayout smallGridLayout)
+        {
+            return new SmallGridPropertiesViewModel(smallGridLayout);
+        }
+
+        return null;
+    }
+
     public void LoadMoreIfNeeded()
     {
-        var model = this._model.Unsafe;
+        var model = _model.Unsafe;
         if (model is null)
         {
             return;
@@ -537,7 +612,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         base.FetchProperty(propertyName);
 
-        var model = this._model.Unsafe;
+        var model = _model.Unsafe;
         if (model is null)
         {
             return; // throw?
@@ -545,18 +620,28 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         switch (propertyName)
         {
+            case nameof(GridProperties):
+                IsGridView = model.GridProperties is not null;
+                GridProperties = LoadGridPropertiesViewModel(model.GridProperties);
+                GridProperties?.InitializeProperties();
+                UpdateProperty(nameof(IsGridView));
+                break;
             case nameof(ShowDetails):
-                this.ShowDetails = model.ShowDetails;
+                ShowDetails = model.ShowDetails;
                 break;
             case nameof(PlaceholderText):
-                this._modelPlaceholderText = model.PlaceholderText;
+                _modelPlaceholderText = model.PlaceholderText;
                 break;
             case nameof(SearchText):
-                this.SearchText = model.SearchText;
+                SearchText = model.SearchText;
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);
                 EmptyContent.SlowInitializeProperties();
+                break;
+            case nameof(Filters):
+                Filters = new(new(model.Filters), PageContext);
+                Filters.InitializeProperties();
                 break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
@@ -620,6 +705,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             FilteredItems.Clear();
         }
+
+        Filters?.SafeCleanup();
 
         var model = _model.Unsafe;
         if (model is not null)
