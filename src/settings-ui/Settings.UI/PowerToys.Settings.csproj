@@ -23,7 +23,6 @@
     <None Remove="Assets\Settings\Icons\LightSwitch.png" />
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
-    <None Remove="Data\world_cities.csv" />
     <None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
     <None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
     <None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
@@ -54,7 +53,8 @@
     <Content Include="Assets\Settings\StoreLogo.png" />
     <Content Include="Assets\Settings\Wide310x150Logo.scale-200.png" />
     <Content Include="Data\world_cities.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 
