@@ -800,6 +800,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightSwitchModuleInterface", "src\modules\LightSwitch\LightSwitchModuleInterface\LightSwitchModuleInterface.vcxproj", "{38177D56-6AD1-4ADF-88C9-2843A7932166}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightModeService", "src\modules\LightSwitch\LightSwitchService\LightSwitchService.vcxproj", "{08E71C67-6A7E-4CA1-B04E-2FB336410BAC}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E11826E1-76DF-42AC-985C-164CC2EE57A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenRuler.UITests", "src\modules\MeasureTool\Tests\ScreenRuler.UITests\ScreenRuler.UITests.csproj", "{66C069F8-C548-4CA6-8CDE-239104D68E88}"
