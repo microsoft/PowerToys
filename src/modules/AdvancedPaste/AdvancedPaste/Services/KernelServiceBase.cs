@@ -28,6 +28,8 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
 
     protected abstract string ModelName { get; }
 
+    protected abstract string ChatComplectionModelName { get; }
+
     protected abstract PromptExecutionSettings PromptExecutionSettings { get; }
 
     protected abstract PromptExecutionSettings CustomTextTransformExecutionSettings { get; }
@@ -145,7 +147,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
 
         await _promptModerationService.ValidateAsync(GetFullPrompt(chatHistory), cancellationToken);
 
-        var chatResult = await kernel.GetRequiredService<IChatCompletionService>()
+        var chatResult = await kernel.GetRequiredService<IChatCompletionService>(ModelName)
                                      .GetChatMessageContentAsync(chatHistory, PromptExecutionSettings, kernel, cancellationToken);
         chatHistory.Add(chatResult);
 
@@ -237,7 +239,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         }
 
         var kernel = CreateKernel();
-        var chatService = kernel.GetRequiredService<IChatCompletionService>();
+        var chatService = kernel.GetRequiredService<IChatCompletionService>(ChatComplectionModelName);
 
         var chatHistory = new ChatHistory();
         chatHistory.AddSystemMessage("""
