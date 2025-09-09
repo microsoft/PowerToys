@@ -25,6 +25,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public SettingsGroup()
         {
             DefaultStyleKey = typeof(SettingsGroup);
+            UpdateTabStop();
+            
+            // Handle focus state changes for visual feedback
+            GotFocus += OnGotFocus;
+            LostFocus += OnLostFocus;
         }
 
         [Localizable(true)]
@@ -38,7 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             "Header",
             typeof(string),
             typeof(SettingsGroup),
-            new PropertyMetadata(default(string)));
+            new PropertyMetadata(default(string), OnHeaderChanged));
 
         [Localizable(true)]
         public object Description
@@ -68,6 +73,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             ((SettingsGroup)d).Update();
         }
 
+        private static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((SettingsGroup)d).UpdateTabStop();
+        }
+
         private void SettingsGroup_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             SetEnabledState();
@@ -93,6 +103,26 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 _settingsGroup._descriptionPresenter.Visibility = Visibility.Visible;
             }
+        }
+
+        private void UpdateTabStop()
+        {
+            // Make the SettingsGroup focusable only when it has a header
+            // This allows keyboard navigation to group headers in search results
+            IsTabStop = !string.IsNullOrEmpty(Header);
+        }
+
+        private void OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            if (IsTabStop)
+            {
+                VisualStateManager.GoToState(this, "Focused", true);
+            }
+        }
+
+        private void OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            VisualStateManager.GoToState(this, "Unfocused", true);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
