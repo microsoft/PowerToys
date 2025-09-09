@@ -119,10 +119,13 @@
     <PackageReference Include="Microsoft.Windows.CppWinRT" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
-  <ItemGroup>
-    <!-- Win2D winmd for C++/WinRT projection (Pkg id normalized with dots to underscores) -->
-    <WinMDReference Include="$(PkgMicrosoft_Graphics_Win2D)\winmd\Microsoft.Graphics.Canvas.winmd" />
-  </ItemGroup>
+  <Target Name="RemoveManagedWebView2CoreFromNativeOutDir" AfterTargets="Build">
+    <ItemGroup>
+      <_ToDelete Include="$(OutDir)Microsoft.Web.WebView2.Core.dll" />
+    </ItemGroup>
+    <Delete Files="@(_ToDelete)" Condition="Exists('%(Identity)')" />
+  </Target>
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
   <!-- ExtensionTargets import group not needed; native targets pulled in automatically by PackageReference restore -->
