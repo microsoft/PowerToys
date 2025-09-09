@@ -9,8 +9,8 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class KernelService(IKernelQueryCacheService queryCacheService, IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService, ICustomTextTransformService customTextTransformService) :
-    KernelServiceBase(queryCacheService, promptModerationService, customTextTransformService)
+public sealed class KernelService(IKernelQueryCacheService queryCacheService, IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService) :
+    KernelServiceBase(queryCacheService, promptModerationService)
 {
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
 
@@ -21,6 +21,14 @@ public sealed class KernelService(IKernelQueryCacheService queryCacheService, IA
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
             Temperature = 0.01,
+        };
+
+    protected override PromptExecutionSettings CustomTextTransformExecutionSettings =>
+        new OpenAIPromptExecutionSettings
+        {
+            Temperature = 0.01,
+            MaxTokens = 2000,
+            FunctionChoiceBehavior = null,
         };
 
     protected override void AddChatCompletionService(IKernelBuilder kernelBuilder) => kernelBuilder.AddOpenAIChatCompletion(ModelName, _aiCredentialsProvider.Key);

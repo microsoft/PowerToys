@@ -13,10 +13,9 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Services;
 
-public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomTextTransformService customTextTransformService) : IPasteFormatExecutor
+public sealed class PasteFormatExecutor(IKernelService kernelService) : IPasteFormatExecutor
 {
     private readonly IKernelService _kernelService = kernelService;
-    private readonly ICustomTextTransformService _customTextTransformService = customTextTransformService;
 
     public async Task<DataPackage> ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source, CancellationToken cancellationToken, IProgress<double> progress)
     {
@@ -36,9 +35,22 @@ public sealed class PasteFormatExecutor(IKernelService kernelService, ICustomTex
             pasteFormat.Format switch
             {
                 PasteFormats.KernelQuery => await _kernelService.TransformClipboardAsync(pasteFormat.Prompt, clipboardData, pasteFormat.IsSavedQuery, cancellationToken, progress),
-                PasteFormats.CustomTextTransformation => DataPackageHelpers.CreateFromText(await _customTextTransformService.TransformTextAsync(pasteFormat.Prompt, await clipboardData.GetTextAsync(), cancellationToken, progress)),
+                PasteFormats.CustomTextTransformation => await TransformCustomTextAsync(pasteFormat.Prompt, clipboardData, cancellationToken, progress),
                 _ => await TransformHelpers.TransformAsync(format, clipboardData, cancellationToken, progress),
             });
+    }
+
+    private async Task<DataPackage> TransformCustomTextAsync(string prompt, DataPackageView clipboardData, CancellationToken cancellationToken, IProgress<double> progress)
+    {
+        var inputText = await clipboardData.GetTextAsync();
+
+        if (_kernelService is KernelServiceBase kernelServiceBase)
+        {
+            var result = await kernelServiceBase.TransformTextWithSemanticKernelAsync(prompt, inputText, cancellationToken, progress);
+            return DataPackageHelpers.CreateFromText(result);
+        }
+
+        throw new InvalidOperationException("KernelService is not derived from KernelServiceBase");
     }
 
     private static void WriteTelemetry(PasteFormats format, PasteActionSource source)

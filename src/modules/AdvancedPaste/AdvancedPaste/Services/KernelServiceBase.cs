@@ -5,10 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Models.KernelQueryCache;
@@ -21,17 +19,18 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Services;
 
-public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheService, IPromptModerationService promptModerationService, ICustomTextTransformService customTextTransformService) : IKernelService
+public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheService, IPromptModerationService promptModerationService) : IKernelService
 {
     private const string PromptParameterName = "prompt";
 
     private readonly IKernelQueryCacheService _queryCacheService = queryCacheService;
     private readonly IPromptModerationService _promptModerationService = promptModerationService;
-    private readonly ICustomTextTransformService _customTextTransformService = customTextTransformService;
 
     protected abstract string ModelName { get; }
 
     protected abstract PromptExecutionSettings PromptExecutionSettings { get; }
+
+    protected abstract PromptExecutionSettings CustomTextTransformExecutionSettings { get; }
 
     protected abstract void AddChatCompletionService(IKernelBuilder kernelBuilder);
 
@@ -220,9 +219,81 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
     private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, CancellationToken cancellationToken, IProgress<double> progress) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => await _customTextTransformService.TransformTextAsync(prompt, input, cancellationToken, progress),
+            PasteFormats.CustomTextTransformation => await TransformTextWithSemanticKernelAsync(prompt, input, cancellationToken, progress),
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
+
+    public async Task<string> TransformTextWithSemanticKernelAsync(string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress)
+    {
+        if (string.IsNullOrWhiteSpace(prompt))
+        {
+            return string.Empty;
+        }
+
+        if (string.IsNullOrWhiteSpace(inputText))
+        {
+            Logger.LogWarning("Clipboard has no usable text data");
+            return string.Empty;
+        }
+
+        var kernel = CreateKernel();
+        var chatService = kernel.GetRequiredService<IChatCompletionService>();
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("""
+            You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it.
+            Do not output anything else besides the reformatted clipboard content.
+            """);
+
+        var userMessage = $"""
+            User instructions:
+            {prompt}
+
+            Clipboard Content:
+            {inputText}
+
+            Output:
+            """;
+
+        chatHistory.AddUserMessage(userMessage);
+
+        var fullPrompt = GetFullPrompt(chatHistory);
+        await _promptModerationService.ValidateAsync(fullPrompt, cancellationToken);
+
+        try
+        {
+            var response = await chatService.GetChatMessageContentAsync(
+                chatHistory,
+                CustomTextTransformExecutionSettings,
+                kernel,
+                cancellationToken);
+
+            var usage = GetAIServiceUsage(response);
+            AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.PromptTokens, usage.CompletionTokens, ModelName);
+            PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+            var logEvent = new AIServiceFormatEvent(telemetryEvent);
+
+            Logger.LogDebug($"{nameof(TransformTextWithSemanticKernelAsync)} complete; {logEvent.ToJsonString()}");
+
+            return response.Content;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"{nameof(TransformTextWithSemanticKernelAsync)} failed", ex);
+
+            AdvancedPasteGenerateCustomErrorEvent errorEvent = new(ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
+            PowerToysTelemetry.Log.WriteEvent(errorEvent);
+
+            if (ex is PasteActionException or OperationCanceledException)
+            {
+                throw;
+            }
+            else
+            {
+                throw new PasteActionException(ErrorHelpers.TranslateErrorText(-1), ex);
+            }
+        }
+    }
 
     private Task<string> ExecuteStandardTransformAsync(Kernel kernel, PasteFormats format) =>
         ExecuteTransformAsync(

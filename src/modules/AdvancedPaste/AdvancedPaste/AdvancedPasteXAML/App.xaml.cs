@@ -79,7 +79,6 @@ namespace AdvancedPaste
                 services.AddSingleton<IUserSettings, UserSettings>();
                 services.AddSingleton<IAICredentialsProvider, Services.OpenAI.VaultCredentialsProvider>();
                 services.AddSingleton<IPromptModerationService, Services.OpenAI.PromptModerationService>();
-                services.AddSingleton<ICustomTextTransformService, Services.OpenAI.CustomTextTransformService>();
                 services.AddSingleton<IKernelQueryCacheService, CustomActionKernelQueryCacheService>();
                 services.AddSingleton<IKernelService, Services.OpenAI.KernelService>();
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
