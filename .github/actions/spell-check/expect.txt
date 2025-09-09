@@ -1451,7 +1451,6 @@ rstringalnum
 rstringalpha
 rstringdigit
 rtb
-RTB
 RTLREADING
 rtm
 runas
@@ -1798,6 +1797,7 @@ UIA
 UIEx
 uild
 uitests
+UITo
 ULONGLONG
 ums
 uncompilable
