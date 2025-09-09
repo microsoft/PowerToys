@@ -31,8 +31,10 @@ public sealed partial class SettingsWindow : WindowEx,
         this.InitializeComponent();
         this.ExtendsContentIntoTitleBar = true;
         this.SetIcon();
-        this.AppWindow.Title = RS_.GetString("SettingsWindowTitle");
+        var title = RS_.GetString("SettingsWindowTitle");
+        this.AppWindow.Title = title;
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+        this.TitleBar.Title = title;
         PositionCentered();
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
