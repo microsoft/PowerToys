@@ -31,7 +31,10 @@
                     IsTabStop="True"
                     Severity="Warning" />
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard   Name="ZoomItEnableToggleControlHeaderText" x:Uid="ZoomIt_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}">
+                    <tkcontrols:SettingsCard
+                        Name="ZoomItEnableToggleControlHeaderText"
+                        x:Uid="ZoomIt_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>

@@ -15,7 +15,10 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="FileLocksmithEnableFileLocksmith" x:Uid="FileLocksmith_Enable_FileLocksmith" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}">
+                    <tkcontrols:SettingsCard
+                        Name="FileLocksmithEnableFileLocksmith"
+                        x:Uid="FileLocksmith_Enable_FileLocksmith"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>

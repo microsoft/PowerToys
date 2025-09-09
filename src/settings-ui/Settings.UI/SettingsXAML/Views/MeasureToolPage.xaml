@@ -15,14 +15,17 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="MeasureToolEnableMeasureTool" x:Uid="MeasureTool_EnableMeasureTool" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}">
-                    <ToggleSwitch
-                        x:Uid="ToggleSwitch"
-                        AutomationProperties.AutomationId="Toggle_ScreenRuler"
-                        IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard
+                        Name="MeasureToolEnableMeasureTool"
+                        x:Uid="MeasureTool_EnableMeasureTool"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ScreenRuler.png}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.AutomationId="Toggle_ScreenRuler"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
-              
+
                 <controls:SettingsGroup x:Uid="MeasureTool_ActivationSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="MeasureToolActivationShortcut"

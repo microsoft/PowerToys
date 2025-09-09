@@ -57,7 +57,10 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="KeyboardManagerEnableToggle" x:Uid="KeyboardManager_EnableToggle" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}">
+                    <tkcontrols:SettingsCard
+                        Name="KeyboardManagerEnableToggle"
+                        x:Uid="KeyboardManager_EnableToggle"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Enabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys">

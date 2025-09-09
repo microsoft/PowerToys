@@ -26,7 +26,8 @@
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
-                        x:Uid="Awake_EnableSettingsCard" Name="AwakeEnableSettingsCard"
+                        Name="AwakeEnableSettingsCard"
+                        x:Uid="Awake_EnableSettingsCard"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
                         IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -34,7 +35,10 @@
                 </controls:GPOInfoControl>
 
                 <controls:SettingsGroup x:Uid="Awake_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard  Name="AwakeModeSettingsCard" x:Uid="Awake_ModeSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                    <tkcontrols:SettingsCard
+                        Name="AwakeModeSettingsCard"
+                        x:Uid="Awake_ModeSettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
                             <ComboBoxItem x:Uid="Awake_NoKeepAwakeSelector" />
                             <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwakeSelector" />

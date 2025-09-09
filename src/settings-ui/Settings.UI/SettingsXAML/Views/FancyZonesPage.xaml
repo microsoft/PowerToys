@@ -15,7 +15,10 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="FancyZonesEnableToggleControlHeaderText" x:Uid="FancyZones_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}">
+                    <tkcontrols:SettingsCard
+                        Name="FancyZonesEnableToggleControlHeaderText"
+                        x:Uid="FancyZones_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>

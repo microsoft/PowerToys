@@ -47,7 +47,10 @@
                     Orientation="Vertical"
                     Spacing="2">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                        <tkcontrols:SettingsCard Name="AdvancedPasteEnableToggleControlHeaderText" x:Uid="AdvancedPaste_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}">
+                        <tkcontrols:SettingsCard
+                            Name="AdvancedPasteEnableToggleControlHeaderText"
+                            x:Uid="AdvancedPaste_EnableToggleControl_HeaderText"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AdvancedPaste.png}">
                             <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
@@ -97,7 +100,10 @@
                     </controls:SettingsGroup>
                     <controls:SettingsGroup x:Uid="AdvancedPaste_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}">
-                            <tkcontrols:SettingsCard Name="AdvancedPasteClipboardHistoryEnabledSettingsCard" x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
+                            <tkcontrols:SettingsCard
+                                Name="AdvancedPasteClipboardHistoryEnabledSettingsCard"
+                                x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </controls:GPOInfoControl>

@@ -278,9 +278,9 @@
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}">
                         <tkcontrols:SettingsCard x:Uid="ShowSystemTrayIcon">
                             <ToggleSwitch
-                            x:Uid="ShowSystemTrayIcon_ToggleSwitch"
-                            IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}"
-                            Toggled="ShowSystemTrayIcon_Toggled" />
+                                x:Uid="ShowSystemTrayIcon_ToggleSwitch"
+                                IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}"
+                                Toggled="ShowSystemTrayIcon_Toggled" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
                 </controls:SettingsGroup>
@@ -455,22 +455,22 @@
                             </InfoBar>
                         </tkcontrols:SettingsExpander.ItemsFooter>
                     </tkcontrols:SettingsExpander>
-                       <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}">
-                       <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
-                        <StackPanel Orientation="Horizontal">
-                            <Button
-                                x:Uid="GeneralPageReportBugPackage"
-                                Click="BugReportToolClicked"
-                                Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
-                            <ProgressRing
-                                Width="24"
-                                Height="24"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Visibility="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay}" />
-                        </StackPanel>
-                    </tkcontrols:SettingsCard>
-                    </controls:GPOInfoControl>                
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
+                            <StackPanel Orientation="Horizontal">
+                                <Button
+                                    x:Uid="GeneralPageReportBugPackage"
+                                    Click="BugReportToolClicked"
+                                    Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}" />
+                                <ProgressRing
+                                    Width="24"
+                                    Height="24"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Visibility="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay}" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
                 </controls:SettingsGroup>
             </StackPanel>
 

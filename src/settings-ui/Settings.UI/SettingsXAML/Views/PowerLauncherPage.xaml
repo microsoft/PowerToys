@@ -322,7 +322,10 @@
                     </InfoBar.ActionButton>
                 </InfoBar>
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="PowerLauncherEnablePowerLauncher" x:Uid="PowerLauncher_EnablePowerLauncher" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}">
+                    <tkcontrols:SettingsCard
+                        Name="PowerLauncherEnablePowerLauncher"
+                        x:Uid="PowerLauncher_EnablePowerLauncher"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>

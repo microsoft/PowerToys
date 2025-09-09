@@ -15,7 +15,10 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="RegistryPreviewEnableRegistryPreview" x:Uid="RegistryPreview_Enable_RegistryPreview" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}">
+                    <tkcontrols:SettingsCard
+                        Name="RegistryPreviewEnableRegistryPreview"
+                        x:Uid="RegistryPreview_Enable_RegistryPreview"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsRegistryPreviewEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>

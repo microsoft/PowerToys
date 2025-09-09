@@ -14,7 +14,10 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="HostsEnableToggleControlHeaderText" x:Uid="Hosts_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}">
+                    <tkcontrols:SettingsCard
+                        Name="HostsEnableToggleControlHeaderText"
+                        x:Uid="Hosts_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
