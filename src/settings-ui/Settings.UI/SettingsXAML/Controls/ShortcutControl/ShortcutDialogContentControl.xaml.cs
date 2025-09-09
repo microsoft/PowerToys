@@ -16,6 +16,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty IsWarningAltGrProperty = DependencyProperty.Register("IsWarningAltGr", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
         public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
         public static readonly DependencyProperty ConflictMessageProperty = DependencyProperty.Register("ConflictMessage", typeof(string), typeof(ShortcutDialogContentControl), new PropertyMetadata(string.Empty));
+        public static readonly DependencyProperty IgnoreConflictProperty = DependencyProperty.Register("IgnoreConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
+
+        public bool IgnoreConflict
+        {
+            get => (bool)GetValue(IgnoreConflictProperty);
+            set => SetValue(IgnoreConflictProperty, value);
+        }
 
         public bool HasConflict
         {
@@ -50,6 +57,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get => (bool)GetValue(IsWarningAltGrProperty);
             set => SetValue(IsWarningAltGrProperty, value);
+        }
+
+        private void DismissConflictInfoBar_Click(object sender, RoutedEventArgs e)
+        {
+            IgnoreConflict = true;
         }
     }
 }
