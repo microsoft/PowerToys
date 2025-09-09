@@ -20,10 +20,10 @@
             "symbolSearchPath": "${workspaceFolder}\\x64\\Debug;${workspaceFolder}\\Debug;${workspaceFolder}\\symbols"
         },
         {
-            "name": "Run Managedcode (managed, no build)",
+            "name": "Run Managedcode (managed, no build, ARCH configurable)",
             "type": "coreclr",
             "request": "launch",
-            "program": "${workspaceFolder}\\arm64\\Debug\\WinUI3Apps\\PowerToys.Settings.exe",
+            "program": "${workspaceFolder}\\${env:ARCH}\\Debug\\WinUI3Apps\\PowerToys.Settings.exe",
             "args": [],
             "cwd": "${workspaceFolder}",
             "env": {},

@@ -20,14 +20,14 @@ VS Code extensions Needed:
 2. Add below config as entry:
 ```json
     "Developer PowerShell for VS 2022": {
-		// Cofnigure based on your preference
+		// Configure based on your preference
         "path": "C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.5.2.0_arm64__8wekyb3d8bbwe\\pwsh.exe",
         "args": [
             "-NoExit",
             "-Command",
             "& {",
             "$orig = Get-Location;",
-			// Configure based on your environment
+            // Configure based on your environment
             "& 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\Launch-VsDevShell.ps1';",
             "Set-Location $orig",
             "}"
@@ -77,7 +77,7 @@ If PowerToys is already running, you can attach to that process:
 
 Many modules have a managed component loaded into the PowerToys process. `cppvsdbg` can debug mixed mode, but if you need richer .NET inspection you can create a second configuration using `type: coreclr` and `processId` attachment after the native launch, or just attach separately:
 
-Similar for attach to managede  code.
+Similar for attach to managed code.
 > Note: In arm64 machine, can only debug arm64 code.
 
 ```jsonc
