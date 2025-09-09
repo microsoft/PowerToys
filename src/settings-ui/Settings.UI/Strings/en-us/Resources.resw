@@ -5305,4 +5305,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="DismissText.Text" xml:space="preserve">
     <value>Dismiss</value>
   </data>
+  <data name="IgnoreShortcutConflicts.Text" xml:space="preserve">
+    <value>Ignore conflict warnings for this shortcut</value>
+  </data>
 </root>
