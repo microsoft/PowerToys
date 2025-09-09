@@ -99,7 +99,6 @@
                                 Header="Sunrise offset (in minutes)"
                                 Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
                                 <NumberBox
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="60"
                                     Minimum="-60"
                                     SpinButtonPlacementMode="Inline"
@@ -110,7 +109,6 @@
                                 Header="Sunset offset (in minutes)"
                                 Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
                                 <NumberBox
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="60"
                                     Minimum="-60"
                                     SpinButtonPlacementMode="Inline"
