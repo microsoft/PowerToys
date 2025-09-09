@@ -18,13 +18,13 @@
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="CropAndLockEnableToggleControlHeaderText" x:Uid="CropAndLock_EnableToggleControl_HeaderText" HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}">
+                    <tkcontrols:SettingsCard
+                        Name="CropAndLockEnableToggleControlHeaderText"
+                        x:Uid="CropAndLock_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
-                <controls:SettingsGroup x:Uid="CropAndLock_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="CropAndLock_ThumbnailActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-
                 <controls:SettingsGroup x:Uid="CropAndLock_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="CropAndLockThumbnailActivationShortcut"
