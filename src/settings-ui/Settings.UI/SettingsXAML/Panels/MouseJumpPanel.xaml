@@ -22,25 +22,14 @@
     </UserControl.Resources>
 
     <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
-
-        <tkcontrols:SettingsCard
-            x:Name="MouseUtilsEnableMouseJump"
-            x:Uid="MouseUtils_Enable_MouseJump"
-            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}"
-            IsEnabled="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
-        </tkcontrols:SettingsCard>
-
-        <InfoBar
-            x:Uid="GPO_SettingIsManaged"
-            IsClosable="False"
-            IsOpen="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
-            IsTabStop="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}"
-            Severity="Informational">
-            <InfoBar.IconSource>
-                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-            </InfoBar.IconSource>
-        </InfoBar>
+        <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}">
+            <tkcontrols:SettingsCard
+                x:Name="MouseUtilsEnableMouseJump"
+                x:Uid="MouseUtils_Enable_MouseJump"
+                HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}">
+                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
+            </tkcontrols:SettingsCard>
+        </controls:GPOInfoControl>
 
         <tkcontrols:SettingsCard
             x:Name="MouseUtilsMouseJumpActivationShortcut"
