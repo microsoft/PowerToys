@@ -20,6 +20,7 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
     private CommandsListPage _commandsListPage = new();
     private DynamicListPage? _suggestionPage;
     private List<MyTokenType> _pickedTokens = new();
+    private int _lastPrefixPosition = -1;
 
     // private int _lastCaretPosition = 0;
     private string _searchText = string.Empty;
@@ -33,7 +34,7 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
             if (value != oldSearch)
             {
                 _searchText = value;
-                UpdateSearch(new SearchUpdateArgs(value, null));
+                UpdateSearch(oldSearch, new SearchUpdateArgs(value, null));
             }
         }
     }
@@ -52,7 +53,7 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
         return _suggestionPage?.GetItems() ?? [];
     }
 
-    public void UpdateSearch(ISearchUpdateArgs args)
+    public void UpdateSearch(string oldSearchText, ISearchUpdateArgs args)
     {
         // if (args.GetProperties() is IDictionary<string, object> props)
         // {
@@ -61,11 +62,10 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
         //         _lastCaretPosition = caretPos;
         //     }
         // }
-        var oldSearchText = this.SearchText;
         var newSearchText = args.NewSearchText;
         if (newSearchText.Length < oldSearchText.Length)
         {
-            // HandleDeletion(oldSearchText, newSearchText);
+            HandleDeletion(oldSearchText, newSearchText);
             return;
         }
 
@@ -84,18 +84,21 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
             if (lastChar == '@')
             {
                 // User typed '@', switch to people suggestion page
+                _lastPrefixPosition = lastCaretPosition - 1;
                 UpdateSuggestionPage(_peopleSearchPage);
             }
-            else if (lastChar == '#')
+            else if (lastChar == '/')
             {
-                // User typed '#', switch to commands suggestion page
+                // User typed '/', switch to commands suggestion page
+                _lastPrefixPosition = lastCaretPosition - 1;
                 UpdateSuggestionPage(_commandsListPage);
             }
         }
         else if (_suggestionPage != null)
         {
             // figure out what part of the text applies to the current suggestion page
-            var subString = /* omitted */string.Empty;
+            var startOfSubSearch = _lastPrefixPosition + 1;
+            var subString = _searchText.Substring(startOfSubSearch, lastCaretPosition - startOfSubSearch);
             _suggestionPage.SearchText = subString;
 
             // When the suggestion page updates its items, it should raise ItemsChanged event, which we will bubble through
@@ -109,6 +112,12 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
 
         var displayText = suggestion.DisplayName;
         var tokenText = $"\u200B{displayText}\u200B "; // Add ZWSP before and after token, and a trailing space
+
+        // remove the prefix character and any partial text after it
+        if (_lastPrefixPosition >= 0 && _lastPrefixPosition < _searchText.Length)
+        {
+            _searchText = _searchText.Remove(_lastPrefixPosition);
+        }
 
         // this.SearchText = this.SearchText.Insert(_lastCaretPosition, tokenText);
         this.SearchText = _searchText + tokenText;
@@ -137,8 +146,39 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
         RaiseItemsChanged();
     }
 
+    private void HandleDeletion(string oldSearch, string newSearch)
+    {
+        var lastCaretPosition = newSearch.Length;
+
+        if (_suggestionPage != null)
+        {
+            if (lastCaretPosition <= _lastPrefixPosition)
+            {
+                // User deleted back over the prefix character, so close the suggestion page
+                UpdateSuggestionPage(null);
+                _lastPrefixPosition = -1;
+                return;
+            }
+
+            // figure out what part of the text applies to the current suggestion page
+            var startOfSubSearch = _lastPrefixPosition + 1;
+            if (lastCaretPosition <= _lastPrefixPosition)
+            {
+                // User deleted back over the prefix character, so close the suggestion page
+                UpdateSuggestionPage(null);
+                _lastPrefixPosition = -1;
+            }
+            else
+            {
+                var subString = newSearch.Substring(startOfSubSearch, lastCaretPosition - startOfSubSearch);
+                _suggestionPage.SearchText = subString;
+            }
+        }
+    }
+
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        // from DynamicListPage, not used
     }
 
     public IDictionary<string, object> GetProperties()
