@@ -255,7 +255,12 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             Logger::warn("Failed to get 'do not activate on game mode' setting");
         }
         // Colors + legacy overlay opacity migration
+        // Desired behavior:
+        //  - Old schema: colors stored as RGB (no alpha) + separate overlay_opacity (0-100). We should migrate by applying that opacity as alpha.
+        //  - New schema: colors stored as ARGB (alpha embedded). Ignore overlay_opacity even if still present.
         int legacyOverlayOpacity = -1;
+        bool backgroundColorHadExplicitAlpha = false;
+        bool spotlightColorHadExplicitAlpha = false;
         try
         {
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OVERLAY_OPACITY);
@@ -278,10 +283,11 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             if (checkValidARGB(backgroundColorStr, &a, &r, &g, &b))
             {
                 parsed = true;
+                backgroundColorHadExplicitAlpha = true; // New schema with alpha present
             }
             else if (checkValidRGB(backgroundColorStr, &r, &g, &b))
             {
-                parsed = true; // keep a=255 or apply legacy later
+                parsed = true; // Old schema (no alpha component)
             }
             if (parsed)
             {
@@ -305,6 +311,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             if (checkValidARGB(spotlightColorStr, &a, &r, &g, &b))
             {
                 parsed = true;
+                spotlightColorHadExplicitAlpha = true;
             }
             else if (checkValidRGB(spotlightColorStr, &r, &g, &b))
             {
@@ -326,16 +333,16 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         if (legacyOverlayOpacity >= 0)
         {
             uint8_t alpha = static_cast<uint8_t>((legacyOverlayOpacity * 255 + 50) / 100);
-            auto applyLegacy = [alpha](winrt::Windows::UI::Color c) {
-                // Only overwrite if color was opaque (255)
-                if (c.A == 255)
+            auto applyLegacy = [alpha](winrt::Windows::UI::Color c, bool hadExplicitAlpha) {
+                // Only apply legacy opacity if the original color did NOT specify an explicit alpha.
+                if (!hadExplicitAlpha)
                 {
                     return winrt::Windows::UI::ColorHelper::FromArgb(alpha, c.R, c.G, c.B);
                 }
                 return c;
             };
-            findMyMouseSettings.backgroundColor = applyLegacy(findMyMouseSettings.backgroundColor);
-            findMyMouseSettings.spotlightColor = applyLegacy(findMyMouseSettings.spotlightColor);
+            findMyMouseSettings.backgroundColor = applyLegacy(findMyMouseSettings.backgroundColor, backgroundColorHadExplicitAlpha);
+            findMyMouseSettings.spotlightColor = applyLegacy(findMyMouseSettings.spotlightColor, spotlightColorHadExplicitAlpha);
         }
         try
         {
