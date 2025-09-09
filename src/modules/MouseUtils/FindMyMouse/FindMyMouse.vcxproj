@@ -119,7 +119,6 @@
     <PackageReference Include="Microsoft.Windows.CppWinRT" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Web.WebView2" />
-    <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
   <ItemGroup>
     <!-- Win2D winmd for C++/WinRT projection (Pkg id normalized with dots to underscores) -->
