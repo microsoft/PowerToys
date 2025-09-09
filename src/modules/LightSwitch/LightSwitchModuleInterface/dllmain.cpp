@@ -346,7 +346,10 @@ public:
 
         if (result == 0 || result >= resolved_path.size())
         {
-            Logger::error(L"Failed to locate Light Switch executable: '{}'", exe_name);
+            Logger::error(
+                L"Failed to locate Light Switch executable named '{}' at location '{}'",
+                exe_name,
+                resolved_path.c_str());
             return;
         }
 
