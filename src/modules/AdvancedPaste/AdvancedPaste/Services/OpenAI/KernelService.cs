@@ -15,7 +15,9 @@ public sealed class KernelService(IKernelQueryCacheService queryCacheService, IA
 {
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
 
-    protected override string ModelName => "gpt-4o";
+    protected override string AdvancedAIModelName => "gpt-4o";
+
+    protected override string ChatComplectionModelName => "gpt-3.5-turbo";
 
     protected override PromptExecutionSettings PromptExecutionSettings =>
         new OpenAIPromptExecutionSettings()
@@ -32,7 +34,11 @@ public sealed class KernelService(IKernelQueryCacheService queryCacheService, IA
             FunctionChoiceBehavior = null,
         };
 
-    protected override void AddChatCompletionService(IKernelBuilder kernelBuilder) => kernelBuilder.AddOpenAIChatCompletion(ModelName, _aiCredentialsProvider.Key);
+    protected override void AddChatCompletionService(IKernelBuilder kernelBuilder)
+    {
+        kernelBuilder.AddOpenAIChatCompletion(AdvancedAIModelName, _aiCredentialsProvider.Key, serviceId: AdvancedAIModelName);
+        kernelBuilder.AddOpenAIChatCompletion(ChatComplectionModelName, _aiCredentialsProvider.Key, serviceId: ChatComplectionModelName);
+    }
 
     protected override AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage)
     {

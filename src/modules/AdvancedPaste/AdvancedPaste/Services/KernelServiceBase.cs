@@ -29,7 +29,9 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
     private readonly IPromptModerationService _promptModerationService = promptModerationService;
     private readonly IUserSettings _userSettings = userSettings;
 
-    protected abstract string ModelName { get; }
+    protected abstract string AdvancedAIModelName { get; }
+
+    protected abstract string ChatComplectionModelName { get; }
 
     protected abstract PromptExecutionSettings PromptExecutionSettings { get; }
 
@@ -148,7 +150,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
 
         await _promptModerationService.ValidateAsync(GetFullPrompt(chatHistory), cancellationToken);
 
-        var chatResult = await kernel.GetRequiredService<IChatCompletionService>()
+        var chatResult = await kernel.GetRequiredService<IChatCompletionService>(AdvancedAIModelName)
                                      .GetChatMessageContentAsync(chatHistory, PromptExecutionSettings, kernel, cancellationToken);
         chatHistory.Add(chatResult);
 
@@ -179,7 +181,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
 
     private void LogResult(bool cacheUsed, bool isSavedQuery, IEnumerable<ActionChainItem> actionChain, AIServiceUsage usage)
     {
-        AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(cacheUsed, isSavedQuery, usage.PromptTokens, usage.CompletionTokens, ModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(actionChain));
+        AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(cacheUsed, isSavedQuery, usage.PromptTokens, usage.CompletionTokens, AdvancedAIModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(actionChain));
         PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
         var logEvent = new AIServiceFormatEvent(telemetryEvent);
         Logger.LogDebug($"{nameof(TransformClipboardAsync)} complete; {logEvent.ToJsonString()}");
@@ -313,7 +315,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         }
 
         var kernel = CreateKernel();
-        var chatService = kernel.GetRequiredService<IChatCompletionService>();
+        var chatService = kernel.GetRequiredService<IChatCompletionService>(ChatComplectionModelName);
 
         var chatHistory = new ChatHistory();
         chatHistory.AddSystemMessage("""
@@ -345,7 +347,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
                 cancellationToken);
 
             var usage = GetAIServiceUsage(response);
-            AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.PromptTokens, usage.CompletionTokens, ModelName);
+            AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.PromptTokens, usage.CompletionTokens, AdvancedAIModelName);
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
             var logEvent = new AIServiceFormatEvent(telemetryEvent);
 
