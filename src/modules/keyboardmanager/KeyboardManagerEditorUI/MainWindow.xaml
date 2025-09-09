@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Window
+<winuiex:WindowEx
     x:Class="KeyboardManagerEditorUI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,7 +7,12 @@
     xmlns:local="using:KeyboardManagerEditorUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pages="using:KeyboardManagerEditorUI.Pages"
+    xmlns:winuiex="using:WinUIEx"
     Title="KeyboardManagerEditorUI"
+    Width="1440"
+    Height="900"
+    MinWidth="480"
+    MinHeight="320"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
@@ -17,23 +22,18 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
-            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid x:Name="titleBar">
-            <StackPanel
-                Grid.ColumnSpan="2"
-                Margin="16,8,8,8"
-                VerticalAlignment="Top"
-                Orientation="Horizontal">
-                <Image Width="16" Source="ms-appx:///Assets/FluentIconsKeyboardManager.png" />
-                <TextBlock
-                    Margin="12,0,0,0"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Keyboard Manager" />
-            </StackPanel>
-        </Grid>
-
+        <TitleBar x:Name="titleBar" Title="Keyboard Manager">
+            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
+            <TitleBar.LeftHeader>
+                <ImageIcon
+                    Height="16"
+                    Margin="16,0,0,0"
+                    Source="/Assets/FluentIconsKeyboardManager.png" />
+            </TitleBar.LeftHeader>
+        </TitleBar>
         <NavigationView
             x:Name="RootView"
             Grid.Row="1"
@@ -70,4 +70,4 @@
             </NavigationView.Content>
         </NavigationView>
     </Grid>
-</Window>
+</winuiex:WindowEx>
