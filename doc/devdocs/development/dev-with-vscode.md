@@ -27,7 +27,7 @@ VS Code extensions Needed:
             "-Command",
             "& {",
             "$orig = Get-Location;",
-			// Configure based on your environment
+            // Configure based on your environment
             "& 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\Tools\\Launch-VsDevShell.ps1';",
             "Set-Location $orig",
             "}"
