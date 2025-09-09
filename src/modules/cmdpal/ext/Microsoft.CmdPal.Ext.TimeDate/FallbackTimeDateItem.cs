@@ -22,6 +22,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
     {
         Title = string.Empty;
         Subtitle = string.Empty;
+        Icon = Icons.TimeDateIcon;
         _settingsManager = settings;
         _timestamp = timestamp;
 
