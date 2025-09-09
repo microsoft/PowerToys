@@ -20,7 +20,7 @@ VS Code extensions Needed:
 2. Add below config as entry:
 ```json
     "Developer PowerShell for VS 2022": {
-		// Cofnigure based on your preference
+		// Configure based on your preference
         "path": "C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.5.2.0_arm64__8wekyb3d8bbwe\\pwsh.exe",
         "args": [
             "-NoExit",
