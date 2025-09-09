@@ -58,10 +58,5 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             get => (bool)GetValue(IsWarningAltGrProperty);
             set => SetValue(IsWarningAltGrProperty, value);
         }
-
-        private void DismissConflictInfoBar_Click(object sender, RoutedEventArgs e)
-        {
-            IgnoreConflict = true;
-        }
     }
 }
