@@ -117,8 +117,6 @@
     <PackageVersion Include="WixToolset.Bal.wixext" Version="5.0.2" />
     <PackageVersion Include="WixToolset.BootstrapperApplicationApi" Version="5.0.2" />
     <PackageVersion Include="WixToolset.WixStandardBootstrapperApplicationFunctionApi" Version="5.0.2" />
-    <!-- Win2D for Composition masking in FindMyMouse -->
-    <PackageVersion Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->

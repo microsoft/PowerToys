@@ -10,15 +10,6 @@
 #include "common/utils/MsWindowsSettings.h"
 #include <winrt/Windows.Graphics.h>
 
-// Some Windows headers define GetCurrentTime() as a macro, which collides with
-// WinRT's IStoryboard::GetCurrentTime(TimeSpan*) signature in generated headers.
-// Guard against that by temporarily undefining the macro around WinRT includes.
-#ifdef GetCurrentTime
-#pragma push_macro("GetCurrentTime")
-#undef GetCurrentTime
-#define PT_RESTORE_GetCurrentTime_MACRO 1
-#endif
-
 #include <winrt/Microsoft.UI.Composition.Interop.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
 #include <winrt/Microsoft.UI.Xaml.h>
@@ -28,10 +19,6 @@
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Microsoft.UI.Content.h>
 
-#ifdef PT_RESTORE_GetCurrentTime_MACRO
-#pragma pop_macro("GetCurrentTime")
-#undef PT_RESTORE_GetCurrentTime_MACRO
-#endif
 #include <vector>
 
 // Ensure Windows App SDK runtime is bootstrapped for unpackaged apps
@@ -701,7 +688,7 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
         m_batch.Completed([hwnd = m_hwnd](auto&&, auto&&) {
             PostMessage(hwnd, WM_OPACITY_ANIMATION_COMPLETED, 0, 0);
         });
-        m_root.Opacity(visible ? 1.0f : 0.0f);
+    m_root.Opacity(visible ? 1.0f : 0.0f);
         if (visible)
         {
             ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
