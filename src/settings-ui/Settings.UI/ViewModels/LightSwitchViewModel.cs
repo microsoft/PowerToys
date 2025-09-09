@@ -138,13 +138,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => ModuleSettings.Properties.ScheduleMode.Value;
             set
             {
+                var oldMode = ModuleSettings.Properties.ScheduleMode.Value;
                 if (ModuleSettings.Properties.ScheduleMode.Value != value)
                 {
                     ModuleSettings.Properties.ScheduleMode.Value = value;
                     OnPropertyChanged(nameof(ScheduleMode));
                 }
 
-                if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours")
+                if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours" && oldMode != "FixedHours")
                 {
                     SunriseOffset = 0;
                     SunsetOffset = 0;
@@ -196,7 +197,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
 
                     OnPropertyChanged(nameof(LightTimeTimeSpan));
-                    OnPropertyChanged(nameof(LightTimePickerValue));
+                    /* OnPropertyChanged(nameof(LightTimePickerValue)); */
                 }
             }
         }
