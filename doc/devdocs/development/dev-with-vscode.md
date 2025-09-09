@@ -73,7 +73,7 @@ If PowerToys is already running, you can attach to that process:
 2. VS Code command palette: “C/C++: (Windows) Attach to Process”.
 3. Filter for `PowerToys.exe` / module-specific processes.
 
-### 4.4 Debugging managed components
+### Debugging managed components
 
 Many modules have a managed component loaded into the PowerToys process. `cppvsdbg` can debug mixed mode, but if you need richer .NET inspection you can create a second configuration using `type: coreclr` and `processId` attachment after the native launch, or just attach separately:
 
@@ -82,15 +82,38 @@ Similar for attach to managede  code.
 
 ```jsonc
 {
-    "name": "Run Managedcode (managed, no build)",
-    "type": "coreclr",
-    "request": "launch",
-    "program": "${workspaceFolder}\\arm64\\Debug\\WinUI3Apps\\PowerToys.Settings.exe",
-    "args": [],
-    "cwd": "${workspaceFolder}",
-    "env": {},
-    "console": "internalConsole",
-    "stopAtEntry": false
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run native executable (no build)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}\\x64\\Debug\\PowerToys.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "C/C++ Attach to PowerToys Process (native)",
+            "type": "cppvsdbg",
+            "request": "attach",
+            "processId": "${command:pickProcess}",
+            "symbolSearchPath": "${workspaceFolder}\\x64\\Debug;${workspaceFolder}\\Debug;${workspaceFolder}\\symbols"
+        },
+        {
+            "name": "Run Managedcode (managed, no build)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}\\arm64\\Debug\\WinUI3Apps\\PowerToys.Settings.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {},
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ]
 }
 ```
 ---
