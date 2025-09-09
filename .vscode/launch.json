@@ -1,0 +1,34 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run native executable (no build)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}\\x64\\Debug\\PowerToys.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "C/C++ Attach to PowerToys Process (native)",
+            "type": "cppvsdbg",
+            "request": "attach",
+            "processId": "${command:pickProcess}",
+            "symbolSearchPath": "${workspaceFolder}\\x64\\Debug;${workspaceFolder}\\Debug;${workspaceFolder}\\symbols"
+        },
+        {
+            "name": "Run Managedcode (managed, no build)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}\\arm64\\Debug\\WinUI3Apps\\PowerToys.Settings.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {},
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ]
+}
