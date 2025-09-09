@@ -4,13 +4,14 @@
 
 using System.Collections.Generic;
 using AdvancedPaste.Models;
+using AdvancedPaste.Settings;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class KernelService(IKernelQueryCacheService queryCacheService, IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService) :
-    KernelServiceBase(queryCacheService, promptModerationService)
+public sealed class KernelService(IKernelQueryCacheService queryCacheService, IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService, IUserSettings userSettings) :
+    KernelServiceBase(queryCacheService, promptModerationService, userSettings)
 {
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
 
