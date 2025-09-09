@@ -77,7 +77,7 @@ If PowerToys is already running, you can attach to that process:
 
 Many modules have a managed component loaded into the PowerToys process. `cppvsdbg` can debug mixed mode, but if you need richer .NET inspection you can create a second configuration using `type: coreclr` and `processId` attachment after the native launch, or just attach separately:
 
-Similar for attach to managede  code.
+Similar for attach to managed code.
 > Note: In arm64 machine, can only debug arm64 code.
 
 ```jsonc
