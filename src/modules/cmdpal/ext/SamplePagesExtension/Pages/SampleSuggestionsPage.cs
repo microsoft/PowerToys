@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -21,6 +21,7 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
     private DynamicListPage? _suggestionPage;
     private List<MyTokenType> _pickedTokens = new();
     private int _lastPrefixPosition = -1;
+    private ListItem _queryItem;
 
     // private int _lastCaretPosition = 0;
     private string _searchText = string.Empty;
@@ -46,11 +47,20 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
         Name = "Open";
         Title = "Sample prefixed search";
         PlaceholderText = "Type a query, and use '@' to add a person";
+
+        _queryItem = new ListItem(new NoOpCommand())
+        {
+            Title = string.Empty,
+            Icon = new IconInfo("\uE8F2"), // ChatBubbles
+        };
     }
 
     public override IListItem[] GetItems()
     {
-        return _suggestionPage?.GetItems() ?? [];
+        return _suggestionPage?.GetItems() ??
+            (string.IsNullOrEmpty(this.SearchText) ?
+                [] :
+                [_queryItem]);
     }
 
     public void UpdateSearch(string oldSearchText, ISearchUpdateArgs args)
@@ -63,6 +73,12 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
         //     }
         // }
         var newSearchText = args.NewSearchText;
+        UpdateListItem(newSearchText);
+        if (string.IsNullOrEmpty(newSearchText) != string.IsNullOrEmpty(oldSearchText))
+        {
+            RaiseItemsChanged();
+        }
+
         if (newSearchText.Length < oldSearchText.Length)
         {
             HandleDeletion(oldSearchText, newSearchText);
@@ -176,6 +192,48 @@ internal sealed partial class SampleSuggestionsPage : DynamicListPage, IExtended
         }
     }
 
+    private void UpdateListItem(string newSearchText)
+    {
+        // Iterate over the search text.
+        // Find all the strings that are surrounded by ZWSP characters.
+        // Use those strings to find all the matching picked tokens.
+        var index = 0;
+        var tokenSpans = new List<(int Start, int End, MyTokenType? Token)>();
+        while (index < newSearchText.Length)
+        {
+            var startIndex = newSearchText.IndexOf('\u200B', index);
+            if (startIndex < 0)
+            {
+                break;
+            }
+
+            var endIndex = newSearchText.IndexOf('\u200B', startIndex + 1);
+            if (endIndex < 0)
+            {
+                break;
+            }
+
+            var tokenText = newSearchText.Substring(startIndex + 1, endIndex - startIndex - 1);
+            var token = _pickedTokens.Find(t => t.DisplayName == tokenText);
+            tokenSpans.Add((startIndex, endIndex, token));
+
+            index = endIndex + 1;
+        }
+
+        // for each span, construct a string like $"[{start}, {end}): {token.DisplayName} {token.Id}\n"
+        var displayText = string.Empty;
+        foreach (var (start, end, token) in tokenSpans)
+        {
+            if (token != null)
+            {
+                displayText += $"[{start}, {end}): {token.DisplayName} {token.Id}\n";
+            }
+        }
+
+        _queryItem.Title = newSearchText;
+        _queryItem.Subtitle = string.IsNullOrEmpty(displayText) ? "no tokens" : displayText;
+    }
+
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         // from DynamicListPage, not used
@@ -228,7 +286,7 @@ internal sealed partial class PeopleSearchPage : DynamicListPage
             var suggestion = new MyTokenType
             {
                 DisplayName = name,
-                Id = i.ToString(CultureInfo.InvariantCulture),
+                Id = Guid.NewGuid().ToString(),
                 Value = name,
             };
             items.Add(new ListItem(new PickSuggestionCommand(suggestion, SuggestionPicked))
