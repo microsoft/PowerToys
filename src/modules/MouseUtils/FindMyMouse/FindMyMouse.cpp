@@ -94,7 +94,7 @@ protected:
     int m_sonarRadius = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_RADIUS;
     int m_sonarZoomFactor = FIND_MY_MOUSE_DEFAULT_SPOTLIGHT_INITIAL_ZOOM;
     DWORD m_fadeDuration = FIND_MY_MOUSE_DEFAULT_ANIMATION_DURATION_MS;
-    int m_finalAlphaNumerator = FIND_MY_MOUSE_DEFAULT_OVERLAY_OPACITY;
+    int m_finalAlphaNumerator = 100; // legacy (root now always animates to 1.0; kept for GDI fallback compatibility)
     std::vector<std::wstring> m_excludedApps;
     int m_shakeMinimumDistance = FIND_MY_MOUSE_DEFAULT_SHAKE_MINIMUM_DISTANCE;
     static constexpr int FinalAlphaDenominator = 100;
@@ -701,7 +701,7 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
         m_batch.Completed([hwnd = m_hwnd](auto&&, auto&&) {
             PostMessage(hwnd, WM_OPACITY_ANIMATION_COMPLETED, 0, 0);
         });
-        m_root.Opacity(visible ? static_cast<float>(m_finalAlphaNumerator) / FinalAlphaDenominator : 0.0f);
+        m_root.Opacity(visible ? 1.0f : 0.0f);
         if (visible)
         {
             ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
@@ -834,7 +834,7 @@ private:
 
         wchar_t expressionText[256];
         winrt::check_hresult(StringCchPrintfW(
-            expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
+            expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius));
 
         radiusExpression.Expression(expressionText);
         m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", radiusExpression);
@@ -893,7 +893,7 @@ public:
             m_includeWinKey = settings.includeWinKey;
             m_doNotActivateOnGameMode = settings.doNotActivateOnGameMode;
             m_fadeDuration = settings.animationDurationMs > 0 ? settings.animationDurationMs : 1;
-            m_finalAlphaNumerator = settings.overlayOpacity;
+            // overlay opacity removed; alpha comes from colors
             m_sonarZoomFactor = settings.spotlightInitialZoom;
             m_excludedApps = settings.excludedApps;
             m_shakeMinimumDistance = settings.shakeMinimumDistance;
@@ -923,7 +923,7 @@ public:
                     m_includeWinKey = localSettings.includeWinKey;
                     m_doNotActivateOnGameMode = localSettings.doNotActivateOnGameMode;
                     m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
-                    m_finalAlphaNumerator = localSettings.overlayOpacity;
+                    // overlay opacity removed; alpha comes from colors
                     m_sonarZoomFactor = localSettings.spotlightInitialZoom;
                     m_excludedApps = localSettings.excludedApps;
                     m_shakeMinimumDistance = localSettings.shakeMinimumDistance;
@@ -956,7 +956,7 @@ public:
                     auto radiusExpression = m_compositor.CreateExpressionAnimation();
                     radiusExpression.SetReferenceParameter(L"Root", m_root);
                     wchar_t expressionText[256];
-                    winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity * %d / %d)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius, FinalAlphaDenominator, m_finalAlphaNumerator));
+                    winrt::check_hresult(StringCchPrintfW(expressionText, ARRAYSIZE(expressionText), L"Lerp(Vector2(%d, %d), Vector2(%d, %d), Root.Opacity)", m_sonarRadius * m_sonarZoomFactor, m_sonarRadius * m_sonarZoomFactor, m_sonarRadius, m_sonarRadius));
                     radiusExpression.Expression(expressionText);
                     m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", radiusExpression);
                     if (m_circleGeometry)

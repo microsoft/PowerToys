@@ -18,7 +18,7 @@ namespace
     const wchar_t JSON_KEY_DO_NOT_ACTIVATE_ON_GAME_MODE[] = L"do_not_activate_on_game_mode";
     const wchar_t JSON_KEY_BACKGROUND_COLOR[] = L"background_color";
     const wchar_t JSON_KEY_SPOTLIGHT_COLOR[] = L"spotlight_color";
-    const wchar_t JSON_KEY_OVERLAY_OPACITY[] = L"overlay_opacity";
+    const wchar_t JSON_KEY_OVERLAY_OPACITY[] = L"overlay_opacity"; // legacy only (migrated into color alpha)
     const wchar_t JSON_KEY_SPOTLIGHT_RADIUS[] = L"spotlight_radius";
     const wchar_t JSON_KEY_ANIMATION_DURATION_MS[] = L"animation_duration_ms";
     const wchar_t JSON_KEY_SPOTLIGHT_INITIAL_ZOOM[] = L"spotlight_initial_zoom";
@@ -224,14 +224,13 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
                 }
                 else
                 {
-					findMyMouseSettings.activationMethod = static_cast<FindMyMouseActivationMethod>(value);
-				}
+                    findMyMouseSettings.activationMethod = static_cast<FindMyMouseActivationMethod>(value);
+                }
             }
             else
             {
                 throw std::runtime_error("Invalid Activation Method value");
             }
-                
         }
         catch (...)
         {
@@ -255,19 +254,42 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         {
             Logger::warn("Failed to get 'do not activate on game mode' setting");
         }
+        // Colors + legacy overlay opacity migration
+        int legacyOverlayOpacity = -1;
         try
         {
-            // Parse background color
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_BACKGROUND_COLOR);
-            auto backgroundColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-            uint8_t r, g, b;
-            if (!checkValidRGB(backgroundColor, &r, &g, &b))
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OVERLAY_OPACITY);
+            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+            if (value >= 0 && value <= 100)
             {
-                Logger::error("Background color RGB value is invalid. Will use default value");
+                legacyOverlayOpacity = value;
+            }
+        }
+        catch (...)
+        {
+            // overlay_opacity may not exist anymore
+        }
+        try
+        {
+            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_BACKGROUND_COLOR);
+            auto backgroundColorStr = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+            uint8_t a = 255, r, g, b;
+            bool parsed = false;
+            if (checkValidARGB(backgroundColorStr, &a, &r, &g, &b))
+            {
+                parsed = true;
+            }
+            else if (checkValidRGB(backgroundColorStr, &r, &g, &b))
+            {
+                parsed = true; // keep a=255 or apply legacy later
+            }
+            if (parsed)
+            {
+                findMyMouseSettings.backgroundColor = winrt::Microsoft::UI::ColorHelper::FromArgb(a, r, g, b);
             }
             else
             {
-                findMyMouseSettings.backgroundColor = winrt::Microsoft::UI::ColorHelper::FromArgb(255, r, g, b);
+                Logger::error("Background color value is invalid. Will use default");
             }
         }
         catch (...)
@@ -276,40 +298,44 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         }
         try
         {
-            // Parse spotlight color
             auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SPOTLIGHT_COLOR);
-            auto spotlightColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-            uint8_t r, g, b;
-            if (!checkValidRGB(spotlightColor, &r, &g, &b))
+            auto spotlightColorStr = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+            uint8_t a = 255, r, g, b;
+            bool parsed = false;
+            if (checkValidARGB(spotlightColorStr, &a, &r, &g, &b))
             {
-                Logger::error("Spotlight color RGB value is invalid. Will use default value");
+                parsed = true;
+            }
+            else if (checkValidRGB(spotlightColorStr, &r, &g, &b))
+            {
+                parsed = true;
+            }
+            if (parsed)
+            {
+                findMyMouseSettings.spotlightColor = winrt::Microsoft::UI::ColorHelper::FromArgb(a, r, g, b);
             }
             else
             {
-                findMyMouseSettings.spotlightColor = winrt::Microsoft::UI::ColorHelper::FromArgb(255, r, g, b);
+                Logger::error("Spotlight color value is invalid. Will use default");
             }
         }
         catch (...)
         {
             Logger::warn("Failed to initialize spotlight color from settings. Will use default value");
         }
-        try
+        if (legacyOverlayOpacity >= 0)
         {
-            // Parse Overlay Opacity
-            auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_OVERLAY_OPACITY);
-            int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-            if (value >= 0)
-            {
-                findMyMouseSettings.overlayOpacity = value;
-            }
-            else
-            {
-                throw std::runtime_error("Invalid Overlay Opacity value");
-            }
-        }
-        catch (...)
-        {
-            Logger::warn("Failed to initialize Overlay Opacity from settings. Will use default value");
+            uint8_t alpha = static_cast<uint8_t>((legacyOverlayOpacity * 255 + 50) / 100);
+            auto applyLegacy = [alpha](winrt::Windows::UI::Color c) {
+                // Only overwrite if color was opaque (255)
+                if (c.A == 255)
+                {
+                    return winrt::Windows::UI::ColorHelper::FromArgb(alpha, c.R, c.G, c.B);
+                }
+                return c;
+            };
+            findMyMouseSettings.backgroundColor = applyLegacy(findMyMouseSettings.backgroundColor);
+            findMyMouseSettings.spotlightColor = applyLegacy(findMyMouseSettings.spotlightColor);
         }
         try
         {
@@ -491,7 +517,6 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
     }
     m_findMyMouseSettings = findMyMouseSettings;
 }
-
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
