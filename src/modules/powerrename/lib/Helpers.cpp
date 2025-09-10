@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Helpers.h"
+#include "ExifReader.h"
 #include <regex>
 #include <ShlGuid.h>
 #include <cstring>
@@ -707,4 +708,188 @@ std::wstring CreateGuidStringWithoutBrackets()
     }
 
     return L"";
+}
+
+bool isExifUsed(_In_ PCWSTR source)
+{
+    if (!source || wcslen(source) == 0)
+    {
+        return false;
+    }
+
+    bool used = false;
+    static const std::array patterns = {
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$CameraMake" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$CameraModel" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$LensModel" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$FNumber" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$ISO" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$ExposureTime" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$FocalLength" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$ExifDateTime" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$ExifDateTaken" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$ImageWidth" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$ImageHeight" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$Orientation" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$GPSLatitude" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$GPSLongitude" },
+        std::wregex{ L"(([^\\$]|^)(\\$\\$)*)\\$GPSAltitude" }
+    };
+    
+    for (size_t i = 0; !used && i < patterns.size(); i++)
+    {
+        if (std::regex_search(source, patterns[i]))
+        {
+            used = true;
+        }
+    }
+    return used;
+}
+
+HRESULT GetExifFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, _In_ PCWSTR filePath)
+{
+    HRESULT hr = E_INVALIDARG;
+    if (!source || wcslen(source) == 0 || !filePath || wcslen(filePath) == 0)
+    {
+        return hr;
+    }
+
+    // Check if file is an image by extension
+    std::wstring filePathStr(filePath);
+    std::wstring extension = filePathStr.substr(filePathStr.find_last_of(L"."));
+    std::transform(extension.begin(), extension.end(), extension.begin(), ::towlower);
+    
+    if (extension != L".jpg" && extension != L".jpeg" && extension != L".tif" && 
+        extension != L".tiff" && extension != L".png" && extension != L".bmp")
+    {
+        // Not an image file, return original source
+        return StringCchCopy(result, cchMax, source);
+    }
+
+    ExifReader exifReader;
+    hr = exifReader.ReadExifData(filePath);
+    if (FAILED(hr) || !exifReader.HasExifData())
+    {
+        // No EXIF data available, return original source
+        return StringCchCopy(result, cchMax, source);
+    }
+
+    std::wstring res(source);
+    wchar_t replaceTerm[MAX_PATH] = { 0 };
+
+    // Replace EXIF parameters with actual values
+    std::wstring value;
+
+    // Camera information
+    value = exifReader.GetExifValue(L"CameraMake");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$CameraMake"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"CameraModel");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$CameraModel"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"LensModel");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$LensModel"), replaceTerm);
+    }
+
+    // Shooting parameters
+    value = exifReader.GetExifValue(L"FNumber");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$FNumber"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"ISO");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ISO"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"ExposureTime");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ExposureTime"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"FocalLength");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$FocalLength"), replaceTerm);
+    }
+
+    // Date/Time
+    value = exifReader.GetExifValue(L"ExifDateTaken");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ExifDateTaken"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"ExifDateTime");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ExifDateTime"), replaceTerm);
+    }
+
+    // Image dimensions
+    value = exifReader.GetExifValue(L"ImageWidth");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ImageWidth"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"ImageHeight");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$ImageHeight"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"Orientation");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$Orientation"), replaceTerm);
+    }
+
+    // GPS data
+    value = exifReader.GetExifValue(L"GPSLatitude");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$GPSLatitude"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"GPSLongitude");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$GPSLongitude"), replaceTerm);
+    }
+
+    value = exifReader.GetExifValue(L"GPSAltitude");
+    if (!value.empty())
+    {
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", value.c_str());
+        res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$GPSAltitude"), replaceTerm);
+    }
+
+    hr = StringCchCopy(result, cchMax, res.c_str());
+    return hr;
 }
