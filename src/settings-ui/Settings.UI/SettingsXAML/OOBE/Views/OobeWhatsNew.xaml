@@ -164,7 +164,6 @@
                         Visibility="Visible" />
                     <tkcontrols:MarkdownTextBlock
                         x:Name="ReleaseNotesMarkdown"
-                        Grid.Row="3"
                         UseAutoLinks="True"
                         UseEmphasisExtras="True"
                         UseListExtras="True"
