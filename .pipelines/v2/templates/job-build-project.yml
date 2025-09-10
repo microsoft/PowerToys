@@ -382,10 +382,10 @@ jobs:
     displayName: Audit WinAppSDK applications path asset conflicts
 
   # To streamline the pipeline and prevent errors, skip this step during compatibility tests with the latest WinAppSDK.
-  # - ${{ if eq(parameters.useLatestWinAppSDK, false) }}:
-  #   - pwsh: |-
-  #       & '.pipelines/verifyNoticeMdAgainstNugetPackages.ps1' -path '$(build.sourcesdirectory)\'
-  #     displayName: Verify NOTICE.md and NuGet packages match
+  - ${{ if eq(parameters.useLatestWinAppSDK, false) }}:
+    - pwsh: |-
+        & '.pipelines/verifyNoticeMdAgainstNugetPackages.ps1' -path '$(build.sourcesdirectory)\'
+      displayName: Verify NOTICE.md and NuGet packages match
 
   - ${{ if eq(parameters.runTests, true) }}:
     # Publish test results which ran in MSBuild
