@@ -291,7 +291,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             if (parsed)
             {
-                findMyMouseSettings.backgroundColor = winrt::Microsoft::UI::ColorHelper::FromArgb(a, r, g, b);
+                findMyMouseSettings.backgroundColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
             }
             else
             {
@@ -319,7 +319,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             if (parsed)
             {
-                findMyMouseSettings.spotlightColor = winrt::Microsoft::UI::ColorHelper::FromArgb(a, r, g, b);
+                findMyMouseSettings.spotlightColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
             }
             else
             {
