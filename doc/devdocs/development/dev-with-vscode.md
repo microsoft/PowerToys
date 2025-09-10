@@ -103,7 +103,7 @@ Similar for attach to managed code.
             "symbolSearchPath": "${workspaceFolder}\\x64\\Debug;${workspaceFolder}\\Debug;${workspaceFolder}\\symbols"
         },
         {
-            "name": "Run Managedcode (managed, no build)",
+            "name": "Run manage dcode (managed, no build)",
             "type": "coreclr",
             "request": "launch",
             "program": "${workspaceFolder}\\arm64\\Debug\\WinUI3Apps\\PowerToys.Settings.exe",
