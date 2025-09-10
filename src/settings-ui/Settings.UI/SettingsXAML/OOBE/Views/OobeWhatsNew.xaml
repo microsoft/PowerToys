@@ -21,7 +21,7 @@
             H3FontSize="16"
             H3FontWeight="SemiBold"
             H3Margin="0, 16, 0, 4"
-            HeadingForeground="{ThemeResource TextFillColorPrimaryBrush}" />
+            HeadingForeground="{StaticResource TextFillColorPrimaryBrush}" />
         <tkcontrols:MarkdownConfig x:Key="ReleaseNotesMarkdownConfig" Themes="{StaticResource ReleaseNotesMarkdownThemeConfig}" />
     </Page.Resources>
 
