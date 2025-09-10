@@ -168,9 +168,9 @@
     <value>All channels</value>
   </data>
   <data name="save_last_selected_channel" xml:space="preserve">
-    <value>Use last selected channel</value>
+    <value>Keep last channel filter</value>
   </data>
   <data name="save_last_selected_channel_description" xml:space="preserve">
-    <value>Synchronize preferred terminal with the filter</value>
+    <value>Remember the last selected channel instead of resetting to All Channels.</value>
   </data>
 </root>

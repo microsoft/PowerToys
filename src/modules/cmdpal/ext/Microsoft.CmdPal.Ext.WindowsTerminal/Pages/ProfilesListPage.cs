@@ -2,8 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
@@ -19,42 +24,39 @@ internal sealed partial class ProfilesListPage : ListPage, INotifyItemsChanged
     {
         add
         {
-            // Invoked every time a page is loaded
             ItemsChanged += value;
-            if (!initialized)
-            {
-                Initialize();
-            }
-
-            // Ensure the correct filter is selected
+            EnsureInitialized();
             SelectTerminalFilter();
         }
-        remove => ItemsChanged -= value;
+
+        remove
+        {
+            ItemsChanged -= value;
+        }
     }
 
     private readonly TerminalQuery _terminalQuery = new();
     private readonly SettingsManager _terminalSettings;
+    private readonly AppSettingsManager _appSettingsManager;
 
     private bool showHiddenProfiles;
     private bool openNewTab;
     private bool openQuake;
 
     private bool initialized;
-    private TerminalChannelFilters _terminalFilters;
+    private TerminalChannelFilters? terminalFilters;
 
-    public ProfilesListPage(SettingsManager terminalSettings)
+    public ProfilesListPage(SettingsManager terminalSettings, AppSettingsManager appSettingsManager)
     {
         Icon = Icons.TerminalIcon;
         Name = Resources.profiles_list_page_name;
         _terminalSettings = terminalSettings;
+        _appSettingsManager = appSettingsManager;
     }
 
     private List<ListItem> Query()
     {
-        if (!initialized)
-        {
-            Initialize();
-        }
+        EnsureInitialized();
 
         showHiddenProfiles = _terminalSettings.ShowHiddenProfiles;
         openNewTab = _terminalSettings.OpenNewTab;
@@ -62,9 +64,9 @@ internal sealed partial class ProfilesListPage : ListPage, INotifyItemsChanged
 
         var profiles = _terminalQuery.GetProfiles();
 
-        if (!_terminalFilters.IsAllSelected)
+        if (terminalFilters?.IsAllSelected == false)
         {
-            profiles = profiles.Where(profile => profile.Terminal.AppUserModelId == Filters.CurrentFilterId);
+            profiles = profiles.Where(profile => profile.Terminal.AppUserModelId == terminalFilters.CurrentFilterId);
         }
 
         var result = new List<ListItem>();
@@ -89,43 +91,60 @@ internal sealed partial class ProfilesListPage : ListPage, INotifyItemsChanged
         return result;
     }
 
-    private void Initialize()
+    private void EnsureInitialized()
     {
-        var terminals = _terminalQuery.GetTerminals().ToList();
+        if (initialized)
+        {
+            return;
+        }
 
-        _terminalFilters = new TerminalChannelFilters(terminals);
-        _terminalFilters.PropChanged += TerminalFiltersOnPropChanged;
+        var terminals = _terminalQuery.GetTerminals();
+        terminalFilters = new TerminalChannelFilters(terminals);
+        terminalFilters.PropChanged += TerminalFiltersOnPropChanged;
         SelectTerminalFilter();
-        Filters = _terminalFilters;
+        Filters = terminalFilters;
         initialized = true;
     }
 
     private void SelectTerminalFilter()
     {
+        Trace.Assert(terminalFilters != null);
+
         // Select the preferred channel if it exists; we always select the preferred channel,
         // but user have an option to save the preferred channel when he changes the filter
-        if (!string.IsNullOrWhiteSpace(_terminalSettings.PreferredChannelAppId))
+        if (_terminalSettings.SaveLastSelectedChannel)
         {
-            if (_terminalFilters.ContainsFilter(_terminalSettings.PreferredChannelAppId))
+            if (!string.IsNullOrWhiteSpace(_appSettingsManager.Current.LastSelectedChannel) &&
+                terminalFilters.ContainsFilter(_appSettingsManager.Current.LastSelectedChannel))
             {
-                _terminalFilters.CurrentFilterId = _terminalSettings.PreferredChannelAppId;
+                terminalFilters.CurrentFilterId = _appSettingsManager.Current.LastSelectedChannel;
             }
         }
         else
         {
-            _terminalFilters.CurrentFilterId = TerminalChannelFilters.AllTerminalsFilterId;
+            terminalFilters.CurrentFilterId = TerminalChannelFilters.AllTerminalsFilterId;
         }
     }
 
     private void TerminalFiltersOnPropChanged(object sender, IPropChangedEventArgs args)
     {
+        Trace.Assert(terminalFilters != null);
+
         RaiseItemsChanged();
-        if (_terminalSettings.SaveLastSelectedChannel)
-        {
-            _terminalSettings.PreferredChannelAppId = _terminalFilters.CurrentFilterId;
-            _terminalSettings.SaveSettings();
-        }
+        _appSettingsManager.Current.LastSelectedChannel = terminalFilters.CurrentFilterId;
+        _appSettingsManager.Save();
     }
 
-    public override IListItem[] GetItems() => [.. Query()];
+    public override IListItem[] GetItems()
+    {
+        try
+        {
+            return [.. Query()];
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to list Windows Terminal profiles", ex);
+            throw;
+        }
+    }
 }

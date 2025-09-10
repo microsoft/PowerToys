@@ -187,7 +187,7 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use last selected channel.
+        ///   Looks up a localized string similar to Keep last channel filter.
         /// </summary>
         internal static string save_last_selected_channel {
             get {
@@ -196,7 +196,7 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Synchronize preferred terminal with the filter.
+        ///   Looks up a localized string similar to Remember the last selected channel instead of resetting to All Channels..
         /// </summary>
         internal static string save_last_selected_channel_description {
             get {
