@@ -87,23 +87,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
             DataContext = this;
-            ReleaseNotesMarkdown.Config =
-                new MarkdownConfig()
-                {
-                    Themes = new MarkdownThemes()
-                    {
-                        HeadingForeground = (SolidColorBrush)App.Current.Resources["TextFillColorPrimaryBrush"],
-                        H1FontSize = 22,
-                        H1FontWeight = FontWeights.SemiBold,
-                        H1Margin = new Thickness(0, 36, 0, 8),
-                        H2FontSize = 16,
-                        H2FontWeight = FontWeights.SemiBold,
-                        H2Margin = new Thickness(0, 16, 0, 4),
-                        H3FontWeight = FontWeights.SemiBold,
-                        H3FontSize = 16,
-                        H3Margin = new Thickness(0, 16, 0, 4),
-                    },
-                };
 
             // Subscribe to hotkey conflict updates
             if (GlobalHotkeyConflictManager.Instance != null)
