@@ -2590,6 +2590,51 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Use a keyboard shortcut to highlight left and right mouse clicks.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+
+  <!-- CursorWrap Module -->
+  <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
+    <value>Enable CursorWrap</value>
+  </data>
+  <data name="MouseUtils_Enable_CursorWrap.Description" xml:space="preserve">
+    <value>Wrap mouse cursor between monitor edges</value>
+  </data>	
+  <data name="MouseUtils_CursorWrap.Header" xml:space="preserve">
+    <value>CursorWrap</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_Description.Text" xml:space="preserve">
+    <value>Wrap mouse cursor between monitor edges</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_EnableToggleSwitch.OnContent" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_EnableToggleSwitch.OffContent" xml:space="preserve">
+    <value>Off</value>
+  </data>
+
+  <!-- CursorWrap Settings Expander -->
+  <data name="MouseUtils_CursorWrap_SettingsExpander.Header" xml:space="preserve">
+    <value>CursorWrap settings</value>
+  </data>
+
+  <!-- Activation Shortcut -->
+  <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut_Description.Text" xml:space="preserve">
+    <value>Hotkey to toggle cursor wrapping on/off</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_ActivationShortcut_Button.Content" xml:space="preserve">
+    <value>Set shortcut</value>
+  </data>
+
+  <!-- Auto-activate -->
+  <data name="MouseUtils_CursorWrap_AutoActivate.Header" xml:space="preserve">
+    <value>Auto-activate on startup</value>
+  </data>
+  <data name="MouseUtils_CursorWrap_AutoActivate.Content" xml:space="preserve">
+    <value>Automatically activate on utility startup</value>
+  </data>	
+	
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
