@@ -14,7 +14,6 @@
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <!-- PackageReference + Central Package Management mode -->
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
@@ -22,7 +21,6 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <!-- Core VC++ property sheet (provided by Visual Studio toolset) -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -115,7 +113,6 @@
     <ResourceCompile Include="FindMyMouse.rc" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Versions provided by Directory.Packages.props -->
     <PackageReference Include="Microsoft.Windows.CppWinRT" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
   </ItemGroup>
@@ -128,5 +125,4 @@
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
-  <!-- ExtensionTargets import group not needed; native targets pulled in automatically by PackageReference restore -->
 </Project>

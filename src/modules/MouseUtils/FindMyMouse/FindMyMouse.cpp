@@ -704,14 +704,6 @@ private:
     bool OnCompositionCreate()
     try
     {
-        // Log effective extended style to validate window flags for XAML/Composition.
-        auto ex = static_cast<DWORD>(GetWindowLongPtr(m_hwnd, GWL_EXSTYLE));
-        Logger::info(
-            "FindMyMouse HWND ex-style: 0x{:08X} (layered={}, noRedirect={})",
-            ex,
-            (ex & WS_EX_LAYERED) != 0,
-            (ex & WS_EX_NOREDIRECTIONBITMAP) != 0);
-
         // Ensure a DispatcherQueue bound to this thread (required by WinAppSDK composition/XAML)
         if (!m_dispatcherQueueController)
         {
@@ -735,7 +727,6 @@ private:
         // A transparent background keeps hit-testing consistent vs. null brush
         m_surface.Background(winrt::Microsoft::UI::Xaml::Media::SolidColorBrush{
             winrt::Microsoft::UI::Colors::Transparent() });
-        // m_surface.Background(muxx::Media::SolidColorBrush{ winrt::Microsoft::UI::Colors::Red() });
         m_surface.HorizontalAlignment(muxx::HorizontalAlignment::Stretch);
         m_surface.VerticalAlignment(muxx::VerticalAlignment::Stretch);
 
@@ -1220,7 +1211,7 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
     {
         const UINT32 majorMinor = WINDOWSAPPSDK_RELEASE_MAJORMINOR;
         PCWSTR versionTag = WINDOWSAPPSDK_RELEASE_VERSION_TAG_W;
-        PACKAGE_VERSION minVersion{}; // accept any installed runtime version matching major/minor
+        PACKAGE_VERSION minVersion{};
         const HRESULT hr = MddBootstrapInitialize(majorMinor, versionTag, minVersion);
         if (FAILED(hr))
         {
