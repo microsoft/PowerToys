@@ -23,18 +23,19 @@
     <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse">
+                <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse" AutomationProperties.AutomationId="MouseUtils_FindMyMouseTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
                             Name="MouseUtilsEnableFindMyMouse"
                             x:Uid="MouseUtils_Enable_FindMyMouse"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FindMyMouse.png}">
-                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
+                            <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="MouseUtils_FindMyMouseToggleId" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
                     <tkcontrols:SettingsExpander
                         Name="MouseUtilsFindMyMouseActivationMethod"
                         x:Uid="MouseUtils_FindMyMouse_ActivationMethod"
+                        AutomationProperties.AutomationId="MouseUtils_FindMyMouseActivationMethodId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE961;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
                         IsExpanded="True">
@@ -108,25 +109,28 @@
                     <tkcontrols:SettingsExpander
                         Name="FindMyMouseAppearanceBehavior"
                         x:Uid="Appearance_Behavior"
+                        AutomationProperties.AutomationId="MouseUtils_FindMyMouseAppearanceBehaviorId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
                         IsExpanded="False">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseOverlayOpacity" x:Uid="MouseUtils_FindMyMouse_OverlayOpacity">
                                 <Slider
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseOverlayOpacityId"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
                                     Value="{x:Bind ViewModel.FindMyMouseOverlayOpacity, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseBackgroundColor" x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton AutomationProperties.AutomationId="MouseUtils_FindMyMouseBackgroundColorId" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightColor" x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
-                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightColorId" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightRadius" x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
                                 <NumberBox
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightRadiusId"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
                                     Minimum="5"
@@ -136,6 +140,7 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightInitialZoom" x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom">
                                 <Slider
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightZoomId"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="40"
                                     Minimum="1"
@@ -143,6 +148,7 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseAnimationDurationMs" x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
                                 <NumberBox
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseAnimationDurationId"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     IsEnabled="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay}"
                                     LargeChange="100"
@@ -166,6 +172,7 @@
                     <tkcontrols:SettingsExpander
                         Name="MouseUtilsFindMyMouseExcludedApps"
                         x:Uid="MouseUtils_FindMyMouse_ExcludedApps"
+                        AutomationProperties.AutomationId="MouseUtils_FindMyMouseExcludedAppsId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
@@ -186,18 +193,19 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter">
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter" AutomationProperties.AutomationId="MouseUtils_MouseHighlighterTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
                             Name="MouseUtilsEnableMouseHighlighter"
                             x:Uid="MouseUtils_Enable_MouseHighlighter"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseHighlighter.png}">
-                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
+                            <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="MouseUtils_MouseHighlighterToggleId" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
                     <tkcontrols:SettingsExpander
                         Name="MouseUtilsMouseHighlighterActivationShortcut"
                         x:Uid="MouseUtils_MouseHighlighter_ActivationShortcut"
+                        AutomationProperties.AutomationId="MouseUtils_MouseHighlighterActivationShortcutId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}"
                         IsExpanded="True">
@@ -211,6 +219,7 @@
                     <tkcontrols:SettingsExpander
                         Name="MouseHighlighterAppearanceBehavior"
                         x:Uid="Appearance_Behavior"
+                        AutomationProperties.AutomationId="MouseUtils_MouseHighlighterAppearanceBehaviorId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
@@ -265,13 +274,13 @@
 
                 <panels:MouseJumpPanel x:Name="MouseUtils_MouseJump_Panel" x:Uid="MouseUtils_MouseJump_Panel" />
 
-                <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs">
+                <controls:SettingsGroup x:Uid="MouseUtils_MousePointerCrosshairs" AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsMousePointerCrosshairsEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
                             Name="MouseUtilsEnableMousePointerCrosshairs"
                             x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrosshairs.png}">
-                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
+                            <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsToggleId" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
 
@@ -292,6 +301,7 @@
                     <tkcontrols:SettingsExpander
                         Name="MousePointerCrosshairsAppearanceBehavior"
                         x:Uid="Appearance_Behavior"
+                        AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsAppearanceBehaviorId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
