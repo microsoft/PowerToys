@@ -19,7 +19,10 @@
                         Name="FancyZonesEnableToggleControlHeaderText"
                         x:Uid="FancyZones_EnableToggleControl_HeaderText"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch 
+                            x:Uid="ToggleSwitch" 
+                            AutomationProperties.AutomationId="EnableFancyZonesToggleSwitch"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="FancyZones_Editor_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
