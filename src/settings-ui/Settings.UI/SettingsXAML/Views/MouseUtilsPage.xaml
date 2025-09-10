@@ -29,7 +29,10 @@
                             Name="MouseUtilsEnableFindMyMouse"
                             x:Uid="MouseUtils_Enable_FindMyMouse"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FindMyMouse.png}">
-                            <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="MouseUtils_FindMyMouseToggleId" IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_FindMyMouseToggleId"
+                                IsOn="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
                     <tkcontrols:SettingsExpander
@@ -116,8 +119,8 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseOverlayOpacity" x:Uid="MouseUtils_FindMyMouse_OverlayOpacity">
                                 <Slider
-                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseOverlayOpacityId"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseOverlayOpacityId"
                                     Maximum="100"
                                     Minimum="1"
                                     Value="{x:Bind ViewModel.FindMyMouseOverlayOpacity, Mode=TwoWay}" />
@@ -130,8 +133,8 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightRadius" x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
                                 <NumberBox
-                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightRadiusId"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightRadiusId"
                                     LargeChange="10"
                                     Minimum="5"
                                     SmallChange="1"
@@ -140,16 +143,16 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightInitialZoom" x:Uid="MouseUtils_FindMyMouse_SpotlightInitialZoom">
                                 <Slider
-                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightZoomId"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightZoomId"
                                     Maximum="40"
                                     Minimum="1"
                                     Value="{x:Bind ViewModel.FindMyMouseSpotlightInitialZoom, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseAnimationDurationMs" x:Uid="MouseUtils_FindMyMouse_AnimationDurationMs">
                                 <NumberBox
-                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseAnimationDurationId"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseAnimationDurationId"
                                     IsEnabled="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay}"
                                     LargeChange="100"
                                     Minimum="0"
@@ -199,7 +202,10 @@
                             Name="MouseUtilsEnableMouseHighlighter"
                             x:Uid="MouseUtils_Enable_MouseHighlighter"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseHighlighter.png}">
-                            <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="MouseUtils_MouseHighlighterToggleId" IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_MouseHighlighterToggleId"
+                                IsOn="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
                     <tkcontrols:SettingsExpander
@@ -280,7 +286,10 @@
                             Name="MouseUtilsEnableMousePointerCrosshairs"
                             x:Uid="MouseUtils_Enable_MousePointerCrosshairs"
                             HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseCrosshairs.png}">
-                            <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsToggleId" IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_MousePointerCrosshairsToggleId"
+                                IsOn="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
 

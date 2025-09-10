@@ -27,7 +27,10 @@
                 x:Name="MouseUtilsEnableMouseJump"
                 x:Uid="MouseUtils_Enable_MouseJump"
                 HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}">
-                <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="MouseUtils_MouseJumpToggleId" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
+                <ToggleSwitch
+                    x:Uid="ToggleSwitch"
+                    AutomationProperties.AutomationId="MouseUtils_MouseJumpToggleId"
+                    IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
             </tkcontrols:SettingsCard>
         </controls:GPOInfoControl>
 
