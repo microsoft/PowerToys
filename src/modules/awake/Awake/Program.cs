@@ -287,28 +287,7 @@ namespace Awake
             }
             else if (pid != 0 || useParentPid)
             {
-                // Second, we snap to process-based execution. Because this is something that
-                // is snapped to a running entity, we only want to enable the ability to set
-                // indefinite keep-awake with the display settings that the user wants to set.
-                // In this context, manual (explicit) PID takes precedence over parent PID.
-                int targetPid = pid != 0 ? pid : useParentPid ? Manager.GetParentProcess()?.Id ?? 0 : 0;
-
-                if (targetPid != 0)
-                {
-                    Logger.LogInfo($"Bound to target process: {targetPid}");
-
-                    Manager.SetIndefiniteKeepAwake(displayOn, targetPid);
-
-                    RunnerHelper.WaitForPowerToysRunner(targetPid, () =>
-                    {
-                        Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
-                        Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
-                    });
-                }
-                else
-                {
-                    Logger.LogError("Not binding to any process.");
-                }
+                HandleProcessScopedKeepAwake(pid, useParentPid, displayOn);
             }
             else
             {
@@ -342,6 +321,50 @@ namespace Awake
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Start a process-scoped keep-awake session. The application will keep the system awake
+        /// indefinitely until the target process terminates.
+        /// </summary>
+        /// <param name="pid">The explicit process ID to monitor.</param>
+        /// <param name="useParentPid">A flag indicating whether the application should monitor its
+        /// parent process.</param>
+        /// <param name="displayOn">Whether to keep the display on during the session.</param>
+        private static void HandleProcessScopedKeepAwake(int pid, bool useParentPid, bool displayOn)
+        {
+            int targetPid = 0;
+
+            // We prioritise a user-provided PID over the parent PID. If both are given on the
+            // command line, the --pid value will be used.
+            if (pid != 0)
+            {
+                targetPid = pid;
+            }
+            else if (useParentPid)
+            {
+                targetPid = Manager.GetParentProcess()?.Id ?? 0;
+
+                if (targetPid == 0)
+                {
+                    // The parent process could not be identified.
+                    Logger.LogError("Failed to identify a parent process for binding.");
+                    Exit(Resources.AWAKE_EXIT_PARENT_BINDING_FAILURE_MESSAGE, 1);
+                }
+            }
+
+            // We have a valid non-zero PID to monitor.
+            Logger.LogInfo($"Bound to target process: {targetPid}");
+
+            // Sets the keep-awake plan and updates the tray icon.
+            Manager.SetIndefiniteKeepAwake(displayOn, targetPid);
+
+            // Synchronize with the target process, and trigger Exit() when it finishes.
+            RunnerHelper.WaitForPowerToysRunner(targetPid, () =>
+            {
+                Logger.LogInfo($"Triggered PID-based exit handler for PID {targetPid}.");
+                Exit(Resources.AWAKE_EXIT_BINDING_HOOK_MESSAGE, 0);
+            });
         }
 
         private static void AllocateLocalConsole()
