@@ -14,7 +14,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.Labs.WinUI.MarkdownTextBlock;
-using CommunityToolkit.WinUI.UI.Controls;
 using ControlzEx.Theming;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
