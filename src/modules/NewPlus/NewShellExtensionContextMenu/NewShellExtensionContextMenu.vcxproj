@@ -123,6 +123,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     <ClInclude Include="settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="new_utilities.h" />
+    <ClInclude Include="RuntimeRegistration.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="template_folder.h" />
     <ClInclude Include="pch.h" />

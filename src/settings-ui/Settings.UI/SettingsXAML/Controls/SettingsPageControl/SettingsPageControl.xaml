@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations" 
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -43,6 +44,7 @@
                     To="0"
                     Duration="0:0:0.1" />
         </animations:ImplicitAnimationSet>
+        <converters:UriToImageSourceConverter x:Key="UriToImageSourceConverter" />
     </UserControl.Resources>
     <Grid Padding="20,0,0,0" RowSpacing="24">
         <Grid.RowDefinitions>
@@ -72,10 +74,7 @@
                 </Grid.RowDefinitions>
 
                 <!--  Top panel  -->
-                <Grid
-                    MaxWidth="{StaticResource PageMaxWidth}"
-                    ColumnSpacing="16"
-                    RowSpacing="0">
+                <Grid MaxWidth="{StaticResource PageMaxWidth}" ColumnSpacing="16" RowSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -87,14 +86,12 @@
                     </Grid.RowDefinitions>
                     <Border
                         MaxWidth="160"
+                        Margin="0,0,16,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top"
-                        CornerRadius="{StaticResource OverlayCornerRadius}">
-                        <Image AutomationProperties.AccessibilityView="Raw">
-                            <Image.Source>
-                                <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
-                            </Image.Source>
-                        </Image>
+                        CornerRadius="{StaticResource OverlayCornerRadius}"
+                        Visibility="{x:Bind ModuleImageSource, Converter={StaticResource EmptyObjectToObjectConverter}}">
+                        <Image AutomationProperties.AccessibilityView="Raw" Source="{x:Bind ModuleImageSource, Converter={StaticResource UriToImageSourceConverter}, Mode=OneWay}" />
                     </Border>
 
                     <StackPanel x:Name="DescriptionPanel" Grid.Column="1">
@@ -108,7 +105,8 @@
                             x:Name="PrimaryLinksControl"
                             Margin="0,8,0,0"
                             IsTabStop="False"
-                            ItemsSource="{x:Bind PrimaryLinks}">
+                            ItemsSource="{x:Bind PrimaryLinks}"
+                            Visibility="{x:Bind PrimaryLinks.Count, Converter={StaticResource DoubleToVisibilityConverter}}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="controls:PageLink">
                                     <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">

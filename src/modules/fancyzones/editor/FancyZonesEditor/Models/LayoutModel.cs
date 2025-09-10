@@ -71,11 +71,21 @@ namespace FancyZonesEditor.Models
                 {
                     _name = value;
                     FirePropertyChanged(nameof(Name));
+                    FirePropertyChanged(nameof(AutomationId));
                 }
             }
         }
 
         private string _name;
+
+        // AutomationId - used for UI automation testing
+        public virtual string AutomationId
+        {
+            get
+            {
+                return _name?.Replace(" ", string.Empty) + "Card";
+            }
+        }
 
         public LayoutType Type { get; set; }
 

@@ -31,3 +31,7 @@ void InclusiveCrosshairsDisable();
 bool InclusiveCrosshairsIsEnabled();
 void InclusiveCrosshairsSwitch();
 void InclusiveCrosshairsApplySettings(InclusiveCrosshairsSettings& settings);
+void InclusiveCrosshairsRequestUpdatePosition();
+void InclusiveCrosshairsEnsureOn();
+void InclusiveCrosshairsEnsureOff();
+void InclusiveCrosshairsSetExternalControl(bool enabled);
