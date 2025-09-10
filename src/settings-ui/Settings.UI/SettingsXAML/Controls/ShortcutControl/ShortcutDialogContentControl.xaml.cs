@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.Diagnostics.Eventing.Reader;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 

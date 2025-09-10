@@ -236,7 +236,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void UpdateConflictStatusFromHotkeySettings()
         {
-            if (hotkeySettings != null)
+            if (!c.IgnoreConflict && hotkeySettings != null)
             {
                 // Update the ShortcutControl's conflict properties from HotkeySettings
                 HasConflict = hotkeySettings.HasConflict;
@@ -280,7 +280,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void OnDialogIgnoreConflictChanged(object sender, bool newValue)
         {
-            if (hotkeySettings != null && hotkeySettings.IgnoreConflict != c.IgnoreConflict)
+            if (hotkeySettings != null)
             {
                 HotkeySettings = hotkeySettings with { IgnoreConflict = c.IgnoreConflict };
 
@@ -290,6 +290,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void UpdateKeyVisualStyles()
         {
+            if (hotkeySettings.IgnoreConflict)
+            {
+                HasConflict = false;
+                Tooltip = null;
+            }
+
             if (PreviewKeysControl?.ItemsSource != null)
             {
                 // Force refresh of the ItemsControl to update KeyVisual styles
@@ -524,6 +530,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 else
                 {
                     EnableKeys();
+
+                    if (c.IgnoreConflict)
+                    {
+                        return;
+                    }
+
                     if (lastValidSettings.IsValid())
                     {
                         if (string.Equals(lastValidSettings.ToString(), hotkeySettings.ToString(), StringComparison.OrdinalIgnoreCase))
@@ -662,9 +674,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             c.Keys = null;
             c.Keys = HotkeySettings.GetKeysList();
 
-            c.HasConflict = hotkeySettings.HasConflict;
-            c.ConflictMessage = hotkeySettings.ConflictDescription;
             c.IgnoreConflict = hotkeySettings.IgnoreConflict;
+            c.HasConflict = c.IgnoreConflict ? false : hotkeySettings.HasConflict;
+            c.ConflictMessage = c.IgnoreConflict ? null : hotkeySettings.ConflictDescription;
 
             // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
             // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
