@@ -335,7 +335,7 @@ namespace Awake
         {
             int targetPid = 0;
 
-            // We prioritise a user-provided PID over the parent PID. If both are given on the
+            // We prioritize a user-provided PID over the parent PID. If both are given on the
             // command line, the --pid value will be used.
             if (pid != 0)
             {
