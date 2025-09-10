@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 
 using Microsoft.UI.Xaml;
@@ -16,7 +17,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty IsWarningAltGrProperty = DependencyProperty.Register("IsWarningAltGr", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
         public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
         public static readonly DependencyProperty ConflictMessageProperty = DependencyProperty.Register("ConflictMessage", typeof(string), typeof(ShortcutDialogContentControl), new PropertyMetadata(string.Empty));
-        public static readonly DependencyProperty IgnoreConflictProperty = DependencyProperty.Register("IgnoreConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
+        public static readonly DependencyProperty IgnoreConflictProperty = DependencyProperty.Register("IgnoreConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false, OnIgnoreConflictChanged));
+
+        public event EventHandler<bool> IgnoreConflictChanged;
 
         public bool IgnoreConflict
         {
@@ -57,6 +60,17 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get => (bool)GetValue(IsWarningAltGrProperty);
             set => SetValue(IsWarningAltGrProperty, value);
+        }
+
+        private static void OnIgnoreConflictChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var control = d as ShortcutDialogContentControl;
+            if (control == null)
+            {
+                return;
+            }
+
+            control.IgnoreConflictChanged?.Invoke(control, (bool)e.NewValue);
         }
     }
 }

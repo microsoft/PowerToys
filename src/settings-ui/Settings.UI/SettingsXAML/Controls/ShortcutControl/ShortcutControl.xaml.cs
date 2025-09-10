@@ -257,6 +257,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.Unloaded += ShortcutControl_Unloaded;
             this.Loaded += ShortcutControl_Loaded;
 
+            c.IgnoreConflictChanged += OnDialogIgnoreConflictChanged;
+
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
             {
@@ -274,6 +276,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
 
             OnAllowDisableChanged(this, null);
+        }
+
+        private void OnDialogIgnoreConflictChanged(object sender, bool newValue)
+        {
+            if (hotkeySettings != null && hotkeySettings.IgnoreConflict != c.IgnoreConflict)
+            {
+                HotkeySettings = hotkeySettings with { IgnoreConflict = c.IgnoreConflict };
+
+                UpdateConflictStatusFromHotkeySettings();
+            }
         }
 
         private void UpdateKeyVisualStyles()
@@ -304,6 +316,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.PrimaryButtonClick -= ShortcutDialog_PrimaryButtonClick;
             shortcutDialog.Opened -= ShortcutDialog_Opened;
             shortcutDialog.Closing -= ShortcutDialog_Closing;
+
+            c.IgnoreConflictChanged -= OnDialogIgnoreConflictChanged;
 
             if (App.GetSettingsWindow() != null)
             {
@@ -650,6 +664,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             c.HasConflict = hotkeySettings.HasConflict;
             c.ConflictMessage = hotkeySettings.ConflictDescription;
+            c.IgnoreConflict = hotkeySettings.IgnoreConflict;
 
             // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
             // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
@@ -686,6 +701,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     lastValidSettings = lastValidSettings with { HasConflict = false };
                 }
+
+                lastValidSettings = lastValidSettings with { IgnoreConflict = c.IgnoreConflict };
 
                 HotkeySettings = lastValidSettings;
             }
