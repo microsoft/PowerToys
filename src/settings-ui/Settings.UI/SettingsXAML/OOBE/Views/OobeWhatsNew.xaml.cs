@@ -13,7 +13,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using CommunityToolkit.Labs.WinUI.MarkdownTextBlock;
+using CommunityToolkit.WinUI.Controls;
 using ControlzEx.Theming;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -92,7 +92,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ReleaseNotesMarkdown.Config =
                 new MarkdownConfig()
                 {
-                    Themes = new CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns.MarkdownThemes()
+                    Themes = new MarkdownThemes()
                     {
                         HeadingForeground = (SolidColorBrush)App.Current.Resources["TextFillColorPrimaryBrush"],
                         H1FontSize = 22,

@@ -4,8 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
     <controls:OOBEPageControl x:Uid="Oobe_ColorPicker" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ColorPicker.gif">
@@ -17,7 +17,7 @@
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <labs:MarkdownTextBlock x:Uid="Oobe_ColorPicker_TipsAndTricks" />
+                <tkcontrols:MarkdownTextBlock x:Uid="Oobe_ColorPicker_TipsAndTricks" />
 
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button
