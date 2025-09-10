@@ -13,8 +13,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
+using CommunityToolkit.Labs.WinUI.MarkdownTextBlock;
 using CommunityToolkit.WinUI.UI.Controls;
+using ControlzEx.Theming;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -25,7 +26,10 @@ using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Text;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
@@ -86,6 +90,23 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
             DataContext = this;
+            ReleaseNotesMarkdown.Config =
+                new MarkdownConfig()
+                {
+                    Themes = new CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns.MarkdownThemes()
+                    {
+                        HeadingForeground = (SolidColorBrush)App.Current.Resources["TextFillColorPrimaryBrush"],
+                        H1FontSize = 22,
+                        H1FontWeight = FontWeights.SemiBold,
+                        H1Margin = new Thickness(0, 36, 0, 8),
+                        H2FontSize = 16,
+                        H2FontWeight = FontWeights.SemiBold,
+                        H2Margin = new Thickness(0, 16, 0, 4),
+                        H3FontWeight = FontWeights.SemiBold,
+                        H3FontSize = 16,
+                        H3Margin = new Thickness(0, 16, 0, 4),
+                    },
+                };
 
             // Subscribe to hotkey conflict updates
             if (GlobalHotkeyConflictManager.Instance != null)
@@ -254,17 +275,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             if (GlobalHotkeyConflictManager.Instance != null)
             {
                 GlobalHotkeyConflictManager.Instance.ConflictsUpdated -= OnConflictsUpdated;
-            }
-        }
-
-        private void ReleaseNotesMarkdown_LinkClicked(object sender, LinkClickedEventArgs e)
-        {
-            if (Uri.TryCreate(e.Link, UriKind.Absolute, out Uri link))
-            {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                {
-                    Process.Start(new ProcessStartInfo(link.ToString()) { UseShellExecute = true });
-                });
             }
         }
 

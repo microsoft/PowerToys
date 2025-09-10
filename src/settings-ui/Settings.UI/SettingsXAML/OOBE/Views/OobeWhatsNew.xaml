@@ -4,8 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     Loaded="Page_Loaded"
@@ -163,23 +163,35 @@
                         VerticalAlignment="Center"
                         IsIndeterminate="True"
                         Visibility="Visible" />
-                    <tk7controls:MarkdownTextBlock
+                    <labs:MarkdownTextBlock
+                        x:Name="ReleaseNotesMarkdown"
+                        Grid.Row="3"
+                        UseAutoLinks="True"
+                        UseEmphasisExtras="True"
+                        UseListExtras="True"
+                        UsePipeTables="True"
+                        UseTaskLists="True" />
+
+                    <!--<tk7controls:MarkdownTextBlock
                         x:Name="ReleaseNotesMarkdown"
                         VerticalAlignment="Top"
                         Background="Transparent"
                         Header1FontSize="20"
                         Header1FontWeight="SemiBold"
-                        Header1Margin="0,0,0,4"
+                        Header1Margin="0,0,0,4"d:\powertoys\src\settings-ui\settings.ui\settingsxaml\oobe\views\oobewhatsnew.xaml.cs
+d:\powertoys\src\settings-ui\settings.ui\settingsxaml\oobe\views\oobewhatsnew.xaml
+
                         Header3FontSize="16"
                         Header3FontWeight="SemiBold"
                         Header4FontSize="16"
                         Header4FontWeight="SemiBold"
                         HorizontalRuleMargin="24"
+                        ImageStretch="UniformToFill"
                         LinkClicked="ReleaseNotesMarkdown_LinkClicked"
                         ListMargin="-18,4,0,12"
                         ParagraphMargin="0,0,0,0"
                         TableMargin="24"
-                        Visibility="Collapsed" />
+                        Visibility="Collapsed" />-->
                 </Grid>
             </ScrollViewer>
         </Grid>
