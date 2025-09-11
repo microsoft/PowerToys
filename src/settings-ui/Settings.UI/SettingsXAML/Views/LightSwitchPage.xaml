@@ -44,6 +44,7 @@
                     <tkcontrols:SettingsCard x:Uid="LightSwitch_ThemeToggle_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="Shortcut_LightSwitch"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ToggleThemeActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>

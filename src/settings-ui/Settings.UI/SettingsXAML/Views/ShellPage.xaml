@@ -206,6 +206,7 @@
                             x:Name="LightSwitchNavigationItem"
                             x:Uid="Shell_LightSwitch"
                             helpers:NavHelper.NavigateTo="views:LightSwitchPage"
+                            AutomationProperties.AutomationId="LightSwitchNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}" />
                         <NavigationViewItem
                             x:Name="PowerLauncherNavigationItem"
