@@ -84,12 +84,14 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CursorWrapTests.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
@@ -107,7 +109,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="COMPLETE_REWRITE_SUMMARY.md" />
+    <None Include="CRITICAL_BUG_ANALYSIS.md" />
+    <None Include="CURSOR_WRAP_FIX_ANALYSIS.md" />
+    <None Include="DEBUG_GUIDE.md" />
     <None Include="packages.config" />
+    <None Include="VERTICAL_WRAP_BUG_FIX.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
