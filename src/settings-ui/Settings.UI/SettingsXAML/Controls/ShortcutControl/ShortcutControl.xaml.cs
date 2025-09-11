@@ -284,7 +284,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 HotkeySettings = hotkeySettings with { IgnoreConflict = c.IgnoreConflict };
 
-                c.Keys = lastValidSettings.GetKeysList();
+                if (lastValidSettings != null)
+                {
+                    c.Keys = lastValidSettings.GetKeysList();
+                }
 
                 UpdateConflictStatusFromHotkeySettings();
             }
@@ -762,6 +765,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void ShortcutDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
         {
             _isActive = false;
+            lastValidSettings = hotkeySettings;
         }
 
         private void Dispose(bool disposing)
