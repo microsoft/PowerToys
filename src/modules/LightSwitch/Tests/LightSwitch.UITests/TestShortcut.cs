@@ -22,10 +22,10 @@ namespace LightSwitch.UITests
 
         [TestMethod("LightSwitch.TestShortcut")]
         [TestCategory("Shortcut")]
-        public void TestScreenRulerBoundsTool()
+        public void TestLightSwitchShortcut()
         {
-            TestHelper.InitializeTest(this, "update time test");
-            TestHelper.PerformShortcutTest(this);
+            var activationKeys = TestHelper.InitializeTest(this, "light switch shortcut test");
+            TestHelper.PerformShortcutTest(this, activationKeys);
             TestHelper.CleanupTest(this);
         }
     }

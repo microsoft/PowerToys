@@ -30,7 +30,7 @@
                     Header="Enable LightSwitch"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                <ToggleSwitch AutomationProperties.AutomationId="Toggle_LightSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
 
                 <InfoBar
@@ -128,12 +128,14 @@
                                 <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
                                     <controls:CheckBoxWithDescriptionControl
                                         Description="Taskbar, Start, and other system UI"
+                                        AutomationProperties.AutomationId="ChangeSystemCheckbox_LightSwitch"
                                         Header="System"
                                         IsChecked="{x:Bind ViewModel.ChangeSystem, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
                                     <controls:CheckBoxWithDescriptionControl
                                         Description="Supported applications"
+                                        AutomationProperties.AutomationId="ChangeAppsCheckbox_LightSwitch"
                                         Header="Apps"
                                         IsChecked="{x:Bind ViewModel.ChangeApps, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>

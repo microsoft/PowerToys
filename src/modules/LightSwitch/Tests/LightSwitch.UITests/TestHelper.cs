@@ -156,20 +156,67 @@ namespace LightSwitch.UITests
         /// <summary>
         /// Perform a test for shortcut changing themes
         /// </summary>
-        public static void PerformShortcutTest(UITestBase testBase)
+        public static void PerformShortcutTest(UITestBase testBase, Key[] activationKeys)
         {
-            // TODO: Make system mode is checked
+            // Test when both are checked
+            var systemCheckbox = testBase.Session.Find<Element>(By.AccessibilityId("ChangeSystemCheckbox_LightSwitch"), 5000);
+            Assert.IsNotNull(systemCheckbox, "System checkbox not found.");
 
-            // TODO: Activate shortcut and check theme change before and after
+            // How do I handle when something is off screen?
+            if (!systemCheckbox.Selected)
+            {
+                systemCheckbox.Click(msPreAction: 1000, msPostAction: 1000);
+            }
 
-            // TODO: Make sure apps mode is checked
+            Assert.IsTrue(systemCheckbox.Selected, "System checkbox should be checked.");
 
-            // TODO: Activate shortcut and check theme change before and after
+            var appsCheckbox = testBase.Session.Find<Element>(By.AccessibilityId("ChangeAppsCheckbox_LightSwitch"), 5000);
+            Assert.IsNotNull(appsCheckbox, "Apps checkbox not found.");
 
-            // TODO: Make sure nothing is checked
+            if (!appsCheckbox.Selected)
+            {
+                appsCheckbox.Click(msPostAction: 1000);
+            }
 
-            // TODO: Activate shortcut and make sure nothing changes before and after
-            Assert.Fail("Not implemented");
+            Assert.IsTrue(appsCheckbox.Selected, "Apps checkbox should be checked.");
+
+            var systemBeforeValue = string.Empty; // How do I get the current system theme from here?
+            var appsBeforeValue = string.Empty; // How do I get the current apps theme from here?
+
+            testBase.Session.SendKeys(activationKeys);
+            Task.Delay(5000).Wait();
+
+            var systemAfterValue = "string.Empty";
+            var appsAfterValue = "string.Empty";
+
+            Assert.AreNotEqual(systemBeforeValue, systemAfterValue, "System theme should have changed.");
+            Assert.AreNotEqual(appsBeforeValue, appsAfterValue, "Apps theme should have changed.");
+
+            // Test with nothing checked
+            if (systemCheckbox.Selected)
+            {
+                systemCheckbox.Click(msPostAction: 1000);
+            }
+
+            if (appsCheckbox.Selected)
+            {
+                appsCheckbox.Click(msPostAction: 1000);
+            }
+
+            Assert.IsFalse(systemCheckbox.Selected, "System checkbox should be unchecked.");
+            Assert.IsFalse(appsCheckbox.Selected, "Apps checkbox should be unchecked.");
+
+            var noneSystemBeforeValue = string.Empty;
+            var noneAppsBeforeValue = string.Empty;
+
+            testBase.Session.SendKeys(activationKeys);
+            Task.Delay(5000).Wait();
+
+            var noneSystemAfterValue = string.Empty;
+            var noneAppsAfterValue = string.Empty;
+
+            Assert.AreEqual(noneSystemBeforeValue, noneSystemAfterValue, "System theme should not have changed.");
+            Assert.AreEqual(noneAppsBeforeValue, noneAppsAfterValue, "Apps theme should not have changed.");
         }
     }
 }
