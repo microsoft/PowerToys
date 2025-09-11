@@ -438,7 +438,7 @@ private:
         
         bool wrapped = false;
         
-        // *** NEW VERTICAL WRAPPING LOGIC ***
+        // *** VERTICAL WRAPPING LOGIC - CONFIRMED WORKING ***
         // Move to bottom of vertical stack when hitting top edge
         if (currentPos.y <= currentMonitorInfo.rcMonitor.top)
         {
@@ -545,23 +545,112 @@ private:
             }
         }
         
-        // *** HORIZONTAL WRAPPING LOGIC (UNCHANGED - WORKING CORRECTLY) ***
+        // *** FIXED HORIZONTAL WRAPPING LOGIC ***
+        // Move to opposite end of horizontal stack when hitting left/right edge
         // Only handle horizontal wrapping if we haven't already wrapped vertically
         if (!wrapped && currentPos.x <= currentMonitorInfo.rcMonitor.left)
         {
 #ifdef _DEBUG
-            Logger::info(L"CursorWrap DEBUG: Cursor at left edge of monitor - wrapping horizontally");
+            Logger::info(L"CursorWrap DEBUG: ======= HORIZONTAL WRAP: LEFT EDGE DETECTED =======");
 #endif
-            newPos.x = currentMonitorInfo.rcMonitor.right - 1;
-            wrapped = true;
+            
+            // Find the right-most monitor in the horizontal stack (same row)
+            HMONITOR rightMonitor = nullptr;
+            
+            if (currentLogicalPos.isValid) {
+                // Search right from current position to find the right-most monitor in same row
+                for (int col = 2; col >= 0; col--) { // Start from right and work left
+                    HMONITOR candidateMonitor = m_topology.GetMonitorAt(currentLogicalPos.row, col);
+                    if (candidateMonitor) {
+                        rightMonitor = candidateMonitor;
+                        break; // Found the right-most monitor
+                    }
+                }
+            }
+            
+            if (rightMonitor && rightMonitor != currentMonitor) {
+                // *** MOVE TO RIGHT END OF HORIZONTAL STACK ***
+                MONITORINFO rightInfo{};
+                rightInfo.cbSize = sizeof(MONITORINFO);
+                GetMonitorInfo(rightMonitor, &rightInfo);
+                
+                // Calculate relative Y position to maintain cursor Y alignment
+                double relativeY = static_cast<double>(currentPos.y - currentMonitorInfo.rcMonitor.top) / 
+                                  (currentMonitorInfo.rcMonitor.bottom - currentMonitorInfo.rcMonitor.top);
+                
+                int targetHeight = rightInfo.rcMonitor.bottom - rightInfo.rcMonitor.top;
+                newPos.y = rightInfo.rcMonitor.top + static_cast<int>(relativeY * targetHeight);
+                newPos.x = rightInfo.rcMonitor.right - 1; // Right edge of right monitor
+                
+                // Clamp Y to target monitor bounds
+                newPos.y = max(rightInfo.rcMonitor.top, min(newPos.y, rightInfo.rcMonitor.bottom - 1));
+                wrapped = true;
+                
+#ifdef _DEBUG
+                Logger::info(L"CursorWrap DEBUG: HORIZONTAL WRAP SUCCESS - Moved to right end of horizontal stack");
+                Logger::info(L"CursorWrap DEBUG: New position: ({}, {})", newPos.x, newPos.y);
+#endif
+            } else {
+                // *** NO OTHER MONITOR IN HORIZONTAL STACK - WRAP WITHIN CURRENT MONITOR ***
+                newPos.x = currentMonitorInfo.rcMonitor.right - 1;
+                wrapped = true;
+                
+#ifdef _DEBUG
+                Logger::info(L"CursorWrap DEBUG: HORIZONTAL WRAP - No other monitor in stack, wrapping within current monitor");
+#endif
+            }
         }
         else if (!wrapped && currentPos.x >= currentMonitorInfo.rcMonitor.right - 1)
         {
 #ifdef _DEBUG
-            Logger::info(L"CursorWrap DEBUG: Cursor at right edge of monitor - wrapping horizontally");
+            Logger::info(L"CursorWrap DEBUG: ======= HORIZONTAL WRAP: RIGHT EDGE DETECTED =======");
 #endif
-            newPos.x = currentMonitorInfo.rcMonitor.left;
-            wrapped = true;
+            
+            // Find the left-most monitor in the horizontal stack (same row)
+            HMONITOR leftMonitor = nullptr;
+            
+            if (currentLogicalPos.isValid) {
+                // Search left from current position to find the left-most monitor in same row
+                for (int col = 0; col <= 2; col++) { // Start from left and work right
+                    HMONITOR candidateMonitor = m_topology.GetMonitorAt(currentLogicalPos.row, col);
+                    if (candidateMonitor) {
+                        leftMonitor = candidateMonitor;
+                        break; // Found the left-most monitor
+                    }
+                }
+            }
+            
+            if (leftMonitor && leftMonitor != currentMonitor) {
+                // *** MOVE TO LEFT END OF HORIZONTAL STACK ***
+                MONITORINFO leftInfo{};
+                leftInfo.cbSize = sizeof(MONITORINFO);
+                GetMonitorInfo(leftMonitor, &leftInfo);
+                
+                // Calculate relative Y position to maintain cursor Y alignment
+                double relativeY = static_cast<double>(currentPos.y - currentMonitorInfo.rcMonitor.top) / 
+                                  (currentMonitorInfo.rcMonitor.bottom - currentMonitorInfo.rcMonitor.top);
+                
+                int targetHeight = leftInfo.rcMonitor.bottom - leftInfo.rcMonitor.top;
+                newPos.y = leftInfo.rcMonitor.top + static_cast<int>(relativeY * targetHeight);
+                newPos.x = leftInfo.rcMonitor.left; // Left edge of left monitor
+                
+                // Clamp Y to target monitor bounds
+                newPos.y = max(leftInfo.rcMonitor.top, min(newPos.y, leftInfo.rcMonitor.bottom - 1));
+                wrapped = true;
+                
+#ifdef _DEBUG
+                Logger::info(L"CursorWrap DEBUG: HORIZONTAL WRAP SUCCESS - Moved to left end of horizontal stack");
+                Logger::info(L"CursorWrap DEBUG: New position: ({}, {})", newPos.x, newPos.y);
+#endif
+            } else {
+                // *** NO OTHER MONITOR IN HORIZONTAL STACK - WRAP WITHIN CURRENT MONITOR ***
+                newPos.x = currentMonitorInfo.rcMonitor.left;
+                wrapped = true;
+                
+#ifdef _DEBUG
+                Logger::info(L"CursorWrap DEBUG: HORIZONTAL WRAP - No other monitor in stack, wrapping within current monitor");
+#endif
+            }
         }
         
 #ifdef _DEBUG
