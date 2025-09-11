@@ -5774,17 +5774,24 @@ LRESULT APIENTRY MainWndProc(
 
             if( !g_DrawingShape ) {
 
-                Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
-                if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
-                {
-                    dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                if (prevPt.x != LOWORD(lParam) || prevPt.y != HIWORD(lParam)) {
+                    Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
+                    if ((GetWindowLong(g_hWndMain, GWL_EXSTYLE) & WS_EX_LAYERED) == 0)
+                    {
+                        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    }
+                    Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+                    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+                    Gdiplus::GraphicsPath path;
+                    pen.SetLineJoin(Gdiplus::LineJoinRound);
+                    path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
+                    dstGraphics.DrawPath(&pen, &path);
                 }
-                Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
-                Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
-                Gdiplus::GraphicsPath path;
-                pen.SetLineJoin(Gdiplus::LineJoinRound);
-                path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
-                dstGraphics.DrawPath(&pen, &path);
+                else {
+                    MoveToEx(hdcScreenCompat, prevPt.x, prevPt.y, NULL);
+                    LineTo(hdcScreenCompat, LOWORD(lParam), HIWORD(lParam));
+                    InvalidateRect(hWnd, NULL, FALSE);
+                }
 
                 prevPt.x = LOWORD( lParam );
                 prevPt.y = HIWORD( lParam );
