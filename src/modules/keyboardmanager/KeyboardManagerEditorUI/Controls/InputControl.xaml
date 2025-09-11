@@ -30,15 +30,21 @@
             <Grid Grid.Row="1" Margin="0,8,0,0">
                 <ToggleButton
                     x:Name="OriginalToggleBtn"
-                    Padding="0,24,0,24"
+                    MinHeight="86"
+                    Padding="8,24,8,24"
                     HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
                     Checked="OriginalToggleBtn_Checked"
                     Style="{StaticResource CustomShortcutToggleButtonStyle}">
                     <ToggleButton.Content>
                         <ItemsControl x:Name="OriginalKeys">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <controls:WrapPanel HorizontalSpacing="4" Orientation="Horizontal" />
+                                    <controls:WrapPanel
+                                        HorizontalSpacing="4"
+                                        Orientation="Horizontal"
+                                        VerticalSpacing="4" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
@@ -66,15 +72,21 @@
                 Margin="0,8,0,0">
                 <ToggleButton
                     x:Name="RemappedToggleBtn"
-                    Padding="0,24,0,24"
+                    MinHeight="86"
+                    Padding="8,24,8,24"
                     HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
                     Checked="RemappedToggleBtn_Checked"
                     Style="{StaticResource CustomShortcutToggleButtonStyle}">
                     <ToggleButton.Content>
                         <ItemsControl x:Name="RemappedKeys">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <controls:WrapPanel HorizontalSpacing="4" Orientation="Horizontal" />
+                                    <controls:WrapPanel
+                                        HorizontalSpacing="4"
+                                        Orientation="Horizontal"
+                                        VerticalSpacing="4" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>

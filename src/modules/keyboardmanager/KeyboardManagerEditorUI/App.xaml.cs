@@ -33,6 +33,7 @@ namespace KeyboardManagerEditorUI
     public partial class App : Application
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="App"/> class.
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
         /// </summary>
@@ -54,19 +55,14 @@ namespace KeyboardManagerEditorUI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            window = new MainWindow();
+            MainWindow = new MainWindow();
 
-            var appWindow = window.AppWindow;
-
-            var windowSize = new Windows.Graphics.SizeInt32(EditorConstants.DefaultEditorWindowWidth, EditorConstants.DefaultEditorWindowHeight);
-            appWindow.Resize(windowSize);
-
-            window.DispatcherQueue.TryEnqueue(() =>
+            MainWindow.DispatcherQueue.TryEnqueue(() =>
             {
-                window.Activate();
-                window.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+                MainWindow.Activate();
+                MainWindow.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
                 {
-                    (window.Content as FrameworkElement)?.UpdateLayout();
+                    (MainWindow.Content as FrameworkElement)?.UpdateLayout();
                 });
             });
 
@@ -81,11 +77,6 @@ namespace KeyboardManagerEditorUI
             Logger.LogError("Unhandled exception", e.Exception);
         }
 
-        public Window? GetWindow()
-        {
-            return window;
-        }
-
-        private Window? window;
+        internal static MainWindow MainWindow { get; private set; } = null!;
     }
 }

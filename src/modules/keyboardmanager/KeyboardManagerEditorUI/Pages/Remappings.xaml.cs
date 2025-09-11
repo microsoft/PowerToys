@@ -76,8 +76,7 @@ namespace KeyboardManagerEditorUI.Pages
         private void RegisterWindowActivationHandler()
         {
             // Get the current window that contains this page
-            var app = Application.Current as App;
-            if (app?.GetWindow() is Window window)
+            if (App.MainWindow is Window window)
             {
                 // Register for window activation events
                 window.Activated += Dialog_WindowActivated;
@@ -86,10 +85,9 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void UnregisterWindowActivationHandler()
         {
-            var app = Application.Current as App;
-            if (app?.GetWindow() is Window window)
+            // Unregister to prevent memory leaks
+            if (App.MainWindow is Window window)
             {
-                // Unregister to prevent memory leaks
                 window.Activated -= Dialog_WindowActivated;
             }
         }
