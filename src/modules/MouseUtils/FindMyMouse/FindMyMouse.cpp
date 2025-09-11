@@ -21,10 +21,6 @@
 
 #include <vector>
 
-// Ensure Windows App SDK runtime is bootstrapped for unpackaged apps
-#include <WindowsAppSDK-VersionInfo.h>
-#include <MddBootstrap.h>
-
 namespace winrt
 {
     using namespace winrt::Windows::System;
@@ -169,9 +165,11 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     WNDCLASS wc{};
+    Logger::info("SuperSonar Initialize: hinst={}, className=FindMyMouse", static_cast<void*>(hinst));
 
     if (!GetClassInfoW(hinst, className, &wc))
     {
+        Logger::info("Class not previously registered. Registering window class.");
         wc.lpfnWndProc = s_WndProc;
         wc.hInstance = hinst;
         wc.hIcon = LoadIcon(hinst, IDI_APPLICATION);
@@ -181,14 +179,37 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
 
         if (!RegisterClassW(&wc))
         {
+            const auto err = GetLastError();
+            Logger::error("RegisterClassW failed. GetLastError={}", err);
             return false;
         }
+        else
+        {
+            Logger::info("RegisterClassW succeeded.");
+        }
+    }
+    else
+    {
+        Logger::info("Window class already registered.");
     }
 
     m_hwndOwner = CreateWindow(L"static", nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
+    if (!m_hwndOwner)
+    {
+        Logger::error("Failed to create owner window. GetLastError={}", GetLastError());
+        return false;
+    }
 
     DWORD exStyle = WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
-    return CreateWindowExW(exStyle, className, windowTitle, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hinst, this) != nullptr;
+    HWND created = CreateWindowExW(exStyle, className, windowTitle, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hinst, this);
+    if (!created)
+    {
+        const auto err = GetLastError();
+        Logger::error("CreateWindowExW failed. GetLastError={}", err);
+        return false;
+    }
+    Logger::info("CreateWindowExW succeeded hwnd={}", static_cast<void*>(created));
+    return true;
 }
 
 template<typename D>
@@ -688,7 +709,7 @@ struct CompositionSpotlight : SuperSonar<CompositionSpotlight>
         m_batch.Completed([hwnd = m_hwnd](auto&&, auto&&) {
             PostMessage(hwnd, WM_OPACITY_ANIMATION_COMPLETED, 0, 0);
         });
-    m_root.Opacity(visible ? 1.0f : 0.0f);
+        m_root.Opacity(visible ? 1.0f : 0.0f);
         if (visible)
         {
             ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
@@ -1179,7 +1200,6 @@ struct GdiCrosshairs : GdiSonar<GdiCrosshairs>
 #pragma region Super_Sonar_API
 
 CompositionSpotlight* m_sonar = nullptr;
-static bool g_winAppSdkBootstrapped = false;
 void FindMyMouseApplySettings(const FindMyMouseSettings& settings)
 {
     if (m_sonar != nullptr)
@@ -1206,21 +1226,6 @@ bool FindMyMouseIsEnabled()
 // Based on SuperSonar's original wWinMain.
 int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
 {
-    // Bootstrap Windows App SDK so WinAppSDK classes (DispatcherQueue, WinUI, Composition) can be activated
-    if (!g_winAppSdkBootstrapped)
-    {
-        const UINT32 majorMinor = WINDOWSAPPSDK_RELEASE_MAJORMINOR;
-        PCWSTR versionTag = WINDOWSAPPSDK_RELEASE_VERSION_TAG_W;
-        PACKAGE_VERSION minVersion{};
-        const HRESULT hr = MddBootstrapInitialize(majorMinor, versionTag, minVersion);
-        if (FAILED(hr))
-        {
-            Logger::error("Windows App SDK Bootstrap failed: 0x{:08X}", static_cast<unsigned int>(hr));
-            return 0;
-        }
-        g_winAppSdkBootstrapped = true;
-    }
-
     Logger::info("Starting a sonar instance.");
     if (m_sonar != nullptr)
     {
@@ -1251,13 +1256,6 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
 
     Logger::info("Sonar message loop ended.");
     m_sonar = nullptr;
-
-    // Shutdown Windows App SDK bootstrap when we're done
-    if (g_winAppSdkBootstrapped)
-    {
-        MddBootstrapShutdown();
-        g_winAppSdkBootstrapped = false;
-    }
 
     return (int)msg.wParam;
 }
