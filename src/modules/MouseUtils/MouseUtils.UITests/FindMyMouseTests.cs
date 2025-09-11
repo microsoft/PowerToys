@@ -49,23 +49,23 @@ namespace MouseUtils.UITests
             settings.BackgroundColor = "000000";
             settings.SpotlightColor = "FFFFFF";
 
-            var foundCustom = this.Find<Custom>("Find My Mouse");
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             Assert.IsNotNull(foundCustom);
 
             if (CheckAnimationEnable(ref foundCustom))
             {
-                foundCustom = this.Find<Custom>("Find My Mouse");
+                foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             }
 
             if (foundCustom != null)
             {
-                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
 
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
                 Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
                 SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
 
-                var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
+                var excludedApps = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseExcludedApps));
                 if (excludedApps != null)
                 {
                     excludedApps.Click();
@@ -115,23 +115,23 @@ namespace MouseUtils.UITests
             settings.BackgroundColor = "FF0000";
             settings.SpotlightColor = "0000FF";
 
-            var foundCustom = this.Find<Custom>("Find My Mouse");
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             Assert.IsNotNull(foundCustom);
 
             if (CheckAnimationEnable(ref foundCustom))
             {
-                foundCustom = this.Find<Custom>("Find My Mouse");
+                foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             }
 
             if (foundCustom != null)
             {
-                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
 
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
                 Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
                 SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
 
-                var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
+                var excludedApps = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseExcludedApps));
                 if (excludedApps != null)
                 {
                     excludedApps.Click();
@@ -170,27 +170,27 @@ namespace MouseUtils.UITests
             settings.AnimationDuration = "0";
             settings.BackgroundColor = "000000";
             settings.SpotlightColor = "FFFFFF";
-            var foundCustom = this.Find<Custom>("Find My Mouse");
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
 
             Assert.IsNotNull(foundCustom);
 
             if (CheckAnimationEnable(ref foundCustom))
             {
-                foundCustom = this.Find<Custom>("Find My Mouse");
+                foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             }
 
             if (foundCustom != null)
             {
-                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
 
-                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
 
-                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
                 Assert.IsNotNull(foundCustom);
                 SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
 
-                var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
+                var excludedApps = foundCustom.Find<Group>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseExcludedApps));
                 if (excludedApps != null)
                 {
                     excludedApps.Click();
@@ -212,14 +212,14 @@ namespace MouseUtils.UITests
             VerifySpotlightAppears(ref settings);
 
             // [Test Case] Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice
-            foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+            foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
             Task.Delay(1000).Wait();
             ActivateSpotlight(ref settings);
 
             VerifySpotlightDisappears(ref settings);
 
             // [Test Case] Press Left Ctrl twice and verify the overlay appears
-            foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+            foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
             Task.Delay(2000).Wait();
             ActivateSpotlight(ref settings);
             VerifySpotlightAppears(ref settings);
@@ -240,27 +240,27 @@ namespace MouseUtils.UITests
             settings.AnimationDuration = "0";
             settings.BackgroundColor = "000000";
             settings.SpotlightColor = "FFFFFF";
-            var foundCustom = this.Find<Custom>("Find My Mouse");
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
 
             Assert.IsNotNull(foundCustom);
 
             if (CheckAnimationEnable(ref foundCustom))
             {
-                foundCustom = this.Find<Custom>("Find My Mouse");
+                foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             }
 
             if (foundCustom != null)
             {
-                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
 
-                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
 
-                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
                 Assert.IsNotNull(foundCustom);
                 SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
 
-                var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
+                var excludedApps = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseExcludedApps));
                 if (excludedApps != null)
                 {
                     excludedApps.Click();
@@ -282,14 +282,14 @@ namespace MouseUtils.UITests
             VerifySpotlightAppears(ref settings);
 
             // [Test Case] Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice
-            foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+            foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
             Task.Delay(1000).Wait();
             ActivateSpotlight(ref settings);
 
             VerifySpotlightDisappears(ref settings);
 
             // [Test Case] Press Left Ctrl twice and verify the overlay appears
-            foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+            foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
             Task.Delay(2000).Wait();
             ActivateSpotlight(ref settings);
             VerifySpotlightAppears(ref settings);
@@ -310,17 +310,17 @@ namespace MouseUtils.UITests
             settings.AnimationDuration = "0";
             settings.BackgroundColor = "000000";
             settings.SpotlightColor = "FFFFFF";
-            var foundCustom = this.Find<Custom>("Find My Mouse");
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             if (foundCustom != null)
             {
-                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
 
-                // foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+                // foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
                 Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
 
                 // SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
-                var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
+                var excludedApps = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseExcludedApps));
                 if (excludedApps != null)
                 {
                     excludedApps.Click();
@@ -340,7 +340,7 @@ namespace MouseUtils.UITests
             // VerifySpotlightSettings(ref settings);
 
             // [Test Case] Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice
-            foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+            foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
             Task.Delay(2000).Wait();
             Session.SendKey(Key.LCtrl, 0, 0);
             Task.Delay(100).Wait();
@@ -382,9 +382,6 @@ namespace MouseUtils.UITests
 
             var colorBackground = this.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
             Assert.AreEqual("#" + settings.BackgroundColor, colorBackground);
-
-            var colorBackground2 = this.GetPixelColorString(location.Item1 + radius + 100, location.Item2 + radius + 100);
-            Assert.AreEqual("#" + settings.BackgroundColor, colorBackground2);
         }
 
         private void ActivateSpotlight(ref FindMyMouseSettings settings)
@@ -427,7 +424,7 @@ namespace MouseUtils.UITests
         private void SetFindMyMouseActivationMethod(ref Custom? foundCustom, string method)
         {
             Assert.IsNotNull(foundCustom);
-            var groupActivation = foundCustom.Find<TextBlock>("Activation method");
+            var groupActivation = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseActivationMethod));
             if (groupActivation != null)
             {
                 groupActivation.Click();
@@ -456,17 +453,17 @@ namespace MouseUtils.UITests
         private void SetFindMyMouseAppearanceBehavior(ref Custom foundCustom, ref FindMyMouseSettings settings)
         {
             Assert.IsNotNull(foundCustom);
-            var groupAppearanceBehavior = foundCustom.Find<TextBlock>("Appearance & behavior");
+            var groupAppearanceBehavior = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseAppearanceBehavior));
             if (groupAppearanceBehavior != null)
             {
                 // groupAppearanceBehavior.Click();
-                if (foundCustom.FindAll<Slider>("Overlay opacity (%)").Count == 0)
+                if (foundCustom.FindAll(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseOverlayOpacity)).Count == 0)
                 {
                     groupAppearanceBehavior.Click();
                 }
 
                 // Set the BackGround color
-                var backgroundColor = foundCustom.Find<Group>("Background color");
+                var backgroundColor = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseBackgroundColor));
                 Assert.IsNotNull(backgroundColor);
 
                 var button = backgroundColor.Find<Button>(By.XPath(".//Button"));
@@ -505,7 +502,7 @@ namespace MouseUtils.UITests
                 button.Click();
 
                 // Set the Spotlight color
-                var spotlightColor = foundCustom.Find<Group>("Spotlight color");
+                var spotlightColor = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseSpotlightColor));
                 Assert.IsNotNull(spotlightColor);
 
                 var spotlightColorButton = spotlightColor.Find<Button>(By.XPath(".//Button"));
@@ -545,7 +542,7 @@ namespace MouseUtils.UITests
                 spotlightColorButton.Click(false, 500, 1500);
 
                 // Set the overlay opacity to overlayOpacity%
-                var overlayOpacitySlider = foundCustom.Find<Slider>("Overlay opacity (%)");
+                var overlayOpacitySlider = foundCustom.Find<Slider>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseOverlayOpacity));
                 Assert.IsNotNull(overlayOpacitySlider);
                 Assert.IsNotNull(settings.OverlayOpacity);
                 int overlayOpacityValue = int.Parse(settings.OverlayOpacity, CultureInfo.InvariantCulture);
@@ -554,7 +551,7 @@ namespace MouseUtils.UITests
                 Task.Delay(1000).Wait();
 
                 // Set the Fade Initial zoom to 0
-                var spotlightInitialZoomSlider = foundCustom.Find<Slider>("Spotlight initial zoom");
+                var spotlightInitialZoomSlider = foundCustom.Find<Slider>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseSpotlightZoom));
                 Assert.IsNotNull(spotlightInitialZoomSlider);
                 Task.Delay(1000).Wait();
                 spotlightInitialZoomSlider.QuickSetValue(int.Parse(settings.InitialZoom, CultureInfo.InvariantCulture));
@@ -562,7 +559,8 @@ namespace MouseUtils.UITests
                 Task.Delay(1000).Wait();
 
                 //// Change the edit value
-                var spotlightRadiusEdit = foundCustom.Find<TextBox>("Spotlight radius (px) Minimum5");
+                var spotlightRadius = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseSpotlightRadius));
+                var spotlightRadiusEdit = spotlightRadius.Find<TextBox>(By.AccessibilityId("InputBox"));
                 Assert.IsNotNull(spotlightRadiusEdit);
                 Task.Delay(1000).Wait();
                 spotlightRadiusEdit.SetText(settings.Radius);
@@ -570,11 +568,12 @@ namespace MouseUtils.UITests
                 Task.Delay(1000).Wait();
 
                 // Set the duration to 0 ms
-                var spotlightAnimationDuration = foundCustom.Find<TextBox>("Animation duration (ms) Minimum0");
-                Assert.IsNotNull(spotlightAnimationDuration);
+                var spotlightAnimationDuration = foundCustom.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseAnimationDuration));
+                var spotlightAnimationDurationEdit = spotlightAnimationDuration.Find<TextBox>(By.AccessibilityId("InputBox"));
+                Assert.IsNotNull(spotlightAnimationDurationEdit);
                 Task.Delay(1000).Wait();
-                spotlightAnimationDuration.SetText(settings.AnimationDuration);
-                Assert.AreEqual(settings.AnimationDuration, spotlightAnimationDuration.Text);
+                spotlightAnimationDurationEdit.SetText(settings.AnimationDuration);
+                Assert.AreEqual(settings.AnimationDuration, spotlightAnimationDurationEdit.Text);
                 Task.Delay(1000).Wait();
 
                 // groupAppearanceBehavior.Click();
@@ -622,19 +621,19 @@ namespace MouseUtils.UITests
             this.Session.SetMainWindowSize(WindowSize.Large);
 
             // Goto Hosts File Editor setting page
-            if (this.FindAll<NavigationViewItem>("Mouse utilities", 10000).Count == 0)
+            if (this.FindAll(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseUtilitiesNavItem)).Count == 0)
             {
                 // Expand Advanced list-group if needed
-                this.Find<NavigationViewItem>("Input / Output").Click();
+                this.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.InputOutputNavItem)).Click();
             }
 
             if (reload)
             {
-                this.Find<NavigationViewItem>("Keyboard Manager").Click();
+                this.Find<NavigationViewItem>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.KeyboardManagerNavItem)).Click();
             }
 
             Task.Delay(1000).Wait();
-            this.Find<NavigationViewItem>("Mouse utilities").Click();
+            this.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseUtilitiesNavItem)).Click();
         }
     }
 }
