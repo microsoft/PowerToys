@@ -21,13 +21,16 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <controls:SettingsGroup x:Uid="MouseUtils_MouseJump">
+    <controls:SettingsGroup x:Uid="MouseUtils_MouseJump" AutomationProperties.AutomationId="MouseUtils_MouseJumpTestId">
         <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}">
             <tkcontrols:SettingsCard
                 x:Name="MouseUtilsEnableMouseJump"
                 x:Uid="MouseUtils_Enable_MouseJump"
                 HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseJump.png}">
-                <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
+                <ToggleSwitch
+                    x:Uid="ToggleSwitch"
+                    AutomationProperties.AutomationId="MouseUtils_MouseJumpToggleId"
+                    IsOn="{x:Bind ViewModel.IsMouseJumpEnabled, Mode=TwoWay}" />
             </tkcontrols:SettingsCard>
         </controls:GPOInfoControl>
 

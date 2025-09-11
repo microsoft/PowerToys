@@ -249,7 +249,7 @@ namespace MouseUtils.UITests
         private void SetColor(ref Custom foundCustom, string colorName, string colorValue = "000000")
         {
             Assert.IsNotNull(foundCustom);
-            var groupAppearanceBehavior = foundCustom.Find<TextBlock>("Appearance & behavior");
+            var groupAppearanceBehavior = foundCustom.Find<Group>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MousePointerCrosshairsAppearanceBehavior));
             if (groupAppearanceBehavior != null)
             {
                 // Set primary button highlight color
@@ -277,7 +277,7 @@ namespace MouseUtils.UITests
         private void SetMousePointerCrosshairsAppearanceBehavior(ref Custom foundCustom, ref MousePointerCrosshairsSettings settings)
         {
             Assert.IsNotNull(foundCustom);
-            var groupAppearanceBehavior = foundCustom.Find<TextBlock>("Appearance & behavior");
+            var groupAppearanceBehavior = foundCustom.Find<Group>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MousePointerCrosshairsAppearanceBehavior));
             if (groupAppearanceBehavior != null)
             {
                 // groupAppearanceBehavior.Click();
@@ -337,7 +337,7 @@ namespace MouseUtils.UITests
             }
             else
             {
-                Assert.Fail("Appearance & behavior group not found.");
+                Assert.Fail("MousePointerCrosshairs Appearance & behavior group not found.");
             }
         }
 
@@ -371,8 +371,16 @@ namespace MouseUtils.UITests
 
         public Custom? FindMouseUtilElement(MouseUtilsSettings.MouseUtils element)
         {
-            var elementName = MouseUtilsSettings.GetMouseUtilUIName(element);
-            var foundCustom = this.Find<Custom>(elementName);
+            string accessibilityId = element switch
+            {
+                MouseUtilsSettings.MouseUtils.FindMyMouse => MouseUtilsSettings.AccessibilityIds.FindMyMouse,
+                MouseUtilsSettings.MouseUtils.MouseHighlighter => MouseUtilsSettings.AccessibilityIds.MouseHighlighter,
+                MouseUtilsSettings.MouseUtils.MousePointerCrosshairs => MouseUtilsSettings.AccessibilityIds.MousePointerCrosshairs,
+                MouseUtilsSettings.MouseUtils.MouseJump => MouseUtilsSettings.AccessibilityIds.MouseJump,
+                _ => throw new ArgumentException($"Unknown MouseUtils element: {element}"),
+            };
+
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(accessibilityId));
             for (int i = 0; i < 20; i++)
             {
                 if (foundCustom != null)
@@ -381,7 +389,7 @@ namespace MouseUtils.UITests
                 }
 
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
-                foundCustom = this.Find<Custom>(elementName);
+                foundCustom = this.Find<Custom>(By.AccessibilityId(accessibilityId));
             }
 
             return foundCustom;
@@ -391,14 +399,14 @@ namespace MouseUtils.UITests
         {
             Session.SetMainWindowSize(WindowSize.Large);
 
-            // Goto Hosts File Editor setting page
-            if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
+            // Goto Mouse utilities setting page
+            if (this.FindAll(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseUtilitiesNavItem)).Count == 0)
             {
-                // Expand Advanced list-group if needed
-                this.Find<NavigationViewItem>("Input / Output").Click();
+                // Expand Input / Output list-group if needed
+                this.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.InputOutputNavItem)).Click();
             }
 
-            this.Find<NavigationViewItem>("Mouse utilities").Click();
+            this.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseUtilitiesNavItem)).Click();
         }
     }
 }
