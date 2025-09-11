@@ -191,32 +191,32 @@ public class Win32Program : IProgram
             commands.Add(new CommandContextItem(
                     new RunAsAdminCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory, false))
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter),
+                RequestedShortcut = KeyChords.RunAsAdministrator,
             });
 
             commands.Add(new CommandContextItem(
                     new RunAsUserCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory))
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.U),
+                RequestedShortcut = KeyChords.RunAsDifferentUser,
             });
         }
 
         commands.Add(new CommandContextItem(
                     new CopyTextCommand(FullPath) { Name = Resources.copy_path })
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
+            RequestedShortcut = KeyChords.CopyFilePath,
         });
 
         commands.Add(new CommandContextItem(
                     new OpenPathCommand(ParentDirectory))
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E),
+            RequestedShortcut = KeyChords.OpenFileLocation,
         });
 
         commands.Add(new CommandContextItem(
                     new OpenInConsoleCommand(ParentDirectory))
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
+            RequestedShortcut = KeyChords.OpenInConsole,
         });
 
         if (AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
