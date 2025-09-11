@@ -4016,7 +4016,9 @@ LRESULT APIENTRY MainWndProc(
             // Now copy crop or copy+save
             if( LOWORD( wParam ) == SNIP_SAVE_HOTKEY )
             {
+                ShowCursor(false);
                 SendMessage( hWnd, WM_COMMAND, IDC_SAVE_CROP, ( zoomed ? 0 : SHALLOW_ZOOM ) );
+                ShowCursor(true);
             }
             else
             {
@@ -4047,12 +4049,6 @@ LRESULT APIENTRY MainWndProc(
                 {
                     OutputDebug( L"Exiting liveDraw after snip\n" );
                     SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
-                }
-                else
-                {
-                    // Set wparam to 1 to exit without animation
-                    OutputDebug(L"Exiting zoom after snip\n" );
-                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_DESTROY );
                 }
             }
             break;
