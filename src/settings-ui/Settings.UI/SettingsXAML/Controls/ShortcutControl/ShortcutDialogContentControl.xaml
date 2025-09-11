@@ -66,8 +66,8 @@
                 <InfoBar
                     x:Uid="WarningShortcutConflict"
                     IsClosable="False"
-                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
-                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
+                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
+                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
                     Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
                     Severity="Warning" />
             </Grid>
