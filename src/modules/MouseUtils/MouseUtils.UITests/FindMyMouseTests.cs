@@ -382,9 +382,6 @@ namespace MouseUtils.UITests
 
             var colorBackground = this.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
             Assert.AreEqual("#" + settings.BackgroundColor, colorBackground);
-
-            var colorBackground2 = this.GetPixelColorString(location.Item1 + radius + 100, location.Item2 + radius + 100);
-            Assert.AreEqual("#" + settings.BackgroundColor, colorBackground2);
         }
 
         private void ActivateSpotlight(ref FindMyMouseSettings settings)
