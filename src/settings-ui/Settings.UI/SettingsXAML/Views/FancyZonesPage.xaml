@@ -19,8 +19,8 @@
                         Name="FancyZonesEnableToggleControlHeaderText"
                         x:Uid="FancyZones_EnableToggleControl_HeaderText"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}">
-                        <ToggleSwitch 
-                            x:Uid="ToggleSwitch" 
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
                             AutomationProperties.AutomationId="EnableFancyZonesToggleSwitch"
                             IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
