@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Shared WinApp SDK / packaging related defaults for native C++ projects.
-       Individual projects can override after import if needed. -->
   <PropertyGroup Label="WinAppSDKDefaults">
     <AppContainerApplication>false</AppContainerApplication>
     <AppxPackage>false</AppxPackage>
+    <ApplicationType>Windows Store</ApplicationType>
     <WindowsPackageType>None</WindowsPackageType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
   </PropertyGroup>
 </Project>

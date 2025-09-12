@@ -14,6 +14,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="..\..\deps\expected.props" />
+  <Import Project="..\Common.WinAppSDK.Cpp.props" Condition="Exists('..\Common.WinAppSDK.Cpp.props')" />
   <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ImportGroup Label="Shared" />
   <PropertyGroup Label="Configuration">
@@ -45,11 +46,6 @@
       <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
-  <PropertyGroup>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-  <UseWinUI>false</UseWinUI>
-    <EnableXaml>false</EnableXaml>
-  </PropertyGroup>
   <PropertyGroup Label="NuGet">
     <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
   </PropertyGroup>

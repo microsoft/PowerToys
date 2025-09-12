@@ -723,7 +723,6 @@ private:
             }
             catch (const winrt::hresult_error& e)
             {
-                Logger::error("[FMM] init_apartment failed: {}", winrt::to_string(e.message()));
                 return false;
             }
 
@@ -735,7 +734,6 @@ private:
             }
             catch (const winrt::hresult_error& e)
             {
-                Logger::error("[FMM] CreateOnCurrentThread failed: {}", winrt::to_string(e.message()));
                 return false;
             }
         }
@@ -751,7 +749,6 @@ private:
         }
         catch (const winrt::hresult_error& e)
         {
-            Logger::error("[FMM] DesktopWindowXamlSource init failed: {}", winrt::to_string(e.message()));
             return false;
         }
 
@@ -779,7 +776,6 @@ private:
         }
         catch (const winrt::hresult_error& e)
         {
-            Logger::error("[FMM] Failed to acquire compositor: {}", winrt::to_string(e.message()));
             return false;
         }
 
