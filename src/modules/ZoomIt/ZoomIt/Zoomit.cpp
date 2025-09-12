@@ -3525,6 +3525,10 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         }
         if( destFile == nullptr ) {
 
+            if (stream) {
+                stream.Close();
+                stream = nullptr;
+            }
             co_await file.DeleteAsync();
         }
         else {
@@ -3544,6 +3548,10 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     }
     else {
 
+        if (stream) {
+            stream.Close();
+            stream = nullptr;
+        }
         co_await file.DeleteAsync();
         g_RecordingSession = nullptr;
     }
