@@ -39,6 +39,7 @@
 
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxBundlePlatforms>None</AppxBundlePlatforms>
   </PropertyGroup>
 
   <PropertyGroup>
