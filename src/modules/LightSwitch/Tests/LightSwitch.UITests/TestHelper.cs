@@ -142,6 +142,62 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
+        /// Perform a update time test operation
+        /// </summary>
+        public static void PerformUpdateTimeTest(UITestBase testBase)
+        {
+            // Make sure in manual mode
+            var modeCombobox = testBase.Session.Find<Element>(By.AccessibilityId("ModeSelection_LightSwitch"), 5000);
+            Assert.IsNotNull(modeCombobox, "Mode combobox not found.");
+
+            var neededTabs = 5;
+
+            if (modeCombobox.Text != "Manual")
+            {
+                modeCombobox.Click();
+                var manualListItem = testBase.Session.Find<Element>(By.AccessibilityId("ManualCBItem_LightSwitch"), 5000);
+                Assert.IsNotNull(manualListItem, "Manual combobox item not found.");
+                manualListItem.Click();
+                neededTabs = 1;
+            }
+
+            Assert.AreEqual("Manual", modeCombobox.Text, "Mode combobox should be set to Manual.");
+
+            var timeline = testBase.Session.Find<Element>(By.AccessibilityId("Timeline_LightSwitch"), 5000);
+            Assert.IsNotNull(timeline, "Timeline not found.");
+
+            var helpText = timeline.GetAttribute("HelpText");
+            string originalStartValue = GetHelpTextValue(helpText, "Start");
+
+            for (int i = 0; i < neededTabs; i++)
+            {
+                testBase.Session.SendKeys(Key.Tab);
+            }
+
+            testBase.Session.SendKeys(Key.Enter);
+            testBase.Session.SendKeys(Key.Up);
+            testBase.Session.SendKeys(Key.Enter);
+
+            helpText = timeline.GetAttribute("HelpText");
+            string updatedStartValue = GetHelpTextValue(helpText, "Start");
+
+            Assert.AreNotEqual(originalStartValue, updatedStartValue, "Timeline start time should have been updated.");
+
+            helpText = timeline.GetAttribute("HelpText");
+            string originalEndValue = GetHelpTextValue(helpText, "End");
+
+            testBase.Session.SendKeys(Key.Tab);
+            testBase.Session.SendKeys(Key.Enter);
+            testBase.Session.SendKeys(Key.Up);
+            testBase.Session.SendKeys(Key.Enter);
+
+            helpText = timeline.GetAttribute("HelpText");
+            string updatedEndValue = GetHelpTextValue(helpText, "End");
+
+            Assert.AreNotEqual(originalEndValue, updatedEndValue, "Timeline end time should have been updated.");
+        }
+
+        /// <summary>
         /// Perform a update geolocation test operation
         /// </summary>
         public static void PerformUserSelectedLocationTest(UITestBase testBase)
