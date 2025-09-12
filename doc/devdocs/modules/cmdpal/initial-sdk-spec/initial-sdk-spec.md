@@ -2112,6 +2112,7 @@ This addenda is broken into multiple draft specs currently. These represent diff
 * [Rich Search Box](./RichSearchBox-draft-A.md)
 * [Prefix Search](./PrefixSearch-draft-B.md)
 * [ZWSP tokens](./PlainRichSearch-draft-C.md)
+<<<<<<< HEAD:doc/devdocs/modules/cmdpal/initial-sdk-spec/initial-sdk-spec.md
 
 ### Commands with parameters
 
@@ -2216,6 +2217,9 @@ interface ICommandProvider4 requires ICommandProvider3
     ICommandItem GetCommandItem(String id);
 };
 ```
+=======
+* [Parameter Page](./ParameterPage-draft-D.md)
+>>>>>>> c2ced6df6 (a lot of notes here. Maybe we should write real code now):src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md
 
 This will allow users to pin not just top-level commands, but also nested
 commands which have an ID. The host can store that ID away, and then later ask
