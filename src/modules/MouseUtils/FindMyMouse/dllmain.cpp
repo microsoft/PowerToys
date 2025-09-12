@@ -328,7 +328,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         }
         catch (...)
         {
-            Logger::warn("Failed to initialize spotlight color from settings. Will use default value");
+            Logger::warn("Failed to initiInitializealize spotlight color from settings. Will use default value");
         }
         if (legacyOverlayOpacity >= 0)
         {

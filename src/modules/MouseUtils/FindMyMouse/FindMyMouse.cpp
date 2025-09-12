@@ -165,11 +165,9 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     WNDCLASS wc{};
-    Logger::info("SuperSonar Initialize: hinst={}, className=FindMyMouse", static_cast<void*>(hinst));
 
     if (!GetClassInfoW(hinst, className, &wc))
     {
-        Logger::info("Class not previously registered. Registering window class.");
         wc.lpfnWndProc = s_WndProc;
         wc.hInstance = hinst;
         wc.hIcon = LoadIcon(hinst, IDI_APPLICATION);
@@ -179,18 +177,17 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
 
         if (!RegisterClassW(&wc))
         {
-            const auto err = GetLastError();
-            Logger::error("RegisterClassW failed. GetLastError={}", err);
+            Logger::error("RegisterClassW failed. GetLastError={}", GetLastError());
             return false;
         }
         else
         {
-            Logger::info("RegisterClassW succeeded.");
+            Logger::info("[FMM] Registered window class.");
         }
     }
     else
     {
-        Logger::info("Window class already registered.");
+        Logger::trace("[FMM] Window class already registered.");
     }
 
     m_hwndOwner = CreateWindow(L"static", nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
@@ -199,16 +196,22 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
         Logger::error("Failed to create owner window. GetLastError={}", GetLastError());
         return false;
     }
+    else
+    {
+        Logger::trace("[FMM] Owner window created hwndOwner={}", (void*)m_hwndOwner);
+    }
 
     DWORD exStyle = WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
     HWND created = CreateWindowExW(exStyle, className, windowTitle, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hinst, this);
     if (!created)
     {
-        const auto err = GetLastError();
-        Logger::error("CreateWindowExW failed. GetLastError={}", err);
+        Logger::error("CreateWindowExW failed. GetLastError={}", GetLastError());
         return false;
     }
-    Logger::info("CreateWindowExW succeeded hwnd={}", static_cast<void*>(created));
+    else
+    {
+        Logger::info("[FMM] Main sonar window created hwnd={} exStyle=0x{:X}", (void*)created, exStyle);
+    }
     return true;
 }
 
@@ -725,25 +728,59 @@ private:
     bool OnCompositionCreate()
     try
     {
+        Logger::info("[FMM] OnCompositionCreate begin.");
         // Ensure a DispatcherQueue bound to this thread (required by WinAppSDK composition/XAML)
         if (!m_dispatcherQueueController)
         {
             // Ensure COM is initialized
-            winrt::init_apartment(winrt::apartment_type::single_threaded);
+            try
+            {
+                winrt::init_apartment(winrt::apartment_type::single_threaded);
+                Logger::trace("[FMM] init_apartment(STA) succeeded.");
+            }
+            catch (const winrt::hresult_error& e)
+            {
+                Logger::error("[FMM] init_apartment failed: {}", winrt::to_string(e.message()));
+                return false;
+            }
 
-            m_dispatcherQueueController =
-                winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
+            try
+            {
+                m_dispatcherQueueController =
+                    winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
+                Logger::trace("[FMM] DispatcherQueueController created.");
+            }
+            catch (const winrt::hresult_error& e)
+            {
+                Logger::error("[FMM] CreateOnCurrentThread failed: {}", winrt::to_string(e.message()));
+                return false;
+            }
+        }
+        else
+        {
+            Logger::trace("[FMM] DispatcherQueueController already exists.");
         }
 
         // 1) Create a XAML island and attach it to this HWND
-        m_island = winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource{};
-        auto windowId = winrt::Microsoft::UI::GetWindowIdFromWindow(m_hwnd);
-        m_island.Initialize(windowId);
+        try
+        {
+            m_island = winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource{};
+            auto windowId = winrt::Microsoft::UI::GetWindowIdFromWindow(m_hwnd);
+            m_island.Initialize(windowId);
+            Logger::trace("[FMM] DesktopWindowXamlSource initialized.");
+        }
+        catch (const winrt::hresult_error& e)
+        {
+            Logger::error("[FMM] DesktopWindowXamlSource init failed: {}", winrt::to_string(e.message()));
+            return false;
+        }
 
         UpdateIslandSize();
+        Logger::trace("[FMM] Island size updated.");
 
         // 2) Create a XAML container to host the Composition child visual
         m_surface = winrt::Microsoft::UI::Xaml::Controls::Grid{};
+        Logger::trace("[FMM] XAML Grid created.");
 
         // A transparent background keeps hit-testing consistent vs. null brush
         m_surface.Background(winrt::Microsoft::UI::Xaml::Media::SolidColorBrush{
@@ -754,9 +791,18 @@ private:
         m_island.Content(m_surface);
 
         // 3) Get the compositor from the XAML visual tree (pure MUXC path)
-        auto elementVisual =
-            winrt::Microsoft::UI::Xaml::Hosting::ElementCompositionPreview::GetElementVisual(m_surface);
-        m_compositor = elementVisual.Compositor();
+        try
+        {
+            auto elementVisual =
+                winrt::Microsoft::UI::Xaml::Hosting::ElementCompositionPreview::GetElementVisual(m_surface);
+            m_compositor = elementVisual.Compositor();
+            Logger::trace("[FMM] Compositor acquired.");
+        }
+        catch (const winrt::hresult_error& e)
+        {
+            Logger::error("[FMM] Failed to acquire compositor: {}", winrt::to_string(e.message()));
+            return false;
+        }
 
         // 4) Build the composition tree
         //
@@ -846,7 +892,8 @@ private:
             m_circleGeometry.StartAnimation(L"Radius", radiusExpression2);
         }
 
-        return true;
+    Logger::info("[FMM] OnCompositionCreate success.");
+    return true;
     }
     catch (const winrt::hresult_error& e)
     {

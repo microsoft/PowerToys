@@ -22,7 +22,6 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Common.WinAppSDK.Cpp.props" Condition="!Exists('$(SolutionDir)src\Common.WinAppSDK.Cpp.props') and Exists('$(MSBuildThisFileDirectory)..\\..\\..\\Common.WinAppSDK.Cpp.props')" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
@@ -30,6 +29,11 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <PropertyGroup>
+    <!-- Switch to self-contained to align with runner so WinAppSDK composition/XAML types work without bootstrap -->
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
   <PropertyGroup Label="UserMacros" />
   <!-- Provide a NuGet target moniker for native PackageReference restore to avoid empty TargetMonikers -->
   <PropertyGroup Label="NuGet">
@@ -116,6 +120,15 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CppWinRT" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+  <!-- Deduplicate WindowsAppRuntimeAutoInitializer.cpp (added twice via transitive imports causing LNK4042). Remove all then add exactly once. -->
+  <ItemGroup Condition="'$(PkgMicrosoft_WindowsAppSDK)'!=''">
+    <!-- Remove any transitive inclusion first -->
+    <ClCompile Remove="$(PkgMicrosoft_WindowsAppSDK)\include\WindowsAppRuntimeAutoInitializer.cpp" />
+    <!-- Re-add once, but disable PCH because the SDK file doesn't include our pch.h -->
+    <ClCompile Include="$(PkgMicrosoft_WindowsAppSDK)\include\WindowsAppRuntimeAutoInitializer.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <Target Name="RemoveManagedWebView2CoreFromNativeOutDir" AfterTargets="Build">
     <ItemGroup>
