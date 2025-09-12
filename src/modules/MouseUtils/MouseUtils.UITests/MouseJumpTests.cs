@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -29,11 +29,11 @@ namespace MouseUtils.UITests
         public void TestEnableMouseJump2()
         {
             LaunchFromSetting();
-            var foundCustom0 = this.Find<Custom>("Find My Mouse");
+            var foundCustom0 = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             if (foundCustom0 != null)
             {
-                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
-                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+                foundCustom0.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
+                foundCustom0.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
             }
             else
             {
@@ -45,10 +45,10 @@ namespace MouseUtils.UITests
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
             }
 
-            var foundCustom = this.Find<Custom>("Mouse Jump");
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseJump));
             if (foundCustom != null)
             {
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Jump").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseJumpToggle)).Toggle(true);
 
                 var xy = Session.GetMousePosition();
                 Session.MoveMouseTo(xy.Item1, xy.Item2 - 100);
@@ -89,7 +89,7 @@ namespace MouseUtils.UITests
                 Task.Delay(1000).Wait();
 
                 // [TestCase] Enable Mouse Jump. Then - Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Jump").Toggle(false);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseJumpToggle)).Toggle(false);
                 Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300, 500, 1000);
                 Session.SendKeys(Key.Win, Key.Shift, Key.Z);
                 Task.Delay(500).Wait();
@@ -108,11 +108,11 @@ namespace MouseUtils.UITests
         public void TestEnableMouseJump3()
         {
             LaunchFromSetting();
-            var foundCustom0 = this.Find<Custom>("Find My Mouse");
+            var foundCustom0 = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouse));
             if (foundCustom0 != null)
             {
-                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
-                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+                foundCustom0.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
+                foundCustom0.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
             }
             else
             {
@@ -124,10 +124,10 @@ namespace MouseUtils.UITests
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
             }
 
-            var foundCustom = this.Find<Custom>("Mouse Jump");
+            var foundCustom = this.Find<Custom>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseJump));
             if (foundCustom != null)
             {
-                foundCustom.Find<ToggleSwitch>("Enable Mouse Jump").Toggle(true);
+                foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseJumpToggle)).Toggle(true);
 
                 var xy = Session.GetMousePosition();
                 Session.MoveMouseTo(xy.Item1, xy.Item2 - 100);
@@ -215,23 +215,23 @@ namespace MouseUtils.UITests
             Session.SetMainWindowSize(WindowSize.Large);
             Task.Delay(1000).Wait();
 
-            // Goto Hosts File Editor setting page
-            if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
+            // Goto Mouse utilities setting page
+            if (this.FindAll(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseUtilitiesNavItem)).Count == 0)
             {
-                // Expand Advanced list-group if needed
-                this.Find<NavigationViewItem>("Input / Output").ClickCenter();
+                // Expand Input / Output list-group if needed
+                this.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.InputOutputNavItem)).Click();
                 Task.Delay(2000).Wait();
             }
 
-            // Goto Hosts File Editor setting page
-            if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
+            // Goto Mouse utilities setting page
+            if (this.FindAll(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseUtilitiesNavItem)).Count == 0)
             {
                 RestartScopeExe();
                 Session.SetMainWindowSize(WindowSize.Large);
                 Task.Delay(1000).Wait();
 
-                // Expand Advanced list-group if needed
-                this.Find<NavigationViewItem>("Input / Output").ClickCenter();
+                // Expand Input / Output list-group if needed
+                this.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.InputOutputNavItem)).Click();
                 Task.Delay(2000).Wait();
             }
 
@@ -243,7 +243,7 @@ namespace MouseUtils.UITests
             }
             else
             {
-                this.Find<NavigationViewItem>("Mouse utilities").Click();
+                this.Find(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.MouseUtilitiesNavItem)).Click();
             }
         }
     }
