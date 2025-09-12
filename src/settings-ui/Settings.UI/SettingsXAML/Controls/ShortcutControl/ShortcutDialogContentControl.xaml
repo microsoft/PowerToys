@@ -91,11 +91,11 @@
                     VerticalAlignment="Center"
                     FontSize="12"/>
 
-                <ToggleSwitch
-                    x:Name="IgnoreConflictsToggle"
+                <CheckBox
+                    x:Name="IgnoreConflictsCheckBox"
                     Grid.Column="1"
                     VerticalAlignment="Center"
-                    IsOn="{Binding ElementName=ShortcutContentControl, Path=IgnoreConflict, Mode=TwoWay}" />
+                    IsChecked="{Binding ElementName=ShortcutContentControl, Path=IgnoreConflict, Mode=TwoWay}" />
             </Grid>
         </StackPanel>
     </Grid>
