@@ -43,6 +43,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+  <!-- Just for testing the pipeline -->
+    <GenerateTestArtifacts>false</GenerateTestArtifacts>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- This lets us actually reference types from Microsoft.Terminal.UI -->
     <CsWinRTIncludes>Microsoft.Terminal.UI;CmdPalKeyboardService</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
