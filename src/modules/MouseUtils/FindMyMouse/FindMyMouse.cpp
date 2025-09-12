@@ -165,7 +165,6 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     WNDCLASS wc{};
-
     if (!GetClassInfoW(hinst, className, &wc))
     {
         wc.lpfnWndProc = s_WndProc;
@@ -180,12 +179,8 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
             Logger::error("RegisterClassW failed. GetLastError={}", GetLastError());
             return false;
         }
-        }
     }
-    else
-    {
-        // class already registered (expected when reusing instance)
-    }
+    // else: class already registered
 
     m_hwndOwner = CreateWindow(L"static", nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
     if (!m_hwndOwner)
@@ -193,7 +188,6 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
         Logger::error("Failed to create owner window. GetLastError={}", GetLastError());
         return false;
     }
-    else { }
 
     DWORD exStyle = WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
     HWND created = CreateWindowExW(exStyle, className, windowTitle, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hinst, this);
@@ -202,7 +196,7 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
         Logger::error("CreateWindowExW failed. GetLastError={}", GetLastError());
         return false;
     }
-    else { }
+
     return true;
 }
 
