@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -99,7 +101,9 @@ public partial class StringParameterRunViewModel : ParameterValueRunViewModel
 {
     private ExtensionObject<IStringParameterRun> _model;
 
-    public string Text { get; set; } = string.Empty;
+    private string _modelText = string.Empty;
+
+    public string Text { get => _modelText; set => SetText(value); }
 
     public StringParameterRunViewModel(IStringParameterRun stringRun, WeakReference<IPageContext> context)
         : base(stringRun, context)
@@ -123,6 +127,23 @@ public partial class StringParameterRunViewModel : ParameterValueRunViewModel
 
         Text = stringRun.Text;
         UpdateProperty(nameof(Text));
+    }
+
+    private void SetText(string value)
+    {
+        if (value != _modelText)
+        {
+            _modelText = value;
+
+            _ = Task.Run(() =>
+            {
+                var stringRun = _model.Unsafe;
+                if (stringRun != null)
+                {
+                    stringRun.Text = value;
+                }
+            });
+        }
     }
 }
 
@@ -175,10 +196,20 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         get => base.IsInitialized; protected set
         {
             base.IsInitialized = value;
+            UpdateCommand();
         }
     }
 
     public ObservableCollection<ParameterRunViewModel> Items { get; set; } = [];
+
+    public CommandItemViewModel Command { get; private set; }
+
+    public bool ShowCommand =>
+        IsInitialized &&
+
+        // FilteredItems.Count == 0 &&
+        // (!_isFetching) &&
+        IsLoading == false;
 
     private readonly Lock _listLock = new();
 
@@ -188,6 +219,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         : base(model, scheduler, host)
     {
         _model = new(model);
+        Command = new(new(null), PageContext);
     }
 
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
@@ -202,6 +234,9 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         {
             return; // throw?
         }
+
+        Command = new(new(model.Command), PageContext);
+        Command.SlowInitializeProperties();
 
         FetchItems();
 
@@ -261,7 +296,25 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             {
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
                 OnPropertyChanged(nameof(Items)); // TODO! hack
+                UpdateCommand();
             });
+    }
+
+    private void UpdateCommand()
+    {
+        UpdateProperty(nameof(ShowCommand));
+        if (!ShowCommand || Command.Model.Unsafe is null)
+        {
+            return;
+        }
+
+        UpdateProperty(nameof(Command));
+
+        DoOnUiThread(
+           () =>
+           {
+               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(Command));
+           });
     }
 
     public void Dispose()

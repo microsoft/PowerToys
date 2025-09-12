@@ -35,6 +35,7 @@ public sealed partial class SimpleParameterTest : ParametersPage
         {
             Name = "Submit",
             Icon = new IconInfo("\uE724"), // Send
+            Result = CommandResult.KeepOpen(),
         };
     }
 
