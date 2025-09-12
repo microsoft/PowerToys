@@ -33,6 +33,9 @@ namespace Awake.Core.Native
         internal static extern bool AttachConsole(int dwProcessId);
 
         [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern void FreeConsole();
+
+        [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern bool SetStdHandle(int nStdHandle, IntPtr hHandle);
 
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]

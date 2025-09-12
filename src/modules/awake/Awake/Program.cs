@@ -125,7 +125,7 @@ namespace Awake
                     Bridge.GetPwrCapabilities(out _powerCapabilities);
                     Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities, _serializerOptions));
 
-                    return rootCommand.InvokeAsync(args).Result;
+                    return await rootCommand.InvokeAsync(args);
                 }
             }
         }
@@ -244,6 +244,7 @@ namespace Awake
             if (pid == 0 && !useParentPid)
             {
                 Logger.LogInfo("No PID specified. Allocating console...");
+                Bridge.FreeConsole();
                 AllocateLocalConsole();
             }
             else
