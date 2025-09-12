@@ -25,4 +25,5 @@ int MouseHighlighterMain(HINSTANCE hinst, MouseHighlighterSettings settings);
 void MouseHighlighterDisable();
 bool MouseHighlighterIsEnabled();
 void MouseHighlighterSwitch();
+void MouseHighlighterSwitchMode();
 void MouseHighlighterApplySettings(MouseHighlighterSettings settings);
