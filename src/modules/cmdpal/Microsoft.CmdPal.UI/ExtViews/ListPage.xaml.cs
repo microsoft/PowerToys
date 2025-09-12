@@ -29,7 +29,7 @@ public sealed partial class ListPage : Page,
 {
     private InputSource _lastInputSource;
 
-    private ListViewModel? ViewModel
+    internal ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
         set => SetValue(ViewModelProperty, value);
