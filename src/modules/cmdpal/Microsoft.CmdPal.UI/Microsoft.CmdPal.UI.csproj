@@ -42,6 +42,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+  <!-- Just for testing the pipeline -->
     <GenerateTestArtifacts>false</GenerateTestArtifacts>
   </PropertyGroup>
 
