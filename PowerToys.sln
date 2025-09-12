@@ -799,7 +799,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LightSwitch", "LightSwitch"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightSwitchModuleInterface", "src\modules\LightSwitch\LightSwitchModuleInterface\LightSwitchModuleInterface.vcxproj", "{38177D56-6AD1-4ADF-88C9-2843A7932166}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightModeService", "src\modules\LightSwitch\LightSwitchService\LightSwitchService.vcxproj", "{08E71C67-6A7E-4CA1-B04E-2FB336410BAC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightSwitchService", "src\modules\LightSwitch\LightSwitchService\LightSwitchService.vcxproj", "{08E71C67-6A7E-4CA1-B04E-2FB336410BAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E11826E1-76DF-42AC-985C-164CC2EE57A1}"
 EndProject
@@ -812,6 +812,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.WebSearch.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.WebSearch.UnitTests\Microsoft.CmdPal.Ext.WebSearch.UnitTests.csproj", "{E816D7B2-4688-4ECB-97CC-3D8E798F3831}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.Shell.UnitTests", "src\modules\cmdpal\Tests\Microsoft.CmdPal.Ext.Shell.UnitTests\Microsoft.CmdPal.Ext.Shell.UnitTests.csproj", "{E816D7B4-4688-4ECB-97CC-3D8E798F3833}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3DCCD936-D085-4869-A1DE-CA6A64152C94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightSwitch.UITests", "src\modules\LightSwitch\Tests\LightSwitch.UITests\LightSwitch.UITests.csproj", "{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2947,6 +2951,18 @@ Global
 		{E816D7B4-4688-4ECB-97CC-3D8E798F3833}.Release|ARM64.Build.0 = Release|ARM64
 		{E816D7B4-4688-4ECB-97CC-3D8E798F3833}.Release|x64.ActiveCfg = Release|x64
 		{E816D7B4-4688-4ECB-97CC-3D8E798F3833}.Release|x64.Build.0 = Release|x64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Debug|ARM64.Build.0 = Debug|ARM64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Debug|x64.ActiveCfg = Debug|x64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Debug|x64.Build.0 = Debug|x64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Debug|x64.Deploy.0 = Debug|x64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Release|ARM64.ActiveCfg = Release|ARM64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Release|ARM64.Build.0 = Release|ARM64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Release|ARM64.Deploy.0 = Release|ARM64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Release|x64.ActiveCfg = Release|x64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Release|x64.Build.0 = Release|x64
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F}.Release|x64.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3270,6 +3286,8 @@ Global
 		{E816D7B3-4688-4ECB-97CC-3D8E798F3832} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{E816D7B2-4688-4ECB-97CC-3D8E798F3831} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
 		{E816D7B4-4688-4ECB-97CC-3D8E798F3833} = {8EF25507-2575-4ADE-BF7E-D23376903AB8}
+		{3DCCD936-D085-4869-A1DE-CA6A64152C94} = {5B201255-53C8-490B-A34F-01F05D48A477}
+		{F5333ED7-06D8-4AB3-953A-36D63F08CB6F} = {3DCCD936-D085-4869-A1DE-CA6A64152C94}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
