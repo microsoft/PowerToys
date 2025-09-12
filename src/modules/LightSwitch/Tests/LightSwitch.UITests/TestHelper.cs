@@ -142,11 +142,89 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
+        /// Perform a update geolocation test operation
+        /// </summary>
+        public static void PerformUserSelectedLocationTest(UITestBase testBase)
+        {
+            // Make sure in sun time mode
+            var modeCombobox = testBase.Session.Find<Element>(By.AccessibilityId("ModeSelection_LightSwitch"), 5000);
+            Assert.IsNotNull(modeCombobox, "Mode combobox not found.");
+
+            if (modeCombobox.Text != "Sunset to sunrise")
+            {
+                modeCombobox.Click();
+                var sunriseListItem = testBase.Session.Find<Element>(By.AccessibilityId("SunCBItem_LightSwitch"), 5000);
+                Assert.IsNotNull(sunriseListItem, "Sunrise combobox item not found.");
+                sunriseListItem.Click();
+            }
+
+            Assert.AreEqual("Sunset to sunrise", modeCombobox.Text, "Mode combobox should be set to Sunset to sunrise.");
+
+            var setLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SetLocationButton_LightSwitch"), 5000);
+            Assert.IsNotNull(setLocationButton, "Set location button not found.");
+            setLocationButton.Click();
+
+            var autoSuggestTextbox = testBase.Session.Find<Element>(By.AccessibilityId("CitySearchBox_LightSwitch"), 5000);
+            Assert.IsNotNull(autoSuggestTextbox, "City search box not found.");
+            autoSuggestTextbox.Click();
+            autoSuggestTextbox.SendKeys("Seattle");
+            autoSuggestTextbox.SendKeys(OpenQA.Selenium.Keys.Down);
+            autoSuggestTextbox.SendKeys(OpenQA.Selenium.Keys.Enter);
+
+            var latLong = testBase.Session.Find<Element>(By.AccessibilityId("LocationResultText_LightSwitch"), 5000);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(latLong.Text));
+
+            var sunrise = testBase.Session.Find<Element>(By.AccessibilityId("SunriseText_LightSwitch"), 5000);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(sunrise.Text));
+
+            var sunset = testBase.Session.Find<Element>(By.AccessibilityId("SunsetText_LightSwitch"), 5000);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(sunset.Text));
+        }
+
+        /// <summary>
+        /// Perform a update geolocation test operation
+        /// </summary>
+        public static void PerformGeolocationTest(UITestBase testBase)
+        {
+            // Make sure in sun time mode
+            var modeCombobox = testBase.Session.Find<Element>(By.AccessibilityId("ModeSelection_LightSwitch"), 5000);
+            Assert.IsNotNull(modeCombobox, "Mode combobox not found.");
+
+            if (modeCombobox.Text != "Sunset to sunrise")
+            {
+                modeCombobox.Click();
+                var sunriseListItem = testBase.Session.Find<Element>(By.AccessibilityId("SunCBItem_LightSwitch"), 5000);
+                Assert.IsNotNull(sunriseListItem, "Sunrise combobox item not found.");
+                sunriseListItem.Click();
+            }
+
+            Assert.AreEqual("Sunset to sunrise", modeCombobox.Text, "Mode combobox should be set to Sunset to sunrise.");
+
+            // Click the select city button
+            var setLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SetLocationButton_LightSwitch"), 5000);
+            Assert.IsNotNull(setLocationButton, "Set location button not found.");
+            setLocationButton.Click();
+
+            var syncLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SyncLocationButton_LightSwitch"), 5000);
+            Assert.IsNotNull(syncLocationButton, "Sync location button not found.");
+            syncLocationButton.Click(msPostAction: 8000);
+
+            var latLong = testBase.Session.Find<Element>(By.AccessibilityId("LocationResultText_LightSwitch"), 5000);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(latLong.Text));
+
+            var sunrise = testBase.Session.Find<Element>(By.AccessibilityId("SunriseText_LightSwitch"), 5000);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(sunrise.Text));
+
+            var sunset = testBase.Session.Find<Element>(By.AccessibilityId("SunsetText_LightSwitch"), 5000);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(sunset.Text));
+        }
+
+        /// <summary>
         /// Perform a update time test operation
         /// </summary>
         public static void PerformOffsetTest(UITestBase testBase)
         {
-            // TODO: Make sure in manual time mode
+            // Make sure in sun time mode
             var modeCombobox = testBase.Session.Find<Element>(By.AccessibilityId("ModeSelection_LightSwitch"), 5000);
             Assert.IsNotNull(modeCombobox, "Mode combobox not found.");
 

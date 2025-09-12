@@ -30,7 +30,7 @@
                     Header="Enable LightSwitch"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                <ToggleSwitch AutomationProperties.AutomationId="Toggle_LightSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch AutomationProperties.AutomationId="Toggle_LightSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
 
                 <InfoBar
@@ -44,8 +44,8 @@
                     <tkcontrols:SettingsCard x:Uid="LightSwitch_ThemeToggle_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            AutomationProperties.AutomationId="Shortcut_LightSwitch"
                             AllowDisable="True"
+                            AutomationProperties.AutomationId="Shortcut_LightSwitch"
                             HotkeySettings="{x:Bind Path=ViewModel.ToggleThemeActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
@@ -58,11 +58,11 @@
                         Header="Schedule preview">
                         <controls:Timeline
                             Margin="0,48,0,48"
+                            AutomationProperties.AutomationId="Timeline_LightSwitch"
                             EndTime="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}"
                             StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
                             Sunrise="07:00"
-                            Sunset="21:00" 
-                          AutomationProperties.AutomationId="Timeline_LightSwitch"/>
+                            Sunset="21:00" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsExpander
@@ -71,19 +71,31 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE823;}"
                         IsExpanded="True">
                         <ComboBox
+                            AutomationProperties.AutomationId="ModeSelection_LightSwitch"
                             SelectedValue="{x:Bind ViewModel.ScheduleMode, Mode=TwoWay}"
                             SelectedValuePath="Tag"
-                            SelectionChanged="ScheduleMode_SelectionChanged"
-                            AutomationProperties.AutomationId="ModeSelection_LightSwitch">
-                            <ComboBoxItem Content="Manual" Tag="FixedHours" AutomationProperties.AutomationId="ManualCBItem_LightSwitch" />
-                            <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunrise" AutomationProperties.AutomationId="SunCBItem_LightSwitch" />
+                            SelectionChanged="ScheduleMode_SelectionChanged">
+                            <ComboBoxItem
+                                AutomationProperties.AutomationId="ManualCBItem_LightSwitch"
+                                Content="Manual"
+                                Tag="FixedHours" />
+                            <ComboBoxItem
+                                AutomationProperties.AutomationId="SunCBItem_LightSwitch"
+                                Content="Sunset to sunrise"
+                                Tag="SunsetToSunrise" />
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Header="Turn off dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                                <TimePicker AutomationProperties.AutomationId="LightTimePicker" ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
+                                <TimePicker
+                                    AutomationProperties.AutomationId="LightTimePicker"
+                                    ClockIdentifier="24HourClock"
+                                    Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Header="Turn on dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                              <TimePicker AutomationProperties.AutomationId="DarkTimePicker" ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
+                                <TimePicker
+                                    AutomationProperties.AutomationId="DarkTimePicker"
+                                    ClockIdentifier="24HourClock"
+                                    Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Description="Choose a location to automatically calculate accurate sunrise and sunset times"
@@ -94,7 +106,10 @@
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{x:Bind ViewModel.SyncButtonInformation, Mode=OneWay}" />
-                                    <Button Click="SyncLocationButton_Click" Content="Set location" />
+                                    <Button
+                                        AutomationProperties.AutomationId="SetLocationButton_LightSwitch"
+                                        Click="SyncLocationButton_Click"
+                                        Content="Set location" />
                                 </StackPanel>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
@@ -102,22 +117,22 @@
                                 Header="Sunrise offset (in minutes)"
                                 Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
                                 <NumberBox
+                                    AutomationProperties.AutomationId="SunriseOffset_LightSwitch"
                                     Maximum="60"
                                     Minimum="-60"
                                     SpinButtonPlacementMode="Inline"
-                                    Value="{x:Bind ViewModel.SunriseOffset, Mode=TwoWay}" 
-                                    AutomationProperties.AutomationId="SunriseOffset_LightSwitch" />
+                                    Value="{x:Bind ViewModel.SunriseOffset, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Description="Adjust the trigger time by starting earlier or later than the actual sunset"
                                 Header="Sunset offset (in minutes)"
                                 Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
                                 <NumberBox
+                                    AutomationProperties.AutomationId="SunsetOffset_LightSwitch"
                                     Maximum="60"
                                     Minimum="-60"
                                     SpinButtonPlacementMode="Inline"
-                                    Value="{x:Bind ViewModel.SunsetOffset, Mode=TwoWay}" 
-                                    AutomationProperties.AutomationId="SunsetOffset_LightSwitch" />
+                                    Value="{x:Bind ViewModel.SunsetOffset, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -131,15 +146,15 @@
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
                                     <controls:CheckBoxWithDescriptionControl
-                                        Description="Taskbar, Start, and other system UI"
                                         AutomationProperties.AutomationId="ChangeSystemCheckbox_LightSwitch"
+                                        Description="Taskbar, Start, and other system UI"
                                         Header="System"
                                         IsChecked="{x:Bind ViewModel.ChangeSystem, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Left">
                                     <controls:CheckBoxWithDescriptionControl
-                                        Description="Supported applications"
                                         AutomationProperties.AutomationId="ChangeAppsCheckbox_LightSwitch"
+                                        Description="Supported applications"
                                         Header="Apps"
                                         IsChecked="{x:Bind ViewModel.ChangeApps, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
@@ -180,6 +195,7 @@
                             <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="To calculate the sunrise and sunset, LightSwitch needs a location." />
                             <AutoSuggestBox
                                 x:Name="CityAutoSuggestBox"
+                                AutomationProperties.AutomationId="CitySearchBox_LightSwitch"
                                 Grid.Row="1"
                                 Margin="0,16,0,8"
                                 ItemsSource="{x:Bind ViewModel.SearchLocations, Mode=OneWay}"
@@ -212,6 +228,7 @@
                                     x:Name="SyncButton"
                                     Padding="0"
                                     HorizontalAlignment="Right"
+                                    AutomationProperties.AutomationId="SyncLocationButton_LightSwitch"
                                     Click="GetLocation_Click">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <FontIcon FontSize="14" Glyph="&#xECAF;" />
@@ -246,7 +263,10 @@
                                     FontSize="16"
                                     Glyph="&#xECAF;"
                                     ToolTipService.ToolTip="Location" />
-                                <TextBlock Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                                <TextBlock
+                                    Grid.Column="1"
+                                    AutomationProperties.AutomationId="LocationResultText_LightSwitch"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                     <Run Text="{x:Bind ViewModel.Latitude, Mode=OneWay}" /><Run Text="°, " />
                                     <Run Text="{x:Bind ViewModel.Longitude, Mode=OneWay}" /><Run Text="°" />
                                 </TextBlock>
@@ -258,6 +278,7 @@
                                 <TextBlock
                                     Grid.Row="1"
                                     Grid.Column="1"
+                                    AutomationProperties.AutomationId="SunriseText_LightSwitch"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     Text="{x:Bind ViewModel.LightTimeTimeSpan, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}" />
                                 <FontIcon
@@ -268,6 +289,7 @@
                                 <TextBlock
                                     Grid.Row="2"
                                     Grid.Column="1"
+                                    AutomationProperties.AutomationId="SunsetText_LightSwitch"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     Text="{x:Bind ViewModel.DarkTimeTimeSpan, Converter={StaticResource TimeSpanToFriendlyTimeConverter}, Mode=OneWay}" />
 
