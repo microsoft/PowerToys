@@ -11,8 +11,8 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal;
 
 public partial class TerminalTopLevelCommandItem : CommandItem
 {
-    public TerminalTopLevelCommandItem(SettingsManager settingsManager)
-        : base(new ProfilesListPage(settingsManager))
+    public TerminalTopLevelCommandItem(SettingsManager settingsManager, AppSettingsManager appSettingsManager)
+        : base(new ProfilesListPage(settingsManager, appSettingsManager))
     {
         Icon = Icons.TerminalIcon;
         Title = Resources.list_item_title;

@@ -34,13 +34,21 @@ public class SettingsManager : JsonSettingsManager
         Resources.open_quake_description,
         false);
 
+    private readonly ToggleSetting _saveLastSelectedChannel = new(
+        Namespaced(nameof(SaveLastSelectedChannel)),
+        Resources.save_last_selected_channel!,
+        Resources.save_last_selected_channel_description!,
+        false);
+
     public bool ShowHiddenProfiles => _showHiddenProfiles.Value;
 
     public bool OpenNewTab => _openNewTab.Value;
 
     public bool OpenQuake => _openQuake.Value;
 
-    internal static string SettingsJsonPath()
+    public bool SaveLastSelectedChannel => _saveLastSelectedChannel.Value;
+
+    private static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
@@ -56,6 +64,7 @@ public class SettingsManager : JsonSettingsManager
         Settings.Add(_showHiddenProfiles);
         Settings.Add(_openNewTab);
         Settings.Add(_openQuake);
+        Settings.Add(_saveLastSelectedChannel);
 
         // Load settings from file upon initialization
         LoadSettings();
