@@ -432,3 +432,96 @@ sequenceDiagram
     %%     H->>BST: Focus previous BasicStringToken
     %% end
 ```
+
+### Commands with parameters
+
+We've also long experimented with the idea of commands having parameters that
+can be filled in by the user. These would be commands that take a couple
+lightweight inputs, so that the use can input them more natively than an
+adaptive card. 
+
+Previous drafts included a new type of `ICommand` ala
+`IInvokableWithParameters`. However, these ran into edge cases:
+* Where are the parameters displayed? In the search box? On the item?
+* What happens if a context menu command needs parameters? 
+* Does the _page_ have parameters?
+
+none of which were trivially solvable by having the parameters on the command.
+
+Instead, we can leverage the concept of a "rich search" experience to provide
+that lightweight parameter input method.
+
+We'll add a new type of page, called a `RichSearchPage`. It's a list page, but
+with a rich search box at the top.
+
+```c#
+interface IRichSearchPage requires IListPage {
+    IRichSearch Search { get; };
+};
+```
+
+This lets the user activate the command that needs parameters, and go straight
+into the rich input page. That page will act like it's _just_ the command the
+user "invoked", and will let us display additional inputs to the user. 
+
+#### Parameters Example
+
+Now, lets say you had a command like "Create a note \${title} in \${folder}".
+`title` is a string input, and `folder` is a static list of folders. 
+
+The extension author can then define a `RichSearchPage` with a `IRichSearch`
+that has four tokens in it:
+* A `ILabelToken` for "Create a note"
+* A `IStringInputToken` for the `title`
+* A `ILabelToken` for "in"
+* A `IStaticListToken` for the `folder`, where the items are possible folders
+
+Then, when the user hits <kbd>↲</kbd>, we gather up all the tokens, and we can
+reference them in the command. As an example, here's the `CreateNoteCommand`,
+which implements the `IRichSearchPage` interface:
+
+The list page can always change it's results based on the user's input. In our
+case, we'll listen for the value of the last token to be set. When it is, we can
+then display the final list item with our fully formed command for the user to
+invoke. 
+
+```csharp
+class CreateNoteCommand : IRichSearchPage {
+    public string Name => "Create a note";
+    public string Id => "create_note";
+    public IIconInfo Icon => null;
+
+    public IRichSearch Search { get; } 
+    private StringInputToken _titleToken;
+    private NotesFolderToken _folderToken;
+
+    private IListItem? _createNoteItem;
+
+    public CreateNoteCommand() {
+        Search = new RichSearch();
+
+        _titleToken = new StringInputToken("title", "Title of the note");
+        _folderToken = new NotesFolderToken("folder", "Select a folder");
+
+        Search.SearchTokens = [
+            new LabelToken("Create a note"),
+            _titleToken,
+            new LabelToken("in"),
+            _folderToken
+        ];
+
+        _folderToken.OnSelectedItemChanged += (sender, e) => {
+            // Update the command with the selected folder
+            UpdateCommand();
+        };
+    }
+
+    private void UpdateCommand() {
+        _createNoteItem = new ListItem() {
+            Title = _titleToken.Value,
+            Subtitle = _folderToken.SelectedItem?.Title,
+            Command = new CreateNoteCommand(title: _titleToken.Value, folder: _folderToken.SelectedItem.Value)
+        };
+    }
+}
+```
