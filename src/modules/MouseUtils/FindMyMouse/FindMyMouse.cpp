@@ -723,6 +723,7 @@ private:
             }
             catch (const winrt::hresult_error& e)
             {
+                Logger::error("Failed to initialize COM apartment: {}", winrt::to_string(e.message()));
                 return false;
             }
 
@@ -734,10 +735,10 @@ private:
             }
             catch (const winrt::hresult_error& e)
             {
+                Logger::error("Failed to create DispatcherQueueController: {}", winrt::to_string(e.message()));
                 return false;
             }
         }
-    else { }
 
         // 1) Create a XAML island and attach it to this HWND
         try
@@ -749,14 +750,15 @@ private:
         }
         catch (const winrt::hresult_error& e)
         {
+            Logger::error("Failed to create XAML island: {}", winrt::to_string(e.message()));
             return false;
         }
 
         UpdateIslandSize();
-    // Island size set
+        // Island size set
 
         // 2) Create a XAML container to host the Composition child visual
-    m_surface = winrt::Microsoft::UI::Xaml::Controls::Grid{};
+        m_surface = winrt::Microsoft::UI::Xaml::Controls::Grid{};
 
         // A transparent background keeps hit-testing consistent vs. null brush
         m_surface.Background(winrt::Microsoft::UI::Xaml::Media::SolidColorBrush{
@@ -776,6 +778,7 @@ private:
         }
         catch (const winrt::hresult_error& e)
         {
+            Logger::error("Failed to get compositor: {}", winrt::to_string(e.message()));
             return false;
         }
 
@@ -867,8 +870,8 @@ private:
             m_circleGeometry.StartAnimation(L"Radius", radiusExpression2);
         }
 
-    // Composition created successfully
-    return true;
+        // Composition created successfully
+        return true;
     }
     catch (const winrt::hresult_error& e)
     {
@@ -905,7 +908,6 @@ public:
     {
         if (!applyToRuntimeObjects)
         {
-            // Runtime objects not created yet. Just update fields.
             m_sonarRadius = settings.spotlightRadius;
             m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
             m_backgroundColor = settings.backgroundColor;
@@ -914,7 +916,6 @@ public:
             m_includeWinKey = settings.includeWinKey;
             m_doNotActivateOnGameMode = settings.doNotActivateOnGameMode;
             m_fadeDuration = settings.animationDurationMs > 0 ? settings.animationDurationMs : 1;
-            // overlay opacity removed; alpha comes from colors
             m_sonarZoomFactor = settings.spotlightInitialZoom;
             m_excludedApps = settings.excludedApps;
             m_shakeMinimumDistance = settings.shakeMinimumDistance;
@@ -923,11 +924,9 @@ public:
         }
         else
         {
-            // Runtime objects already created. Should update in the owner thread.
             if (m_dispatcherQueueController == nullptr)
             {
                 Logger::warn("Tried accessing the dispatch queue controller before it was initialized.");
-                // No dispatcher Queue Controller? Means initialization still hasn't run, so settings will be applied then.
                 return;
             }
             auto dispatcherQueue = m_dispatcherQueueController.DispatcherQueue();
@@ -935,7 +934,6 @@ public:
             bool enqueueSucceeded = dispatcherQueue.TryEnqueue([=]() {
                 if (!m_destroyed)
                 {
-                    // Runtime objects not created yet. Just update fields.
                     m_sonarRadius = localSettings.spotlightRadius;
                     m_sonarRadiusFloat = static_cast<float>(m_sonarRadius);
                     m_backgroundColor = localSettings.backgroundColor;
@@ -944,7 +942,6 @@ public:
                     m_includeWinKey = localSettings.includeWinKey;
                     m_doNotActivateOnGameMode = localSettings.doNotActivateOnGameMode;
                     m_fadeDuration = localSettings.animationDurationMs > 0 ? localSettings.animationDurationMs : 1;
-                    // overlay opacity removed; alpha comes from colors
                     m_sonarZoomFactor = localSettings.spotlightInitialZoom;
                     m_excludedApps = localSettings.excludedApps;
                     m_shakeMinimumDistance = localSettings.shakeMinimumDistance;
