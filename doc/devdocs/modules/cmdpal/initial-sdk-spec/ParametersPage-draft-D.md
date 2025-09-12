@@ -13,6 +13,7 @@ issue id: n/a
 
 
 ```c#
+[uuid("a2590cc9-510c-4af7-b562-a6b56fe37f55")]
 interface IParameterRun requires INotifyPropChanged
 {
     
@@ -23,25 +24,24 @@ interface ILabelRun requires IParameterRun
     String Text { get; };
 };
 
-interface IParameterRun requires IParameterRun
+interface IParameterValueRun requires IParameterRun
 {
-    String PlaceholderText { get; };
-    Boolean NeedsValue { get; } // TODO! name is weird
+    String PlaceholderText{ get; };
+    Boolean NeedsValue{ get; }; // TODO! name is weird
 };
 
-interface IStringParameterRun requires IParameterRun
+interface IStringParameterRun requires IParameterValueRun
 {
-    String Text { get; set; };
+    String Text{ get; set; };
 
     // TODO! do we need a way to validate string inputs?
 };
 
-interface ICommandParameterRun requires IParameterRun
+interface ICommandParameterRun requires IParameterValueRun
 {
-    String DisplayText { get; };
-    ICommand GetSelectValueCommand(UInt64 hostHwnd); 
-    IIconInfo Icon { get; }; // ? maybe
-    
+    String DisplayText{ get; };
+    ICommand GetSelectValueCommand(UInt64 hostHwnd);
+    IIconInfo Icon{ get; }; // ? maybe
 };
 
 interface IParametersPage requires IPage
