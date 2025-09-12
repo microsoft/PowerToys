@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
@@ -32,12 +34,28 @@ public interface IContextMenuContext : INotifyPropertyChanged
     /// that have a shortcut key set.</returns>
     public Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
     {
-        return MoreCommands
-            .OfType<CommandContextItemViewModel>()
-            .Where(c => c.HasRequestedShortcut)
-            .ToDictionary(
-            c => c.RequestedShortcut ?? new KeyChord(0, 0, 0),
-            c => c);
+        var result = new Dictionary<KeyChord, CommandContextItemViewModel>();
+
+        var menu = MoreCommands;
+        if (menu is null)
+        {
+            return result;
+        }
+
+        foreach (var item in menu)
+        {
+            if (item is CommandContextItemViewModel cmd && cmd.HasRequestedShortcut)
+            {
+                var key = cmd.RequestedShortcut ?? new KeyChord(0, 0, 0);
+                var added = result.TryAdd(key, cmd);
+                if (!added)
+                {
+                    Logger.LogWarning($"Ignoring duplicate keyboard shortcut {KeyChordHelpers.FormatForDebug(key)} on command '{cmd.Title ?? cmd.Name ?? "(unknown)"}'");
+                }
+            }
+        }
+
+        return result;
     }
 }
 
