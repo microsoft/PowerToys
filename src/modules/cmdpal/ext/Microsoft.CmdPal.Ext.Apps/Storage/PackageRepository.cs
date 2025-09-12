@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Utils;
@@ -104,10 +103,14 @@ internal sealed partial class PackageRepository : ListRepository<IUWPApplication
         // find apps associated with this package.
         var packageWrapper = PackageWrapper.GetWrapperFromPackage(package);
         var uwp = new UWP(packageWrapper);
-        var apps = Items.Where(a => a.Package.Equals(uwp)).ToArray();
 
-        foreach (var app in apps)
+        foreach (var app in Items)
         {
+            if (!app.Package.Equals(uwp))
+            {
+                continue;
+            }
+
             Remove(app);
             _isDirty = true;
         }
