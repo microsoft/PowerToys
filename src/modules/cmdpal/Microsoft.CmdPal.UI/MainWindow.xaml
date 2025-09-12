@@ -14,5 +14,15 @@
     Activated="MainWindow_Activated"
     Closed="MainWindow_Closed"
     mc:Ignorable="d">
-    <pages:ShellPage x:Name="RootShellPage" />
+    <winuiex:WindowEx.Content>
+        <!--
+        Sets the content of the window directly. This works around an issue with WindowEx where it adds 
+        a focusable content control between the window and its content.
+        This should be removed if the issue in WinUIEx is resolved (https://github.com/dotMorten/WinUIEx/issues/225)
+        -->
+        <pages:ShellPage 
+            x:Name="RootShellPage" 
+            HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch" />
+    </winuiex:WindowEx.Content>
 </winuiex:WindowEx>
