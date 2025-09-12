@@ -4,11 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32;
 
 namespace LightSwitch.UITests
 {
@@ -162,10 +161,13 @@ namespace LightSwitch.UITests
             var systemCheckbox = testBase.Session.Find<Element>(By.AccessibilityId("ChangeSystemCheckbox_LightSwitch"), 5000);
             Assert.IsNotNull(systemCheckbox, "System checkbox not found.");
 
+            var scrollViewer = testBase.Session.Find<Element>(By.AccessibilityId("PageScrollViewer"));
+            systemCheckbox.EnsureVisible(scrollViewer);
+
             // How do I handle when something is off screen?
             if (!systemCheckbox.Selected)
             {
-                systemCheckbox.Click(msPreAction: 1000, msPostAction: 1000);
+                systemCheckbox.Click();
             }
 
             Assert.IsTrue(systemCheckbox.Selected, "System checkbox should be checked.");
@@ -175,19 +177,19 @@ namespace LightSwitch.UITests
 
             if (!appsCheckbox.Selected)
             {
-                appsCheckbox.Click(msPostAction: 1000);
+                appsCheckbox.Click();
             }
 
             Assert.IsTrue(appsCheckbox.Selected, "Apps checkbox should be checked.");
 
-            var systemBeforeValue = string.Empty; // How do I get the current system theme from here?
-            var appsBeforeValue = string.Empty; // How do I get the current apps theme from here?
+            var systemBeforeValue = GetSystemTheme();
+            var appsBeforeValue = GetAppsTheme();
 
             testBase.Session.SendKeys(activationKeys);
             Task.Delay(5000).Wait();
 
-            var systemAfterValue = "string.Empty";
-            var appsAfterValue = "string.Empty";
+            var systemAfterValue = GetSystemTheme();
+            var appsAfterValue = GetAppsTheme();
 
             Assert.AreNotEqual(systemBeforeValue, systemAfterValue, "System theme should have changed.");
             Assert.AreNotEqual(appsBeforeValue, appsAfterValue, "Apps theme should have changed.");
@@ -195,28 +197,50 @@ namespace LightSwitch.UITests
             // Test with nothing checked
             if (systemCheckbox.Selected)
             {
-                systemCheckbox.Click(msPostAction: 1000);
+                systemCheckbox.Click();
             }
 
             if (appsCheckbox.Selected)
             {
-                appsCheckbox.Click(msPostAction: 1000);
+                appsCheckbox.Click();
             }
 
             Assert.IsFalse(systemCheckbox.Selected, "System checkbox should be unchecked.");
             Assert.IsFalse(appsCheckbox.Selected, "Apps checkbox should be unchecked.");
 
-            var noneSystemBeforeValue = string.Empty;
-            var noneAppsBeforeValue = string.Empty;
+            var noneSystemBeforeValue = GetSystemTheme();
+            var noneAppsBeforeValue = GetAppsTheme();
 
             testBase.Session.SendKeys(activationKeys);
             Task.Delay(5000).Wait();
 
-            var noneSystemAfterValue = string.Empty;
-            var noneAppsAfterValue = string.Empty;
+            var noneSystemAfterValue = GetSystemTheme();
+            var noneAppsAfterValue = GetAppsTheme();
 
             Assert.AreEqual(noneSystemBeforeValue, noneSystemAfterValue, "System theme should not have changed.");
             Assert.AreEqual(noneAppsBeforeValue, noneAppsAfterValue, "Apps theme should not have changed.");
+        }
+
+        private static int GetSystemTheme()
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            if (key is null)
+            {
+                return 1;
+            }
+
+            return (int)key.GetValue("SystemUsesLightTheme", 1);
+        }
+
+        private static int GetAppsTheme()
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            if (key is null)
+            {
+                return 1;
+            }
+
+            return (int)key.GetValue("AppsUseLightTheme", 1);
         }
     }
 }
