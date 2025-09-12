@@ -13,6 +13,40 @@ namespace SamplePagesExtension.Pages;
 #pragma warning disable SA1649 // File name should match first type name
 #nullable enable
 
+public sealed partial class SimpleParameterTest : ParametersPage
+{
+    private readonly StringParameterRun _stringParameter;
+    private readonly InvokableCommand _command;
+
+    public SimpleParameterTest()
+    {
+        Name = "Open";
+        _stringParameter = new StringParameterRun()
+        {
+            PlaceholderText = "Type something",
+        };
+
+        _command = new AnonymousCommand(() =>
+        {
+            var input = _stringParameter.Text;
+            var toast = new ToastStatusMessage(new StatusMessage() { Message = $"You entered: {input}" });
+            toast.Show();
+        })
+        {
+            Name = "Submit",
+            Icon = new IconInfo("\uE724"), // Send
+        };
+    }
+
+    public override IParameterRun[] Parameters => new IParameterRun[]
+    {
+        new LabelRun("Enter a value:"),
+        _stringParameter,
+    };
+
+    public override IListItem Command => new ListItem(_command);
+}
+
 public sealed partial class CreateNoteParametersPage : ParametersPage
 {
     private readonly SelectFolderPage _selectFolderPage = new();

@@ -23,9 +23,15 @@ public class CommandPalettePageViewModelFactory
     {
         return page switch
         {
+<<<<<<< HEAD
             MainListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsRootPage = !nested, IsMainPage = true },
             IListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsRootPage = !nested },
             IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host, providerContext),
+=======
+            IListPage listPage => new ListViewModel(listPage, _scheduler, host) { IsNested = nested },
+            IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host),
+            IParametersPage paramsPage => new ParametersPageViewModel(paramsPage, _scheduler, host),
+>>>>>>> e557e052f (Wire it up to the UI, painfully, but it works)
             _ => null,
         };
     }

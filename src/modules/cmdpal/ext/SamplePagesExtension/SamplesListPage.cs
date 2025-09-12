@@ -116,11 +116,19 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of the settings helpers",
         },
 
+<<<<<<< HEAD
         // Data package samples
         new ListItem(new SampleDataTransferPage())
         {
             Title = "Clipboard and Drag-and-Drop Demo",
             Subtitle = "Demonstrates clipboard integration and drag-and-drop functionality",
+=======
+        // Parameter pages
+        new ListItem(new SimpleParameterTest())
+        {
+            Title = "Sample parameters page",
+            Subtitle = "A demo of a command that takes simple parameters",
+>>>>>>> e557e052f (Wire it up to the UI, painfully, but it works)
         },
 
         // Evil edge cases
