@@ -14,7 +14,6 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="..\..\deps\expected.props" />
-  <!-- Re-introduce explicit C++/WinRT props import to align version with prebuilt static libs (Solution1 rollback) -->
   <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ImportGroup Label="Shared" />
   <PropertyGroup Label="Configuration">
@@ -33,7 +32,6 @@
   <PropertyGroup>
     <TargetName>PowerToys</TargetName>
   </PropertyGroup>
-  <!-- Using packages.config only; version is controlled there. -->
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)packages\Microsoft.WindowsAppSDK.1.7.250513003\include;..\common\inc;..\common\os-detection;..\common\Telemetry;..;..\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -47,7 +45,6 @@
       <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
-  <!-- Removed PackageReference for Microsoft.WindowsAppSDK; using packages.config for all native deps -->
   <PropertyGroup>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
   <UseWinUI>false</UseWinUI>
@@ -142,21 +139,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\deps\spdlog.props" />
   <ImportGroup Label="ExtensionTargets">
-  <!-- Explicit C++/WinRT targets import (Solution1) -->
   <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
-  <!-- Import Windows App SDK native props to link Bootstrap lib (packages.config path) -->
   <Import Project="$(SolutionDir)packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\WindowsAppSDK-Nuget-Native.C.props" Condition="Exists('$(SolutionDir)packages\Microsoft.WindowsAppSDK.1.7.250513003\build\native\WindowsAppSDK-Nuget-Native.C.props')" />
   </ImportGroup>
-  <!-- Validate presence of WinAppSDK headers (packages.config path) -->
-  <Target Name="ValidateWinAppSDKHeaders" BeforeTargets="ClCompile">
-    <PropertyGroup>
-      <!-- Ensure trailing backslash for simple concatenation -->
-      <_WinAppSdkPrimary>$(SolutionDir)packages\Microsoft.WindowsAppSDK.1.7.250513003\include\</_WinAppSdkPrimary>
-    </PropertyGroup>
-    <Message Importance="High" Text="[runner] WinAppSDK path=$(_WinAppSdkPrimary) checking MddBootstrap.h" />
-    <Message Importance="Low" Condition="Exists('$(_WinAppSdkPrimary)MddBootstrap.h')" Text="[runner] Found $(_WinAppSdkPrimary)MddBootstrap.h" />
-    <Error Condition="!Exists('$(_WinAppSdkPrimary)MddBootstrap.h')" Text="Windows App SDK headers not found: $(_WinAppSdkPrimary)MddBootstrap.h . Run restore." />
-  </Target>
-  <!-- Removed EnsureNuGetPackageBuildImports for CppWinRT; package restore errors will surface naturally if missing. -->
 </Project>

@@ -180,14 +180,11 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
             Logger::error("RegisterClassW failed. GetLastError={}", GetLastError());
             return false;
         }
-        else
-        {
-            Logger::info("[FMM] Registered window class.");
         }
     }
     else
     {
-        Logger::trace("[FMM] Window class already registered.");
+        // class already registered (expected when reusing instance)
     }
 
     m_hwndOwner = CreateWindow(L"static", nullptr, WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
@@ -196,10 +193,7 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
         Logger::error("Failed to create owner window. GetLastError={}", GetLastError());
         return false;
     }
-    else
-    {
-        Logger::trace("[FMM] Owner window created hwndOwner={}", (void*)m_hwndOwner);
-    }
+    else { }
 
     DWORD exStyle = WS_EX_TOOLWINDOW | Shim()->GetExtendedStyle();
     HWND created = CreateWindowExW(exStyle, className, windowTitle, WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, m_hwndOwner, nullptr, hinst, this);
@@ -208,10 +202,7 @@ bool SuperSonar<D>::Initialize(HINSTANCE hinst)
         Logger::error("CreateWindowExW failed. GetLastError={}", GetLastError());
         return false;
     }
-    else
-    {
-        Logger::info("[FMM] Main sonar window created hwnd={} exStyle=0x{:X}", (void*)created, exStyle);
-    }
+    else { }
     return true;
 }
 
@@ -728,7 +719,7 @@ private:
     bool OnCompositionCreate()
     try
     {
-        Logger::info("[FMM] OnCompositionCreate begin.");
+    // Creating composition resources
         // Ensure a DispatcherQueue bound to this thread (required by WinAppSDK composition/XAML)
         if (!m_dispatcherQueueController)
         {
@@ -736,7 +727,7 @@ private:
             try
             {
                 winrt::init_apartment(winrt::apartment_type::single_threaded);
-                Logger::trace("[FMM] init_apartment(STA) succeeded.");
+                // COM STA initialized
             }
             catch (const winrt::hresult_error& e)
             {
@@ -748,7 +739,7 @@ private:
             {
                 m_dispatcherQueueController =
                     winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
-                Logger::trace("[FMM] DispatcherQueueController created.");
+                // DispatcherQueueController created
             }
             catch (const winrt::hresult_error& e)
             {
@@ -756,10 +747,7 @@ private:
                 return false;
             }
         }
-        else
-        {
-            Logger::trace("[FMM] DispatcherQueueController already exists.");
-        }
+    else { }
 
         // 1) Create a XAML island and attach it to this HWND
         try
@@ -767,7 +755,7 @@ private:
             m_island = winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource{};
             auto windowId = winrt::Microsoft::UI::GetWindowIdFromWindow(m_hwnd);
             m_island.Initialize(windowId);
-            Logger::trace("[FMM] DesktopWindowXamlSource initialized.");
+            // Xaml source initialized
         }
         catch (const winrt::hresult_error& e)
         {
@@ -776,11 +764,10 @@ private:
         }
 
         UpdateIslandSize();
-        Logger::trace("[FMM] Island size updated.");
+    // Island size set
 
         // 2) Create a XAML container to host the Composition child visual
-        m_surface = winrt::Microsoft::UI::Xaml::Controls::Grid{};
-        Logger::trace("[FMM] XAML Grid created.");
+    m_surface = winrt::Microsoft::UI::Xaml::Controls::Grid{};
 
         // A transparent background keeps hit-testing consistent vs. null brush
         m_surface.Background(winrt::Microsoft::UI::Xaml::Media::SolidColorBrush{
@@ -796,7 +783,7 @@ private:
             auto elementVisual =
                 winrt::Microsoft::UI::Xaml::Hosting::ElementCompositionPreview::GetElementVisual(m_surface);
             m_compositor = elementVisual.Compositor();
-            Logger::trace("[FMM] Compositor acquired.");
+            // Compositor acquired
         }
         catch (const winrt::hresult_error& e)
         {
@@ -892,7 +879,7 @@ private:
             m_circleGeometry.StartAnimation(L"Radius", radiusExpression2);
         }
 
-    Logger::info("[FMM] OnCompositionCreate success.");
+    // Composition created successfully
     return true;
     }
     catch (const winrt::hresult_error& e)
