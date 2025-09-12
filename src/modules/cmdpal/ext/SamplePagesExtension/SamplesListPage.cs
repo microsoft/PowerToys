@@ -89,6 +89,13 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of the settings helpers",
         },
 
+        // Parameter pages
+        new ListItem(new SimpleParameterTest())
+        {
+            Title = "Sample parameters page",
+            Subtitle = "A demo of a command that takes simple parameters",
+        },
+
         // Evil edge cases
         // Anything weird that might break the palette - put that in here.
         new ListItem(new EvilSamplesPage())

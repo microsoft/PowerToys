@@ -194,11 +194,6 @@ namespace winrt::Microsoft::Terminal::UI::implementation
                         // Some emojis (e.g. 2️⃣) would be rendered as emoji glyphs otherwise.
                         family = L"Segoe UI Emoji, Segoe UI";
                     }
-                    else if (!fontFamily.empty())
-                    {
-                        icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ fontFamily });
-
-                    }
                     else
                     {
                         family = L"Segoe UI";

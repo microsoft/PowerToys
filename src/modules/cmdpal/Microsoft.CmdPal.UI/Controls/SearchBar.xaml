@@ -4,7 +4,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cmdpalUi="using:Microsoft.CmdPal.UI"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:coreVm="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,21 +15,77 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <cmdpalUi:PlaceholderTextConverter x:Key="PlaceholderTextConverter" />
+
+            <DataTemplate x:Key="LabelRunTemplate" x:DataType="coreVm:LabelRunViewModel">
+                <TextBlock
+                    MinHeight="32"
+                    VerticalAlignment="Center"
+                    Text="{x:Bind Text, Mode=OneWay}" />
+            </DataTemplate>
+            <DataTemplate x:Key="ButtonParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
+                <Button
+                    MinHeight="32"
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Stretch"
+                    Content="{x:Bind DisplayText, Mode=OneWay}" />
+            </DataTemplate>
+            <DataTemplate x:Key="StringParamTemplate" x:DataType="coreVm:StringParameterRunViewModel">
+                <TextBox
+                    MinHeight="32"
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Stretch"
+                    BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                    BorderThickness="1"
+                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                    PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
+                    Style="{StaticResource SearchTextBoxStyle}"
+                    Text="{x:Bind Text, Mode=TwoWay}" />
+            </DataTemplate>
+            <cpcontrols:ParameterRunTemplateSelector
+                x:Key="ParameterRunTemplateSelector"
+                ButtonParamTemplate="{StaticResource ButtonParamTemplate}"
+                LabelRunTemplate="{StaticResource LabelRunTemplate}"
+                StringParamTemplate="{StaticResource StringParamTemplate}" />
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <!--  Search box  -->
-    <TextBox
-        x:Name="FilterBox"
-        MinHeight="32"
-        VerticalAlignment="Stretch"
-        VerticalContentAlignment="Stretch"
-        AutomationProperties.AutomationId="MainSearchBox"
-        KeyDown="FilterBox_KeyDown"
-        PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Converter={StaticResource PlaceholderTextConverter}, Mode=OneWay}"
-        PreviewKeyDown="FilterBox_PreviewKeyDown"
-        PreviewKeyUp="FilterBox_PreviewKeyUp"
-        Style="{StaticResource SearchTextBoxStyle}"
-        TextChanged="FilterBox_TextChanged" />
-    <!--  Disabled Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}" for now, needs more work  -->
+    <controls:SwitchPresenter
+        HorizontalAlignment="Stretch"
+        TargetType="x:String"
+        Value="{x:Bind PageType, Mode=OneWay}">
+        <controls:Case Value="List">
+
+            <!--  Search box  -->
+            <TextBox
+                x:Name="FilterBox"
+                MinHeight="32"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
+                AutomationProperties.AutomationId="MainSearchBox"
+                KeyDown="FilterBox_KeyDown"
+                PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Converter={StaticResource PlaceholderTextConverter}, Mode=OneWay}"
+                PreviewKeyDown="FilterBox_PreviewKeyDown"
+                PreviewKeyUp="FilterBox_PreviewKeyUp"
+                Style="{StaticResource SearchTextBoxStyle}"
+                TextChanged="FilterBox_TextChanged" />
+            <!--  Disabled Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}" for now, needs more work  -->
+        </controls:Case>
+
+        <controls:Case Value="Parameters">
+
+            <ItemsControl
+                x:Name="ParametersBar"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                ItemTemplateSelector="{StaticResource ParameterRunTemplateSelector}"
+                ItemsSource="{x:Bind Parameters, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+
+        </controls:Case>
+    </controls:SwitchPresenter>
 </UserControl>

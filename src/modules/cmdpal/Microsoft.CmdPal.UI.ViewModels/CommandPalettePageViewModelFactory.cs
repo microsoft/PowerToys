@@ -23,6 +23,7 @@ public class CommandPalettePageViewModelFactory
         {
             IListPage listPage => new ListViewModel(listPage, _scheduler, host) { IsNested = nested },
             IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host),
+            IParametersPage paramsPage => new ParametersPageViewModel(paramsPage, _scheduler, host),
             _ => null,
         };
     }

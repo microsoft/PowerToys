@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Core.ViewModels;
@@ -19,6 +21,7 @@ using VirtualKey = Windows.System.VirtualKey;
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class SearchBar : UserControl,
+    INotifyPropertyChanged,
     IRecipient<GoHomeMessage>,
     IRecipient<FocusSearchBoxMessage>,
     IRecipient<UpdateSuggestionMessage>,
@@ -46,6 +49,8 @@ public sealed partial class SearchBar : UserControl,
     public static readonly DependencyProperty CurrentPageViewModelProperty =
         DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(SearchBar), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
 
+    public event PropertyChangedEventHandler? PropertyChanged;
+
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
@@ -67,7 +72,19 @@ public sealed partial class SearchBar : UserControl,
 
             page.PropertyChanged += @this.Page_PropertyChanged;
         }
+
+        @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
     }
+
+    public string PageType => CurrentPageViewModel switch
+    {
+        ListViewModel => "List",
+        ContentPageViewModel => "Content",
+        ParametersPageViewModel => "Parameters",
+        _ => string.Empty,
+    };
+
+    public ObservableCollection<ParameterRunViewModel>? Parameters => CurrentPageViewModel is ParametersPageViewModel ppvm ? ppvm.Items : null;
 
     public SearchBar()
     {
@@ -355,6 +372,13 @@ public sealed partial class SearchBar : UserControl,
                 SelectSearch();
             }
         }
+        else if (CurrentPageViewModel is ParametersPageViewModel parametersPage)
+        {
+            if (property == nameof(ParametersPageViewModel.Items))
+            {
+                this.PropertyChanged?.Invoke(this, new(nameof(Parameters)));
+            }
+        }
     }
 
     public void Receive(GoHomeMessage message) => ClearSearch();
@@ -451,5 +475,32 @@ public sealed partial class SearchBar : UserControl,
                 FilterBox.Select(matchedChars, suggestion.Length - matchedChars);
             }
         }));
+    }
+}
+
+#pragma warning disable SA1402 // File may only contain a single type
+public sealed partial class ParameterRunTemplateSelector : DataTemplateSelector
+#pragma warning restore SA1402 // File may only contain a single type
+{
+    public DataTemplate? LabelRunTemplate { get; set; }
+
+    public DataTemplate? StringParamTemplate { get; set; }
+
+    public DataTemplate? ButtonParamTemplate { get; set; }
+
+    protected override DataTemplate? SelectTemplateCore(object item)
+    {
+        return item switch
+        {
+            LabelRunViewModel => LabelRunTemplate,
+            StringParameterRunViewModel => StringParamTemplate,
+            CommandParameterRunViewModel => ButtonParamTemplate,
+            _ => base.SelectTemplateCore(item),
+        };
+    }
+
+    protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+    {
+        return SelectTemplateCore(item);
     }
 }
