@@ -377,4 +377,47 @@ namespace Microsoft.CommandPalette.Extensions
     };
     
 
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    [uuid("a2590cc9-510c-4af7-b562-a6b56fe37f55")]
+    interface IParameterRun requires INotifyPropChanged
+    {
+
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ILabelRun requires IParameterRun
+    {
+        String Text{ get; };
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IParameterValueRun requires IParameterRun
+    {
+        String PlaceholderText{ get; };
+        Boolean NeedsValue{ get; }; // TODO! name is weird
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IStringParameterRun requires IParameterValueRun
+    {
+        String Text{ get; set; };
+
+        // TODO! do we need a way to validate string inputs?
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandParameterRun requires IParameterValueRun
+    {
+        String DisplayText{ get; };
+        ICommand GetSelectValueCommand(UInt64 hostHwnd);
+        IIconInfo Icon{ get; }; // ? maybe
+
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IParametersPage requires IPage
+    {
+        IParameterRun[] Parameters{ get; };
+        IListItem Command{ get; };
+    };
 }
