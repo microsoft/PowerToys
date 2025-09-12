@@ -13,19 +13,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace LightSwitch.UITests
 {
     [TestClass]
-    public class TestUpdatingTime : UITestBase
+    public class TestOffset : UITestBase
     {
-        public TestUpdatingTime()
+        public TestOffset()
             : base(PowerToysModule.PowerToysSettings, WindowSize.Large)
         {
         }
 
-        [TestMethod("LightSwitch.UpdateTime")]
+        [TestMethod("LightSwitch.Offset")]
         [TestCategory("Time")]
-        public void TestScreenRulerBoundsTool()
+        public void TestTimeOffset()
         {
-            TestHelper.InitializeTest(this, "update time test");
-            TestHelper.PerformUpdateTimeTest(this);
+            TestHelper.InitializeTest(this, "offset test");
+            TestHelper.PerformOffsetTest(this);
             TestHelper.CleanupTest(this);
         }
     }

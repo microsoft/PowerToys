@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Win32;
@@ -89,7 +91,7 @@ namespace LightSwitch.UITests
         {
             if (string.IsNullOrEmpty(shortcutText))
             {
-                return new Key[] { Key.Win, Key.Ctrl, Key.Shift, Key.M };
+                return new Key[] { Key.Win, Key.Ctrl, Key.Shift, Key.D };
             }
 
             var keys = new List<Key>();
@@ -142,14 +144,52 @@ namespace LightSwitch.UITests
         /// <summary>
         /// Perform a update time test operation
         /// </summary>
-        public static void PerformUpdateTimeTest(UITestBase testBase)
+        public static void PerformOffsetTest(UITestBase testBase)
         {
             // TODO: Make sure in manual time mode
+            var modeCombobox = testBase.Session.Find<Element>(By.AccessibilityId("ModeSelection_LightSwitch"), 5000);
+            Assert.IsNotNull(modeCombobox, "Mode combobox not found.");
 
-            // TODO: Update light time, ensure time is updated in settings
+            if (modeCombobox.Text != "Sunset to sunrise")
+            {
+                modeCombobox.Click();
+                var sunriseListItem = testBase.Session.Find<Element>(By.AccessibilityId("SunCBItem_LightSwitch"), 5000);
+                Assert.IsNotNull(sunriseListItem, "Sunrise combobox item not found.");
+                sunriseListItem.Click();
+            }
 
-            // TODO: Update dark time, ensure time is update in settings
-            Assert.Fail("Not implemented");
+            Assert.AreEqual("Sunset to sunrise", modeCombobox.Text, "Mode combobox should be set to Sunset to sunrise.");
+
+            // Testing sunrise offset
+            var sunriseOffset = testBase.Session.Find<Element>(By.AccessibilityId("SunriseOffset_LightSwitch"), 5000);
+            Assert.IsNotNull(sunriseOffset, "Sunrise offset number box not found.");
+
+            var timeline = testBase.Session.Find<Element>(By.AccessibilityId("Timeline_LightSwitch"), 5000);
+            Assert.IsNotNull(timeline, "Timeline not found.");
+
+            var helpText = timeline.GetAttribute("HelpText");
+            string originalStartValue = GetHelpTextValue(helpText, "Start");
+
+            sunriseOffset.Click();
+
+            helpText = timeline.GetAttribute("HelpText");
+            string updatedStartValue = GetHelpTextValue(helpText, "Start");
+
+            Assert.AreNotEqual(originalStartValue, updatedStartValue, "Timeline start time should have been updated.");
+
+            // Testing sunset offset
+            var sunsetOffset = testBase.Session.Find<Element>(By.AccessibilityId("SunsetOffset_LightSwitch"), 5000);
+            Assert.IsNotNull(sunsetOffset, "Sunrise offset number box not found.");
+
+            helpText = timeline.GetAttribute("HelpText");
+            string originalEndValue = GetHelpTextValue(helpText, "End");
+
+            sunsetOffset.Click();
+
+            helpText = timeline.GetAttribute("HelpText");
+            string updatedEndValue = GetHelpTextValue(helpText, "End");
+
+            Assert.AreNotEqual(originalEndValue, updatedEndValue, "Timeline end time should have been updated.");
         }
 
         /// <summary>
@@ -221,6 +261,7 @@ namespace LightSwitch.UITests
             Assert.AreEqual(noneAppsBeforeValue, noneAppsAfterValue, "Apps theme should not have changed.");
         }
 
+        /* Helpers */
         private static int GetSystemTheme()
         {
             using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
@@ -241,6 +282,20 @@ namespace LightSwitch.UITests
             }
 
             return (int)key.GetValue("AppsUseLightTheme", 1);
+        }
+
+        private static string GetHelpTextValue(string helpText, string key)
+        {
+            foreach (var part in helpText.Split(';'))
+            {
+                var kv = part.Split('=');
+                if (kv.Length == 2 && kv[0] == key)
+                {
+                    return kv[1];
+                }
+            }
+
+            return string.Empty;
         }
     }
 }

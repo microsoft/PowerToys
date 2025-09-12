@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
@@ -133,6 +134,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             UpdateSunriseSunsetTicksLayout();
             UpdateSunPanelsLayout();
             UpdateMajorTickLabelsLayout();
+            AutomationProperties.SetHelpText(
+                this,
+                $"Start={StartTime};End={EndTime};Sunrise={Sunrise};Sunset={Sunset}");
         }
 
         // ===== Ticks =====

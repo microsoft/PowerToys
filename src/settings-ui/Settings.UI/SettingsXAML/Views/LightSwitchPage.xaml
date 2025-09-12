@@ -61,7 +61,8 @@
                             EndTime="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}"
                             StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
                             Sunrise="07:00"
-                            Sunset="21:00" />
+                            Sunset="21:00" 
+                          AutomationProperties.AutomationId="Timeline_LightSwitch"/>
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsExpander
@@ -72,16 +73,17 @@
                         <ComboBox
                             SelectedValue="{x:Bind ViewModel.ScheduleMode, Mode=TwoWay}"
                             SelectedValuePath="Tag"
-                            SelectionChanged="ScheduleMode_SelectionChanged">
-                            <ComboBoxItem Content="Manual" Tag="FixedHours" />
-                            <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunrise" />
+                            SelectionChanged="ScheduleMode_SelectionChanged"
+                            AutomationProperties.AutomationId="ModeSelection_LightSwitch">
+                            <ComboBoxItem Content="Manual" Tag="FixedHours" AutomationProperties.AutomationId="ManualCBItem_LightSwitch" />
+                            <ComboBoxItem Content="Sunset to sunrise" Tag="SunsetToSunrise" AutomationProperties.AutomationId="SunCBItem_LightSwitch" />
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Header="Turn off dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                                <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
+                                <TimePicker AutomationProperties.AutomationId="LightTimePicker" ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Header="Turn on dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                                <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
+                              <TimePicker AutomationProperties.AutomationId="DarkTimePicker" ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Description="Choose a location to automatically calculate accurate sunrise and sunset times"
@@ -103,7 +105,8 @@
                                     Maximum="60"
                                     Minimum="-60"
                                     SpinButtonPlacementMode="Inline"
-                                    Value="{x:Bind ViewModel.SunriseOffset, Mode=TwoWay}" />
+                                    Value="{x:Bind ViewModel.SunriseOffset, Mode=TwoWay}" 
+                                    AutomationProperties.AutomationId="SunriseOffset_LightSwitch" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Description="Adjust the trigger time by starting earlier or later than the actual sunset"
@@ -113,7 +116,8 @@
                                     Maximum="60"
                                     Minimum="-60"
                                     SpinButtonPlacementMode="Inline"
-                                    Value="{x:Bind ViewModel.SunsetOffset, Mode=TwoWay}" />
+                                    Value="{x:Bind ViewModel.SunsetOffset, Mode=TwoWay}" 
+                                    AutomationProperties.AutomationId="SunsetOffset_LightSwitch" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
