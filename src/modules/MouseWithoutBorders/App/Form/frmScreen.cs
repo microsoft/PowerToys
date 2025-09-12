@@ -139,13 +139,13 @@ namespace MouseWithoutBorders
             {
                 if (cleanup)
                 {
-                    Common.Cleanup();
+                    InitAndCleanup.Cleanup();
                 }
 
                 Helper.WndProcCounter++;
                 if (!Common.RunOnScrSaverDesktop)
                 {
-                    Common.ReleaseAllKeys();
+                    InitAndCleanup.ReleaseAllKeys();
                 }
 
                 Helper.RunDDHelper(true);
@@ -412,7 +412,7 @@ namespace MouseWithoutBorders
 
                         count = 0;
 
-                        Common.InitDone = true;
+                        InitAndCleanup.InitDone = true;
 #if SHOW_ON_WINLOGON
                         if (Common.RunOnLogonDesktop)
                         {
@@ -423,39 +423,39 @@ namespace MouseWithoutBorders
 
                     if ((count % 2) == 0)
                     {
-                        if (Common.PleaseReopenSocket == 10 || (Common.PleaseReopenSocket > 0 && count > 0 && count % 300 == 0))
+                        if (InitAndCleanup.PleaseReopenSocket == 10 || (InitAndCleanup.PleaseReopenSocket > 0 && count > 0 && count % 300 == 0))
                         {
-                            if (!Common.AtLeastOneSocketEstablished() || Common.PleaseReopenSocket == 10)
+                            if (!Common.AtLeastOneSocketEstablished() || InitAndCleanup.PleaseReopenSocket == 10)
                             {
                                 Thread.Sleep(1000);
-                                if (Common.PleaseReopenSocket > 0)
+                                if (InitAndCleanup.PleaseReopenSocket > 0)
                                 {
-                                    Common.PleaseReopenSocket--;
+                                    InitAndCleanup.PleaseReopenSocket--;
                                 }
 
                                 // Double check.
                                 if (!Common.AtLeastOneSocketEstablished())
                                 {
                                     Common.GetMachineName();
-                                    Logger.LogDebug("Common.pleaseReopenSocket: " + Common.PleaseReopenSocket.ToString(CultureInfo.InvariantCulture));
+                                    Logger.LogDebug("Common.pleaseReopenSocket: " + InitAndCleanup.PleaseReopenSocket.ToString(CultureInfo.InvariantCulture));
                                     Common.ReopenSockets(false);
                                     MachineStuff.NewDesMachineID = Common.DesMachineID = Common.MachineID;
                                 }
                             }
                             else
                             {
-                                Common.PleaseReopenSocket = 0;
+                                InitAndCleanup.PleaseReopenSocket = 0;
                             }
                         }
 
-                        if (Common.PleaseReopenSocket == Common.REOPEN_WHEN_HOTKEY)
+                        if (InitAndCleanup.PleaseReopenSocket == InitAndCleanup.REOPEN_WHEN_HOTKEY)
                         {
-                            Common.PleaseReopenSocket = 0;
+                            InitAndCleanup.PleaseReopenSocket = 0;
                             Common.ReopenSockets(true);
                         }
-                        else if (Common.PleaseReopenSocket == Common.REOPEN_WHEN_WSAECONNRESET)
+                        else if (InitAndCleanup.PleaseReopenSocket == InitAndCleanup.REOPEN_WHEN_WSAECONNRESET)
                         {
-                            Common.PleaseReopenSocket = 0;
+                            InitAndCleanup.PleaseReopenSocket = 0;
                             Thread.Sleep(1000);
                             MachineStuff.UpdateClientSockets("REOPEN_WHEN_WSAECONNRESET");
                         }
