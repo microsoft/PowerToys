@@ -394,7 +394,6 @@ void SuperSonar<D>::OnSonarKeyboardInput(RAWINPUT const& input)
                 GetCursorPos(&m_lastKeyPos);
                 UpdateMouseSnooping();
             }
-            Logger::info("Detecting double left control click with {} ms interval.", doubleClickInterval);
             m_lastKeyTime = now;
             m_lastKeyPos = ptCursor;
         }
@@ -533,7 +532,6 @@ void SuperSonar<D>::StartSonar()
         return;
     }
 
-    Logger::info("Focusing the sonar on the mouse cursor.");
     Trace::MousePointerFocused();
     // Cover the entire virtual screen.
     // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
@@ -1232,7 +1230,6 @@ void FindMyMouseApplySettings(const FindMyMouseSettings& settings)
 {
     if (m_sonar != nullptr)
     {
-        Logger::info("Applying settings.");
         m_sonar->ApplySettings(settings, true);
     }
 }
@@ -1241,7 +1238,6 @@ void FindMyMouseDisable()
 {
     if (m_sonar != nullptr)
     {
-        Logger::info("Terminating a sonar instance.");
         m_sonar->Terminate();
     }
 }
@@ -1254,7 +1250,6 @@ bool FindMyMouseIsEnabled()
 // Based on SuperSonar's original wWinMain.
 int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
 {
-    Logger::info("Starting a sonar instance.");
     if (m_sonar != nullptr)
     {
         Logger::error("A sonar instance was still working when trying to start a new one.");
@@ -1269,7 +1264,6 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
         return 0;
     }
     m_sonar = &sonar;
-    Logger::info("Initialized the sonar instance.");
 
     InitializeWinhookEventIds();
 
@@ -1282,7 +1276,6 @@ int FindMyMouseMain(HINSTANCE hinst, const FindMyMouseSettings& settings)
         DispatchMessage(&msg);
     }
 
-    Logger::info("Sonar message loop ended.");
     m_sonar = nullptr;
 
     return (int)msg.wParam;
