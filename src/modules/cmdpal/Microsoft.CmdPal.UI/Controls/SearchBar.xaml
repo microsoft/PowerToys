@@ -32,6 +32,7 @@
             <DataTemplate x:Key="StringParamTemplate" x:DataType="coreVm:StringParameterRunViewModel">
                 <TextBox
                     MinHeight="32"
+                    Padding="4,2"
                     VerticalAlignment="Center"
                     VerticalContentAlignment="Stretch"
                     BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}"
@@ -81,7 +82,7 @@
                 ItemsSource="{x:Bind Parameters, Mode=OneWay}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
+                        <StackPanel Orientation="Horizontal" Spacing="4" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>

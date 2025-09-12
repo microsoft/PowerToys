@@ -11,6 +11,7 @@
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
@@ -22,8 +23,89 @@
     <Page.Resources>
         <ResourceDictionary />
     </Page.Resources>
+
     <Grid>
-        <TextBlock Text="Parameters Page" />
+        <controls:SwitchPresenter
+            HorizontalAlignment="Stretch"
+            TargetType="x:Boolean"
+            Value="{x:Bind ViewModel.ShowCommand, Mode=OneWay}">
+            <controls:Case Value="False">
+                <!--<controls:SwitchPresenter
+                    HorizontalAlignment="Stretch"
+                    TargetType="x:Boolean"
+                    Value="{x:Bind ViewModel.IsGridView, Mode=OneWay}">
+                    <controls:Case Value="False">
+                        <ListView
+                            x:Name="ItemsList"
+                            Padding="0,2,0,0"
+                            ContextCanceled="Items_OnContextCanceled"
+                            ContextRequested="Items_OnContextRequested"
+                            DoubleTapped="Items_DoubleTapped"
+                            IsDoubleTapEnabled="True"
+                            IsItemClickEnabled="True"
+                            ItemClick="Items_ItemClick"
+                            ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+                            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                            RightTapped="Items_RightTapped"
+                            SelectionChanged="Items_SelectionChanged">
+                            <ListView.ItemContainerTransitions>
+                                <TransitionCollection />
+                            </ListView.ItemContainerTransitions>
+                        </ListView>
+                    </controls:Case>
+                    <controls:Case Value="True">
+                        <GridView
+                            x:Name="ItemsGrid"
+                            Padding="8"
+                            ContextCanceled="Items_OnContextCanceled"
+                            ContextRequested="Items_OnContextRequested"
+                            DoubleTapped="Items_DoubleTapped"
+                            IsDoubleTapEnabled="True"
+                            IsItemClickEnabled="True"
+                            ItemClick="Items_ItemClick"
+                            ItemTemplateSelector="{StaticResource GridItemTemplateSelector}"
+                            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                            RightTapped="Items_RightTapped"
+                            SelectionChanged="Items_SelectionChanged">
+                            <GridView.ItemContainerTransitions>
+                                <TransitionCollection />
+                            </GridView.ItemContainerTransitions>
+                        </GridView>
+                    </controls:Case>
+                </controls:SwitchPresenter>-->
+            </controls:Case>
+            <controls:Case Value="True">
+                <StackPanel
+                    Margin="24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Vertical"
+                    Spacing="4">
+                    <cmdPalControls:IconBox
+                        x:Name="IconBorder"
+                        Width="48"
+                        Height="48"
+                        Margin="8"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        SourceKey="{x:Bind ViewModel.Command.Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        HorizontalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="{x:Bind ViewModel.Command.Title, Mode=OneWay}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.Command.Subtitle, Mode=OneWay}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </controls:Case>
+
+        </controls:SwitchPresenter>
     </Grid>
 
 </Page>
