@@ -273,10 +273,26 @@ namespace Microsoft.CommandPalette.Extensions
         String Section { get; };
         String TextToSuggest { get; };
     }
+
+    [uuid("50C6F080-1CBE-4CE4-B92F-DA2F116ED524")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGridProperties requires INotifyPropChanged { }
+
+    [uuid("05914D59-6ECB-4992-9CF2-5982B5120A26")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ISmallGridLayout requires IGridProperties { }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IGridProperties  {
-        Windows.Foundation.Size TileSize { get; };
+    interface IMediumGridLayout requires IGridProperties
+    {
+        Boolean ShowTitle { get; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGalleryGridLayout requires IGridProperties
+    {
+        Boolean ShowTitle { get; };
+        Boolean ShowSubtitle { get; };
     }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
