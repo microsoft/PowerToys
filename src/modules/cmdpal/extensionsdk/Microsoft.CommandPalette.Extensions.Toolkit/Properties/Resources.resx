@@ -141,4 +141,20 @@
   <data name="ShowFileInFolderCommand_ShowInFolder" xml:space="preserve">
     <value>Show in folder</value>
   </data>
+  <data name="OpenInConsoleCommand_Name" xml:space="preserve">
+    <value>Open path in console</value>
+  </data>
+  <data name="OpenPropertiesCommand_Name" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="OpenFileCommand_Name" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="OpenWithCommand_Name" xml:space="preserve">
+    <value>Open with</value>
+  </data>
+  <data name="copy_failed" xml:space="preserve">
+    <value>Copy failed ({0}). Please try again.</value>
+    <comment>{0} is the error message</comment>
+  </data>
 </root>

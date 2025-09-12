@@ -17,3 +17,7 @@ SHCreateStreamOnFileEx
 CoAllowSetForegroundWindow
 SHCreateStreamOnFileEx
 SHLoadIndirectString
+CoCancelCall
+CoEnableCallCancellation
+CoDisableCallCancellation
+GetCurrentThreadId
