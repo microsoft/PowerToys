@@ -74,7 +74,7 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
     else
     {
         // Default to modification time if no specific flag is set
-        parsedTimeType = PowerRenameFlags::CreationTime;
+        parsedTimeType = PowerRenameFlags::CreationTime;    
     }
 
     if (m_isTimeParsed && parsedTimeType == m_parsedTimeType)
@@ -121,9 +121,9 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
                     }
                 }
             }
-        }
 
-        CloseHandle(hFile);
+            CloseHandle(hFile);
+        }
     }
     *time = m_time;
     return hr;

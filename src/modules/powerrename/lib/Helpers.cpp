@@ -1,9 +1,11 @@
 #include "pch.h"
 #include "Helpers.h"
+#include "MetadataTypes.h"
 #include <regex>
 #include <ShlGuid.h>
 #include <cstring>
 #include <filesystem>
+#include <unordered_map>
 
 namespace fs = std::filesystem;
 
@@ -271,6 +273,28 @@ bool isFileTimeUsed(_In_ PCWSTR source)
     return used;
 }
 
+bool isMetadataUsed(_In_ PCWSTR source)
+{
+    if (!source) return false;
+    
+    std::wstring str(source);
+    
+    // Get all possible metadata patterns from the extractor
+    auto allPatterns = PowerRenameLib::MetadataPatternExtractor::GetAllPossiblePatterns();
+    
+    // Check if any metadata pattern exists in the source string
+    for (const auto& pattern : allPatterns)
+    {
+        std::wstring searchPattern = L"$" + pattern;
+        if (str.find(searchPattern) != std::wstring::npos)
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME fileTime)
 {
     std::locale::global(std::locale(""));
@@ -378,6 +402,91 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
 
     return hr;
 }
+
+HRESULT GetMetadataFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, const PowerRenameLib::MetadataPatternMap& patterns)
+{
+    HRESULT hr = E_INVALIDARG;
+    if (source && wcslen(source) > 0)
+    {
+        std::wstring res(source);
+        std::wstring output;
+        output.reserve(res.length() * 2); // Reserve space to avoid frequent reallocations
+        
+        // Get all possible patterns to check
+        auto allPatterns = PowerRenameLib::MetadataPatternExtractor::GetAllPossiblePatterns();
+        
+        size_t i = 0;
+        while (i < res.length())
+        {
+            if (res[i] == L'$')
+            {
+                // Count consecutive $ symbols
+                size_t dollarCount = 0;
+                size_t start = i;
+                while (i < res.length() && res[i] == L'$')
+                {
+                    dollarCount++;
+                    i++;
+                }
+                
+                bool patternFound = false;
+                
+                // If we have an odd number of $, the last one might start a pattern
+                if (dollarCount % 2 == 1 && i < res.length())
+                {
+                    // Check for matching pattern
+                    for (const auto& pattern : allPatterns)
+                    {
+                        if (i + pattern.length() <= res.length() &&
+                            res.substr(i, pattern.length()) == pattern)
+                        {
+                            // Add the escaped $ symbols (dollarCount - 1) / 2 pairs
+                            for (size_t j = 0; j < (dollarCount - 1) / 2; j++)
+                            {
+                                output += L'$';
+                            }
+                            
+                            // Replace the pattern
+                            auto it = patterns.find(pattern);
+                            if (it != patterns.end() && !it->second.empty())
+                            {
+                                output += it->second;
+                            }
+                            else if (it != patterns.end() && it->second == L"unsupported")
+                            {
+                                output += L"unsupported";
+                            }
+                            else
+                            {
+                                output += L"unknown";
+                            }
+                            
+                            i += pattern.length();
+                            patternFound = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!patternFound)
+                {
+                    // No pattern found, add all $ symbols as-is
+                    output.append(dollarCount, L'$');
+                }
+            }
+            else
+            {
+                output += res[i];
+                i++;
+            }
+        }
+        
+        hr = StringCchCopy(result, cchMax, output.c_str());
+    }
+
+    return hr;
+}
+
 
 HRESULT GetShellItemArrayFromDataObject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
 {
