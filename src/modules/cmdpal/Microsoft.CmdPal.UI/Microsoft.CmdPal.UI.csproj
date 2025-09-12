@@ -39,12 +39,7 @@
 
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
-    <AppxBundlePlatforms>None</AppxBundlePlatforms>
-  </PropertyGroup>
-
-  <PropertyGroup>
-  <!-- Just for testing the pipeline -->
-    <GenerateTestArtifacts>false</GenerateTestArtifacts>
+    <AppxBundle>Never</AppxBundle>
   </PropertyGroup>
 
   <PropertyGroup>
