@@ -267,7 +267,7 @@ void MetadataPatternExtractor::AddDatePatterns(
 
 std::wstring MetadataPatternExtractor::FormatAperture(double aperture)
 {
-    return std::format(L"f/{:.1f}", aperture);
+    return std::format(L"f_{:.1f}", aperture);
 }
 
 std::wstring MetadataPatternExtractor::FormatShutterSpeed(double speed)
@@ -275,7 +275,7 @@ std::wstring MetadataPatternExtractor::FormatShutterSpeed(double speed)
     if (speed < 1.0)
     {
         int denominator = static_cast<int>(std::round(1.0 / speed));
-        return std::format(L"1/{}", denominator);
+        return std::format(L"1_{}", denominator);
     }
     else
     {
