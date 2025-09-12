@@ -124,6 +124,24 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Run as administrator.
+        /// </summary>
+        internal static string Indexer_Command_RunAsAdministrator {
+            get {
+                return ResourceManager.GetString("Indexer_Command_RunAsAdministrator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run as different user.
+        /// </summary>
+        internal static string Indexer_Command_RunAsDifferentUser {
+            get {
+                return ResourceManager.GetString("Indexer_Command_RunAsDifferentUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show in folder.
         /// </summary>
         internal static string Indexer_Command_ShowInFolder {
@@ -187,7 +205,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Tip: Improve your search result using filters like in Windows Explorer. (For example: type:directory).
+        ///   Looks up a localized string similar to Tip: Refine your search using filters, just like in File Explorer (e.g., type:directory)..
         /// </summary>
         internal static string Indexer_NoResultsMessageTip {
             get {

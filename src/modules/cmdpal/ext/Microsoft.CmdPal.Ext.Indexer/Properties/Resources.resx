@@ -186,4 +186,10 @@
   <data name="Indexer_NoResultsMessageTip" xml:space="preserve">
     <value>Tip: Refine your search using filters, just like in File Explorer (e.g., type:directory).</value>
   </data>
+  <data name="Indexer_Command_RunAsDifferentUser" xml:space="preserve">
+    <value>Run as different user</value>
+  </data>
+  <data name="Indexer_Command_RunAsAdministrator" xml:space="preserve">
+    <value>Run as administrator</value>
+  </data>
 </root>
