@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
@@ -80,11 +81,12 @@ public partial class LabelRunViewModel : ParameterRunViewModel
 
     public override void InitializeProperties()
     {
-        if (IsInitialized)
-        {
-            return;
-        }
+        base.InitializeProperties();
 
+        // if (IsInitialized)
+        // {
+        //    return;
+        // }
         var labelRun = _model.Unsafe;
         if (labelRun == null)
         {
@@ -114,11 +116,12 @@ public partial class ParameterValueRunViewModel : ParameterRunViewModel
 
     public override void InitializeProperties()
     {
-        if (IsInitialized)
-        {
-            return;
-        }
+        base.InitializeProperties();
 
+        // if (IsInitialized)
+        // {
+        //    return;
+        // }
         var valueRun = _model.Unsafe;
         if (valueRun == null)
         {
@@ -150,12 +153,12 @@ public partial class StringParameterRunViewModel : ParameterValueRunViewModel
 
     public override void InitializeProperties()
     {
-        if (IsInitialized)
-        {
-            return;
-        }
-
         base.InitializeProperties();
+
+        // if (IsInitialized)
+        // {
+        //    return;
+        // }
         var stringRun = _model.Unsafe;
         if (stringRun == null)
         {
@@ -213,12 +216,12 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
 
     public override void InitializeProperties()
     {
-        if (IsInitialized)
-        {
-            return;
-        }
-
         base.InitializeProperties();
+
+        // if (IsInitialized)
+        // {
+        //    return;
+        // }
         var commandRun = _model.Unsafe;
         if (commandRun == null)
         {
@@ -290,6 +293,18 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
     private void SetSearchText(string value)
     {
         _listViewModel?.SearchTextBox = value;
+    }
+
+    [RelayCommand]
+    public void Invoke()
+    {
+        if (_commandViewModel == null)
+        {
+            return;
+        }
+
+        PerformCommandMessage m = new(this._commandViewModel.Model);
+        WeakReferenceMessenger.Default.Send(m);
     }
 
     public void Dispose()
