@@ -3525,6 +3525,10 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         }
         if( destFile == nullptr ) {
 
+            if (stream) {
+                stream.Close();
+                stream = nullptr;
+            }
             co_await file.DeleteAsync();
         }
         else {
@@ -3544,6 +3548,10 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     }
     else {
 
+        if (stream) {
+            stream.Close();
+            stream = nullptr;
+        }
         co_await file.DeleteAsync();
         g_RecordingSession = nullptr;
     }
@@ -4016,7 +4024,10 @@ LRESULT APIENTRY MainWndProc(
             // Now copy crop or copy+save
             if( LOWORD( wParam ) == SNIP_SAVE_HOTKEY )
             {
+                // Hide cursor for screen capture
+                ShowCursor(false);
                 SendMessage( hWnd, WM_COMMAND, IDC_SAVE_CROP, ( zoomed ? 0 : SHALLOW_ZOOM ) );
+                ShowCursor(true);
             }
             else
             {
@@ -4047,12 +4058,6 @@ LRESULT APIENTRY MainWndProc(
                 {
                     OutputDebug( L"Exiting liveDraw after snip\n" );
                     SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
-                }
-                else
-                {
-                    // Set wparam to 1 to exit without animation
-                    OutputDebug(L"Exiting zoom after snip\n" );
-                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_DESTROY );
                 }
             }
             break;
@@ -5778,17 +5783,26 @@ LRESULT APIENTRY MainWndProc(
 
             if( !g_DrawingShape ) {
 
-                Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
-                if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
-                {
-                    dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                // If the point has changed, draw a line to it
+                if (prevPt.x != LOWORD(lParam) || prevPt.y != HIWORD(lParam)) {
+                    Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
+                    if ((GetWindowLong(g_hWndMain, GWL_EXSTYLE) & WS_EX_LAYERED) == 0)
+                    {
+                        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                    }
+                    Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
+                    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+                    Gdiplus::GraphicsPath path;
+                    pen.SetLineJoin(Gdiplus::LineJoinRound);
+                    path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
+                    dstGraphics.DrawPath(&pen, &path);
                 }
-                Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
-                Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
-                Gdiplus::GraphicsPath path;
-                pen.SetLineJoin(Gdiplus::LineJoinRound);
-                path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
-                dstGraphics.DrawPath(&pen, &path);
+                // Draw a dot at the current point, if the point hasn't changed
+                else {
+                    MoveToEx(hdcScreenCompat, prevPt.x, prevPt.y, NULL);
+                    LineTo(hdcScreenCompat, LOWORD(lParam), HIWORD(lParam));
+                    InvalidateRect(hWnd, NULL, FALSE);
+                }
 
                 prevPt.x = LOWORD( lParam );
                 prevPt.y = HIWORD( lParam );
