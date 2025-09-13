@@ -5,7 +5,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
     <controls:OOBEPageControl x:Uid="Oobe_Workspaces" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/Workspaces.png">
@@ -13,12 +13,12 @@
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <tk7controls:MarkdownTextBlock x:Uid="Oobe_Workspaces_HowToUse" Background="Transparent" />
+                <tkcontrols:MarkdownTextBlock x:Uid="Oobe_Workspaces_HowToUse" />
                 <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_Workspaces_HowToUse_Shortcut" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <tk7controls:MarkdownTextBlock x:Uid="Oobe_Workspaces_TipsAndTricks" Background="Transparent" />
+                <tkcontrols:MarkdownTextBlock x:Uid="Oobe_Workspaces_TipsAndTricks" />
 
                 <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
 

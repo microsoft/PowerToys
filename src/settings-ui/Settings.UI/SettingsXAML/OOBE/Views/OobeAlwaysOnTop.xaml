@@ -5,7 +5,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
     <controls:OOBEPageControl x:Uid="Oobe_AlwaysOnTop" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/AlwaysOnTop.png">
@@ -17,7 +17,7 @@
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <tk7controls:MarkdownTextBlock x:Uid="Oobe_AlwaysOnTop_TipsAndTricks" Background="Transparent" />
+                <tkcontrols:MarkdownTextBlock x:Uid="Oobe_AlwaysOnTop_TipsAndTricks" />
 
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />

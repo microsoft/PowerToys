@@ -1509,7 +1509,6 @@ SOFTWARE.
 - CommunityToolkit.WinUI.Converters
 - CommunityToolkit.WinUI.Extensions
 - CommunityToolkit.WinUI.UI.Controls.DataGrid
-- CommunityToolkit.WinUI.UI.Controls.Markdown
 - ControlzEx
 - HelixToolkit
 - HelixToolkit.Core.Wpf
