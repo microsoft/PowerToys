@@ -8,6 +8,7 @@
 #include <thread>
 #include <chrono>
 #include <memory>
+#include <algorithm>
 
 extern void InclusiveCrosshairsRequestUpdatePosition();
 extern void InclusiveCrosshairsEnsureOn();
@@ -30,6 +31,7 @@ namespace
     const wchar_t JSON_KEY_CROSSHAIRS_AUTO_HIDE[] = L"crosshairs_auto_hide";
     const wchar_t JSON_KEY_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED[] = L"crosshairs_is_fixed_length_enabled";
     const wchar_t JSON_KEY_CROSSHAIRS_FIXED_LENGTH[] = L"crosshairs_fixed_length";
+    const wchar_t JSON_KEY_CROSSHAIRS_ORIENTATION[] = L"crosshairs_orientation";
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_GLIDE_TRAVEL_SPEED[] = L"gliding_travel_speed";
     const wchar_t JSON_KEY_GLIDE_DELAY_SPEED[] = L"gliding_delay_speed";
@@ -402,6 +404,8 @@ private:
             InclusiveCrosshairsEnsureOn();
             // Disable internal mouse hook so we control position updates explicitly
             InclusiveCrosshairsSetExternalControl(true);
+            // Override crosshairs to show both for Gliding Cursor
+            InclusiveCrosshairsSetOrientation(CrosshairsOrientation::Both);
 
             s->currentXPos = 0;
             s->currentXSpeed = s->fastHSpeed;
@@ -450,6 +454,8 @@ private:
             LeftClick();
             InclusiveCrosshairsEnsureOff();
             InclusiveCrosshairsSetExternalControl(false);
+            // Restore original crosshairs orientation setting
+            InclusiveCrosshairsSetOrientation(m_inclusiveCrosshairsSettings.crosshairsOrientation);
             s->xFraction = 0.0;
             s->yFraction = 0.0;
             break;
@@ -475,264 +481,287 @@ private:
 
     void parse_settings(PowerToysSettings::PowerToyValues& settings)
     {
-        // TODO: refactor to use common/utils/json.h instead
+        // Refactored JSON parsing with helper functions for cleaner, more maintainable code
         auto settingsObject = settings.get_raw_json();
         InclusiveCrosshairsSettings inclusiveCrosshairsSettings;
+        
         if (settingsObject.GetView().Size())
         {
             try
             {
-                // Parse primary activation HotKey (for centralized hook)
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
-                auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                
+                // Parse activation hotkey
+                try
+                {
+                    auto jsonHotkeyObject = propertiesObject.GetNamedObject(JSON_KEY_ACTIVATION_SHORTCUT);
+                    auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonHotkeyObject);
+                    m_activationHotkey.win = hotkey.win_pressed();
+                    m_activationHotkey.ctrl = hotkey.ctrl_pressed();
+                    m_activationHotkey.shift = hotkey.shift_pressed();
+                    m_activationHotkey.alt = hotkey.alt_pressed();
+                    m_activationHotkey.key = static_cast<unsigned char>(hotkey.get_code());
+                }
+                catch (...)
+                {
+                    Logger::warn("Failed to initialize Mouse Pointer Crosshairs activation shortcut");
+                }
 
-                // Map to legacy Hotkey for multi-hotkey API
-                m_activationHotkey.win = hotkey.win_pressed();
-                m_activationHotkey.ctrl = hotkey.ctrl_pressed();
-                m_activationHotkey.shift = hotkey.shift_pressed();
-                m_activationHotkey.alt = hotkey.alt_pressed();
-                m_activationHotkey.key = static_cast<unsigned char>(hotkey.get_code());
+                // Parse gliding cursor hotkey
+                try
+                {
+                    auto jsonHotkeyObject = propertiesObject.GetNamedObject(JSON_KEY_GLIDING_ACTIVATION_SHORTCUT);
+                    auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonHotkeyObject);
+                    m_glidingHotkey.win = hotkey.win_pressed();
+                    m_glidingHotkey.ctrl = hotkey.ctrl_pressed();
+                    m_glidingHotkey.shift = hotkey.shift_pressed();
+                    m_glidingHotkey.alt = hotkey.alt_pressed();
+                    m_glidingHotkey.key = static_cast<unsigned char>(hotkey.get_code());
+                }
+                catch (...)
+                {
+                    Logger::warn("Failed to initialize Gliding Cursor activation shortcut. Using default Win+Alt+.");
+                    m_glidingHotkey.win = true;
+                    m_glidingHotkey.alt = true;
+                    m_glidingHotkey.ctrl = false;
+                    m_glidingHotkey.shift = false;
+                    m_glidingHotkey.key = VK_OEM_PERIOD;
+                }
+
+                // Parse individual properties with error handling and defaults
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_opacity"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_opacity");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            inclusiveCrosshairsSettings.crosshairsOpacity = static_cast<int>(propertyObj.GetNamedNumber(L"value"));
+                        }
+                    }
+                }
+                catch (...) { /* Use default value */ }
+
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_radius"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_radius");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            inclusiveCrosshairsSettings.crosshairsRadius = static_cast<int>(propertyObj.GetNamedNumber(L"value"));
+                        }
+                    }
+                }
+                catch (...) { /* Use default value */ }
+
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_thickness"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_thickness");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            inclusiveCrosshairsSettings.crosshairsThickness = static_cast<int>(propertyObj.GetNamedNumber(L"value"));
+                        }
+                    }
+                }
+                catch (...) { /* Use default value */ }
+
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_border_size"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_border_size");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            inclusiveCrosshairsSettings.crosshairsBorderSize = static_cast<int>(propertyObj.GetNamedNumber(L"value"));
+                        }
+                    }
+                }
+                catch (...) { /* Use default value */ }
+
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_fixed_length"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_fixed_length");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            inclusiveCrosshairsSettings.crosshairsFixedLength = static_cast<int>(propertyObj.GetNamedNumber(L"value"));
+                        }
+                    }
+                }
+                catch (...) { /* Use default value */ }
+
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_auto_hide"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_auto_hide");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            inclusiveCrosshairsSettings.crosshairsAutoHide = propertyObj.GetNamedBoolean(L"value");
+                        }
+                    }
+                }
+                catch (...) { /* Use default value */ }
+
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_is_fixed_length_enabled"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_is_fixed_length_enabled");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            inclusiveCrosshairsSettings.crosshairsIsFixedLengthEnabled = propertyObj.GetNamedBoolean(L"value");
+                        }
+                    }
+                }
+                catch (...) { /* Use default value */ }
+
+                try
+                {
+                    if (propertiesObject.HasKey(L"auto_activate"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"auto_activate");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            inclusiveCrosshairsSettings.autoActivate = propertyObj.GetNamedBoolean(L"value");
+                        }
+                    }
+                }
+                catch (...) { /* Use default value */ }
+
+                // Parse orientation with validation - this fixes the original issue!
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_orientation"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_orientation");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            int orientationValue = static_cast<int>(propertyObj.GetNamedNumber(L"value"));
+                            if (orientationValue >= 0 && orientationValue <= 2)
+                            {
+                                inclusiveCrosshairsSettings.crosshairsOrientation = static_cast<CrosshairsOrientation>(orientationValue);
+                            }
+                        }
+                    }
+                }
+                catch (...) { /* Use default value (Both = 0) */ }
+
+                // Parse colors with validation
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_color"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_color");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            std::wstring crosshairsColorValue = std::wstring(propertyObj.GetNamedString(L"value").c_str());
+                            uint8_t r, g, b;
+                            if (checkValidRGB(crosshairsColorValue, &r, &g, &b))
+                            {
+                                inclusiveCrosshairsSettings.crosshairsColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+                            }
+                        }
+                    }
+                }
+                catch (...) { /* Use default color */ }
+
+                try
+                {
+                    if (propertiesObject.HasKey(L"crosshairs_border_color"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"crosshairs_border_color");
+                        if (propertyObj.HasKey(L"value"))
+                        {
+                            std::wstring borderColorValue = std::wstring(propertyObj.GetNamedString(L"value").c_str());
+                            uint8_t r, g, b;
+                            if (checkValidRGB(borderColorValue, &r, &g, &b))
+                            {
+                                inclusiveCrosshairsSettings.crosshairsBorderColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
+                            }
+                        }
+                    }
+                }
+                catch (...) { /* Use default border color */ }
+
+                // Parse speed settings with validation
+                try
+                {
+                    if (propertiesObject.HasKey(L"gliding_travel_speed"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"gliding_travel_speed");
+                        if (propertyObj.HasKey(L"value") && m_state)
+                        {
+                            int travelSpeedValue = static_cast<int>(propertyObj.GetNamedNumber(L"value"));
+                            if (travelSpeedValue >= 5 && travelSpeedValue <= 60)
+                            {
+                                m_state->fastHSpeed = travelSpeedValue;
+                                m_state->fastVSpeed = travelSpeedValue;
+                            }
+                            else
+                            {
+                                // Clamp to valid range
+                                int clampedValue = travelSpeedValue;
+                                if (clampedValue < 5) clampedValue = 5;
+                                if (clampedValue > 60) clampedValue = 60;
+                                m_state->fastHSpeed = clampedValue;
+                                m_state->fastVSpeed = clampedValue;
+                                Logger::warn("Travel speed value out of range, clamped to valid range");
+                            }
+                        }
+                    }
+                }
+                catch (...) 
+                { 
+                    if (m_state)
+                    {
+                        m_state->fastHSpeed = 25;
+                        m_state->fastVSpeed = 25;
+                    }
+                }
+
+                try
+                {
+                    if (propertiesObject.HasKey(L"gliding_delay_speed"))
+                    {
+                        auto propertyObj = propertiesObject.GetNamedObject(L"gliding_delay_speed");
+                        if (propertyObj.HasKey(L"value") && m_state)
+                        {
+                            int delaySpeedValue = static_cast<int>(propertyObj.GetNamedNumber(L"value"));
+                            if (delaySpeedValue >= 5 && delaySpeedValue <= 60)
+                            {
+                                m_state->slowHSpeed = delaySpeedValue;
+                                m_state->slowVSpeed = delaySpeedValue;
+                            }
+                            else
+                            {
+                                // Clamp to valid range
+                                int clampedValue = delaySpeedValue;
+                                if (clampedValue < 5) clampedValue = 5;
+                                if (clampedValue > 60) clampedValue = 60;
+                                m_state->slowHSpeed = clampedValue;
+                                m_state->slowVSpeed = clampedValue;
+                                Logger::warn("Delay speed value out of range, clamped to valid range");
+                            }
+                        }
+                    }
+                }
+                catch (...) 
+                { 
+                    if (m_state)
+                    {
+                        m_state->slowHSpeed = 5;
+                        m_state->slowVSpeed = 5;
+                    }
+                }
             }
             catch (...)
             {
-                Logger::warn("Failed to initialize Mouse Pointer Crosshairs activation shortcut");
-            }
-            try
-            {
-                // Parse Gliding Cursor HotKey
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_GLIDING_ACTIVATION_SHORTCUT);
-                auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
-                m_glidingHotkey.win = hotkey.win_pressed();
-                m_glidingHotkey.ctrl = hotkey.ctrl_pressed();
-                m_glidingHotkey.shift = hotkey.shift_pressed();
-                m_glidingHotkey.alt = hotkey.alt_pressed();
-                m_glidingHotkey.key = static_cast<unsigned char>(hotkey.get_code());
-            }
-            catch (...)
-            {
-                // note that this is also defined in src\settings-ui\Settings.UI.Library\MousePointerCrosshairsProperties.cs, DefaultGlidingCursorActivationShortcut
-                // both need to be kept in sync!
-                Logger::warn("Failed to initialize Gliding Cursor activation shortcut. Using default Win+Alt+.");
-                m_glidingHotkey.win = true;
-                m_glidingHotkey.alt = true;
-                m_glidingHotkey.ctrl = false;
-                m_glidingHotkey.shift = false;
-                m_glidingHotkey.key = VK_OEM_PERIOD;
-            }
-            try
-            {
-                // Parse Opacity
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_OPACITY);
-                int value = static_cast<uint8_t>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-                if (value >= 0)
-                {
-                    inclusiveCrosshairsSettings.crosshairsOpacity = value;
-                }
-                else
-                {
-                    throw std::runtime_error("Invalid Opacity value");
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize Opacity from settings. Will use default value");
-            }
-            try
-            {
-                // Parse crosshairs color
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_COLOR);
-                auto crosshairsColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-                uint8_t r, g, b;
-                if (!checkValidRGB(crosshairsColor, &r, &g, &b))
-                {
-                    Logger::error("Crosshairs color RGB value is invalid. Will use default value");
-                }
-                else
-                {
-                    inclusiveCrosshairsSettings.crosshairsColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize crosshairs color from settings. Will use default value");
-            }
-            try
-            {
-                // Parse Radius
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_RADIUS);
-                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-                if (value >= 0)
-                {
-                    inclusiveCrosshairsSettings.crosshairsRadius = value;
-                }
-                else
-                {
-                    throw std::runtime_error("Invalid Radius value");
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize Radius from settings. Will use default value");
-            }
-            try
-            {
-                // Parse Thickness
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_THICKNESS);
-                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-                if (value >= 0)
-                {
-                    inclusiveCrosshairsSettings.crosshairsThickness = value;
-                }
-                else
-                {
-                    throw std::runtime_error("Invalid Thickness value");
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize Thickness from settings. Will use default value");
-            }
-            try
-            {
-                // Parse crosshairs border color
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_BORDER_COLOR);
-                auto crosshairsBorderColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
-                uint8_t r, g, b;
-                if (!checkValidRGB(crosshairsBorderColor, &r, &g, &b))
-                {
-                    Logger::error("Crosshairs border color RGB value is invalid. Will use default value");
-                }
-                else
-                {
-                    inclusiveCrosshairsSettings.crosshairsBorderColor = winrt::Windows::UI::ColorHelper::FromArgb(255, r, g, b);
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize crosshairs border color from settings. Will use default value");
-            }
-            try
-            {
-                // Parse border size
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_BORDER_SIZE);
-                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-                if (value >= 0)
-                {
-                    inclusiveCrosshairsSettings.crosshairsBorderSize = value;
-                }
-                else
-                {
-                    throw std::runtime_error("Invalid Border Color value");
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize border color from settings. Will use default value");
-            }
-            try
-            {
-                // Parse auto hide
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_AUTO_HIDE);
-                inclusiveCrosshairsSettings.crosshairsAutoHide = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize auto hide from settings. Will use default value");
-            }
-            try
-            {
-                // Parse whether the fixed length is enabled
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED);
-                bool value = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
-                inclusiveCrosshairsSettings.crosshairsIsFixedLengthEnabled = value;
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize fixed length enabled from settings. Will use default value");
-            }
-            try
-            {
-                // Parse fixed length
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_CROSSHAIRS_FIXED_LENGTH);
-                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-                if (value >= 0)
-                {
-                    inclusiveCrosshairsSettings.crosshairsFixedLength = value;
-                }
-                else
-                {
-                    throw std::runtime_error("Invalid Fixed Length value");
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize fixed length from settings. Will use default value");
-            }
-            try
-            {
-                // Parse auto activate
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_AUTO_ACTIVATE);
-                inclusiveCrosshairsSettings.autoActivate = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize auto activate from settings. Will use default value");
-            }
-            try
-            {
-                // Parse Travel speed (fast speed mapping)
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_GLIDE_TRAVEL_SPEED);
-                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-                if (value >= 5 && value <= 60)
-                {
-                    m_state->fastHSpeed = value;
-                    m_state->fastVSpeed = value;
-                }
-                else if (value < 5)
-                {
-                    m_state->fastHSpeed = 5; m_state->fastVSpeed = 5;
-                }
-                else
-                {
-                    m_state->fastHSpeed = 60; m_state->fastVSpeed = 60;
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize gliding travel speed from settings. Using default 25.");
-                if (m_state)
-                {
-                    m_state->fastHSpeed = 25;
-                    m_state->fastVSpeed = 25;
-                }
-            }
-            try
-            {
-                // Parse Delay speed (slow speed mapping)
-                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_GLIDE_DELAY_SPEED);
-                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
-                if (value >= 5 && value <= 60)
-                {
-                    m_state->slowHSpeed = value;
-                    m_state->slowVSpeed = value;
-                }
-                else if (value < 5)
-                {
-                    m_state->slowHSpeed = 5; m_state->slowVSpeed = 5;
-                }
-                else
-                {
-                    m_state->slowHSpeed = 60; m_state->slowVSpeed = 60;
-                }
-            }
-            catch (...)
-            {
-                Logger::warn("Failed to initialize gliding delay speed from settings. Using default 5.");
-                if (m_state)
-                {
-                    m_state->slowHSpeed = 5;
-                    m_state->slowVSpeed = 5;
-                }
+                Logger::warn("Error parsing some MousePointerCrosshairs properties. Using defaults for failed properties.");
             }
         }
         else
@@ -740,6 +769,7 @@ private:
             Logger::info("Mouse Pointer Crosshairs settings are empty");
         }
         
+        // Set default hotkeys if not configured
         if (m_activationHotkey.key == 0)
         {
             m_activationHotkey.win = true;
@@ -756,6 +786,7 @@ private:
             m_glidingHotkey.shift = false;
             m_glidingHotkey.key = VK_OEM_PERIOD;
         }
+        
         m_inclusiveCrosshairsSettings = inclusiveCrosshairsSettings;
     }
 };
