@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -17,15 +18,51 @@ namespace Microsoft.CmdPal.Core.ViewModels;
 
 public abstract partial class ParameterRunViewModel : ExtensionObjectViewModel
 {
+    private ExtensionObject<IParameterRun> _model;
+
     internal InitializedState Initialized { get; set; } = InitializedState.Uninitialized;
 
     protected bool IsInitialized => IsInErrorState || Initialized.HasFlag(InitializedState.Initialized);
 
     public bool IsInErrorState => Initialized.HasFlag(InitializedState.Error);
 
-    internal ParameterRunViewModel(WeakReference<IPageContext> context)
+    internal ParameterRunViewModel(IParameterRun model, WeakReference<IPageContext> context)
         : base(context)
     {
+        _model = new(model);
+    }
+
+    public override void InitializeProperties()
+    {
+        if (IsInitialized)
+        {
+            return;
+        }
+
+        var model = _model.Unsafe;
+        if (model == null)
+        {
+            return;
+        }
+
+        model.PropChanged += Model_PropChanged;
+    }
+
+    private void Model_PropChanged(object sender, IPropChangedEventArgs args)
+    {
+        try
+        {
+            FetchProperty(args.PropertyName);
+        }
+        catch (Exception ex)
+        {
+            ShowException(ex);
+        }
+    }
+
+    protected virtual void FetchProperty(string propertyName)
+    {
+        // Override in derived classes
     }
 }
 
@@ -36,7 +73,7 @@ public partial class LabelRunViewModel : ParameterRunViewModel
     public string Text { get; set; } = string.Empty;
 
     public LabelRunViewModel(ILabelRun labelRun, WeakReference<IPageContext> context)
-        : base(context)
+        : base(labelRun, context)
     {
         _model = new(labelRun);
     }
@@ -70,7 +107,7 @@ public partial class ParameterValueRunViewModel : ParameterRunViewModel
     public bool NeedsValue { get; set; }
 
     public ParameterValueRunViewModel(IParameterValueRun valueRun, WeakReference<IPageContext> context)
-        : base(context)
+        : base(valueRun, context)
     {
         _model = new(valueRun);
     }
@@ -147,18 +184,31 @@ public partial class StringParameterRunViewModel : ParameterValueRunViewModel
     }
 }
 
-public partial class CommandParameterRunViewModel : ParameterValueRunViewModel
+public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, IDisposable
 {
     private ExtensionObject<ICommandParameterRun> _model;
+
+    private ListViewModel? _listViewModel;
+    private CommandViewModel? _commandViewModel;
+    private AppExtensionHost _extensionHost;
 
     public string DisplayText { get; set; } = string.Empty;
 
     public IconInfoViewModel Icon { get; set; } = new(null);
 
-    public CommandParameterRunViewModel(ICommandParameterRun commandRun, WeakReference<IPageContext> context)
+    public string ButtonLabel => !string.IsNullOrEmpty(DisplayText) ? DisplayText : string.Empty;
+
+    public string SearchBoxText
+    {
+        get => GetSearchText();
+        set => SetSearchText(value);
+    }
+
+    public CommandParameterRunViewModel(ICommandParameterRun commandRun, WeakReference<IPageContext> context, AppExtensionHost extensionHost)
         : base(commandRun, context)
     {
         _model = new(commandRun);
+        _extensionHost = extensionHost;
     }
 
     public override void InitializeProperties()
@@ -182,8 +232,70 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel
             Icon.InitializeProperties();
         }
 
+        GetHwndMessage msg = new();
+        WeakReferenceMessenger.Default.Send(msg);
+        var command = commandRun.GetSelectValueCommand((ulong)msg.Hwnd);
+        if (command == null)
+        {
+        }
+        else if (command is IListPage list)
+        {
+            if (PageContext.TryGetTarget(out var pageContext))
+            {
+                _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost);
+                _listViewModel.InitializeProperties();
+            }
+        }
+        else if (command is IInvokableCommand invokable)
+        {
+            _commandViewModel = new CommandViewModel(invokable, this.PageContext);
+            _commandViewModel.InitializeProperties();
+        }
+
         UpdateProperty(nameof(DisplayText));
         UpdateProperty(nameof(Icon));
+    }
+
+    protected override void FetchProperty(string propertyName)
+    {
+        var model = this._model.Unsafe;
+        if (model is null)
+        {
+            return; // throw?
+        }
+
+        switch (propertyName)
+        {
+            case nameof(ICommandParameterRun.DisplayText):
+                DisplayText = model.DisplayText;
+                break;
+            case nameof(ICommandParameterRun.Icon):
+                Icon = new(model.Icon);
+                if (Icon is not null)
+                {
+                    Icon.InitializeProperties();
+                }
+
+                break;
+        }
+
+        UpdateProperty(propertyName);
+    }
+
+    private string GetSearchText()
+    {
+        return _listViewModel?.SearchText ?? string.Empty;
+    }
+
+    private void SetSearchText(string value)
+    {
+        _listViewModel?.SearchTextBox = value;
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _listViewModel?.Dispose();
     }
 }
 
@@ -257,7 +369,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     ILabelRun labelRun => new LabelRunViewModel(labelRun, PageContext),
                     IStringParameterRun stringRun => new StringParameterRunViewModel(stringRun, PageContext),
-                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(commandRun, PageContext),
+                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(commandRun, PageContext, this.ExtensionHost),
                     _ => null,
                 };
                 if (itemVm != null)

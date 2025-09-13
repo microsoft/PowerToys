@@ -50,6 +50,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowPaletteAtMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
+<<<<<<< HEAD
     IRecipient<NavigateToPageMessage>,
     IRecipient<NavigationDepthMessage>,
     IRecipient<SearchQueryMessage>,
@@ -59,6 +60,10 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ToggleDevRibbonMessage>,
     IDisposable,
     IHostWindow
+=======
+    IRecipient<GetHwndMessage>,
+    IDisposable
+>>>>>>> e970c18de (Make some things observable)
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_")]
@@ -135,6 +140,29 @@ public sealed partial class MainWindow : WindowEx,
 
         _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
 
+<<<<<<< HEAD
+=======
+        this.SetIcon();
+        AppWindow.Title = RS_.GetString("AppName");
+        PositionCentered();
+        SetAcrylic();
+
+        WeakReferenceMessenger.Default.Register<DismissMessage>(this);
+        WeakReferenceMessenger.Default.Register<QuitMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
+
+        // Hide our titlebar.
+        // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
+        // to hide the old caption buttons. Then, in UpdateRegionsForCustomTitleBar,
+        // we'll make the top drag-able again. (after our content loads)
+        ExtendsContentIntoTitleBar = true;
+        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+        SizeChanged += WindowSizeChanged;
+        RootShellPage.Loaded += RootShellPage_Loaded;
+
+>>>>>>> e970c18de (Make some things observable)
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
         // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
@@ -1362,6 +1390,7 @@ public sealed partial class MainWindow : WindowEx,
         DisposeAcrylic();
     }
 
+<<<<<<< HEAD
     void IRecipient<ShowPaletteAtMessage>.Receive(ShowPaletteAtMessage message) => Receive(message);
 
     public void Receive(ToggleDevRibbonMessage message)
@@ -1407,5 +1436,10 @@ public sealed partial class MainWindow : WindowEx,
         {
             PInvoke.SetForegroundWindow(_hwnd);
         }
+=======
+    public void Receive(GetHwndMessage message)
+    {
+        message.Hwnd = this.GetWindowHandle();
+>>>>>>> e970c18de (Make some things observable)
     }
 }

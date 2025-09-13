@@ -130,6 +130,11 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of a command that takes simple parameters",
 >>>>>>> e557e052f (Wire it up to the UI, painfully, but it works)
         },
+        new ListItem(new ButtonParameterTest())
+        {
+            Title = "Button parameters page",
+            Subtitle = "A demo of a command that takes simple parameters",
+        },
 
         // Evil edge cases
         // Anything weird that might break the palette - put that in here.
