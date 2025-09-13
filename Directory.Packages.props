@@ -37,6 +37,7 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.8" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Windows.CppWinRT" Version="2.0.240111.5" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.8" />
