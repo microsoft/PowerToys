@@ -36,7 +36,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
     public IAsyncAction HideStatus(IStatusMessage? message)
     {
-        if (message == null)
+        if (message is null)
         {
             return Task.CompletedTask.AsAsyncAction();
         }
@@ -55,7 +55,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
     public IAsyncAction LogMessage(ILogMessage? message)
     {
-        if (message == null)
+        if (message is null)
         {
             return Task.CompletedTask.AsAsyncAction();
         }
@@ -80,7 +80,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
                 try
                 {
                     var vm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
-                    if (vm != null)
+                    if (vm is not null)
                     {
                         StatusMessages.Remove(vm);
                     }
@@ -113,7 +113,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
     {
         // If this message is already in the list of messages, just bring it to the top
         var oldVm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();
-        if (oldVm != null)
+        if (oldVm is not null)
         {
             Task.Factory.StartNew(
                 () =>
@@ -142,7 +142,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
     public IAsyncAction ShowStatus(IStatusMessage? message, StatusContext context)
     {
-        if (message == null)
+        if (message is null)
         {
             return Task.CompletedTask.AsAsyncAction();
         }

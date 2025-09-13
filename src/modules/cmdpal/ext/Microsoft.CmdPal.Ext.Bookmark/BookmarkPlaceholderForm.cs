@@ -73,7 +73,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
         // parse the submitted JSON and then open the link
         var formInput = JsonNode.Parse(payload);
         var formObject = formInput?.AsObject();
-        if (formObject == null)
+        if (formObject is null)
         {
             return CommandResult.GoHome();
         }

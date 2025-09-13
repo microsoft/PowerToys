@@ -170,7 +170,7 @@ public class Win32Program : IProgram
 
     public bool QueryEqualsNameForRunCommands(string query)
     {
-        if (query != null && AppType == ApplicationType.RunCommand)
+        if (query is not null && AppType == ApplicationType.RunCommand)
         {
             // Using OrdinalIgnoreCase since this is used internally
             if (!query.Equals(Name, StringComparison.OrdinalIgnoreCase) && !query.Equals(ExecutableName, StringComparison.OrdinalIgnoreCase))
@@ -191,33 +191,43 @@ public class Win32Program : IProgram
             commands.Add(new CommandContextItem(
                     new RunAsAdminCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory, false))
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter),
+                RequestedShortcut = KeyChords.RunAsAdministrator,
             });
 
             commands.Add(new CommandContextItem(
                     new RunAsUserCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory))
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.U),
+                RequestedShortcut = KeyChords.RunAsDifferentUser,
             });
         }
 
         commands.Add(new CommandContextItem(
-                    new Commands.CopyPathCommand(FullPath))
+                    new CopyTextCommand(FullPath) { Name = Resources.copy_path })
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
+            RequestedShortcut = KeyChords.CopyFilePath,
         });
 
         commands.Add(new CommandContextItem(
                     new OpenPathCommand(ParentDirectory))
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E),
+            RequestedShortcut = KeyChords.OpenFileLocation,
         });
 
         commands.Add(new CommandContextItem(
                     new OpenInConsoleCommand(ParentDirectory))
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
+            RequestedShortcut = KeyChords.OpenInConsole,
         });
+
+        if (AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
+        {
+            commands.Add(new CommandContextItem(
+                new UninstallApplicationConfirmation(this))
+            {
+                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
+                IsCritical = true,
+            });
+        }
 
         return commands;
     }
@@ -667,7 +677,7 @@ public class Win32Program : IProgram
         var paths = new List<string>();
         using (var root = Registry.LocalMachine.OpenSubKey(appPaths))
         {
-            if (root != null)
+            if (root is not null)
             {
                 paths.AddRange(GetPathsFromRegistry(root));
             }
@@ -675,7 +685,7 @@ public class Win32Program : IProgram
 
         using (var root = Registry.CurrentUser.OpenSubKey(appPaths))
         {
-            if (root != null)
+            if (root is not null)
             {
                 paths.AddRange(GetPathsFromRegistry(root));
             }
@@ -700,7 +710,7 @@ public class Win32Program : IProgram
         {
             using (var key = root.OpenSubKey(subkey))
             {
-                if (key == null)
+                if (key is null)
                 {
                     return string.Empty;
                 }
@@ -742,13 +752,13 @@ public class Win32Program : IProgram
 
         public bool Equals(Win32Program? app1, Win32Program? app2)
         {
-            if (app1 == null && app2 == null)
+            if (app1 is null && app2 is null)
             {
                 return true;
             }
 
-            return app1 != null
-                    && app2 != null
+            return app1 is not null
+                    && app2 is not null
                     && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
                     .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
         }
@@ -908,7 +918,7 @@ public class Win32Program : IProgram
             Parallel.ForEach(paths, source =>
             {
                 var program = GetProgramFromPath(source);
-                if (program != null)
+                if (program is not null)
                 {
                     programsList.Add(program);
                 }
@@ -918,7 +928,7 @@ public class Win32Program : IProgram
             Parallel.ForEach(runCommandPaths, source =>
             {
                 var program = GetRunCommandProgramFromPath(source);
-                if (program != null)
+                if (program is not null)
                 {
                     runCommandProgramsList.Add(program);
                 }

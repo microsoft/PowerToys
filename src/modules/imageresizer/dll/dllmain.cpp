@@ -14,6 +14,7 @@
 #include <common/utils/resources.h>
 #include <common/utils/logger_helper.h>
 #include <interface/powertoy_module_interface.h>
+#include "RuntimeRegistration.h"
 
 CImageResizerExtModule _AtlModule;
 HINSTANCE g_hInst_imageResizer = 0;
@@ -42,11 +43,32 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
+    // Update registration based on enabled state
+    void UpdateRegistration(bool enabled)
+    {
+        if (enabled)
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            ImageResizerRuntimeRegistration::EnsureRegistered();
+            Logger::info(L"ImageResizer context menu registered");
+#endif
+        }
+        else
+        {
+#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)
+            ImageResizerRuntimeRegistration::Unregister();
+            Logger::info(L"ImageResizer context menu unregistered");
+#endif
+        }
+    }
+
+
 public:
     // Constructor
     ImageResizerModule()
     {
         m_enabled = CSettingsInstance().GetEnabled();
+        UpdateRegistration(m_enabled);
         app_name = GET_RESOURCE_STRING(IDS_IMAGERESIZER);
         app_key = ImageResizerConstants::ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::imageResizerLoggerName);
@@ -106,13 +128,12 @@ public:
         {
             std::wstring path = get_module_folderpath(g_hInst_imageResizer);
             std::wstring packageUri = path + L"\\ImageResizerContextMenuPackage.msix";
-
             if (!package::IsPackageRegisteredWithPowerToysVersion(ImageResizerConstants::ModulePackageDisplayName))
             {
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
-
+        UpdateRegistration(m_enabled);
         Trace::EnableImageResizer(m_enabled);
     }
 
@@ -120,6 +141,7 @@ public:
     virtual void disable()
     {
         m_enabled = false;
+        UpdateRegistration(m_enabled);
         Trace::EnableImageResizer(m_enabled);
     }
 

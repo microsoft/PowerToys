@@ -42,6 +42,8 @@ public partial class SettingsModel : ObservableObject
 
     public bool IgnoreShortcutWhenFullscreen { get; set; }
 
+    public bool AllowExternalReload { get; set; }
+
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
     public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
@@ -95,7 +97,7 @@ public partial class SettingsModel : ObservableObject
 
             var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, JsonSerializationContext.Default.SettingsModel);
 
-            Debug.WriteLine(loaded != null ? "Loaded settings file" : "Failed to parse");
+            Debug.WriteLine(loaded is not null ? "Loaded settings file" : "Failed to parse");
 
             return loaded ?? new();
         }

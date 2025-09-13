@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -14,6 +13,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Data.Json;
+using WinRT.Interop;
 using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
@@ -104,7 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.Overview));
+                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.Overview));
                 }
 
                 App.GetOobeWindow().Activate();
@@ -115,7 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(Microsoft.PowerToys.Settings.UI.OOBE.Enums.PowerToysModules.WhatsNew));
+                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew));
                 }
                 else
                 {
@@ -160,6 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI
             });
 
             this.InitializeComponent();
+            SetAppTitleBar();
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
@@ -184,6 +185,13 @@ namespace Microsoft.PowerToys.Settings.UI
             bootTime.Stop();
 
             PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
+        }
+
+        private void SetAppTitleBar()
+        {
+            // We need to assign the window here so it can configure the custom title bar area correctly.
+            shellPage.TitleBar.Window = this;
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
         }
 
         public void NavigateToSection(System.Type type)

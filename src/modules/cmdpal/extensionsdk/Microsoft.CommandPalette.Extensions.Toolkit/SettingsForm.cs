@@ -19,7 +19,7 @@ public partial class SettingsForm : FormContent
     public override ICommandResult SubmitForm(string inputs, string data)
     {
         var formInput = JsonNode.Parse(inputs)?.AsObject();
-        if (formInput == null)
+        if (formInput is null)
         {
             return CommandResult.KeepOpen();
         }

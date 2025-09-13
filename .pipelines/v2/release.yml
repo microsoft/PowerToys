@@ -20,6 +20,11 @@ parameters:
     type: string
     default: '0.0.1'
 
+  - name: installerSuffix
+    type: string
+    displayName: "WiX5 installer suffix (e.g., 'wix5', 'vnext', etc.)"
+    default: "wix5"
+
   - name: buildConfigurations
     displayName: "Build Configurations"
     type: object
@@ -64,6 +69,10 @@ extends:
       tsa:
         enabled: true
         configFile: '$(Build.SourcesDirectory)\.pipelines\tsa.json'
+      binskim:
+        enabled: true
+        # Exclude every dll/exe in tests/*, as well as all msdia*, covrun* and vcruntime*
+        analyzeTargetGlob: +:file|$(Build.ArtifactStagingDirectory)/**/*.dll;+:file|$(Build.ArtifactStagingDirectory)/**/*.exe;-:file:regex|tests.*\.(dll|exe)$;-:file:regex|(covrun.*)\.dll$;-:file:regex|(msdia.*)\.dll$;-:file:regex|(vcruntime.*)\.dll$
 
     stages:
       - stage: Build
@@ -100,7 +109,8 @@ extends:
                 useManagedIdentity: $(SigningUseManagedIdentity)
                 clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
-              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=${{ parameters.enableAOT }}
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=${{ parameters.enableAOT }} /p:InstallerSuffix=${{ parameters.installerSuffix }}
+              installerSuffix: ${{ parameters.installerSuffix }}
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
