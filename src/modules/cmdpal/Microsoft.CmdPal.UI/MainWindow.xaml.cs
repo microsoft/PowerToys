@@ -46,6 +46,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
+    IRecipient<GetHwndMessage>,
     IDisposable
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
@@ -87,6 +88,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -746,5 +748,10 @@ public sealed partial class MainWindow : WindowEx,
     {
         _localKeyboardListener.Dispose();
         DisposeAcrylic();
+    }
+
+    public void Receive(GetHwndMessage message)
+    {
+        message.Hwnd = this.GetWindowHandle();
     }
 }

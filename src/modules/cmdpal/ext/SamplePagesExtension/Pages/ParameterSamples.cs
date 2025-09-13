@@ -48,6 +48,38 @@ public sealed partial class SimpleParameterTest : ParametersPage
     public override IListItem Command => new ListItem(_command);
 }
 
+public sealed partial class ButtonParameterTest : ParametersPage
+{
+    private readonly CommandParameterRun _stringParameter;
+    private readonly InvokableCommand _command;
+
+    public ButtonParameterTest()
+    {
+        Name = "Open";
+        _stringParameter = new FilePickerParameterRun();
+
+        _command = new AnonymousCommand(() =>
+        {
+            var input = _stringParameter.Value?.ToString();
+            var toast = new ToastStatusMessage(new StatusMessage() { Message = $"You entered: '{input}'" });
+            toast.Show();
+        })
+        {
+            Name = "Submit",
+            Icon = new IconInfo("\uE724"), // Send
+            Result = CommandResult.KeepOpen(),
+        };
+    }
+
+    public override IParameterRun[] Parameters => new IParameterRun[]
+    {
+        new LabelRun("Enter a value:"),
+        _stringParameter,
+    };
+
+    public override IListItem Command => new ListItem(_command);
+}
+
 public sealed partial class CreateNoteParametersPage : ParametersPage
 {
     private readonly SelectFolderPage _selectFolderPage = new();

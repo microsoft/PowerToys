@@ -42,6 +42,19 @@
                     Style="{StaticResource SearchTextBoxStyle}"
                     Text="{x:Bind Text, Mode=TwoWay}" />
             </DataTemplate>
+            <DataTemplate x:Key="ListParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
+                <TextBox
+                    MinHeight="32"
+                    Padding="4,2"
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Stretch"
+                    BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                    BorderThickness="1"
+                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                    PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
+                    Style="{StaticResource SearchTextBoxStyle}"
+                    Text="{x:Bind SearchBoxText, Mode=TwoWay}" />
+            </DataTemplate>
             <cpcontrols:ParameterRunTemplateSelector
                 x:Key="ParameterRunTemplateSelector"
                 ButtonParamTemplate="{StaticResource ButtonParamTemplate}"

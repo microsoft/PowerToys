@@ -95,7 +95,7 @@ public partial class StringParameterRun : ParameterValueRun, IStringParameterRun
     }
 }
 
-public partial class CommandParameterRun : ParameterValueRun
+public partial class CommandParameterRun : ParameterValueRun, ICommandParameterRun
 {
     private string? _displayText;
 
@@ -164,35 +164,25 @@ internal sealed partial class FilePickerParameterRun : CommandParameterRun
 {
     public StorageFile? File { get; private set; }
 
+    public override string? DisplayText { get => File != null ? File.DisplayName : "Select a file"; }
+
     public FilePickerParameterRun()
     {
         var command = new FilePickerCommand();
         command.FileSelected += (s, file) =>
         {
             File = file;
-            if (file != null)
-            {
-                Value = file;
-                DisplayText = file.Name;
-
-                // Icon = new IconInfo("File");
-            }
-            else
-            {
-                Value = null;
-                DisplayText = null;
-
-                // Icon = new IconInfo("File");
-            }
+            Value = file != null ? file : (object?)null;
+            OnPropertyChanged(nameof(DisplayText));
         };
         PlaceholderText = "Select a file";
-        Icon = new IconInfo("File");
+        Icon = new IconInfo("\uE710"); // Add
         Command = command;
     }
 
     private sealed partial class FilePickerCommand : InvokableCommand, IRequiresHostHwnd
     {
-        public override IconInfo Icon => new("File");
+        public override IconInfo Icon => new("\uE710"); // Add
 
         public override string Name => "Pick a file";
 
