@@ -49,5 +49,8 @@ namespace Awake.Core.Native
         // Menu Item Info Flags
         internal const uint MNS_AUTO_DISMISS = 0x10000000;
         internal const uint MIM_STYLE = 0x00000010;
+
+        // Attach Console
+        internal const int ATTACH_PARENT_PROCESS = -1;
     }
 }
