@@ -1,6 +1,6 @@
 param (
     [string]$certSubject = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-    [string[]]$TargetPaths = "C:\PowerToys\ARM64\Release\WinUI3Apps\CmdPal\AppPackages\Microsoft.CmdPal.UI_0.0.1.0_arm64_Test\Microsoft.CmdPal.UI_0.0.1.0_arm64.msix"
+    [string[]]$TargetPaths = "C:\PowerToys\ARM64\Release\WinUI3Apps\CmdPal\AppPackages\Microsoft.CmdPal.UI_0.0.1.0_Test\Microsoft.CmdPal.UI_0.0.1.0_arm64.msix"
 )
 
 . "$PSScriptRoot\cert-management.ps1"

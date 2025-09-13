@@ -13,41 +13,34 @@
         </Directory>
       </Directory>
     </DirectoryRef>
-    <?if $(sys.BUILDARCH) = x64 ?>
-    <DirectoryRef Id="CmdPalInstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_x64_Test">
+    <DirectoryRef Id="CmdPalInstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test">
       <Component Id="Module_CmdPal" Guid="3A4942B2-1A86-4182-B3B4-65157365A980" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Module_CmdPal" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Id="Microsoft.CmdPal.UI___var.CmdPalVersion_._x64.msix" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_x64_Test\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_x64.msix" />
+        <?if $(sys.BUILDARCH) = x64 ?>
+        <File Id="Microsoft.CmdPal.UI___var.CmdPalVersion_._x64.msix" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_x64.msix" />
+        <?else?>
+        <File Id="Microsoft.CmdPal.UI___var.CmdPalVersion_._arm64.msix" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_arm64.msix" />
+        <?endif?>
       </Component>
     </DirectoryRef>
-    <?else?>
-    <DirectoryRef Id="CmdPalInstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_arm64_Test">
-      <Component Id="Module_CmdPal" Guid="3A4942B2-1A86-4182-B3B4-65157365A980" Bitness="always64">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="Module_CmdPal" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <File Id="Microsoft.CmdPal.UI___var.CmdPalVersion_._arm64.msix" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_arm64_Test\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_arm64.msix" />
-      </Component>
-    </DirectoryRef>
-    <?endif?>
     <?if $(sys.BUILDARCH) = x64 ?>
-    <DirectoryRef Id="CmdPalDepsX64InstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_x64_Test\Dependencies\x64">
+    <DirectoryRef Id="CmdPalDepsX64InstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\x64">
       <Component Id="Module_CmdPal_Deps" Guid="C2790FC4-0665-4462-947A-D942A2AABFF0" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Id="Microsoft.VCLibs.x64.14.00.Desktop.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_x64_Test\Dependencies\x64\Microsoft.VCLibs.x64.14.00.Desktop.appx" />
+        <File Id="Microsoft.VCLibs.x64.14.00.Desktop.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\x64\Microsoft.VCLibs.x64.14.00.Desktop.appx" />
       </Component>
     </DirectoryRef>
     <?else?>
-    <DirectoryRef Id="CmdPalDepsArm64InstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_arm64_Test\Dependencies\arm64">
+    <DirectoryRef Id="CmdPalDepsArm64InstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\arm64">
       <Component Id="Module_CmdPal_Deps" Guid="C2790FC4-0665-4462-947A-D942A2AABFF0" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Id="Microsoft.VCLibs.ARM64.14.00.Desktop.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_arm64_Test\Dependencies\arm64\Microsoft.VCLibs.ARM64.14.00.Desktop.appx" />
+        <File Id="Microsoft.VCLibs.ARM64.14.00.Desktop.appx" Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test\Dependencies\arm64\Microsoft.VCLibs.ARM64.14.00.Desktop.appx" />
       </Component>
     </DirectoryRef>
     <?endif?>
