@@ -151,6 +151,24 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exiting because the parent process ID could not be found..
+        /// </summary>
+        internal static string AWAKE_EXIT_PARENT_BINDING_FAILURE_MESSAGE {
+            get {
+                return ResourceManager.GetString("AWAKE_EXIT_PARENT_BINDING_FAILURE_MESSAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exiting because the requested process ID could not be found..
+        /// </summary>
+        internal static string AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE {
+            get {
+                return ResourceManager.GetString("AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Received a signal to end the process. Making sure we quit....
         /// </summary>
         internal static string AWAKE_EXIT_SIGNAL_MESSAGE {

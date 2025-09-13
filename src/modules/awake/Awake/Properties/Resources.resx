@@ -226,4 +226,10 @@
   <data name="AWAKE_SCREEN_OFF" xml:space="preserve">
     <value>Off</value>
   </data>
+  <data name="AWAKE_EXIT_PARENT_BINDING_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the parent process ID could not be found.</value>
+  </data>
+  <data name="AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the requested process ID could not be found.</value>
+  </data>
 </root>
