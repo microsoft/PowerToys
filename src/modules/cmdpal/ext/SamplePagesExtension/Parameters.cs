@@ -58,12 +58,30 @@ public partial class ParameterValueRun : BaseObservable, IParameterValueRun
 
     private bool _needsValue = true;
 
+    // _required | _needsValue | out
+    // F         | F           | T
+    // F         | T           | T
+    // T         | F           | F
+    // T         | T           | T
     public virtual bool NeedsValue
     {
-        get => _needsValue;
+        get => !_required || _needsValue;
         set
         {
             _needsValue = value;
+            OnPropertyChanged(nameof(NeedsValue));
+        }
+    }
+
+    // Toolkit helper
+    private bool _required = true;
+
+    public virtual bool Required
+    {
+        get => _required;
+        set
+        {
+            _required = value;
             OnPropertyChanged(nameof(NeedsValue));
         }
     }
@@ -203,7 +221,8 @@ internal sealed partial class FilePickerParameterRun : CommandParameterRun
 
         private async void PickFileAsync()
         {
-            var picker = new FileOpenPicker();
+            var picker = new FileOpenPicker() { };
+            picker.FileTypeFilter.Add("*");
 
             // You need to initialize the picker with a window handle in WinUI 3 desktop apps
             // See https://learn.microsoft.com/en-us/windows/apps/design/controls/file-open-picker

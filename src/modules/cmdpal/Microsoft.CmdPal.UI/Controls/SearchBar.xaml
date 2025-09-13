@@ -27,6 +27,7 @@
                     MinHeight="32"
                     VerticalAlignment="Center"
                     VerticalContentAlignment="Stretch"
+                    Command="{x:Bind InvokeCommand, Mode=OneWay}"
                     Content="{x:Bind DisplayText, Mode=OneWay}" />
             </DataTemplate>
             <DataTemplate x:Key="StringParamTemplate" x:DataType="coreVm:StringParameterRunViewModel">

@@ -50,20 +50,15 @@ public sealed partial class SimpleParameterTest : ParametersPage
 
 public sealed partial class ButtonParameterTest : ParametersPage
 {
-    private readonly CommandParameterRun _stringParameter;
+    private readonly CommandParameterRun _fileParameter;
     private readonly InvokableCommand _command;
 
     public ButtonParameterTest()
     {
         Name = "Open";
-        _stringParameter = new FilePickerParameterRun();
+        _fileParameter = new FilePickerParameterRun();
 
-        _command = new AnonymousCommand(() =>
-        {
-            var input = _stringParameter.Value?.ToString();
-            var toast = new ToastStatusMessage(new StatusMessage() { Message = $"You entered: '{input}'" });
-            toast.Show();
-        })
+        _command = new AnonymousCommand(HandleInvoke)
         {
             Name = "Submit",
             Icon = new IconInfo("\uE724"), // Send
@@ -73,11 +68,29 @@ public sealed partial class ButtonParameterTest : ParametersPage
 
     public override IParameterRun[] Parameters => new IParameterRun[]
     {
-        new LabelRun("Enter a value:"),
-        _stringParameter,
+        new LabelRun("Pick a file:"),
+        _fileParameter,
+        new LabelRun("and we'll open it"),
     };
 
     public override IListItem Command => new ListItem(_command);
+
+    private void HandleInvoke()
+    {
+        var input = (Windows.Storage.StorageFile?)_fileParameter.Value;
+        ToastStatusMessage? toast;
+        if (_fileParameter.Value is Windows.Storage.StorageFile file)
+        {
+            toast = new ToastStatusMessage(new StatusMessage() { Message = $"You entered: '{file.Path}'", State = MessageState.Success });
+            ShellHelpers.OpenInShell(file.Path);
+        }
+        else
+        {
+            toast = new ToastStatusMessage(new StatusMessage() { Message = $"no file selected", State = MessageState.Warning });
+        }
+
+        toast?.Show();
+    }
 }
 
 public sealed partial class CreateNoteParametersPage : ParametersPage
