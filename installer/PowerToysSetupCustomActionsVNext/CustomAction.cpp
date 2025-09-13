@@ -3,6 +3,7 @@
 #include "RcResource.h"
 #include <ProjectTelemetry.h>
 #include <spdlog/sinks/base_sink.h>
+#include <filesystem>
 
 #include "../../src/common/logger/logger.h"
 #include "../../src/common/utils/gpo.h"
@@ -232,7 +233,9 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
         auto action = [&commandLine](HANDLE userToken)
         {
-            STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
+            STARTUPINFO startupInfo = { 0 };
+            startupInfo.cb = sizeof(STARTUPINFO);
+            startupInfo.wShowWindow = SW_SHOWNORMAL;
             PROCESS_INFORMATION processInformation;
 
             PVOID lpEnvironment = NULL;
@@ -271,7 +274,9 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     }
     else
     {
-        STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
+        STARTUPINFO startupInfo = { 0 };
+        startupInfo.cb = sizeof(STARTUPINFO);
+        startupInfo.wShowWindow = SW_SHOWNORMAL;
 
         PROCESS_INFORMATION processInformation;
 
@@ -398,6 +403,130 @@ LExit:
     return WcaFinalize(er);
 }
 
+// Generate DSC manifests during install by invoking PowerToys.DSC.exe
+UINT __stdcall GenerateDscManifestCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+    std::wstring exePath;
+    std::wstring args;
+    std::wstring commandLine;
+    STARTUPINFO startupInfo = { 0 };
+    PROCESS_INFORMATION processInformation = { 0 };
+    DWORD exitCode = 0;
+
+    hr = WcaInitialize(hInstall, "GenerateDscManifest");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    // Build executable path: <INSTALLFOLDER>\PowerToys.DSC.exe
+    exePath = installationFolder + L"\\PowerToys.DSC.exe";
+
+    // Build args: manifest --resource settings --outputDir "<INSTALLFOLDER>"
+    args = L"manifest --resource settings --outputDir \"" + installationFolder + L"\"";
+    commandLine = L"\"" + exePath + L"\" " + args;
+
+    // Try to start the process and wait for it to finish; ignore failures (best-effort)
+    startupInfo.cb = sizeof(STARTUPINFO);
+    startupInfo.wShowWindow = SW_HIDE;
+
+    if (!CreateProcess(
+            nullptr,
+            commandLine.data(),
+            nullptr,
+            nullptr,
+            FALSE,
+            CREATE_DEFAULT_ERROR_MODE,
+            nullptr,
+            nullptr,
+            &startupInfo,
+            &processInformation))
+    {
+        Logger::error(L"GenerateDscManifestCA: failed to launch DSC manifest generator");
+        // Don't fail installation on error
+        goto LExit;
+    }
+
+    // Wait for completion
+    WaitForSingleObject(processInformation.hProcess, INFINITE);
+
+    if (GetExitCodeProcess(processInformation.hProcess, &exitCode))
+    {
+        if (exitCode != 0)
+        {
+            Logger::warn(L"GenerateDscManifestCA: manifest generator exited with non-zero code");
+        }
+        else
+        {
+            Logger::info(L"GenerateDscManifestCA: manifests generated successfully");
+        }
+    }
+
+    if (!CloseHandle(processInformation.hProcess))
+    {
+        Logger::warn(L"GenerateDscManifestCA: failed to close process handle");
+    }
+    if (!CloseHandle(processInformation.hThread))
+    {
+        Logger::warn(L"GenerateDscManifestCA: failed to close thread handle");
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+// Delete any *.dsc.json files under the install folder on uninstall
+UINT __stdcall DeleteDscJsonFilesCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "DeleteDscJsonFiles");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    try
+    {
+        std::filesystem::path root{ installationFolder };
+        if (std::filesystem::exists(root) && std::filesystem::is_directory(root))
+        {
+            for (auto const &entry : std::filesystem::recursive_directory_iterator(root, std::filesystem::directory_options::skip_permission_denied))
+            {
+                if (!entry.is_regular_file()) continue;
+                const auto &p = entry.path();
+                if (p.has_extension() && _wcsicmp(p.extension().c_str(), L".json") == 0)
+                {
+                    auto name = p.filename().wstring();
+                    if (name.size() >= 9 && _wcsicmp(name.c_str() + (name.size() - 9), L".dsc.json") == 0)
+                    {
+                        std::error_code ec;
+                        std::filesystem::remove(p, ec);
+                        if (ec)
+                        {
+                            Logger::warn(L"DeleteDscJsonFilesCA: failed to delete %s", p.c_str());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        Logger::warn(L"DeleteDscJsonFilesCA: exception while deleting files");
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 const wchar_t *DSC_CONFIGURE_PSD1_NAME = L"Microsoft.PowerToys.Configure.psd1";
 const wchar_t *DSC_CONFIGURE_PSM1_NAME = L"Microsoft.PowerToys.Configure.psm1";
 
@@ -424,7 +553,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
         const auto modulesPath = baseModulesPath / L"Microsoft.PowerToys.Configure" / (get_product_version(false) + L".0");
 
         std::error_code errorCode;
-        fs::create_directories(modulesPath, errorCode);
+        std::filesystem::create_directories(modulesPath, errorCode);
         if (errorCode)
         {
             hr = E_FAIL;
@@ -433,7 +562,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
-            fs::copy_file(fs::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, fs::copy_options::overwrite_existing, errorCode);
+            std::filesystem::copy_file(std::filesystem::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, std::filesystem::copy_options::overwrite_existing, errorCode);
 
             if (errorCode)
             {
@@ -481,7 +610,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
-            fs::remove(versionedModulePath / filename, errorCode);
+            std::filesystem::remove(versionedModulePath / filename, errorCode);
 
             if (errorCode)
             {
@@ -492,7 +621,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         for (const auto *modulePath : {&versionedModulePath, &powerToysModulePath})
         {
-            fs::remove(*modulePath, errorCode);
+            std::filesystem::remove(*modulePath, errorCode);
 
             if (errorCode)
             {
