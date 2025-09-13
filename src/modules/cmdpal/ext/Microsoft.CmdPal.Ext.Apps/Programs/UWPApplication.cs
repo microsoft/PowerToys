@@ -87,7 +87,7 @@ public class UWPApplication : IUWPApplication
                 new CommandContextItem(
                     new RunAsAdminCommand(UniqueIdentifier, string.Empty, true))
                 {
-                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter),
+                    RequestedShortcut = KeyChords.RunAsAdministrator,
                 });
 
             // We don't add context menu to 'run as different user', because UWP applications normally installed per user and not for all users.
@@ -97,7 +97,7 @@ public class UWPApplication : IUWPApplication
             new CommandContextItem(
                 new CopyTextCommand(Location) { Name = Resources.copy_path })
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.C),
+                RequestedShortcut = KeyChords.CopyFilePath,
             });
 
         commands.Add(
@@ -107,14 +107,14 @@ public class UWPApplication : IUWPApplication
                     Name = Resources.open_containing_folder,
                 })
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.E),
+                RequestedShortcut = KeyChords.OpenFileLocation,
             });
 
         commands.Add(
         new CommandContextItem(
             new OpenInConsoleCommand(Package.Location))
         {
-            RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.R),
+            RequestedShortcut = KeyChords.OpenInConsole,
         });
 
         commands.Add(

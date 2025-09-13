@@ -247,6 +247,7 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
+coreclr
 constexpr
 contentdialog
 contentfiles
@@ -268,6 +269,8 @@ cpcontrols
 cph
 cplusplus
 CPower
+cpptools
+cppvsdbg
 cppwinrt
 createdump
 CREATEPROCESS
@@ -279,6 +282,7 @@ CRH
 critsec
 cropandlock
 Crossdevice
+csdevkit
 CSearch
 CSettings
 cso
@@ -306,6 +310,7 @@ CXVIRTUALSCREEN
 CYSCREEN
 CYSMICON
 CYVIRTUALSCREEN
+Czechia
 cziplib
 Dac
 dacl
@@ -330,6 +335,7 @@ Deact
 debugbreak
 decryptor
 Dedup
+Deduplicator
 Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
@@ -435,6 +441,7 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 ekus
+emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
 ENABLETAB
@@ -799,6 +806,7 @@ KEYBOARDMANAGEREDITORLIBRARYWRAPPER
 keyboardmanagerstate
 keyboardmanagerui
 keyboardtester
+keycap
 KEYEVENTF
 KEYIMAGE
 keynum
@@ -1447,7 +1455,6 @@ rstringalnum
 rstringalpha
 rstringdigit
 rtb
-RTB
 RTLREADING
 rtm
 runas
@@ -1780,10 +1787,13 @@ UACUI
 UAL
 uap
 UBR
+UBreak
+ubrk
 UCallback
 ucrt
 ucrtd
 uefi
+UError
 uesc
 UFlags
 UHash
@@ -1791,6 +1801,7 @@ UIA
 UIEx
 uild
 uitests
+UITo
 ULONGLONG
 ums
 uncompilable
@@ -1853,6 +1864,7 @@ VFT
 vget
 vgetq
 viewmodels
+virama
 VIRTKEY
 VIRTUALDESK
 VISEGRADRELAY
@@ -2004,6 +2016,7 @@ XButton
 xclip
 xcopy
 XDeployment
+xdf
 XDocument
 XElement
 xfd
