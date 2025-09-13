@@ -20,6 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _hasConflict;
         private string _conflictDescription;
         private bool _isSystemConflict;
+        private bool _ignoreConflict;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -57,9 +58,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HasConflict = false;
         }
 
+        public bool IgnoreConflict
+        {
+            get => _ignoreConflict;
+            set
+            {
+                if (_ignoreConflict != value)
+                {
+                    _ignoreConflict = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        [JsonIgnore]
         public bool HasConflict
         {
-            get => _hasConflict;
+            get => !_ignoreConflict && _hasConflict;
             set
             {
                 if (_hasConflict != value)
@@ -70,9 +85,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonIgnore]
         public string ConflictDescription
         {
-            get => _conflictDescription ?? string.Empty;
+            get => _ignoreConflict ? null : _conflictDescription;
             set
             {
                 if (_conflictDescription != value)
@@ -83,6 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        [JsonIgnore]
         public bool IsSystemConflict
         {
             get => _isSystemConflict;

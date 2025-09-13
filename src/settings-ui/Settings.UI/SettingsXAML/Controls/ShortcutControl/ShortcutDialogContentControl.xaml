@@ -66,16 +66,37 @@
                 <InfoBar
                     x:Uid="WarningShortcutConflict"
                     IsClosable="False"
-                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
-                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
+                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
+                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
                     Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
                     Severity="Warning" />
             </Grid>
+
             <tk7controls:MarkdownTextBlock
                 x:Uid="InvalidShortcutWarningLabel"
                 Background="Transparent"
                 FontSize="12"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <tk7controls:MarkdownTextBlock
+                    x:Uid="IgnoreShortcutConflicts"
+                    Background="Transparent"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    FontSize="12"/>
+
+                <CheckBox
+                    x:Name="IgnoreConflictsCheckBox"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding ElementName=ShortcutContentControl, Path=IgnoreConflict, Mode=TwoWay}" />
+            </Grid>
         </StackPanel>
     </Grid>
 </UserControl>
