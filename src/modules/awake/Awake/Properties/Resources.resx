@@ -232,4 +232,7 @@
   <data name="AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE" xml:space="preserve">
     <value>Exiting because the requested process ID could not be found.</value>
   </data>
+  <data name="AWAKE_EXIT_BIND_TO_SELF_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the provided process ID is Awake's own.</value>
+  </data>
 </root>

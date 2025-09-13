@@ -388,6 +388,12 @@ namespace Awake
             // command line, the --pid value will be used.
             if (pid != 0)
             {
+                if (pid == Environment.ProcessId)
+                {
+                    Logger.LogError("Awake cannot bind to itself, as this would lead to an indefinite keep-awake state.");
+                    Exit(Resources.AWAKE_EXIT_BIND_TO_SELF_FAILURE_MESSAGE, 1);
+                }
+
                 if (!ProcessExists(pid))
                 {
                     Logger.LogError($"PID {pid} does not exist or is not accessible. Exiting.");
