@@ -42,7 +42,6 @@
         <RemoveFolder Id="RemoveCmdPalDepsInstallDirFolder" Directory="CmdPalDepsInstallFolder" On="uninstall"/>
       </Component>
       <ComponentRef Id="Module_CmdPal" />
-      <ComponentRef Id="Module_CmdPal_Deps" />
     </ComponentGroup>
 
   </Fragment>
