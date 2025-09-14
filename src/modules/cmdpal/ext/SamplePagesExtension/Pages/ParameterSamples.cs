@@ -31,6 +31,7 @@ public sealed partial class SimpleParameterTest : ParametersPage
             var input = _stringParameter.Text;
             var toast = new ToastStatusMessage(new StatusMessage() { Message = $"You entered: {input}" });
             toast.Show();
+            _stringParameter.ClearValue();
         })
         {
             Name = "Submit",
@@ -89,6 +90,7 @@ public sealed partial class ButtonParameterTest : ParametersPage
             toast = new ToastStatusMessage(new StatusMessage() { Message = $"no file selected", State = MessageState.Warning });
         }
 
+        _fileParameter.ClearValue();
         toast?.Show();
     }
 }

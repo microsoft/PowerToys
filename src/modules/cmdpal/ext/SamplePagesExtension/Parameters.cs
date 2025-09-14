@@ -195,6 +195,8 @@ internal sealed partial class FilePickerParameterRun : CommandParameterRun
 {
     public StorageFile? File { get; private set; }
 
+    public override object? Value => File;
+
     public override string? DisplayText { get => File != null ? File.DisplayName : "Select a file"; }
 
     public FilePickerParameterRun()
@@ -203,12 +205,20 @@ internal sealed partial class FilePickerParameterRun : CommandParameterRun
         command.FileSelected += (s, file) =>
         {
             File = file;
-            Value = file != null ? file : (object?)null;
+
+            // Value = file != null ? file : (object?)null;
+            // OnPropertyChanged(nameof(Value));
+            OnPropertyChanged(nameof(NeedsValue));
             OnPropertyChanged(nameof(DisplayText));
         };
         PlaceholderText = "Select a file";
         Icon = new IconInfo("\uE710"); // Add
         Command = command;
+    }
+
+    public override void ClearValue()
+    {
+        File = null;
     }
 
     private sealed partial class FilePickerCommand : InvokableCommand, IRequiresHostHwnd
