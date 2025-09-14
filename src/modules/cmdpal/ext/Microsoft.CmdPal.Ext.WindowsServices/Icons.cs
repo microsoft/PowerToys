@@ -18,9 +18,5 @@ internal sealed class Icons
 
     internal static IconInfo OpenIcon { get; } = new IconInfo("\xE8A7"); // OpenInNewWindow icon
 
-    internal static IconInfo GreenCircleIcon { get; } = new("\U0001f7e2"); // unicode LARGE GREEN CIRCLE
-
-    internal static IconInfo RedCircleIcon { get; } = new("\U0001F534"); // unicode LARGE RED CIRCLE
-
     internal static IconInfo PauseIcon { get; } = new("\u23F8"); // unicode DOUBLE VERTICAL BAR, aka, "Pause"
 }
