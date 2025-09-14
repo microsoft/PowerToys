@@ -17,18 +17,23 @@
             <cmdpalUi:PlaceholderTextConverter x:Key="PlaceholderTextConverter" />
 
             <DataTemplate x:Key="LabelRunTemplate" x:DataType="coreVm:LabelRunViewModel">
-                <TextBlock
-                    MinHeight="32"
-                    VerticalAlignment="Center"
-                    Text="{x:Bind Text, Mode=OneWay}" />
+                <StackPanel VerticalAlignment="Bottom" Background="Red">
+                    <Border BorderBrush="Blue" BorderThickness="1">
+                        <TextBlock VerticalAlignment="Bottom" Text="{x:Bind Text, Mode=OneWay}" />
+
+                    </Border>
+                </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="ButtonParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
-                <Button
-                    MinHeight="32"
-                    VerticalAlignment="Center"
-                    VerticalContentAlignment="Stretch"
-                    Command="{x:Bind InvokeCommand, Mode=OneWay}"
-                    Content="{x:Bind DisplayText, Mode=OneWay}" />
+                <StackPanel>
+                    <Button
+                        MinHeight="32"
+                        VerticalAlignment="Center"
+                        VerticalContentAlignment="Stretch"
+                        Command="{x:Bind InvokeCommand, Mode=OneWay}"
+                        Content="{x:Bind DisplayText, Mode=OneWay}" />
+
+                </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="StringParamTemplate" x:DataType="coreVm:StringParameterRunViewModel">
                 <TextBox
@@ -41,8 +46,8 @@
                     Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                     PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
                     Style="{StaticResource SearchTextBoxStyle}"
-                    TextChanged="StringParameter_TextChanged"
-                    Text="{x:Bind TextForUI, Mode=OneWay}" />
+                    Text="{x:Bind TextForUI, Mode=OneWay}"
+                    TextChanged="StringParameter_TextChanged" />
             </DataTemplate>
             <DataTemplate x:Key="ListParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
                 <TextBox
