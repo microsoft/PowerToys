@@ -41,7 +41,7 @@
                     Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                     PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
                     Style="{StaticResource SearchTextBoxStyle}"
-                    Text="{x:Bind Text, Mode=TwoWay}" />
+                    Text="{x:Bind TextForUI, Mode=TwoWay}" />
             </DataTemplate>
             <DataTemplate x:Key="ListParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
                 <TextBox

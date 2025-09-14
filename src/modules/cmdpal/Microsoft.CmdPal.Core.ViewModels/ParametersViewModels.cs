@@ -104,9 +104,9 @@ public partial class ParameterValueRunViewModel : ParameterRunViewModel
 {
     private ExtensionObject<IParameterValueRun> _model;
 
-    public string PlaceholderText { get; set; } = string.Empty;
+    public string PlaceholderText { get; protected set; } = string.Empty;
 
-    public bool NeedsValue { get; set; }
+    public bool NeedsValue { get; protected set; }
 
     public ParameterValueRunViewModel(IParameterValueRun valueRun, WeakReference<IPageContext> context)
         : base(valueRun, context)
@@ -135,6 +135,28 @@ public partial class ParameterValueRunViewModel : ParameterRunViewModel
 
         Initialized = InitializedState.Initialized;
     }
+
+    protected override void FetchProperty(string propertyName)
+    {
+        // Don't bother with calling base class, because it is a no-op
+        var model = this._model.Unsafe;
+        if (model is null)
+        {
+            return; // throw?
+        }
+
+        switch (propertyName)
+        {
+            case nameof(IParameterValueRun.PlaceholderText):
+                PlaceholderText = model.PlaceholderText;
+                break;
+            case nameof(IParameterValueRun.NeedsValue):
+                NeedsValue = model.NeedsValue;
+                break;
+        }
+
+        UpdateProperty(propertyName);
+    }
 }
 
 public partial class StringParameterRunViewModel : ParameterValueRunViewModel
@@ -143,7 +165,7 @@ public partial class StringParameterRunViewModel : ParameterValueRunViewModel
 
     private string _modelText = string.Empty;
 
-    public string Text { get => _modelText; set => SetText(value); }
+    public string TextForUI { get => _modelText; set => SetTextFromUi(value); }
 
     public StringParameterRunViewModel(IStringParameterRun stringRun, WeakReference<IPageContext> context)
         : base(stringRun, context)
@@ -165,11 +187,11 @@ public partial class StringParameterRunViewModel : ParameterValueRunViewModel
             return;
         }
 
-        Text = stringRun.Text;
-        UpdateProperty(nameof(Text));
+        _modelText = stringRun.Text;
+        UpdateProperty(nameof(TextForUI));
     }
 
-    private void SetText(string value)
+    public void SetTextFromUi(string value)
     {
         if (value != _modelText)
         {
@@ -184,6 +206,36 @@ public partial class StringParameterRunViewModel : ParameterValueRunViewModel
                 }
             });
         }
+    }
+
+    protected override void FetchProperty(string propertyName)
+    {
+        var model = this._model.Unsafe;
+        if (model is null)
+        {
+            return; // throw?
+        }
+
+        switch (propertyName)
+        {
+            case nameof(IStringParameterRun.Text):
+                var newText = model.Text;
+                if (newText != _modelText)
+                {
+                    _modelText = newText;
+                    UpdateProperty(nameof(TextForUI));
+                }
+                else
+                {
+                    return;
+                }
+
+                break;
+        }
+
+        // call the base class at the end, because ParameterValueRunViewModel
+        // will handle calling UpdateProperty for the property name
+        base.FetchProperty(propertyName);
     }
 }
 
@@ -282,7 +334,9 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
                 break;
         }
 
-        UpdateProperty(propertyName);
+        // call the base class at the end, because ParameterValueRunViewModel
+        // will handle calling UpdateProperty for the property name
+        base.FetchProperty(propertyName);
     }
 
     private string GetSearchText()
@@ -333,10 +387,12 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
     public bool ShowCommand =>
         IsInitialized &&
+        IsLoading == false &&
+        !NeedsAnyValues()
 
         // FilteredItems.Count == 0 &&
         // (!_isFetching) &&
-        IsLoading == false;
+        ;
 
     private readonly Lock _listLock = new();
 
@@ -391,6 +447,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     itemVm.InitializeProperties();
                     newViewModels.Add(itemVm);
+                    itemVm.PropertyChanged += ItemPropertyChanged;
                 }
             }
 
@@ -410,6 +467,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             // If we removed items, we need to clean them up, to remove our event handlers
             foreach (var removedItem in removedItems)
             {
+                removedItem.PropertyChanged -= ItemPropertyChanged;
                 removedItem.SafeCleanup();
             }
         }
@@ -442,6 +500,30 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(Command));
            });
+    }
+
+    private void ItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ParameterValueRunViewModel.NeedsValue))
+        {
+            UpdateCommand();
+        }
+    }
+
+    private bool NeedsAnyValues()
+    {
+        lock (_listLock)
+        {
+            foreach (var item in Items)
+            {
+                if (item is ParameterValueRunViewModel val && val.NeedsValue)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public void Dispose()
