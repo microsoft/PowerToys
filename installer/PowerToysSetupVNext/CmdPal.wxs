@@ -4,13 +4,6 @@
   <Fragment>
     <DirectoryRef Id="WinUI3AppsInstallFolder">
       <Directory Id="CmdPalInstallFolder" Name="CmdPal">
-        <Directory Id="CmdPalDepsInstallFolder" Name="Dependencies">
-        <?if $(sys.BUILDARCH) = x64 ?>
-          <Directory Id="CmdPalDepsX64InstallFolder" Name="x64" />
-        <?else?>
-          <Directory Id="CmdPalDepsArm64InstallFolder" Name="arm64" />
-        <?endif?>
-        </Directory>
       </Directory>
     </DirectoryRef>
     <DirectoryRef Id="CmdPalInstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion)_Test">
@@ -31,7 +24,6 @@
           <RegistryValue Type="string" Name="RemoveCmdPalFolder" Value="" KeyPath="yes" />
         </RegistryKey>
         <RemoveFolder Id="RemoveCmdPalInstallDirFolder" Directory="CmdPalInstallFolder" On="uninstall" />
-        <RemoveFolder Id="RemoveCmdPalDepsInstallDirFolder" Directory="CmdPalDepsInstallFolder" On="uninstall" />
       </Component>
       <ComponentRef Id="Module_CmdPal" />
     </ComponentGroup>
