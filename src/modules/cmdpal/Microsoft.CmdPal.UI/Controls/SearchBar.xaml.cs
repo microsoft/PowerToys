@@ -476,6 +476,14 @@ public sealed partial class SearchBar : UserControl,
             }
         }));
     }
+
+    private void StringParameter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is TextBox textBox && textBox.DataContext is StringParameterRunViewModel stringParam)
+        {
+            stringParam.SetTextFromUi(textBox.Text);
+        }
+    }
 }
 
 #pragma warning disable SA1402 // File may only contain a single type
