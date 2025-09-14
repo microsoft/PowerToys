@@ -42,7 +42,7 @@ public partial class LabelRun : BaseObservable, ILabelRun
     }
 }
 
-public partial class ParameterValueRun : BaseObservable, IParameterValueRun
+public abstract partial class ParameterValueRun : BaseObservable, IParameterValueRun
 {
     private string _placeholderText = string.Empty;
 
@@ -85,6 +85,8 @@ public partial class ParameterValueRun : BaseObservable, IParameterValueRun
             OnPropertyChanged(nameof(NeedsValue));
         }
     }
+
+    public abstract void ClearValue();
 }
 
 public partial class StringParameterRun : ParameterValueRun, IStringParameterRun
@@ -98,6 +100,7 @@ public partial class StringParameterRun : ParameterValueRun, IStringParameterRun
         {
             _text = value;
             OnPropertyChanged(nameof(Text));
+            OnPropertyChanged(nameof(NeedsValue));
         }
     }
 
@@ -110,6 +113,11 @@ public partial class StringParameterRun : ParameterValueRun, IStringParameterRun
     public StringParameterRun(string placeholderText)
     {
         PlaceholderText = placeholderText;
+    }
+
+    public override void ClearValue()
+    {
+        Text = string.Empty;
     }
 }
 
@@ -175,6 +183,11 @@ public partial class CommandParameterRun : ParameterValueRun, ICommandParameterR
             OnPropertyChanged(nameof(Value));
             OnPropertyChanged(nameof(NeedsValue));
         }
+    }
+
+    public override void ClearValue()
+    {
+        Value = null;
     }
 }
 
