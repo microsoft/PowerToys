@@ -116,6 +116,7 @@
                 x:Name="ParametersBar"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
+                IsTabStop="False"
                 ItemTemplateSelector="{StaticResource ParameterRunTemplateSelector}"
                 ItemsSource="{x:Bind Parameters, Mode=OneWay}">
                 <ItemsControl.ItemsPanel>

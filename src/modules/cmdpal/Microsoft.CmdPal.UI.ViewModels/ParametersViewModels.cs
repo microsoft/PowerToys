@@ -482,6 +482,8 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
                 OnPropertyChanged(nameof(Items)); // TODO! hack
                 UpdateCommand();
+
+                WeakReferenceMessenger.Default.Send(new FocusSearchBoxMessage());
             });
     }
 
