@@ -78,25 +78,10 @@
                 FontSize="12"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <tk7controls:MarkdownTextBlock
-                    x:Uid="IgnoreShortcutConflicts"
-                    Background="Transparent"
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
-                    FontSize="12"/>
-
-                <CheckBox
-                    x:Name="IgnoreConflictsCheckBox"
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding ElementName=ShortcutContentControl, Path=IgnoreConflict, Mode=TwoWay}" />
-            </Grid>
+            <CheckBox
+                x:Name="IgnoreConflictsCheckBox"
+                x:Uid="IgnoreShortcutConflicts"
+                IsChecked="{Binding ElementName=ShortcutContentControl, Path=IgnoreConflict, Mode=TwoWay}" />
         </StackPanel>
     </Grid>
 </UserControl>
