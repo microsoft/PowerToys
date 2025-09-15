@@ -74,6 +74,7 @@ public sealed partial class SearchBar : UserControl,
         }
 
         @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
+        @this?.Focus();
     }
 
     public string PageType => CurrentPageViewModel switch
@@ -377,13 +378,27 @@ public sealed partial class SearchBar : UserControl,
             if (property == nameof(ParametersPageViewModel.Items))
             {
                 this.PropertyChanged?.Invoke(this, new(nameof(Parameters)));
+                Focus();
             }
         }
     }
 
     public void Receive(GoHomeMessage message) => ClearSearch();
 
-    public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+    public void Receive(FocusSearchBoxMessage message) => Focus();
+
+    private void Focus()
+    {
+        this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+        {
+            if (FocusManager.FindFirstFocusableElement(this) is DependencyObject focusable)
+            {
+                FocusManager.TryFocusAsync(focusable, FocusState.Programmatic).Wait();
+            }
+
+            // FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+        });
+    }
 
     public void Receive(UpdateSuggestionMessage message)
     {
