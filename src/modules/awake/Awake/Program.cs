@@ -33,12 +33,16 @@ namespace Awake
         private static readonly string[] _aliasesPidOption = ["--pid", "-p"];
         private static readonly string[] _aliasesExpireAtOption = ["--expire-at", "-e"];
         private static readonly string[] _aliasesParentPidOption = ["--use-parent-pid", "-u"];
+        private static readonly string[] _aliasesHttpServerOption = ["--http-server", "-s"];
+        private static readonly string[] _aliasesHttpPortOption = ["--http-port"];
 
         private static readonly JsonSerializerOptions _serializerOptions = new() { IncludeFields = true };
         private static readonly ETWTrace _etwTrace = new();
 
         private static FileSystemWatcher? _watcher;
         private static SettingsUtils? _settingsUtils;
+        private static ManagedCommon.HttpServer? _httpServer;
+        private static AwakeHttpHandler? _awakeHttpHandler;
 
         private static bool _startedFromPowerToys;
 
@@ -71,7 +75,11 @@ namespace Awake
             }
 
             await TrayHelper.InitializeTray(TrayHelper.DefaultAwakeIcon, Core.Constants.FullAppName);
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() => LockMutex?.ReleaseMutex());
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() =>
+            {
+                _httpServer?.Dispose();
+                LockMutex?.ReleaseMutex();
+            });
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
             if (!instantiated)
@@ -145,6 +153,18 @@ namespace Awake
                         IsRequired = false,
                     };
 
+                    Option<bool> httpServerOption = new(_aliasesHttpServerOption, () => false, "Enable HTTP server for remote control")
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
+
+                    Option<int> httpPortOption = new(_aliasesHttpPortOption, () => 8080, "HTTP server port (default: 8080)")
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
+
                     timeOption.AddValidator(result =>
                     {
                         if (result.Tokens.Count != 0 && !uint.TryParse(result.Tokens[0].Value, out _))
@@ -175,6 +195,16 @@ namespace Awake
                         }
                     });
 
+                    httpPortOption.AddValidator(result =>
+                    {
+                        if (result.Tokens.Count != 0 && (!int.TryParse(result.Tokens[0].Value, out int port) || port < 1 || port > 65535))
+                        {
+                            string errorMessage = $"HTTP port value could not be parsed correctly or is out of range (1-65535). Value used: {result.Tokens[0].Value}.";
+                            Logger.LogError(errorMessage);
+                            result.ErrorMessage = errorMessage;
+                        }
+                    });
+
                     RootCommand? rootCommand =
                     [
                         configOption,
@@ -183,10 +213,12 @@ namespace Awake
                         pidOption,
                         expireAtOption,
                         parentPidOption,
+                        httpServerOption,
+                        httpPortOption,
                     ];
 
                     rootCommand.Description = Core.Constants.AppName;
-                    rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
+                    rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption, httpServerOption, httpPortOption);
 
                     return rootCommand.InvokeAsync(args).Result;
                 }
@@ -211,12 +243,13 @@ namespace Awake
 
         private static void Exit(string message, int exitCode)
         {
+            _httpServer?.Dispose();
             _etwTrace?.Dispose();
             Logger.LogInfo(message);
             Manager.CompleteExit(exitCode);
         }
 
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid, bool enableHttpServer, int httpPort)
         {
             if (pid == 0 && !useParentPid)
             {
@@ -235,6 +268,30 @@ namespace Awake
             Logger.LogInfo($"The value for --pid is: {pid}");
             Logger.LogInfo($"The value for --expire-at is: {expireAt}");
             Logger.LogInfo($"The value for --use-parent-pid is: {useParentPid}");
+            Logger.LogInfo($"The value for --http-server is: {enableHttpServer}");
+            Logger.LogInfo($"The value for --http-port is: {httpPort}");
+
+            // Initialize HTTP server if requested
+            if (enableHttpServer)
+            {
+                try
+                {
+                    string prefix = $"http://localhost:{httpPort}/";
+                    _httpServer = new ManagedCommon.HttpServer(prefix);
+
+                    // Register Awake-specific handler
+                    _awakeHttpHandler = new AwakeHttpHandler();
+                    _httpServer.RegisterHandler(_awakeHttpHandler);
+
+                    _httpServer.Start();
+                    Logger.LogInfo($"HTTP server started on {prefix}");
+                    Logger.LogInfo($"Available endpoints: GET {prefix}status, GET {prefix}awake/...");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to start HTTP server: {ex.Message}");
+                }
+            }
 
             // Start the monitor thread that will be used to track the current state.
             Manager.StartMonitor();
