@@ -68,6 +68,7 @@
     <ComboBox
         Name="FiltersComboBox"
         x:Uid="FiltersComboBox"
+        MinWidth="200"
         VerticalAlignment="Center"
         ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
         ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
@@ -75,7 +76,6 @@
         PreviewKeyDown="FiltersComboBox_PreviewKeyDown"
         SelectionChanged="FiltersComboBox_SelectionChanged"
         Style="{StaticResource ComboBoxStyle}"
-        MinWidth="200"
         Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
         <ComboBox.ItemContainerStyle>
             <Style BasedOn="{StaticResource DefaultComboBoxItemStyle}" TargetType="ComboBoxItem">
