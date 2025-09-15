@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
 using Microsoft.CommandPalette.Extensions.Toolkit.Properties;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
@@ -9,6 +11,8 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 public partial class CopyPathCommand : InvokableCommand
 {
     internal static IconInfo CopyPath { get; } = new("\uE8c8"); // Copy
+
+    private static readonly CompositeFormat CopyFailedFormat = CompositeFormat.Parse(Resources.copy_failed);
 
     private readonly string _path;
 
@@ -27,8 +31,15 @@ public partial class CopyPathCommand : InvokableCommand
         {
             ClipboardHelper.SetText(_path);
         }
-        catch
+        catch (Exception ex)
         {
+            ExtensionHost.LogMessage(new LogMessage("Copy failed: " + ex.Message) { State = MessageState.Error });
+            return CommandResult.ShowToast(
+            new ToastArgs
+            {
+                Message = string.Format(CultureInfo.CurrentCulture, CopyFailedFormat, ex.Message),
+                Result = CommandResult.KeepOpen(),
+            });
         }
 
         return Result;
