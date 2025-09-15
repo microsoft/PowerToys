@@ -73,9 +73,9 @@
         ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
         PlaceholderText="Filters"
         PreviewKeyDown="FiltersComboBox_PreviewKeyDown"
-        SelectionChanged="FiltersComboBox_SelectionChanged"
         SelectedValue="{x:Bind ViewModel.CurrentFilterId, Mode=OneWay}"
         SelectedValuePath="Id"
+        SelectionChanged="FiltersComboBox_SelectionChanged"
         Style="{StaticResource ComboBoxStyle}"
         Visibility="{x:Bind ViewModel.ShouldShowFilters, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
         <ComboBox.ItemContainerStyle>
