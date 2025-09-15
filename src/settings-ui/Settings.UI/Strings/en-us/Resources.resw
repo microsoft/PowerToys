@@ -2595,27 +2595,13 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_Enable_CursorWrap.Header" xml:space="preserve">
     <value>Enable CursorWrap</value>
   </data>
-  <data name="MouseUtils_Enable_CursorWrap.Description" xml:space="preserve">
-    <value>Wrap mouse cursor between monitor edges</value>
-  </data>	
   <data name="MouseUtils_CursorWrap.Header" xml:space="preserve">
     <value>CursorWrap</value>
   </data>
-  <data name="MouseUtils_CursorWrap_Description.Text" xml:space="preserve">
-    <value>Wrap mouse cursor between monitor edges</value>
+  <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
+    <value>Wrap the mouse cursor between monitor edges</value>
   </data>
-  <data name="MouseUtils_CursorWrap_EnableToggleSwitch.OnContent" xml:space="preserve">
-    <value>On</value>
-  </data>
-  <data name="MouseUtils_CursorWrap_EnableToggleSwitch.OffContent" xml:space="preserve">
-    <value>Off</value>
-  </data>
-
-  <!-- CursorWrap Settings Expander -->
-  <data name="MouseUtils_CursorWrap_SettingsExpander.Header" xml:space="preserve">
-    <value>CursorWrap settings</value>
-  </data>
-
+	
   <!-- Activation Shortcut -->
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -2639,7 +2625,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
-  <data name="Oobe_MouseUtils_MousePointerCrosshairs_Description.Text" xml:space="preserve">
+  <data name="Oobe_MouseUtils_MousePointerCrosshairs.Description" xml:space="preserve">
     <value>Draw crosshairs centered around the mouse pointer.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
