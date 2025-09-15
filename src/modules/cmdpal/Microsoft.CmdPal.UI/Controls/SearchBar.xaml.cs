@@ -74,6 +74,8 @@ public sealed partial class SearchBar : UserControl,
         }
 
         @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
+
+        // Attempt to focus us again, once we evaluate what input is visible
         @this?.Focus();
     }
 
@@ -378,7 +380,6 @@ public sealed partial class SearchBar : UserControl,
             if (property == nameof(ParametersPageViewModel.Items))
             {
                 this.PropertyChanged?.Invoke(this, new(nameof(Parameters)));
-                Focus();
             }
         }
     }
@@ -395,8 +396,6 @@ public sealed partial class SearchBar : UserControl,
             {
                 FocusManager.TryFocusAsync(focusable, FocusState.Programmatic).Wait();
             }
-
-            // FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
         });
     }
 
