@@ -5,11 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.AI.Actions;
 using Windows.AI.Actions.Hosting;
 using Windows.ApplicationModel.Contacts;
+using Windows.Storage;
 
 namespace Microsoft.CmdPal.Ext.Actions;
 
@@ -33,8 +36,21 @@ internal sealed partial class ActionsTestPage : ListPage
         var actions = _actionRuntime.ActionCatalog.GetAllActions();
 
         var items = new List<ListItem>();
+
+        var actionsDebug = string.Empty;
+
         foreach (var action in actions)
         {
+            var overloads = action.GetOverloads();
+            var overloadsTxt = string.Join("\n\t", overloads.Select(o => o.DescriptionTemplate));
+            actionsDebug += $"{action.Id}: {action.Description}\n\t{overloadsTxt}\n";
+        }
+
+        Logger.LogDebug(actionsDebug);
+
+        foreach (var action in actions)
+        {
+            var overloads = action.GetOverloads();
             foreach (var overload in action.GetOverloads())
             {
                 try
@@ -78,59 +94,6 @@ internal sealed partial class ActionsTestPage : ListPage
     }
 }
 
-// [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
-// public partial class CommandParameter : BaseObservable, ICommandArgument
-// {
-//    public virtual string Name { get; set; }
-
-// public virtual bool Required { get; set; }
-
-// public virtual ParameterType Type { get; set; }
-
-// public virtual object? Value
-//    {
-//        get; set
-//        {
-//            if (field != value)
-//            {
-//                field = value;
-//                OnPropertyChanged(nameof(Value));
-//                OnPropertyChanged(nameof(DisplayName));
-//            }
-//        }
-//    }
-
-// public virtual string? DisplayName => Value?.ToString() ?? string.Empty;
-
-// public virtual IIconInfo? Icon
-//    {
-//        get => field;
-//        set
-//        {
-//            field = value;
-//            OnPropertyChanged(nameof(Icon));
-//        }
-//    }
-
-// public virtual void ShowPicker(ulong hostHwnd)
-//    {
-//    }
-
-// public CommandParameter(string name = "", bool required = true, ParameterType type = ParameterType.Text)
-//    {
-//        Name = name;
-//        Required = required;
-//        Type = type;
-//    }
-// }
-
-// [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
-// public abstract partial class InvokableWithParams : Command, IInvokableCommandWithParameters
-// {
-//    public ICommandArgument[] Parameters { get; set; } = [];
-
-// public abstract ICommandResult InvokeWithArgs(object sender, ICommandArgument[] args);
-// }
 public partial class DoActionPage : ParametersPage
 {
     public override IconInfo Icon => _command.Icon;
@@ -141,23 +104,18 @@ public partial class DoActionPage : ParametersPage
     private readonly string _id;
     private readonly List<IParameterRun> _parameters = new();
     private readonly DoActionCommand _command;
+    private Dictionary<string, ParameterValueRun> _actionParams = new();
 
     public DoActionPage(ActionDefinition action, ActionOverload overload, ActionRuntime actionRuntime)
     {
         _action = action;
         _overload = overload;
-
-        var inputs = action.GetInputs();
-
         _actionRuntime = actionRuntime;
         _id = action.Id;
 
         _parameters.Add(new LabelRun(overload.DescriptionTemplate));
 
-        // ICommandArgument[] commandParameters = inputs.AsEnumerable()
-        //     .Select(input => new CommandParameter(input.Name))
-        //     .ToArray();
-        // Parameters = commandParameters;
+        var inputs = action.GetInputs();
         foreach (var input in inputs)
         {
             IParameterRun param = input.Kind switch
@@ -175,34 +133,19 @@ public partial class DoActionPage : ParametersPage
                 _ => throw new NotSupportedException($"Unsupported action entity kind: {input.Kind}"),
             };
 
-            // var parameter = new CommandParameter(input.Name, input.Required, input.Kind.ToParameterType());
-            // if (input.DefaultValue != null)
-            // {
-            //     parameter.Value = input.DefaultValue;
-            // }
             _parameters.Add(param);
+            if (param is ParameterValueRun p)
+            {
+                _actionParams.Add(input.Name, p);
+            }
         }
 
-        _command = new DoActionCommand(action, overload, actionRuntime, _parameters);
+        _command = new DoActionCommand(action, overload, actionRuntime, _actionParams);
     }
 
     public override IListItem Command => new ListItem(_command) { Title = _overload.DescriptionTemplate };
 
     public override IParameterRun[] Parameters => _parameters.ToArray();
-
-    private ActionEntity CreateEntity(ActionEntityRegistrationInfo i, ActionEntityFactory f, object value)
-    {
-        ActionEntity v = i.Kind switch
-        {
-            ActionEntityKind.Photo => f.CreatePhotoEntity(value as string),
-            ActionEntityKind.Document => f.CreateDocumentEntity(value as string),
-            ActionEntityKind.File => f.CreateFileEntity(value as string),
-            ActionEntityKind.Text => f.CreateTextEntity(value as string),
-            ActionEntityKind.Contact => f.CreateContactEntity(value as Contact),
-            _ => throw new NotSupportedException($"Unsupported entity kind: {i.Kind}"),
-        };
-        return v;
-    }
 }
 
 public partial class DoActionCommand : InvokableCommand
@@ -215,103 +158,112 @@ public partial class DoActionCommand : InvokableCommand
     private readonly ActionOverload _overload;
     private readonly ActionRuntime _actionRuntime;
     private readonly string _id;
-    private readonly List<IParameterRun> _parameters;
+    private readonly Dictionary<string, ParameterValueRun> _actionParams;
 
-    // public ICommandResult InvokeWithArgs(object sender, object[] args)
-    // {
-    //     if (args == null)
-    //     {
-    //         var error = new ToastStatusMessage("no args oops");
-    //         error.Show();
-    //         return CommandResult.KeepOpen();
-    //     }
-    //
-    //     var s = $"{_action.DescriptionTemplate}(";
-    //     foreach (var arg in args)
-    //     {
-    //         s += $"{arg.Name}: {arg.Value.ToString()}";
-    //     }
-    //
-    //     s += ")";
-    //
-    //     // var t = new ToastStatusMessage(s);
-    //     // t.Show();
-    //     _ = Task.Run(async () =>
-    //     {
-    //         var c = _actionRuntime.CreateInvocationContext(actionId: _id);
-    //         var f = _actionRuntime.EntityFactory;
-    //
-    //         for (var i = 0; i < args.Length; i++)
-    //         {
-    //             var arg = args[i];
-    //             var inputParam = _action.GetInputs()[i];
-    //             var entity = CreateEntity(inputParam, f, arg);
-    //             c.SetInputEntity(arg.Name, entity);
-    //         }
-    //
-    //         // foreach (var i in args)
-    //         // {
-    //         //     var v = f.CreatePhotoEntity(i.Value as string);
-    //         //     c.SetInputEntity(i.Name, v);
-    //         // }
-    //         var task = _action.InvokeAsync(c);
-    //         await task;
-    //         var status = task.Status;
-    //         var statusType = c.Result switch
-    //         {
-    //             ActionInvocationResult.Success => MessageState.Success,
-    //             _ => MessageState.Error,
-    //         };
-    //         var text = c.Result switch
-    //         {
-    //             ActionInvocationResult.Success => $"{c.Result.ToString()}",
-    //             _ => $"{c.Result.ToString()}: {c.ExtendedError}",
-    //         };
-    //         var resultToast = new ToastStatusMessage(new StatusMessage() { Message = text, State = statusType });
-    //         resultToast.Show();
-    //     });
-    //
-    //     return CommandResult.KeepOpen();
-    // }
-    public DoActionCommand(ActionDefinition action, ActionOverload overload, ActionRuntime actionRuntime, List<IParameterRun> parameters)
+    public override ICommandResult Invoke()
+    {
+        // First, check that all required parameters have values.
+        foreach (var input in _overload.GetInputs())
+        {
+            if (_actionParams.TryGetValue(input.Name, out var param))
+            {
+                if (param == null || param.NeedsValue)
+                {
+                    var error = new ToastStatusMessage($"Parameter '{input.Name}' is required.");
+                    error.Show();
+                    return CommandResult.KeepOpen();
+                }
+            }
+        }
+
+        _ = Task.Run(InvokeActionAsync);
+
+        return CommandResult.Dismiss();
+    }
+
+    private async Task InvokeActionAsync()
+    {
+        try
+        {
+            var c = _actionRuntime.CreateInvocationContext(actionId: _id);
+            var f = _actionRuntime.EntityFactory;
+
+            var inputs = _overload.GetInputs();
+            for (var i = 0; i < inputs.Length; i++)
+            {
+                var input = inputs[i];
+                var name = input.Name;
+                if (_actionParams.TryGetValue(name, out var v))
+                {
+                    var value = v.Value;
+                    var entity = CreateEntity(input, f, v.Value!);
+                    c.SetInputEntity(name, entity);
+                }
+            }
+
+            var task = _overload.InvokeAsync(c);
+            await task;
+            var statusType = c.Result switch
+            {
+                ActionInvocationResult.Success => MessageState.Success,
+                _ => MessageState.Error,
+            };
+            var text = c.Result switch
+            {
+                ActionInvocationResult.Success => $"{c.Result.ToString()}",
+                _ => $"{c.Result.ToString()}: {c.ExtendedError}",
+            };
+            var resultToast = new ToastStatusMessage(new StatusMessage() { Message = text, State = statusType });
+            resultToast.Show();
+        }
+        catch (Exception ex)
+        {
+            var errorToast = new ToastStatusMessage(new StatusMessage() { Message = ex.Message, State = MessageState.Error });
+            errorToast.Show();
+        }
+    }
+
+    public DoActionCommand(ActionDefinition action, ActionOverload overload, ActionRuntime actionRuntime, Dictionary<string, ParameterValueRun> parameters)
     {
         _overload = overload;
         _action = action;
-
-        var inputs = overload.GetInputs();
-
         _actionRuntime = actionRuntime;
         _id = action.Id;
-        _parameters = parameters;
+        _actionParams = parameters;
+    }
 
-        // ICommandArgument[] commandParameters = inputs.AsEnumerable()
-        //     .Select(input => new CommandParameter(input.Name))
-        //     .ToArray();
-        // Parameters = commandParameters;
-        //    foreach (var input in inputs)
-        //    {
-        //        var param = input.Kind switch
-        //        {
-        //            ActionEntityKind.None => new CommandParameter(input.Name),
-        //            ActionEntityKind.Document => new CommandParameter(input.Name),
-        //            ActionEntityKind.File => new CommandParameter(input.Name),
-        //            ActionEntityKind.Photo => new ImageParameter(input.Name),
-        //            ActionEntityKind.Text => new CommandParameter(input.Name),
+    private ActionEntity CreateEntity(ActionEntityRegistrationInfo i, ActionEntityFactory f, object value)
+    {
+        var input = value switch
+        {
+            string s => s,
+            StorageFile file => file.Path,
+            _ => null,
+        };
+        if (input == null)
+        {
+            throw new NotSupportedException($"Unexpected action input {value.ToString()}");
+        }
 
-        // // ActionEntityKind.StreamingText => new CommandParameter(input.Name, input.Required, ParameterType.StreamingText),
-        //            // ActionEntityKind.RemoteFile => new CommandParameter(input.Name, input.Required, ParameterType.RemoteFile),
-        //            // ActionEntityKind.Table => new CommandParameter(input.Name, input.Required, ParameterType.Table),
-        //            ActionEntityKind.Contact => new ContactParameter(input.Name),
-        //            _ => throw new NotSupportedException($"Unsupported action entity kind: {input.Kind}"),
-        //        };
+        ActionEntity v = i.Kind switch
+        {
+            ActionEntityKind.Photo => f.CreatePhotoEntity(input),
+            ActionEntityKind.Document => f.CreateDocumentEntity(input),
+            ActionEntityKind.File => f.CreateFileEntity(input),
+            ActionEntityKind.Text => f.CreateTextEntity(input),
+            ActionEntityKind.Contact => CreateContact(input, f),
+            _ => throw new NotSupportedException($"Unsupported entity kind: {i.Kind}"),
+        };
+        return v;
+    }
 
-        // // var parameter = new CommandParameter(input.Name, input.Required, input.Kind.ToParameterType());
-        //        // if (input.DefaultValue != null)
-        //        // {
-        //        //     parameter.Value = input.DefaultValue;
-        //        // }
-        //        Parameters = Parameters.Append(param).ToArray();
-        //    }
+    private ContactActionEntity CreateContact(string? text, ActionEntityFactory f)
+    {
+        var contact = new Contact();
+        var email = new ContactEmail();
+        email.Address = text ?? string.Empty;
+        contact.Emails.Add(email);
+        return f.CreateContactEntity(contact);
     }
 }
 
@@ -369,67 +321,6 @@ public partial class DoActionCommand : InvokableCommand
 //        get { return string.IsNullOrEmpty(_filePath) ? null : Path.GetFileName(_filePath); }
 //    }
 // }
-
-// [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
-// public partial class ContactParameter : CommandParameter
-// {
-//    private Contact? _selectedContact;
-
-// public ContactParameter(string name = "", bool required = true)
-//        : base(name, required, ParameterType.Custom)
-//    {
-//    }
-
-// public override void ShowPicker(ulong hostHwnd)
-//    {
-//        var picker = new ContactPicker
-//        {
-//            // CommitButtonText = "Select",
-
-// // SelectionMode = ContactSelectionMode.Contacts,
-//        };
-
-// // Specify which contact properties to retrieve
-//        // picker.DesiredFieldsWithContactFieldType.Add(ContactFieldType.Email);
-//        // picker.DesiredFieldsWithContactFieldType.Add(ContactFieldType.PhoneNumber);
-
-// // Initialize the picker with the window handle
-//        WinRT.Interop.InitializeWithWindow.Initialize(picker, (IntPtr)hostHwnd);
-
-// _ = Task.Run(async () =>
-//        {
-//            try
-//            {
-//                var contact = await picker.PickContactAsync();
-//                if (contact != null)
-//                {
-//                    _selectedContact = contact;
-//                    Value = contact;
-//                    Icon = Icons.ContactInput;
-//                }
-//            }
-//            catch (Exception ex)
-//            {
-//                // Handle any exceptions that might occur during contact picking
-//                System.Diagnostics.Debug.WriteLine($"Error picking contact: {ex.Message}");
-//            }
-//        });
-//    }
-
-// public override string? DisplayName
-//    {
-//        get
-//        {
-//            return _selectedContact == null
-//                ? null
-//                : !string.IsNullOrEmpty(_selectedContact.DisplayName)
-//                ? _selectedContact.DisplayName
-//                : _selectedContact.Name;
-//        }
-//    }
-// }
-
-
 #pragma warning restore SA1649 // File name should match first type name
 #pragma warning restore SA1402 // File may only contain a single type
 #nullable disable

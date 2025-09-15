@@ -87,6 +87,8 @@ public abstract partial class ParameterValueRun : BaseObservable, IParameterValu
     }
 
     public abstract void ClearValue();
+
+    public abstract object? Value { get; set; }
 }
 
 public partial class StringParameterRun : ParameterValueRun, IStringParameterRun
@@ -119,6 +121,8 @@ public partial class StringParameterRun : ParameterValueRun, IStringParameterRun
     {
         Text = string.Empty;
     }
+
+    public override object? Value { get => Text; set => Text = (value is string s) ? s : string.Empty; }
 }
 
 public partial class CommandParameterRun : ParameterValueRun, ICommandParameterRun
@@ -174,7 +178,7 @@ public partial class CommandParameterRun : ParameterValueRun, ICommandParameterR
     // Toolkit helper: a value for the parameter
     private object? _value;
 
-    public virtual object? Value
+    public override object? Value
     {
         get => _value;
         set
