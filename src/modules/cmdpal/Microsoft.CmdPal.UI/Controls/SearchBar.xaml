@@ -17,11 +17,8 @@
             <cmdpalUi:PlaceholderTextConverter x:Key="PlaceholderTextConverter" />
 
             <DataTemplate x:Key="LabelRunTemplate" x:DataType="coreVm:LabelRunViewModel">
-                <StackPanel VerticalAlignment="Bottom" Background="Red">
-                    <Border BorderBrush="Blue" BorderThickness="1">
-                        <TextBlock VerticalAlignment="Bottom" Text="{x:Bind Text, Mode=OneWay}" />
-
-                    </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Bottom" Text="{x:Bind Text, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="ButtonParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
