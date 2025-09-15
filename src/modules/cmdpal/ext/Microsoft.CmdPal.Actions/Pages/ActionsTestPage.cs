@@ -58,7 +58,12 @@ internal sealed partial class ActionsTestPage : ListPage
                 {
                     var inputs = overload.GetInputs();
 
-                    var tags = inputs.AsEnumerable().Select(input => new Tag(input.Name) { Icon = GetIconForInput(input)! }).ToList();
+                    var tags = inputs.AsEnumerable().Select(input => new Tag(input.Name) { Icon = GetIconForInput(input)! });
+                    if (action.UsesGenerativeAI)
+                    {
+                        tags = tags.Prepend(RobotTag);
+                    }
+
                     var command = new DoActionPage(action, overload, _actionRuntime);
                     items.Add(new ListItem(command)
                     {
@@ -93,6 +98,9 @@ internal sealed partial class ActionsTestPage : ListPage
             _ => null,
         };
     }
+
+    private static readonly IconInfo RobotIcon = new("\uE99A");
+    private static readonly Tag RobotTag = new() { Icon = RobotIcon };
 }
 
 public partial class DoActionPage : ParametersPage
