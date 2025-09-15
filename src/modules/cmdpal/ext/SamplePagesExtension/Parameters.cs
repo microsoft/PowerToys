@@ -195,13 +195,15 @@ public partial class CommandParameterRun : ParameterValueRun, ICommandParameterR
     }
 }
 
-internal sealed partial class FilePickerParameterRun : CommandParameterRun
+public partial class FilePickerParameterRun : CommandParameterRun
 {
     public StorageFile? File { get; private set; }
 
     public override object? Value => File;
 
     public override string? DisplayText { get => File != null ? File.DisplayName : "Select a file"; }
+
+    public Action<FileOpenPicker>? SetupFilePicker { get; set; }
 
     public FilePickerParameterRun()
     {
@@ -215,6 +217,7 @@ internal sealed partial class FilePickerParameterRun : CommandParameterRun
             OnPropertyChanged(nameof(NeedsValue));
             OnPropertyChanged(nameof(DisplayText));
         };
+        command.RequestCustomizePicker += ConfigureFilePicker;
         PlaceholderText = "Select a file";
         Icon = new IconInfo("\uE710"); // Add
         Command = command;
@@ -233,6 +236,8 @@ internal sealed partial class FilePickerParameterRun : CommandParameterRun
 
         public event EventHandler<StorageFile?>? FileSelected;
 
+        public event EventHandler<FileOpenPicker>? RequestCustomizePicker;
+
         private nint _hostHwnd;
 
         public void SetHostHwnd(nint hostHwnd)
@@ -249,7 +254,8 @@ internal sealed partial class FilePickerParameterRun : CommandParameterRun
         private async void PickFileAsync()
         {
             var picker = new FileOpenPicker() { };
-            picker.FileTypeFilter.Add("*");
+
+            RequestCustomizePicker?.Invoke(this, picker);
 
             // You need to initialize the picker with a window handle in WinUI 3 desktop apps
             // See https://learn.microsoft.com/en-us/windows/apps/design/controls/file-open-picker
@@ -258,6 +264,11 @@ internal sealed partial class FilePickerParameterRun : CommandParameterRun
             var file = await picker.PickSingleFileAsync();
             FileSelected?.Invoke(this, file);
         }
+    }
+
+    protected virtual void ConfigureFilePicker(object? sender, FileOpenPicker picker)
+    {
+        picker.FileTypeFilter.Add("*");
     }
 }
 

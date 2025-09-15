@@ -13,6 +13,7 @@ using Windows.AI.Actions;
 using Windows.AI.Actions.Hosting;
 using Windows.ApplicationModel.Contacts;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 
 namespace Microsoft.CmdPal.Ext.Actions;
 
@@ -42,8 +43,8 @@ internal sealed partial class ActionsTestPage : ListPage
         foreach (var action in actions)
         {
             var overloads = action.GetOverloads();
-            var overloadsTxt = string.Join("\n\t", overloads.Select(o => o.DescriptionTemplate));
-            actionsDebug += $"{action.Id}: {action.Description}\n\t{overloadsTxt}\n";
+            var overloadsTxt = string.Join("\n", overloads.Select(o => $"  - {o.DescriptionTemplate}"));
+            actionsDebug += $"* `{action.Id}`: {action.Description}\n{overloadsTxt}\n";
         }
 
         Logger.LogDebug(actionsDebug);
@@ -118,20 +119,7 @@ public partial class DoActionPage : ParametersPage
         var inputs = action.GetInputs();
         foreach (var input in inputs)
         {
-            IParameterRun param = input.Kind switch
-            {
-                ActionEntityKind.None => new LabelRun(input.Name),
-                ActionEntityKind.Document => new FilePickerParameterRun() { PlaceholderText = input.Name },
-                ActionEntityKind.File => new FilePickerParameterRun() { PlaceholderText = input.Name },
-                ActionEntityKind.Photo => new FilePickerParameterRun() { PlaceholderText = input.Name },
-                ActionEntityKind.Text => new StringParameterRun(input.Name),
-
-                // ActionEntityKind.StreamingText => new CommandParameter(input.Name, input.Required, ParameterType.StreamingText),
-                // ActionEntityKind.RemoteFile => new CommandParameter(input.Name, input.Required, ParameterType.RemoteFile),
-                // ActionEntityKind.Table => new CommandParameter(input.Name, input.Required, ParameterType.Table),
-                ActionEntityKind.Contact => new StringParameterRun(input.Name),
-                _ => throw new NotSupportedException($"Unsupported action entity kind: {input.Kind}"),
-            };
+            var param = GetParameter(input);
 
             _parameters.Add(param);
             if (param is ParameterValueRun p)
@@ -146,6 +134,25 @@ public partial class DoActionPage : ParametersPage
     public override IListItem Command => new ListItem(_command) { Title = _overload.DescriptionTemplate };
 
     public override IParameterRun[] Parameters => _parameters.ToArray();
+
+    internal static IParameterRun GetParameter(ActionEntityRegistrationInfo input)
+    {
+        IParameterRun param = input.Kind switch
+        {
+            ActionEntityKind.None => new LabelRun(input.Name),
+            ActionEntityKind.Document => new FilePickerParameterRun() { PlaceholderText = input.Name },
+            ActionEntityKind.File => new FilePickerParameterRun() { PlaceholderText = input.Name },
+            ActionEntityKind.Photo => new PhotoFilePicker() { PlaceholderText = input.Name },
+            ActionEntityKind.Text => new StringParameterRun(input.Name),
+
+            // ActionEntityKind.StreamingText => new CommandParameter(input.Name, input.Required, ParameterType.StreamingText),
+            // ActionEntityKind.RemoteFile => new CommandParameter(input.Name, input.Required, ParameterType.RemoteFile),
+            // ActionEntityKind.Table => new CommandParameter(input.Name, input.Required, ParameterType.Table),
+            ActionEntityKind.Contact => new StringParameterRun(input.Name),
+            _ => throw new NotSupportedException($"Unsupported action entity kind: {input.Kind}"),
+        };
+        return param;
+    }
 }
 
 public partial class DoActionCommand : InvokableCommand
@@ -232,7 +239,7 @@ public partial class DoActionCommand : InvokableCommand
         _actionParams = parameters;
     }
 
-    private ActionEntity CreateEntity(ActionEntityRegistrationInfo i, ActionEntityFactory f, object value)
+    private static ActionEntity CreateEntity(ActionEntityRegistrationInfo i, ActionEntityFactory f, object value)
     {
         var input = value switch
         {
@@ -257,7 +264,7 @@ public partial class DoActionCommand : InvokableCommand
         return v;
     }
 
-    private ContactActionEntity CreateContact(string? text, ActionEntityFactory f)
+    private static ContactActionEntity CreateContact(string? text, ActionEntityFactory f)
     {
         var contact = new Contact();
         var email = new ContactEmail();
@@ -266,6 +273,22 @@ public partial class DoActionCommand : InvokableCommand
         return f.CreateContactEntity(contact);
     }
 }
+
+internal sealed partial class PhotoFilePicker : FilePickerParameterRun
+{
+    protected override void ConfigureFilePicker(object? sender, FileOpenPicker picker)
+    {
+        picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+        picker.FileTypeFilter.Add(".jpg");
+        picker.FileTypeFilter.Add(".jpeg");
+        picker.FileTypeFilter.Add(".png");
+        picker.FileTypeFilter.Add(".gif");
+        picker.FileTypeFilter.Add(".bmp");
+        picker.FileTypeFilter.Add(".tiff");
+        picker.FileTypeFilter.Add(".webp");
+    }
+}
+
 
 // [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "meh")]
 // public partial class ImageParameter : CommandParameter
