@@ -40,6 +40,16 @@ public class SettingsManager : JsonSettingsManager
         Resources.save_last_selected_channel_description!,
         false);
 
+    private readonly ChoiceSetSetting _profileSortOrder = new(
+        Namespaced(nameof(ProfileSortOrder)),
+        Resources.profile_sort_order!,
+        Resources.profile_sort_order_description!,
+        [
+            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_default!, ProfileSortOrder.Default.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_lexi!, ProfileSortOrder.Alphabetical.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_mru!, ProfileSortOrder.MostRecentlyUsed.ToString("G")),
+        ]);
+
     public bool ShowHiddenProfiles => _showHiddenProfiles.Value;
 
     public bool OpenNewTab => _openNewTab.Value;
@@ -47,6 +57,8 @@ public class SettingsManager : JsonSettingsManager
     public bool OpenQuake => _openQuake.Value;
 
     public bool SaveLastSelectedChannel => _saveLastSelectedChannel.Value;
+
+    public ProfileSortOrder ProfileSortOrder => System.Enum.TryParse<ProfileSortOrder>(_profileSortOrder.Value, out var result) ? result : ProfileSortOrder.Default;
 
     private static string SettingsJsonPath()
     {
@@ -65,6 +77,7 @@ public class SettingsManager : JsonSettingsManager
         Settings.Add(_openNewTab);
         Settings.Add(_openQuake);
         Settings.Add(_saveLastSelectedChannel);
+        Settings.Add(_profileSortOrder);
 
         // Load settings from file upon initialization
         LoadSettings();

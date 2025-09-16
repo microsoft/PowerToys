@@ -51,7 +51,14 @@ internal sealed partial class ProfilesListPage : ListPage, INotifyItemsChanged
         Icon = Icons.TerminalIcon;
         Name = Resources.profiles_list_page_name;
         _terminalSettings = terminalSettings;
+        _terminalSettings.Settings.SettingsChanged += Settings_SettingsChanged;
         _appSettingsManager = appSettingsManager;
+    }
+
+    private void Settings_SettingsChanged(object sender, Settings args)
+    {
+        EnsureInitialized();
+        RaiseItemsChanged();
     }
 
     private List<ListItem> Query()
@@ -62,7 +69,27 @@ internal sealed partial class ProfilesListPage : ListPage, INotifyItemsChanged
         openNewTab = _terminalSettings.OpenNewTab;
         openQuake = _terminalSettings.OpenQuake;
 
-        var profiles = _terminalQuery.GetProfiles();
+        var profiles = _terminalQuery.GetProfiles()!;
+
+        switch (_terminalSettings.ProfileSortOrder)
+        {
+            case ProfileSortOrder.MostRecentlyUsed:
+                var mru = _appSettingsManager.Current.RecentlyUsedProfiles ?? [];
+                profiles = profiles.OrderBy(p =>
+                    {
+                        var key = new TerminalProfileKey(p.Terminal?.AppUserModelId ?? string.Empty, p.Name ?? string.Empty);
+                        var index = mru.IndexOf(key);
+                        return index == -1 ? int.MaxValue : index;
+                    })
+                    .ThenBy(static p => p.Name, StringComparer.CurrentCultureIgnoreCase)
+                    .ToList();
+                break;
+            case ProfileSortOrder.Default:
+            case ProfileSortOrder.Alphabetical:
+            default:
+                profiles = profiles.OrderBy(static p => p.Name, StringComparer.CurrentCultureIgnoreCase);
+                break;
+        }
 
         if (terminalFilters?.IsAllSelected == false)
         {
@@ -78,12 +105,12 @@ internal sealed partial class ProfilesListPage : ListPage, INotifyItemsChanged
                 continue;
             }
 
-            result.Add(new ListItem(new LaunchProfileCommand(profile.Terminal.AppUserModelId, profile.Name, profile.Terminal.LogoPath, openNewTab, openQuake))
+            result.Add(new ListItem(new LaunchProfileCommand(profile.Terminal.AppUserModelId, profile.Name, profile.Terminal.LogoPath, openNewTab, openQuake, _appSettingsManager))
             {
                 Title = profile.Name,
                 Subtitle = profile.Terminal.DisplayName,
                 MoreCommands = [
-                    new CommandContextItem(new LaunchProfileAsAdminCommand(profile.Terminal.AppUserModelId, profile.Name, openNewTab, openQuake)),
+                    new CommandContextItem(new LaunchProfileAsAdminCommand(profile.Terminal.AppUserModelId, profile.Name, openNewTab, openQuake, _appSettingsManager)),
                 ],
             });
         }
