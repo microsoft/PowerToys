@@ -66,6 +66,7 @@
     <None Remove="Controls\ActionBar.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
     <None Remove="ListDetailPage.xaml" />
+    <None Remove="ListViewControl.xaml" />
     <None Remove="LoadingPage.xaml" />
     <None Remove="MainPage.xaml" />
     <None Remove="Pages\Settings\ExtensionsPage.xaml" />
@@ -188,6 +189,12 @@
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="ListViewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\Colors.xaml">
