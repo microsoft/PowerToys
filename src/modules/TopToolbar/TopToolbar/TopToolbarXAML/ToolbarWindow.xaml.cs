@@ -3,33 +3,34 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Numerics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Timers;
-using Microsoft.UI.Composition;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Shapes;
+using TopToolbar.Services;
+using TopToolbar.ViewModels;
 using WinUIEx;
+using Path = System.IO.Path;
 using Timer = System.Timers.Timer;
 
 namespace TopToolbar
 {
     public sealed partial class ToolbarWindow : WindowEx, IDisposable
     {
+        private const int TriggerZoneHeight = 2;
+        private readonly ToolbarViewModel _vm = new(new ToolbarConfigService());
         private Timer _monitorTimer;
+        private Timer _configWatcherDebounce;
         private bool _isVisible;
-        private const int TriggerZoneHeight = 2; // pixels from top edge
-        private const int HiddenYOffset = -80; // shift above screen when hidden
+        private bool _builtConfigOnce;
         private IntPtr _hwnd;
         private bool _initializedLayout;
-        private Border _toolbarContainer; // runtime-resolved toolbar root
-
-        // Composition clipping cache
-        private CompositionRoundedRectangleGeometry _geo;
-        private CompositionGeometricClip _clip;
+        private Border _toolbarContainer;
+        private FileSystemWatcher _configWatcher;
 
         public ToolbarWindow()
         {
@@ -40,7 +41,7 @@ namespace TopToolbar
                 Windows.UI.Color.FromArgb(0, 0, 0, 0));
 
             // Create the toolbar content programmatically with transparent root
-            CreateToolbarContent();
+            CreateToolbarShell();
 
             // Apply styles when content is loaded
             _toolbarContainer.Loaded += (s, e) =>
@@ -52,133 +53,297 @@ namespace TopToolbar
                     ApplyFramelessStyles();
                     ResizeToContent();
                     PositionAtTopCenter();
-                    ApplyCapsuleClip(); // Apply smooth composition clipping
+                    AppWindow.Hide();
+                    _isVisible = false;
                     _initializedLayout = true;
                 }
-            };
-
-            // Handle size and DPI changes
-            this.AppWindow.Changed += (s, e) =>
-            {
-                if (e.DidSizeChange)
-                {
-                    UpdateClipGeometry();
-                }
-            };
-
-            // Handle content size changes
-            _toolbarContainer.SizeChanged += (s, e) =>
-            {
-                ResizeToContent();
-                UpdateClipGeometry();
             };
 
             // Apply styles immediately after activation as backup
             this.Activated += (s, e) => MakeTopMost();
 
             StartMonitoring();
-            HideToolbar(initial: true);
+            StartWatchingConfig();
+
+            // Load config and build UI when window activates
+            this.Activated += async (s, e) =>
+            {
+                if (_builtConfigOnce)
+                {
+                    return;
+                }
+
+                await _vm.LoadAsync(this.DispatcherQueue);
+
+                // Ensure UI-thread access for XAML object tree
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    BuildToolbarFromConfig();
+                    ResizeToContent();
+                    PositionAtTopCenter();
+                    _builtConfigOnce = true;
+                });
+            };
         }
 
-        private void CreateToolbarContent()
+        private void CreateToolbarShell()
         {
-            // Create a completely transparent root container
+            // Create a completely transparent root container with optimized rendering
             var rootGrid = new Grid
             {
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
+                UseLayoutRounding = true,
+                IsHitTestVisible = true,
             };
 
-            // Create the toolbar content
+            // Create the toolbar content with modern macOS-style design
             var border = new Border
             {
                 Name = "ToolbarContainer",
-                CornerRadius = new CornerRadius(36),
-                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(245, 245, 245, 247)),
-                Opacity = 0.96,
-                Height = 64,
-                Padding = new Thickness(24, 0, 24, 0),
+                CornerRadius = new CornerRadius(12),
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 255, 255, 255)),
+                Height = 48,
+                Padding = new Thickness(12, 6, 12, 6),
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
+                UseLayoutRounding = true,
+                IsHitTestVisible = true,     // the pill remains interactive
+
+                // Optional: ThemeShadow may need a proper shadow host; keep or remove as you like.
+                Shadow = new Microsoft.UI.Xaml.Media.ThemeShadow(),
             };
 
-            var mainStack = new StackPanel
+            border.Child = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Spacing = 32,
+                Spacing = 8,
                 VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                IsHitTestVisible = true,
+                Name = "MainStack",
             };
-
-            // Group 1
-            var group1 = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 16,
-            };
-            group1.Children.Add(CreateButton("🏠", "Home", OnHomeClick));
-            group1.Children.Add(CreateButton("🔍", "Search", OnSearchClick));
-            group1.Children.Add(CreateButton("📁", "Files", OnFilesClick));
-            group1.Children.Add(CreateButton("🧮", "Calculator", OnCalcClick));
-            mainStack.Children.Add(group1);
-
-            // Separator 1
-            mainStack.Children.Add(new Rectangle
-            {
-                Width = 1,
-                Height = 32,
-                Fill = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(51, 0, 0, 0)),
-                VerticalAlignment = VerticalAlignment.Center,
-            });
-
-            // Group 2
-            var group2 = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 16,
-            };
-            group2.Children.Add(CreateButton("📷", "Camera", OnCameraClick));
-            group2.Children.Add(CreateButton("🎵", "Music", OnMusicClick));
-            group2.Children.Add(CreateButton("✉", "Mail", OnMailClick));
-            group2.Children.Add(CreateButton("📅", "Calendar", OnCalendarClick));
-            mainStack.Children.Add(group2);
-
-            // Separator 2
-            mainStack.Children.Add(new Rectangle
-            {
-                Width = 1,
-                Height = 32,
-                Fill = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(51, 0, 0, 0)),
-                VerticalAlignment = VerticalAlignment.Center,
-            });
-
-            // Group 3
-            var group3 = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 16,
-            };
-            group3.Children.Add(CreateButton("💻", "Display", OnDisplayClick));
-            group3.Children.Add(CreateButton("🔊", "Sound", OnSoundClick));
-            group3.Children.Add(CreateButton("📶", "Network", OnNetworkClick));
-            group3.Children.Add(CreateButton("⚙", "Settings", OnSettingsClick));
-            mainStack.Children.Add(group3);
-
-            border.Child = mainStack;
             rootGrid.Children.Add(border);
             this.Content = rootGrid;
             _toolbarContainer = border;
         }
 
-        private Button CreateButton(string content, string tooltip, RoutedEventHandler clickHandler)
+        private void StartWatchingConfig()
+        {
+            try
+            {
+                var service = new ToolbarConfigService();
+                var path = service.ConfigPath;
+                var dir = Path.GetDirectoryName(path);
+                var file = Path.GetFileName(path);
+                if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(file))
+                {
+                    return;
+                }
+
+                _configWatcherDebounce = new Timer(250) { AutoReset = false };
+                _configWatcherDebounce.Elapsed += async (s, e) =>
+                {
+                    await _vm.LoadAsync(this.DispatcherQueue);
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        BuildToolbarFromConfig();
+                        ResizeToContent();
+                    });
+                };
+
+                _configWatcher = new FileSystemWatcher(dir, file)
+                {
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.FileName,
+                    IncludeSubdirectories = false,
+                    EnableRaisingEvents = true,
+                };
+
+                FileSystemEventHandler onChanged = (s, e) =>
+                {
+                    _configWatcherDebounce.Stop();
+                    _configWatcherDebounce.Start();
+                };
+                RenamedEventHandler onRenamed = (s, e) =>
+                {
+                    _configWatcherDebounce.Stop();
+                    _configWatcherDebounce.Start();
+                };
+
+                _configWatcher.Changed += onChanged;
+                _configWatcher.Created += onChanged;
+                _configWatcher.Deleted += onChanged;
+                _configWatcher.Renamed += onRenamed;
+            }
+            catch
+            {
+                // ignore watcher failures
+            }
+        }
+
+        private void BuildToolbarFromConfig()
+        {
+            if (_toolbarContainer?.Child is not StackPanel mainStack)
+            {
+                return;
+            }
+
+            mainStack.Children.Clear();
+
+            // Use only groups that have at least one enabled button
+            var nonEmptyGroups = _vm.Groups
+                .Where(g => g.IsEnabled)
+                .Select(g => new { Group = g, EnabledButtons = g.Buttons.Where(b => b.IsEnabled).ToList() })
+                .Where(x => x.EnabledButtons.Count > 0)
+                .ToList();
+
+            for (int gi = 0; gi < nonEmptyGroups.Count; gi++)
+            {
+                var group = nonEmptyGroups[gi].Group;
+                var enabledButtons = nonEmptyGroups[gi].EnabledButtons;
+                var groupPanel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+
+                foreach (var btn in enabledButtons)
+                {
+                    var iconButton = CreateIconButton(btn);
+                    groupPanel.Children.Add(iconButton);
+                }
+
+                mainStack.Children.Add(groupPanel);
+
+                // Add separator only between non-empty groups
+                if (gi != nonEmptyGroups.Count - 1)
+                {
+                    mainStack.Children.Add(new Rectangle
+                    {
+                        Width = 1,
+                        Height = 24,
+                        Fill = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(40, 0, 0, 0)),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Margin = new Thickness(8, 0, 8, 0),
+                        IsHitTestVisible = false,
+                    });
+                }
+            }
+
+            // Settings button at far right
+            mainStack.Children.Add(new Rectangle
+            {
+                Width = 1,
+                Height = 24,
+                Fill = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(40, 0, 0, 0)),
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(8, 0, 8, 0),
+                IsHitTestVisible = false,
+            });
+
+            var settingsButton = CreateIconButton("\uE713", "Toolbar Settings", (s, e) =>
+            {
+                var win = new SettingsWindow();
+                win.AppWindow.Move(new Windows.Graphics.PointInt32(this.AppWindow.Position.X + 50, this.AppWindow.Position.Y + 60));
+                win.Activate();
+            });
+            mainStack.Children.Add(settingsButton);
+        }
+
+        private Button CreateIconButton(string content, string tooltip, RoutedEventHandler clickHandler)
         {
             var button = new Button
             {
-                Content = content,
-                MinWidth = 40,
-                MinHeight = 40,
+                Content = new FontIcon { Glyph = content, FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe MDL2 Assets"), FontSize = 16 },
+                Width = 32,
+                Height = 32,
+                CornerRadius = new CornerRadius(6),
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)), // Transparent base
+                BorderBrush = null,
+                BorderThickness = new Thickness(0),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(2),
+                Padding = new Thickness(0),
+                UseLayoutRounding = true,
             };
+
+            // Use WinUI button visual state resources to ensure stable hover/pressed visuals
+            var hoverBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(60, 0, 0, 0));
+            var pressedBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(100, 0, 0, 0));
+            var normalBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0));
+
+            // Override per-button theme resources so the default template keeps our visuals
+            button.Resources["ButtonBackground"] = normalBrush;
+            button.Resources["ButtonBackgroundPointerOver"] = hoverBrush;
+            button.Resources["ButtonBackgroundPressed"] = pressedBrush;
+            button.Resources["ButtonBackgroundDisabled"] = normalBrush;
 
             Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(button, tooltip);
             button.Click += clickHandler;
+            return button;
+        }
+
+        private Button CreateIconButton(TopToolbar.Models.ToolbarButton model)
+        {
+            RoutedEventHandler handler = (s, e) => ToolbarActionExecutor.Execute(model.Action);
+            var button = new Button
+            {
+                Width = 32,
+                Height = 32,
+                CornerRadius = new CornerRadius(6),
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0)),
+                BorderBrush = null,
+                BorderThickness = new Thickness(0),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(2),
+                Padding = new Thickness(0),
+                UseLayoutRounding = true,
+            };
+
+            // Visual states for hover/press
+            var hoverBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(60, 0, 0, 0));
+            var pressedBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(100, 0, 0, 0));
+            var normalBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0));
+            button.Resources["ButtonBackground"] = normalBrush;
+            button.Resources["ButtonBackgroundPointerOver"] = hoverBrush;
+            button.Resources["ButtonBackgroundPressed"] = pressedBrush;
+            button.Resources["ButtonBackgroundDisabled"] = normalBrush;
+
+            // Content based on icon type
+            if (model.IconType == TopToolbar.Models.ToolbarIconType.Image && !string.IsNullOrWhiteSpace(model.IconPath))
+            {
+                try
+                {
+                    var path = model.IconPath;
+                    if (!path.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        path = "file:///" + path.Replace("\\", "/");
+                    }
+
+                    var img = new Image
+                    {
+                        Width = 16,
+                        Height = 16,
+                        Stretch = Microsoft.UI.Xaml.Media.Stretch.Uniform,
+                        Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(path)),
+                    };
+                    button.Content = img;
+                }
+                catch
+                {
+                    // Fallback to glyph if loading fails
+                    button.Content = new FontIcon { Glyph = model.IconGlyph, FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe MDL2 Assets"), FontSize = 16 };
+                }
+            }
+            else
+            {
+                button.Content = new FontIcon { Glyph = model.IconGlyph, FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe MDL2 Assets"), FontSize = 16 };
+            }
+
+            Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(button, model.Name);
+            button.Click += handler;
             return button;
         }
 
@@ -221,7 +386,7 @@ namespace TopToolbar
 
         private void MonitorTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            var pt = GetCursorPos();
+            GetCursorPos(out var pt);
             var displayArea = DisplayArea.GetFromPoint(new Windows.Graphics.PointInt32(pt.X, pt.Y), DisplayAreaFallback.Primary);
             var topEdge = displayArea.WorkArea.Y;
             bool inTrigger = pt.Y <= topEdge + TriggerZoneHeight;
@@ -232,13 +397,14 @@ namespace TopToolbar
             }
             else if (!inTrigger && _isVisible)
             {
-                // hide only if mouse left the bar area
+                // hide when cursor is not over the toolbar rectangle
                 DispatcherQueue.TryEnqueue(() =>
                 {
-                    var relativeY = pt.Y - this.AppWindow.Position.Y;
-
-                    // left below the bar or above top
-                    if (relativeY > 80 || pt.Y < topEdge)
+                    var winPos = this.AppWindow.Position;
+                    var winSize = this.AppWindow.Size;
+                    bool overToolbar = pt.X >= winPos.X && pt.X <= winPos.X + winSize.Width &&
+                                       pt.Y >= winPos.Y && pt.Y <= winPos.Y + winSize.Height;
+                    if (!overToolbar)
                     {
                         HideToolbar();
                     }
@@ -249,19 +415,24 @@ namespace TopToolbar
         private void ShowToolbar()
         {
             _isVisible = true;
-            var pos = this.AppWindow.Position;
 
-            // Slide down animation (simple incremental move)
-            int targetY = 0;
-            this.AppWindow.Move(new Windows.Graphics.PointInt32(pos.X, targetY));
+            // Reposition to current monitor top edge
+            GetCursorPos(out var pt);
+            var da = DisplayArea.GetFromPoint(new Windows.Graphics.PointInt32(pt.X, pt.Y), DisplayAreaFallback.Primary);
+            var work = da.WorkArea;
+            var size = AppWindow.Size;
+            int x = work.X + ((work.Width - size.Width) / 2);
+            int y = work.Y; // flush with top
+
+            AppWindow.Move(new Windows.Graphics.PointInt32(x, y));
+            AppWindow.Show(false); // show without activation
+            MakeTopMost();
         }
 
         private void HideToolbar(bool initial = false)
         {
             _isVisible = false;
-            var pos = this.AppWindow.Position;
-            int y = -(int)this.AppWindow.Size.Height + HiddenYOffset;
-            this.AppWindow.Move(new Windows.Graphics.PointInt32(pos.X, y));
+            AppWindow.Hide();
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -322,16 +493,10 @@ namespace TopToolbar
         private static extern bool GetCursorPos(out POINT lpPoint);
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct POINT
+        public struct POINT
         {
             public int X;
             public int Y;
-        }
-
-        private static POINT GetCursorPos()
-        {
-            GetCursorPos(out var p);
-            return p;
         }
 
         // P/Invoke to keep window topmost if WinUIEx helper not available
@@ -382,68 +547,6 @@ namespace TopToolbar
             // With WS_EX_LAYERED + no background, only visible content shows
         }
 
-        private void ApplyCapsuleClip()
-        {
-            var root = (FrameworkElement)this.Content;
-            if (root == null)
-            {
-                return;
-            }
-
-            var visual = ElementCompositionPreview.GetElementVisual(root);
-            var comp = visual.Compositor;
-
-            _geo ??= comp.CreateRoundedRectangleGeometry();
-            _clip ??= comp.CreateGeometricClip(_geo);
-            visual.Clip = _clip;
-
-            UpdateClipGeometry();
-        }
-
-        private void UpdateClipGeometry()
-        {
-            if (_hwnd == IntPtr.Zero || _geo == null || _toolbarContainer == null)
-            {
-                return;
-            }
-
-            double scale = GetDpiForWindow(_hwnd) / 96.0;
-            float w = (float)Math.Round(this.AppWindow.Size.Width * scale) / (float)scale;
-            float h = (float)Math.Round(this.AppWindow.Size.Height * scale) / (float)scale;
-            float r = (float)Math.Round(_toolbarContainer.CornerRadius.TopLeft * scale) / (float)scale;
-
-            _geo.Size = new Vector2(w, h);
-            _geo.CornerRadius = new Vector2(r);
-        }
-
-        private static bool PointInRoundedRect(float x, float y, float w, float h, float r)
-        {
-            // Check if point is in main rectangles (excluding corners)
-            if (x >= r && x <= w - r && y >= 0 && y <= h)
-            {
-                return true;
-            }
-
-            if (y >= r && y <= h - r && x >= 0 && x <= w)
-            {
-                return true;
-            }
-
-            // Check if point is in any of the corner circles
-            Vector2[] corners = { new Vector2(r, r), new Vector2(w - r, r), new Vector2(r, h - r), new Vector2(w - r, h - r) };
-            foreach (var corner in corners)
-            {
-                float dx = x - corner.X;
-                float dy = y - corner.Y;
-                if ((dx * dx) + (dy * dy) <= (r * r))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         [DllImport("user32.dll", SetLastError = true)]
         private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
@@ -457,6 +560,14 @@ namespace TopToolbar
         {
             _monitorTimer?.Stop();
             _monitorTimer?.Dispose();
+            _configWatcherDebounce?.Stop();
+            _configWatcherDebounce?.Dispose();
+            if (_configWatcher != null)
+            {
+                _configWatcher.EnableRaisingEvents = false;
+                _configWatcher.Dispose();
+            }
+
             GC.SuppressFinalize(this);
         }
     }

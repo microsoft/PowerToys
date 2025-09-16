@@ -1,0 +1,311 @@
+<winuiex:WindowEx
+    x:Class="TopToolbar.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:winuiex="using:WinUIEx"
+    xmlns:local="using:TopToolbar.Models"
+    mc:Ignorable="d"
+    Title="Toolbar Settings"
+    Width="1000"
+    Height="700"
+    MinWidth="800"
+    MinHeight="600">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title Bar -->
+        <Border Grid.Row="0" Background="#f6f6f6" BorderBrush="#e0e0e0" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                <TextBlock Text="⚙" FontFamily="Segoe MDL2 Assets" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#333333"/>
+                <TextBlock Text="Toolbar Settings" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="#333333"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel - Groups List -->
+            <Border Grid.Column="0" Background="#fafafa" BorderBrush="#e0e0e0" BorderThickness="0,0,1,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Groups Header -->
+                    <TextBlock Grid.Row="0" Text="Groups" FontSize="14" FontWeight="SemiBold" 
+                               Margin="20,20,20,16" Foreground="#333333"/>
+
+                    <!-- Groups List -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ListView x:Name="GroupsList" ItemsSource="{x:Bind ViewModel.Groups, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedGroup, Mode=TwoWay}"
+                                  SelectionMode="Single" Background="Transparent"
+                                  BorderThickness="0" Padding="0">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="local:ButtonGroup">
+                                    <Border Background="Transparent" Margin="12,2,12,2" CornerRadius="6" 
+                                            BorderBrush="Transparent" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal" Margin="12,8" Background="Transparent">
+                                            <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" 
+                                                        OffContent="" OnContent="" 
+                                                        Width="32" Height="20" Margin="0,0,8,0"
+                                                        MinWidth="32" MinHeight="20"/>
+                                            <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" 
+                                                     FontSize="13" Foreground="#333333"/>
+                                            <Button Content="Remove" FontSize="11" Foreground="#666666" 
+                                                  Background="Transparent" BorderThickness="0"
+                                                  HorizontalAlignment="Right" Margin="8,0,0,0" Padding="8,4"
+                                                  Click="OnRemoveGroup" Tag="{x:Bind}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </ScrollViewer>
+
+                    <!-- Add/Remove Buttons -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" 
+                                Margin="20" Spacing="12">
+                        <Button Content="Add" Click="OnAddGroup" Padding="16,8"
+                                Background="#0078d4" Foreground="White" CornerRadius="4"
+                                BorderThickness="0" FontSize="12"/>
+                        <Button Content="Remove" Click="OnRemoveSelectedGroup" Padding="16,8"
+                                Background="#f5f5f5" Foreground="#333333" CornerRadius="4"
+                                BorderBrush="#d0d0d0" BorderThickness="1" FontSize="12"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Right Panel - Group Configuration -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="32,24">
+                <Grid>
+                    <Grid x:Name="ConfigurationPanel" Visibility="{x:Bind ViewModel.HasSelectedGroup, Mode=OneWay}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Group Configuration Header -->
+                    <TextBlock Grid.Row="0" Text="Group Configuration" FontSize="18" FontWeight="SemiBold" 
+                               Margin="0,0,0,24" Foreground="#333333"/>
+
+                    <!-- Group Basic Info -->
+                    <Grid Grid.Row="1" Margin="0,0,0,32">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Name -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Name" VerticalAlignment="Center" 
+                                   FontSize="13" Foreground="#555555" Margin="0,0,0,12"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.SelectedGroup.Name, Mode=TwoWay}"
+                                 Margin="0,0,0,12" Padding="12,8" Background="White" 
+                                 BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4"/>
+
+                        <!-- Enabled Toggle -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="" VerticalAlignment="Center" 
+                                   FontSize="13" Margin="0,0,0,12"/>
+                        <ToggleSwitch Grid.Row="1" Grid.Column="1" IsOn="{x:Bind ViewModel.SelectedGroup.IsEnabled, Mode=TwoWay}"
+                                      OnContent="Enabled" OffContent="Disabled" Margin="0,0,0,12"/>
+
+                        <!-- Description -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Description" VerticalAlignment="Top" 
+                                   FontSize="13" Foreground="#555555" Margin="0,8,0,16"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.SelectedGroup.Description, Mode=TwoWay}"
+                                 AcceptsReturn="True" TextWrapping="Wrap" Height="80" Margin="0,0,0,16"
+                                 Padding="12,8" Background="White" BorderBrush="#d0d0d0" 
+                                 BorderThickness="1" CornerRadius="4"/>
+                    </Grid>
+
+                    <!-- Buttons Section -->
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Buttons Header with Actions -->
+                        <Grid Grid.Row="0" Margin="0,0,0,16">
+                            <TextBlock Text="Buttons" FontSize="16" FontWeight="SemiBold" 
+                                       VerticalAlignment="Center" Foreground="#333333"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                                <Button Content="Add Button" Click="OnAddButton" Padding="12,6"
+                                        Background="#0078d4" Foreground="White" CornerRadius="4"
+                                        BorderThickness="0" FontSize="12" Tag="{x:Bind ViewModel.SelectedGroup}"/>
+                                <Button Content="Remove Button" Click="OnRemoveButton" Padding="12,6"
+                                        Background="#f5f5f5" Foreground="#333333" CornerRadius="4"
+                                        BorderBrush="#d0d0d0" BorderThickness="1" FontSize="12"
+                                        Tag="{x:Bind ViewModel.SelectedButton}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Buttons List -->
+                        <ListView Grid.Row="1" x:Name="ButtonsList" 
+                                  ItemsSource="{x:Bind ViewModel.SelectedGroup.Buttons, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.SelectedButton, Mode=TwoWay}"
+                                  SelectionMode="Single" Background="Transparent" BorderThickness="0">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="local:ToolbarButton">
+                                    <Border Background="White" Margin="0,0,0,8" Padding="16" CornerRadius="6"
+                                            BorderBrush="#e0e0e0" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" 
+                                                        OffContent="" OnContent="" 
+                                                        Width="32" Height="20" MinWidth="32" MinHeight="20"/>
+                                            <TextBlock Text="{x:Bind Name}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+
+                    <!-- Selected Button Details -->
+                    <Grid Grid.Row="3" x:Name="ButtonDetailsPanel" 
+                          Visibility="{x:Bind ViewModel.HasSelectedButton, Mode=OneWay}"
+                          Margin="0,24,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Button Details" FontSize="16" FontWeight="SemiBold" 
+                                   Margin="0,0,0,16" Foreground="#333333"/>
+
+                        <Grid Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Button Name -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Name" VerticalAlignment="Center" 
+                                       FontSize="13" Foreground="#555555" Margin="0,0,0,12"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" 
+                                     Text="{x:Bind ViewModel.SelectedButton.Name, Mode=TwoWay}"
+                                     Margin="0,0,0,12" Padding="12,8" Background="White" 
+                                     BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4"/>
+
+                            <!-- Description -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Description" VerticalAlignment="Top" 
+                                       FontSize="13" Foreground="#555555" Margin="0,8,0,12"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" 
+                                     Text="{x:Bind ViewModel.SelectedButton.Description, Mode=TwoWay}"
+                                     Margin="0,0,0,12" Padding="12,8" Background="White" 
+                                     BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4"/>
+
+                            <!-- Icon Type -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Icon Type" VerticalAlignment="Center" 
+                                       FontSize="13" Foreground="#555555" Margin="0,0,0,12"/>
+                            <ComboBox Grid.Row="2" Grid.Column="1" 
+                                      SelectedIndex="{x:Bind ViewModel.SelectedButton.IconTypeIndex, Mode=TwoWay}"
+                                      Margin="0,0,0,12" Padding="12,8" Background="White" 
+                                      BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4">
+                                <ComboBoxItem Content="Glyph"/>
+                                <ComboBoxItem Content="Image"/>
+                            </ComboBox>
+
+                            <!-- Icon Glyph -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Glyph (e.g. \uE80F)" VerticalAlignment="Center" 
+                                       FontSize="13" Foreground="#555555" Margin="0,0,0,12"/>
+                            <Grid Grid.Row="3" Grid.Column="1" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{x:Bind ViewModel.SelectedButton.IconGlyph, Mode=TwoWay}"
+                                         Padding="12,8" Background="White" 
+                                         BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4,0,0,4"/>
+                                <Border Grid.Column="1" Background="#f5f5f5" BorderBrush="#d0d0d0" 
+                                        BorderThickness="0,1,1,1" CornerRadius="0,4,4,0" Width="40" Height="36">
+                                    <TextBlock Text="{x:Bind ViewModel.SelectedButton.IconGlyph, Mode=OneWay}" 
+                                               FontFamily="Segoe MDL2 Assets" FontSize="16" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+
+                            <!-- Image Path -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Image Path (.png/.ico)" VerticalAlignment="Center" 
+                                       FontSize="13" Foreground="#555555" Margin="0,0,0,12"/>
+                            <Grid Grid.Row="4" Grid.Column="1" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{x:Bind ViewModel.SelectedButton.IconPath, Mode=TwoWay}"
+                                         Padding="12,8" Background="White" 
+                                         BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4,0,0,4"/>
+                                <Button Grid.Column="1" Content="Browse" Padding="16,8" 
+                                        Background="#f5f5f5" Foreground="#333333" CornerRadius="0,4,4,0"
+                                        BorderBrush="#d0d0d0" BorderThickness="0,1,1,1" 
+                                        Click="OnBrowseIcon" Tag="{x:Bind ViewModel.SelectedButton}"/>
+                            </Grid>
+
+                            <!-- Command -->
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Command (exe,uri)" VerticalAlignment="Center" 
+                                       FontSize="13" Foreground="#555555" Margin="0,0,0,12"/>
+                            <TextBox Grid.Row="5" Grid.Column="1" 
+                                     Text="{x:Bind ViewModel.SelectedButton.Action.Command, Mode=TwoWay}"
+                                     Margin="0,0,0,12" Padding="12,8" Background="White" 
+                                     BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4"/>
+
+                            <!-- Arguments -->
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Arguments" VerticalAlignment="Center" 
+                                       FontSize="13" Foreground="#555555" Margin="0,0,0,12"/>
+                            <TextBox Grid.Row="6" Grid.Column="1" 
+                                     Text="{x:Bind ViewModel.SelectedButton.Action.Arguments, Mode=TwoWay}"
+                                     Margin="0,0,0,12" Padding="12,8" Background="White" 
+                                     BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4"/>
+
+                            <!-- Working Directory -->
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Working Directory" VerticalAlignment="Center" 
+                                       FontSize="13" Foreground="#555555"/>
+                            <TextBox Grid.Row="7" Grid.Column="1" 
+                                     Text="{x:Bind ViewModel.SelectedButton.Action.WorkingDirectory, Mode=TwoWay}"
+                                     Padding="12,8" Background="White" 
+                                     BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4"/>
+                        </Grid>
+                    </Grid>
+                    </Grid>
+
+                    <!-- Empty State Message -->
+                    <TextBlock x:Name="EmptyStateMessage" 
+                               Visibility="{x:Bind ViewModel.HasNoSelectedGroup, Mode=OneWay}"
+                               Text="Select a group to configure its settings"
+                               FontSize="16" Foreground="#999999"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</winuiex:WindowEx>
