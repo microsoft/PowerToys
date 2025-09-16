@@ -59,7 +59,7 @@
                 <Rectangle
                     Height="1"
                     Margin="-16,-12,-12,-12"
-                    Fill="{ThemeResource MenuFlyoutSeparatorThemeBrush}" />
+                    Fill="{ThemeResource MenuFlyoutSeparatorBackground}" />
             </DataTemplate>
 
         </ResourceDictionary>
@@ -68,6 +68,7 @@
     <ComboBox
         Name="FiltersComboBox"
         x:Uid="FiltersComboBox"
+        MinWidth="200"
         VerticalAlignment="Center"
         ItemTemplateSelector="{StaticResource FilterTemplateSelector}"
         ItemsSource="{x:Bind ViewModel.Filters, Mode=OneWay}"
