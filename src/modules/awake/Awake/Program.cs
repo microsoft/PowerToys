@@ -98,8 +98,9 @@ namespace Awake
 
                     // Start background COM automation host (ROT) so any startup path exposes the automation surface.
                     // Uses default moniker; could be extended with a --rotname parameter if needed later.
-                    ComServerHost.StartBackground();
-                    AppDomain.CurrentDomain.ProcessExit += (_, _) => ComServerHost.Stop();
+                    var rotHost = new RotSingletonHost("Awake.Automation", () => new AwakeAutomation(), "AwakeAutomationRotThread");
+                    rotHost.Start();
+                    AppDomain.CurrentDomain.ProcessExit += (_, _) => rotHost.Stop();
 
                     TaskScheduler.UnobservedTaskException += (sender, args) =>
                     {
