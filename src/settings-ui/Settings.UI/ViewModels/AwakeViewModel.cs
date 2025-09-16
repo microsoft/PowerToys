@@ -96,6 +96,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsScreenConfigurationPossibleEnabled => ModuleSettings.Properties.Mode != AwakeMode.PASSIVE && IsEnabled;
 
+        public bool IsActivityConfigurationEnabled => ModuleSettings.Properties.Mode == AwakeMode.ACTIVITY && IsEnabled;
+
         public AwakeMode Mode
         {
             get => ModuleSettings.Properties.Mode;
@@ -128,6 +130,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
                     OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
                     OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
+                    OnPropertyChanged(nameof(IsActivityConfigurationEnabled));
 
                     NotifyPropertyChanged();
                 }
@@ -210,6 +213,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsTimeConfigurationEnabled));
             OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
             OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
+            OnPropertyChanged(nameof(IsActivityConfigurationEnabled));
         }
 
         public void RefreshModuleSettings()
@@ -219,6 +223,77 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IntervalHours));
             OnPropertyChanged(nameof(IntervalMinutes));
             OnPropertyChanged(nameof(ExpirationDateTime));
+            OnPropertyChanged(nameof(ActivityCpuThresholdPercent));
+            OnPropertyChanged(nameof(ActivityMemoryThresholdPercent));
+            OnPropertyChanged(nameof(ActivityNetworkThresholdKBps));
+            OnPropertyChanged(nameof(ActivitySampleIntervalSeconds));
+            OnPropertyChanged(nameof(ActivityInactivityTimeoutSeconds));
+        }
+
+        // Activity configuration bindables
+        public uint ActivityCpuThresholdPercent
+        {
+            get => ModuleSettings.Properties.ActivityCpuThresholdPercent;
+            set
+            {
+                if (ModuleSettings.Properties.ActivityCpuThresholdPercent != value)
+                {
+                    ModuleSettings.Properties.ActivityCpuThresholdPercent = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public uint ActivityMemoryThresholdPercent
+        {
+            get => ModuleSettings.Properties.ActivityMemoryThresholdPercent;
+            set
+            {
+                if (ModuleSettings.Properties.ActivityMemoryThresholdPercent != value)
+                {
+                    ModuleSettings.Properties.ActivityMemoryThresholdPercent = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public uint ActivityNetworkThresholdKBps
+        {
+            get => ModuleSettings.Properties.ActivityNetworkThresholdKBps;
+            set
+            {
+                if (ModuleSettings.Properties.ActivityNetworkThresholdKBps != value)
+                {
+                    ModuleSettings.Properties.ActivityNetworkThresholdKBps = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public uint ActivitySampleIntervalSeconds
+        {
+            get => ModuleSettings.Properties.ActivitySampleIntervalSeconds;
+            set
+            {
+                if (ModuleSettings.Properties.ActivitySampleIntervalSeconds != value)
+                {
+                    ModuleSettings.Properties.ActivitySampleIntervalSeconds = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public uint ActivityInactivityTimeoutSeconds
+        {
+            get => ModuleSettings.Properties.ActivityInactivityTimeoutSeconds;
+            set
+            {
+                if (ModuleSettings.Properties.ActivityInactivityTimeoutSeconds != value)
+                {
+                    ModuleSettings.Properties.ActivityInactivityTimeoutSeconds = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         private bool _enabledStateIsGPOConfigured;

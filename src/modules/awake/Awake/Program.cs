@@ -35,6 +35,12 @@ namespace Awake
         private static readonly string[] _aliasesParentPidOption = ["--use-parent-pid", "-u"];
         private static readonly string[] _aliasesHttpServerOption = ["--http-server", "-s"];
         private static readonly string[] _aliasesHttpPortOption = ["--http-port"];
+        private static readonly string[] _aliasesActivityOption = ["--activity", "-a"];
+        private static readonly string[] _aliasesActivityCpuOption = ["--act-cpu"];
+        private static readonly string[] _aliasesActivityMemOption = ["--act-mem"];
+        private static readonly string[] _aliasesActivityNetOption = ["--act-net"];
+        private static readonly string[] _aliasesActivitySampleOption = ["--act-sample"];
+        private static readonly string[] _aliasesActivityTimeoutOption = ["--act-timeout"];
 
         private static readonly JsonSerializerOptions _serializerOptions = new() { IncludeFields = true };
         private static readonly ETWTrace _etwTrace = new();
@@ -165,6 +171,38 @@ namespace Awake
                         IsRequired = false,
                     };
 
+                    // Activity-based keep-awake options
+                    Option<bool> activityOption = new(_aliasesActivityOption, () => false, "Enable activity-based keep awake mode (CPU / Memory / Network)")
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
+                    Option<uint> activityCpuOption = new(_aliasesActivityCpuOption, () => 20, "Activity mode CPU threshold percent (0-100, 0 to ignore)")
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
+                    Option<uint> activityMemOption = new(_aliasesActivityMemOption, () => 50, "Activity mode Memory usage threshold percent (0-100, 0 to ignore)")
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
+                    Option<uint> activityNetOption = new(_aliasesActivityNetOption, () => 100, "Activity mode total network throughput threshold KB/s (0 to ignore)")
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
+                    Option<uint> activitySampleOption = new(_aliasesActivitySampleOption, () => 5, "Activity mode sampling interval in seconds (min 1)")
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
+                    Option<uint> activityTimeoutOption = new(_aliasesActivityTimeoutOption, () => 60, "Activity mode inactivity timeout in seconds before reverting (min 5)")
+                    {
+                        Arity = ArgumentArity.ZeroOrOne,
+                        IsRequired = false,
+                    };
+
                     timeOption.AddValidator(result =>
                     {
                         if (result.Tokens.Count != 0 && !uint.TryParse(result.Tokens[0].Value, out _))
@@ -215,10 +253,54 @@ namespace Awake
                         parentPidOption,
                         httpServerOption,
                         httpPortOption,
+                        activityOption,
+                        activityCpuOption,
+                        activityMemOption,
+                        activityNetOption,
+                        activitySampleOption,
+                        activityTimeoutOption,
                     ];
 
                     rootCommand.Description = Core.Constants.AppName;
-                    rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption, httpServerOption, httpPortOption);
+
+                    // NOTE: The strongly-typed SetHandler overloads have an upper limit on the number of symbols
+                    // they accept. We exceed that limit with the new activity-mode parameters. Switch to a context
+                    // based handler and manually extract option values from the ParseResult.
+                    rootCommand.SetHandler(context =>
+                    {
+                        var pr = context.ParseResult;
+
+                        bool usePtConfig = pr.GetValueForOption(configOption);
+                        bool displayOn = pr.GetValueForOption(displayOption);
+                        uint timeLimit = pr.GetValueForOption(timeOption);
+                        int pid = pr.GetValueForOption(pidOption);
+                        string expireAt = pr.GetValueForOption(expireAtOption) ?? string.Empty;
+                        bool useParentPid = pr.GetValueForOption(parentPidOption);
+                        bool enableHttpServer = pr.GetValueForOption(httpServerOption);
+                        int httpPort = pr.GetValueForOption(httpPortOption);
+                        bool activityMode = pr.GetValueForOption(activityOption);
+                        uint actCpu = pr.GetValueForOption(activityCpuOption);
+                        uint actMem = pr.GetValueForOption(activityMemOption);
+                        uint actNet = pr.GetValueForOption(activityNetOption);
+                        uint actSample = pr.GetValueForOption(activitySampleOption);
+                        uint actTimeout = pr.GetValueForOption(activityTimeoutOption);
+
+                        HandleCommandLineArguments(
+                            usePtConfig,
+                            displayOn,
+                            timeLimit,
+                            pid,
+                            expireAt,
+                            useParentPid,
+                            enableHttpServer,
+                            httpPort,
+                            activityMode,
+                            actCpu,
+                            actMem,
+                            actNet,
+                            actSample,
+                            actTimeout);
+                    });
 
                     return rootCommand.InvokeAsync(args).Result;
                 }
@@ -249,7 +331,7 @@ namespace Awake
             Manager.CompleteExit(exitCode);
         }
 
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid, bool enableHttpServer, int httpPort)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid, bool enableHttpServer, int httpPort, bool activityMode, uint actCpu, uint actMem, uint actNet, uint actSample, uint actTimeout)
         {
             if (pid == 0 && !useParentPid)
             {
@@ -270,6 +352,11 @@ namespace Awake
             Logger.LogInfo($"The value for --use-parent-pid is: {useParentPid}");
             Logger.LogInfo($"The value for --http-server is: {enableHttpServer}");
             Logger.LogInfo($"The value for --http-port is: {httpPort}");
+            Logger.LogInfo($"The value for --activity is: {activityMode}");
+            if (activityMode)
+            {
+                Logger.LogInfo($"Activity thresholds CPU={actCpu}% MEM={actMem}% NET={actNet}KB/s SAMPLE={actSample}s TIMEOUT={actTimeout}s");
+            }
 
             // Initialize HTTP server if requested
             if (enableHttpServer)
@@ -341,6 +428,11 @@ namespace Awake
                 {
                     Logger.LogError($"There was a problem with the configuration file. Make sure it exists. {ex.Message}");
                 }
+            }
+            else if (!usePtConfig && activityMode)
+            {
+                Logger.LogInfo("Starting activity-based keep-awake mode (CLI override).");
+                Manager.SetActivityBasedKeepAwake(actCpu, actMem, actNet, actSample, actTimeout, displayOn);
             }
             else if (pid != 0 || useParentPid)
             {
@@ -504,6 +596,15 @@ namespace Awake
                         }
 
                         Manager.SetExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);
+                        break;
+                    case AwakeMode.ACTIVITY:
+                        Manager.SetActivityBasedKeepAwake(
+                            settings.Properties.ActivityCpuThresholdPercent,
+                            settings.Properties.ActivityMemoryThresholdPercent,
+                            settings.Properties.ActivityNetworkThresholdKBps,
+                            settings.Properties.ActivitySampleIntervalSeconds,
+                            settings.Properties.ActivityInactivityTimeoutSeconds,
+                            settings.Properties.KeepDisplayOn);
                         break;
 
                     default:

@@ -10,6 +10,7 @@ namespace Awake.Core.Models
         TC_MODE_PASSIVE = Native.Constants.WM_USER + 0x3,
         TC_MODE_INDEFINITE = Native.Constants.WM_USER + 0x4,
         TC_MODE_EXPIRABLE = Native.Constants.WM_USER + 0x5,
+        TC_MODE_ACTIVITY = Native.Constants.WM_USER + 0x6,
         TC_EXIT = Native.Constants.WM_USER + 0x64,
         TC_TIME = Native.Constants.WM_USER + 0x65,
     }

@@ -2341,6 +2341,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_ExpirableKeepAwakeSelector.Content" xml:space="preserve">
     <value>Keep awake until expiration</value>
   </data>
+  <data name="Awake_ActivityKeepAwakeSelector.Content" xml:space="preserve">
+    <value>Keep awake while system is active</value>
+  </data>
   <data name="Awake_DisplaySettingsCard.Header" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
@@ -2367,6 +2370,42 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_ExpirationSettingsExpander_Time.Header" xml:space="preserve">
     <value>End time</value>
+  </data>
+  <data name="Awake_ActivitySettingsExpander.Header" xml:space="preserve">
+    <value>Activity thresholds</value>
+  </data>
+  <data name="Awake_ActivitySettingsExpander.Description" xml:space="preserve">
+    <value>Stay awake while any enabled metric exceeds its threshold</value>
+  </data>
+  <data name="Awake_ActivityCpuThresholdCard.Header" xml:space="preserve">
+    <value>CPU usage (%)</value>
+  </data>
+  <data name="Awake_ActivityCpuThresholdInput.Header" xml:space="preserve">
+    <value>CPU %</value>
+  </data>
+  <data name="Awake_ActivityMemoryThresholdCard.Header" xml:space="preserve">
+    <value>Memory usage (%)</value>
+  </data>
+  <data name="Awake_ActivityMemoryThresholdInput.Header" xml:space="preserve">
+    <value>Memory %</value>
+  </data>
+  <data name="Awake_ActivityNetworkThresholdCard.Header" xml:space="preserve">
+    <value>Network throughput (KB/s)</value>
+  </data>
+  <data name="Awake_ActivityNetworkThresholdInput.Header" xml:space="preserve">
+    <value>KB/s</value>
+  </data>
+  <data name="Awake_ActivitySampleIntervalCard.Header" xml:space="preserve">
+    <value>Sample interval (s)</value>
+  </data>
+  <data name="Awake_ActivitySampleIntervalInput.Header" xml:space="preserve">
+    <value>Seconds</value>
+  </data>
+  <data name="Awake_ActivityInactivityTimeoutCard.Header" xml:space="preserve">
+    <value>Inactivity timeout (s)</value>
+  </data>
+  <data name="Awake_ActivityInactivityTimeoutInput.Header" xml:space="preserve">
+    <value>Timeout</value>
   </data>
   <data name="Oobe_Awake.Title" xml:space="preserve">
     <value>Awake</value>

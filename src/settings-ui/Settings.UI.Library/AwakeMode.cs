@@ -10,5 +10,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         INDEFINITE = 1,
         TIMED = 2,
         EXPIRABLE = 3,
+        ACTIVITY = 4, // Resource activity based keep-awake
     }
 }

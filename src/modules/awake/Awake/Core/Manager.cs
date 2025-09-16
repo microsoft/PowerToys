@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -123,6 +124,19 @@ namespace Awake.Core
                 : ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
         }
 
+        // Activity mode state
+        private static bool _activityActive;
+        private static DateTimeOffset _activityLastHigh;
+        private static uint _activityCpu;
+        private static uint _activityMem;
+        private static uint _activityNetKBps;
+        private static uint _activitySample;
+        private static uint _activityTimeout;
+        private static bool _activityKeepDisplay;
+        private static PerformanceCounter? _cpuCounter;
+        private static PerformanceCounter? _memCounter;
+        private static List<PerformanceCounter>? _netCounters;
+
         internal static void CancelExistingThread()
         {
             Logger.LogInfo("Ensuring the thread is properly cleaned up...");
@@ -173,6 +187,10 @@ namespace Awake.Core
                 case AwakeMode.TIMED:
                     iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}]";
                     icon = TrayHelper.TimedIcon;
+                    break;
+                case AwakeMode.ACTIVITY:
+                    iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_ACTIVITY}][{ScreenStateString}]";
+                    icon = TrayHelper.IndefiniteIcon; // Placeholder icon
                     break;
             }
 
@@ -498,6 +516,152 @@ namespace Awake.Core
             CurrentOperatingMode = AwakeMode.PASSIVE;
 
             SetModeShellIcon();
+        }
+
+        internal static void SetActivityBasedKeepAwake(
+            uint cpuThresholdPercent,
+            uint memThresholdPercent,
+            uint netThresholdKBps,
+            uint sampleIntervalSeconds,
+            uint inactivityTimeoutSeconds,
+            bool keepDisplayOn,
+            [CallerMemberName] string callerName = "")
+        {
+            Logger.LogInfo($"Activity-based keep-awake invoked by {callerName}. CPU>={cpuThresholdPercent}%, MEM>={memThresholdPercent}%, NET>={netThresholdKBps}KB/s sample={sampleIntervalSeconds}s timeout={inactivityTimeoutSeconds}s display={keepDisplayOn}.");
+
+            CancelExistingThread();
+
+            if (IsUsingPowerToysConfig)
+            {
+                try
+                {
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    bool settingsChanged =
+                        currentSettings.Properties.Mode != AwakeMode.ACTIVITY ||
+                        currentSettings.Properties.ActivityCpuThresholdPercent != cpuThresholdPercent ||
+                        currentSettings.Properties.ActivityMemoryThresholdPercent != memThresholdPercent ||
+                        currentSettings.Properties.ActivityNetworkThresholdKBps != netThresholdKBps ||
+                        currentSettings.Properties.ActivitySampleIntervalSeconds != sampleIntervalSeconds ||
+                        currentSettings.Properties.ActivityInactivityTimeoutSeconds != inactivityTimeoutSeconds ||
+                        currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
+
+                    if (settingsChanged)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.ACTIVITY;
+                        currentSettings.Properties.ActivityCpuThresholdPercent = cpuThresholdPercent;
+                        currentSettings.Properties.ActivityMemoryThresholdPercent = memThresholdPercent;
+                        currentSettings.Properties.ActivityNetworkThresholdKBps = netThresholdKBps;
+                        currentSettings.Properties.ActivitySampleIntervalSeconds = sampleIntervalSeconds;
+                        currentSettings.Properties.ActivityInactivityTimeoutSeconds = inactivityTimeoutSeconds;
+                        currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        return; // Settings will be processed triggering this again
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to persist activity mode settings: {ex.Message}");
+                }
+            }
+
+            // Initialize performance counters
+            try
+            {
+                _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                _memCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use");
+                _netCounters = PerformanceCounterCategory.GetCategories()
+                    .FirstOrDefault(c => c.CategoryName == "Network Interface")?
+                    .GetInstanceNames()
+                    .Select(n => new PerformanceCounter("Network Interface", "Bytes Total/sec", n))
+                    .ToList() ?? new List<PerformanceCounter>();
+                _cpuCounter.NextValue(); // Prime CPU counter
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to initialize performance counters for activity mode: {ex.Message}");
+                return;
+            }
+
+            _activityCpu = cpuThresholdPercent;
+            _activityMem = memThresholdPercent;
+            _activityNetKBps = netThresholdKBps;
+            _activitySample = Math.Max(1, sampleIntervalSeconds);
+            _activityTimeout = Math.Max(5, inactivityTimeoutSeconds);
+            _activityKeepDisplay = keepDisplayOn;
+            _activityLastHigh = DateTimeOffset.Now;
+            _activityActive = true;
+
+            CurrentOperatingMode = AwakeMode.ACTIVITY;
+            IsDisplayOn = keepDisplayOn;
+            SetModeShellIcon();
+
+            TimeSpan sampleInterval = TimeSpan.FromSeconds(_activitySample);
+
+            Observable.Interval(sampleInterval).Subscribe(
+                _ =>
+                {
+                    if (!_activityActive)
+                    {
+                        return;
+                    }
+
+                    float cpu = 0;
+                    float mem = 0;
+                    double netKBps = 0;
+
+                    try
+                    {
+                        cpu = _cpuCounter?.NextValue() ?? 0;
+                        mem = _memCounter?.NextValue() ?? 0;
+                        if (_netCounters != null && _netCounters.Count > 0)
+                        {
+                            netKBps = _netCounters.Sum(c => c.NextValue()) / 1024.0;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Performance counter read failure: {ex.Message}");
+                    }
+
+                    bool above =
+                        (_activityCpu == 0 || cpu >= _activityCpu) ||
+                        (_activityMem == 0 || mem >= _activityMem) ||
+                        (_activityNetKBps == 0 || netKBps >= _activityNetKBps);
+
+                    if (above)
+                    {
+                        _activityLastHigh = DateTimeOffset.Now;
+                        _stateQueue.Add(ComputeAwakeState(_activityKeepDisplay));
+                    }
+
+                    TrayHelper.SetShellIcon(
+                        TrayHelper.WindowHandle,
+                        $"{Constants.FullAppName} [Activity][{ScreenStateString}][CPU {cpu:0.#}% | MEM {mem:0.#}% | NET {netKBps:0.#}KB/s]",
+                        TrayHelper.IndefiniteIcon,
+                        TrayIconAction.Update);
+
+                    if ((DateTimeOffset.Now - _activityLastHigh).TotalSeconds >= _activityTimeout)
+                    {
+                        Logger.LogInfo("Activity thresholds not met within timeout window. Ending activity mode.");
+                        _activityActive = false;
+                        CancelExistingThread();
+
+                        if (IsUsingPowerToysConfig)
+                        {
+                            SetPassiveKeepAwake();
+                        }
+                        else
+                        {
+                            Logger.LogInfo("Exiting after activity mode idle.");
+                            CompleteExit(Environment.ExitCode);
+                        }
+                    }
+                },
+                ex =>
+                {
+                    Logger.LogError($"Activity mode observable failure: {ex.Message}");
+                },
+                _tokenSource.Token);
         }
 
         /// <summary>

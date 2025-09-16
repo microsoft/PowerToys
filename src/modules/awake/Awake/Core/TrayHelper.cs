@@ -306,6 +306,19 @@ namespace Awake.Core
                                 break;
                             }
 
+                        case (uint)TrayCommands.TC_MODE_ACTIVITY:
+                            {
+                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                Manager.SetActivityBasedKeepAwake(
+                                    settings.Properties.ActivityCpuThresholdPercent,
+                                    settings.Properties.ActivityMemoryThresholdPercent,
+                                    settings.Properties.ActivityNetworkThresholdKBps,
+                                    settings.Properties.ActivitySampleIntervalSeconds,
+                                    settings.Properties.ActivityInactivityTimeoutSeconds,
+                                    settings.Properties.KeepDisplayOn);
+                                break;
+                            }
+
                         case (uint)TrayCommands.TC_MODE_PASSIVE:
                             {
                                 Manager.SetPassiveKeepAwake();
@@ -455,6 +468,7 @@ namespace Awake.Core
             InsertMenuItem(0, TrayCommands.TC_MODE_PASSIVE, Resources.AWAKE_OFF, mode == AwakeMode.PASSIVE);
             InsertMenuItem(0, TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY, mode == AwakeMode.INDEFINITE);
             InsertMenuItem(0, TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION, mode == AwakeMode.EXPIRABLE, true);
+            InsertMenuItem(0, TrayCommands.TC_MODE_ACTIVITY, Resources.AWAKE_KEEP_ON_ACTIVITY, mode == AwakeMode.ACTIVITY);
         }
     }
 }

@@ -214,6 +214,15 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Keep awake on activity (CPU / Memory / Network).
+        /// </summary>
+        internal static string AWAKE_KEEP_ON_ACTIVITY {
+            get {
+                return ResourceManager.GetString("AWAKE_KEEP_ON_ACTIVITY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to d.
         /// </summary>
         internal static string AWAKE_LABEL_DAYS {
@@ -336,6 +345,15 @@ namespace Awake.Properties {
         internal static string AWAKE_TRAY_TEXT_TIMED {
             get {
                 return ResourceManager.GetString("AWAKE_TRAY_TEXT_TIMED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Activity.
+        /// </summary>
+        internal static string AWAKE_TRAY_TEXT_ACTIVITY {
+            get {
+                return ResourceManager.GetString("AWAKE_TRAY_TEXT_ACTIVITY", resourceCulture);
             }
         }
         

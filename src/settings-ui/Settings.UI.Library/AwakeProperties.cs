@@ -20,6 +20,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IntervalMinutes = 1;
             ExpirationDateTime = DateTimeOffset.Now;
             CustomTrayTimes = [];
+
+            // Defaults for activity-based mode
+            ActivityCpuThresholdPercent = 20;
+            ActivityMemoryThresholdPercent = 50;
+            ActivityNetworkThresholdKBps = 100;
+            ActivitySampleIntervalSeconds = 5;
+            ActivityInactivityTimeoutSeconds = 60;
         }
 
         [JsonPropertyName("keepDisplayOn")]
@@ -40,5 +47,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("customTrayTimes")]
         [CmdConfigureIgnore]
         public Dictionary<string, uint> CustomTrayTimes { get; set; }
+
+        // Activity-based mode configuration
+        [JsonPropertyName("activityCpuThresholdPercent")]
+        public uint ActivityCpuThresholdPercent { get; set; }
+
+        [JsonPropertyName("activityMemoryThresholdPercent")]
+        public uint ActivityMemoryThresholdPercent { get; set; }
+
+        [JsonPropertyName("activityNetworkThresholdKBps")]
+        public uint ActivityNetworkThresholdKBps { get; set; }
+
+        [JsonPropertyName("activitySampleIntervalSeconds")]
+        public uint ActivitySampleIntervalSeconds { get; set; }
+
+        [JsonPropertyName("activityInactivityTimeoutSeconds")]
+        public uint ActivityInactivityTimeoutSeconds { get; set; }
     }
 }

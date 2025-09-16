@@ -146,6 +146,10 @@
     <value>Keep awake until expiration date and time</value>
     <comment>Keep the system awake until expiration date and time</comment>
   </data>
+  <data name="AWAKE_KEEP_ON_ACTIVITY" xml:space="preserve">
+    <value>Keep awake on activity (CPU / Memory / Network)</value>
+    <comment>Keep the system awake while resource activity is above configured thresholds</comment>
+  </data>
   <data name="AWAKE_MINUTE" xml:space="preserve">
     <value>{0} minute</value>
     <comment>{0} shouldn't be removed. It will be replaced by the number 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
@@ -196,6 +200,9 @@
   </data>
   <data name="AWAKE_TRAY_TEXT_TIMED" xml:space="preserve">
     <value>Interval</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_ACTIVITY" xml:space="preserve">
+    <value>Activity</value>
   </data>
   <data name="AWAKE_LABEL_DAYS" xml:space="preserve">
     <value>d</value>

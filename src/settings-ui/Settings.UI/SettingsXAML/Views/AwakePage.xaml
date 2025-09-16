@@ -44,6 +44,7 @@
                             <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwakeSelector" />
                             <ComboBoxItem x:Uid="Awake_TemporaryKeepAwakeSelector" />
                             <ComboBoxItem x:Uid="Awake_ExpirableKeepAwakeSelector" />
+                            <ComboBoxItem x:Uid="Awake_ActivityKeepAwakeSelector" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
@@ -99,6 +100,76 @@
                         IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <!-- Activity mode configuration -->
+                    <tkcontrols:SettingsExpander
+                        Name="AwakeActivitySettingsExpander"
+                        x:Uid="Awake_ActivitySettingsExpander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}"
+                        IsExpanded="True"
+                        Visibility="{x:Bind ViewModel.IsActivityConfigurationEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="AwakeActivityCpuThresholdCard" x:Uid="Awake_ActivityCpuThresholdCard">
+                                <StackPanel Orientation="Horizontal" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                    <NumberBox
+                                        x:Uid="Awake_ActivityCpuThresholdInput"
+                                        Width="120"
+                                        Minimum="0"
+                                        Maximum="100"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.ActivityCpuThresholdPercent, Mode=TwoWay}" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="AwakeActivityMemoryThresholdCard" x:Uid="Awake_ActivityMemoryThresholdCard">
+                                <StackPanel Orientation="Horizontal" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                    <NumberBox
+                                        x:Uid="Awake_ActivityMemoryThresholdInput"
+                                        Width="120"
+                                        Minimum="0"
+                                        Maximum="100"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.ActivityMemoryThresholdPercent, Mode=TwoWay}" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="AwakeActivityNetworkThresholdCard" x:Uid="Awake_ActivityNetworkThresholdCard">
+                                <StackPanel Orientation="Horizontal" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                    <NumberBox
+                                        x:Uid="Awake_ActivityNetworkThresholdInput"
+                                        Width="120"
+                                        Minimum="0"
+                                        SmallChange="10"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.ActivityNetworkThresholdKBps, Mode=TwoWay}" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="AwakeActivitySampleIntervalCard" x:Uid="Awake_ActivitySampleIntervalCard">
+                                <StackPanel Orientation="Horizontal" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                    <NumberBox
+                                        x:Uid="Awake_ActivitySampleIntervalInput"
+                                        Width="120"
+                                        Minimum="1"
+                                        Maximum="3600"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.ActivitySampleIntervalSeconds, Mode=TwoWay}" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="AwakeActivityInactivityTimeoutCard" x:Uid="Awake_ActivityInactivityTimeoutCard">
+                                <StackPanel Orientation="Horizontal" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                    <NumberBox
+                                        x:Uid="Awake_ActivityInactivityTimeoutInput"
+                                        Width="120"
+                                        Minimum="5"
+                                        Maximum="86400"
+                                        SmallChange="5"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.ActivityInactivityTimeoutSeconds, Mode=TwoWay}" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
