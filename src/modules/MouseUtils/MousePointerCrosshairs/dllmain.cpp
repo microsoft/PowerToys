@@ -481,7 +481,7 @@ private:
 
     void parse_settings(PowerToysSettings::PowerToyValues& settings)
     {
-        // Refactored JSON parsing with helper functions for cleaner, more maintainable code
+        // Refactored JSON parsing: uses inline try-catch blocks for each property for clarity and error handling
         auto settingsObject = settings.get_raw_json();
         InclusiveCrosshairsSettings inclusiveCrosshairsSettings;
         
