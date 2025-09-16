@@ -96,6 +96,11 @@ namespace Awake
                     Logger.LogInfo($"OS: {Environment.OSVersion}");
                     Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
 
+                    // Start background COM automation host (ROT) so any startup path exposes the automation surface.
+                    // Uses default moniker; could be extended with a --rotname parameter if needed later.
+                    ComServerHost.StartBackground();
+                    AppDomain.CurrentDomain.ProcessExit += (_, _) => ComServerHost.Stop();
+
                     TaskScheduler.UnobservedTaskException += (sender, args) =>
                     {
                         Trace.WriteLine($"Task scheduler error: {args.Exception.Message}"); // somebody forgot to check!
