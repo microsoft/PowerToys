@@ -30,7 +30,7 @@
         <!-- Main Content -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240"/>
+                <ColumnDefinition x:Name="LeftPaneColumn" Width="0"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -57,17 +57,9 @@
                                 <DataTemplate x:DataType="local:ButtonGroup">
                                     <Border Background="Transparent" Margin="12,2,12,2" CornerRadius="6" 
                                             BorderBrush="Transparent" BorderThickness="1">
-                                        <StackPanel Orientation="Horizontal" Margin="12,8" Background="Transparent">
-                                            <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" 
-                                                        OffContent="" OnContent="" 
-                                                        Width="32" Height="20" Margin="0,0,8,0"
-                                                        MinWidth="32" MinHeight="20"/>
-                                            <TextBlock Text="{x:Bind Name}" VerticalAlignment="Center" 
+                                        <StackPanel Orientation="Horizontal" Margin="12,8" Background="Transparent" Spacing="8">
+                                            <TextBlock Text="{x:Bind Name, Mode=OneWay}" VerticalAlignment="Center" 
                                                      FontSize="13" Foreground="#333333"/>
-                                            <Button Content="Remove" FontSize="11" Foreground="#666666" 
-                                                  Background="Transparent" BorderThickness="0"
-                                                  HorizontalAlignment="Right" Margin="8,0,0,0" Padding="8,4"
-                                                  Click="OnRemoveGroup" Tag="{x:Bind}"/>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
@@ -100,8 +92,15 @@
                     </Grid.RowDefinitions>
 
                     <!-- Group Configuration Header -->
-                    <TextBlock Grid.Row="0" Text="Group Configuration" FontSize="18" FontWeight="SemiBold" 
-                               Margin="0,0,0,24" Foreground="#333333"/>
+                    <Grid Grid.Row="0" Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Group Configuration" FontSize="18" FontWeight="SemiBold" Foreground="#333333"/>
+                        <Button Grid.Column="1" Content="Show Groups" Click="OnToggleGroupsPane" Padding="8,4"
+                                Background="#f5f5f5" Foreground="#333333" CornerRadius="4" BorderBrush="#d0d0d0" BorderThickness="1"/>
+                    </Grid>
 
                     <!-- Group Basic Info -->
                     <Grid Grid.Row="1" Margin="0,0,0,32">
@@ -156,6 +155,9 @@
                                         Background="#f5f5f5" Foreground="#333333" CornerRadius="4"
                                         BorderBrush="#d0d0d0" BorderThickness="1" FontSize="12"
                                         Tag="{x:Bind ViewModel.SelectedButton}"/>
+                                <Button Content="Save" Click="OnSave" Padding="12,6"
+                                        Background="#f5f5f5" Foreground="#333333" CornerRadius="4"
+                                        BorderBrush="#d0d0d0" BorderThickness="1" FontSize="12"/>
                             </StackPanel>
                         </Grid>
 
@@ -169,10 +171,10 @@
                                     <Border Background="White" Margin="0,0,0,8" Padding="16" CornerRadius="6"
                                             BorderBrush="#e0e0e0" BorderThickness="1">
                                         <StackPanel Orientation="Horizontal" Spacing="12">
-                                            <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" 
-                                                        OffContent="" OnContent="" 
-                                                        Width="32" Height="20" MinWidth="32" MinHeight="20"/>
-                                            <TextBlock Text="{x:Bind Name}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                                            <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                                                          OffContent="" OnContent=""
+                                                          VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
@@ -212,7 +214,7 @@
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Name" VerticalAlignment="Center" 
                                        FontSize="13" Foreground="#555555" Margin="0,0,0,12"/>
                             <TextBox Grid.Row="0" Grid.Column="1" 
-                                     Text="{x:Bind ViewModel.SelectedButton.Name, Mode=TwoWay}"
+                                     Text="{x:Bind ViewModel.SelectedButton.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,0,0,12" Padding="12,8" Background="White" 
                                      BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4"/>
 
@@ -243,7 +245,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" Text="{x:Bind ViewModel.SelectedButton.IconGlyph, Mode=TwoWay}"
+                                <TextBox Grid.Column="0" Text="{x:Bind ViewModel.SelectedButton.IconGlyph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Padding="12,8" Background="White" 
                                          BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4,0,0,4"/>
                                 <Border Grid.Column="1" Background="#f5f5f5" BorderBrush="#d0d0d0" 
@@ -262,7 +264,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" Text="{x:Bind ViewModel.SelectedButton.IconPath, Mode=TwoWay}"
+                                <TextBox Grid.Column="0" Text="{x:Bind ViewModel.SelectedButton.IconPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Padding="12,8" Background="White" 
                                          BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4,0,0,4"/>
                                 <Button Grid.Column="1" Content="Browse" Padding="16,8" 
@@ -275,7 +277,7 @@
                             <TextBlock Grid.Row="5" Grid.Column="0" Text="Command (exe,uri)" VerticalAlignment="Center" 
                                        FontSize="13" Foreground="#555555" Margin="0,0,0,12"/>
                             <TextBox Grid.Row="5" Grid.Column="1" 
-                                     Text="{x:Bind ViewModel.SelectedButton.Action.Command, Mode=TwoWay}"
+                                     Text="{x:Bind ViewModel.SelectedButton.Action.Command, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,0,0,12" Padding="12,8" Background="White" 
                                      BorderBrush="#d0d0d0" BorderThickness="1" CornerRadius="4"/>
 

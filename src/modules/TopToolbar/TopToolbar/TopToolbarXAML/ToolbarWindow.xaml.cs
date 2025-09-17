@@ -30,6 +30,7 @@ namespace TopToolbar
         private IntPtr _hwnd;
         private bool _initializedLayout;
         private Border _toolbarContainer;
+        private ScrollViewer _scrollViewer;
         private FileSystemWatcher _configWatcher;
 
         public ToolbarWindow()
@@ -114,15 +115,26 @@ namespace TopToolbar
                 Shadow = new Microsoft.UI.Xaml.Media.ThemeShadow(),
             };
 
-            border.Child = new StackPanel
+            var mainStack = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 Spacing = 8,
                 VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Left,
                 IsHitTestVisible = true,
                 Name = "MainStack",
             };
+
+            _scrollViewer = new ScrollViewer
+            {
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                HorizontalScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode.Enabled,
+                VerticalScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode.Disabled,
+                Content = mainStack,
+            };
+
+            border.Child = _scrollViewer;
             rootGrid.Children.Add(border);
             this.Content = rootGrid;
             _toolbarContainer = border;
@@ -183,7 +195,9 @@ namespace TopToolbar
 
         private void BuildToolbarFromConfig()
         {
-            if (_toolbarContainer?.Child is not StackPanel mainStack)
+            StackPanel mainStack = (_toolbarContainer?.Child as ScrollViewer)?.Content as StackPanel
+                                   ?? _toolbarContainer?.Child as StackPanel;
+            if (mainStack == null)
             {
                 return;
             }
@@ -316,24 +330,49 @@ namespace TopToolbar
             {
                 try
                 {
-                    var path = model.IconPath;
-                    if (!path.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+                    Uri imgUri = null;
+                    var rawPath = model.IconPath;
+                    if (System.IO.File.Exists(rawPath))
                     {
-                        path = "file:///" + path.Replace("\\", "/");
+                        // Build cache-busting file URI with last write ticks
+                        var ver = System.IO.File.GetLastWriteTimeUtc(rawPath).Ticks;
+                        var ub = new UriBuilder
+                        {
+                            Scheme = "file",
+                            Path = rawPath,
+                            Query = $"v={ver}",
+                        };
+                        imgUri = ub.Uri;
+                        ManagedCommon.Logger.LogInfo($"Toolbar image: local path exists '{rawPath}', uri='{imgUri}'");
+                    }
+                    else if (Uri.TryCreate(rawPath, UriKind.Absolute, out var parsed))
+                    {
+                        imgUri = parsed;
+                        ManagedCommon.Logger.LogInfo($"Toolbar image: using provided URI '{parsed}'");
+                    }
+                    else
+                    {
+                        // Best effort: prefix file scheme for non-existent yet absolute-looking paths
+                        var prefixed = new UriBuilder { Scheme = "file", Path = rawPath }.Uri;
+                        imgUri = prefixed;
+                        ManagedCommon.Logger.LogInfo($"Toolbar image: prefixed file URI '{prefixed}'");
                     }
 
+                    var bmp = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
+                    bmp.UriSource = imgUri;
                     var img = new Image
                     {
                         Width = 16,
                         Height = 16,
                         Stretch = Microsoft.UI.Xaml.Media.Stretch.Uniform,
-                        Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(path)),
+                        Source = bmp,
                     };
                     button.Content = img;
                 }
                 catch
                 {
                     // Fallback to glyph if loading fails
+                    ManagedCommon.Logger.LogWarning($"Toolbar image: failed to load '{model.IconPath}', fallback to glyph");
                     button.Content = new FontIcon { Glyph = model.IconGlyph, FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe MDL2 Assets"), FontSize = 16 };
                 }
             }
@@ -351,17 +390,26 @@ namespace TopToolbar
         {
             if (_toolbarContainer != null)
             {
-                // Get the actual size after layout
-                double actualWidth = _toolbarContainer.ActualWidth;
-                double actualHeight = _toolbarContainer.ActualHeight;
-
-                if (actualWidth > 0 && actualHeight > 0)
+                // Measure content desired width independent of current constraints
+                StackPanel mainStack = (_toolbarContainer.Child as ScrollViewer)?.Content as StackPanel
+                                       ?? _toolbarContainer.Child as StackPanel;
+                if (mainStack == null)
                 {
-                    // Resize window to exactly fit the content (no extra margin)
-                    int width = (int)Math.Ceiling(actualWidth);
-                    int height = (int)Math.Ceiling(actualHeight);
-                    this.AppWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
+                    return;
                 }
+
+                mainStack.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
+                double desiredWidth = mainStack.DesiredSize.Width + _toolbarContainer.Padding.Left + _toolbarContainer.Padding.Right;
+                double desiredHeight = _toolbarContainer.ActualHeight > 0 ? _toolbarContainer.ActualHeight : 48;
+
+                var displayArea = DisplayArea.GetFromWindowId(this.AppWindow.Id, DisplayAreaFallback.Primary);
+                double maxWidth = displayArea.WorkArea.Width / 2.0;
+                double widthToSet = Math.Min(desiredWidth, maxWidth);
+
+                int width = (int)Math.Ceiling(widthToSet);
+                int height = (int)Math.Ceiling(desiredHeight);
+
+                this.AppWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
             }
         }
 

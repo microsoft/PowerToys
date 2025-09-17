@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
+using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using TopToolbar.Models;
@@ -14,7 +14,7 @@ using WinRT.Interop;
 
 namespace TopToolbar
 {
-    public sealed partial class SettingsWindow : WinUIEx.WindowEx
+    public sealed partial class SettingsWindow : WinUIEx.WindowEx, IDisposable
     {
         private readonly SettingsViewModel _vm;
 
@@ -24,6 +24,10 @@ namespace TopToolbar
         {
             this.InitializeComponent();
             _vm = new SettingsViewModel(new ToolbarConfigService());
+            this.Closed += async (s, e) =>
+            {
+                await _vm.SaveAsync();
+            };
             this.Activated += async (s, e) =>
             {
                 if (_vm.Groups.Count == 0)
@@ -31,11 +35,37 @@ namespace TopToolbar
                     await _vm.LoadAsync(this.DispatcherQueue);
                 }
             };
+
+            // Keep left pane visible when no selection so UI doesn't look empty
+            _vm.PropertyChanged += ViewModel_PropertyChanged;
         }
 
-        private void OnAddGroup(object sender, RoutedEventArgs e)
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SettingsViewModel.SelectedGroup) ||
+                e.PropertyName == nameof(SettingsViewModel.HasNoSelectedGroup))
+            {
+                var leftCol = LeftPaneColumn;
+                if (leftCol != null && _vm.HasNoSelectedGroup)
+                {
+                    leftCol.Width = new GridLength(240);
+                }
+            }
+        }
+
+        private void OnToggleGroupsPane(object sender, RoutedEventArgs e)
+        {
+            var leftCol = LeftPaneColumn;
+            if (leftCol != null)
+            {
+                leftCol.Width = (leftCol.Width.Value == 0) ? new GridLength(240) : new GridLength(0);
+            }
+        }
+
+        private async void OnAddGroup(object sender, RoutedEventArgs e)
         {
             _vm.AddGroup();
+            await _vm.SaveAsync();
         }
 
         private async void OnSave(object sender, RoutedEventArgs e)
@@ -43,42 +73,47 @@ namespace TopToolbar
             await _vm.SaveAsync();
         }
 
-        private void OnClose(object sender, RoutedEventArgs e)
+        private async void OnClose(object sender, RoutedEventArgs e)
         {
+            await _vm.SaveAsync();
             this.Close();
         }
 
-        private void OnAddButton(object sender, RoutedEventArgs e)
+        private async void OnAddButton(object sender, RoutedEventArgs e)
         {
             if (_vm.SelectedGroup != null)
             {
                 _vm.AddButton(_vm.SelectedGroup);
+                await _vm.SaveAsync();
             }
         }
 
-        private void OnRemoveGroup(object sender, RoutedEventArgs e)
+        private async void OnRemoveGroup(object sender, RoutedEventArgs e)
         {
             var tag = (sender as Button)?.Tag;
             var group = (tag as ButtonGroup) ?? (_vm.Groups.Contains(_vm.SelectedGroup) ? _vm.SelectedGroup : null);
             if (group != null)
             {
                 _vm.RemoveGroup(group);
+                await _vm.SaveAsync();
             }
         }
 
-        private void OnRemoveSelectedGroup(object sender, RoutedEventArgs e)
+        private async void OnRemoveSelectedGroup(object sender, RoutedEventArgs e)
         {
             if (_vm.SelectedGroup != null)
             {
                 _vm.RemoveGroup(_vm.SelectedGroup);
+                await _vm.SaveAsync();
             }
         }
 
-        private void OnRemoveButton(object sender, RoutedEventArgs e)
+        private async void OnRemoveButton(object sender, RoutedEventArgs e)
         {
             if (_vm.SelectedButton != null && _vm.SelectedGroup != null)
             {
                 _vm.RemoveButton(_vm.SelectedGroup, _vm.SelectedButton);
+                await _vm.SaveAsync();
             }
         }
 
@@ -103,7 +138,13 @@ namespace TopToolbar
             {
                 _vm.SelectedButton.IconType = ToolbarIconType.Image;
                 _vm.SelectedButton.IconPath = file.Path;
+                await _vm.SaveAsync();
             }
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }
