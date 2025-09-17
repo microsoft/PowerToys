@@ -63,9 +63,16 @@ namespace Awake.Core
         // Foreground usage tracker instance (lifecycle managed by Program)
         internal static ForegroundUsageTracker? UsageTracker { get; set; }
 
+        private static PowerSchemeManager powerSchemeManager;
+
+        // Power scheme auto-switch (activity mode)
+        private static string? _originalPowerSchemeGuid;
+        private static bool _powerSchemeSwitched;
+
         static Manager()
         {
             _tokenSource = new CancellationTokenSource();
+            powerSchemeManager = new PowerSchemeManager();
             _stateQueue = [];
             ModuleSettings = new SettingsUtils();
         }
@@ -205,6 +212,94 @@ namespace Awake.Core
                 iconText,
                 icon,
                 forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
+        }
+
+        private static void CaptureOriginalPowerScheme()
+        {
+            try
+            {
+                powerSchemeManager.RefreshSchemes();
+                _originalPowerSchemeGuid = powerSchemeManager
+                    .GetAllSchemes()
+                    .FirstOrDefault(s => s.IsActive)?.PSGuid;
+                Logger.LogInfo($"Captured original power scheme: {_originalPowerSchemeGuid ?? "UNKNOWN"}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Failed to capture original power scheme: {ex.Message}");
+            }
+        }
+
+        private static void SwitchToHighestPerformanceIfNeeded()
+        {
+            if (_powerSchemeSwitched)
+            {
+                return;
+            }
+
+            try
+            {
+                powerSchemeManager.RefreshSchemes();
+                var highest = powerSchemeManager.GetHighestPerformanceScheme();
+                if (highest == null)
+                {
+                    Logger.LogInfo("No power schemes found when attempting high performance switch.");
+                    return;
+                }
+
+                if (highest.IsActive)
+                {
+                    Logger.LogInfo("Already on highest performance scheme – no switch needed.");
+                    return;
+                }
+
+                if (_originalPowerSchemeGuid == null)
+                {
+                    CaptureOriginalPowerScheme();
+                }
+
+                if (powerSchemeManager.SwitchScheme(highest.PSGuid))
+                {
+                    _powerSchemeSwitched = true;
+                    Logger.LogInfo($"Switched to highest performance scheme: {highest.Name} ({highest.PSGuid})");
+                }
+                else
+                {
+                    Logger.LogWarning($"Failed to switch to highest performance scheme: {highest.Name} ({highest.PSGuid})");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Exception while attempting to switch power scheme: {ex.Message}");
+            }
+        }
+
+        private static void RestoreOriginalPowerSchemeIfNeeded()
+        {
+            if (!_powerSchemeSwitched || string.IsNullOrWhiteSpace(_originalPowerSchemeGuid))
+            {
+                return;
+            }
+
+            try
+            {
+                if (powerSchemeManager.SwitchScheme(_originalPowerSchemeGuid))
+                {
+                    Logger.LogInfo($"Restored original power scheme: {_originalPowerSchemeGuid}");
+                }
+                else
+                {
+                    Logger.LogWarning($"Failed to restore original power scheme: {_originalPowerSchemeGuid}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Exception restoring original power scheme: {ex.Message}");
+            }
+            finally
+            {
+                _powerSchemeSwitched = false;
+            }
         }
 
         internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false, int processId = 0, [CallerMemberName] string callerName = "")
@@ -424,15 +519,11 @@ namespace Awake.Core
         internal static void CompleteExit(int exitCode)
         {
             SetPassiveKeepAwake(updateSettings: false);
-
+            RestoreOriginalPowerSchemeIfNeeded();
             if (TrayHelper.WindowHandle != IntPtr.Zero)
             {
-                // Delete the icon.
                 TrayHelper.SetShellIcon(TrayHelper.WindowHandle, string.Empty, null, TrayIconAction.Delete);
-
-                // Close the message window that we used for the tray.
                 Bridge.SendMessage(TrayHelper.WindowHandle, Native.Constants.WM_CLOSE, 0, 0);
-
                 Bridge.DestroyWindow(TrayHelper.WindowHandle);
             }
 
@@ -611,6 +702,9 @@ namespace Awake.Core
             IsDisplayOn = keepDisplayOn;
             SetModeShellIcon();
 
+            // Capture original scheme before any switch
+            CaptureOriginalPowerScheme();
+
             TimeSpan sampleInterval = TimeSpan.FromSeconds(_activitySample);
 
             Observable.Interval(sampleInterval).Subscribe(
@@ -648,6 +742,7 @@ namespace Awake.Core
                     {
                         _activityLastHigh = DateTimeOffset.Now;
                         _stateQueue.Add(ComputeAwakeState(_activityKeepDisplay));
+                        SwitchToHighestPerformanceIfNeeded();
                     }
 
                     TrayHelper.SetShellIcon(
@@ -661,6 +756,7 @@ namespace Awake.Core
                         Logger.LogInfo("Activity thresholds not met within timeout window. Ending activity mode.");
                         _activityActive = false;
                         CancelExistingThread();
+                        RestoreOriginalPowerSchemeIfNeeded();
 
                         if (IsUsingPowerToysConfig)
                         {
@@ -668,7 +764,6 @@ namespace Awake.Core
                         }
                         else
                         {
-                            Logger.LogInfo("Exiting after activity mode idle.");
                             CompleteExit(Environment.ExitCode);
                         }
                     }
