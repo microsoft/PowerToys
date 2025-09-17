@@ -13,6 +13,7 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
 {
     private readonly ListItem _clipboardHistoryListItem;
     private readonly ListItem _emojiListItem;
+    private readonly ListItem _segoeListItem;
     private readonly SettingsManager _settingsManager = new();
 
     public ClipboardHistoryCommandsProvider()
@@ -31,6 +32,11 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
             Title = "Emoji Picker",
             Subtitle = "Browse and copy emojis",
         };
+        _segoeListItem = new ListItem(new SegoeIconsExtensionPage())
+        {
+            Title = "Segoe Icons",
+            Subtitle = "Browse and copy Segoe Fluent Icons",
+        };
 
         DisplayName = Properties.Resources.provider_display_name;
         Icon = Icons.ClipboardListIcon;
@@ -41,6 +47,6 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
 
     public override IListItem[] TopLevelCommands()
     {
-        return [_clipboardHistoryListItem, _emojiListItem];
+        return [_clipboardHistoryListItem, _emojiListItem, _segoeListItem];
     }
 }
