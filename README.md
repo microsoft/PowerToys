@@ -16,11 +16,446 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link]
 
+You said:
+I'm creating a sizzle reel, and about a new adaptive controller. some of its features include:
+
+- modular
+- super versatile
+- deep integration with windows
+- the same unit can be used in a wide variety of 
+- 16 recognifurable 3.5mm jack ports
+- works for both windows and xbox, a single controller for all
+
+give me a few lines that I can put in the video.. the first 5 seconds I need to have about 3 lines.. so maybe start with something 'introducing blabla'
+ChatGPT said:
+Thought for 42s
+
+Love it. Here are tight, punchy lines you can drop in. I gave you two quick variants—both start with 3 hits in the first ~5s.
+
+Option A (high-energy)
+
+First ~5s (3 lines)
+
+Introducing [Controller Name]
+
+Adaptive. Modular. Yours.
+
+One controller. Any setup.
+
+Feature beats
+
+16 reconfigurable 3.5mm ports
+
+Deep Windows integration
+
+Works on Windows and Xbox
+
+Plug in switches, pedals—anything
+
+Swap modules in seconds
+
+Map every input your way
+
+Closing
+
+One controller for all.
+
+Play your way.
+
+Option B (sleek/minimal)
+
+First ~5s (3 lines)
+
+Introducing [Controller Name]
+
+Super versatile.
+
+Built for every player.
+
+Feature beats
+
+Modular by design
+
+16 reconfigurable 3.5mm ports
+
+Seamless with Windows
+
+Xbox ready—same unit
+
+From desktop to living room
+
+Infinite configurations
+
+Closing
+
+Your setup. Your rules.
+
+Start playing.
+
+You said:
+-Ja versatility/customizable? -> flat on desk, on lap, mounted in cradle, mounted separately (multiple 1/4 inch mounting points), portable. Use built in buttons, joysticks or customize with external switches (total 16 jack ports) and external joysticks (2type A connectors) 
+ 
+-Omnidirectional design -> units can be rotated to your preference
+
+-Fully backward compatibility (leveraging/or designed for) what the community is using today -> logitech buttons, joysticks etc.
+
+-Designed as extandable platform -> mount buttons, grips for portability, topper compatibility (nadruk ook op dat je alles aan elkaar kunt maken, externe buttons etc... etc.. Magneten benoemen? Snap in cradle or attach to each other?
+ 
+-Configurable through AI/Copilot in natural ways
+
+- Deep OS integration
+
+- Ending
+
+
+
+ChatGPT said:
+Thought for 32s
+
+Awesome—here are crisp, on-screen lines you can drop straight into a 30s sizzle. I gave you two styles. Both start with 3 hits in the first ~5s.
+
+Option A — punchy/tech
+
+0:00–0:05 (3 lines)
+
+Introducing [Controller Name]
+
+Adaptive. Modular. Yours.
+
+One controller. For all.
+
+Feature beats
+
+Flat on desk. On lap. In cradle.
+
+Multiple ¼" mounting points
+
+Omnidirectional: rotate to your preference
+
+16 reconfigurable 3.5mm ports
+
+2× USB Type-A for external joysticks
+
+Use built-in buttons & sticks — or customize with external switches
+
+Works with community gear (Logitech buttons, joysticks, …)
+
+Extendable platform: add buttons, grips, toppers
+
+Snap-in cradle; attach units together
+
+Configure with Copilot—just say it
+
+Deep Windows integration
+
+One unit. Windows and Xbox.
+
+Ending
+
+[Controller Name] — Play your way.
+
+Option B — sleek/minimal
+
+0:00–0:05 (3 lines)
+
+Meet [Controller Name]
+
+Super versatile.
+
+Built for every setup.
+
+Feature beats
+
+Desk. Lap. Cradle. Rig.
+
+¼" mounts — anywhere you need
+
+Rotate the unit—any orientation
+
+16× 3.5mm inputs for switches
+
+2× Type-A ports for joysticks
+
+Plug-and-play with today’s community hardware
+
+Expand with add-on buttons, grips, toppers
+
+Snap together. Scale your layout.
+
+Natural setup with Copilot
+
+Deep OS integration
+
+One controller for Windows & Xbox.
+
+Ending
+
+Your setup. Your rules.
+
+[Controller Name] — Ready to play.
+
+You said:
+I need a super short (3 words max I guess) sentence to show how super versatile it cna be in using it in different setups
+ChatGPT said:
+Thought for 16s
+
+Here are snappy 3-word (or less) options:
+
+Any setup. Anywhere.
+
+One controller, anywhere.
+
+Fits every setup.
+
+Adapts to you.
+
+Configurable. Everywhere.
+
+Endlessly adaptable.
+
+Modular by nature.
+
+Desk. Lap. Rig.
+
+Mount. Snap. Play.
+
+Rotate. Attach. Go.
+
+Customize. Connect. Play.
+
+Every setup, solved.
+
+You said:
+is it officially called a 3.5 jack port?
+ChatGPT said:
+Thought for 8s
+
+Short answer: say “3.5 mm jack” or “3.5 mm port.”
+
+“Jack” = the female connector (on your device); “plug” = the male on a cable.
+
+For accessibility switches, the most precise is “3.5 mm switch jack.”
+
+Avoid “3.5 jack port” — it’s redundant/muddy.
+
+For your card: “16 × 3.5 mm switch jacks.”
+
+You said:
+should it be 'extensible' or 'extendable
+ChatGPT said:
+Thought for 12s
+
+Use extensible for platforms/software; use extendable/expandable for physical hardware.
+
+If you mean “designed to support add-ons, plugins, profiles, APIs”: extensible platform ✅
+
+If you mean “you can attach more buttons, toppers, modules”: expandable hardware (or extendable) ✅
+
+For your reel, I’d write:
+
+“Extensible platform.” (software/Copilot/config)
+
+“Expandable hardware.” (modules, mounts, magnets)
+
+You said:
+"Customizable & extendable"
+
+rewirte
+ChatGPT said:
+Thought for 15s
+
+Here are tighter options—pick based on context:
+
+Platform (software)
+
+Customizable & Extensible
+
+Configurable & Extensible
+
+Hardware (physical)
+
+Customizable & Expandable
+
+Modular & Customizable
+
+Adaptable & Expandable
+
+Punchy 3-word riffs
+
+Customize. Expand. Evolve.
+
+Modular. Customizable. Yours.
+
+You said:
+
+turn this into a XAML gradient
+ChatGPT said:
+Thought for 1m 39s
+
+Here’s a clean XAML brush that matches your image (soft blue-gray from bottom-left to lighter top/right).
+
+Simple (single brush)
+<Grid.Background>
+  <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+    <GradientStop Color="#A3B7D1" Offset="0.00"/>  <!-- bluish bottom-left -->
+    <GradientStop Color="#C9D5E4" Offset="0.35"/>
+    <GradientStop Color="#E7EAEF" Offset="0.55"/>
+    <GradientStop Color="#D6D8DC" Offset="0.80"/>
+    <GradientStop Color="#D1D4D9" Offset="1.00"/>  <!-- cooler top-right -->
+  </LinearGradientBrush>
+</Grid.Background>
+
+Closer match (adds soft highlight in bottom-right)
+<Grid>
+  <!-- Base diagonal gradient -->
+  <Rectangle>
+    <Rectangle.Fill>
+      <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+        <GradientStop Color="#A3B7D1" Offset="0.00"/>
+        <GradientStop Color="#C9D5E4" Offset="0.35"/>
+        <GradientStop Color="#E7EAEF" Offset="0.55"/>
+        <GradientStop Color="#D6D8DC" Offset="0.80"/>
+        <GradientStop Color="#D1D4D9" Offset="1.00"/>
+      </LinearGradientBrush>
+    </Rectangle.Fill>
+  </Rectangle>
+
+  <!-- Subtle bright vignette in bottom-right -->
+  <Rectangle Opacity="0.45">
+    <Rectangle.Fill>
+      <RadialGradientBrush Center="1,1" GradientOrigin="1,1" RadiusX="0.85" RadiusY="0.85">
+        <GradientStop Color="#F6F6F7" Offset="0.0"/>
+        <GradientStop Color="#00FFFFFF" Offset="1.0"/>
+      </RadialGradientBrush>
+    </Rectangle.Fill>
+  </Rectangle>
+</Grid>
+
+
+Tweak offsets/opacity to taste based on your UI.
+
+You said:
+<h1 align="center">
+  <img src="doc/images/icons/PowerToys icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToysLogo"> Microsoft PowerToys
+</h1>
+
+how do I vertically this image and text?
+ChatGPT said:
+Thought for 51s
+
+Easiest: make the heading a flex container so the icon and text are vertically centered.
+
+<h1 align="center" style="display:flex;align-items:center;justify-content:center;gap:.5rem;">
+  <img src="doc/images/icons/PowerToys icon/PNG/PowerToysAppList.targetsize-30.png"
+       alt="PowerToys logo" height="30">
+  <span>Microsoft PowerToys</span>
+</h1>
+
+
+If you can’t use flex (e.g., styles get stripped), use inline elements with vertical-align:
+
+<h1 align="center">
+  <img src="doc/images/icons/PowerToys icon/PNG/PowerToysAppList.targetsize-30.png"
+       alt="PowerToys logo" height="30" style="vertical-align:middle;margin-right:8px;">
+  <span style="vertical-align:middle;">Microsoft PowerToys</span>
+</h1>
+
+You said:
+|              |  |              |
+|--------------|--------------------|--------------|
+| [Advanced Paste](https://aka.ms/PowerToysOverview_AdvancedPaste) | [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) |
+| [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [Command Palette](https://aka.ms/PowerToysOverview_CmdPal) |
+| [Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
+| [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) |
+| [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse Utilities](https://aka.ms/PowerToysOverview_MouseUtilities) |
+| [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) | [New+](https://aka.ms/PowerToysOverview_NewPlus) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) |
+| [Peek](https://aka.ms/PowerToysOverview_Peek) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) |
+| [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
+| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
+| [ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |
+
+can you convert this to an HTML table, and for every item I want to have a small image with that powertoys icon
+ChatGPT said:
+Thought for 54s
+
+Here’s a clean HTML table with a small PowerToys icon before each link.
+(Adjust the src if your icon path differs; space is URL-encoded.)
+
 <table style="border-collapse:collapse;">
   <tbody>
     <tr>
       <td><a href="https://aka.ms/PowerToysOverview_AdvancedPaste"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Advanced Paste</a></td>
       <td><a href="https://aka.ms/PowerToysOverview_AoT"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Always on Top</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_Awake"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">PowerToys Awake</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ColorPicker"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Color Picker</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_CmdNotFound"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Command Not Found</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_CmdPal"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Command Palette</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_CropAndLock"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Crop And Lock</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_EnvironmentVariables"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Environment Variables</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_FancyZones"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">FancyZones</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_FileExplorerAddOns"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">File Explorer Add-ons</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_FileLocksmith"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">File Locksmith</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_HostsFileEditor"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Hosts File Editor</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ImageResizer"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Image Resizer</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_KeyboardManager"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Keyboard Manager</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_MouseUtilities"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Mouse Utilities</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_MouseWithoutBorders"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Mouse Without Borders</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_NewPlus"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">New+</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_PastePlain"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Paste as Plain Text</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_Peek"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Peek</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_PowerRename"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">PowerRename</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_PowerToysRun"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">PowerToys Run</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_QuickAccent"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Quick Accent</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_RegistryPreview"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Registry Preview</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_ScreenRuler"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Screen Ruler</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ShortcutGuide"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Shortcut Guide</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_TextExtractor"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Text Extractor</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_Workspaces"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Workspaces</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ZoomIt"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">ZoomIt</a></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+You said:
+could this be done in a markdown table too?
+ChatGPT said:
+Thought for 1m 31s
+
+Yep—here’s a Markdown table with a small icon before each link. (Uses an HTML <img> inside the link so we can fix the icon size.)
+
+|   |   |   |
+|---|---|---|
+| [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> Advanced Paste](https://aka.ms/PowerToysOverview_AdvancedPaste) | [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> Always on Top](https://aka.ms/PowerToysOverview_AoT) | [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) |
+| [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> Command Palette](https://aka.ms/PowerToysOverview_CmdPal) |
+| [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
+| [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [<img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="16"> Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) |
+
+
+<table style="border-collapse:collapse;">
+  <tbody>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_AdvancedPaste"><img src="doc/images/icons/AdvancedPaste.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Advanced Paste</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_AoT"><img src="doc/images/icons/Always On Top.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Always on Top</a></td>
       <td><a href="https://aka.ms/PowerToysOverview_Awake"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">PowerToys Awake</a></td>
     </tr>
     <tr>
