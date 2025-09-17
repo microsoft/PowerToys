@@ -25,6 +25,7 @@
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
 		<None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
+		<None Remove="SettingsXAML\Controls\OpacityMaskView.xaml" />
 		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
 	</ItemGroup>
 	<ItemGroup>
@@ -63,6 +64,7 @@
 		<PackageReference Include="CommunityToolkit.WinUI.Animations" />
 		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
 		<PackageReference Include="CommunityToolkit.WinUI.Converters" />
+		<PackageReference Include="CommunityToolkit.WinUI.Media" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
 		<PackageReference Include="System.Net.Http" />
 		<PackageReference Include="System.Private.Uri" />
@@ -73,6 +75,8 @@
 		<PackageReference Include="Microsoft.WindowsAppSDK" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
+		<PackageReference Include="Microsoft.Graphics.Win2D" />
+		
 		<PackageReference Include="StreamJsonRpc" />
 		<!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since the Experimentation APIs that are added in CI reference some net standard 2.0 assemblies. -->
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
@@ -156,7 +160,10 @@
 		</None>
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+		</None>
+		<Page Update="SettingsXAML\Controls\OpacityMaskView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
 		</Page>
 		<Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
 			<Generator>MSBuild:Compile</Generator>

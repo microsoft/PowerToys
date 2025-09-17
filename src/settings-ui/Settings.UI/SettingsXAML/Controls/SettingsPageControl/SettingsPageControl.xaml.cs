@@ -72,8 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            PrimaryLinksControl.Focus(FocusState.Programmatic);
-
+            // PrimaryLinksControl.Focus(FocusState.Programmatic);
             var requestUrl = "https://raw.githubusercontent.com/MicrosoftDocs/windows-dev-docs/refs/heads/docs/hub/powertoys/advanced-paste.md";
 
             using var client = new HttpClient();

@@ -12,6 +12,7 @@
                 <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyVisual.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyCharPresenter.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/TitleBar/TitleBar.xaml" />
+                <ResourceDictionary Source="/SettingsXAML/Controls/OpacityMaskView.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/Button.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/InfoBadge.xaml" />
