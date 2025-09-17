@@ -26,6 +26,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <TargetName>SilentFilesInUseBAFunction</TargetName>
+    <ProjectName>PowerToysSetupCustomActionsVNext</ProjectName>
     <ProjectModuleDefinitionFile>bafunctions.def</ProjectModuleDefinitionFile>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
