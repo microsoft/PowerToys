@@ -148,7 +148,7 @@ steps:
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
-      clean: true
+      clean: false # don't undo our hard work above by deleting the msi
       msbuildArchitecture: x64
       maximumCpuCount: true
 
