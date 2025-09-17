@@ -34,13 +34,12 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 To get started with PowerToys, ensure you have the right system requirements:
 
 <details>
-<summary>System requirementss</summary>
+<summary>System requirements</summary>
 
-- Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
-- x64 or ARM64 processor
-- Our installer will install the following items:
-   - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
-
+- Windows 11, or Windows 10 version 2004 (20H1 / build 19041) or newer
+- 64-bit processor: x64 or ARM64
+- During setup, the **Microsoft Edge WebView2 Runtime** is installed via the bootstrapper (latest stable version):
+  - <https://go.microsoft.com/fwlink/p/?LinkId=2124703>
 </details>
 
 To install, there are multiple options:
