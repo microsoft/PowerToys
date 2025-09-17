@@ -1,7 +1,9 @@
 #pragma once
 
-#include <vector>
+#include <algorithm>
+#include <cwchar>
 #include <string>
+#include <vector>
 
 #include <workspaces-common/GuidUtils.h>
 #include <workspaces-common/InvokePoint.h>
@@ -16,12 +18,14 @@ struct CommandLineArgs
     std::wstring workspaceId;
     InvokePoint invokePoint;
     bool isRestarted;
+    bool forceSave;
 };
 
 CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
 {
     CommandLineArgs cmdArgs{};
     cmdArgs.isRestarted = false;
+    cmdArgs.forceSave = false;
 
     size_t pos = 0;
     std::wstring token;
@@ -34,24 +38,46 @@ CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
     }
     tokens.push_back(s);
 
-    for (const auto& token : tokens)
+    auto normalizeToken = [](std::wstring value) {
+        if (!value.empty() && value.front() == L'"')
+        {
+            value.erase(0, 1);
+        }
+        if (!value.empty() && value.back() == L'"')
+        {
+            value.pop_back();
+        }
+        return value;
+    };
+
+    for (const auto& tokenValue : tokens)
     {
-        if (token == NonLocalizable::restartedString)
+        auto normalizedToken = normalizeToken(tokenValue);
+        if (normalizedToken.empty())
+        {
+            continue;
+        }
+
+        if (_wcsicmp(normalizedToken.c_str(), NonLocalizable::restartedString) == 0)
         {
             cmdArgs.isRestarted = true;
         }
+        else if (_wcsicmp(normalizedToken.c_str(), L"-force") == 0)
+        {
+            cmdArgs.forceSave = true;
+        }
         else
         {
-            auto guid = GuidFromString(token);
+            auto guid = GuidFromString(normalizedToken);
             if (guid.has_value())
             {
-                cmdArgs.workspaceId = token;
+                cmdArgs.workspaceId = normalizedToken;
             }
             else
             {
                 try
                 {
-                    auto invokePoint = static_cast<InvokePoint>(std::stoi(token));
+                    auto invokePoint = static_cast<InvokePoint>(std::stoi(normalizedToken));
                     cmdArgs.invokePoint = invokePoint;
                 }
                 catch (std::exception)

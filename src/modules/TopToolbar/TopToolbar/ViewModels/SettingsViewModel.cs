@@ -300,7 +300,13 @@ namespace TopToolbar.ViewModels
             }
 
             // Resolve relative/name-only commands (e.g., code, code.exe) via WorkingDirectory and PATH
-            var resolved = ResolveCommandToFilePath(path, button.Action?.WorkingDirectory);
+            var workingDirectory = string.Empty;
+            if (button != null && button.Action != null && !string.IsNullOrWhiteSpace(button.Action.WorkingDirectory))
+            {
+                workingDirectory = button.Action.WorkingDirectory;
+            }
+
+            var resolved = ResolveCommandToFilePath(path, workingDirectory);
             if (!string.IsNullOrEmpty(resolved))
             {
                 path = resolved;
@@ -339,7 +345,7 @@ namespace TopToolbar.ViewModels
         {
             if (string.IsNullOrWhiteSpace(file))
             {
-                return null;
+                return string.Empty;
             }
 
             try
@@ -386,7 +392,7 @@ namespace TopToolbar.ViewModels
                         }
                     }
 
-                    return null;
+                    return string.Empty;
                 }
 
                 // Build search dirs: workingDir, current dir, PATH
@@ -442,7 +448,7 @@ namespace TopToolbar.ViewModels
             {
             }
 
-            return null;
+            return string.Empty;
         }
 
         private static System.Collections.Generic.IEnumerable<string> GetPathExtensions()

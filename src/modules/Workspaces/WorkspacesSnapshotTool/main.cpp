@@ -1,6 +1,9 @@
 #include "pch.h"
 
+#include <algorithm>
 #include <chrono>
+#include <filesystem>
+#include <vector>
 
 #include <workspaces-common/GuidUtils.h>
 #include <workspaces-common/MonitorUtils.h>
@@ -53,6 +56,10 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
     // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     WorkspacesData::WorkspacesProject project{ .id = CreateGuidString(), .creationTime = creationTime };
+    if (!cmdArgs.workspaceId.empty())
+    {
+        project.id = cmdArgs.workspaceId;
+    }
     Logger::trace(L"Creating workspace {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();
@@ -80,7 +87,85 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         }
         return project.monitors[0].monitorRectDpiUnaware; });
 
-    JsonUtils::Write(WorkspacesData::TempWorkspacesFile(), project);
+    const auto tempWorkspacesFile = WorkspacesData::TempWorkspacesFile();
+
+    if (cmdArgs.forceSave)
+    {
+        const auto workspacesFilePath = WorkspacesData::WorkspacesFile();
+        std::vector<WorkspacesData::WorkspacesProject> workspaces;
+
+        if (std::filesystem::exists(workspacesFilePath))
+        {
+            auto readResult = JsonUtils::ReadWorkspaces(workspacesFilePath);
+            if (readResult.isOk())
+            {
+                workspaces = readResult.getValue();
+            }
+            else
+            {
+                Logger::error(L"Failed to read existing workspaces file {}. Saving snapshot to {} instead.", workspacesFilePath, tempWorkspacesFile);
+                if (!JsonUtils::Write(tempWorkspacesFile, project))
+                {
+                    Logger::error(L"Failed to write workspace snapshot to fallback path {}", tempWorkspacesFile);
+                }
+                CoUninitialize();
+                return -1;
+            }
+        }
+
+        bool replaced = false;
+        if (!project.id.empty())
+        {
+            const auto existing = std::find_if(workspaces.begin(), workspaces.end(), [&](const auto& existingProject) {
+                return existingProject.id == project.id;
+                });
+            if (existing != workspaces.end())
+            {
+                *existing = project;
+                replaced = true;
+            }
+        }
+
+        if (!replaced)
+        {
+            if (project.id.empty())
+            {
+                project.id = CreateGuidString();
+            }
+
+            while (std::any_of(workspaces.begin(), workspaces.end(), [&](const auto& existingProject) {
+                return existingProject.id == project.id;
+                }))
+            {
+                project.id = CreateGuidString();
+            }
+
+            workspaces.push_back(project);
+        }
+
+        if (!JsonUtils::Write(workspacesFilePath, workspaces))
+        {
+            Logger::error(L"Failed to write workspace snapshot to {}", workspacesFilePath);
+            if (!JsonUtils::Write(tempWorkspacesFile, project))
+            {
+                Logger::error(L"Failed to write workspace snapshot to fallback path {}", tempWorkspacesFile);
+            }
+            CoUninitialize();
+            return -1;
+        }
+
+        Logger::trace(L"Workspace snapshot saved to {} with id {}", workspacesFilePath, project.id);
+    }
+    else
+    {
+        if (!JsonUtils::Write(tempWorkspacesFile, project))
+        {
+            Logger::error(L"Failed to write workspace snapshot to {}", tempWorkspacesFile);
+            CoUninitialize();
+            return -1;
+        }
+    }
+
     Logger::trace(L"WorkspacesProject {}:{} created", project.name, project.id);
 
     CoUninitialize();
