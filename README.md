@@ -1,6 +1,6 @@
 # Microsoft PowerToys
 
-![Hero image for Microsoft PowerToys](doc/images/overview/PT_hero_image.png)
+![Hero image for Microsoft PowerToys](doc/images/overview/Header.png)
 
 [How to use PowerToys][usingPowerToys-docs-link] | [Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap)
 
