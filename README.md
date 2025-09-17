@@ -1,4 +1,4 @@
-![Hero image for Microsoft PowerToys](doc/images/overview/Header.png)
+![Hero image for Microsoft PowerToys](doc/images/overview/Header-dark.png)
 
 <h1 align="center">
   <img src="doc/images/icons/PowerToys icon/PNG/PowerToysAppList.targetsize-30.png"
