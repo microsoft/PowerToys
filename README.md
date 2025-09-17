@@ -1,7 +1,9 @@
 ![Hero image for Microsoft PowerToys](doc/images/overview/Header.png)
 
-<h1 align="center">
-    Microsoft PowerToys
+<h1 align="center" style="display:flex;align-items:center;justify-content:center;gap:.5rem;">
+  <img src="doc/images/icons/PowerToys icon/PNG/PowerToysAppList.targetsize-30.png"
+       alt="PowerToys logo" height="30">
+  <span>Microsoft PowerToys</span>
 </h1>
 
 <h3 align="center">
