@@ -198,6 +198,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool TrackUsageEnabled
+        {
+            get => ModuleSettings.Properties.TrackUsageEnabled;
+            set
+            {
+                if (ModuleSettings.Properties.TrackUsageEnabled != value)
+                {
+                    ModuleSettings.Properties.TrackUsageEnabled = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int UsageRetentionDays
+        {
+            get => ModuleSettings.Properties.UsageRetentionDays;
+            set
+            {
+                int clamped = Math.Max(1, Math.Min(365, value));
+                if (ModuleSettings.Properties.UsageRetentionDays != clamped)
+                {
+                    ModuleSettings.Properties.UsageRetentionDays = clamped;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             Logger.LogInfo($"Changed the property {propertyName}");
@@ -219,6 +246,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IntervalHours));
             OnPropertyChanged(nameof(IntervalMinutes));
             OnPropertyChanged(nameof(ExpirationDateTime));
+            OnPropertyChanged(nameof(TrackUsageEnabled));
+            OnPropertyChanged(nameof(UsageRetentionDays));
         }
 
         private bool _enabledStateIsGPOConfigured;

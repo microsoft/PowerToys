@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Data.Sqlite;
 using Microsoft.PowerToys.Settings.UI.Library;
 using ModelContextProtocol.Server;
 
@@ -36,7 +37,7 @@ namespace PowerToys.MCPServer.Tools
         }
 
         [McpServerTool]
-        [Description("Get top N foreground app usage entries recorded by Awake (reads usage.json). Parameters: top (default 10), days (default 7). Returns JSON.")]
+        [Description("Get top N foreground app usage entries recorded by Awake. Reads usage.sqlite if present (preferred) else legacy usage.json. Parameters: top (default 10), days (default 7). Returns JSON array.")]
         public static string GetAwakeUsageSummary(int top = 10, int days = 7)
         {
             try
@@ -44,24 +45,86 @@ namespace PowerToys.MCPServer.Tools
                 SettingsUtils utils = new();
                 string settingsPath = utils.GetSettingsFilePath("Awake");
                 string directory = Path.GetDirectoryName(settingsPath)!;
-                string usageFile = Path.Combine(directory, "usage.json");
+                string sqlitePath = Path.Combine(directory, "usage.sqlite");
+                string legacyJson = Path.Combine(directory, "usage.json");
 
-                if (!File.Exists(usageFile))
+                if (File.Exists(sqlitePath))
                 {
-                    return JsonSerializer.Serialize(new { error = "usage.json not found", path = usageFile });
+                    return QuerySqlite(sqlitePath, top, days);
                 }
 
+                // Fallback to legacy JSON if DB not yet created (tracking not enabled or not flushed).
+                if (File.Exists(legacyJson))
+                {
+                    return QueryLegacyJson(legacyJson, top, days, note: "legacy-json");
+                }
+
+                return JsonSerializer.Serialize(new { error = "No usage data found", sqlite = sqlitePath, legacy = legacyJson });
+            }
+            catch (Exception ex)
+            {
+                return JsonSerializer.Serialize(new { error = ex.Message });
+            }
+        }
+
+        private static string QuerySqlite(string dbPath, int top, int days)
+        {
+            try
+            {
+                int safeDays = Math.Max(1, days);
+                using SqliteConnection conn = new(new SqliteConnectionStringBuilder { DataSource = dbPath, Mode = SqliteOpenMode.ReadOnly }.ToString());
+                conn.Open();
+                using SqliteCommand cmd = conn.CreateCommand();
+                cmd.CommandText = @"SELECT process_name, SUM(total_seconds) AS total_seconds, MIN(first_seen_utc) AS first_seen_utc, MAX(last_updated_utc) AS last_updated_utc
+FROM process_usage
+WHERE day_utc >= date('now', @cutoff)
+GROUP BY process_name
+ORDER BY total_seconds DESC
+LIMIT @top;";
+                cmd.Parameters.AddWithValue("@cutoff", $"-{safeDays} days");
+                cmd.Parameters.AddWithValue("@top", top);
+
+                var list = cmd.ExecuteReader()
+                    .Cast<System.Data.Common.DbDataRecord>()
+                    .Select(r => new AppUsageRecord
+                    {
+                        ProcessName = r.GetString(0),
+                        TotalSeconds = r.GetDouble(1),
+                        FirstSeenUtc = DateTime.Parse(r.GetString(2), null, System.Globalization.DateTimeStyles.RoundtripKind),
+                        LastUpdatedUtc = DateTime.Parse(r.GetString(3), null, System.Globalization.DateTimeStyles.RoundtripKind),
+                    })
+                    .OrderByDescending(r => r.TotalSeconds)
+                    .Select(r => new
+                    {
+                        process = r.ProcessName,
+                        totalSeconds = Math.Round(r.TotalSeconds, 1),
+                        totalHours = Math.Round(r.TotalSeconds / 3600.0, 2),
+                        firstSeenUtc = r.FirstSeenUtc,
+                        lastUpdatedUtc = r.LastUpdatedUtc,
+                        source = "sqlite",
+                    });
+
+                return JsonSerializer.Serialize(list);
+            }
+            catch (Exception ex)
+            {
+                return JsonSerializer.Serialize(new { error = "sqlite query failed", message = ex.Message, path = dbPath });
+            }
+        }
+
+        private static string QueryLegacyJson(string usageFile, int top, int days, string? note = null)
+        {
+            try
+            {
                 string json = File.ReadAllText(usageFile);
                 using JsonDocument doc = JsonDocument.Parse(json);
-
                 DateTime cutoff = DateTime.UtcNow.AddDays(-Math.Max(1, days));
-
                 var result = doc.RootElement
                     .EnumerateArray()
                     .Select(e => new
                     {
                         process = e.GetPropertyOrDefault("process", string.Empty),
-                        totalSeconds = Math.Round(e.GetPropertyOrDefault("totalSeconds", 0.0), 1),
+                        totalSeconds = e.GetPropertyOrDefault("totalSeconds", 0.0),
                         lastUpdatedUtc = e.GetPropertyOrDefaultDateTime("lastUpdatedUtc"),
                         firstSeenUtc = e.GetPropertyOrDefaultDateTime("firstSeenUtc"),
                     })
@@ -71,17 +134,17 @@ namespace PowerToys.MCPServer.Tools
                     .Select(r => new
                     {
                         r.process,
-                        r.totalSeconds,
+                        totalSeconds = Math.Round(r.totalSeconds, 1),
                         totalHours = Math.Round(r.totalSeconds / 3600.0, 2),
                         r.firstSeenUtc,
                         r.lastUpdatedUtc,
+                        source = note ?? "json",
                     });
-
                 return JsonSerializer.Serialize(result);
             }
             catch (Exception ex)
             {
-                return JsonSerializer.Serialize(new { error = ex.Message });
+                return JsonSerializer.Serialize(new { error = "legacy json read failed", message = ex.Message, path = usageFile });
             }
         }
 

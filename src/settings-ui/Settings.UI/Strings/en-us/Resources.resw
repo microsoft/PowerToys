@@ -527,6 +527,22 @@ opera.exe</value>
     <value>Awake</value>
     <comment>{Locked}</comment>
   </data>
+  <data name="Awake_UsageTrackingEnabledCard.Header" xml:space="preserve">
+    <value>Track foreground app usage</value>
+    <comment>Header: enable/disable foreground process usage tracking (Awake)</comment>
+  </data>
+  <data name="Awake_UsageTrackingEnabledCard.Description" xml:space="preserve">
+    <value>Record the active foreground application's usage time locally. Data is stored only on this device.</value>
+    <comment>Description: explains what usage tracking does (Awake)</comment>
+  </data>
+  <data name="Awake_UsageRetentionCard.Header" xml:space="preserve">
+    <value>Usage data retention (days)</value>
+    <comment>Header: number of days to keep usage records (Awake)</comment>
+  </data>
+  <data name="Awake_UsageRetentionCard.Description" xml:space="preserve">
+    <value>Number of days to keep usage records (1–365)</value>
+    <comment>Description: retention range hint (Awake)</comment>
+  </data>
   <data name="Shell_PowerLauncher.Content" xml:space="preserve">
     <value>PowerToys Run</value>
     <comment>Product name: Navigation view item name for PowerToys Run</comment>

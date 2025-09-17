@@ -29,6 +29,7 @@
     <!-- Core dependencies -->
     <PackageReference Include="Microsoft.Extensions.Hosting" />
 	<PackageReference Include="ModelContextProtocol " />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
   </ItemGroup>
 
   <ItemGroup>

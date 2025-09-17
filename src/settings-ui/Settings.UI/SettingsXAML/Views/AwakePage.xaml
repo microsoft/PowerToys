@@ -99,6 +99,22 @@
                         IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <!-- Usage tracking settings -->
+                    <tkcontrols:SettingsCard
+                        Name="AwakeUsageTrackingEnabledCard"
+                        x:Uid="Awake_UsageTrackingEnabledCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE11C;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.TrackUsageEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        Name="AwakeUsageRetentionCard"
+                        x:Uid="Awake_UsageRetentionCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE823;}"
+                        IsEnabled="{x:Bind ViewModel.TrackUsageEnabled, Mode=OneWay}">
+                        <NumberBox Width="120" Minimum="1" Maximum="365" Value="{x:Bind ViewModel.UsageRetentionDays, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

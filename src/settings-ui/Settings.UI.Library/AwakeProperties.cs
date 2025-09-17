@@ -21,9 +21,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ExpirationDateTime = DateTimeOffset.Now;
             CustomTrayTimes = [];
 
-            // New usage tracking defaults (opt-in, disabled by default)
-            // Need to add this to settings, set it to true for testing
-            TrackUsageEnabled = true;
+            // Usage tracking defaults (opt-in, disabled by default)
+            TrackUsageEnabled = false; // default off
             UsageRetentionDays = 14; // two weeks default retention
         }
 

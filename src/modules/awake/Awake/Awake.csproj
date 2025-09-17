@@ -42,6 +42,7 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="System.Runtime.Caching" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
   </ItemGroup>
 
   <ItemGroup>

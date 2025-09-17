@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -17,15 +17,16 @@ using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Awake.Core.Usage
 {
-    /// <summary>
-    /// Tracks foreground application usage time (simple active window focus durations) with idle suppression.
-    /// </summary>
     internal sealed class ForegroundUsageTracker : IDisposable
     {
         private const uint EventSystemForeground = 0x0003;
         private const uint WinEventOutOfContext = 0x0000;
+        private const double CommitThresholdSeconds = 0.25;
 
-        private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
+        private static readonly JsonSerializerOptions LegacySerializer = new()
+        {
+            WriteIndented = true,
+        };
 
         private delegate void WinEventDelegate(
             IntPtr hWinEventHook,
@@ -56,33 +57,33 @@ namespace Awake.Core.Usage
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
         private readonly object _lock = new();
-        private readonly Dictionary<string, AppUsageRecord> _usage = new(StringComparer.OrdinalIgnoreCase);
-        private readonly string _storePath;
+        private readonly string _legacyJsonPath;
+        private readonly string _dbPath;
         private readonly Timer _flushTimer;
+        private readonly Timer _pollTimer;
         private readonly TimeSpan _idleThreshold = TimeSpan.FromSeconds(60);
-        private readonly Timer _pollTimer; // Fallback polling when WinEvent hook not firing
+        private readonly Dictionary<string, AppUsageRecord> _sessionCache = new(StringComparer.OrdinalIgnoreCase);
+
+        private IUsageStore _store;
 
         private string? _activeProcess;
         private DateTime _activeSince;
-        private bool _disposed;
-        private IntPtr _hook = IntPtr.Zero;
+        private IntPtr _hook;
         private WinEventDelegate? _hookDelegate;
+        private IntPtr _lastHwnd;
         private int _retentionDays;
-        private IntPtr _lastHwnd = IntPtr.Zero;
-
-        private const double CommitThresholdSeconds = 0.25;
+        private bool _disposed;
 
         internal bool Enabled { get; private set; }
 
-        public ForegroundUsageTracker(string storePath, int retentionDays)
+        public ForegroundUsageTracker(string legacyJsonPath, int retentionDays)
         {
-            _storePath = storePath;
+            _legacyJsonPath = legacyJsonPath;
+            _dbPath = Path.Combine(Path.GetDirectoryName(legacyJsonPath)!, "usage.sqlite");
             _retentionDays = retentionDays;
-            Directory.CreateDirectory(Path.GetDirectoryName(storePath)!);
+            _store = new SqliteUsageStore(_dbPath);
 
-            LoadState();
-
-            _flushTimer = new Timer(30000)
+            _flushTimer = new Timer(5000)
             {
                 AutoReset = true,
             };
@@ -93,6 +94,33 @@ namespace Awake.Core.Usage
                 AutoReset = true,
             };
             _pollTimer.Elapsed += (_, _) => PollForeground();
+
+            TryImportLegacy();
+        }
+
+        private void TryImportLegacy()
+        {
+            try
+            {
+                if (!File.Exists(_legacyJsonPath))
+                {
+                    return;
+                }
+
+                string json = File.ReadAllText(_legacyJsonPath);
+                List<AppUsageRecord> list = JsonSerializer.Deserialize<List<AppUsageRecord>>(json, LegacySerializer) ?? new();
+                foreach (AppUsageRecord r in list)
+                {
+                    _store.AddSpan(r.ProcessName, r.TotalSeconds, r.FirstSeenUtc, r.LastUpdatedUtc, _retentionDays);
+                }
+
+                Logger.LogInfo("[AwakeUsage] Imported legacy usage.json into SQLite. Deleting old file.");
+                File.Delete(_legacyJsonPath);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("[AwakeUsage] Legacy import failed: " + ex.Message);
+            }
         }
 
         public void Configure(bool enabled, int retentionDays)
@@ -104,17 +132,16 @@ namespace Awake.Core.Usage
             }
 
             Enabled = enabled;
-
             if (Enabled)
             {
                 _activeSince = DateTime.UtcNow;
                 _hookDelegate = WinEventCallback;
                 _hook = SetWinEventHook(EventSystemForeground, EventSystemForeground, IntPtr.Zero, _hookDelegate, 0, 0, WinEventOutOfContext);
-                Logger.LogInfo(_hook != IntPtr.Zero ? "[AwakeUsage] WinEvent hook installed." : "[AwakeUsage] WinEvent hook failed (fallback polling only).");
+                Logger.LogInfo(_hook != IntPtr.Zero ? "[AwakeUsage] WinEvent hook installed." : "[AwakeUsage] WinEvent hook failed (poll fallback)");
                 CaptureInitialForeground();
                 _flushTimer.Start();
                 _pollTimer.Start();
-                Logger.LogInfo("[AwakeUsage] Started foreground usage tracking.");
+                Logger.LogInfo("[AwakeUsage] Tracking enabled (5s flush, sqlite store).");
             }
             else
             {
@@ -127,109 +154,26 @@ namespace Awake.Core.Usage
                 }
 
                 CommitActiveSpan();
-                FlushInternal();
-                Logger.LogInfo("[AwakeUsage] Stopped foreground usage tracking.");
+                FlushInternal(force: true);
+                Logger.LogInfo("[AwakeUsage] Tracking disabled.");
             }
         }
 
-        private void CaptureInitialForeground()
-        {
-            try
-            {
-                IntPtr hwnd = GetForegroundWindow();
-                if (hwnd == IntPtr.Zero)
-                {
-                    Logger.LogDebug("[AwakeUsage] Initial foreground hwnd == 0.");
-                    return;
-                }
-
-                if (TryResolveProcess(hwnd, out string? procName))
-                {
-                    _activeProcess = procName;
-                    _activeSince = DateTime.UtcNow;
-                    _lastHwnd = hwnd;
-                    EnsurePlaceholder(_activeProcess);
-                    Logger.LogInfo("[AwakeUsage] Initial foreground captured: " + _activeProcess);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning("[AwakeUsage] Failed to capture initial foreground: " + ex.Message);
-            }
-        }
-
-        private static string SafeResolveProcessName(Process proc)
-        {
-            try
-            {
-                return Path.GetFileName(proc.MainModule?.FileName) ?? proc.ProcessName;
-            }
-            catch
-            {
-                return proc.ProcessName;
-            }
-        }
-
-        private bool TryResolveProcess(IntPtr hwnd, out string? processName)
-        {
-            processName = null;
-
-            if (hwnd == IntPtr.Zero)
-            {
-                return false;
-            }
-
-            try
-            {
-                uint pid;
-                uint tid = GetWindowThreadProcessId(hwnd, out pid);
-                if (tid == 0 || pid == 0)
-                {
-                    return false;
-                }
-
-                using Process p = Process.GetProcessById((int)pid);
-                processName = SafeResolveProcessName(p);
-                return !string.IsNullOrWhiteSpace(processName);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug("[AwakeUsage] TryResolveProcess failed: " + ex.Message);
-                return false;
-            }
-        }
-
-        private void EnsurePlaceholder(string? process)
-        {
-            if (string.IsNullOrWhiteSpace(process))
-            {
-                return;
-            }
-
-            lock (_lock)
-            {
-                if (!_usage.ContainsKey(process))
-                {
-                    _usage[process] = new AppUsageRecord
-                    {
-                        ProcessName = process,
-                        FirstSeenUtc = DateTime.UtcNow,
-                        LastUpdatedUtc = DateTime.UtcNow,
-                        TotalSeconds = 0,
-                    };
-                }
-            }
-        }
-
-        private void WinEventCallback(IntPtr hWinEventHook, uint evt, IntPtr hwnd, int idObj, int idChild, uint thread, uint time)
+        private void WinEventCallback(
+            IntPtr hWinEventHook,
+            uint evt,
+            IntPtr hwnd,
+            int idObj,
+            int idChild,
+            uint thread,
+            uint time)
         {
             if (_disposed || !Enabled || evt != EventSystemForeground)
             {
                 return;
             }
 
-            Logger.LogDebug($"[AwakeUsage] WinEvent foreground change: hwnd=0x{hwnd.ToInt64():X}");
-            HandleForegroundChange(hwnd, source: "hook");
+            HandleForegroundChange(hwnd, "hook");
         }
 
         private void PollForeground()
@@ -245,8 +189,57 @@ namespace Awake.Core.Usage
                 return;
             }
 
-            Logger.LogDebug($"[AwakeUsage] Poll detected change: hwnd=0x{hwnd.ToInt64():X}");
-            HandleForegroundChange(hwnd, source: "poll");
+            HandleForegroundChange(hwnd, "poll");
+        }
+
+        private void CaptureInitialForeground()
+        {
+            IntPtr hwnd = GetForegroundWindow();
+            if (hwnd == IntPtr.Zero)
+            {
+                return;
+            }
+
+            if (TryResolveProcess(hwnd, out string? name))
+            {
+                _activeProcess = name;
+                _activeSince = DateTime.UtcNow;
+                _lastHwnd = hwnd;
+            }
+        }
+
+        private bool TryResolveProcess(IntPtr hwnd, out string? name)
+        {
+            name = null;
+            try
+            {
+                uint pid;
+                uint tid = GetWindowThreadProcessId(hwnd, out pid);
+                if (tid == 0 || pid == 0)
+                {
+                    return false;
+                }
+
+                using Process p = Process.GetProcessById((int)pid);
+                name = SafeProcessName(p);
+                return !string.IsNullOrWhiteSpace(name);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static string SafeProcessName(Process p)
+        {
+            try
+            {
+                return Path.GetFileName(p.MainModule?.FileName) ?? p.ProcessName;
+            }
+            catch
+            {
+                return p.ProcessName;
+            }
         }
 
         private void HandleForegroundChange(IntPtr hwnd, string source)
@@ -254,21 +247,19 @@ namespace Awake.Core.Usage
             try
             {
                 CommitActiveSpan();
-                if (!TryResolveProcess(hwnd, out string? procName))
+                if (!TryResolveProcess(hwnd, out string? name))
                 {
                     _activeProcess = null;
                     return;
                 }
 
-                _activeProcess = procName;
+                _activeProcess = name;
                 _activeSince = DateTime.UtcNow;
                 _lastHwnd = hwnd;
-                EnsurePlaceholder(_activeProcess);
-                Logger.LogDebug($"[AwakeUsage] Active process set ({source}): {_activeProcess}");
             }
             catch (Exception ex)
             {
-                Logger.LogWarning("[AwakeUsage] HandleForegroundChange failed: " + ex.Message);
+                Logger.LogWarning("[AwakeUsage] FG change failed: " + ex.Message);
             }
         }
 
@@ -285,15 +276,15 @@ namespace Awake.Core.Usage
                 return;
             }
 
-            double seconds = (DateTime.UtcNow - _activeSince).TotalSeconds;
-            if (seconds < CommitThresholdSeconds)
+            double secs = (DateTime.UtcNow - _activeSince).TotalSeconds;
+            if (secs < CommitThresholdSeconds)
             {
                 return;
             }
 
             lock (_lock)
             {
-                if (!_usage.TryGetValue(_activeProcess!, out AppUsageRecord? rec))
+                if (!_sessionCache.TryGetValue(_activeProcess!, out AppUsageRecord? rec))
                 {
                     rec = new AppUsageRecord
                     {
@@ -302,102 +293,38 @@ namespace Awake.Core.Usage
                         LastUpdatedUtc = DateTime.UtcNow,
                         TotalSeconds = 0,
                     };
-                    _usage[_activeProcess!] = rec;
+                    _sessionCache[_activeProcess!] = rec;
                 }
 
-                rec.TotalSeconds += seconds;
+                rec.TotalSeconds += secs;
                 rec.LastUpdatedUtc = DateTime.UtcNow;
             }
 
             _activeSince = DateTime.UtcNow;
         }
 
-        private void LoadState()
-        {
-            try
-            {
-                if (!File.Exists(_storePath))
-                {
-                    return;
-                }
-
-                string json = File.ReadAllText(_storePath);
-                List<AppUsageRecord>? list = JsonSerializer.Deserialize<List<AppUsageRecord>>(json);
-                if (list == null)
-                {
-                    return;
-                }
-
-                DateTime cutoff = DateTime.UtcNow.AddDays(-_retentionDays);
-                foreach (AppUsageRecord rec in list.Where(r => r.LastUpdatedUtc >= cutoff))
-                {
-                    _usage[rec.ProcessName] = rec;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning("[AwakeUsage] Failed to load usage store: " + ex.Message);
-            }
-        }
-
-        private double GetLiveActiveSeconds()
-        {
-            if (string.IsNullOrEmpty(_activeProcess))
-            {
-                return 0;
-            }
-
-            if (IdleTime.GetIdleTime() > _idleThreshold)
-            {
-                return 0;
-            }
-
-            return Math.Max(0, (DateTime.UtcNow - _activeSince).TotalSeconds);
-        }
-
-        private void FlushInternal()
+        private void FlushInternal(bool force = false)
         {
             try
             {
                 CommitActiveSpan();
 
-                List<AppUsageRecord> snapshot;
-                double liveSeconds = GetLiveActiveSeconds();
-                string? liveProcess = _activeProcess;
+                Dictionary<string, AppUsageRecord> snapshot;
                 lock (_lock)
                 {
-                    DateTime cutoff = DateTime.UtcNow.AddDays(-_retentionDays);
-                    foreach (string key in _usage.Values.Where(v => v.LastUpdatedUtc < cutoff).Select(v => v.ProcessName).ToList())
-                    {
-                        _usage.Remove(key);
-                    }
-
-                    snapshot = _usage.Values
-                        .Select(r => new AppUsageRecord
-                        {
-                            ProcessName = r.ProcessName,
-                            TotalSeconds = r.ProcessName.Equals(liveProcess, StringComparison.OrdinalIgnoreCase) ? r.TotalSeconds + liveSeconds : r.TotalSeconds,
-                            FirstSeenUtc = r.FirstSeenUtc,
-                            LastUpdatedUtc = r.LastUpdatedUtc,
-                        })
-                        .OrderByDescending(r => r.TotalSeconds)
-                        .ToList();
-
-                    if (liveProcess != null && !_usage.ContainsKey(liveProcess) && liveSeconds > 0)
-                    {
-                        snapshot.Add(new AppUsageRecord
-                        {
-                            ProcessName = liveProcess,
-                            TotalSeconds = liveSeconds,
-                            FirstSeenUtc = DateTime.UtcNow,
-                            LastUpdatedUtc = DateTime.UtcNow,
-                        });
-                        snapshot = snapshot.OrderByDescending(r => r.TotalSeconds).ToList();
-                    }
+                    snapshot = _sessionCache.ToDictionary(k => k.Key, v => v.Value);
+                    _sessionCache.Clear();
                 }
 
-                string json = JsonSerializer.Serialize(snapshot, SerializerOptions);
-                File.WriteAllText(_storePath, json);
+                foreach (AppUsageRecord rec in snapshot.Values)
+                {
+                    _store.AddSpan(rec.ProcessName, rec.TotalSeconds, rec.FirstSeenUtc, rec.LastUpdatedUtc, _retentionDays);
+                }
+
+                if (force)
+                {
+                    _store.Prune(_retentionDays);
+                }
             }
             catch (Exception ex)
             {
@@ -408,38 +335,15 @@ namespace Awake.Core.Usage
         public IReadOnlyList<AppUsageRecord> GetSummary(int top, int days)
         {
             CommitActiveSpan();
-            double liveSeconds = GetLiveActiveSeconds();
-            string? liveProcess = _activeProcess;
-
-            lock (_lock)
+            FlushInternal();
+            try
             {
-                DateTime cutoff = DateTime.UtcNow.AddDays(-Math.Max(1, days));
-                List<AppUsageRecord> list = _usage.Values
-                    .Where(r => r.LastUpdatedUtc >= cutoff)
-                    .Select(r => new AppUsageRecord
-                    {
-                        ProcessName = r.ProcessName,
-                        TotalSeconds = r.ProcessName.Equals(liveProcess, StringComparison.OrdinalIgnoreCase) ? r.TotalSeconds + liveSeconds : r.TotalSeconds,
-                        FirstSeenUtc = r.FirstSeenUtc,
-                        LastUpdatedUtc = r.LastUpdatedUtc,
-                    })
-                    .ToList();
-
-                if (liveProcess != null && list.All(r => !r.ProcessName.Equals(liveProcess, StringComparison.OrdinalIgnoreCase)) && liveSeconds > 0)
-                {
-                    list.Add(new AppUsageRecord
-                    {
-                        ProcessName = liveProcess,
-                        TotalSeconds = liveSeconds,
-                        FirstSeenUtc = DateTime.UtcNow,
-                        LastUpdatedUtc = DateTime.UtcNow,
-                    });
-                }
-
-                return list
-                    .OrderByDescending(r => r.TotalSeconds)
-                    .Take(top)
-                    .ToList();
+                return _store.Query(top, days);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("[AwakeUsage] Query failed: " + ex.Message);
+                return Array.Empty<AppUsageRecord>();
             }
         }
 
@@ -452,6 +356,7 @@ namespace Awake.Core.Usage
 
             _disposed = true;
             Configure(false, _retentionDays);
+            _store.Dispose();
             _flushTimer.Dispose();
             _pollTimer.Dispose();
         }
