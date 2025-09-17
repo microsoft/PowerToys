@@ -29,18 +29,14 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [<img src="doc/images/icons/Shortcut%20Guide.png" alt="PowerToys" height="16"> Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [<img src="doc/images/icons/PowerOCR.png" alt="PowerToys" height="16"> Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [<img src="doc/images/icons/Workspaces.png" alt="PowerToys" height="16"> Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
 | [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |  |  |
 
-## 📋 Getting started
+## 📋 Installation
 
 To get started with PowerToys, ensure you have the right system requirements:
 
-<details>
-<summary>System requirements</summary>
-
-- Windows 11, or Windows 10 version 2004 (20H1 / build 19041) or newer
-- 64-bit processor: x64 or ARM64
-- During setup, the **Microsoft Edge WebView2 Runtime** is installed via the bootstrapper (latest stable version):
-  - <https://go.microsoft.com/fwlink/p/?LinkId=2124703>
-</details>
+> [!NOTE]
+> - Windows 11 or Windows 10 version 2004 (20H1 / build 19041) or newer
+> - 64-bit processor: x64 or ARM64
+> - Latest stable version of [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) is installed via the bootstrapper during setup
 
 To install, there are multiple options:
 
@@ -98,13 +94,13 @@ winget install --scope machine Microsoft.PowerToys -s winget
 There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
 </details>
 
-### What's new in 0.94 (September 2025)
+## ✨ What's new in 0.94 (September 2025)
 
 In this release, we focused on new features, stability, optimization improvements, and automation.
 
 For an in-depth look at the latest changes, visit the [release blog](https://aka.ms/powertoys-releaseblog).
 
-**✨Highlights**
+**✨ Highlights**
 
  - PowerToys Settings added a Settings search with fuzzy matching, suggestions, a results page, and UX polish to make finding options faster.
  - A comprehensive hotkey conflict detection system was introduced in Settings to surface and help resolve conflicting shortcuts. Note that the default hotkey settings (Win+Ctrl+Shift+T, Win+Ctrl+V, Win+Ctrl+T, Win+Shift+T) may overlap with existing Windows system shortcuts. This is expected. You can resolve the conflict by assigning different hotkeys.
@@ -228,7 +224,7 @@ For an in-depth look at the latest changes, visit the [release blog](https://aka
  - Cleans up AI‑generated tests; adds meaningful query tests across extensions.
  - Removed the obsolete debug dialog from Settings for a smoother developer loop.
 
-### Roadmap
+## 🛣️ Roadmap
 
 Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
