@@ -16,18 +16,61 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link]
 
-|              |  |              |
-|--------------|--------------------|--------------|
-| [Advanced Paste](https://aka.ms/PowerToysOverview_AdvancedPaste) | [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) |
-| [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [Command Palette](https://aka.ms/PowerToysOverview_CmdPal) |
-| [Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
-| [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) |
-| [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse Utilities](https://aka.ms/PowerToysOverview_MouseUtilities) |
-| [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) | [New+](https://aka.ms/PowerToysOverview_NewPlus) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) |
-| [Peek](https://aka.ms/PowerToysOverview_Peek) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) |
-| [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
-| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
-| [ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |
+<table style="border-collapse:collapse;">
+  <tbody>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_AdvancedPaste"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Advanced Paste</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_AoT"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Always on Top</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_Awake"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">PowerToys Awake</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ColorPicker"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Color Picker</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_CmdNotFound"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Command Not Found</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_CmdPal"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Command Palette</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_CropAndLock"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Crop And Lock</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_EnvironmentVariables"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Environment Variables</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_FancyZones"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">FancyZones</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_FileExplorerAddOns"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">File Explorer Add-ons</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_FileLocksmith"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">File Locksmith</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_HostsFileEditor"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Hosts File Editor</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ImageResizer"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Image Resizer</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_KeyboardManager"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Keyboard Manager</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_MouseUtilities"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Mouse Utilities</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_MouseWithoutBorders"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Mouse Without Borders</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_NewPlus"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">New+</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_PastePlain"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Paste as Plain Text</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_Peek"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Peek</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_PowerRename"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">PowerRename</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_PowerToysRun"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">PowerToys Run</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_QuickAccent"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Quick Accent</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_RegistryPreview"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Registry Preview</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_ScreenRuler"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Screen Ruler</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ShortcutGuide"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Shortcut Guide</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_TextExtractor"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Text Extractor</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_Workspaces"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">Workspaces</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ZoomIt"><img src="doc/images/icons/PowerToys%20icon/PNG/PowerToysAppList.targetsize-30.png" alt="PowerToys" height="18" style="vertical-align:middle;margin-right:6px;">ZoomIt</a></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
 
 
 ## 📋 Getting started
