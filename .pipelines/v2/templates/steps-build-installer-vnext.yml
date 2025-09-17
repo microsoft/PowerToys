@@ -163,6 +163,7 @@ steps:
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
+  #### END BUILDING AND SIGNING SilentFilesInUseBAFunction DLL
   
   #### BOOTSTRAP BUILDING AND SIGNING
   - task: VSBuild@1
