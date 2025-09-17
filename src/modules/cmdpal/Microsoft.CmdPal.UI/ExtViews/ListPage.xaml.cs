@@ -39,7 +39,7 @@ public sealed partial class ListPage : Page,
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListPage), new PropertyMetadata(null, OnViewModelChanged));
 
-    private ListViewBase ItemView
+    private FrameworkElement ItemElement
     {
         get
         {
@@ -47,13 +47,15 @@ public sealed partial class ListPage : Page,
         }
     }
 
+    private ListViewBase? ItemView => ViewModel?.IsGridView == true ? null : ItemsList;
+
     public ListPage()
     {
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
-        this.ItemView.Loaded += Items_Loaded;
-        this.ItemView.PreviewKeyDown += Items_PreviewKeyDown;
-        this.ItemView.PointerPressed += Items_PointerPressed;
+        this.ItemElement.Loaded += Items_Loaded;
+        this.ItemElement.PreviewKeyDown += Items_PreviewKeyDown;
+        this.ItemElement.PointerPressed += Items_PointerPressed;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -64,11 +66,12 @@ public sealed partial class ListPage : Page,
         }
 
         if (e.NavigationMode == NavigationMode.Back
-            || (e.NavigationMode == NavigationMode.New && ItemView.Items.Count > 0))
+            || (e.NavigationMode == NavigationMode.New/* && TODO!
+                ItemView.Items.Count > 0*/))
         {
             // Upon navigating _back_ to this page, immediately select the
             // first item in the list
-            ItemView.SelectedIndex = 0;
+            // ItemView.SelectedIndex = 0; TODO!
         }
 
         // RegisterAll isn't AOT compatible
@@ -133,7 +136,7 @@ public sealed partial class ListPage : Page,
 
     private void Items_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
-        if (ItemView.SelectedItem is ListItemViewModel vm)
+        if (ItemView?.SelectedItem is ListItemViewModel vm)
         {
             var settings = App.Current.Services.GetService<SettingsModel>()!;
             if (!settings.SingleClickActivates)
@@ -146,8 +149,18 @@ public sealed partial class ListPage : Page,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void Items_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        SelectionChanged(sender);
+    }
+
+    private void Items_SelectionChanged(object sender, ItemsViewSelectionChangedEventArgs e)
+    {
+        SelectionChanged(sender);
+    }
+
+    private void SelectionChanged(object sender)
+    {
         var vm = ViewModel;
-        var li = ItemView.SelectedItem as ListItemViewModel;
+        var li = ItemView?.SelectedItem as ListItemViewModel;
         _ = Task.Run(() =>
         {
             vm?.UpdateSelectedItemCommand.Execute(li);
@@ -162,9 +175,9 @@ public sealed partial class ListPage : Page,
         // here, then in Page_ItemsUpdated trying to select that cached item if
         // it's in the list (otherwise, clear the cache), but that seems
         // aggressively BODGY for something that mostly just works today.
-        if (ItemView.SelectedItem is not null)
+        if (li is not null)
         {
-            ItemView.ScrollIntoView(ItemView.SelectedItem);
+            ItemView?.ScrollIntoView(ItemView.SelectedItem);
 
             // Automation notification for screen readers
             var listViewPeer = Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer.CreatePeerForElement(ItemView);
@@ -185,7 +198,7 @@ public sealed partial class ListPage : Page,
         if (e.OriginalSource is FrameworkElement element &&
             element.DataContext is ListItemViewModel item)
         {
-            if (ItemView.SelectedItem != item)
+            if (ItemView is not null && ItemView.SelectedItem != item)
             {
                 ItemView.SelectedItem = item;
             }
@@ -210,7 +223,7 @@ public sealed partial class ListPage : Page,
     private void Items_Loaded(object sender, RoutedEventArgs e)
     {
         // Find the ScrollViewer in the ItemView (ItemsList or ItemsGrid)
-        var listViewScrollViewer = FindScrollViewer(this.ItemView);
+        var listViewScrollViewer = FindScrollViewer(this.ItemElement);
 
         if (listViewScrollViewer is not null)
         {
@@ -242,11 +255,11 @@ public sealed partial class ListPage : Page,
         // And then have these commands manipulate that state being bound to the UI instead
         // We may want to see how other non-list UIs need to behave to make this decision
         // At least it's decoupled from the SearchBox now :)
-        if (ItemView.SelectedIndex < ItemView.Items.Count - 1)
+        if (ItemView?.SelectedIndex < ItemView?.Items.Count - 1)
         {
             ItemView.SelectedIndex++;
         }
-        else
+        else if (ItemView is not null)
         {
             ItemView.SelectedIndex = 0;
         }
@@ -254,11 +267,11 @@ public sealed partial class ListPage : Page,
 
     public void Receive(NavigatePreviousCommand message)
     {
-        if (ItemView.SelectedIndex > 0)
+        if (ItemView?.SelectedIndex > 0)
         {
             ItemView.SelectedIndex--;
         }
-        else
+        else if (ItemView is not null)
         {
             ItemView.SelectedIndex = ItemView.Items.Count - 1;
         }
@@ -270,7 +283,7 @@ public sealed partial class ListPage : Page,
         {
             ViewModel?.InvokeItemCommand.Execute(null);
         }
-        else if (ItemView.SelectedItem is ListItemViewModel item)
+        else if (ItemView?.SelectedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeItemCommand.Execute(item);
         }
@@ -282,7 +295,7 @@ public sealed partial class ListPage : Page,
         {
             ViewModel?.InvokeSecondaryCommandCommand.Execute(null);
         }
-        else if (ItemView.SelectedItem is ListItemViewModel item)
+        else if (ItemView?.SelectedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
         }
@@ -321,7 +334,7 @@ public sealed partial class ListPage : Page,
         // ItemView_SelectionChanged again to give us another chance to change
         // the selection from null -> something. Better to just update the
         // selection once, at the end of all the updating.
-        if (ItemView.SelectedItem is null)
+        if (ItemView is not null && ItemView.SelectedItem is null)
         {
             ItemView.SelectedIndex = 0;
         }
@@ -330,7 +343,10 @@ public sealed partial class ListPage : Page,
         // its items
         if (!sender.IsNested)
         {
-            ItemView.SelectedIndex = 0;
+            if (ItemView is not null)
+            {
+                ItemView.SelectedIndex = 0;
+            }
         }
     }
 
@@ -339,7 +355,7 @@ public sealed partial class ListPage : Page,
         var prop = e.PropertyName;
         if (prop == nameof(ViewModel.FilteredItems))
         {
-            Debug.WriteLine($"ViewModel.FilteredItems {ItemView.SelectedItem}");
+            Debug.WriteLine($"ViewModel.FilteredItems {ItemView?.SelectedItem}");
         }
     }
 
@@ -368,7 +384,7 @@ public sealed partial class ListPage : Page,
         var (item, element) = e.OriginalSource switch
         {
             // caused by keyboard shortcut (e.g. Context menu key or Shift+F10)
-            SelectorItem selectorItem => (ItemView.ItemFromContainer(selectorItem) as ListItemViewModel, selectorItem),
+            SelectorItem selectorItem => (ItemView?.ItemFromContainer(selectorItem) as ListItemViewModel, selectorItem),
 
             // caused by right-click on the ListViewItem
             FrameworkElement { DataContext: ListItemViewModel itemViewModel } frameworkElement => (itemViewModel, frameworkElement),
@@ -381,7 +397,7 @@ public sealed partial class ListPage : Page,
             return;
         }
 
-        if (ItemView.SelectedItem != item)
+        if (ItemView is not null && ItemView.SelectedItem != item)
         {
             ItemView.SelectedItem = item;
         }
