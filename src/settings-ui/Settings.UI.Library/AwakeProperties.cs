@@ -20,6 +20,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IntervalMinutes = 1;
             ExpirationDateTime = DateTimeOffset.Now;
             CustomTrayTimes = [];
+
+            // New usage tracking defaults (opt-in, disabled by default)
+            // Need to add this to settings, set it to true for testing
+            TrackUsageEnabled = true;
+            UsageRetentionDays = 14; // two weeks default retention
         }
 
         [JsonPropertyName("keepDisplayOn")]
@@ -40,5 +45,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("customTrayTimes")]
         [CmdConfigureIgnore]
         public Dictionary<string, uint> CustomTrayTimes { get; set; }
+
+        // New opt-in usage tracking flag
+        [JsonPropertyName("trackUsageEnabled")]
+        public bool TrackUsageEnabled { get; set; }
+
+        // Retention window for usage data (days)
+        [JsonPropertyName("usageRetentionDays")]
+        public int UsageRetentionDays { get; set; }
     }
 }

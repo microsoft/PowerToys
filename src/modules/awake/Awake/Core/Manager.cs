@@ -17,6 +17,9 @@ using System.Text.Json;
 using System.Threading;
 using Awake.Core.Models;
 using Awake.Core.Native;
+
+// New usage tracking namespace
+using Awake.Core.Usage;
 using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -55,6 +58,9 @@ namespace Awake.Core
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
         private static CancellationTokenSource _tokenSource;
+
+        // Foreground usage tracker instance (lifecycle managed by Program)
+        internal static ForegroundUsageTracker? UsageTracker { get; set; }
 
         static Manager()
         {
@@ -410,6 +416,16 @@ namespace Awake.Core
                 Bridge.SendMessage(TrayHelper.WindowHandle, Native.Constants.WM_CLOSE, 0, 0);
 
                 Bridge.DestroyWindow(TrayHelper.WindowHandle);
+            }
+
+            // Dispose usage tracker (flushes data)
+            try
+            {
+                UsageTracker?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Failed disposing UsageTracker: {ex.Message}");
             }
 
             Bridge.PostQuitMessage(exitCode);
