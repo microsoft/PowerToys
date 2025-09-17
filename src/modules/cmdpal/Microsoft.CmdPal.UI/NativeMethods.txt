@@ -54,3 +54,8 @@ SetWindowsHookEx
 UnhookWindowsHookEx
 CallNextHookEx
 GetModuleHandle
+
+
+DWRITE_FACTORY_TYPE
+IDWriteFactory8
+IDWriteBitmapRenderTarget3

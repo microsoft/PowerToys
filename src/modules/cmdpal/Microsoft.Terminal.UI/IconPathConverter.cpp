@@ -225,6 +225,41 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         return iconSource;
     }
 
+    // static Microsoft::UI::Xaml::Controls::IconSource _leonardsMagicEmojiRenderer(const winrt::hstring& glyph)
+    // {
+    //     // magic static init dwrite factory
+    //     const static auto dwriteFactory = []() {
+    //         wil::com_ptr<IDWriteFactory> factory;
+    //         THROW_IF_FAILED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(factory.put())));
+    //         return factory;
+    //     }();
+
+    //     // magic static font face
+    //     const static auto emojiFontFace = []() {
+    //         wil::com_ptr<IDWriteFontCollection> fontCollection;
+    //         THROW_IF_FAILED(dwriteFactory->GetSystemFontCollection(fontCollection.put()));
+
+    //         UINT32 index;
+    //         BOOL exists;
+    //         THROW_IF_FAILED(fontCollection->FindFamilyName(L"Segoe UI Emoji", &index, &exists));
+    //         if (!exists)
+    //         {
+    //             throw winrt::hresult_error(E_FAIL, L"Segoe UI Emoji font not found");
+    //         }
+
+    //         wil::com_ptr<IDWriteFontFamily> fontFamily;
+    //         THROW_IF_FAILED(fontCollection->GetFontFamily(index, fontFamily.put()));
+
+    //         wil::com_ptr<IDWriteFont> font;
+    //         THROW_IF_FAILED(fontFamily->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, font.put()));
+
+    //         wil::com_ptr<IDWriteFontFace> fontFace;
+    //         THROW_IF_FAILED(font->CreateFontFace(fontFace.put()));
+
+    //         return fontFace;
+    //     }();
+    // }
+
     // Windows::UI::Xaml::Controls::IconSource IconPathConverter::IconSourceWUX(const hstring& path)
     // {
     //     //    * If the icon is a path to an image, we'll use that.
