@@ -55,6 +55,11 @@ public partial class SamplesListPage : ListPage
             Title = "Sample content page",
             Subtitle = "Display mixed forms, markdown, and other types of content",
         },
+        new ListItem(new SampleStartPage())
+        {
+            Title = "Sample mixed content page",
+            Subtitle = "Mix content types to create a 'start' for your extension",
+        },
         new ListItem(new SampleTreeContentPage())
         {
             Title = "Sample nested content",

@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Nodes;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
 
 namespace SamplePagesExtension;
 
@@ -13,8 +14,12 @@ internal sealed partial class SampleContentPage : ContentPage
 {
     private readonly SampleContentForm sampleForm = new();
     private readonly MarkdownContent sampleMarkdown = new() { Body = "# Sample page with mixed content \n This page has both markdown, and form content" };
+    private readonly SampleListContent sampleList = new()
+    {
+        GridProperties = new MediumGridLayout(),
+    };
 
-    public override IContent[] GetContent() => [sampleMarkdown, sampleForm];
+    public override IContent[] GetContent() => [sampleMarkdown, sampleForm, sampleList];
 
     public SampleContentPage()
     {
@@ -311,6 +316,72 @@ internal sealed partial class SampleContentForm : FormContent
 
         // Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("GlobalHotkey", formInput["hotkey"]?.ToString() ?? string.Empty);
         return CommandResult.GoHome();
+    }
+}
+
+[SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]
+internal sealed partial class SampleListContent : ListContent
+{
+    public override IListItem[] GetItems()
+    {
+        return [
+            new ListItem(new NoOpCommand()
+            {
+                Name = "List item 1",
+                Icon = new("\uF148"),
+            }),
+            new ListItem(
+                new ToastCommand("Primary command invoked", MessageState.Info) { Name = "Primary command", Icon = new IconInfo("\uF146") }) // dial 1
+            {
+                Title = "You can add context menu items too. Press Ctrl+k",
+                Subtitle = "Try pressing Ctrl+1 with me selected",
+                Icon = new IconInfo("\uE712"),  // "More" dots
+                MoreCommands = [
+                    new CommandContextItem(
+                        new ToastCommand("Secondary command invoked", MessageState.Warning) { Name = "Secondary command", Icon = new IconInfo("\uF147") }) // dial 2
+                    {
+                        Title = "I'm a second command",
+                        RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
+                    },
+                    new Separator(),
+                    new CommandContextItem(
+                        new ToastCommand("Third command invoked", MessageState.Error) { Name = "Do 3", Icon = new IconInfo("\uF148") }) // dial 3
+                    {
+                        Title = "We can go deeper...",
+                        Icon = new IconInfo("\uF148"),
+                        RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number2),
+                        MoreCommands = [
+                            new CommandContextItem(
+                                new ToastCommand("Nested A invoked") { Name = "Do it", Icon = new IconInfo("A") })
+                            {
+                                Title = "Nested A",
+                                RequestedShortcut = KeyChordHelpers.FromModifiers(alt: true, vkey: VirtualKey.A),
+                            },
+
+                            new CommandContextItem(
+                                new ToastCommand("Nested B invoked") { Name = "Do it", Icon = new IconInfo("B") })
+                            {
+                                Title = "Nested B with a really, really long title that should be trimmed",
+                                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
+                                MoreCommands = [
+                                    new CommandContextItem(
+                                        new ToastCommand("Nested C invoked") { Name = "Do it" })
+                                    {
+                                        Title = "You get it",
+                                        RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
+                                    }
+                                ],
+                            },
+                        ],
+                    }
+                ],
+            },
+            new ListItem(new NoOpCommand()
+            {
+                Name = "List item 3",
+                Icon = new("\uF148"),
+            })
+        ];
     }
 }
 

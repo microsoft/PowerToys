@@ -7,31 +7,31 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
-namespace Microsoft.CmdPal.Core.ViewModels;
+namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ListViewModel : PageViewModel, IListViewModel
+public partial class ContentListViewModel : ContentViewModel, IListViewModel
 {
-    // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange change
-    // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
     [ObservableProperty]
     public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
-    public FiltersViewModel? Filters { get; set; }
+    public bool IsNested { get; set; }
 
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
-    private readonly ExtensionObject<IListPage> _model;
+    private readonly ExtensionObject<IListContent> _model;
 
     private readonly Lock _listLock = new();
 
     private InterlockedBoolean _isLoading;
     private bool _isFetching;
+    private bool _isInitialized;
 
     public event TypedEventHandler<IListViewModel, object>? ItemsUpdated;
 
@@ -39,7 +39,7 @@ public partial class ListViewModel : PageViewModel, IListViewModel
         IsInitialized &&
         FilteredItems.Count == 0 &&
         (!_isFetching) &&
-        IsLoading == false;
+        _isLoading.Value == false;
 
     public bool IsGridView { get; private set; }
 
@@ -50,8 +50,6 @@ public partial class ListViewModel : PageViewModel, IListViewModel
     public bool ShowDetails { get; private set; }
 
     private string _modelPlaceholderText = string.Empty;
-
-    public override string PlaceholderText => _modelPlaceholderText;
 
     public string SearchText { get; private set; } = string.Empty;
 
@@ -69,17 +67,19 @@ public partial class ListViewModel : PageViewModel, IListViewModel
 
     private ListItemViewModel? _lastSelectedItem;
 
-    public override bool IsInitialized
+    public string SearchTextBox { get; set; } = string.Empty;
+
+    public bool IsInitialized
     {
-        get => base.IsInitialized; protected set
+        get => _isInitialized; protected set
         {
-            base.IsInitialized = value;
+            _isInitialized = value;
             UpdateEmptyContent();
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host)
-        : base(model, scheduler, host)
+    public ContentListViewModel(IListContent model, WeakReference<IPageContext> context)
+        : base(context)
     {
         _model = new(model);
         EmptyContent = new(new(null), PageContext);
@@ -88,7 +88,7 @@ public partial class ListViewModel : PageViewModel, IListViewModel
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
 
-    protected override void OnSearchTextBoxUpdated(string searchTextBox)
+    protected void OnSearchTextBoxUpdated(string searchTextBox)
     {
         //// TODO: Just temp testing, need to think about where we want to filter, as AdvancedCollectionView in View could be done, but then grouping need CollectionViewSource, maybe we do grouping in view
         //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
@@ -111,7 +111,7 @@ public partial class ListViewModel : PageViewModel, IListViewModel
                 }
                 catch (Exception ex)
                 {
-                    ShowException(ex, _model?.Unsafe?.Name);
+                    ShowException(ex, "ContentList");
                 }
             });
         }
@@ -144,7 +144,7 @@ public partial class ListViewModel : PageViewModel, IListViewModel
             }
             catch (Exception ex)
             {
-                ShowException(ex, _model?.Unsafe?.Name);
+                ShowException(ex, "Content List");
             }
         });
     }
@@ -184,7 +184,7 @@ public partial class ListViewModel : PageViewModel, IListViewModel
                 // Check for cancellation during item processing
                 cancellationToken.ThrowIfCancellationRequested();
 
-                ListItemViewModel viewModel = new(item, new(this));
+                ListItemViewModel viewModel = new(item, PageContext);
 
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
@@ -248,7 +248,7 @@ public partial class ListViewModel : PageViewModel, IListViewModel
         {
             // TODO: Move this within the for loop, so we can catch issues with individual items
             // Create a special ListItemViewModel for errors and use an ItemTemplateSelector in the ListPage to display error items differently.
-            ShowException(ex, _model?.Unsafe?.Name);
+            ShowException(ex, "Content List");
             throw;
         }
         finally
@@ -442,9 +442,6 @@ public partial class ListViewModel : PageViewModel, IListViewModel
                {
                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                }
-
-               TextToSuggest = item.TextToSuggest;
-               WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
            });
 
         _lastSelectedItem = item;
@@ -479,9 +476,6 @@ public partial class ListViewModel : PageViewModel, IListViewModel
                 }
 
                 break;
-            case nameof(item.TextToSuggest):
-                TextToSuggest = item.TextToSuggest;
-                break;
         }
     }
 
@@ -495,19 +489,13 @@ public partial class ListViewModel : PageViewModel, IListViewModel
            () =>
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
-
                WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
-
                WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(string.Empty));
-
-               TextToSuggest = string.Empty;
            });
     }
 
     public override void InitializeProperties()
     {
-        base.InitializeProperties();
-
         var model = _model.Unsafe;
         if (model is null)
         {
@@ -523,22 +511,12 @@ public partial class ListViewModel : PageViewModel, IListViewModel
         GridProperties?.InitializeProperties();
         UpdateProperty(nameof(GridProperties));
 
-        ShowDetails = model.ShowDetails;
-        UpdateProperty(nameof(ShowDetails));
-
-        _modelPlaceholderText = model.PlaceholderText;
-        UpdateProperty(nameof(PlaceholderText));
-
         InitialSearchText = SearchText = model.SearchText;
         UpdateProperty(nameof(SearchText));
         UpdateProperty(nameof(InitialSearchText));
 
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
-
-        Filters = new(new(model.Filters), PageContext);
-        Filters.InitializeProperties();
-        UpdateProperty(nameof(Filters));
 
         FetchItems();
         model.ItemsChanged += Model_ItemsChanged;
@@ -599,15 +577,13 @@ public partial class ListViewModel : PageViewModel, IListViewModel
             catch (Exception ex)
             {
                 _isLoading.Clear();
-                ShowException(ex, model.Name);
+                ShowException(ex, "Content List");
             }
         });
     }
 
-    protected override void FetchProperty(string propertyName)
+    protected void FetchProperty(string propertyName)
     {
-        base.FetchProperty(propertyName);
-
         var model = _model.Unsafe;
         if (model is null)
         {
@@ -622,25 +598,12 @@ public partial class ListViewModel : PageViewModel, IListViewModel
                 GridProperties?.InitializeProperties();
                 UpdateProperty(nameof(IsGridView));
                 break;
-            case nameof(ShowDetails):
-                ShowDetails = model.ShowDetails;
-                break;
-            case nameof(PlaceholderText):
-                _modelPlaceholderText = model.PlaceholderText;
-                break;
             case nameof(SearchText):
                 SearchText = model.SearchText;
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);
                 EmptyContent.SlowInitializeProperties();
-                break;
-            case nameof(Filters):
-                Filters = new(new(model.Filters), PageContext);
-                Filters.InitializeProperties();
-                break;
-            case nameof(IsLoading):
-                UpdateEmptyContent();
                 break;
         }
 
@@ -702,12 +665,51 @@ public partial class ListViewModel : PageViewModel, IListViewModel
             FilteredItems.Clear();
         }
 
-        Filters?.SafeCleanup();
-
         var model = _model.Unsafe;
         if (model is not null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
+        }
+    }
+
+    public void UpdateSearchTextBox(string searchTextBox)
+    {
+        //// TODO: Just temp testing, need to think about where we want to filter, as AdvancedCollectionView in View could be done, but then grouping need CollectionViewSource, maybe we do grouping in view
+        //// and manage filtering below, but we should be smarter about this and understand caching and other requirements...
+        //// Investigate if we re-use src\modules\cmdpal\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\ListHelpers.cs InPlaceUpdateList and FilterList?
+
+        // Dynamic pages will handler their own filtering. They will tell us if
+        // something needs to change, by raising ItemsChanged.
+        if (_isDynamic)
+        {
+            // We're getting called on the UI thread.
+            // Hop off to a BG thread to update the extension.
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    if (_model.Unsafe is IDynamicListPage dynamic)
+                    {
+                        dynamic.SearchText = searchTextBox;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowException(ex, "Content List");
+                }
+            });
+        }
+        else
+        {
+            // But for all normal pages, we should run our fuzzy match on them.
+            lock (_listLock)
+            {
+                ApplyFilterUnderLock();
+            }
+
+            ItemsUpdated?.Invoke(this, EventArgs.Empty);
+            UpdateEmptyContent();
+            _isLoading.Clear();
         }
     }
 }

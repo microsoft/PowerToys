@@ -15,7 +15,6 @@
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
@@ -37,12 +36,14 @@
                 x:Key="ContentTemplateSelector"
                 FormTemplate="{StaticResource FormContentTemplate}"
                 MarkdownTemplate="{StaticResource MarkdownContentTemplate}"
-                TreeTemplate="{StaticResource TreeContentTemplate}" />
+                TreeTemplate="{StaticResource TreeContentTemplate}"
+                ListTemplate="{StaticResource ListContentTemplate}" />
             <cmdpalUI:ContentTemplateSelector
                 x:Key="NestedContentTemplateSelector"
                 FormTemplate="{StaticResource NestedFormContentTemplate}"
                 MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
-                TreeTemplate="{StaticResource TreeContentTemplate}" />
+                TreeTemplate="{StaticResource TreeContentTemplate}"
+                ListTemplate="{StaticResource NestedListContentTemplate}" />
 
             <DataTemplate x:Key="FormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
@@ -107,6 +108,20 @@
                     </ItemsRepeater>
 
                 </StackPanel>
+            </DataTemplate>
+
+            <!-- List content templates (non-nested) -->
+            <DataTemplate x:Key="ListContentTemplate" x:DataType="viewModels:ContentListViewModel">
+                <Grid Margin="0,4,4,4" Padding="0,0,0,0">
+                    <cmdPalControls:ListViewControl ViewModel="{x:Bind}" />
+                </Grid>
+            </DataTemplate>
+
+            <!-- Nested list content template -->
+            <DataTemplate x:Key="NestedListContentTemplate" x:DataType="viewModels:ContentListViewModel">
+                <Grid>
+                    <cmdPalControls:ListViewControl ViewModel="{x:Bind}" />
+                </Grid>
             </DataTemplate>
 
         </ResourceDictionary>

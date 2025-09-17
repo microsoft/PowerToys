@@ -341,6 +341,23 @@ namespace Microsoft.CommandPalette.Extensions
     }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IListContent requires IContent, INotifyItemsChanged {
+        String SearchText { get; };
+        IGridProperties GridProperties { get; };
+        Boolean HasMoreItems { get; };
+        ICommandItem EmptyContent { get; };
+
+        IListItem[] GetItems();
+        void LoadMore();
+    }
+
+    [uuid("B2C5A9E7-3F4D-5A3D-A018-AE2F6C5D5678")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDynamicListContent requires IListContent {
+        String SearchText { set; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IContentPage requires IPage, INotifyItemsChanged {
         IContent[] GetContent();
         IDetails Details { get; };

@@ -27,15 +27,15 @@ public sealed partial class ListViewControl : UserControl,
 {
     private InputSource _lastInputSource;
 
-    public ListViewModel? ViewModel
+    public IListViewModel? ViewModel
     {
-        get => (ListViewModel?)GetValue(ViewModelProperty);
+        get => (IListViewModel?)GetValue(ViewModelProperty);
         set => SetValue(ViewModelProperty, value);
     }
 
     // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register(nameof(ViewModel), typeof(ListViewModel), typeof(ListPage), new PropertyMetadata(null, OnViewModelChanged));
+        DependencyProperty.Register(nameof(ViewModel), typeof(IListViewModel), typeof(ListViewControl), new PropertyMetadata(null, OnViewModelChanged));
 
     private ListViewBase ItemView
     {
@@ -78,7 +78,7 @@ public sealed partial class ListViewControl : UserControl,
 
     // Called after we've finished updating the whole list for either a
     // GetItems or a change in the filter.
-    private void Page_ItemsUpdated(ListViewModel sender, object args)
+    private void Page_ItemsUpdated(IListViewModel sender, object args)
     {
         // If for some reason, we don't have a selected item, fix that.
         //
@@ -105,21 +105,43 @@ public sealed partial class ListViewControl : UserControl,
     {
         if (e.ClickedItem is ListItemViewModel item)
         {
-            if (_lastInputSource == InputSource.Keyboard)
+            if (ViewModel is ListViewModel listViewModel)
             {
-                ViewModel?.InvokeItemCommand.Execute(item);
-                return;
-            }
+                if (_lastInputSource == InputSource.Keyboard)
+                {
+                    listViewModel?.InvokeItemCommand.Execute(item);
+                    return;
+                }
 
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
-            if (settings.SingleClickActivates)
-            {
-                ViewModel?.InvokeItemCommand.Execute(item);
+                var settings = App.Current.Services.GetService<SettingsModel>()!;
+                if (settings.SingleClickActivates)
+                {
+                    listViewModel?.InvokeItemCommand.Execute(item);
+                }
+                else
+                {
+                    listViewModel?.UpdateSelectedItemCommand.Execute(item);
+                    WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                }
             }
-            else
+            else if (ViewModel is ContentListViewModel contentListViewModel)
             {
-                ViewModel?.UpdateSelectedItemCommand.Execute(item);
-                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                if (_lastInputSource == InputSource.Keyboard)
+                {
+                    contentListViewModel?.InvokeItemCommand.Execute(item);
+                    return;
+                }
+
+                var settings = App.Current.Services.GetService<SettingsModel>()!;
+                if (settings.SingleClickActivates)
+                {
+                    contentListViewModel?.InvokeItemCommand.Execute(item);
+                }
+                else
+                {
+                    contentListViewModel?.UpdateSelectedItemCommand.Execute(item);
+                    WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                }
             }
         }
     }
@@ -131,7 +153,14 @@ public sealed partial class ListViewControl : UserControl,
             var settings = App.Current.Services.GetService<SettingsModel>()!;
             if (!settings.SingleClickActivates)
             {
-                ViewModel?.InvokeItemCommand.Execute(vm);
+                if (ViewModel is ListViewModel listViewModel)
+                {
+                    listViewModel?.InvokeItemCommand.Execute(vm);
+                }
+                else if (ViewModel is ContentListViewModel contentListViewModel)
+                {
+                    contentListViewModel?.InvokeItemCommand.Execute(vm);
+                }
             }
         }
     }
@@ -143,7 +172,14 @@ public sealed partial class ListViewControl : UserControl,
         var li = ItemView.SelectedItem as ListItemViewModel;
         _ = Task.Run(() =>
         {
-            vm?.UpdateSelectedItemCommand.Execute(li);
+            if (vm is ListViewModel listViewModel)
+            {
+                listViewModel?.UpdateSelectedItemCommand.Execute(li);
+            }
+            else if (vm is ContentListViewModel contentListViewModel)
+            {
+                contentListViewModel?.UpdateSelectedItemCommand.Execute(li);
+            }
         });
 
         // There's mysterious behavior here, where the selection seemingly
@@ -183,7 +219,14 @@ public sealed partial class ListViewControl : UserControl,
                 ItemView.SelectedItem = item;
             }
 
-            ViewModel?.UpdateSelectedItemCommand.Execute(item);
+            if (ViewModel is ListViewModel listViewModel)
+            {
+                listViewModel?.UpdateSelectedItemCommand.Execute(item);
+            }
+            else if (ViewModel is ContentListViewModel contentListViewModel)
+            {
+                contentListViewModel?.UpdateSelectedItemCommand.Execute(item);
+            }
 
             var pos = e.GetPosition(element);
 
@@ -261,11 +304,25 @@ public sealed partial class ListViewControl : UserControl,
     {
         if (ViewModel?.ShowEmptyContent ?? false)
         {
-            ViewModel?.InvokeItemCommand.Execute(null);
+            if (ViewModel is ListViewModel listViewModel)
+            {
+                listViewModel?.InvokeItemCommand.Execute(null);
+            }
+            else if (ViewModel is ContentListViewModel contentListViewModel)
+            {
+                contentListViewModel?.InvokeItemCommand.Execute(null);
+            }
         }
         else if (ItemView.SelectedItem is ListItemViewModel item)
         {
-            ViewModel?.InvokeItemCommand.Execute(item);
+            if (ViewModel is ListViewModel listViewModel)
+            {
+                listViewModel?.InvokeItemCommand.Execute(item);
+            }
+            else if (ViewModel is ContentListViewModel contentListViewModel)
+            {
+                contentListViewModel?.InvokeItemCommand.Execute(item);
+            }
         }
     }
 
@@ -312,7 +369,14 @@ public sealed partial class ListViewControl : UserControl,
             ItemView.SelectedItem = item;
         }
 
-        ViewModel?.UpdateSelectedItemCommand.Execute(item);
+        if (ViewModel is ListViewModel listViewModel)
+        {
+            listViewModel?.UpdateSelectedItemCommand.Execute(item);
+        }
+        else if (ViewModel is ContentListViewModel contentListViewModel)
+        {
+            contentListViewModel?.UpdateSelectedItemCommand.Execute(item);
+        }
 
         if (!e.TryGetPosition(element, out var pos))
         {
@@ -382,7 +446,14 @@ public sealed partial class ListViewControl : UserControl,
     {
         if (ItemView.SelectedItem is ListItemViewModel item)
         {
-            ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
+            if (ViewModel is ListViewModel listViewModel)
+            {
+                listViewModel?.InvokeSecondaryCommandCommand.Execute(item);
+            }
+            else if (ViewModel is ContentListViewModel contentListViewModel)
+            {
+                contentListViewModel?.InvokeSecondaryCommandCommand.Execute(item);
+            }
         }
     }
 

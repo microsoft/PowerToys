@@ -21,8 +21,20 @@ public partial class CommandPaletteContentPageViewModel : ContentPageViewModel
             IFormContent form => new ContentFormViewModel(form, context),
             IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
             ITreeContent tree => new ContentTreeViewModel(tree, context),
+            IListContent listContent => new ContentListViewModel(listContent, context),
             _ => null,
         };
         return viewModel;
+    }
+
+    protected override void OnSearchTextBoxUpdated(string searchTextBox)
+    {
+        base.OnSearchTextBoxUpdated(searchTextBox);
+
+        // Propagate to any list content VMs so they can filter/update
+        foreach (var c in Content.OfType<ContentListViewModel>())
+        {
+            c.UpdateSearchTextBox(searchTextBox);
+        }
     }
 }
