@@ -40,7 +40,7 @@ To get started with PowerToys, ensure you have the right system requirements:
 
 To install, there are multiple options:
 
-<details open>
+<details>
 <summary>Microsoft Store</summary>
 You can easily install PowerToys from the Microsoft Store:
 <p>
