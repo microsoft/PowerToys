@@ -45,7 +45,18 @@ To get started with PowerToys, ensure you have the right system requirements:
 To install, there are multiple options:
 
 <details open>
-<summary>Via GitHub with .exe (Recommended)</summary>
+<summary>Microsoft Store</summary>
+You can easily install PowerToys from the Microsoft Store:
+<p>
+  <a style="text-decoration:none" href="https://aka.ms/getPowertoy">
+    <picture>
+      <source media="(prefers-color-scheme: light)" srcset="doc/images/StoreBadge-dark.png" width="220" />
+      <img src="doc/images/StoreBadge-light.png" width="220" />
+  </picture></a>
+</p>
+</details>
+<details>
+<summary>Via GitHub with .exe</summary>
 
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
@@ -63,13 +74,6 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 | Per user - ARM64     | [PowerToysUserSetup-0.94.0-arm64.exe][ptUserArm64] |
 | Machine wide - x64   | [PowerToysSetup-0.94.0-x64.exe][ptMachineX64] |
 | Machine wide - ARM64 | [PowerToysSetup-0.94.0-arm64.exe][ptMachineArm64] |
-
-</details>
-
-<details>
-<summary>Microsoft Store</summary>
-
-Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/), which is available for both Windows 11 and Windows 10.
 
 </details>
 
