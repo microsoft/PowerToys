@@ -13,6 +13,12 @@ public:
     static void PeekInvoked() noexcept;
 
     // Event to send settings telemetry.
-    static void Trace::SettingsTelemetry(PowertoyModuleIface::Hotkey& hotkey) noexcept;
+    static void SettingsTelemetry(PowertoyModuleIface::Hotkey& hotkey) noexcept;
+
+    // Log when space mode toggle state changes.
+    static void SpaceModeEnabled(bool enabled) noexcept;
+
+    // Log a rejection in space mode due to ineligible foreground (debounced fast exit).
+    static void SpaceModeRejected() noexcept;
 
 };

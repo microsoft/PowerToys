@@ -48,3 +48,22 @@ void Trace::SettingsTelemetry(PowertoyModuleIface::Hotkey& hotkey) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingWideString(hotKeyStr.c_str(), "HotKey"));
 }
+
+void Trace::SpaceModeEnabled(bool enabled) noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "Peek_SpaceModeEnabled",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(enabled, "Enabled"));
+}
+
+void Trace::SpaceModeRejected() noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "Peek_SpaceModeRejected",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}

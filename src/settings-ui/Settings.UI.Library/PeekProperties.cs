@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AlwaysRunNotElevated = new BoolProperty(true);
             CloseAfterLosingFocus = new BoolProperty(false);
             ConfirmFileDelete = new BoolProperty(true);
+            EnableSpaceToActivate = new BoolProperty(false);
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
@@ -28,6 +29,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public BoolProperty CloseAfterLosingFocus { get; set; }
 
         public BoolProperty ConfirmFileDelete { get; set; }
+
+        // Opt-in single-space activation toggle; when true activation shortcut is forced to space.
+        public BoolProperty EnableSpaceToActivate { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this);
     }

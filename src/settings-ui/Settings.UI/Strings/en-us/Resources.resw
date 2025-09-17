@@ -3152,6 +3152,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
     <value>You'll be asked to confirm before files are moved to the Recycle Bin</value>
   </data>
+  <data name="Peek_EnableSpaceMode.Header" xml:space="preserve">
+    <value>Enable single Space key activation</value>
+    <comment>Header for toggle that forces activation shortcut to Space</comment>
+  </data>
+  <data name="Peek_EnableSpaceMode.Description" xml:space="preserve">
+    <value>Use the Space key alone to activate Peek when File Explorer or Desktop is focused. Other contexts are ignored.</value>
+    <comment>Describes scope limitation of Space-only activation for Peek</comment>
+  </data>
+  <data name="Peek_SpaceShortcutLocked.Description" xml:space="preserve">
+    <value>Shortcut locked to Space while single key activation is enabled</value>
+    <comment>Tooltip shown when activation shortcut control is disabled due to Space mode</comment>
+  </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable rounded corners when a window is snapped</value>
   </data>

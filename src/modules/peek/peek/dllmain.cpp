@@ -10,6 +10,20 @@
 #include <exdisp.h>
 #include <comdef.h>
 #include <common/utils/elevation.h>
+#include <atomic>
+
+// Forward declarations for Space activation push model (design doc v1)
+namespace
+{
+    std::atomic_bool g_spaceOptimizationActive{ false }; // true if WinEvent hook successfully installed
+    std::atomic_bool g_isEligible{ false };              // last foreground eligibility snapshot
+    HWINEVENTHOOK g_foregroundHook = nullptr;            // foreground change hook
+    HANDLE g_foregroundDebounceTimer = nullptr;          // timer for debouncing rapid foreground switches
+    constexpr DWORD FOREGROUND_DEBOUNCE_MS = 40;         // wait this many ms after last switch before recompute
+    // Removed viewer debounce state; rely on existing is_viewer_running() guard.
+    class Peek;                                          // fwd
+    Peek* g_instance = nullptr;                          // current instance pointer
+}
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -42,6 +56,7 @@ namespace
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"ActivationShortcut";
     const wchar_t JSON_KEY_ALWAYS_RUN_NOT_ELEVATED[] = L"AlwaysRunNotElevated";
+    const wchar_t JSON_KEY_ENABLE_SPACE_TO_ACTIVATE[] = L"EnableSpaceToActivate";
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -60,6 +75,12 @@ private:
 
     // If we should always try to run Peek non-elevated.
     bool m_alwaysRunNotElevated = true;
+
+    // Feature toggle: allow single-space activation (design doc v1). When true we force Space shortcut.
+    bool m_enableSpaceToActivate = false;
+
+    // Remember previous multi-key shortcut so we can optionally restore if design changes later.
+    Hotkey m_previousHotkey{}; // only meaningful while space mode enabled.
 
     HANDLE m_hProcess = 0;
     DWORD m_processPid = 0;
@@ -111,6 +132,44 @@ private:
 
                 m_alwaysRunNotElevated = true;
             }
+            try
+            {
+                auto jsonEnableSpaceObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_ENABLE_SPACE_TO_ACTIVATE);
+                m_enableSpaceToActivate = jsonEnableSpaceObject.GetNamedBoolean(L"value");
+            }
+            catch (...)
+            {
+                // Absent -> default false
+                m_enableSpaceToActivate = false;
+            }
+
+            // Enforce design: if space toggle ON, force single-space hotkey and store previous combination once.
+            if (m_enableSpaceToActivate)
+            {
+                if (!(m_hotkey.win || m_hotkey.alt || m_hotkey.shift || m_hotkey.ctrl) && m_hotkey.key == ' ')
+                {
+                    // already single space, nothing to do.
+                }
+                    Trace::SpaceModeEnabled(m_enableSpaceToActivate);
+                else
+                {
+                    m_previousHotkey = m_hotkey; // stash
+                    m_hotkey.win = false;
+                    m_hotkey.alt = false;
+                    m_hotkey.shift = false;
+                    m_hotkey.ctrl = false; // no modifier in space mode
+                    m_hotkey.key = ' ';
+                }
+            }
+            else
+            {
+                // If toggle off and current hotkey is single space without ctrl, revert to default (per design simplification).
+                if (!(m_hotkey.win || m_hotkey.alt || m_hotkey.shift || m_hotkey.ctrl) && m_hotkey.key == ' ')
+                {
+                    set_default_key_settings();
+                }
+            }
+            manage_space_mode_hook();
         }
         else
         {
@@ -154,6 +213,103 @@ private:
             m_hotkey.key = ' ';
         }
     }
+
+    void recompute_space_mode_eligibility()
+    {
+        if (!m_enableSpaceToActivate)
+        {
+            g_isEligible.store(false, std::memory_order_relaxed);
+            return;
+        }
+        // Reuse existing logic; no extra caret / rename suppression in v1.
+        bool eligible = is_peek_or_explorer_or_desktop_window_focused();
+        g_isEligible.store(eligible, std::memory_order_relaxed);
+    }
+
+    static void CALLBACK ForegroundWinEventProc(HWINEVENTHOOK /*hook*/, DWORD /*event*/, HWND /*hwnd*/, LONG /*idObject*/, LONG /*idChild*/, DWORD /*thread*/, DWORD /*time*/)
+    {
+        // Coalesce bursts: schedule (or reset) a short timer; only when it fires we recompute.
+        if (!g_spaceOptimizationActive.load(std::memory_order_relaxed) || !g_instance)
+        {
+            return;
+        }
+
+        // Create or reset timer. Use default timer queue (NULL). If timer exists, ChangeTimerQueueTimer; else create.
+        if (g_foregroundDebounceTimer)
+        {
+            // Reset countdown
+            if (!ChangeTimerQueueTimer(nullptr, g_foregroundDebounceTimer, FOREGROUND_DEBOUNCE_MS, 0))
+            {
+                // If change failed (rare), fall back to immediate recompute.
+                g_instance->recompute_space_mode_eligibility();
+            }
+        }
+        else
+        {
+            auto timerCallback = [](PVOID, BOOLEAN) {
+                if (g_instance && g_spaceOptimizationActive.load(std::memory_order_relaxed))
+                {
+                    g_instance->recompute_space_mode_eligibility();
+                }
+            };
+
+            if (!CreateTimerQueueTimer(&g_foregroundDebounceTimer, nullptr, reinterpret_cast<WAITORTIMERCALLBACK>(timerCallback), nullptr, FOREGROUND_DEBOUNCE_MS, 0, WT_EXECUTEDEFAULT))
+            {
+                // If timer creation fails, recompute immediately to stay correct.
+                g_instance->recompute_space_mode_eligibility();
+            }
+        }
+    }
+
+    void install_foreground_hook()
+    {
+        if (g_foregroundHook || !m_enableSpaceToActivate)
+        {
+            return;
+        }
+        g_foregroundHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, nullptr, ForegroundWinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+        if (g_foregroundHook)
+        {
+            g_spaceOptimizationActive.store(true, std::memory_order_relaxed);
+            recompute_space_mode_eligibility();
+            Logger::debug(L"Peek Space mode foreground hook installed");
+        }
+        else
+        {
+            g_spaceOptimizationActive.store(false, std::memory_order_relaxed);
+            Logger::warn(L"Peek failed to install foreground hook. Falling back to polling.");
+        }
+    }
+
+    void uninstall_foreground_hook()
+    {
+        if (g_foregroundHook)
+        {
+            UnhookWinEvent(g_foregroundHook);
+            g_foregroundHook = nullptr;
+        }
+        if (g_foregroundDebounceTimer)
+        {
+            // Delete timer; if already queued, allow it to finish without waiting by passing nullptr completion event.
+            DeleteTimerQueueTimer(nullptr, g_foregroundDebounceTimer, nullptr);
+            g_foregroundDebounceTimer = nullptr;
+        }
+        g_spaceOptimizationActive.store(false, std::memory_order_relaxed);
+        g_isEligible.store(false, std::memory_order_relaxed);
+    }
+
+    void manage_space_mode_hook()
+    {
+        if (m_enableSpaceToActivate && m_enabled)
+        {
+            install_foreground_hook();
+        }
+        else
+        {
+            uninstall_foreground_hook();
+        }
+    }
+
 
     bool is_desktop_window(HWND windowHandle)
     {
@@ -323,6 +479,8 @@ public:
 
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_PEEK_SHARED_EVENT);
         m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_PEEK_SHARED_EVENT);
+    g_instance = this;
+    // If settings already enabled space mode and module later enabled, hook will be installed in enable().
     };
 
     ~Peek()
@@ -331,6 +489,11 @@ public:
         {
         }
         m_enabled = false;
+        uninstall_foreground_hook();
+        if (g_instance == this)
+        {
+            g_instance = nullptr;
+        }
     };
 
     // Destroy the powertoy and free memory
@@ -365,6 +528,9 @@ public:
         PowerToysSettings::Settings settings(hinstance, get_name());
         settings.set_description(MODULE_DESC);
 
+    // Add toggle for single-space activation (label/description temporary; proper resource integration TBD).
+    settings.add_bool_toggle(JSON_KEY_ENABLE_SPACE_TO_ACTIVATE, L"Enable single Space key activation", m_enableSpaceToActivate);
+
         return settings.serialize_to_buffer(buffer, buffer_size);
     }
 
@@ -395,6 +561,7 @@ public:
         launch_process();
         m_enabled = true;
         Trace::EnablePeek(true);
+    manage_space_mode_hook();
     }
 
     // Disable the powertoy
@@ -425,6 +592,7 @@ public:
 
         m_enabled = false;
         Trace::EnablePeek(false);
+    uninstall_foreground_hook();
     }
 
     // Returns if the powertoys is enabled
@@ -455,18 +623,34 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Peek hotkey pressed");
-
-            // Only activate and consume the shortcut if a Peek, explorer or desktop window is the foreground application.
-            if (is_peek_or_explorer_or_desktop_window_focused())
+            bool spaceMode = m_enableSpaceToActivate && !(m_hotkey.win || m_hotkey.alt || m_hotkey.shift || m_hotkey.ctrl) && m_hotkey.key == ' ';
+            bool eligible = false;
+            if (spaceMode && g_spaceOptimizationActive.load(std::memory_order_relaxed))
             {
-                // TODO: fix VK_SPACE DestroyWindow in viewer app
+                eligible = g_isEligible.load(std::memory_order_relaxed);
+            }
+            else
+                if (!eligible)
+                {
+                    Trace::SpaceModeRejected();
+                }
+            {
+                // Fallback: original polling logic
+                eligible = is_peek_or_explorer_or_desktop_window_focused();
+            }
+
+            if (eligible)
+            {
                 if (!is_viewer_running())
                 {
                     launch_process();
                 }
+                else
+                {
+                    // viewer already running; still send invoke to update content.
+                }
 
                 SetEvent(m_hInvokeEvent);
-
                 Trace::PeekInvoked();
                 return true;
             }
