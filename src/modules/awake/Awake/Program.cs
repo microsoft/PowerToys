@@ -18,6 +18,9 @@ using System.Threading.Tasks;
 using Awake.Core;
 using Awake.Core.Models;
 using Awake.Core.Native;
+
+// Usage tracking
+using Awake.Core.Usage;
 using Awake.Properties;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -491,6 +494,33 @@ namespace Awake
                     }
                 }
             }
+
+            // Initialize usage tracking
+            InitializeUsageTracking();
+        }
+
+        private static void InitializeUsageTracking()
+        {
+            try
+            {
+                string settingsPath = _settingsUtils!.GetSettingsFilePath(Core.Constants.AppName);
+                string directory = Path.GetDirectoryName(settingsPath)!;
+                string usageFile = Path.Combine(directory, "usage.json");
+
+                AwakeSettings settings = _settingsUtils.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
+
+                if (Manager.UsageTracker == null)
+                {
+                    Manager.UsageTracker = new ForegroundUsageTracker(usageFile, settings.Properties.UsageRetentionDays);
+                }
+
+                Manager.UsageTracker.Configure(settings.Properties.TrackUsageEnabled, settings.Properties.UsageRetentionDays);
+                Logger.LogInfo($"Usage tracking configured (enabled={settings.Properties.TrackUsageEnabled}, retentionDays={settings.Properties.UsageRetentionDays}).");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Failed to initialize usage tracking: {ex.Message}");
+            }
         }
 
         private static void AllocateLocalConsole()
@@ -510,6 +540,7 @@ namespace Awake
                 SetupFileSystemWatcher(settingsPath);
                 InitializeSettings();
                 ProcessSettings();
+                InitializeUsageTracking(); // after initial settings load
             }
             catch (Exception ex)
             {
@@ -555,6 +586,7 @@ namespace Awake
             {
                 Logger.LogInfo("Detected a settings file change. Updating configuration...");
                 ProcessSettings();
+                InitializeUsageTracking(); // re-evaluate usage tracking on config change
             }
             catch (Exception e)
             {

@@ -27,6 +27,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivityNetworkThresholdKBps = 100;
             ActivitySampleIntervalSeconds = 5;
             ActivityInactivityTimeoutSeconds = 60;
+            
+            // Usage tracking defaults (opt-in, disabled by default)
+                        TrackUsageEnabled = false; // default off
+            UsageRetentionDays = 14; // two weeks default retention
         }
 
         [JsonPropertyName("keepDisplayOn")]
@@ -63,5 +67,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("activityInactivityTimeoutSeconds")]
         public uint ActivityInactivityTimeoutSeconds { get; set; }
+        
+        // New opt-in usage tracking flag
+                [JsonPropertyName("trackUsageEnabled")]
+        public bool TrackUsageEnabled { get; set; }
+
+        // Retention window for usage data (days)
+        [JsonPropertyName("usageRetentionDays")]
+        public int UsageRetentionDays { get; set; }
     }
 }

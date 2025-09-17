@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>false</UseWindowsForms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>PowerToys.MCPServer</AssemblyName>
+    <AssemblyDescription>PowerToys MCP Server for Model Context Protocol</AssemblyDescription>
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <NoWin32Manifest>true</NoWin32Manifest>
+    <RootNamespace>PowerToys.MCPServer</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- CsWinRT configuration -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Core dependencies -->
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+	<PackageReference Include="ModelContextProtocol " />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- PowerToys project references -->
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
