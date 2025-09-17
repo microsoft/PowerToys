@@ -1,14 +1,20 @@
-# Microsoft PowerToys
-
 ![Hero image for Microsoft PowerToys](doc/images/overview/Header.png)
 
-[How to use PowerToys][usingPowerToys-docs-link] | [Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap)
+<h1 align="center">
+    Microsoft PowerToys
+</h1>
 
-## About
+<h3 align="center">
+  <a href="https://aka.ms/powertoys-docs">Getting started</a>
+  <span> · </span>
+  <a href="https://aka.ms/powertoys-docs">Documentation</a>
+  <span> · </span>
+  <a href="#powertoys-roadmap">Release notes & roadmap</a>
+</h3>
 
-Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://learn.microsoft.com/windows/dev-environment/overview), head over to [learn.microsoft.com][usingPowerToys-docs-link]!
+Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link]
 
-|              | Current utilities: |              |
+|              |  |              |
 |--------------|--------------------|--------------|
 | [Advanced Paste](https://aka.ms/PowerToysOverview_AdvancedPaste) | [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) |
 | [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [Command Palette](https://aka.ms/PowerToysOverview_CmdPal) |
@@ -21,10 +27,10 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
 | [ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |
 
-## Installing and running Microsoft PowerToys
 
-### Requirements
+## 📋 Getting started
 
+#### System requirements
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
 - x64 or ARM64 processor
 - Our installer will install the following items:
