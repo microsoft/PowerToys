@@ -24,7 +24,7 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
       <td><a href="https://aka.ms/PowerToysOverview_Awake"><img src="doc/images/icons/Awake.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">PowerToys Awake</a></td>
     </tr>
     <tr>
-      <td><a href="https://aka.ms/PowerToysOverview_ColorPicker"><img src="doc/images/icons/Color%20Picker.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;"> Color Picker</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_ColorPicker"><img src="doc/images/icons/Color%20Picker.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:12px;">Color Picker</a></td>
       <td><a href="https://aka.ms/PowerToysOverview_CmdNotFound"><img src="doc/images/icons/Command%20Not%20Found.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Command Not Found</a></td>
       <td><a href="https://aka.ms/PowerToysOverview_CmdPal"><img src="doc/images/icons/Peek.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Command Palette</a></td>
     </tr>
