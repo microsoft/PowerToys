@@ -16,18 +16,60 @@
 
 Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link]
 
-| Utility | Utility | Utility |
-|---|---|---|
-| [<img src="doc/images/icons/AdvancedPaste.png" alt="PowerToys" height="16"> Advanced Paste](https://aka.ms/PowerToysOverview_AdvancedPaste) | [<img src="doc/images/icons/Always%20On%20Top.png" alt="PowerToys" height="16"> Always on Top](https://aka.ms/PowerToysOverview_AoT) | [<img src="doc/images/icons/Awake.png" alt="PowerToys" height="16"> PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) |
-| [<img src="doc/images/icons/Color%20Picker.png" alt="PowerToys" height="16"> Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [<img src="doc/images/icons/Command%20Not%20Found.png" alt="PowerToys" height="16"> Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> Command Palette](https://aka.ms/PowerToysOverview_CmdPal) |
-| [<img src="doc/images/icons/Crop%20And%20Lock.png" alt="PowerToys" height="16"> Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [<img src="doc/images/icons/Environment%20Manager.png" alt="PowerToys" height="16"> Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [<img src="doc/images/icons/FancyZones.png" alt="PowerToys" height="16"> FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
-| [<img src="doc/images/icons/File%20Explorer%20Preview.png" alt="PowerToys" height="16"> File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [<img src="doc/images/icons/File%20Locksmith.png" alt="PowerToys" height="16"> File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [<img src="doc/images/icons/Host%20File%20Editor.png" alt="PowerToys" height="16"> Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) |
-| [<img src="doc/images/icons/Image%20Resizer.png" alt="PowerToys" height="16"> Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [<img src="doc/images/icons/Keyboard%20Manager.png" alt="PowerToys" height="16"> Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [<img src="doc/images/icons/Keyboard%20Manager.png" alt="PowerToys" height="16"> Mouse Utilities](https://aka.ms/PowerToysOverview_MouseUtilities) |
-| [<img src="doc/images/icons/MouseWithoutBorders.png" alt="PowerToys" height="16"> Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) | [<img src="doc/images/icons/NewPlus.png" alt="PowerToys" height="16"> New+](https://aka.ms/PowerToysOverview_NewPlus) | [<img src="doc/images/icons/AdvancedPaste.png" alt="PowerToys" height="16"> Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) |
-| [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> Peek](https://aka.ms/PowerToysOverview_Peek) | [<img src="doc/images/icons/PowerRename.png" alt="PowerToys" height="16"> PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [<img src="doc/images/icons/PowerToys%20Run.png" alt="PowerToys" height="16"> PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) |
-| [<img src="doc/images/icons/PowerAccent.png" alt="PowerToys" height="16"> Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [<img src="doc/images/icons/Registry%20Preview.png" alt="PowerToys" height="16"> Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [<img src="doc/images/icons/MeasureTool.png" alt="PowerToys" height="16"> Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
-| [<img src="doc/images/icons/Shortcut%20Guide.png" alt="PowerToys" height="16"> Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [<img src="doc/images/icons/PowerOCR.png" alt="PowerToys" height="16"> Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [<img src="doc/images/icons/Workspaces.png" alt="PowerToys" height="16"> Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
-| [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |  |  |
+<table style="border-collapse:collapse;">
+  <tbody>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_AdvancedPaste"><img src="doc/images/icons/AdvancedPaste.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Advanced Paste</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_AoT"><img src="doc/images/icons/Always%20On%20Top.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Always on Top</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_Awake"><img src="doc/images/icons/Awake.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">PowerToys Awake</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ColorPicker"><img src="doc/images/icons/Color%20Picker.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Color Picker</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_CmdNotFound"><img src="doc/images/icons/Command%20Not%20Found.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Command Not Found</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_CmdPal"><img src="doc/images/icons/Peek.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Command Palette</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_CropAndLock"><img src="doc/images/icons/Crop%20And%20Lock.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Crop And Lock</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_EnvironmentVariables"><img src="doc/images/icons/Environment%20Manager.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Environment Variables</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_FancyZones"><img src="doc/images/icons/FancyZones.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">FancyZones</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_FileExplorerAddOns"><img src="doc/images/icons/File%20Explorer%20Preview.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">File Explorer Add-ons</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_FileLocksmith"><img src="doc/images/icons/File%20Locksmith.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">File Locksmith</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_HostsFileEditor"><img src="doc/images/icons/Host%20File%20Editor.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Hosts File Editor</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ImageResizer"><img src="doc/images/icons/Image%20Resizer.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Image Resizer</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_KeyboardManager"><img src="doc/images/icons/Keyboard%20Manager.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Keyboard Manager</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_MouseUtilities"><img src="doc/images/icons/Mouse%20Crosshair.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Mouse Utilities</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_MouseWithoutBorders"><img src="doc/images/icons/MouseWithoutBorders.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Mouse Without Borders</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_NewPlus"><img src="doc/images/icons/NewPlus.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">New+</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_PastePlain"><img src="doc/images/icons/AdvancedPaste.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Paste as Plain Text</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_Peek"><img src="doc/images/icons/Peek.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Peek</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_PowerRename"><img src="doc/images/icons/PowerRename.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">PowerRename</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_PowerToysRun"><img src="doc/images/icons/PowerToys%20Run.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">PowerToys Run</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_QuickAccent"><img src="doc/images/icons/PowerAccent.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Quick Accent</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_RegistryPreview"><img src="doc/images/icons/Registry%20Preview.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Registry Preview</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_ScreenRuler"><img src="doc/images/icons/MeasureTool.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Screen Ruler</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ShortcutGuide"><img src="doc/images/icons/Shortcut%20Guide.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Shortcut Guide</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_TextExtractor"><img src="doc/images/icons/PowerOCR.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Text Extractor</a></td>
+      <td><a href="https://aka.ms/PowerToysOverview_Workspaces"><img src="doc/images/icons/Workspaces.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">Workspaces</a></td>
+    </tr>
+    <tr>
+      <td><a href="https://aka.ms/PowerToysOverview_ZoomIt"><img src="doc/images/icons/Peek.png" alt="PowerToys" height="16" style="vertical-align:middle;margin-right:6px;">ZoomIt</a></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
 
 
 
