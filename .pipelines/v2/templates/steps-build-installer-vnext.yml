@@ -144,7 +144,7 @@ steps:
         /p:RunBuildEvents=true;PerUser=${{parameters.buildUserInstaller}};RestorePackagesConfig=true;CIBuild=true
         /p:InstallerSuffix=${{ parameters.installerSuffix }}
         -restore -graph
-        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-silentfilesinusebafunction.binlog
+        /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-SilentFilesInUseBAFunction.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
