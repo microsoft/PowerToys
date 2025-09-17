@@ -29,33 +29,24 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [<img src="doc/images/icons/Shortcut%20Guide.png" alt="PowerToys" height="16"> Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [<img src="doc/images/icons/PowerOCR.png" alt="PowerToys" height="16"> Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [<img src="doc/images/icons/Workspaces.png" alt="PowerToys" height="16"> Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
 | [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |  |  |
 
-
-
 ## 📋 Getting started
 
+To get started with PowerToys, ensure you have the right system requirements:
+
 <details>
+<summary>System requirementss</summary>
 
-<summary>Tips for collapsed sections</summary>
-
-### You can add a header
-
-You can add text within a collapsed section.
-
-You can add an image or a code block, too.
-
-```ruby
-   puts "Hello World"
-```
-
-</details>
-
-#### System requirements
 - Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
 - x64 or ARM64 processor
 - Our installer will install the following items:
    - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
 
-### Via GitHub with EXE [Recommended]
+</details>
+
+To install, there are multiple options:
+
+<details open>
+<summary>Via GitHub with .exe (Recommended)</summary>
 
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
@@ -74,51 +65,37 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 | Machine wide - x64   | [PowerToysSetup-0.94.0-x64.exe][ptMachineX64] |
 | Machine wide - ARM64 | [PowerToysSetup-0.94.0-arm64.exe][ptMachineArm64] |
 
-This is our preferred method.
+</details>
 
-### Via Microsoft Store
+<details>
+<summary>Microsoft Store</summary>
 
 Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/), which is available for both Windows 11 and Windows 10.
 
-### Via WinGet
+</details>
+
+<details>
+<summary>WinGet</summary>
+
 Download PowerToys from [WinGet][winget-link]. Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
 
-#### User scope installer [default]
+*User scope installer [default]*
 ```powershell
 winget install Microsoft.PowerToys -s winget
 ```
 
-#### Machine-wide scope installer
-
+*User scope installer [default]*
 ```powershell
 winget install --scope machine Microsoft.PowerToys -s winget
 ```
+</details>
 
-### Other install methods
-
+<details>
+<summary>Other methods</summary>
 There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
+</details>
 
-## Third-Party Run Plugins
-
-There is a collection of [third-party plugins](./doc/thirdPartyRunPlugins.md) created by the community that aren't distributed with PowerToys.
-
-## Contributing
-
-This project welcomes contributions of all types. Besides coding features / bug fixes, other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
-
-We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
-
-Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you grant us the rights to use your contribution and that you have permission to do so.
-
-For guidance on developing for PowerToys, please read the [developer docs](./doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile.
-
-## What's Happening
-
-### PowerToys Roadmap
-
-Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
-
-### 0.94 - Sep 2025 Update
+### What's new in 0.94 (September 2025)
 
 In this release, we focused on new features, stability, optimization improvements, and automation.
 
@@ -248,7 +225,9 @@ For an in-depth look at the latest changes, visit the [release blog](https://aka
  - Cleans up AI‑generated tests; adds meaningful query tests across extensions.
  - Removed the obsolete debug dialog from Settings for a smoother developer loop.
 
-### What is being planned over the next few releases
+### Roadmap
+
+Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
 For [v0.95][github-next-release-work], we'll work on the items below:
 
@@ -263,6 +242,16 @@ For [v0.95][github-next-release-work], we'll work on the items below:
 ## PowerToys Community
 
 The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month by month, you directly help make PowerToys a better piece of software.
+
+## Contributing
+
+This project welcomes contributions of all types. Besides coding features / bug fixes, other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
+
+We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
+
+Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you grant us the rights to use your contribution and that you have permission to do so.
+
+For guidance on developing for PowerToys, please read the [developer docs](./doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile.
 
 ## Code of Conduct
 
