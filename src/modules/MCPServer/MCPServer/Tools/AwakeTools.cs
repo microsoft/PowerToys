@@ -100,7 +100,7 @@ namespace PowerToys.MCPServer.Tools
         }
 
         [McpServerTool]
-        [Description("Set activity-based keep-awake via HTTP. Monitors CPU, memory, and network activity. Params: cpuThresholdPercent (0-100), memThresholdPercent (0-100), netThresholdKBps (KB/s), sampleIntervalSeconds (>0), inactivityTimeoutSeconds (>0), keepDisplayOn=true|false")]
+        [Description("Keep PC awake during CPU-intensive tasks like building, compiling, downloading, or processing. Monitors system activity and prevents sleep while CPU/memory/network usage is above thresholds. Perfect for long-running operations. Params: cpuThresholdPercent (0-100), memThresholdPercent (0-100), netThresholdKBps (KB/s), sampleIntervalSeconds (>0), inactivityTimeoutSeconds (>0), keepDisplayOn=true|false")]
         public static string AwakeHttpActivityBased(uint cpuThresholdPercent = 50, uint memThresholdPercent = 50, uint netThresholdKBps = 10, uint sampleIntervalSeconds = 30, uint inactivityTimeoutSeconds = 300, bool keepDisplayOn = true)
         {
             if (cpuThresholdPercent > 100)
@@ -147,7 +147,7 @@ namespace PowerToys.MCPServer.Tools
         public static string AwakeHttpSettings() => SendAwakeRequest("GET", "awake/settings");
 
         [McpServerTool]
-        [Description("Get current Awake configuration status via HTTP (GET /awake/config).")]
+        [Description("Check current PowerToys Awake mode and configuration. Returns active mode (indefinite, timed, activity-based, or passive), remaining time, thresholds, and display settings. Use to verify if system is being kept awake and what settings are active.")]
         public static string AwakeHttpConfig() => SendAwakeRequest("GET", "awake/config");
 
         private sealed class AppUsageRecord

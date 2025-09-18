@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "powertoys-mcp": {
+      "command": "D:/work/PowerToys/x64/Debug/PowerToys.MCPServer.exe",
+      "transport": "stdio",
+      "args": [],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
