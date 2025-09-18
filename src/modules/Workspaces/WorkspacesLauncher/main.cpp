@@ -39,7 +39,17 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     }
 
     std::wstring cmdLineStr{ GetCommandLineW() };
+    
+    // Debug logging
+    Logger::info(L"Raw command line: {}", cmdLineStr);
+    
     auto cmdArgs = split(cmdLineStr, L" ");
+    
+    // Debug logging
+    Logger::info(L"Parsed workspace id: '{}'", cmdArgs.workspaceId);
+    Logger::info(L"Force save: {}, Skip minimized: {}, Is restarted: {}", 
+                 cmdArgs.forceSave, cmdArgs.skipMinimized, cmdArgs.isRestarted);
+    
     if (cmdArgs.workspaceId.empty())
     {
         Logger::warn("Incorrect command line arguments: no workspace id");
@@ -63,7 +73,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             std::string cmdLineStr(cmdline);
             std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
 
-            std::wstring cmd = cmdArgs.workspaceId + L" " + std::to_wstring(cmdArgs.invokePoint) + L" " + NonLocalizable::restartedString;
+            std::wstring cmd = cmdArgs.workspaceId + L" " + std::to_wstring(static_cast<int>(InvokePoint::Shortcut)) + L" " + NonLocalizable::restartedString;
 
             RunNonElevatedEx(exe_path.get(), cmd, modulePath);
             return 1;
@@ -91,12 +101,13 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-    Logger::trace(L"Invoke point: {}", cmdArgs.invokePoint);
+    Logger::trace(L"Invoke point: {}", static_cast<int>(InvokePoint::Shortcut));
 
     // read workspaces
     std::vector<WorkspacesData::WorkspacesProject> workspaces;
     WorkspacesData::WorkspacesProject projectToLaunch{};
-    if (cmdArgs.invokePoint == InvokePoint::LaunchAndEdit)
+    const InvokePoint invokePoint = InvokePoint::Shortcut; // Default for MCP launcher
+    if (invokePoint == InvokePoint::LaunchAndEdit)
     {
         // check the temp file in case the project is just created and not saved to the workspaces.json yet
         auto file = WorkspacesData::TempWorkspacesFile();
@@ -206,7 +217,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
 
     // launch
     {
-        Launcher launcher(projectToLaunch, workspaces, cmdArgs.invokePoint);
+        Launcher launcher(projectToLaunch, workspaces, invokePoint);
     }
 
     trace.Flush();

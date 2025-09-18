@@ -16,9 +16,9 @@ namespace NonLocalizable
 struct CommandLineArgs
 {
     std::wstring workspaceId;
-    InvokePoint invokePoint;
     bool isRestarted;
     bool forceSave;
+    bool skipMinimized;
 };
 
 CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
@@ -26,6 +26,7 @@ CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
     CommandLineArgs cmdArgs{};
     cmdArgs.isRestarted = false;
     cmdArgs.forceSave = false;
+    cmdArgs.skipMinimized = false;
 
     size_t pos = 0;
     std::wstring token;
@@ -50,12 +51,26 @@ CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
         return value;
     };
 
+    bool isFirstToken = true; // Track if this is the first token (exe path)
     for (const auto& tokenValue : tokens)
     {
         auto normalizedToken = normalizeToken(tokenValue);
         if (normalizedToken.empty())
         {
             continue;
+        }
+
+        // Skip the first token only if it looks like an executable path
+        if (isFirstToken)
+        {
+            isFirstToken = false;
+            // Skip if it ends with .exe or contains path separators
+            if ((normalizedToken.length() > 4 && normalizedToken.substr(normalizedToken.length() - 4) == L".exe") || 
+                normalizedToken.find(L'\\') != std::wstring::npos ||
+                normalizedToken.find(L'/') != std::wstring::npos)
+            {
+                continue;
+            }
         }
 
         if (_wcsicmp(normalizedToken.c_str(), NonLocalizable::restartedString) == 0)
@@ -66,23 +81,17 @@ CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
         {
             cmdArgs.forceSave = true;
         }
+        else if (_wcsicmp(normalizedToken.c_str(), L"-skipMinimized") == 0)
+        {
+            cmdArgs.skipMinimized = true;
+        }
         else
         {
-            auto guid = GuidFromString(normalizedToken);
-            if (guid.has_value())
+            // If it's not a flag, treat it as workspaceId
+            // This allows for both GUID format and custom formats like "yy-MM-dd-HH-mm"
+            if (cmdArgs.workspaceId.empty())
             {
                 cmdArgs.workspaceId = normalizedToken;
-            }
-            else
-            {
-                try
-                {
-                    auto invokePoint = static_cast<InvokePoint>(std::stoi(normalizedToken));
-                    cmdArgs.invokePoint = invokePoint;
-                }
-                catch (std::exception)
-                {
-                }
             }
         }
     }

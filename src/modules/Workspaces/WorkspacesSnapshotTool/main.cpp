@@ -51,20 +51,26 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
     }
 
     std::wstring cmdLineStr{ GetCommandLineW() };
+    Logger::info(L"Raw command line: '{}'", cmdLineStr);
     auto cmdArgs = split(cmdLineStr, L" ");
+    Logger::info(L"Command line arguments parsed: workspaceId='{}', forceSave={}, skipMinimized={}", cmdArgs.workspaceId, cmdArgs.forceSave, cmdArgs.skipMinimized);
 
     // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    WorkspacesData::WorkspacesProject project{ .id = CreateGuidString(), .creationTime = creationTime };
+    WorkspacesData::WorkspacesProject project;
+    project.id = CreateGuidString();
+    project.creationTime = creationTime;
+    project.name = L"Workspace"; // Default name
     if (!cmdArgs.workspaceId.empty())
     {
         project.id = cmdArgs.workspaceId;
+        project.name = cmdArgs.workspaceId; // Use the workspaceId as the name too
     }
     Logger::trace(L"Creating workspace {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();
-    bool isGuidNeeded = cmdArgs.invokePoint == InvokePoint::LaunchAndEdit;
-    project.apps = SnapshotUtils::GetApps(isGuidNeeded, [&](HWND window) -> unsigned int {
+    bool isGuidNeeded = false; // Simplified since we removed invokePoint handling
+    project.apps = SnapshotUtils::GetApps(isGuidNeeded, cmdArgs.skipMinimized, [&](HWND window) -> unsigned int {
         auto windowMonitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
         unsigned int monitorNumber = 0;
         for (const auto& monitor : project.monitors)
@@ -89,17 +95,23 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
 
     const auto tempWorkspacesFile = WorkspacesData::TempWorkspacesFile();
 
+    Logger::info(L"Force save mode: {}", cmdArgs.forceSave);
+    Logger::info(L"Temp workspaces file path: {}", tempWorkspacesFile);
+
     if (cmdArgs.forceSave)
     {
         const auto workspacesFilePath = WorkspacesData::WorkspacesFile();
+        Logger::info(L"Force save enabled. Target file: {}", workspacesFilePath);
         std::vector<WorkspacesData::WorkspacesProject> workspaces;
 
         if (std::filesystem::exists(workspacesFilePath))
         {
+            Logger::info(L"Existing workspaces file found, reading...");
             auto readResult = JsonUtils::ReadWorkspaces(workspacesFilePath);
             if (readResult.isOk())
             {
                 workspaces = readResult.getValue();
+                Logger::info(L"Successfully read {} existing workspaces", workspaces.size());
             }
             else
             {
@@ -112,6 +124,10 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
                 return -1;
             }
         }
+        else
+        {
+            Logger::info(L"No existing workspaces file found, creating new one");
+        }
 
         bool replaced = false;
         if (!project.id.empty())
@@ -121,6 +137,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
                 });
             if (existing != workspaces.end())
             {
+                Logger::info(L"Replacing existing workspace with id: {}", project.id);
                 *existing = project;
                 replaced = true;
             }
@@ -140,9 +157,11 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
                 project.id = CreateGuidString();
             }
 
+            Logger::info(L"Adding new workspace with id: {}", project.id);
             workspaces.push_back(project);
         }
 
+        Logger::info(L"Writing {} workspaces to file: {}", workspaces.size(), workspacesFilePath);
         if (!JsonUtils::Write(workspacesFilePath, workspaces))
         {
             Logger::error(L"Failed to write workspace snapshot to {}", workspacesFilePath);
@@ -154,16 +173,18 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
             return -1;
         }
 
-        Logger::trace(L"Workspace snapshot saved to {} with id {}", workspacesFilePath, project.id);
+        Logger::info(L"Successfully saved workspace snapshot to {} with id {}", workspacesFilePath, project.id);
     }
     else
     {
+        Logger::info(L"Force save disabled, writing to temp file: {}", tempWorkspacesFile);
         if (!JsonUtils::Write(tempWorkspacesFile, project))
         {
             Logger::error(L"Failed to write workspace snapshot to {}", tempWorkspacesFile);
             CoUninitialize();
             return -1;
         }
+        Logger::info(L"Successfully saved workspace snapshot to temp file");
     }
 
     Logger::trace(L"WorkspacesProject {}:{} created", project.name, project.id);

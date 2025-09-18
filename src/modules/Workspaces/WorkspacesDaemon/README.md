@@ -21,118 +21,112 @@ PowerToys.WorkspacesMCP.exe
 
 The server will start and listen on stdin/stdout for MCP protocol messages.
 
+## 🔧 Available Tools
+
+### `create_workspace_snapshot`
+
+Creates a workspace snapshot using PowerToys.WorkspacesSnapshotTool.exe. This captures the current state of all open windows and applications.
+
+**Parameters:**
+- `workspaceId` (string, optional): Custom workspace identifier to assign to the snapshot
+- `force` (boolean, optional): When true, saves directly to workspaces.json; when false, creates a temporary file
+- `skipMinimized` (boolean, optional): When true, excludes minimized windows from the snapshot
+
+**Examples:**
+- Basic snapshot: `{"arguments": {}}`
+- Force save to workspaces.json: `{"arguments": {"force": true}}`
+- Skip minimized windows: `{"arguments": {"skipMinimized": true}}`
+- Custom ID with all options: `{"arguments": {"workspaceId": "my-workspace-123", "force": true, "skipMinimized": true}}`
+
+### `launch_workspace`
+
+Launches an existing workspace using PowerToys.WorkspacesLauncher.exe. This restores all the windows and applications defined in the specified workspace.
+
+**Parameters:**
+- `workspaceId` (string, required): ID of the workspace to launch
+
+**Examples:**
+- Launch workspace: `{"arguments": {"workspaceId": "25-09-18-18-09"}}`
+
 ## 🧪 Testing the MCP Server
 
-### Option 1: Manual Testing with JSON Messages
+### JSON-RPC — Detailed test requests and parsing (single-line JSON)
 
-Send MCP protocol messages via stdin. Here are some examples:
+This section provides end-to-end JSON-RPC request examples and robust client parsing patterns. The MCP server communicates over stdio (one JSON object per line).
 
-#### Initialize the server:
+Note: For backward compatibility some responses include both a `text` field (serialized JSON string) and a `data` field (structured object). Clients should prefer `data` and fall back to parsing `text` if `data` is not present.
+
+#### Basic requests (one JSON object per line)
+
+Initialize:
 ```json
 {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{"tools":{}},"clientInfo":{"name":"test-client","version":"1.0.0"}}}
 ```
 
-#### List available tools:
+List tools (`tools/list`):
 ```json
-{"jsonrpc":"2.0","id":2,"method":"tools/list"}
+{"jsonrpc":"2.0","id":2,"method":"tools/list","params":null}
 ```
 
-#### Call a tool (get all windows):
+Call `list_workspaces` tool:
 ```json
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_windows","arguments":{"includeMinimized":false}}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"list_workspaces","arguments":{}}}
 ```
 
-#### List available resources:
+Read `workspace://workspaces` resource:
 ```json
-{"jsonrpc":"2.0","id":4,"method":"resources/list"}
+{"jsonrpc":"2.0","id":4,"method":"resources/read","params":{"uri":"workspace://workspaces"}}
 ```
 
-#### Read a resource:
+Find windows by title (`find_windows`):
 ```json
-{"jsonrpc":"2.0","id":5,"method":"resources/read","params":{"uri":"workspace://current"}}
+{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"find_windows","arguments":{"titlePattern":"Notepad"}}}
 ```
 
-### Option 2: Use a MCP Client
+Create workspace snapshot with automatic naming (`create_workspace_snapshot`):
+```json
+{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"create_workspace_snapshot","arguments":{}}}
+```
+This tool automatically:
+- Creates a workspace snapshot with name format `yy-MM-dd-HH-mm` (current date/time)
+- Enables force save to write directly to workspaces.json
+- Skips all minimized windows
+- No parameters needed!
 
-You can use any MCP-compatible client to test this server. Popular options include:
-
-1. **Claude Desktop** - Configure as an MCP server
-2. **MCP Inspector** - A debugging tool for MCP servers
-3. **Custom client** - Build your own using MCP SDK
-
-### Option 3: PowerShell Testing Script
-
-Here's a simple PowerShell script to test the server:
-
-```powershell
-# test-mcp-server.ps1
-$serverPath = "x64\Debug\PowerToys.WorkspacesMCP.exe"
-
-# Start the server process
-$process = Start-Process -FilePath $serverPath -RedirectStandardInput -RedirectStandardOutput -PassThru
-
-# Send initialize message
-$initMessage = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{"tools":{}},"clientInfo":{"name":"test-client","version":"1.0.0"}}}'
-$process.StandardInput.WriteLine($initMessage)
-
-# Read response
-$response = $process.StandardOutput.ReadLine()
-Write-Output "Initialize Response: $response"
-
-# Send tools/list message
-$toolsMessage = '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
-$process.StandardInput.WriteLine($toolsMessage)
-
-# Read response
-$response = $process.StandardOutput.ReadLine()
-Write-Output "Tools List Response: $response"
-
-# Clean up
-$process.Kill()
+Launch an existing workspace (`launch_workspace`):
+```json
+{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"launch_workspace","arguments":{"workspaceId":"25-09-18-21-08"}}}
 ```
 
-## 🛠️ Available Capabilities
+## 📋 Available Tools
 
-### Tools:
-- **get_windows** - Get information about all visible windows
-- **get_apps** - Get information about all running applications  
-- **check_app_running** - Check if a specific application is running
-- **find_windows** - Find windows by title or class name
+### `create_workspace_snapshot`
+**Description:** Creates a workspace snapshot with automatic configuration  
+**Parameters:** None required  
+**Features:**
+- **Auto-naming:** Uses current timestamp in `yy-MM-dd-HH-mm` format
+- **Force save:** Always saves to workspaces.json (not temp file)
+- **Skip minimized:** Ignores minimized windows for cleaner snapshots
 
-### Resources:
-- **workspace://current** - Current workspace state
-- **workspace://apps** - Application catalog
-- **workspace://hierarchy** - Window hierarchy
+### `launch_workspace`
+**Description:** Launches an existing workspace by restoring all its windows and applications  
+**Parameters:**
+- `workspaceId` (required): ID of the workspace to launch
+**Features:**
+- **Async launch:** Initiates workspace restoration without waiting for completion
+- **Window arrangement:** Automatically positions windows to match snapshot
+- **App launching:** Starts any applications that aren't currently running
 
-## 🐛 Development & Debugging
+### `list_workspaces`
+**Description:** Lists all available workspace definitions  
+**Parameters:** None
 
-### Build for Development:
-```bash
-dotnet build src\modules\Workspaces\WorkspacesDaemon\PowerToys.WorkspacesMCP.csproj -c Debug --verbosity normal
-```
+### `find_windows`
+**Description:** Find windows by title pattern or class name  
+**Parameters:**
+- `titlePattern` (optional): Pattern to match in window titles
+- `className` (optional): Window class name to match
 
-### Run with Logging:
-The server outputs errors to stderr, so you can redirect them for debugging:
-```bash
-PowerToys.WorkspacesMCP.exe 2>error.log
-```
+## 🛠️ Technical Details
 
-### Attach Debugger:
-1. Build in Debug configuration
-2. Run `PowerToys.WorkspacesMCP.exe` 
-3. Attach Visual Studio debugger to the process
-4. Set breakpoints in the service methods
-
-## 📋 Configuration
-
-The MCP server is configured to:
-- Use stdin/stdout for communication (MCP standard)
-- Support graceful shutdown with Ctrl+C
-- Log errors to stderr
-- Return JSON responses for all capabilities
-
-## 🔗 MCP Protocol Documentation
-
-For more information about the Model Context Protocol, visit:
-- [MCP Specification](https://spec.modelcontextprotocol.org/)
-- [MCP SDK Documentation](https://modelcontextprotocol.org/docs/)
+The MCP server provides a simplified interface for workspace management. The `create_workspace_snapshot` tool is designed to be fire-and-forget - simply call it without any parameters and it will handle all the complexity automatically.

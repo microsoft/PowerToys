@@ -55,7 +55,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}\\ARM64\\Debug\\PowerToys.WorkspacesLauncher.exe",
-            "args": ["{DB42D388-9862-4DCE-8ABC-0512A263FF31}", "1"],
+            "args": ["25-09-18-18-44", "1"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [

@@ -51,6 +51,22 @@ $messages = @(
     @{
         name = "Read Current Workspace"
         message = '{"jsonrpc":"2.0","id":7,"method":"resources/read","params":{"uri":"workspace://current"}}'
+    },
+    @{
+        name = "List Workspaces"
+        message = '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"list_workspaces","arguments":{}}}'
+    },
+    @{
+        name = "Create Workspace Snapshot (Basic)"
+        message = '{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"create_workspace_snapshot","arguments":{}}}'
+    },
+    @{
+        name = "Create Workspace Snapshot (With ID)"
+        message = '{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"create_workspace_snapshot","arguments":{"workspaceId":"test-workspace-123"}}}'
+    },
+    @{
+        name = "Create Workspace Snapshot (Force Save)"
+        message = '{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"create_workspace_snapshot","arguments":{"force":true}}}'
     }
 )
 

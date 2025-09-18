@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PowerToys.WorkspacesMCP.Services;
+using PowerToys.WorkspacesMCP.Services.Workspaces;
 
 namespace PowerToys.WorkspacesMCP;
 
@@ -54,8 +55,19 @@ public class Program
             })
             .ConfigureServices(services =>
             {
-                services.AddSingleton<MCPProtocolService>();
+                // Windows API service (fallback enumeration)
                 services.AddSingleton<WindowsApiService>();
+
+                // Workspace state + monitor
+                services.AddSingleton<WorkspaceStateProvider>();
+                services.AddSingleton<IWorkspaceStateProvider>(sp => sp.GetRequiredService<WorkspaceStateProvider>());
+                services.AddHostedService<WorkspaceMonitor>();
+
+                // Workspace catalog
+                services.AddSingleton<IWorkspaceCatalog, WorkspaceCatalogService>();
+
+                // MCP protocol handler (uses state provider)
+                services.AddSingleton<MCPProtocolService>();
             })
             .Build();
     }

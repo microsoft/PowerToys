@@ -28,6 +28,10 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     
     std::wstring commandLine{ GetCommandLineW() };
+    
+    // Debug logging
+    Logger::info(L"Raw command line: {}", commandLine);
+    
     if (commandLine.empty())
     {
         Logger::warn("Empty command line arguments");
@@ -35,6 +39,12 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     }
 
     auto args = split(commandLine, L" ");
+    
+    // Debug logging
+    Logger::info(L"Parsed workspace id: '{}'", args.workspaceId);
+    Logger::info(L"Force save: {}, Skip minimized: {}, Is restarted: {}", 
+                 args.forceSave, args.skipMinimized, args.isRestarted);
+    
     if (args.workspaceId.empty())
     {
         Logger::warn("Incorrect command line arguments: no workspace id");

@@ -43,7 +43,7 @@ namespace SnapshotUtils
         return false;
     }
 
-    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(bool isGuidNeeded, const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle, const std::function<WorkspacesData::WorkspacesProject::Monitor::MonitorRect(unsigned int)> getMonitorRect)
+    std::vector<WorkspacesData::WorkspacesProject::Application> GetApps(bool isGuidNeeded, bool skipMinimized, const std::function<unsigned int(HWND)> getMonitorNumberFromWindowHandle, const std::function<WorkspacesData::WorkspacesProject::Monitor::MonitorRect(unsigned int)> getMonitorRect)
     {
         Utils::PwaHelper pwaHelper{};
         std::vector<WorkspacesData::WorkspacesProject::Application> apps{};
@@ -55,6 +55,13 @@ namespace SnapshotUtils
         {
             if (WindowFilter::FilterPopup(window))
             {
+                continue;
+            }
+
+            // Skip minimized windows if requested
+            if (skipMinimized && IsIconic(window))
+            {
+                Logger::trace(L"Skipping minimized window with title: {}", WindowUtils::GetWindowTitle(window));
                 continue;
             }
 
@@ -71,8 +78,6 @@ namespace SnapshotUtils
             {
                 continue;
             }
-
-            Logger::info("Try to get window app:{}", reinterpret_cast<void*>(window));
 
             DWORD pid{};
             GetWindowThreadProcessId(window, &pid);
@@ -121,7 +126,6 @@ namespace SnapshotUtils
             auto data = Utils::Apps::GetApp(processPath, pid, installedApps);
             if (!data.has_value() || data->name.empty())
             {
-                Logger::info(L"Installed app not found:{},{}", reinterpret_cast<void*>(window), processPath);
                 continue;
             }
 
@@ -131,8 +135,6 @@ namespace SnapshotUtils
                 // the behavior as before.
                 continue;
             }
-
-            Logger::info(L"Found app for window:{},{}", reinterpret_cast<void*>(window), processPath);
 
             auto appData = data.value();
 
