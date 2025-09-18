@@ -1,0 +1,59 @@
+{
+  "id": "QuickAccessProvider",
+  "groupName": "Quick Access",
+  "description": "Pinned shortcuts",
+  "layout": {
+    "style": "capsule",
+    "overflow": "menu",
+    "maxInline": 6,
+    "showLabels": false
+  },
+  "actions": [
+    {
+      "id": "quick-access::home",
+      "name": "Home",
+      "description": "Open Explorer Home",
+      "iconGlyph": "\\uE80F",
+      "sortOrder": 0,
+      "action": {
+        "type": "commandLine",
+        "command": "explorer.exe",
+        "arguments": "shell:Home"
+      }
+    },
+    {
+      "id": "quick-access::search",
+      "name": "Search",
+      "description": "Open Windows Search",
+      "iconGlyph": "\\uE721",
+      "sortOrder": 1,
+      "action": {
+        "type": "commandLine",
+        "command": "explorer.exe",
+        "arguments": "shell:SearchHome"
+      }
+    },
+    {
+      "id": "quick-access::files",
+      "name": "Files",
+      "description": "Open File Explorer",
+      "iconGlyph": "\\uE8B7",
+      "sortOrder": 2,
+      "action": {
+        "type": "commandLine",
+        "command": "explorer.exe"
+      }
+    },
+    {
+      "id": "quick-access::calculator",
+      "name": "Calculator",
+      "description": "Open Calculator",
+      "iconGlyph": "\\uE8EF",
+      "sortOrder": 3,
+      "action": {
+        "type": "commandLine",
+        "command": "calc.exe"
+      }
+    }
+  ]
+}

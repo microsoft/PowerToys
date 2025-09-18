@@ -44,4 +44,7 @@
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="TopToolbarProviders\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

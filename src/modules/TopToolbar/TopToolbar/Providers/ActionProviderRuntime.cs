@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TopToolbar.Actions;
+using TopToolbar.Models;
 
 namespace TopToolbar.Providers
 {
@@ -15,14 +16,18 @@ namespace TopToolbar.Providers
     {
         private readonly Dictionary<string, IActionProvider> _providers;
         private readonly Dictionary<string, ProviderInfo> _infoCache;
+        private readonly Dictionary<string, IToolbarGroupProvider> _groupProviders;
 
         public ActionProviderRuntime()
         {
             _providers = new Dictionary<string, IActionProvider>(StringComparer.OrdinalIgnoreCase);
             _infoCache = new Dictionary<string, ProviderInfo>(StringComparer.OrdinalIgnoreCase);
+            _groupProviders = new Dictionary<string, IToolbarGroupProvider>(StringComparer.OrdinalIgnoreCase);
         }
 
         public IReadOnlyCollection<string> RegisteredProviderIds => _providers.Keys;
+
+        public IReadOnlyCollection<string> RegisteredGroupProviderIds => _groupProviders.Keys;
 
         public void RegisterProvider(IActionProvider provider)
         {
@@ -34,6 +39,15 @@ namespace TopToolbar.Providers
             }
 
             _providers[provider.Id] = provider;
+
+            if (provider is IToolbarGroupProvider groupProvider)
+            {
+                _groupProviders[provider.Id] = groupProvider;
+            }
+            else
+            {
+                _groupProviders.Remove(provider.Id);
+            }
         }
 
         public bool TryGetProvider(string providerId, out IActionProvider provider)
@@ -63,6 +77,17 @@ namespace TopToolbar.Providers
             return info;
         }
 
+        public async Task<ButtonGroup> CreateGroupAsync(string providerId, ActionContext context, CancellationToken cancellationToken)
+        {
+            if (!_groupProviders.TryGetValue(providerId, out var provider))
+            {
+                throw new InvalidOperationException("Provider '{providerId}' does not support toolbar groups.");
+            }
+
+            var ctx = context ?? new ActionContext();
+            return await provider.CreateGroupAsync(ctx, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<IReadOnlyList<ActionDescriptor>> DiscoverAsync(
             IEnumerable<string> providerIds,
             ActionContext context,
@@ -82,6 +107,11 @@ namespace TopToolbar.Providers
                 {
                     if (descriptor != null)
                     {
+                        if (string.IsNullOrEmpty(descriptor.ProviderId))
+                        {
+                            descriptor.ProviderId = providerId;
+                        }
+
                         results.Add(descriptor);
                     }
                 }

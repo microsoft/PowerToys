@@ -80,22 +80,6 @@ namespace TopToolbar.Services
 
         private static ToolbarConfig CreateDefault()
         {
-            var quickAccess = new ButtonGroup
-            {
-                Name = "Quick Access",
-                Layout = new ToolbarGroupLayout
-                {
-                    Style = ToolbarGroupLayoutStyle.Capsule,
-                    Overflow = ToolbarGroupOverflowMode.Menu,
-                    MaxInline = 6,
-                },
-            };
-
-            quickAccess.Buttons.Add(new ToolbarButton { Name = "Home", IconGlyph = "\uE80F", Action = new ToolbarAction { Command = "explorer.exe", Arguments = "shell:Home" } });
-            quickAccess.Buttons.Add(new ToolbarButton { Name = "Search", IconGlyph = "\uE721", Action = new ToolbarAction { Command = "explorer.exe", Arguments = "shell:SearchHome" } });
-            quickAccess.Buttons.Add(new ToolbarButton { Name = "Files", IconGlyph = "\uE8B7", Action = new ToolbarAction { Command = "explorer.exe" } });
-            quickAccess.Buttons.Add(new ToolbarButton { Name = "Calculator", IconGlyph = "\uE8EF", Action = new ToolbarAction { Command = "calc.exe" } });
-
             var system = new ButtonGroup
             {
                 Name = "System",
@@ -110,27 +94,11 @@ namespace TopToolbar.Services
             system.Buttons.Add(new ToolbarButton { Name = "Sound", IconGlyph = "\uE767", Action = new ToolbarAction { Command = "ms-settings:sound" } });
             system.Buttons.Add(new ToolbarButton { Name = "Network", IconGlyph = "\uE968", Action = new ToolbarAction { Command = "ms-settings:network" } });
 
-            var workspaces = new ButtonGroup
-            {
-                Name = "Workspaces",
-                Layout = new ToolbarGroupLayout
-                {
-                    Style = ToolbarGroupLayoutStyle.Capsule,
-                    Overflow = ToolbarGroupOverflowMode.Menu,
-                    MaxInline = 8,
-                },
-                Filter = "workspace.launch:*",
-            };
-
-            workspaces.Providers.Add("WorkspaceProvider");
-
             return new ToolbarConfig
             {
                 Groups =
                 {
-                    quickAccess,
                     system,
-                    workspaces,
                 },
                 Bindings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {

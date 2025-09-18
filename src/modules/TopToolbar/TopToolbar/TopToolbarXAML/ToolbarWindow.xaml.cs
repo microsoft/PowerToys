@@ -11,6 +11,8 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
+using TopToolbar.Models;
+using TopToolbar.Providers;
 using TopToolbar.Services;
 using TopToolbar.ViewModels;
 using WinUIEx;
@@ -22,7 +24,12 @@ namespace TopToolbar
     public sealed partial class ToolbarWindow : WindowEx, IDisposable
     {
         private const int TriggerZoneHeight = 2;
-        private readonly ToolbarViewModel _vm = new(new ToolbarConfigService());
+        private readonly ToolbarConfigService _configService;
+        private readonly ActionProviderRuntime _providerRuntime;
+        private readonly ActionProviderService _providerService;
+        private readonly ActionContextFactory _contextFactory;
+        private readonly ToolbarActionExecutor _actionExecutor;
+        private readonly ToolbarViewModel _vm;
         private Timer _monitorTimer;
         private Timer _configWatcherDebounce;
         private bool _isVisible;
@@ -35,6 +42,14 @@ namespace TopToolbar
 
         public ToolbarWindow()
         {
+            _configService = new ToolbarConfigService();
+            _contextFactory = new ActionContextFactory();
+            _providerRuntime = new ActionProviderRuntime();
+            _providerService = new ActionProviderService(_providerRuntime);
+            _actionExecutor = new ToolbarActionExecutor(_providerService, _contextFactory);
+            _vm = new ToolbarViewModel(_configService, _providerService, _contextFactory);
+            RegisterProviders();
+
             Title = "Top Toolbar";
 
             // Make window background completely transparent
@@ -85,6 +100,44 @@ namespace TopToolbar
                     _builtConfigOnce = true;
                 });
             };
+        }
+
+        private void RegisterProviders()
+        {
+            try
+            {
+                var configService = new ProviderConfigService();
+                foreach (var config in configService.LoadConfigs())
+                {
+                    if (config == null || string.IsNullOrWhiteSpace(config.Id))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        var provider = new ConfiguredActionProvider(config);
+                        _providerRuntime.RegisterProvider(provider);
+                    }
+                    catch (Exception providerEx)
+                    {
+                        ManagedCommon.Logger.LogError($"ToolbarWindow: failed to register configured provider '{config.Id}'.", providerEx);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ManagedCommon.Logger.LogError("ToolbarWindow: failed to load configured providers.", ex);
+            }
+
+            try
+            {
+                _providerRuntime.RegisterProvider(new WorkspaceProvider());
+            }
+            catch (Exception ex)
+            {
+                ManagedCommon.Logger.LogError("ToolbarWindow: failed to register WorkspaceProvider.", ex);
+            }
         }
 
         private void CreateToolbarShell()
@@ -144,8 +197,7 @@ namespace TopToolbar
         {
             try
             {
-                var service = new ToolbarConfigService();
-                var path = service.ConfigPath;
+                var path = _configService.ConfigPath;
                 var dir = Path.GetDirectoryName(path);
                 var file = Path.GetFileName(path);
                 if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(file))
@@ -219,7 +271,7 @@ namespace TopToolbar
 
                 foreach (var btn in enabledButtons)
                 {
-                    var iconButton = CreateIconButton(btn);
+                    var iconButton = CreateIconButton(group, btn);
                     groupPanel.Children.Add(iconButton);
                 }
 
@@ -291,14 +343,15 @@ namespace TopToolbar
             button.Resources["ButtonBackgroundPressed"] = pressedBrush;
             button.Resources["ButtonBackgroundDisabled"] = normalBrush;
 
-            Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(button, tooltip);
+            ToolTipService.SetToolTip(button, tooltip);
             button.Click += clickHandler;
             return button;
         }
 
-        private Button CreateIconButton(TopToolbar.Models.ToolbarButton model)
+        private Button CreateIconButton(ButtonGroup group, ToolbarButton model)
         {
-            RoutedEventHandler handler = (s, e) => ToolbarActionExecutor.Execute(model.Action);
+            var dispatcher = DispatcherQueue;
+
             var button = new Button
             {
                 Width = 32,
@@ -316,7 +369,6 @@ namespace TopToolbar
                 UseLayoutRounding = true,
             };
 
-            // Visual states for hover/press
             var hoverBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(60, 0, 0, 0));
             var pressedBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(100, 0, 0, 0));
             var normalBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(0, 0, 0, 0));
@@ -325,64 +377,190 @@ namespace TopToolbar
             button.Resources["ButtonBackgroundPressed"] = pressedBrush;
             button.Resources["ButtonBackgroundDisabled"] = normalBrush;
 
-            // Content based on icon type
-            if (model.IconType == TopToolbar.Models.ToolbarIconType.Image && !string.IsNullOrWhiteSpace(model.IconPath))
+            FrameworkElement BuildIcon()
             {
+                if (model.IconType == ToolbarIconType.Image && !string.IsNullOrWhiteSpace(model.IconPath))
+                {
+                    try
+                    {
+                        Uri imgUri = null;
+                        var rawPath = model.IconPath;
+                        if (File.Exists(rawPath))
+                        {
+                            var ver = File.GetLastWriteTimeUtc(rawPath).Ticks;
+                            var ub = new UriBuilder
+                            {
+                                Scheme = "file",
+                                Path = rawPath,
+                                Query = $"v={ver}",
+                            };
+                            imgUri = ub.Uri;
+                            ManagedCommon.Logger.LogInfo($"Toolbar image: local path exists '{rawPath}', uri='{imgUri}'");
+                        }
+                        else if (Uri.TryCreate(rawPath, UriKind.Absolute, out var parsed))
+                        {
+                            imgUri = parsed;
+                            ManagedCommon.Logger.LogInfo($"Toolbar image: using provided URI '{parsed}'");
+                        }
+                        else
+                        {
+                            var prefixed = new UriBuilder { Scheme = "file", Path = rawPath }.Uri;
+                            imgUri = prefixed;
+                            ManagedCommon.Logger.LogInfo($"Toolbar image: prefixed file URI '{prefixed}'");
+                        }
+
+                        var bmp = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
+                        bmp.UriSource = imgUri;
+                        return new Image
+                        {
+                            Width = 16,
+                            Height = 16,
+                            Stretch = Microsoft.UI.Xaml.Media.Stretch.Uniform,
+                            Source = bmp,
+                        };
+                    }
+                    catch
+                    {
+                        ManagedCommon.Logger.LogWarning($"Toolbar image: failed to load '{model.IconPath}', fallback to glyph");
+                    }
+                }
+
+                return new FontIcon
+                {
+                    Glyph = model.IconGlyph,
+                    FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe MDL2 Assets"),
+                    FontSize = 16,
+                };
+            }
+
+            var iconElement = BuildIcon();
+            var contentGrid = new Grid
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            contentGrid.Children.Add(iconElement);
+
+            var progressRing = new ProgressRing
+            {
+                Width = 20,
+                Height = 20,
+                IsActive = false,
+                Visibility = Visibility.Collapsed,
+            };
+            contentGrid.Children.Add(progressRing);
+
+            button.Content = contentGrid;
+
+            void UpdateVisualState()
+            {
+                void ApplyState()
+                {
+                    button.IsEnabled = model.IsEnabled && !model.IsExecuting;
+                    progressRing.IsActive = model.IsExecuting;
+                    progressRing.Visibility = model.IsExecuting ? Visibility.Visible : Visibility.Collapsed;
+                    iconElement.Opacity = model.IsExecuting ? 0.4 : 1.0;
+                }
+
+                if (dispatcher.HasThreadAccess)
+                {
+                    ApplyState();
+                }
+                else
+                {
+                    dispatcher.TryEnqueue(ApplyState);
+                }
+            }
+
+            string BuildTooltip()
+            {
+                var parts = new System.Collections.Generic.List<string>();
+                if (!string.IsNullOrWhiteSpace(model.Name))
+                {
+                    parts.Add(model.Name);
+                }
+
+                if (!string.IsNullOrWhiteSpace(model.Description))
+                {
+                    parts.Add(model.Description);
+                }
+
+                if (!string.IsNullOrWhiteSpace(model.ProgressMessage))
+                {
+                    parts.Add(model.ProgressMessage);
+                }
+                else if (!string.IsNullOrWhiteSpace(model.StatusMessage))
+                {
+                    parts.Add(model.StatusMessage);
+                }
+
+                if (parts.Count == 0)
+                {
+                    return model.Name ?? string.Empty;
+                }
+
+                return string.Join(Environment.NewLine, parts);
+            }
+
+            void UpdateToolTip()
+            {
+                var tooltip = BuildTooltip();
+                void Apply()
+                {
+                    Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(button, tooltip);
+                }
+
+                if (dispatcher.HasThreadAccess)
+                {
+                    Apply();
+                }
+                else
+                {
+                    dispatcher.TryEnqueue(Apply);
+                }
+            }
+
+            async void OnClick(object sender, RoutedEventArgs e)
+            {
+                if (model.IsExecuting)
+                {
+                    return;
+                }
+
                 try
                 {
-                    Uri imgUri = null;
-                    var rawPath = model.IconPath;
-                    if (System.IO.File.Exists(rawPath))
-                    {
-                        // Build cache-busting file URI with last write ticks
-                        var ver = System.IO.File.GetLastWriteTimeUtc(rawPath).Ticks;
-                        var ub = new UriBuilder
-                        {
-                            Scheme = "file",
-                            Path = rawPath,
-                            Query = $"v={ver}",
-                        };
-                        imgUri = ub.Uri;
-                        ManagedCommon.Logger.LogInfo($"Toolbar image: local path exists '{rawPath}', uri='{imgUri}'");
-                    }
-                    else if (Uri.TryCreate(rawPath, UriKind.Absolute, out var parsed))
-                    {
-                        imgUri = parsed;
-                        ManagedCommon.Logger.LogInfo($"Toolbar image: using provided URI '{parsed}'");
-                    }
-                    else
-                    {
-                        // Best effort: prefix file scheme for non-existent yet absolute-looking paths
-                        var prefixed = new UriBuilder { Scheme = "file", Path = rawPath }.Uri;
-                        imgUri = prefixed;
-                        ManagedCommon.Logger.LogInfo($"Toolbar image: prefixed file URI '{prefixed}'");
-                    }
-
-                    var bmp = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
-                    bmp.UriSource = imgUri;
-                    var img = new Image
-                    {
-                        Width = 16,
-                        Height = 16,
-                        Stretch = Microsoft.UI.Xaml.Media.Stretch.Uniform,
-                        Source = bmp,
-                    };
-                    button.Content = img;
+                    await _actionExecutor.ExecuteAsync(group, model);
                 }
-                catch
+                catch (OperationCanceledException)
                 {
-                    // Fallback to glyph if loading fails
-                    ManagedCommon.Logger.LogWarning($"Toolbar image: failed to load '{model.IconPath}', fallback to glyph");
-                    button.Content = new FontIcon { Glyph = model.IconGlyph, FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe MDL2 Assets"), FontSize = 16 };
+                }
+                catch (Exception ex)
+                {
+                    ManagedCommon.Logger.LogError("ToolbarWindow: dynamic action execution failed.", ex);
+                    model.StatusMessage = ex.Message;
                 }
             }
-            else
-            {
-                button.Content = new FontIcon { Glyph = model.IconGlyph, FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Segoe MDL2 Assets"), FontSize = 16 };
-            }
 
-            Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(button, model.Name);
-            button.Click += handler;
+            UpdateVisualState();
+            UpdateToolTip();
+
+            model.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ToolbarButton.IsEnabled) ||
+                    e.PropertyName == nameof(ToolbarButton.IsExecuting))
+                {
+                    UpdateVisualState();
+                }
+                else if (e.PropertyName == nameof(ToolbarButton.ProgressMessage) ||
+                         e.PropertyName == nameof(ToolbarButton.StatusMessage) ||
+                         e.PropertyName == nameof(ToolbarButton.Description) ||
+                         e.PropertyName == nameof(ToolbarButton.Name))
+                {
+                    UpdateToolTip();
+                }
+            };
+
+            button.Click += OnClick;
             return button;
         }
 

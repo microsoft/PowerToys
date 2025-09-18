@@ -7,26 +7,122 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using ManagedCommon;
+using TopToolbar.Actions;
 using TopToolbar.Models;
 
 namespace TopToolbar.Services
 {
-    public static class ToolbarActionExecutor
+    public sealed class ToolbarActionExecutor
     {
-        public static void Execute(ToolbarAction action)
+        private readonly ActionProviderService _providerService;
+        private readonly ActionContextFactory _contextFactory;
+
+        public ToolbarActionExecutor(ActionProviderService providerService, ActionContextFactory contextFactory)
         {
-            if (action == null)
+            _providerService = providerService ?? throw new ArgumentNullException(nameof(providerService));
+            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
+        }
+
+        public Task ExecuteAsync(ButtonGroup group, ToolbarButton button, CancellationToken cancellationToken = default)
+        {
+            if (button?.Action == null)
             {
+                return Task.CompletedTask;
+            }
+
+            return button.Action.Type switch
+            {
+                ToolbarActionType.CommandLine => ExecuteCommandLineAsync(button.Action),
+                ToolbarActionType.Provider => ExecuteProviderActionAsync(group, button, cancellationToken),
+                _ => Task.CompletedTask,
+            };
+        }
+
+        private static Task ExecuteCommandLineAsync(ToolbarAction action)
+        {
+            LaunchProcess(action);
+            return Task.CompletedTask;
+        }
+
+        private async Task ExecuteProviderActionAsync(ButtonGroup group, ToolbarButton button, CancellationToken cancellationToken)
+        {
+            var action = button.Action;
+            if (string.IsNullOrWhiteSpace(action.ProviderId) || string.IsNullOrWhiteSpace(action.ProviderActionId))
+            {
+                Logger.LogWarning("ToolbarActionExecutor: provider metadata missing for dynamic action.");
                 return;
             }
 
-            switch (action.Type)
+            button.IsExecuting = true;
+            button.ProgressMessage = string.Empty;
+            button.ProgressValue = null;
+            button.StatusMessage = string.Empty;
+
+            JsonElement? args = null;
+            if (!string.IsNullOrWhiteSpace(action.ProviderArgumentsJson))
             {
-                case ToolbarActionType.CommandLine:
-                    LaunchProcess(action);
-                    break;
-                default:
-                    break;
+                try
+                {
+                    using var doc = JsonDocument.Parse(action.ProviderArgumentsJson);
+                    args = doc.RootElement.Clone();
+                }
+                catch (JsonException ex)
+                {
+                    Logger.LogWarning($"ToolbarActionExecutor: failed to parse provider arguments. - {ex.Message}");
+                }
+            }
+
+            var context = _contextFactory.CreateForInvocation(group, button);
+            var progress = new Progress<ActionProgress>(update =>
+            {
+                if (update == null)
+                {
+                    return;
+                }
+
+                if (update.Percent.HasValue)
+                {
+                    button.ProgressValue = update.Percent.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(update.Note))
+                {
+                    button.ProgressMessage = update.Note;
+                }
+            });
+
+            try
+            {
+                var result = await _providerService
+                    .InvokeAsync(action.ProviderId, action.ProviderActionId, args, context, progress, cancellationToken)
+                    .ConfigureAwait(false);
+
+                if (result != null)
+                {
+                    button.StatusMessage = string.IsNullOrWhiteSpace(result.Message)
+                        ? (result.Ok ? string.Empty : "Action failed.")
+                        : result.Message;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                button.StatusMessage = "Cancelled.";
+                throw;
+            }
+            catch (Exception ex)
+            {
+                button.StatusMessage = ex.Message;
+                Logger.LogError($"ToolbarActionExecutor: provider invocation threw an exception. - {ex.Message}");
+            }
+            finally
+            {
+                button.ProgressValue = null;
+                button.ProgressMessage = string.Empty;
+                button.IsExecuting = false;
             }
         }
 
@@ -116,69 +212,36 @@ namespace TopToolbar.Services
                     };
                 }
 
-                ManagedCommon.Logger.LogInfo($"Launch: file='{file}', ext='{ext}', args='{args}', wd='{workingDir}', runAsAdmin={action.RunAsAdmin}");
+                Logger.LogInfo($"Launch: file='{file}', ext='{ext}', args='{args}', wd='{workingDir}', runAsAdmin={action.RunAsAdmin}");
                 var p = Process.Start(psi);
                 if (p != null)
                 {
-                    ManagedCommon.Logger.LogInfo($"Launch: started pid={p.Id}");
+                    Logger.LogInfo($"Launch: started pid={p.Id}");
                 }
                 else
                 {
-                    ManagedCommon.Logger.LogWarning("Launch: Process.Start returned null; attempting fallback without shell execute");
+                    Logger.LogWarning("Launch: Process.Start returned null; attempting fallback without shell execute");
 
-                    // Fallback: try without shell execute
-                    var psi2 = new ProcessStartInfo
+                    psi.UseShellExecute = false;
+                    psi.Verb = string.Empty;
+                    p = Process.Start(psi);
+                    if (p != null)
                     {
-                        FileName = psi.FileName,
-                        Arguments = psi.Arguments,
-                        WorkingDirectory = psi.WorkingDirectory,
-                        UseShellExecute = false,
-                        CreateNoWindow = false,
-                        Verb = action.RunAsAdmin ? "runas" : string.Empty,
-                    };
-                    try
-                    {
-                        var p2 = Process.Start(psi2);
-                        if (p2 != null)
-                        {
-                            ManagedCommon.Logger.LogInfo($"Launch fallback: started pid={p2.Id}");
-                        }
-                        else
-                        {
-                            ManagedCommon.Logger.LogWarning("Launch fallback: Process.Start returned null again; attempting cmd /c start");
-                            var psi3 = new ProcessStartInfo
-                            {
-                                FileName = "cmd.exe",
-                                Arguments = $"/c start \"\" \"{file}\" {args}",
-                                WorkingDirectory = workingDir,
-                                UseShellExecute = true,
-                                Verb = action.RunAsAdmin ? "runas" : "open",
-                            };
-                            var p3 = Process.Start(psi3);
-                            if (p3 != null)
-                            {
-                                ManagedCommon.Logger.LogInfo($"Launch cmd start: started pid={p3.Id}");
-                            }
-                            else
-                            {
-                                ManagedCommon.Logger.LogError("Launch cmd start: Process.Start returned null");
-                            }
-                        }
+                        Logger.LogInfo($"Launch fallback: started pid={p.Id}");
                     }
-                    catch (Exception ex2)
+                    else
                     {
-                        ManagedCommon.Logger.LogError("Launch fallback failed", ex2);
-                        throw;
+                        Logger.LogError("Launch: Process.Start returned null even without shell execute");
                     }
                 }
             }
             catch (Win32Exception ex)
             {
-                ManagedCommon.Logger.LogError($"Launch: Win32Exception {ex.NativeErrorCode} {ex.Message}", ex);
+                Logger.LogError($"Launch: Win32Exception {ex.NativeErrorCode} {ex.Message}");
             }
             catch (Exception ex)
             {
-                ManagedCommon.Logger.LogError($"Launch: Exception {ex.GetType().Name} {ex.Message}", ex);
+                Logger.LogError($"Launch: Exception {ex.GetType().Name} {ex.Message}");
             }
         }
 

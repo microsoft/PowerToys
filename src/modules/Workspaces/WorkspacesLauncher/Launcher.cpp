@@ -30,6 +30,13 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     bool launchElevated = std::find_if(m_project.apps.begin(), m_project.apps.end(), [](const WorkspacesData::WorkspacesProject::Application& app) { return app.isElevated; }) != m_project.apps.end();
     m_windowArrangerHelper->Launch(m_project.id, launchElevated, [&]() -> bool
         {
+            // Check if we received the completion signal
+            if (m_arrangerCompleted)
+            {
+                Logger::info(L"WindowArranger completed signal received, stopping wait");
+                return false;
+            }
+            
             if (m_launchingStatus.AllLaunchedAndMoved())
             {
                 return false;
@@ -40,8 +47,10 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
                 static auto arrangerTimeDelay = std::chrono::high_resolution_clock::now();
                 auto currentTime = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> timeDiff = currentTime - arrangerTimeDelay;
-                if (timeDiff.count() >= 5)
+                // Use 2 second timeout - balance between performance and ensuring window movement completion
+                if (timeDiff.count() >= 2.0)
                 {
+                    Logger::info(L"WindowArranger timeout reached (2s), stopping wait");
                     return false;
                 }
             }
@@ -97,8 +106,8 @@ Launcher::~Launcher()
 
 void Launcher::Launch() // Launching thread
 {
-    const long maxWaitTimeMs = 3000;
-    const long ms = 100;
+    const long maxWaitTimeMs = 2000; // Reduced from 3000 to 2000
+    const long ms = 50; // Reduced from 100 to 50 for faster polling
 
     // Launch apps
     for (auto appState = m_launchingStatus.GetNext(LaunchingState::Waiting);appState.has_value();appState = m_launchingStatus.GetNext(LaunchingState::Waiting))
@@ -114,13 +123,14 @@ void Launcher::Launch() // Launching thread
             additionalWait = true;
         }
 
+        // Reduced Outlook delay from 1000ms to 500ms for better performance
         if (additionalWait)
         {
             // Resolves an issue when Outlook does not launch when launching one after another.
             // Launching Outlook instances right one after another causes error message.
             // Launching Outlook instances with less than 1-second delay causes the second window not to appear
             // even though there wasn't a launch error.
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Reduced from 1000ms
         }
 
         if (waitingTime >= maxWaitTimeMs)
@@ -137,6 +147,7 @@ void Launcher::Launch() // Launching thread
         if (launched)
         {
             m_launchingStatus.Update(app, LaunchingState::Launched);
+            Logger::info(L"Successfully launched {}", app.name);
         }
         else
         {
@@ -159,6 +170,8 @@ void Launcher::Launch() // Launching thread
             m_uiHelper->UpdateLaunchStatus(m_launchingStatus.Get());
         };
     }
+
+    Logger::info(L"All apps launched, total apps processed: {}", m_project.apps.size());
 }
 
 void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // WorkspacesArranger IPC thread
@@ -166,6 +179,12 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // Workspace
     if (msg == L"ready")
     {
         std::thread([&]() { Launch(); }).detach();
+    }
+    else if (msg == L"completed")
+    {
+        Logger::info(L"Received completion signal from WindowArranger");
+        // Force completion by setting a flag or similar mechanism
+        m_arrangerCompleted = true;
     }
     else
     {

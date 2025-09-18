@@ -7,5 +7,6 @@ namespace TopToolbar.Models
     public enum ToolbarActionType
     {
         CommandLine = 0,
+        Provider = 1,
     }
 }

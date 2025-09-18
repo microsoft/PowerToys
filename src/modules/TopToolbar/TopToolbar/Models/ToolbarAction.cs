@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace TopToolbar.Models;
 
@@ -87,5 +88,68 @@ public class ToolbarAction : INotifyPropertyChanged
                 OnPropertyChanged();
             }
         }
+    }
+
+    private string _providerId = string.Empty;
+
+    public string ProviderId
+    {
+        get => _providerId;
+        set
+        {
+            if (_providerId != value)
+            {
+                _providerId = value ?? string.Empty;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private string _providerActionId = string.Empty;
+
+    public string ProviderActionId
+    {
+        get => _providerActionId;
+        set
+        {
+            if (_providerActionId != value)
+            {
+                _providerActionId = value ?? string.Empty;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private string _providerArgumentsJson;
+
+    public string ProviderArgumentsJson
+    {
+        get => _providerArgumentsJson;
+        set
+        {
+            if (_providerArgumentsJson != value)
+            {
+                _providerArgumentsJson = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool IsProviderAction => Type == ToolbarActionType.Provider;
+
+    public ToolbarAction Clone()
+    {
+        return new ToolbarAction
+        {
+            Type = Type,
+            Command = Command,
+            Arguments = Arguments,
+            WorkingDirectory = WorkingDirectory,
+            RunAsAdmin = RunAsAdmin,
+            ProviderId = ProviderId,
+            ProviderActionId = ProviderActionId,
+            ProviderArgumentsJson = ProviderArgumentsJson,
+        };
     }
 }

@@ -31,6 +31,11 @@ private:
     std::optional<WindowWithDistance> GetNearestWindow(const WorkspacesData::WorkspacesProject::Application& app, const std::vector<HWND>& movedWindows, Utils::PwaHelper& pwaHelper);
     bool TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove);
 
+    // High-performance parallel window minimization
+    void MinimizeUnmanagedWindowsParallel();
+    bool IsWindowInAppList(HWND window, Utils::PwaHelper& pwaHelper);
+    bool MinimizeWindowWithoutAnimation(HWND window);
+
     //void onWindowCreated(HWND window);
     bool processWindows(bool processAll);
     bool processWindow(HWND window);

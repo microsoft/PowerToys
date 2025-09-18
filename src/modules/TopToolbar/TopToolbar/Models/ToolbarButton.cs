@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace TopToolbar.Models;
 
@@ -15,7 +16,7 @@ public class ToolbarButton : INotifyPropertyChanged
     private void OnPropertyChanged([CallerMemberName] string name = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-    private string _id = System.Guid.NewGuid().ToString();
+    private string _id = Guid.NewGuid().ToString();
 
     public string Id
     {
@@ -39,13 +40,13 @@ public class ToolbarButton : INotifyPropertyChanged
         {
             if (_name != value)
             {
-                _name = value;
+                _name = value ?? string.Empty;
                 OnPropertyChanged();
             }
         }
     }
 
-    private string _description;
+    private string _description = string.Empty;
 
     public string Description
     {
@@ -54,7 +55,7 @@ public class ToolbarButton : INotifyPropertyChanged
         {
             if (_description != value)
             {
-                _description = value;
+                _description = value ?? string.Empty;
                 OnPropertyChanged();
             }
         }
@@ -89,7 +90,6 @@ public class ToolbarButton : INotifyPropertyChanged
         }
     }
 
-    // For glyph icons (Segoe MDL2 Assets)
     private string _iconGlyph = "\uE10F";
 
     public string IconGlyph
@@ -117,25 +117,23 @@ public class ToolbarButton : INotifyPropertyChanged
 
         try
         {
-            // Accept patterns: \uE713, U+E713, 0xE713, E713, &#xE713; or the literal glyph
-            if (s.StartsWith("\\u", System.StringComparison.OrdinalIgnoreCase) && s.Length >= 6)
+            if (s.StartsWith("\\u", StringComparison.OrdinalIgnoreCase) && s.Length >= 6)
             {
                 s = s.Substring(2);
             }
-            else if (s.StartsWith("U+", System.StringComparison.OrdinalIgnoreCase) && s.Length >= 5)
+            else if (s.StartsWith("U+", StringComparison.OrdinalIgnoreCase) && s.Length >= 5)
             {
                 s = s.Substring(2);
             }
-            else if (s.StartsWith("0x", System.StringComparison.OrdinalIgnoreCase) && s.Length >= 4)
+            else if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase) && s.Length >= 4)
             {
                 s = s.Substring(2);
             }
-            else if (s.StartsWith("&#x", System.StringComparison.OrdinalIgnoreCase) && s.EndsWith(';'))
+            else if (s.StartsWith("&#x", StringComparison.OrdinalIgnoreCase) && s.EndsWith(';'))
             {
                 s = s.Substring(3, s.Length - 4);
             }
 
-            // If now looks like hex, parse to a single char string
             bool isHex = true;
             foreach (var c in s)
             {
@@ -154,14 +152,12 @@ public class ToolbarButton : INotifyPropertyChanged
         }
         catch
         {
-            // Fall back to original input on any parse error
         }
 
         return input;
     }
 
-    // For custom images (png/jpg/ico) absolute path
-    private string _iconPath;
+    private string _iconPath = string.Empty;
 
     public string IconPath
     {
@@ -170,7 +166,7 @@ public class ToolbarButton : INotifyPropertyChanged
         {
             if (_iconPath != value)
             {
-                _iconPath = value;
+                _iconPath = value ?? string.Empty;
                 OnPropertyChanged();
             }
         }
@@ -191,6 +187,91 @@ public class ToolbarButton : INotifyPropertyChanged
         }
     }
 
+    [JsonIgnore]
+    private bool _isExecuting;
+
+    [JsonIgnore]
+    public bool IsExecuting
+    {
+        get => _isExecuting;
+        set
+        {
+            if (_isExecuting != value)
+            {
+                _isExecuting = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonIgnore]
+    private double? _progressValue;
+
+    [JsonIgnore]
+    public double? ProgressValue
+    {
+        get => _progressValue;
+        set
+        {
+            if (_progressValue != value)
+            {
+                _progressValue = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonIgnore]
+    private string _progressMessage = string.Empty;
+
+    [JsonIgnore]
+    public string ProgressMessage
+    {
+        get => _progressMessage;
+        set
+        {
+            if (_progressMessage != value)
+            {
+                _progressMessage = value ?? string.Empty;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonIgnore]
+    private string _statusMessage = string.Empty;
+
+    [JsonIgnore]
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set
+        {
+            if (_statusMessage != value)
+            {
+                _statusMessage = value ?? string.Empty;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonIgnore]
+    private double? _sortOrder;
+
+    [JsonIgnore]
+    public double? SortOrder
+    {
+        get => _sortOrder;
+        set
+        {
+            if (_sortOrder != value)
+            {
+                _sortOrder = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     private ToolbarAction _action = new();
 
     public ToolbarAction Action
@@ -200,9 +281,27 @@ public class ToolbarButton : INotifyPropertyChanged
         {
             if (!Equals(_action, value))
             {
-                _action = value;
+                _action = value ?? new ToolbarAction();
                 OnPropertyChanged();
             }
         }
+    }
+
+    public ToolbarButton Clone()
+    {
+        var clone = new ToolbarButton
+        {
+            Id = Id,
+            Name = Name,
+            Description = Description,
+            IconType = IconType,
+            IconGlyph = IconGlyph,
+            IconPath = IconPath,
+            IsEnabled = IsEnabled,
+            Action = Action?.Clone() ?? new ToolbarAction(),
+        };
+
+        clone.SortOrder = SortOrder;
+        return clone;
     }
 }

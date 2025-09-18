@@ -15,6 +15,12 @@
 #include <WorkspacesLib/PwaHelper.h>
 #include <WorkspacesLib/WindowUtils.h>
 
+#include <algorithm>
+#include <execution>
+#include <future>
+#include <mutex>
+#include <vector>
+
 namespace NonLocalizable
 {
     const std::wstring ApplicationFrameHost = L"ApplicationFrameHost.exe";
@@ -58,42 +64,57 @@ namespace PlacementHelper
 
     inline bool SizeWindowToRect(HWND window, HMONITOR monitor, bool isMinimized, bool isMaximized, RECT rect) noexcept
     {
-        WINDOWPLACEMENT placement{};
-        ::GetWindowPlacement(window, &placement);
-
         if (isMinimized)
         {
-            placement.showCmd = SW_MINIMIZE;
+            // Use ShowWindow with SW_FORCEMINIMIZE to avoid animation
+            if (!ShowWindow(window, SW_FORCEMINIMIZE))
+            {
+                Logger::error(L"ShowWindow minimize failed, {}", get_last_error_or_default(GetLastError()));
+                return false;
+            }
+            return true;
+        }
+
+        // For normal/maximized windows, use SetWindowPos which is faster and has better control over animations
+        if (!isMaximized)
+        {
+            ScreenToWorkAreaCoords(window, monitor, rect);
+            
+            // First ensure window is visible but not activated
+            ShowWindow(window, SW_SHOWNOACTIVATE);
+            
+            // Use SetWindowPos with flags to disable animations and avoid activation
+            auto result = ::SetWindowPos(window, nullptr, 
+                rect.left, rect.top, 
+                rect.right - rect.left, rect.bottom - rect.top,
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_DEFERERASE);
+            
+            if (!result)
+            {
+                Logger::error(L"SetWindowPos failed, {}", get_last_error_or_default(GetLastError()));
+                return false;
+            }
         }
         else
         {
-            placement.showCmd = SW_RESTORE;
+            // For maximized windows, first move to correct monitor, then maximize
             ScreenToWorkAreaCoords(window, monitor, rect);
-            placement.rcNormalPosition = rect;
-        }
-
-        placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
-
-        auto result = ::SetWindowPlacement(window, &placement);
-        if (!result)
-        {
-            Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
-            return false;
-        }
-
-        // make sure window is moved to the correct monitor before maximize.
-        if (isMaximized)
-        {
-            placement.showCmd = SW_SHOWMAXIMIZED;
-        }
-
-        // Do it again, allowing Windows to resize the window and set correct scaling
-        // This fixes Issue #365
-        result = ::SetWindowPlacement(window, &placement);
-        if (!result)
-        {
-            Logger::error(L"SetWindowPlacement failed, {}", get_last_error_or_default(GetLastError()));
-            return false;
+            
+            // First ensure window is visible but not activated
+            ShowWindow(window, SW_SHOWNOACTIVATE);
+            
+            // Move to correct position first (without animation flags)
+            ::SetWindowPos(window, nullptr, 
+                rect.left, rect.top, 
+                rect.right - rect.left, rect.bottom - rect.top,
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_DEFERERASE);
+            
+            // Then maximize without animation using ShowWindow instead of SetWindowPlacement
+            if (!ShowWindow(window, SW_MAXIMIZE))
+            {
+                Logger::error(L"ShowWindow maximize failed, {}", get_last_error_or_default(GetLastError()));
+                return false;
+            }
         }
 
         return true;
@@ -236,7 +257,8 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
             if (pwaAppId.has_value())
             {
                 auto pwaName = pwaHelper.SearchPwaName(pwaAppId.value(), windowAumid);
-                Logger::info(L"Found {} PWA app with name {}, appId: {}", (isEdge ? L"Edge" : (isChrome ? L"Chrome" : L"unknown")), pwaName, pwaAppId.value());
+                std::wstring browserType = isEdge ? L"Edge" : (isChrome ? L"Chrome" : L"unknown");
+                Logger::info(L"Found {} PWA app with name {}, appId: {}", browserType, pwaName, pwaAppId.value());
 
                 appData.pwaAppId = pwaAppId.value();
                 appData.name = pwaName + L" (" + appData.name + L")";
@@ -279,21 +301,36 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_ipcHelper(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1)),
     m_launchingStatus(m_project)
 {
+    auto startTime = std::chrono::high_resolution_clock::now();
+    Logger::info(L"WindowArranger construction started");
+
+    // First, minimize all unmanaged windows in parallel for maximum performance
+    auto minimizeStart = std::chrono::high_resolution_clock::now();
+    MinimizeUnmanagedWindowsParallel();
+    auto minimizeEnd = std::chrono::high_resolution_clock::now();
+    auto minimizeDuration = std::chrono::duration_cast<std::chrono::milliseconds>(minimizeEnd - minimizeStart);
+    Logger::info(L"MinimizeUnmanagedWindowsParallel took {} ms", minimizeDuration.count());
+
     if (project.moveExistingWindows)
     {
-        Logger::info(L"Moving existing windows");
+        auto moveExistingStart = std::chrono::high_resolution_clock::now();
+        Logger::info(L"Moving existing windows started");
         bool isMovePhase = true;
         bool movedAny = false;
         std::vector<HWND> movedWindows;
         std::vector<WorkspacesData::WorkspacesProject::Application> movedApps;
         Utils::PwaHelper pwaHelper{};
 
+        int moveIterations = 0;
         while (isMovePhase)
         {
+            auto iterationStart = std::chrono::high_resolution_clock::now();
+            moveIterations++;
             isMovePhase = false;
             int minDistance = INT_MAX;
             WorkspacesData::WorkspacesProject::Application appToMove;
             HWND windowToMove = NULL;
+            
             for (auto& app : project.apps)
             {
                 // move the apps which are set to "Move-If-Exists" and are already present (launched, running)
@@ -302,10 +339,15 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
                     continue;
                 }
 
+                auto findStart = std::chrono::high_resolution_clock::now();
                 std::optional<WindowWithDistance> nearestWindowWithDistance;
                 nearestWindowWithDistance = GetNearestWindow(app, movedWindows, pwaHelper);
+                auto findEnd = std::chrono::high_resolution_clock::now();
+                auto findDuration = std::chrono::duration_cast<std::chrono::milliseconds>(findEnd - findStart);
+                
                 if (nearestWindowWithDistance.has_value())
                 {
+                    Logger::trace(L"Found nearest window for {} in {} ms, distance: {}", app.name, findDuration.count(), nearestWindowWithDistance.value().distance);
                     if (nearestWindowWithDistance.value().distance < minDistance)
                     {
                         minDistance = nearestWindowWithDistance.value().distance;
@@ -315,15 +357,25 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
                 }
                 else
                 {
-                    Logger::info(L"The app {} is not found at launch, cannot be moved, has to be started", app.name);
+                    Logger::info(L"The app {} is not found at launch, cannot be moved, has to be started (search took {} ms)", app.name, findDuration.count());
                     movedApps.push_back(app);
                 }
             }
+            
+            auto iterationEnd = std::chrono::high_resolution_clock::now();
+            auto iterationDuration = std::chrono::duration_cast<std::chrono::milliseconds>(iterationEnd - iterationStart);
+            Logger::trace(L"Move iteration {} completed in {} ms", moveIterations, iterationDuration.count());
+            
             if (minDistance < INT_MAX)
             {
                 isMovePhase = true;
                 movedAny = true;
+                auto moveStart = std::chrono::high_resolution_clock::now();
                 bool success = TryMoveWindow(appToMove, windowToMove);
+                auto moveEnd = std::chrono::high_resolution_clock::now();
+                auto moveDuration = std::chrono::duration_cast<std::chrono::milliseconds>(moveEnd - moveStart);
+                Logger::info(L"TryMoveWindow for {} took {} ms, success: {}", appToMove.name, moveDuration.count(), success);
+                
                 movedApps.push_back(appToMove);
                 if (success)
                 {
@@ -332,52 +384,145 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
             }
         }
 
+        auto moveExistingEnd = std::chrono::high_resolution_clock::now();
+        auto moveExistingDuration = std::chrono::duration_cast<std::chrono::milliseconds>(moveExistingEnd - moveExistingStart);
+        Logger::info(L"Moving existing windows completed in {} ms ({} iterations)", moveExistingDuration.count(), moveIterations);
+
         if (movedAny)
         {
             // Wait if there were moved windows. This message might not arrive if sending immediately after the last "moved" message (status update)
+            auto sleepStart = std::chrono::high_resolution_clock::now();
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            auto sleepEnd = std::chrono::high_resolution_clock::now();
+            auto sleepDuration = std::chrono::duration_cast<std::chrono::milliseconds>(sleepEnd - sleepStart);
+            Logger::trace(L"Sleep after moving windows: {} ms", sleepDuration.count());
         }
 
         Logger::info(L"Finished moving existing windows");
     }
 
+    auto ipcStart = std::chrono::high_resolution_clock::now();
     m_ipcHelper.send(L"ready");
+    auto ipcEnd = std::chrono::high_resolution_clock::now();
+    auto ipcDuration = std::chrono::duration_cast<std::chrono::milliseconds>(ipcEnd - ipcStart);
+    Logger::info(L"IPC ready message sent in {} ms", ipcDuration.count());
 
-    const long maxLaunchingWaitingTime = 10000, maxRepositionWaitingTime = 3000, ms = 300;
+    // Optimized timeouts - but with early exit logic
+    const long maxLaunchingWaitingTime = 3000, maxRepositionWaitingTime = 2000, ms = 50; // Further reduced timeouts
     long waitingTime{ 0 };
+    bool hasAppsToLaunch = !m_project.apps.empty();
 
     // process launching windows
-    while (!m_launchingStatus.AllLaunched() && waitingTime < maxLaunchingWaitingTime)
+    auto launchingStart = std::chrono::high_resolution_clock::now();
+    Logger::info(L"Starting to process launching windows (apps to launch: {})", m_project.apps.size());
+    
+    // If no apps to launch, skip the launching phase entirely
+    if (!hasAppsToLaunch)
     {
-        if (processWindows(false))
-        {
-            waitingTime = 0;
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-        waitingTime += ms;
+        Logger::info(L"No apps to launch, skipping launching phase");
     }
+    else
+    {
+        while (!m_launchingStatus.AllLaunched() && waitingTime < maxLaunchingWaitingTime)
+        {
+            auto processStart = std::chrono::high_resolution_clock::now();
+            bool processed = processWindows(false);
+            auto processEnd = std::chrono::high_resolution_clock::now();
+            auto processDuration = std::chrono::duration_cast<std::chrono::milliseconds>(processEnd - processStart);
+            
+            if (processed)
+            {
+                Logger::info(L"processWindows(false) took {} ms, processed windows, resetting waitingTime", processDuration.count());
+                waitingTime = 0;
+            }
+            else
+            {
+                Logger::trace(L"processWindows(false) took {} ms, no windows processed, waitingTime={}", processDuration.count(), waitingTime);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+            waitingTime += ms;
+            
+            // Add periodic status check every 1 second
+            if (waitingTime % 1000 == 0)
+            {
+                Logger::info(L"Still waiting for apps to launch, elapsed: {} ms, AllLaunched: {}", waitingTime, m_launchingStatus.AllLaunched());
+            }
+        }
+    }
+
+    auto launchingEnd = std::chrono::high_resolution_clock::now();
+    auto launchingDuration = std::chrono::duration_cast<std::chrono::milliseconds>(launchingEnd - launchingStart);
+    Logger::info(L"Processing launching windows completed in {} ms", launchingDuration.count());
 
     if (waitingTime >= maxLaunchingWaitingTime)
     {
-        Logger::info(L"Launching timeout expired");
+        Logger::info(L"Launching timeout expired after {} ms", waitingTime);
     }
 
     Logger::info(L"Finished moving new windows");
 
-    // wait for 3 seconds after all apps launched
+    // wait for repositioning after all apps launched
+    auto repositionStart = std::chrono::high_resolution_clock::now();
+    Logger::info(L"Starting repositioning phase");
     waitingTime = 0;
-    while (!m_launchingStatus.AllLaunchedAndMoved() && waitingTime < maxRepositionWaitingTime)
+    
+    // Skip repositioning if no apps were launched or if all are already in position
+    if (!hasAppsToLaunch || m_launchingStatus.AllLaunchedAndMoved())
     {
-        processWindows(true);
-        std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-        waitingTime += ms;
+        Logger::info(L"Skipping repositioning phase - no apps to reposition or all already in position");
     }
+    else
+    {
+        while (!m_launchingStatus.AllLaunchedAndMoved() && waitingTime < maxRepositionWaitingTime)
+        {
+            auto reprocessStart = std::chrono::high_resolution_clock::now();
+            bool reprocessed = processWindows(true);
+            auto reprocessEnd = std::chrono::high_resolution_clock::now();
+            auto reprocessDuration = std::chrono::duration_cast<std::chrono::milliseconds>(reprocessEnd - reprocessStart);
+            
+            if (reprocessed)
+            {
+                Logger::info(L"processWindows(true) took {} ms, processed windows", reprocessDuration.count());
+                // If we processed windows, check if we're done before continuing to wait
+                if (m_launchingStatus.AllLaunchedAndMoved())
+                {
+                    Logger::info(L"All windows launched and moved, early exit from repositioning");
+                    break;
+                }
+            }
+            else
+            {
+                Logger::trace(L"processWindows(true) took {} ms, no windows processed", reprocessDuration.count());
+            }
+            
+            std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+            waitingTime += ms;
+            
+            // Add periodic status check every 1 second
+            if (waitingTime % 1000 == 0)
+            {
+                Logger::info(L"Still repositioning windows, elapsed: {} ms", waitingTime);
+            }
+        }
+    }
+
+    auto repositionEnd = std::chrono::high_resolution_clock::now();
+    auto repositionDuration = std::chrono::duration_cast<std::chrono::milliseconds>(repositionEnd - repositionStart);
+    Logger::info(L"Repositioning phase completed in {} ms", repositionDuration.count());
 
     if (waitingTime >= maxRepositionWaitingTime)
     {
-        Logger::info(L"Repositioning timeout expired");
+        Logger::info(L"Repositioning timeout expired after {} ms", waitingTime);
     }
+    
+    auto totalEnd = std::chrono::high_resolution_clock::now();
+    auto totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(totalEnd - startTime);
+    Logger::info(L"WindowArranger construction completed in {} ms total", totalDuration.count());
+    
+    // Send explicit completion signal to Launcher
+    m_ipcHelper.send(L"completed");
+    Logger::info(L"Sent completion signal to Launcher");
 }
 
 bool WindowArranger::processWindows(bool processAll)
@@ -437,7 +582,7 @@ bool WindowArranger::processWindow(HWND window)
 
     if (iter == apps.end())
     {
-        Logger::info(L"Skip {}", processPath);
+        Logger::trace(L"Skip {}", processPath);  // Changed from info to trace to reduce noise
         return false;
     }
 
@@ -538,4 +683,167 @@ void WindowArranger::receiveIpcMessage(const std::wstring& message)
 void WindowArranger::sendUpdatedState(const WorkspacesData::LaunchingAppState& data) const
 {
     m_ipcHelper.send(WorkspacesData::AppLaunchInfoJSON::ToJson({ data.application, nullptr, data.state }).ToString().c_str());
+}
+
+void WindowArranger::MinimizeUnmanagedWindowsParallel()
+{
+    Logger::info(L"Starting parallel minimization of unmanaged windows");
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // Get all current windows
+    auto enumStart = std::chrono::high_resolution_clock::now();
+    auto allWindows = WindowEnumerator::Enumerate(WindowFilter::Filter);
+    auto enumEnd = std::chrono::high_resolution_clock::now();
+    auto enumDuration = std::chrono::duration_cast<std::chrono::milliseconds>(enumEnd - enumStart);
+    Logger::info(L"Window enumeration found {} windows in {} ms", allWindows.size(), enumDuration.count());
+    
+    // Use concurrent filtering to classify windows
+    std::vector<HWND> unmanagedWindows;
+    std::mutex unmanagedWindowsMutex;
+    
+    Utils::PwaHelper pwaHelper{};
+    
+    // Parallel classification of windows
+    auto classifyStart = std::chrono::high_resolution_clock::now();
+    std::for_each(std::execution::par_unseq, allWindows.begin(), allWindows.end(),
+        [&](HWND window) {
+            if (!IsWindowInAppList(window, pwaHelper))
+            {
+                std::lock_guard<std::mutex> lock(unmanagedWindowsMutex);
+                unmanagedWindows.push_back(window);
+            }
+        });
+    auto classifyEnd = std::chrono::high_resolution_clock::now();
+    auto classifyDuration = std::chrono::duration_cast<std::chrono::milliseconds>(classifyEnd - classifyStart);
+    Logger::info(L"Window classification completed in {} ms", classifyDuration.count());
+
+    Logger::info(L"Found {} unmanaged windows to minimize out of {} total", unmanagedWindows.size(), allWindows.size());
+
+    // Parallel minimization of unmanaged windows
+    auto minimizeStart = std::chrono::high_resolution_clock::now();
+    std::atomic<int> minimizedCount = 0;
+    std::for_each(std::execution::par_unseq, unmanagedWindows.begin(), unmanagedWindows.end(),
+        [&](HWND window) {
+            if (MinimizeWindowWithoutAnimation(window))
+            {
+                minimizedCount.fetch_add(1);
+            }
+        });
+    auto minimizeEnd = std::chrono::high_resolution_clock::now();
+    auto minimizeDuration = std::chrono::duration_cast<std::chrono::milliseconds>(minimizeEnd - minimizeStart);
+    Logger::info(L"Window minimization completed in {} ms, successfully minimized {} windows", minimizeDuration.count(), minimizedCount.load());
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    Logger::info(L"Parallel window minimization completed in {} ms total", totalDuration.count());
+}
+
+bool WindowArranger::IsWindowInAppList(HWND window, Utils::PwaHelper& pwaHelper)
+{
+    if (WindowFilter::FilterPopup(window))
+    {
+        return true; // Don't minimize system popups
+    }
+
+    std::wstring processPath = get_process_path(window);
+    if (processPath.empty())
+    {
+        return true; // Skip windows without valid process path
+    }
+
+    DWORD pid{};
+    GetWindowThreadProcessId(window, &pid);
+    std::wstring title = WindowUtils::GetWindowTitle(window);
+
+    // Handle ApplicationFrameHost (UWP apps)
+    if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
+    {
+        // Get all current windows to find the actual process
+        auto currentWindows = WindowEnumerator::Enumerate(WindowFilter::Filter);
+        for (auto otherWindow : currentWindows)
+        {
+            DWORD otherPid{};
+            GetWindowThreadProcessId(otherWindow, &otherPid);
+            if (pid != otherPid && title == WindowUtils::GetWindowTitle(otherWindow))
+            {
+                processPath = get_process_path(otherPid);
+                break;
+            }
+        }
+    }
+
+    auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
+    if (!data.has_value())
+    {
+        return false; // Unknown app, should be minimized
+    }
+
+    auto appData = data.value();
+
+    // Handle PWA apps
+    bool isEdge = appData.IsEdge();
+    bool isChrome = appData.IsChrome();
+    if (isEdge || isChrome)
+    {
+        auto windowAumid = Utils::GetAUMIDFromWindow(window);
+        std::optional<std::wstring> pwaAppId{};
+
+        if (isEdge)
+        {
+            pwaAppId = pwaHelper.GetEdgeAppId(windowAumid);
+        }
+        else if (isChrome)
+        {
+            pwaAppId = pwaHelper.GetChromeAppId(windowAumid);
+        }
+
+        if (pwaAppId.has_value())
+        {
+            auto pwaName = pwaHelper.SearchPwaName(pwaAppId.value(), windowAumid);
+            appData.pwaAppId = pwaAppId.value();
+            appData.name = pwaName + L" (" + appData.name + L")";
+        }
+    }
+
+    // Check if this app is in our workspace app list
+    for (const auto& app : m_project.apps)
+    {
+        if ((app.name == appData.name || app.path == appData.installPath) && 
+            (app.pwaAppId == appData.pwaAppId))
+        {
+            return true; // App is in our list, don't minimize
+        }
+    }
+
+    return false; // App is not in our list, should be minimized
+}
+
+bool WindowArranger::MinimizeWindowWithoutAnimation(HWND window)
+{
+    WINDOWPLACEMENT placement{};
+    placement.length = sizeof(WINDOWPLACEMENT);
+    
+    if (!GetWindowPlacement(window, &placement))
+    {
+        Logger::warn(L"Failed to get window placement for minimization");
+        return false;
+    }
+
+    // Skip if already minimized
+    if (placement.showCmd == SW_SHOWMINIMIZED)
+    {
+        Logger::trace(L"Window already minimized, skipping");
+        return true;
+    }
+
+    // Use ShowWindow with SW_FORCEMINIMIZE to avoid animation and activation
+    // SW_FORCEMINIMIZE minimizes the window without activating it, which avoids most animations
+    if (!ShowWindow(window, SW_FORCEMINIMIZE))
+    {
+        Logger::warn(L"Failed to force minimize window: {}", get_last_error_or_default(GetLastError()));
+        return false;
+    }
+
+    Logger::trace(L"Successfully force minimized window without animation");
+    return true;
 }

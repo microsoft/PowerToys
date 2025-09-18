@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TopToolbar.Actions;
+using TopToolbar.Models;
 using TopToolbar.Providers;
 
 namespace TopToolbar.Services
@@ -23,6 +24,8 @@ namespace TopToolbar.Services
 
         public IReadOnlyCollection<string> RegisteredProviderIds => _runtime.RegisteredProviderIds;
 
+        public IReadOnlyCollection<string> RegisteredGroupProviderIds => _runtime.RegisteredGroupProviderIds;
+
         public void RegisterProvider(IActionProvider provider)
         {
             _runtime.RegisterProvider(provider);
@@ -31,6 +34,11 @@ namespace TopToolbar.Services
         public Task<ProviderInfo> GetInfoAsync(string providerId, CancellationToken cancellationToken)
         {
             return _runtime.GetInfoAsync(providerId, cancellationToken);
+        }
+
+        public Task<ButtonGroup> CreateGroupAsync(string providerId, ActionContext context, CancellationToken cancellationToken)
+        {
+            return _runtime.CreateGroupAsync(providerId, context, cancellationToken);
         }
 
         public Task<IReadOnlyList<ActionDescriptor>> DiscoverAsync(

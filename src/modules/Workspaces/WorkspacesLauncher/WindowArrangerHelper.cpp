@@ -55,7 +55,8 @@ void WindowArrangerHelper::Launch(const std::wstring& projectId, bool elevated, 
                 HANDLE process = value.hProcess;
                 while (keepWaitingCallback())
                 {
-                    WaitForSingleObject(process, 100);
+                    // Reduce wait interval from 100ms to 50ms for better responsiveness
+                    WaitForSingleObject(process, 50);
                 }
                 
                 Logger::trace(L"Finished waiting WorkspacesWindowArranger");

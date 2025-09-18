@@ -40,7 +40,9 @@ namespace AppLauncher
         sei.lpFile = appPath.c_str();
         sei.lpParameters = commandLineArgs.c_str();
         sei.lpDirectory = dir.c_str();
-        sei.nShow = SW_SHOWNORMAL;
+        // Use SW_SHOWMINNOACTIVE to start minimized without activating, reducing initial animation
+        // The WindowArranger will move it to the correct position afterward
+        sei.nShow = SW_SHOWMINNOACTIVE;
 
         if (!ShellExecuteEx(&sei))
         {

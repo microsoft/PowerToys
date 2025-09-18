@@ -27,6 +27,7 @@ private:
 
     std::unique_ptr<WindowArrangerHelper> m_windowArrangerHelper;
     std::mutex m_windowArrangerHelperMutex;
+    std::atomic<bool> m_arrangerCompleted{false};
     
     std::vector<std::pair<std::wstring, std::wstring>> m_launchErrors{};
     std::mutex m_launchErrorsMutex;

@@ -49,6 +49,39 @@
             "env": {},
             "console": "internalConsole",
             "stopAtEntry": false
-        }
+        },
+        {
+            "name": "WorkspacesLauncher ARM64 Debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}\\ARM64\\Debug\\PowerToys.WorkspacesLauncher.exe",
+            "args": ["{DB42D388-9862-4DCE-8ABC-0512A263FF31}", "1"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "POWERTOYS_DEBUG",
+                    "value": "1"
+                }
+            ],
+            "console": "integratedTerminal",
+            "symbolSearchPath": "${workspaceFolder}\\ARM64\\Debug;${workspaceFolder}\\symbols",
+            "sourceFileMap": {
+                "${workspaceFolder}": "${workspaceFolder}"
+            },
+            "visualizerFile": "${workspaceFolder}\\tools\\natvis\\PowerToys.natvis",
+            "externalConsole": false,
+            "logging": {
+                "moduleLoad": false,
+                "trace": true
+            },
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
     ]
 }
