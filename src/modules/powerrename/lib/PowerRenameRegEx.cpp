@@ -329,6 +329,22 @@ IFACEMETHODIMP CPowerRenameRegEx::ResetFileTime()
     return S_OK;
 }
 
+IFACEMETHODIMP CPowerRenameRegEx::PutMetadataPatterns(_In_ const PowerRenameLib::MetadataPatternMap& patterns)
+{
+    m_metadataPatterns = patterns;
+    m_useMetadata = true;
+    _OnMetadataChanged();
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::ResetMetadata()
+{
+    m_metadataPatterns.clear();
+    m_useMetadata = false;
+    _OnMetadataChanged();
+    return S_OK;
+}
+
 HRESULT CPowerRenameRegEx::s_CreateInstance(_Outptr_ IPowerRenameRegEx** renameRegEx)
 {
     *renameRegEx = nullptr;
@@ -388,10 +404,17 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         // TODO: creating the regex could be costly.  May want to cache this.
         wchar_t newReplaceTerm[MAX_PATH] = { 0 };
         bool fileTimeErrorOccurred = false;
+        bool metadataErrorOccurred = false;
+        
         if (m_useFileTime)
         {
             if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, m_fileTime)))
                 fileTimeErrorOccurred = true;
+        }
+        if (m_useMetadata)
+        {
+            if (FAILED(GetMetadataFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, m_metadataPatterns)))
+                metadataErrorOccurred = true;
         }
 
         std::wstring sourceToUse;
@@ -404,6 +427,10 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         std::wstring searchTerm(m_searchTerm);
         std::wstring replaceTerm;
         if (m_useFileTime && !fileTimeErrorOccurred)
+        {
+            replaceTerm = newReplaceTerm;
+        }
+        else if (m_useMetadata && !metadataErrorOccurred)
         {
             replaceTerm = newReplaceTerm;
         }
@@ -589,4 +616,42 @@ void CPowerRenameRegEx::_OnFileTimeChanged()
             it.pEvents->OnFileTimeChanged(m_fileTime);
         }
     }
+}
+
+void CPowerRenameRegEx::_OnMetadataChanged()
+{
+    CSRWSharedAutoLock lock(&m_lockEvents);
+
+    for (auto it : m_renameRegExEvents)
+    {
+        if (it.pEvents)
+        {
+            it.pEvents->OnMetadataChanged();
+        }
+    }
+}
+
+PowerRenameLib::MetadataType CPowerRenameRegEx::_GetMetadataTypeFromFlags() const
+{
+    if (m_flags & MetadataSourceXMP)
+        return PowerRenameLib::MetadataType::XMP;
+    
+    // Default to EXIF
+    return PowerRenameLib::MetadataType::EXIF;
+}
+
+// Interface method implementation  
+IFACEMETHODIMP CPowerRenameRegEx::GetMetadataType(_Out_ PowerRenameLib::MetadataType* metadataType)
+{
+    if (metadataType == nullptr)
+        return E_POINTER;
+        
+    *metadataType = _GetMetadataTypeFromFlags();
+    return S_OK;
+}
+
+// Convenience method for internal use
+PowerRenameLib::MetadataType CPowerRenameRegEx::GetMetadataType() const
+{
+    return _GetMetadataTypeFromFlags();
 }

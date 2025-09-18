@@ -3,6 +3,8 @@
 
 #include "Renaming.h"
 #include <Helpers.h>
+#include "MetadataPatternExtractor.h"
+#include "PowerRenameRegEx.h"
 
 namespace fs = std::filesystem;
 
@@ -14,12 +16,18 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
 
     PWSTR replaceTerm = nullptr;
     bool useFileTime = false;
+    bool useMetadata = false;
 
     winrt::check_hresult(spRenameRegEx->GetReplaceTerm(&replaceTerm));
 
     if (isFileTimeUsed(replaceTerm))
     {
         useFileTime = true;
+    }
+
+    if (isMetadataUsed(replaceTerm))
+    {
+        useMetadata = true;
     }
     CoTaskMemFree(replaceTerm);
 
@@ -82,6 +90,33 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
         winrt::check_hresult(spRenameRegEx->PutFileTime(fileTime));
     }
 
+    if (useMetadata)
+    {
+        // Extract metadata patterns from the file
+        PWSTR filePath = nullptr;
+        winrt::check_hresult(spItem->GetPath(&filePath));
+        
+        std::wstring filePathStr(filePath);
+        CoTaskMemFree(filePath);
+        
+        // Get metadata type using the interface method
+        PowerRenameLib::MetadataType metadataType;
+        HRESULT hr = spRenameRegEx->GetMetadataType(&metadataType);
+        if (FAILED(hr))
+        {
+            // Fallback to default metadata type if call fails
+            metadataType = PowerRenameLib::MetadataType::EXIF;
+        }
+        
+        // Extract all patterns for the selected metadata type
+        PowerRenameLib::MetadataPatternMap patterns = 
+            PowerRenameLib::MetadataPatternExtractor::ExtractPatternsStatic(filePathStr, metadataType);
+        
+        // Always call PutMetadataPatterns to ensure all patterns get replaced
+        // Even if empty, this ensures unsupported patterns become "unsupported" and missing values become "unknown"
+        winrt::check_hresult(spRenameRegEx->PutMetadataPatterns(patterns));
+    }
+
     PWSTR newName = nullptr;
 
     // Failure here means we didn't match anything or had nothing to match
@@ -93,6 +128,10 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
         winrt::check_hresult(spRenameRegEx->ResetFileTime());
     }
 
+    if (useMetadata)
+    {
+        winrt::check_hresult(spRenameRegEx->ResetMetadata());
+    }
     wchar_t resultName[MAX_PATH] = { 0 };
 
     PWSTR newNameToUse = nullptr;
