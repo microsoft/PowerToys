@@ -58,12 +58,3 @@ void Trace::SpaceModeEnabled(bool enabled) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
-
-void Trace::SpaceModeRejected() noexcept
-{
-    TraceLoggingWriteWrapper(
-        g_hProvider,
-        "Peek_SpaceModeRejected",
-        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
-}
