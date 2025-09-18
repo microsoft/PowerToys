@@ -5299,4 +5299,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="UtilitiesHeader.Title" xml:space="preserve">
     <value>Utilities</value>
   </data>
+  <data name="DismissConflictBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="DismissText.Text" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="IgnoreShortcutConflicts.Content" xml:space="preserve">
+    <value>Ignore conflict warnings for this shortcut</value>
+  </data>
 </root>
