@@ -69,7 +69,7 @@
                     <Setter Property="Padding" Value="24" />
                 </Style.Setters>
             </Style>
-            
+
             <!--  Overrides  -->
             <Thickness x:Key="InfoBarIconMargin">6,16,16,16</Thickness>
             <Thickness x:Key="InfoBarContentRootPadding">16,0,0,0</Thickness>

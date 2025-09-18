@@ -2,17 +2,21 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.WinUI.UI.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class SettingsPageControl : UserControl
     {
+        private readonly Dictionary<string, FrameworkElement> _anchors = new();
+
         public SettingsPageControl()
         {
             this.InitializeComponent();
@@ -79,6 +83,77 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             var response = await client.GetAsync(requestUrl);
             string content = await response.Content.ReadAsStringAsync();
             docsTextBlock.Text = PreprocessMarkdown(content);
+        }
+
+        private sealed class TocItem
+        {
+            public string Id { get; init; } = string.Empty;
+
+            public string Title { get; init; } = string.Empty;
+
+            public int Level { get; init; }
+        }
+
+        private List<TocItem> BuildDocumentAndAnchors(string md)
+        {
+            DocHost.Children.Clear();
+            _anchors.Clear();
+
+            // Grab H1/H2
+            var headings = doc.Descendants<HeadingBlock>()
+                              .Where(h => h.Level is 1 or 2)
+                              .ToList();
+
+            var toc = new List<TocItem>();
+            if (headings.Count == 0)
+            {
+                DocHost.Children.Add(new MarkdownTextBlock { Text = md });
+                return toc;
+            }
+
+            // De-duplicate slugs like GitHub does
+            var seen = new Dictionary<string, int>();
+
+            for (int i = 0; i < headings.Count; i++)
+            {
+                var hb = headings[i];
+
+                // Char ranges for the slice belonging to this heading
+                int start = hb.Span.Start;
+                int end = (i + 1 < headings.Count) ? headings[i + 1].Span.Start : md.Length;
+                string sectionMd = md.Substring(start, end - start);
+
+                // Heading text
+                string title = hb.Inline?.FirstChild?.ToString() ?? "Section";
+
+                // Slug/anchor id
+                string id = MakeSlug(title);
+                if (seen.TryGetValue(id, out int n)) { n++; seen[id] = n; id = $"{id}-{n}"; }
+                else { seen[id] = 1; }
+
+                toc.Add(new TocItem { Id = id, Title = title, Level = hb.Level });
+
+                // Invisible anchor right before the slice so BringIntoView hits the correct spot
+                var anchor = new Border { Height = 1, Opacity = 0, Tag = id };
+                DocHost.Children.Add(anchor);
+                _anchors[id] = anchor;
+
+                // Render the section’s markdown
+                var mdtb = new MarkdownTextBlock { Text = sectionMd };
+                mdtb.LinkClicked += Markdown_LinkClicked;  // handle [links to #anchors] inside the doc
+                DocHost.Children.Add(mdtb);
+            }
+
+            return toc;
+        }
+
+        // Click in ToC -> scroll to anchor
+        private void TocList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is TextBlock tb && tb.Tag is string id && _anchors.TryGetValue(id, out var target))
+            {
+                target.StartBringIntoView(); // Scrolls nearest ScrollViewer
+            }
         }
 
         public static string PreprocessMarkdown(string markdown)

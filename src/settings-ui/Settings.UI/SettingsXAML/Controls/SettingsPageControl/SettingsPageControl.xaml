@@ -114,8 +114,6 @@
                             <media:UIElementExtensions.VisualFactory>
                                 <media:PipelineVisualFactory>
                                     <media:BlurEffect Amount="100.0" />
-
-
                                 </media:PipelineVisualFactory>
                             </media:UIElementExtensions.VisualFactory>
                         </Image>
@@ -131,9 +129,11 @@
                     MaxWidth="{StaticResource PageHeaderMaxWidth}"
                     Margin="16,8,0,0"
                     Orientation="Vertical">
-
-                    <StackPanel Spacing="12" Orientation="Horizontal">
-                        <Image Width="48" VerticalAlignment="Top" Source="/Assets/Settings/Icons/Awake.png"/>
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Image
+                            Width="48"
+                            VerticalAlignment="Top"
+                            Source="/Assets/Settings/Icons/Awake.png" />
                         <StackPanel Orientation="Vertical">
                             <TextBlock
                                 x:Name="Header"
@@ -163,8 +163,6 @@
                     Visibility="{x:Bind ModuleImageSource, Converter={StaticResource EmptyObjectToObjectConverter}}">
                     <Image AutomationProperties.AccessibilityView="Raw" Source="{x:Bind ModuleImageSource, Converter={StaticResource UriToImageSourceConverter}, Mode=OneWay}" />
                 </Border>
-
-
                 <Grid
                     Grid.Row="1"
                     MaxWidth="{StaticResource PageMaxWidth}"
@@ -197,6 +195,21 @@
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
                             CornerRadius="{StaticResource OverlayCornerRadius}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ListView
+                                x:Name="TocList"
+                                Grid.Column="1"
+                                IsItemClickEnabled="True"
+                                ItemClick="TocList_ItemClick"
+                                SelectionMode="None" />
+
+                            <ScrollViewer x:Name="DocScroll" Grid.Column="1" VerticalScrollMode="Auto" VerticalScrollBarVisibility="Auto">
+                                <StackPanel x:Name="DocHost" Orientation="Vertical" />
+                            </ScrollViewer>
+                            
                             <tk7controls:MarkdownTextBlock
                                 x:Name="docsTextBlock"
                                 Margin="16"
