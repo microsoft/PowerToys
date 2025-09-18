@@ -162,7 +162,7 @@ namespace Awake
                         IsRequired = false,
                     };
 
-                    Option<bool> httpServerOption = new(_aliasesHttpServerOption, () => false, "Enable HTTP server for remote control")
+                    Option<bool> httpServerOption = new(_aliasesHttpServerOption, () => true, "Enable HTTP server for remote control")
                     {
                         Arity = ArgumentArity.ZeroOrOne,
                         IsRequired = false,

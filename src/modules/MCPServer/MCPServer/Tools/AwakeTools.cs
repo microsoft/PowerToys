@@ -6,6 +6,8 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Data.Sqlite;
@@ -20,6 +22,94 @@ namespace PowerToys.MCPServer.Tools
         [McpServerTool]
         [Description("Echoes the message back to the client.")]
         public static string SetTimeTest(string message) => $"Hello {message}";
+
+        // =============================
+        // HTTP client (Awake remote control)
+        // =============================
+        private static readonly HttpClient _http = new HttpClient();
+
+        // Base URL for Awake HTTP server. Default matches Awake --http-port default (8080).
+        // Allow override through environment variable POWERTOYS_AWAKE_HTTP (e.g. http://localhost:9090/)
+        private static string BaseUrl => (Environment.GetEnvironmentVariable("POWERTOYS_AWAKE_HTTP") ?? "http://localhost:8080/").TrimEnd('/') + "/";
+
+        private static string JsonError(string msg, int? status = null) => JsonSerializer.Serialize(new { success = false, error = msg, status });
+
+        private static string JsonOk(object payload) => JsonSerializer.Serialize(payload);
+
+        private static string SendAwakeRequest(string method, string relativePath, object? body = null)
+        {
+            try
+            {
+                using var req = new HttpRequestMessage(new HttpMethod(method), BaseUrl + relativePath.TrimStart('/'));
+                if (body != null)
+                {
+                    string json = JsonSerializer.Serialize(body);
+                    req.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                }
+
+                using var resp = _http.Send(req);
+                string respText = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                if (!resp.IsSuccessStatusCode)
+                {
+                    return JsonError($"HTTP {(int)resp.StatusCode} {resp.StatusCode}", (int)resp.StatusCode) + "\n" + respText;
+                }
+
+                return respText;
+            }
+            catch (HttpRequestException ex)
+            {
+                return JsonError($"Connection failed: {ex.Message}. Ensure Awake is running with --http-server.");
+            }
+            catch (Exception ex)
+            {
+                return JsonError(ex.Message);
+            }
+        }
+
+        [McpServerTool]
+        [Description("Get Awake HTTP status (GET /awake/status). Requires Awake launched with --http-server.")]
+        public static string AwakeHttpStatus() => SendAwakeRequest("GET", "awake/status");
+
+        [McpServerTool]
+        [Description("Set indefinite keep-awake via HTTP. Params: keepDisplayOn=true|false, processId=0")]
+        public static string AwakeHttpIndefinite(bool keepDisplayOn = true, int processId = 0)
+            => SendAwakeRequest("POST", "awake/indefinite", new { keepDisplayOn, processId });
+
+        [McpServerTool]
+        [Description("Set timed keep-awake via HTTP. Params: seconds (>0), keepDisplayOn=true|false")]
+        public static string AwakeHttpTimed(uint seconds, bool keepDisplayOn = true)
+        {
+            if (seconds == 0)
+            {
+                return JsonError("seconds must be > 0");
+            }
+
+            return SendAwakeRequest("POST", "awake/timed", new { seconds, keepDisplayOn });
+        }
+
+        [McpServerTool]
+        [Description("Set expirable keep-awake via HTTP. Params: expireAt (ISO 8601), keepDisplayOn=true|false")]
+        public static string AwakeHttpExpirable(string expireAt, bool keepDisplayOn = true)
+        {
+            if (string.IsNullOrWhiteSpace(expireAt))
+            {
+                return JsonError("expireAt required (ISO 8601)");
+            }
+
+            return SendAwakeRequest("POST", "awake/expirable", new { expireAt, keepDisplayOn });
+        }
+
+        [McpServerTool]
+        [Description("Set passive mode via HTTP (POST /awake/passive).")]
+        public static string AwakeHttpPassive() => SendAwakeRequest("POST", "awake/passive");
+
+        [McpServerTool]
+        [Description("Toggle display keep-on via HTTP (POST /awake/display/toggle).")]
+        public static string AwakeHttpToggleDisplay() => SendAwakeRequest("POST", "awake/display/toggle");
+
+        [McpServerTool]
+        [Description("Get Awake settings via HTTP (GET /awake/settings).")]
+        public static string AwakeHttpSettings() => SendAwakeRequest("GET", "awake/settings");
 
         private sealed class AppUsageRecord
         {
@@ -53,7 +143,6 @@ namespace PowerToys.MCPServer.Tools
                     return QuerySqlite(sqlitePath, top, days);
                 }
 
-                // Fallback to legacy JSON if DB not yet created (tracking not enabled or not flushed).
                 if (File.Exists(legacyJson))
                 {
                     return QueryLegacyJson(legacyJson, top, days, note: "legacy-json");
