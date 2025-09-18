@@ -77,7 +77,6 @@ private:
     // If we should always try to run Peek non-elevated.
     bool m_alwaysRunNotElevated = true;
     bool m_enableSpaceToActivate = false; // toggle from settings
-    Hotkey m_previousHotkey{}; // stored previous shortcut when forcing space
 
     HANDLE m_hProcess = 0;
     DWORD m_processPid = 0;
@@ -148,7 +147,6 @@ private:
                 }
                 else
                 {
-                    m_previousHotkey = m_hotkey; // stash existing
                     m_hotkey.win = false;
                     m_hotkey.alt = false;
                     m_hotkey.shift = false;
@@ -223,7 +221,7 @@ private:
             if (g_foregroundDebounceTimer)
             {
                 // Best effort: cancel previous pending timer; ignore failure.
-                DeleteTimerQueueTimer(nullptr, g_foregroundDebounceTimer, nullptr);
+                DeleteTimerQueueTimer(nullptr, g_foregroundDebounceTimer, INVALID_HANDLE_VALUE);
                 g_foregroundDebounceTimer = nullptr;
             }
             if (CreateTimerQueueTimer(&g_foregroundDebounceTimer, nullptr, ForegroundDebounceTimerProc, nullptr, FOREGROUND_DEBOUNCE_MS, 0, WT_EXECUTEDEFAULT))
@@ -269,7 +267,7 @@ private:
         }
         if (g_foregroundDebounceTimer)
         {
-            DeleteTimerQueueTimer(nullptr, g_foregroundDebounceTimer, nullptr);
+            DeleteTimerQueueTimer(nullptr, g_foregroundDebounceTimer, INVALID_HANDLE_VALUE);
             g_foregroundDebounceTimer = nullptr;
         }
         g_foregroundLastScheduleTick.store(0, std::memory_order_relaxed);
