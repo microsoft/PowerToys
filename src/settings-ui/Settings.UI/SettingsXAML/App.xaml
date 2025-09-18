@@ -13,6 +13,7 @@
                 <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyCharPresenter.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/TitleBar/TitleBar.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/OpacityMaskView.xaml" />
+                <ResourceDictionary Source="/SettingsXAML/Controls/OOBE/RedirectVisualView.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/Button.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/InfoBadge.xaml" />
@@ -59,6 +60,16 @@
             <tkconverters:StringVisibilityConverter x:Key="StringVisibilityConverter" />
             <x:Double x:Key="SettingsCardSpacing">2</x:Double>
 
+            <Style x:Key="GridCardStyle" TargetType="Grid">
+                <Style.Setters>
+                    <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                    <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                    <Setter Property="Padding" Value="24" />
+                </Style.Setters>
+            </Style>
+            
             <!--  Overrides  -->
             <Thickness x:Key="InfoBarIconMargin">6,16,16,16</Thickness>
             <Thickness x:Key="InfoBarContentRootPadding">16,0,0,0</Thickness>

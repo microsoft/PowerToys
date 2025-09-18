@@ -55,16 +55,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void WhatsNewButton_Click(object sender, RoutedEventArgs e)
         {
-            if (App.GetOobeWindow() == null)
-            {
-                App.SetOobeWindow(new OobeWindow(PowerToysModules.WhatsNew));
-            }
-            else
-            {
-                App.GetOobeWindow().SetAppWindow(PowerToysModules.WhatsNew);
-            }
-
-            App.GetOobeWindow().Activate();
+            ScoobeWindow window = new ScoobeWindow();
+            window.Activate();
         }
     }
 }

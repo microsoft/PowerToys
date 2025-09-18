@@ -20,13 +20,18 @@
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
 	<ItemGroup>
+		<None Remove="Assets\Settings\Header.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
 		<None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
+		<None Remove="SettingsXAML\Controls\OOBE\OOBEControl.xaml" />
+		<None Remove="SettingsXAML\Controls\OOBE\RedirectVisualView.xaml" />
 		<None Remove="SettingsXAML\Controls\OpacityMaskView.xaml" />
 		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
+		<None Remove="SettingsXAML\Oobe2Window.xaml" />
+		<None Remove="SettingsXAML\ScoobeWindow.xaml" />
 	</ItemGroup>
 	<ItemGroup>
 		<Page Remove="SettingsXAML\App.xaml" />
@@ -140,6 +145,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Update="Assets\Settings\Header.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Update="Assets\Settings\icon.ico">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
@@ -161,6 +172,18 @@
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="SettingsXAML\ScoobeWindow.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\Controls\OOBE\OOBEControl.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\Controls\OOBE\RedirectVisualView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\Oobe2Window.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="SettingsXAML\Controls\OpacityMaskView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">

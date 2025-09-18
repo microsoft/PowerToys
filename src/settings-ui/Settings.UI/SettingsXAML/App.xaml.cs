@@ -263,20 +263,12 @@ namespace Microsoft.PowerToys.Settings.UI
                 if (ShowOobe)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new OobeStartedEvent());
-                    OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
-                    oobeWindow.Activate();
-                    oobeWindow.ExtendsContentIntoTitleBar = true;
                     WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
-                    SetOobeWindow(oobeWindow);
                 }
                 else if (ShowScoobe)
                 {
                     PowerToysTelemetry.Log.WriteEvent(new ScoobeStartedEvent());
-                    OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
-                    scoobeWindow.Activate();
-                    scoobeWindow.ExtendsContentIntoTitleBar = true;
                     WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
-                    SetOobeWindow(scoobeWindow);
                 }
                 else if (ShowFlyout)
                 {
@@ -363,7 +355,7 @@ namespace Microsoft.PowerToys.Settings.UI
         public static ThemeService ThemeService => themeService;
 
         private static MainWindow settingsWindow;
-        private static OobeWindow oobeWindow;
+        private static Oobe2Window oobeWindow;
         private static FlyoutWindow flyoutWindow;
 
         public static void ClearSettingsWindow()
@@ -376,7 +368,7 @@ namespace Microsoft.PowerToys.Settings.UI
             return settingsWindow;
         }
 
-        public static OobeWindow GetOobeWindow()
+        public static Oobe2Window GetOobeWindow()
         {
             return oobeWindow;
         }
@@ -386,7 +378,7 @@ namespace Microsoft.PowerToys.Settings.UI
             return flyoutWindow;
         }
 
-        public static void SetOobeWindow(OobeWindow window)
+        public static void SetOobeWindow(Oobe2Window window)
         {
             oobeWindow = window;
         }

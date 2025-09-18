@@ -363,7 +363,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void OOBEItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            OpenOobeWindowCallback();
+            Oobe2Window window = new Oobe2Window();
+            window.Activate();
         }
 
         private async void FeedbackItem_Tapped(object sender, TappedRoutedEventArgs e)
@@ -373,7 +374,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            OpenWhatIsNewWindowCallback();
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

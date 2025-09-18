@@ -104,7 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.Overview));
+                    App.SetOobeWindow(new Oobe2Window());
                 }
 
                 App.GetOobeWindow().Activate();
@@ -115,11 +115,10 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 if (App.GetOobeWindow() == null)
                 {
-                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew));
                 }
                 else
                 {
-                    App.GetOobeWindow().SetAppWindow(OOBE.Enums.PowerToysModules.WhatsNew);
+                    App.SetOobeWindow(new Oobe2Window());
                 }
 
                 App.GetOobeWindow().Activate();

@@ -132,7 +132,8 @@
                     Margin="16,8,0,0"
                     Orientation="Vertical">
 
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Spacing="12" Orientation="Horizontal">
+                        <Image Width="48" VerticalAlignment="Top" Source="/Assets/Settings/Icons/Awake.png"/>
                         <StackPanel Orientation="Vertical">
                             <TextBlock
                                 x:Name="Header"

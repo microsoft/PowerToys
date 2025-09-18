@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="Microsoft.PowerToys.Settings.UI.Oobe2Window"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:winuiex="using:WinUIEx"
+    Title="Oobe2Window"
+    mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <controls:OOBEControl
+        Title="PowerToys"
+        Icon="/Assets/Settings/logo150.png"
+        Subtitle="Get started with">
+        <controls:OOBEControl.NavigationItems>
+            <controls:OOBEItem
+                Description="Supercharge Windows. Your way."
+                Header="Overview"
+                Icon="&#xE80F;">
+                <controls:OOBEItem.Content>
+                    <Grid
+                        MinHeight="640"
+                        MaxWidth="1920"
+                        Margin="32"
+                        Padding="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Stretch"
+                        CornerRadius="16"
+                        Style="{StaticResource GridCardStyle}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Image Source="/Assets/Settings/Header.png" />
+
+
+                        <Grid
+                            Grid.Row="1"
+                            Padding="48,32,48,0"
+                            RowSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                FontSize="28"
+                                FontWeight="SemiBold"
+                                Text="Microsoft PowerToys"
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Grid.Row="1"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="A collection of advanced tools that boost productivity and unlock hidden capabilities in Windows."
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                            <StackPanel
+                                Grid.Row="2"
+                                Margin="0,36,0,32"
+                                Orientation="Vertical"
+                                Spacing="8">
+                                <toolkit:SettingsCard Description="Diagnostic data helps us with bug fixes, performance, and product decisions" Header="Help us make PowerToys better">
+                                    <ToggleSwitch IsOn="True" />
+                                </toolkit:SettingsCard>
+
+                                <Button
+                                    Margin="0,48,0,0"
+                                    HorizontalAlignment="Center"
+                                    Content="Get started"
+                                    Style="{StaticResource AccentButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
+                        <Grid
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            ColumnSpacing="24"
+                            Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <StackPanel
+                                Margin="0,-24,0,0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top"
+                                Orientation="Vertical">
+                                <StackPanel Width="676" Orientation="Vertical">
+                                    <StackPanel
+                                        Padding="16"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="{StaticResource OverlayCornerRadius}"
+                                        Orientation="Vertical">
+                                        <TextBlock
+                                            Margin="16,8,16,0"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="Tabs help you stay productive and in your flow. Configure your default shell to make sure you're always ready to go and be productive upon launch!"
+                                            TextWrapping="Wrap" />
+                                        <toolkit:SettingsCard
+                                            Margin="0,8,0,0"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Header="Default profile">
+                                            <ComboBox SelectedIndex="0">
+                                                <ComboBoxItem>
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <Image Width="16" Source="/Assets/pwsh.png" />
+                                                        <TextBlock Text="PowerShell" />
+                                                    </StackPanel>
+                                                </ComboBoxItem>
+                                            </ComboBox>
+                                        </toolkit:SettingsCard>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </controls:OOBEItem.Content>
+            </controls:OOBEItem>
+
+            <controls:OOBEItem
+                Description="Smarter window control and layout tools to keep your desktop organized and efficient."
+                Header="Windowing &amp; layouts"
+                Icon="&#xEB91;">
+                <controls:OOBEItem.Content>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid x:Name="ShadowCastGrid" Grid.RowSpan="3" />
+                            <Grid
+                                Grid.Row="0"
+                                Margin="32,0"
+                                CornerRadius="8"
+                                Translation="0,0,32">
+                                <!--<controls:AnimatedImage
+                                    x:Name="HeroImage"
+                                    CornerRadius="8"
+                                    Loaded="HeroImage_Loaded" />-->
+                                <!--<controls:CrossfadeTextBlock
+                                    x:Name="HeroTextBlock"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    FontSize="32"
+                                    FontWeight="SemiBold"
+                                    Text="Tralalala" />-->
+                                <Grid.Shadow>
+                                    <ThemeShadow x:Name="PictureShadow" />
+                                </Grid.Shadow>
+                            </Grid>
+                            <StackPanel
+                                Grid.Row="1"
+                                Margin="0,48,0,48"
+                                Orientation="Vertical">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    Style="{StaticResource SubtitleTextBlockStyle}"
+                                    Text="Explore these modules to make your more productive"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="Select which modules you want to enable."
+                                    TextAlignment="Center" />
+                            </StackPanel>
+
+                        </Grid>
+                    </Grid>
+                </controls:OOBEItem.Content>
+            </controls:OOBEItem>
+            <controls:OOBEItem
+                Description="Enhanced keyboard and mouse tools to type, click, and control with precision."
+                Header="Mouse &amp; keyboard"
+                Icon="&#xE961;">
+                <controls:OOBEItem.Content>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <StackPanel
+                                Grid.Row="1"
+                                Margin="0,48,0,48"
+                                Orientation="Vertical">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    Style="{StaticResource SubtitleTextBlockStyle}"
+                                    Text="Explore these modules to make your more productive"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="Select which modules you want to enable."
+                                    TextAlignment="Center" />
+                            </StackPanel>
+
+                        </Grid>
+                    </Grid>
+                </controls:OOBEItem.Content>
+            </controls:OOBEItem>
+            <controls:OOBEItem
+                Description="Powerful tools to streamline, rename, resize, and unlock your file workflows."
+                Header="File management"
+                Icon="&#xEC50;">
+                <controls:OOBEItem.Content>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Center" VerticalAlignment="Top">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid x:Name="ShadowCastGrid2" Grid.RowSpan="3" />
+                            <Grid
+                                Grid.Row="0"
+                                Margin="32,0"
+                                CornerRadius="8"
+                                Translation="0,0,32">
+
+                                <!--<controls:CrossfadeTextBlock
+                     x:Name="HeroTextBlock"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Top"
+                     FontSize="32"
+                     FontWeight="SemiBold"
+                     Text="Tralalala" />-->
+                                <Grid.Shadow>
+                                    <ThemeShadow x:Name="PictureShadow2" />
+                                </Grid.Shadow>
+                            </Grid>
+                            <StackPanel
+                                Grid.Row="1"
+                                Margin="0,48,0,48"
+                                Orientation="Vertical">
+                                <TextBlock
+                                    FontWeight="SemiBold"
+                                    Style="{StaticResource SubtitleTextBlockStyle}"
+                                    Text="Explore these modules to make your more productive"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="Select which modules you want to enable."
+                                    TextAlignment="Center" />
+                            </StackPanel>
+
+                        </Grid>
+                    </Grid>
+                </controls:OOBEItem.Content>
+            </controls:OOBEItem>
+            <controls:OOBEItem
+                Description="Developer-focused tools for deeper control over your system and environment."
+                Header="Advanced tools"
+                Icon="&#xE835;">
+                <controls:OOBEItem.Content>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <StackPanel Width="676" Orientation="Vertical">
+                            <Grid
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top"
+                                ColumnSpacing="24"
+                                Style="{StaticResource GridCardStyle}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" MaxWidth="560" />
+                                    <ColumnDefinition Width="*" MaxWidth="480" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="1" TextWrapping="Wrap">
+                                    <Run
+                                        FontSize="20"
+                                        FontWeight="SemiBold"
+                                        Text="Rendering" /> <LineBreak /><Run Text="Windows Terminal has a powerful rendering engine that can support emojis, sixels, and shaders. You can even enable “Retro terminal effects” under your profile appearances. " />
+                                </TextBlock>
+                            </Grid>
+
+                        </StackPanel>
+                    </Grid>
+                </controls:OOBEItem.Content>
+            </controls:OOBEItem>
+        </controls:OOBEControl.NavigationItems>
+    </controls:OOBEControl>
+</winuiex:WindowEx>
