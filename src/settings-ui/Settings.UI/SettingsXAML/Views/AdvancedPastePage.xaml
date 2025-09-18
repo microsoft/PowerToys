@@ -46,6 +46,9 @@
                     ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
                     Orientation="Vertical"
                     Spacing="2">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <!--  Include the heading line in the flyout and place it at the right  -->
+                    </StackPanel>
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
                             Name="AdvancedPasteEnableToggleControlHeaderText"
@@ -86,7 +89,11 @@
                             <tkcontrols:SettingsCard.Description>
                                 <StackPanel Orientation="Vertical">
                                     <TextBlock x:Uid="AdvancedPaste_EnableAISettingsCardDescription" />
-                                    <HyperlinkButton x:Uid="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore" NavigateUri="https://learn.microsoft.com/windows/powertoys/advanced-paste" />
+                                    <HyperlinkButton
+                                        x:Uid="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore"
+                                        controls:DocSectionFlyout.IncludeHeading="True"
+                                        controls:DocSectionFlyout.Placement="Right"
+                                        controls:DocSectionFlyout.SectionId="paste-text-with-ai" />
                                 </StackPanel>
                             </tkcontrols:SettingsCard.Description>
                         </tkcontrols:SettingsCard>
