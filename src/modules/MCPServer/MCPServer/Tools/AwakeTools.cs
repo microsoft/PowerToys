@@ -100,6 +100,41 @@ namespace PowerToys.MCPServer.Tools
         }
 
         [McpServerTool]
+        [Description("Set activity-based keep-awake via HTTP. Monitors CPU, memory, and network activity. Params: cpuThresholdPercent (0-100), memThresholdPercent (0-100), netThresholdKBps (KB/s), sampleIntervalSeconds (>0), inactivityTimeoutSeconds (>0), keepDisplayOn=true|false")]
+        public static string AwakeHttpActivityBased(uint cpuThresholdPercent = 50, uint memThresholdPercent = 50, uint netThresholdKBps = 10, uint sampleIntervalSeconds = 30, uint inactivityTimeoutSeconds = 300, bool keepDisplayOn = true)
+        {
+            if (cpuThresholdPercent > 100)
+            {
+                return JsonError("cpuThresholdPercent must be 0-100");
+            }
+
+            if (memThresholdPercent > 100)
+            {
+                return JsonError("memThresholdPercent must be 0-100");
+            }
+
+            if (sampleIntervalSeconds == 0)
+            {
+                return JsonError("sampleIntervalSeconds must be > 0");
+            }
+
+            if (inactivityTimeoutSeconds == 0)
+            {
+                return JsonError("inactivityTimeoutSeconds must be > 0");
+            }
+
+            return SendAwakeRequest("POST", "awake/activity", new
+            {
+                cpuThresholdPercent,
+                memThresholdPercent,
+                netThresholdKBps,
+                sampleIntervalSeconds,
+                inactivityTimeoutSeconds,
+                keepDisplayOn,
+            });
+        }
+
+        [McpServerTool]
         [Description("Set passive mode via HTTP (POST /awake/passive).")]
         public static string AwakeHttpPassive() => SendAwakeRequest("POST", "awake/passive");
 
@@ -110,6 +145,10 @@ namespace PowerToys.MCPServer.Tools
         [McpServerTool]
         [Description("Get Awake settings via HTTP (GET /awake/settings).")]
         public static string AwakeHttpSettings() => SendAwakeRequest("GET", "awake/settings");
+
+        [McpServerTool]
+        [Description("Get current Awake configuration status via HTTP (GET /awake/config).")]
+        public static string AwakeHttpConfig() => SendAwakeRequest("GET", "awake/config");
 
         private sealed class AppUsageRecord
         {

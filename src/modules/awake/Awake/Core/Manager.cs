@@ -808,6 +808,90 @@ namespace Awake.Core
             }
         }
 
+        /// <summary>
+        /// Gets the current Awake configuration status.
+        /// </summary>
+        /// <returns>Current configuration status information.</returns>
+        public static object GetCurrentConfig()
+        {
+            try
+            {
+                AwakeSettings currentSettings = ModuleSettings?.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+
+                var baseConfig = new
+                {
+                    mode = CurrentOperatingMode.ToString(),
+                    keepDisplayOn = IsDisplayOn,
+                    processId = ProcessId,
+                    isUsingPowerToysConfig = IsUsingPowerToysConfig,
+                };
+
+                // Return different parameters based on the current mode
+                return CurrentOperatingMode switch
+                {
+                    AwakeMode.PASSIVE => new
+                    {
+                        baseConfig.mode,
+                        baseConfig.processId,
+                        baseConfig.isUsingPowerToysConfig,
+                    },
+                    AwakeMode.INDEFINITE => new
+                    {
+                        baseConfig.mode,
+                        baseConfig.keepDisplayOn,
+                        baseConfig.processId,
+                        baseConfig.isUsingPowerToysConfig,
+                    },
+                    AwakeMode.TIMED => new
+                    {
+                        baseConfig.mode,
+                        baseConfig.keepDisplayOn,
+                        timeRemaining = TimeRemaining,
+                        intervalHours = currentSettings.Properties.IntervalHours,
+                        intervalMinutes = currentSettings.Properties.IntervalMinutes,
+                        baseConfig.processId,
+                        baseConfig.isUsingPowerToysConfig,
+                    },
+                    AwakeMode.EXPIRABLE => new
+                    {
+                        baseConfig.mode,
+                        baseConfig.keepDisplayOn,
+                        expireAt = ExpireAt == DateTimeOffset.MinValue ? (DateTimeOffset?)null : ExpireAt,
+                        expirationDateTime = currentSettings.Properties.ExpirationDateTime,
+                        baseConfig.processId,
+                        baseConfig.isUsingPowerToysConfig,
+                    },
+                    AwakeMode.ACTIVITY => new
+                    {
+                        baseConfig.mode,
+                        baseConfig.keepDisplayOn,
+                        cpuThresholdPercent = currentSettings.Properties.ActivityCpuThresholdPercent,
+                        memoryThresholdPercent = currentSettings.Properties.ActivityMemoryThresholdPercent,
+                        networkThresholdKBps = currentSettings.Properties.ActivityNetworkThresholdKBps,
+                        sampleIntervalSeconds = currentSettings.Properties.ActivitySampleIntervalSeconds,
+                        inactivityTimeoutSeconds = currentSettings.Properties.ActivityInactivityTimeoutSeconds,
+                        activityActive = _activityActive,
+                        lastHighActivity = _activityLastHigh,
+                        baseConfig.processId,
+                        baseConfig.isUsingPowerToysConfig,
+                    },
+                    _ => new
+                    {
+                        baseConfig.mode,
+                        baseConfig.keepDisplayOn,
+                        baseConfig.processId,
+                        baseConfig.isUsingPowerToysConfig,
+                        error = "Unknown mode",
+                    },
+                };
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to get current config: {ex.Message}");
+                return new { error = "Failed to get current configuration", message = ex.Message };
+            }
+        }
+
         public static Process? GetParentProcess()
         {
             return GetParentProcess(Process.GetCurrentProcess().Handle);

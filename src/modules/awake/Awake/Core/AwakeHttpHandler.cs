@@ -23,9 +23,11 @@ namespace Awake.Core
             return new[]
             {
                 "GET /awake/status - Get current Awake status",
+                "GET /awake/config - Get current Awake configuration",
                 "POST /awake/indefinite - Set indefinite keep-awake (body: {\"keepDisplayOn\": true, \"processId\": 0})",
                 "POST /awake/timed - Set timed keep-awake (body: {\"seconds\": 3600, \"keepDisplayOn\": true})",
                 "POST /awake/expirable - Set expirable keep-awake (body: {\"expireAt\": \"2024-12-31T23:59:59Z\", \"keepDisplayOn\": true})",
+                "POST /awake/activity - Set activity-based keep-awake (body: {\"cpuThresholdPercent\": 50, \"memThresholdPercent\": 50, \"netThresholdKBps\": 10, \"sampleIntervalSeconds\": 30, \"inactivityTimeoutSeconds\": 300, \"keepDisplayOn\": true})",
                 "POST /awake/passive - Set passive mode (no keep-awake)",
                 "POST /awake/display/toggle - Toggle display setting",
                 "GET /awake/settings - Get current PowerToys settings",
@@ -47,6 +49,10 @@ namespace Awake.Core
                         await HandleGetStatusAsync(response);
                         break;
 
+                    case ("GET", "config"):
+                        await HandleGetConfigAsync(response);
+                        break;
+
                     case ("POST", "indefinite"):
                         await HandleSetIndefiniteAwakeAsync(request, response);
                         break;
@@ -57,6 +63,10 @@ namespace Awake.Core
 
                     case ("POST", "expirable"):
                         await HandleSetExpirableAwakeAsync(request, response);
+                        break;
+
+                    case ("POST", "activity"):
+                        await HandleSetActivityBasedAwakeAsync(request, response);
                         break;
 
                     case ("POST", "passive"):
@@ -95,6 +105,12 @@ namespace Awake.Core
             };
 
             await WriteJsonResponseAsync(response, status);
+        }
+
+        private async Task HandleGetConfigAsync(HttpListenerResponse response)
+        {
+            var config = Manager.GetCurrentConfig();
+            await WriteJsonResponseAsync(response, config);
         }
 
         private async Task HandleSetIndefiniteAwakeAsync(HttpListenerRequest request, HttpListenerResponse response)
@@ -167,6 +183,64 @@ namespace Awake.Core
                 Success = true,
                 Mode = "Expirable",
                 ExpireAt = requestData.ExpireAt,
+                KeepDisplayOn = requestData.KeepDisplayOn ?? true,
+            };
+            await WriteJsonResponseAsync(response, result);
+        }
+
+        private async Task HandleSetActivityBasedAwakeAsync(HttpListenerRequest request, HttpListenerResponse response)
+        {
+            var requestData = await ReadJsonRequestAsync<ActivityBasedAwakeRequest>(request);
+
+            if (requestData == null)
+            {
+                await HandleErrorAsync(response, 400, "Invalid or missing request body. Expected JSON with cpuThresholdPercent, memThresholdPercent, netThresholdKBps, sampleIntervalSeconds, inactivityTimeoutSeconds, and optional keepDisplayOn.");
+                return;
+            }
+
+            // Validate required parameters
+            if (requestData.CpuThresholdPercent > 100)
+            {
+                await HandleErrorAsync(response, 400, "Invalid cpuThresholdPercent. Must be between 0 and 100.");
+                return;
+            }
+
+            if (requestData.MemThresholdPercent > 100)
+            {
+                await HandleErrorAsync(response, 400, "Invalid memThresholdPercent. Must be between 0 and 100.");
+                return;
+            }
+
+            if (requestData.SampleIntervalSeconds == 0)
+            {
+                await HandleErrorAsync(response, 400, "Invalid sampleIntervalSeconds. Must be greater than 0.");
+                return;
+            }
+
+            if (requestData.InactivityTimeoutSeconds == 0)
+            {
+                await HandleErrorAsync(response, 400, "Invalid inactivityTimeoutSeconds. Must be greater than 0.");
+                return;
+            }
+
+            Manager.SetActivityBasedKeepAwake(
+                requestData.CpuThresholdPercent,
+                requestData.MemThresholdPercent,
+                requestData.NetThresholdKBps,
+                requestData.SampleIntervalSeconds,
+                requestData.InactivityTimeoutSeconds,
+                requestData.KeepDisplayOn ?? true,
+                "HttpServer");
+
+            var result = new
+            {
+                Success = true,
+                Mode = "Activity-based",
+                CpuThresholdPercent = requestData.CpuThresholdPercent,
+                MemThresholdPercent = requestData.MemThresholdPercent,
+                NetThresholdKBps = requestData.NetThresholdKBps,
+                SampleIntervalSeconds = requestData.SampleIntervalSeconds,
+                InactivityTimeoutSeconds = requestData.InactivityTimeoutSeconds,
                 KeepDisplayOn = requestData.KeepDisplayOn ?? true,
             };
             await WriteJsonResponseAsync(response, result);
@@ -306,6 +380,21 @@ namespace Awake.Core
         private sealed class ExpirableAwakeRequest
         {
             public DateTimeOffset ExpireAt { get; set; }
+
+            public bool? KeepDisplayOn { get; set; }
+        }
+
+        private sealed class ActivityBasedAwakeRequest
+        {
+            public uint CpuThresholdPercent { get; set; }
+
+            public uint MemThresholdPercent { get; set; }
+
+            public uint NetThresholdKBps { get; set; }
+
+            public uint SampleIntervalSeconds { get; set; }
+
+            public uint InactivityTimeoutSeconds { get; set; }
 
             public bool? KeepDisplayOn { get; set; }
         }
