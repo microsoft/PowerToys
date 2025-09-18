@@ -168,8 +168,15 @@ private:
         }
         else
         {
-            Logger::info("Peek settings are empty");
-            set_default_key_settings();
+            // First-run (no existing settings file or empty JSON): default to Space-only activation
+            Logger::info("Peek settings are empty - initializing first-run defaults (Space activation)");
+            m_enableSpaceToActivate = true;
+            m_hotkey.win = false;
+            m_hotkey.alt = false;
+            m_hotkey.shift = false;
+            m_hotkey.ctrl = false;
+            m_hotkey.key = ' ';
+            Trace::SpaceModeEnabled(true);
         }
     }
 
