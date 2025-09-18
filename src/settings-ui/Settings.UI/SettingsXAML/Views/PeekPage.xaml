@@ -42,9 +42,10 @@
                         Name="ActivationShortcut"
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                   HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
-                                                   IsEnabled="{x:Bind ViewModel.IsActivationShortcutLocked, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
+                            IsEnabled="{x:Bind ViewModel.IsActivationShortcutLocked, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                             <ToolTipService.ToolTip>
                                 <ToolTip x:Uid="Peek_SpaceShortcutLocked" />
                             </ToolTipService.ToolTip>
