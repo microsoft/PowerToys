@@ -24,24 +24,18 @@
                 </controls:GPOInfoControl>
 
                 <controls:SettingsGroup x:Uid="Peek_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        Name="EnableSpaceMode"
-                        x:Uid="Peek_EnableSpaceMode"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xECA5;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnableSpaceToActivate, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="Peek_ActivationMethod">
+                        <ComboBox SelectedIndex="{x:Bind ViewModel.EnableSpaceToActivate, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                            <ComboBoxItem x:Uid="Peek_ActivationMethod_CustomizedShortcut" />
+                            <ComboBoxItem x:Uid="Peek_ActivationMethod_SpaceBar" />
+                        </ComboBox>
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         Name="ActivationShortcut"
                         x:Uid="Activation_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
-                        <controls:ShortcutControl
-                            MinWidth="{StaticResource SettingActionControlMinWidth}"
-                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}"
-                            IsEnabled="{x:Bind ViewModel.IsActivationShortcutLocked, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                            <ToolTipService.ToolTip>
-                                <ToolTip x:Uid="Peek_SpaceShortcutLocked" />
-                            </ToolTipService.ToolTip>
-                        </controls:ShortcutControl>
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        Visibility="{x:Bind ViewModel.EnableSpaceToActivate, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

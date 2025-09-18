@@ -247,13 +247,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     OnPropertyChanged(nameof(EnableSpaceToActivate));
                     OnPropertyChanged(nameof(ActivationShortcut));
-                    OnPropertyChanged(nameof(IsActivationShortcutLocked));
                     NotifySettingsChanged();
                 }
             }
         }
-
-        public bool IsActivationShortcutLocked => EnableSpaceToActivate;
 
         public bool SourceCodeWrapText
         {

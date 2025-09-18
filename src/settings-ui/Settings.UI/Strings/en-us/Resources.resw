@@ -3152,17 +3152,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
     <value>You'll be asked to confirm before files are moved to the Recycle Bin</value>
   </data>
-  <data name="Peek_EnableSpaceMode.Header" xml:space="preserve">
-    <value>Enable single Space key activation</value>
-    <comment>Toggle to force activation shortcut to Space key only</comment>
+	<data name="Peek_ActivationMethod.Header" xml:space="preserve">
+    <value>Activation method</value>
   </data>
-  <data name="Peek_EnableSpaceMode.Description" xml:space="preserve">
-    <value>Use only the Space key to open Peek when File Explorer or the Desktop is focused. Other apps are ignored.</value>
+	<data name="Peek_ActivationMethod.Description" xml:space="preserve">
+    <value>Use a shortcut or press the Spacebar when a file is selected</value>
+	<comment>Spacebar is a physical keyboard key</comment>
   </data>
-  <data name="Peek_SpaceShortcutLocked.Content" xml:space="preserve">
-    <value>Shortcut locked while single Space activation is enabled</value>
-    <comment>Tooltip shown for disabled activation shortcut control</comment>
+	<data name="Peek_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
+    <value>Custom shortcut</value>
   </data>
+	<data name="Peek_ActivationMethod_SpaceBar.Content" xml:space="preserve">
+    <value>Spacebar</value>
+  </data>	
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable rounded corners when a window is snapped</value>
   </data>
