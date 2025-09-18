@@ -481,7 +481,6 @@ public:
     Peek()
     {
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", "Peek");
-        g_instance = this;
         init_settings();
 
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_PEEK_SHARED_EVENT);
@@ -495,10 +494,6 @@ public:
         }
         m_enabled = false;
         uninstall_foreground_hook();
-        if (g_instance == this)
-        {
-            g_instance = nullptr;
-        }
     };
 
     // Destroy the powertoy and free memory
