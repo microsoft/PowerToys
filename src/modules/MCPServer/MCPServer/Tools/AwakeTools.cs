@@ -67,40 +67,7 @@ namespace PowerToys.MCPServer.Tools
         }
 
         [McpServerTool]
-        [Description("Get Awake HTTP status (GET /awake/status). Requires Awake launched with --http-server.")]
-        public static string AwakeHttpStatus() => SendAwakeRequest("GET", "awake/status");
-
-        [McpServerTool]
-        [Description("Set indefinite keep-awake via HTTP. Params: keepDisplayOn=true|false, processId=0")]
-        public static string AwakeHttpIndefinite(bool keepDisplayOn = true, int processId = 0)
-            => SendAwakeRequest("POST", "awake/indefinite", new { keepDisplayOn, processId });
-
-        [McpServerTool]
-        [Description("Set timed keep-awake via HTTP. Params: seconds (>0), keepDisplayOn=true|false")]
-        public static string AwakeHttpTimed(uint seconds, bool keepDisplayOn = true)
-        {
-            if (seconds == 0)
-            {
-                return JsonError("seconds must be > 0");
-            }
-
-            return SendAwakeRequest("POST", "awake/timed", new { seconds, keepDisplayOn });
-        }
-
-        [McpServerTool]
-        [Description("Set expirable keep-awake via HTTP. Params: expireAt (ISO 8601), keepDisplayOn=true|false")]
-        public static string AwakeHttpExpirable(string expireAt, bool keepDisplayOn = true)
-        {
-            if (string.IsNullOrWhiteSpace(expireAt))
-            {
-                return JsonError("expireAt required (ISO 8601)");
-            }
-
-            return SendAwakeRequest("POST", "awake/expirable", new { expireAt, keepDisplayOn });
-        }
-
-        [McpServerTool]
-        [Description("Keep PC awake during CPU-intensive tasks like building, compiling, downloading, or processing. Monitors system activity and prevents sleep while CPU/memory/network usage is above thresholds. Perfect for long-running operations. Params: cpuThresholdPercent (0-100), memThresholdPercent (0-100), netThresholdKBps (KB/s), sampleIntervalSeconds (>0), inactivityTimeoutSeconds (>0), keepDisplayOn=true|false")]
+        [Description("RECOMMENDED FOR BUILDS: Intelligently keeps the system awake during build, compile, download, or process operations. Monitors CPU/memory/network activity and prevents sleep only when system is actively working. Automatically returns to sleep when build completes. PREFERRED over indefinite mode for development workflows. Params: cpuThresholdPercent (0-100), memThresholdPercent (0-100), netThresholdKBps (KB/s), sampleIntervalSeconds (>0), inactivityTimeoutSeconds (>0), keepDisplayOn=true|false")]
         public static string AwakeHttpActivityBased(uint cpuThresholdPercent = 50, uint memThresholdPercent = 50, uint netThresholdKBps = 10, uint sampleIntervalSeconds = 30, uint inactivityTimeoutSeconds = 300, bool keepDisplayOn = true)
         {
             if (cpuThresholdPercent > 100)
@@ -132,6 +99,39 @@ namespace PowerToys.MCPServer.Tools
                 inactivityTimeoutSeconds,
                 keepDisplayOn,
             });
+        }
+
+        [McpServerTool]
+        [Description("Get Awake HTTP status (GET /awake/status). Requires Awake launched with --http-server.")]
+        public static string AwakeHttpStatus() => SendAwakeRequest("GET", "awake/status");
+
+        [McpServerTool]
+        [Description("Keeps the system awake indefinitely until manually changed. WARNING: Less efficient than activity-based mode for builds. Use only when you need guaranteed continuous awake state regardless of system activity. Params: keepDisplayOn=true|false, processId=0")]
+        public static string AwakeHttpIndefinite(bool keepDisplayOn = true, int processId = 0)
+            => SendAwakeRequest("POST", "awake/indefinite", new { keepDisplayOn, processId });
+
+        [McpServerTool]
+        [Description("Set timed keep-awake via HTTP. Params: seconds (>0), keepDisplayOn=true|false")]
+        public static string AwakeHttpTimed(uint seconds, bool keepDisplayOn = true)
+        {
+            if (seconds == 0)
+            {
+                return JsonError("seconds must be > 0");
+            }
+
+            return SendAwakeRequest("POST", "awake/timed", new { seconds, keepDisplayOn });
+        }
+
+        [McpServerTool]
+        [Description("Set expirable keep-awake via HTTP. Params: expireAt (ISO 8601), keepDisplayOn=true|false")]
+        public static string AwakeHttpExpirable(string expireAt, bool keepDisplayOn = true)
+        {
+            if (string.IsNullOrWhiteSpace(expireAt))
+            {
+                return JsonError("expireAt required (ISO 8601)");
+            }
+
+            return SendAwakeRequest("POST", "awake/expirable", new { expireAt, keepDisplayOn });
         }
 
         [McpServerTool]
