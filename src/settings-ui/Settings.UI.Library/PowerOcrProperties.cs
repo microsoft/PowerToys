@@ -17,11 +17,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ActivationShortcut = DefaultActivationShortcut;
             PreferredLanguage = string.Empty;
+            UseLocalAIIfAvailable = true;
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
 
         public string PreferredLanguage { get; set; }
+
+        // New: whether to attempt local AI-based OCR when available (fallback handled internally)
+        public bool UseLocalAIIfAvailable { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this);

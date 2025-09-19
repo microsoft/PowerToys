@@ -26,12 +26,15 @@ namespace PowerOCR.Settings
         private readonly IFileSystemWatcher _watcher;
         private readonly Lock _loadingSettingsLock = new();
 
+        // Simplified: default ON; backend handles actual availability.
+
         [ImportingConstructor]
         public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
         {
             _settingsUtils = new SettingsUtils();
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             PreferredLanguage = new SettingItem<string>(string.Empty);
+            UseAITextRecognition = new SettingItem<bool>(true); // default ON: backend will fallback silently if unusable
 
             LoadSettingsFromJson();
 
@@ -40,8 +43,9 @@ namespace PowerOCR.Settings
         }
 
         public SettingItem<string> ActivationShortcut { get; private set; }
-
         public SettingItem<string> PreferredLanguage { get; private set; }
+        // New setting to control AI recognizer usage (maps to JSON key UseLocalAIIfAvailable for clarity)
+        public SettingItem<bool> UseAITextRecognition { get; private set; }
 
         private void LoadSettingsFromJson()
         {
@@ -70,6 +74,17 @@ namespace PowerOCR.Settings
                             {
                                 ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
                                 PreferredLanguage.Value = settings.Properties.PreferredLanguage.ToString();
+
+                                // Read existing flag if present; otherwise keep default true
+                                if (settings.Properties.Json.TryGetValue("UseLocalAIIfAvailable", out var aiJson) && bool.TryParse(aiJson?.ToString(), out bool parsed))
+                                {
+                                    UseAITextRecognition.Value = parsed;
+                                }
+                                else
+                                {
+                                    settings.Properties.Json["UseLocalAIIfAvailable"] = UseAITextRecognition.Value;
+                                    settings.Save(_settingsUtils);
+                                }
                             }
 
                             retry = false;
@@ -121,5 +136,7 @@ namespace PowerOCR.Settings
             //
             // PowerToysTelemetry.Log.WriteEvent(telemetrySettings);
         }
+
+        // Capability probing removed; backend handles availability lazily.
     }
 }

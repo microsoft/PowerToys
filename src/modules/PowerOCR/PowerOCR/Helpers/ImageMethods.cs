@@ -22,6 +22,8 @@ using PowerOCR.Models;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
+using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 
 using BitmapDecoder = Windows.Graphics.Imaging.BitmapDecoder;
 
@@ -118,6 +120,45 @@ internal sealed class ImageMethods
         if (selectedLanguage == null)
         {
             return string.Empty;
+        }
+
+        // Attempt AI backend first if enabled & usable and not a single-point extraction (keep single word quick path legacy for now)
+        bool aiTried = false;
+        try
+        {
+            if (singlePoint == null)
+            {
+                var userSettings = new Settings.UserSettings(new ThrottledActionInvoker());
+                if (userSettings.UseAITextRecognition.Value && Helpers.AiTextRecognizer.Instance.IsUsable)
+                {
+                    aiTried = true;
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    string aiText = await Helpers.AiTextRecognizer.Instance.RecognizeAsync(bmp, selectedLanguage, singlePoint != null, System.Threading.CancellationToken.None);
+                    sw.Stop();
+                    PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRAIInvokedEvent
+                    {
+                        Backend = Helpers.AiTextRecognizer.Instance.Name,
+                        DurationMs = (int)sw.ElapsedMilliseconds,
+                        Success = !string.IsNullOrWhiteSpace(aiText),
+                    });
+                    if (!string.IsNullOrWhiteSpace(aiText))
+                    {
+                        return aiText;
+                    }
+                    else
+                    {
+                        PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRAIFallbackEvent { Reason = "EmptyResult" });
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("AI backend failed, falling back to legacy", ex);
+            if (aiTried)
+            {
+                PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRAIFallbackEvent { Reason = "Exception" });
+            }
         }
 
         XmlLanguage lang = XmlLanguage.GetLanguage(selectedLanguage.LanguageTag);
