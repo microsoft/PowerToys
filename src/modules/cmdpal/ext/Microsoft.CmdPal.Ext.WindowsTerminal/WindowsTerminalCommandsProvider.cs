@@ -13,6 +13,7 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
 {
     private readonly TerminalTopLevelCommandItem _terminalCommand;
     private readonly SettingsManager _settingsManager = new();
+    private readonly AppSettingsManager _appSettingsManager = new();
 
     public WindowsTerminalCommandsProvider()
     {
@@ -21,7 +22,7 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
         Icon = Icons.TerminalIcon;
         Settings = _settingsManager.Settings;
 
-        _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager)
+        _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager, _appSettingsManager)
         {
             MoreCommands = [
                 new CommandContextItem(Settings.SettingsPage),
