@@ -19,12 +19,15 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI;
 
 public sealed partial class ListPage : Page,
     IRecipient<NavigateNextCommand>,
     IRecipient<NavigatePreviousCommand>,
+    IRecipient<NavigatePageDownCommand>,
+    IRecipient<NavigatePageUpCommand>,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
@@ -75,6 +78,8 @@ public sealed partial class ListPage : Page,
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
+        WeakReferenceMessenger.Default.Register<NavigatePageDownCommand>(this);
+        WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
 
@@ -87,6 +92,8 @@ public sealed partial class ListPage : Page,
 
         WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
+        WeakReferenceMessenger.Default.Unregister<NavigatePageDownCommand>(this);
+        WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
@@ -286,6 +293,91 @@ public sealed partial class ListPage : Page,
         else if (ItemView.SelectedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
+        }
+    }
+
+    public void Receive(NavigatePageDownCommand message)
+    {
+        var scroll = FindScrollViewer(ItemView);
+        if ( scroll is null )
+        {
+            return;
+        }
+
+        var viewportHeight = scroll.ViewportHeight;
+        if ( viewportHeight <= 0 )
+        {
+            return;
+        }
+
+        var currentIndex = ItemView.SelectedIndex >= 0 ? ItemView.SelectedIndex : 0;
+        var itemCount = ItemView.Items.Count;
+
+        // Estimate items per page using the first available container height
+        double itemHeight = 0;
+        for ( var i = currentIndex; i < itemCount; i++ )
+        {
+            if ( ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c )
+            {
+                itemHeight = c.ActualHeight;
+                break;
+            }
+        }
+
+        if ( itemHeight <= 0 )
+        {
+            // fallback to 1 item if we can't measure
+            itemHeight = 1;
+        }
+
+        var itemsPerPage = Math.Max(1, (int)Math.Floor(viewportHeight / itemHeight));
+        var targetIndex = Math.Min(itemCount - 1, currentIndex + itemsPerPage);
+
+        if ( targetIndex != currentIndex )
+        {
+            ItemView.SelectedIndex = targetIndex;
+            ItemView.ScrollIntoView(ItemView.SelectedItem);
+        }
+    }
+
+    public void Receive(NavigatePageUpCommand message)
+    {
+        var scroll = FindScrollViewer(ItemView);
+        if ( scroll is null )
+        {
+            return;
+        }
+
+        var viewportHeight = scroll.ViewportHeight;
+        if ( viewportHeight <= 0 )
+        {
+            return;
+        }
+
+        var currentIndex = ItemView.SelectedIndex >= 0 ? ItemView.SelectedIndex : 0;
+
+        double itemHeight = 0;
+        for ( var i = currentIndex; i >= 0; i-- )
+        {
+            if ( ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c )
+            {
+                itemHeight = c.ActualHeight;
+                break;
+            }
+        }
+
+        if ( itemHeight <= 0 )
+        {
+            itemHeight = 1;
+        }
+
+        var itemsPerPage = Math.Max(1, (int)Math.Floor(viewportHeight / itemHeight));
+        var targetIndex = Math.Max(0, currentIndex - itemsPerPage);
+
+        if ( targetIndex != currentIndex )
+        {
+            ItemView.SelectedIndex = targetIndex;
+            ItemView.ScrollIntoView(ItemView.SelectedItem);
         }
     }
 
