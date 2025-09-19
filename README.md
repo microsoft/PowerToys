@@ -16,10 +16,14 @@
   <span> · </span>
   <a href="https://aka.ms/powertoys-docs">Documentation</a>
   <span> · </span>
-  <a href="#-whats-new">What's new & roadmap</a>
+  <a href="https://aka.ms/powertoys-releaseblog">Blog</a>
+  <span> · </span>
+  <a href="#-whats-new">Release notes</a>
 </h3>
-
+<br>
 Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks. To learn more about each utility, visit the [PowerToys docs](https://aka.ms/powertoys-docs).
+<br>
+<br>
 
 |   |   |   |
 |---|---|---|
@@ -73,8 +77,8 @@ You can easily install PowerToys from the Microsoft Store:
 <p>
   <a style="text-decoration:none" href="https://aka.ms/getPowertoys">
     <picture>
-      <source media="(prefers-color-scheme: light)" srcset="doc/images/readme/StoreBadge-dark.png" width="220" />
-      <img src="doc/images/readme/StoreBadge-light.png" width="220" />
+      <source media="(prefers-color-scheme: light)" srcset="doc/images/readme/StoreBadge-dark.png" width="148" />
+      <img src="doc/images/readme/StoreBadge-light.png" width="148" />
   </picture></a>
 </p>
 </details>
