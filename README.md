@@ -1,12 +1,9 @@
-![Hero image for Microsoft PowerToys](doc/images/overview/Header-light.png)
-
 <p align="center">
     <picture>
-      <source media="(prefers-color-scheme: light)" srcset="./doc/images/pt-hero.light.png" />
-      <img src="./doc/images/pt-hero.dark.png" />
+      <source media="(prefers-color-scheme: light)" srcset="./doc/images/readme/pt-hero.light.png" />
+      <img src="./doc/images/readme/pt-hero.dark.png" />
   </picture></a>
 </p>
-
 
 <h1 align="center">
   <img src="doc/images/icons/PowerToys icon/PNG/PowerToysAppList.targetsize-30.png"
@@ -15,14 +12,15 @@
 </h1>
 
 <h3 align="center">
-  <a href="#powertoys-roadmap">Installation</a>
+  <a href="#-installation">Installation</a>
   <span> · </span>
   <a href="https://aka.ms/powertoys-docs">Documentation</a>
   <span> · </span>
-  <a href="#powertoys-roadmap">Release notes & roadmap</a>
+  <a href="#-whats-new">What's new & roadmap</a>
 </h3>
 
-Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link]
+<p align="center">
+Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks. To learn more about each utility, visit the [PowerToys docs](https://aka.ms/powertoys-docs).
 
 |   |   |   |
 |---|---|---|
@@ -37,32 +35,22 @@ Microsoft PowerToys is a set of utilities for power users to tune and streamline
 | [<img src="doc/images/icons/Shortcut%20Guide.png" alt="PowerToys" height="16"> Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [<img src="doc/images/icons/PowerOCR.png" alt="PowerToys" height="16"> Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [<img src="doc/images/icons/Workspaces.png" alt="PowerToys" height="16"> Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
 | [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |  |  |
 
+</p>
+
 ## 📋 Installation
 
-To get started with PowerToys, ensure you have the right system requirements:
+Before you begin, make sure your device meets the system requirements:
 
 > [!NOTE]
 > - Windows 11 or Windows 10 version 2004 (20H1 / build 19041) or newer
 > - 64-bit processor: x64 or ARM64
 > - Latest stable version of [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) is installed via the bootstrapper during setup
 
-To install, there are multiple options:
+Choose one of the installation methods below:
 
-<details>
-<summary>Microsoft Store</summary>
-You can easily install PowerToys from the Microsoft Store:
-<p>
-  <a style="text-decoration:none" href="https://aka.ms/getPowertoy">
-    <picture>
-      <source media="(prefers-color-scheme: light)" srcset="doc/images/StoreBadge-dark.png" width="220" />
-      <img src="doc/images/StoreBadge-light.png" width="220" />
-  </picture></a>
-</p>
-</details>
-<details>
 <summary>Via GitHub with .exe</summary>
 
-Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
+Go to the [PowerToys GitHub releases][github-release-link], click Assets to reveal the downloads, and choose the installer that matches your architecture and install scope. For most devices, that's the x64 per-user installer.
 
 <!-- items that need to be updated release to release -->
 [github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.95%22
@@ -80,6 +68,19 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 | Machine wide - ARM64 | [PowerToysSetup-0.94.0-arm64.exe][ptMachineArm64] |
 
 </details>
+
+<details>
+<summary>Microsoft Store</summary>
+You can easily install PowerToys from the Microsoft Store:
+<p>
+  <a style="text-decoration:none" href="https://aka.ms/getPowertoys">
+    <picture>
+      <source media="(prefers-color-scheme: light)" srcset="doc/images/readme/StoreBadge-dark.png" width="220" />
+      <img src="doc/images/readme/StoreBadge-light.png" width="220" />
+  </picture></a>
+</p>
+</details>
+<details>
 
 <details>
 <summary>WinGet</summary>
