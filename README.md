@@ -1,36 +1,66 @@
-# Microsoft PowerToys
+![Hero image for Microsoft PowerToys](doc/images/overview/Header-light.png)
 
-![Hero image for Microsoft PowerToys](doc/images/overview/PT_hero_image.png)
+<p align="center">
+    <picture>
+      <source media="(prefers-color-scheme: light)" srcset="./doc/images/pt-hero.light.png" />
+      <img src="./doc/images/pt-hero.dark.png" />
+  </picture></a>
+</p>
 
-[How to use PowerToys][usingPowerToys-docs-link] | [Downloads & Release notes][github-release-link] | [Contributing to PowerToys](#contributing) | [What's Happening](#whats-happening) | [Roadmap](#powertoys-roadmap)
 
-## About
+<h1 align="center">
+  <img src="doc/images/icons/PowerToys icon/PNG/PowerToysAppList.targetsize-30.png"
+       alt="PowerToys logo" height="30" style="vertical-align:middle;margin-right:8px;">
+  <span style="vertical-align:middle;">Microsoft PowerToys</span>
+</h1>
 
-Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link], or any other tools and resources for [Windows development environments](https://learn.microsoft.com/windows/dev-environment/overview), head over to [learn.microsoft.com][usingPowerToys-docs-link]!
+<h3 align="center">
+  <a href="#powertoys-roadmap">Installation</a>
+  <span> · </span>
+  <a href="https://aka.ms/powertoys-docs">Documentation</a>
+  <span> · </span>
+  <a href="#powertoys-roadmap">Release notes & roadmap</a>
+</h3>
 
-|              | Current utilities: |              |
-|--------------|--------------------|--------------|
-| [Advanced Paste](https://aka.ms/PowerToysOverview_AdvancedPaste) | [Always on Top](https://aka.ms/PowerToysOverview_AoT) | [PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) |
-| [Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [Command Palette](https://aka.ms/PowerToysOverview_CmdPal) |
-| [Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
-| [File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) |
-| [Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [Mouse Utilities](https://aka.ms/PowerToysOverview_MouseUtilities) |
-| [Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) | [New+](https://aka.ms/PowerToysOverview_NewPlus) | [Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) |
-| [Peek](https://aka.ms/PowerToysOverview_Peek) | [PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) |
-| [Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
-| [Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
-| [ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |
+Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity. For more info on [PowerToys overviews and how to use the utilities][usingPowerToys-docs-link]
 
-## Installing and running Microsoft PowerToys
+|   |   |   |
+|---|---|---|
+| [<img src="doc/images/icons/AdvancedPaste.png" alt="PowerToys" height="16"> Advanced Paste](https://aka.ms/PowerToysOverview_AdvancedPaste) | [<img src="doc/images/icons/Always%20On%20Top.png" alt="PowerToys" height="16"> Always on Top](https://aka.ms/PowerToysOverview_AoT) | [<img src="doc/images/icons/Awake.png" alt="PowerToys" height="16"> PowerToys Awake](https://aka.ms/PowerToysOverview_Awake) |
+| [<img src="doc/images/icons/Color%20Picker.png" alt="PowerToys" height="16"> Color Picker](https://aka.ms/PowerToysOverview_ColorPicker) | [<img src="doc/images/icons/Command%20Not%20Found.png" alt="PowerToys" height="16"> Command Not Found](https://aka.ms/PowerToysOverview_CmdNotFound) | [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> Command Palette](https://aka.ms/PowerToysOverview_CmdPal) |
+| [<img src="doc/images/icons/Crop%20And%20Lock.png" alt="PowerToys" height="16"> Crop And Lock](https://aka.ms/PowerToysOverview_CropAndLock) | [<img src="doc/images/icons/Environment%20Manager.png" alt="PowerToys" height="16"> Environment Variables](https://aka.ms/PowerToysOverview_EnvironmentVariables) | [<img src="doc/images/icons/FancyZones.png" alt="PowerToys" height="16"> FancyZones](https://aka.ms/PowerToysOverview_FancyZones) |
+| [<img src="doc/images/icons/File%20Explorer%20Preview.png" alt="PowerToys" height="16"> File Explorer Add-ons](https://aka.ms/PowerToysOverview_FileExplorerAddOns) | [<img src="doc/images/icons/File%20Locksmith.png" alt="PowerToys" height="16"> File Locksmith](https://aka.ms/PowerToysOverview_FileLocksmith) | [<img src="doc/images/icons/Host%20File%20Editor.png" alt="PowerToys" height="16"> Hosts File Editor](https://aka.ms/PowerToysOverview_HostsFileEditor) |
+| [<img src="doc/images/icons/Image%20Resizer.png" alt="PowerToys" height="16"> Image Resizer](https://aka.ms/PowerToysOverview_ImageResizer) | [<img src="doc/images/icons/Keyboard%20Manager.png" alt="PowerToys" height="16"> Keyboard Manager](https://aka.ms/PowerToysOverview_KeyboardManager) | [<img src="doc/images/icons/Keyboard%20Manager.png" alt="PowerToys" height="16"> Mouse Utilities](https://aka.ms/PowerToysOverview_MouseUtilities) |
+| [<img src="doc/images/icons/MouseWithoutBorders.png" alt="PowerToys" height="16"> Mouse Without Borders](https://aka.ms/PowerToysOverview_MouseWithoutBorders) | [<img src="doc/images/icons/NewPlus.png" alt="PowerToys" height="16"> New+](https://aka.ms/PowerToysOverview_NewPlus) | [<img src="doc/images/icons/AdvancedPaste.png" alt="PowerToys" height="16"> Paste as Plain Text](https://aka.ms/PowerToysOverview_PastePlain) |
+| [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> Peek](https://aka.ms/PowerToysOverview_Peek) | [<img src="doc/images/icons/PowerRename.png" alt="PowerToys" height="16"> PowerRename](https://aka.ms/PowerToysOverview_PowerRename) | [<img src="doc/images/icons/PowerToys%20Run.png" alt="PowerToys" height="16"> PowerToys Run](https://aka.ms/PowerToysOverview_PowerToysRun) |
+| [<img src="doc/images/icons/PowerAccent.png" alt="PowerToys" height="16"> Quick Accent](https://aka.ms/PowerToysOverview_QuickAccent) | [<img src="doc/images/icons/Registry%20Preview.png" alt="PowerToys" height="16"> Registry Preview](https://aka.ms/PowerToysOverview_RegistryPreview) | [<img src="doc/images/icons/MeasureTool.png" alt="PowerToys" height="16"> Screen Ruler](https://aka.ms/PowerToysOverview_ScreenRuler) |
+| [<img src="doc/images/icons/Shortcut%20Guide.png" alt="PowerToys" height="16"> Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [<img src="doc/images/icons/PowerOCR.png" alt="PowerToys" height="16"> Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [<img src="doc/images/icons/Workspaces.png" alt="PowerToys" height="16"> Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
+| [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |  |  |
 
-### Requirements
+## 📋 Installation
 
-- Windows 11 or Windows 10 version 2004 (code name 20H1 / build number 19041) or newer.
-- x64 or ARM64 processor
-- Our installer will install the following items:
-   - [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) bootstrapper. This will install the latest version.
+To get started with PowerToys, ensure you have the right system requirements:
 
-### Via GitHub with EXE [Recommended]
+> [!NOTE]
+> - Windows 11 or Windows 10 version 2004 (20H1 / build 19041) or newer
+> - 64-bit processor: x64 or ARM64
+> - Latest stable version of [Microsoft Edge WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) is installed via the bootstrapper during setup
+
+To install, there are multiple options:
+
+<details>
+<summary>Microsoft Store</summary>
+You can easily install PowerToys from the Microsoft Store:
+<p>
+  <a style="text-decoration:none" href="https://aka.ms/getPowertoy">
+    <picture>
+      <source media="(prefers-color-scheme: light)" srcset="doc/images/StoreBadge-dark.png" width="220" />
+      <img src="doc/images/StoreBadge-light.png" width="220" />
+  </picture></a>
+</p>
+</details>
+<details>
+<summary>Via GitHub with .exe</summary>
 
 Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and click on `Assets` at the bottom to show the files available in the release. Please use the appropriate PowerToys installer that matches your machine's architecture and install scope. For most, it is `x64` and per-user.
 
@@ -49,57 +79,37 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 | Machine wide - x64   | [PowerToysSetup-0.94.0-x64.exe][ptMachineX64] |
 | Machine wide - ARM64 | [PowerToysSetup-0.94.0-arm64.exe][ptMachineArm64] |
 
-This is our preferred method.
+</details>
 
-### Via Microsoft Store
+<details>
+<summary>WinGet</summary>
 
-Install from the [Microsoft Store's PowerToys page][microsoft-store-link]. You must be using the [new Microsoft Store](https://blogs.windows.com/windowsExperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/), which is available for both Windows 11 and Windows 10.
-
-### Via WinGet
 Download PowerToys from [WinGet][winget-link]. Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
 
-#### User scope installer [default]
+*User scope installer [default]*
 ```powershell
 winget install Microsoft.PowerToys -s winget
 ```
 
-#### Machine-wide scope installer
-
+*User scope installer [default]*
 ```powershell
 winget install --scope machine Microsoft.PowerToys -s winget
 ```
+</details>
 
-### Other install methods
-
+<details>
+<summary>Other methods</summary>
 There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
+</details>
 
-## Third-Party Run Plugins
-
-There is a collection of [third-party plugins](./doc/thirdPartyRunPlugins.md) created by the community that aren't distributed with PowerToys.
-
-## Contributing
-
-This project welcomes contributions of all types. Besides coding features / bug fixes, other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
-
-We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
-
-Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you grant us the rights to use your contribution and that you have permission to do so.
-
-For guidance on developing for PowerToys, please read the [developer docs](./doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile.
-
-## What's Happening
-
-### PowerToys Roadmap
-
-Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
-
-### 0.94 - Sep 2025 Update
+## ✨ What's new
+Version 0.94 (September 2025)
 
 In this release, we focused on new features, stability, optimization improvements, and automation.
 
 For an in-depth look at the latest changes, visit the [release blog](https://aka.ms/powertoys-releaseblog).
 
-**✨Highlights**
+**✨ Highlights**
 
  - PowerToys Settings added a Settings search with fuzzy matching, suggestions, a results page, and UX polish to make finding options faster.
  - A comprehensive hotkey conflict detection system was introduced in Settings to surface and help resolve conflicting shortcuts. Note that the default hotkey settings (Win+Ctrl+Shift+T, Win+Ctrl+V, Win+Ctrl+T, Win+Shift+T) may overlap with existing Windows system shortcuts. This is expected. You can resolve the conflict by assigning different hotkeys.
@@ -223,7 +233,9 @@ For an in-depth look at the latest changes, visit the [release blog](https://aka
  - Cleans up AI‑generated tests; adds meaningful query tests across extensions.
  - Removed the obsolete debug dialog from Settings for a smoother developer loop.
 
-### What is being planned over the next few releases
+## 🛣️ Roadmap
+
+Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
 
 For [v0.95][github-next-release-work], we'll work on the items below:
 
@@ -238,6 +250,16 @@ For [v0.95][github-next-release-work], we'll work on the items below:
 ## PowerToys Community
 
 The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month by month, you directly help make PowerToys a better piece of software.
+
+## Contributing
+
+This project welcomes contributions of all types. Besides coding features / bug fixes, other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
+
+We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
+
+Most contributions require you to agree to a [Contributor License Agreement (CLA)][oss-CLA] declaring that you grant us the rights to use your contribution and that you have permission to do so.
+
+For guidance on developing for PowerToys, please read the [developer docs](./doc/devdocs) for a detailed breakdown. This includes how to setup your computer to compile.
 
 ## Code of Conduct
 
