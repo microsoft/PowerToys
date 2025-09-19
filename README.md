@@ -19,7 +19,6 @@
   <a href="#-whats-new">What's new & roadmap</a>
 </h3>
 
-<p align="center">
 Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks. To learn more about each utility, visit the [PowerToys docs](https://aka.ms/powertoys-docs).
 
 |   |   |   |
@@ -35,8 +34,6 @@ Microsoft PowerToys is a collection of utilities that help you customize Windows
 | [<img src="doc/images/icons/Shortcut%20Guide.png" alt="PowerToys" height="16"> Shortcut Guide](https://aka.ms/PowerToysOverview_ShortcutGuide) | [<img src="doc/images/icons/PowerOCR.png" alt="PowerToys" height="16"> Text Extractor](https://aka.ms/PowerToysOverview_TextExtractor) | [<img src="doc/images/icons/Workspaces.png" alt="PowerToys" height="16"> Workspaces](https://aka.ms/PowerToysOverview_Workspaces) |
 | [<img src="doc/images/icons/Peek.png" alt="PowerToys" height="16"> ZoomIt](https://aka.ms/PowerToysOverview_ZoomIt) |  |  |
 
-</p>
-
 ## 📋 Installation
 
 Before you begin, make sure your device meets the system requirements:
@@ -48,6 +45,7 @@ Before you begin, make sure your device meets the system requirements:
 
 Choose one of the installation methods below:
 
+<details>
 <summary>Via GitHub with .exe</summary>
 
 Go to the [PowerToys GitHub releases][github-release-link], click Assets to reveal the downloads, and choose the installer that matches your architecture and install scope. For most devices, that's the x64 per-user installer.
@@ -80,7 +78,7 @@ You can easily install PowerToys from the Microsoft Store:
   </picture></a>
 </p>
 </details>
-<details>
+
 
 <details>
 <summary>WinGet</summary>
@@ -104,11 +102,9 @@ There are [community driven install methods](./doc/unofficialInstallMethods.md) 
 </details>
 
 ## ✨ What's new
-Version 0.94 (September 2025)
+**Version 0.94 (September 2025)**
 
-In this release, we focused on new features, stability, optimization improvements, and automation.
-
-For an in-depth look at the latest changes, visit the [release blog](https://aka.ms/powertoys-releaseblog).
+For an in-depth look at the latest changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
 **✨ Highlights**
 
@@ -149,13 +145,13 @@ For an in-depth look at the latest changes, visit the [release blog](https://aka
  - Allowed providers to override Dispose with a virtual method.
  - Fixed memory leaks by cleaning up removed or cancelled list items.
  - Sorted DateTime extension results by relevance for better usability.
- - Reduced search text “jiggling” by avoiding redundant change notifications.
+ - Reduced search text "jiggling" by avoiding redundant change notifications.
  - Centralized automation notifications in a UIHelper for better accessibility. Thanks [@chatasweetie](https://github.com/chatasweetie)!
  - Preserved Adaptive Card action types during trimming via DynamicDependency.
  - Added an acrylic backdrop and refined styling to the context menu. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Prevented disposed pages and Settings windows from handling stale messages. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Made the extension API easier to evolve without breaking clients.
- - Added “evil” sample pages to help reproduce tricky bugs.
+ - Added "evil" sample pages to help reproduce tricky bugs.
  - Fixed WinGet trim-safety issues by replacing LINQ with manual iteration.
  - Cancelled stale list fetches to avoid older results overwriting newer ones in CmdPal.
 
@@ -231,7 +227,7 @@ For an in-depth look at the latest changes, visit the [release blog](https://aka
  - Rewrote system command tests with a new test base and cleaner patterns.
  - Added unit tests for WebSearch and Shell extensions with mockable settings.
  - Added unit tests and abstractions for Apps and Bookmarks extensions.
- - Cleans up AI‑generated tests; adds meaningful query tests across extensions.
+ - Cleans up AI-generated tests; adds meaningful query tests across extensions.
  - Removed the obsolete debug dialog from Settings for a smoother developer loop.
 
 ## 🛣️ Roadmap
@@ -250,7 +246,7 @@ For [v0.95][github-next-release-work], we'll work on the items below:
 
 ## PowerToys Community
 
-The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month by month, you directly help make PowerToys a better piece of software.
+The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn't be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work. Your contributions and feedback improve PowerToys month after month!
 
 ## Contributing
 
