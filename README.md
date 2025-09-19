@@ -237,8 +237,6 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ## 🛣️ Roadmap
 
-Our [prioritized roadmap][roadmap] of features and utilities that the core team is focusing on.
-
 For [v0.95][github-next-release-work], we'll work on the items below:
 
  - Continued Command Palette polish
