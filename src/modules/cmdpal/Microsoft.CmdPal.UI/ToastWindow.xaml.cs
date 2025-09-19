@@ -12,6 +12,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -33,12 +34,17 @@ public sealed partial class ToastWindow : WindowEx,
     {
         this.InitializeComponent();
         AppWindow.Hide();
-        this.SetVisibilityInSwitchers(false);
         ExtendsContentIntoTitleBar = true;
         AppWindow.SetPresenter(AppWindowPresenterKind.CompactOverlay);
         this.SetIcon();
         AppWindow.Title = RS_.GetString("ToastWindowTitle");
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+
+        // Tool windows don't show up in ALT+TAB, and don't show up in the taskbar
+        // Since tool windows have smaller corner radii, we need to force the normal ones
+        // to visually match system toasts.
+        this.ToggleExtendedWindowStyle(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW, true);
+        this.SetCornerPreference(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND);
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
         PInvoke.EnableWindow(_hwnd, false);
