@@ -23,7 +23,6 @@
 <br/><br/>
 Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks. To learn more about each utility, visit the [PowerToys docs](https://aka.ms/powertoys-docs).
 <br/><br/>
-<br/><br/>
 
 |   |   |   |
 |---|---|---|
