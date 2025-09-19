@@ -2,7 +2,6 @@
 #include "WindowArranger.h"
 
 #include <common/logger/logger.h>
-#include <common/utils/OnThreadExecutor.h>
 #include <common/utils/process_path.h>
 #include <common/utils/winapi_error.h>
 
@@ -16,9 +15,6 @@
 #include <WorkspacesLib/WindowUtils.h>
 
 #include <algorithm>
-#include <execution>
-#include <future>
-#include <mutex>
 #include <vector>
 
 namespace NonLocalizable
@@ -304,12 +300,12 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     auto startTime = std::chrono::high_resolution_clock::now();
     Logger::info(L"WindowArranger construction started");
 
-    // First, minimize all unmanaged windows in parallel for maximum performance
+    // First, minimize all unmanaged windows sequentially for thread safety
     auto minimizeStart = std::chrono::high_resolution_clock::now();
     MinimizeUnmanagedWindowsParallel();
     auto minimizeEnd = std::chrono::high_resolution_clock::now();
     auto minimizeDuration = std::chrono::duration_cast<std::chrono::milliseconds>(minimizeEnd - minimizeStart);
-    Logger::info(L"MinimizeUnmanagedWindowsParallel took {} ms", minimizeDuration.count());
+    Logger::info(L"MinimizeUnmanagedWindows took {} ms", minimizeDuration.count());
 
     if (project.moveExistingWindows)
     {
@@ -687,7 +683,7 @@ void WindowArranger::sendUpdatedState(const WorkspacesData::LaunchingAppState& d
 
 void WindowArranger::MinimizeUnmanagedWindowsParallel()
 {
-    Logger::info(L"Starting parallel minimization of unmanaged windows");
+    Logger::info(L"Starting sequential minimization of unmanaged windows");
     auto start = std::chrono::high_resolution_clock::now();
 
     // Get all current windows
@@ -697,45 +693,43 @@ void WindowArranger::MinimizeUnmanagedWindowsParallel()
     auto enumDuration = std::chrono::duration_cast<std::chrono::milliseconds>(enumEnd - enumStart);
     Logger::info(L"Window enumeration found {} windows in {} ms", allWindows.size(), enumDuration.count());
     
-    // Use concurrent filtering to classify windows
+    // Use sequential filtering to classify windows for thread safety
     std::vector<HWND> unmanagedWindows;
-    std::mutex unmanagedWindowsMutex;
     
     Utils::PwaHelper pwaHelper{};
     
-    // Parallel classification of windows
+    // Sequential classification of windows
     auto classifyStart = std::chrono::high_resolution_clock::now();
-    std::for_each(std::execution::par_unseq, allWindows.begin(), allWindows.end(),
-        [&](HWND window) {
-            if (!IsWindowInAppList(window, pwaHelper))
-            {
-                std::lock_guard<std::mutex> lock(unmanagedWindowsMutex);
-                unmanagedWindows.push_back(window);
-            }
-        });
+    for (HWND window : allWindows)
+    {
+        if (!IsWindowInAppList(window, pwaHelper))
+        {
+            unmanagedWindows.push_back(window);
+        }
+    }
     auto classifyEnd = std::chrono::high_resolution_clock::now();
     auto classifyDuration = std::chrono::duration_cast<std::chrono::milliseconds>(classifyEnd - classifyStart);
     Logger::info(L"Window classification completed in {} ms", classifyDuration.count());
 
     Logger::info(L"Found {} unmanaged windows to minimize out of {} total", unmanagedWindows.size(), allWindows.size());
 
-    // Parallel minimization of unmanaged windows
+    // Sequential minimization of unmanaged windows
     auto minimizeStart = std::chrono::high_resolution_clock::now();
-    std::atomic<int> minimizedCount = 0;
-    std::for_each(std::execution::par_unseq, unmanagedWindows.begin(), unmanagedWindows.end(),
-        [&](HWND window) {
-            if (MinimizeWindowWithoutAnimation(window))
-            {
-                minimizedCount.fetch_add(1);
-            }
-        });
+    int minimizedCount = 0;
+    for (HWND window : unmanagedWindows)
+    {
+        if (MinimizeWindowWithoutAnimation(window))
+        {
+            minimizedCount++;
+        }
+    }
     auto minimizeEnd = std::chrono::high_resolution_clock::now();
     auto minimizeDuration = std::chrono::duration_cast<std::chrono::milliseconds>(minimizeEnd - minimizeStart);
-    Logger::info(L"Window minimization completed in {} ms, successfully minimized {} windows", minimizeDuration.count(), minimizedCount.load());
+    Logger::info(L"Sequential window minimization completed in {} ms, successfully minimized {} windows", minimizeDuration.count(), minimizedCount);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    Logger::info(L"Parallel window minimization completed in {} ms total", totalDuration.count());
+    Logger::info(L"Sequential window minimization completed in {} ms total", totalDuration.count());
 }
 
 bool WindowArranger::IsWindowInAppList(HWND window, Utils::PwaHelper& pwaHelper)

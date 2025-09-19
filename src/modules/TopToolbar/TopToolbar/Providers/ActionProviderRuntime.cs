@@ -17,6 +17,12 @@ namespace TopToolbar.Providers
         private readonly Dictionary<string, IActionProvider> _providers;
         private readonly Dictionary<string, ProviderInfo> _infoCache;
         private readonly Dictionary<string, IToolbarGroupProvider> _groupProviders;
+        private long _changeVersion;
+
+        /// <summary>
+        /// Raised when any provider reports a change. Carries semantic detail for selective refresh.
+        /// </summary>
+        public event EventHandler<ProviderChangedEventArgs> ProvidersChanged;
 
         public ActionProviderRuntime()
         {
@@ -47,6 +53,28 @@ namespace TopToolbar.Providers
             else
             {
                 _groupProviders.Remove(provider.Id);
+            }
+
+            if (provider is IChangeNotifyingActionProvider notifying)
+            {
+                notifying.ProviderChanged += (_, args) =>
+                {
+                    if (args == null)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        // Assign version (thread-safe increment)
+                        var version = System.Threading.Interlocked.Increment(ref _changeVersion);
+                        args.Version = version;
+                        ProvidersChanged?.Invoke(this, args);
+                    }
+                    catch
+                    {
+                    }
+                };
             }
         }
 

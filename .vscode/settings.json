@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.rh": "cpp",
-        "optional": "cpp"
+        "optional": "cpp",
+        "mutex": "cpp"
     }
 }

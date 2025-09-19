@@ -48,7 +48,8 @@
             "cwd": "${workspaceFolder}",
             "env": {},
             "console": "internalConsole",
-            "stopAtEntry": false
+            "stopAtEntry": false,
+            "requireExactSource": false
         },
         {
             "name": "WorkspacesLauncher ARM64 Debug",

@@ -79,10 +79,10 @@ public sealed class ConfiguredActionProvider : IActionProvider, IToolbarGroupPro
         });
     }
 
-    private static (Dictionary<string, ProviderActionConfig> Map, List<(ProviderActionConfig, double, int)> Ordered) BuildActionIndex(IEnumerable<ProviderActionConfig> actions)
+    private static (Dictionary<string, ProviderActionConfig> Map, List<(ProviderActionConfig Config, double Order, int Index)> Ordered) BuildActionIndex(IEnumerable<ProviderActionConfig> actions)
     {
         var map = new Dictionary<string, ProviderActionConfig>(StringComparer.OrdinalIgnoreCase);
-        var ordered = new List<(ProviderActionConfig, double, int)>();
+        var ordered = new List<(ProviderActionConfig Config, double Order, int Index)>();
 
         if (actions == null)
         {
@@ -118,14 +118,14 @@ public sealed class ConfiguredActionProvider : IActionProvider, IToolbarGroupPro
                     }
 
                     var current = ordered[i];
-                    ordered[i] = (action, action.SortOrder ?? double.MaxValue, current.Index);
+                    ordered[i] = (Config: action, Order: action.SortOrder ?? double.MaxValue, Index: current.Index);
                     break;
                 }
             }
             else
             {
                 map[key] = action;
-                ordered.Add((action, action.SortOrder ?? double.MaxValue, index));
+                ordered.Add((Config: action, Order: action.SortOrder ?? double.MaxValue, Index: index));
             }
 
             index++;

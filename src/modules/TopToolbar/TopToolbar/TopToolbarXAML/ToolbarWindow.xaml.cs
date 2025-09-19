@@ -3,16 +3,22 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
+using TopToolbar.Actions;
 using TopToolbar.Models;
 using TopToolbar.Providers;
+using TopToolbar.Providers.Configuration;
+using TopToolbar.Providers.External.Mcp;
 using TopToolbar.Services;
 using TopToolbar.ViewModels;
 using WinUIEx;
@@ -29,7 +35,12 @@ namespace TopToolbar
         private readonly ActionProviderService _providerService;
         private readonly ActionContextFactory _contextFactory;
         private readonly ToolbarActionExecutor _actionExecutor;
+        private readonly List<IDisposable> _providerDisposables = new();
         private readonly ToolbarViewModel _vm;
+
+        private readonly TopToolbar.Stores.ToolbarStore _store = new();
+        private readonly Dictionary<string, ButtonGroup> _groupMap = new(StringComparer.OrdinalIgnoreCase);
+        private int _lastPartialUpdateTick;
         private Timer _monitorTimer;
         private Timer _configWatcherDebounce;
         private bool _isVisible;
@@ -49,6 +60,115 @@ namespace TopToolbar
             _actionExecutor = new ToolbarActionExecutor(_providerService, _contextFactory);
             _vm = new ToolbarViewModel(_configService, _providerService, _contextFactory);
             RegisterProviders();
+
+            _store.StoreChanged += (s, e) =>
+            {
+                // If a partial update just occurred, suppress immediate full rebuild to avoid duplicate visuals.
+                if (Environment.TickCount - _lastPartialUpdateTick < 50)
+                {
+                    return;
+                }
+
+                try
+                {
+                    BuildToolbarFromStore();
+                    ResizeToContent();
+                }
+                catch
+                {
+                }
+            };
+
+            _store.StoreChangedDetailed += (s, e) =>
+            {
+                try
+                {
+                    if (e == null || e.Kind == TopToolbar.Stores.StoreChangeKind.Reset || string.IsNullOrWhiteSpace(e.GroupId))
+                    {
+                        BuildToolbarFromStore();
+                        ResizeToContent();
+                        return;
+                    }
+
+                    // Attempt partial update for single group
+                    if (!DispatcherQueue.TryEnqueue(() =>
+                    {
+                        BuildOrReplaceSingleGroup(e.GroupId);
+                        _lastPartialUpdateTick = Environment.TickCount;
+                    }))
+                    {
+                        BuildOrReplaceSingleGroup(e.GroupId);
+                        _lastPartialUpdateTick = Environment.TickCount;
+                    }
+                }
+                catch
+                {
+                }
+            };
+
+            _providerRuntime.ProvidersChanged += async (_, args) =>
+            {
+                if (args == null)
+                {
+                    return;
+                }
+
+                // Only handle WorkspaceProvider for now (other providers not yet dynamic)
+                if (!string.Equals(args.ProviderId, "WorkspaceProvider", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                try
+                {
+                    var kindsNeedingGroup = args.Kind == ProviderChangeKind.ActionsUpdated ||
+                                            args.Kind == ProviderChangeKind.ActionsAdded ||
+                                            args.Kind == ProviderChangeKind.ActionsRemoved ||
+                                            args.Kind == ProviderChangeKind.GroupUpdated ||
+                                            args.Kind == ProviderChangeKind.BulkRefresh ||
+                                            args.Kind == ProviderChangeKind.Reset ||
+                                            args.Kind == ProviderChangeKind.ProviderRegistered;
+
+                    if (!kindsNeedingGroup)
+                    {
+                        return; // other change kinds (progress, execution) not yet surfaced
+                    }
+
+                    // Build new group off the UI thread
+                    var ctx = new ActionContext();
+                    ButtonGroup newGroup;
+                    try
+                    {
+                        newGroup = await _providerService.CreateGroupAsync("WorkspaceProvider", ctx, CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // TODO: log: failed to create workspace group
+                        return;
+                    }
+
+                    void ApplyStore()
+                    {
+                        try
+                        {
+                            _store.UpsertProviderGroup(newGroup);
+                        }
+                        catch
+                        {
+                            // TODO: log: store upsert failed
+                        }
+                    }
+
+                    if (!DispatcherQueue.TryEnqueue(ApplyStore))
+                    {
+                        ApplyStore();
+                    }
+                }
+                catch (Exception)
+                {
+                    // TODO: log: provider change handling wrapper failure
+                }
+            };
 
             Title = "Top Toolbar";
 
@@ -94,7 +214,8 @@ namespace TopToolbar
                 // Ensure UI-thread access for XAML object tree
                 DispatcherQueue.TryEnqueue(() =>
                 {
-                    BuildToolbarFromConfig();
+                    SyncStaticGroupsIntoStore();
+                    BuildToolbarFromStore();
                     ResizeToContent();
                     PositionAtTopCenter();
                     _builtConfigOnce = true;
@@ -116,57 +237,72 @@ namespace TopToolbar
 
                     try
                     {
-                        var provider = new ConfiguredActionProvider(config);
+                        var provider = CreateProvider(config);
                         _providerRuntime.RegisterProvider(provider);
+
+                        if (provider is IDisposable disposable)
+                        {
+                            _providerDisposables.Add(disposable);
+                        }
                     }
-                    catch (Exception providerEx)
+                    catch (Exception)
                     {
-                        ManagedCommon.Logger.LogError($"ToolbarWindow: failed to register configured provider '{config.Id}'.", providerEx);
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ManagedCommon.Logger.LogError("ToolbarWindow: failed to load configured providers.", ex);
             }
 
             try
             {
-                _providerRuntime.RegisterProvider(new WorkspaceProvider());
+                var workspaceProvider = new WorkspaceProvider();
+                _providerRuntime.RegisterProvider(workspaceProvider);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ManagedCommon.Logger.LogError("ToolbarWindow: failed to register WorkspaceProvider.", ex);
             }
+        }
+
+        private static IActionProvider CreateProvider(ProviderConfig config)
+        {
+            if (config?.External?.Type == ExternalProviderType.Mcp)
+            {
+                return new McpActionProvider(config);
+            }
+
+            return new ConfiguredActionProvider(config);
         }
 
         private void CreateToolbarShell()
         {
-            // Create a completely transparent root container with optimized rendering
+            // Create a completely transparent root container with symmetric padding for shadow
             var rootGrid = new Grid
             {
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
                 UseLayoutRounding = true,
                 IsHitTestVisible = true,
+                Padding = new Thickness(12), // Symmetric padding for shadow space
             };
 
-            // Create the toolbar content with modern macOS-style design
+            // Create the toolbar content with modern macOS-style design and default shadow
             var border = new Border
             {
                 Name = "ToolbarContainer",
                 CornerRadius = new CornerRadius(12),
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                     Windows.UI.Color.FromArgb(255, 255, 255, 255)),
-                Height = 48,
+                Height = 75,
                 Padding = new Thickness(12, 6, 12, 6),
-                VerticalAlignment = VerticalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center, // Back to center
                 HorizontalAlignment = HorizontalAlignment.Center,
                 UseLayoutRounding = true,
                 IsHitTestVisible = true,     // the pill remains interactive
-
-                // Optional: ThemeShadow may need a proper shadow host; keep or remove as you like.
-                Shadow = new Microsoft.UI.Xaml.Media.ThemeShadow(),
             };
+
+            // Apply default shadow
+            var themeShadow = new Microsoft.UI.Xaml.Media.ThemeShadow();
+            border.Shadow = themeShadow;
 
             var mainStack = new StackPanel
             {
@@ -211,7 +347,8 @@ namespace TopToolbar
                     await _vm.LoadAsync(this.DispatcherQueue);
                     DispatcherQueue.TryEnqueue(() =>
                     {
-                        BuildToolbarFromConfig();
+                        SyncStaticGroupsIntoStore();
+                        BuildToolbarFromStore();
                         ResizeToContent();
                     });
                 };
@@ -245,7 +382,34 @@ namespace TopToolbar
             }
         }
 
-        private void BuildToolbarFromConfig()
+        // Sync static (config) groups into the central store so subsequent dynamic rebuilds retain them.
+        private void SyncStaticGroupsIntoStore()
+        {
+            try
+            {
+                foreach (var g in _vm.Groups)
+                {
+                    if (g == null)
+                    {
+                        continue;
+                    }
+
+                    // Workspace group (dynamic) will arrive via provider path
+                    if (string.Equals(g.Id, "WorkspaceProvider", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    // Upsert static group into store (reuse provider upsert since it is id-based)
+                    _store.UpsertProviderGroup(g);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private void BuildToolbarFromStore()
         {
             StackPanel mainStack = (_toolbarContainer?.Child as ScrollViewer)?.Content as StackPanel
                                    ?? _toolbarContainer?.Child as StackPanel;
@@ -256,52 +420,75 @@ namespace TopToolbar
 
             mainStack.Children.Clear();
 
-            // Use only groups that have at least one enabled button
-            var nonEmptyGroups = _vm.Groups
-                .Where(g => g.IsEnabled)
+            // Filter enabled groups and buttons
+            var activeGroups = _store.Groups
+                .Where(g => g != null && g.IsEnabled)
                 .Select(g => new { Group = g, EnabledButtons = g.Buttons.Where(b => b.IsEnabled).ToList() })
                 .Where(x => x.EnabledButtons.Count > 0)
                 .ToList();
 
-            for (int gi = 0; gi < nonEmptyGroups.Count; gi++)
+            for (int gi = 0; gi < activeGroups.Count; gi++)
             {
-                var group = nonEmptyGroups[gi].Group;
-                var enabledButtons = nonEmptyGroups[gi].EnabledButtons;
-                var groupPanel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+                var group = activeGroups[gi].Group;
+                var enabledButtons = activeGroups[gi].EnabledButtons;
 
+                var groupContainer = new Border
+                {
+                    CornerRadius = new CornerRadius(15),
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(10, 0, 0, 0)),
+                    Padding = new Thickness(4, 2, 4, 2),
+                    Margin = new Thickness(2, 0, 2, 0),
+                    Tag = group.Id,
+                };
+
+                var groupShadow = new Microsoft.UI.Xaml.Media.ThemeShadow();
+                groupContainer.Shadow = groupShadow;
+                groupContainer.Translation = new System.Numerics.Vector3(0, 0, 1);
+
+                var groupPanel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
                 foreach (var btn in enabledButtons)
                 {
                     var iconButton = CreateIconButton(group, btn);
                     groupPanel.Children.Add(iconButton);
                 }
 
-                mainStack.Children.Add(groupPanel);
+                groupContainer.Child = groupPanel;
+                mainStack.Children.Add(groupContainer);
 
-                // Add separator only between non-empty groups
-                if (gi != nonEmptyGroups.Count - 1)
+                if (gi != activeGroups.Count - 1)
                 {
-                    mainStack.Children.Add(new Rectangle
+                    var separatorContainer = new Border
                     {
                         Width = 1,
                         Height = 24,
-                        Fill = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(40, 0, 0, 0)),
+                        Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(50, 0, 0, 0)),
                         VerticalAlignment = VerticalAlignment.Center,
                         Margin = new Thickness(8, 0, 8, 0),
                         IsHitTestVisible = false,
-                    });
+                        CornerRadius = new CornerRadius(0.5),
+                    };
+                    var separatorShadow = new Microsoft.UI.Xaml.Media.ThemeShadow();
+                    separatorContainer.Shadow = separatorShadow;
+                    separatorContainer.Translation = new System.Numerics.Vector3(0, 0, 2);
+                    mainStack.Children.Add(separatorContainer);
                 }
             }
 
-            // Settings button at far right
-            mainStack.Children.Add(new Rectangle
+            var settingsSeparatorContainer = new Border
             {
                 Width = 1,
                 Height = 24,
-                Fill = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(40, 0, 0, 0)),
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(50, 0, 0, 0)),
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(8, 0, 8, 0),
                 IsHitTestVisible = false,
-            });
+                CornerRadius = new CornerRadius(0.5),
+                Tag = "__SETTINGS_SEPARATOR__",
+            };
+            var settingsSeparatorShadow = new Microsoft.UI.Xaml.Media.ThemeShadow();
+            settingsSeparatorContainer.Shadow = settingsSeparatorShadow;
+            settingsSeparatorContainer.Translation = new System.Numerics.Vector3(0, 0, 2);
+            mainStack.Children.Add(settingsSeparatorContainer);
 
             var settingsButton = CreateIconButton("\uE713", "Toolbar Settings", (s, e) =>
             {
@@ -312,7 +499,7 @@ namespace TopToolbar
             mainStack.Children.Add(settingsButton);
         }
 
-        private Button CreateIconButton(string content, string tooltip, RoutedEventHandler clickHandler)
+        private FrameworkElement CreateIconButton(string content, string tooltip, RoutedEventHandler clickHandler)
         {
             var button = new Button
             {
@@ -324,12 +511,37 @@ namespace TopToolbar
                 BorderBrush = null,
                 BorderThickness = new Thickness(0),
                 HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(2),
+                Margin = new Thickness(0),
                 Padding = new Thickness(0),
                 UseLayoutRounding = true,
+            };
+
+            // Create text label for button
+            var textLabel = new TextBlock
+            {
+                Text = "Settings",
+                FontSize = 9,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 100, 100, 100)),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextAlignment = TextAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 50,
+                Margin = new Thickness(0, 2, 0, 0),
+                UseLayoutRounding = true,
+            };
+
+            // Create container stack panel for button + text
+            var containerStack = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Spacing = 0,
+                Width = 54, // Slightly wider to accommodate text
+                Margin = new Thickness(2),
             };
 
             // Use WinUI button visual state resources to ensure stable hover/pressed visuals
@@ -343,12 +555,16 @@ namespace TopToolbar
             button.Resources["ButtonBackgroundPressed"] = pressedBrush;
             button.Resources["ButtonBackgroundDisabled"] = normalBrush;
 
+            // Add button and text to the container stack
+            containerStack.Children.Add(button);
+            containerStack.Children.Add(textLabel);
+
             ToolTipService.SetToolTip(button, tooltip);
             button.Click += clickHandler;
-            return button;
+            return containerStack;
         }
 
-        private Button CreateIconButton(ButtonGroup group, ToolbarButton model)
+        private FrameworkElement CreateIconButton(ButtonGroup group, ToolbarButton model)
         {
             var dispatcher = DispatcherQueue;
 
@@ -361,12 +577,40 @@ namespace TopToolbar
                 BorderBrush = null,
                 BorderThickness = new Thickness(0),
                 HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(2),
+                Margin = new Thickness(0),
                 Padding = new Thickness(0),
                 UseLayoutRounding = true,
+            };
+
+            // Create text label for button with smaller font and fixed positioning
+            var textLabel = new TextBlock
+            {
+                Text = model.Name ?? string.Empty,
+                FontSize = 7,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 100, 100, 100)),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top,
+                TextAlignment = TextAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 48,
+                Height = 12,
+                Margin = new Thickness(0, 2, 0, 0),
+                UseLayoutRounding = true,
+            };
+
+            // Create container stack panel for button + text with fixed dimensions
+            var containerStack = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Spacing = 0,
+                Width = 50,
+                Height = 48,
+                Margin = new Thickness(2),
             };
 
             var hoverBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(60, 0, 0, 0));
@@ -395,18 +639,15 @@ namespace TopToolbar
                                 Query = $"v={ver}",
                             };
                             imgUri = ub.Uri;
-                            ManagedCommon.Logger.LogInfo($"Toolbar image: local path exists '{rawPath}', uri='{imgUri}'");
                         }
                         else if (Uri.TryCreate(rawPath, UriKind.Absolute, out var parsed))
                         {
                             imgUri = parsed;
-                            ManagedCommon.Logger.LogInfo($"Toolbar image: using provided URI '{parsed}'");
                         }
                         else
                         {
                             var prefixed = new UriBuilder { Scheme = "file", Path = rawPath }.Uri;
                             imgUri = prefixed;
-                            ManagedCommon.Logger.LogInfo($"Toolbar image: prefixed file URI '{prefixed}'");
                         }
 
                         var bmp = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
@@ -421,7 +662,6 @@ namespace TopToolbar
                     }
                     catch
                     {
-                        ManagedCommon.Logger.LogWarning($"Toolbar image: failed to load '{model.IconPath}', fallback to glyph");
                     }
                 }
 
@@ -436,6 +676,8 @@ namespace TopToolbar
             var iconElement = BuildIcon();
             var contentGrid = new Grid
             {
+                Width = 32,
+                Height = 32,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             };
@@ -451,6 +693,10 @@ namespace TopToolbar
             contentGrid.Children.Add(progressRing);
 
             button.Content = contentGrid;
+
+            // Add button and text to the container stack
+            containerStack.Children.Add(button);
+            containerStack.Children.Add(textLabel);
 
             void UpdateVisualState()
             {
@@ -536,7 +782,6 @@ namespace TopToolbar
                 }
                 catch (Exception ex)
                 {
-                    ManagedCommon.Logger.LogError("ToolbarWindow: dynamic action execution failed.", ex);
                     model.StatusMessage = ex.Message;
                 }
             }
@@ -557,11 +802,121 @@ namespace TopToolbar
                          e.PropertyName == nameof(ToolbarButton.Name))
                 {
                     UpdateToolTip();
+
+                    // Update text label when name changes
+                    if (e.PropertyName == nameof(ToolbarButton.Name))
+                    {
+                        if (dispatcher.HasThreadAccess)
+                        {
+                            textLabel.Text = model.Name ?? string.Empty;
+                        }
+                        else
+                        {
+                            dispatcher.TryEnqueue(() => textLabel.Text = model.Name ?? string.Empty);
+                        }
+                    }
                 }
             };
 
             button.Click += OnClick;
-            return button;
+            return containerStack;
+        }
+
+        // Build or replace a single group's visual container in-place; falls back to full rebuild if structure missing.
+        private void BuildOrReplaceSingleGroup(string groupId)
+        {
+            if (string.IsNullOrWhiteSpace(groupId))
+            {
+                return;
+            }
+
+            StackPanel mainStack = (_toolbarContainer?.Child as ScrollViewer)?.Content as StackPanel
+                                   ?? _toolbarContainer?.Child as StackPanel;
+            if (mainStack == null)
+            {
+                return;
+            }
+
+            var group = _store.Groups.FirstOrDefault(g => string.Equals(g.Id, groupId, StringComparison.OrdinalIgnoreCase));
+            if (group == null)
+            {
+                // Removed group: trigger full rebuild to also clean separators coherently.
+                BuildToolbarFromStore();
+                ResizeToContent();
+                return;
+            }
+
+            // Locate existing group container (Border) tagged with group id.
+            Border existingContainer = null;
+            for (int i = 0; i < mainStack.Children.Count; i++)
+            {
+                if (mainStack.Children[i] is Border b && b.Tag is string tag && string.Equals(tag, groupId, StringComparison.OrdinalIgnoreCase))
+                {
+                    existingContainer = b;
+                    break;
+                }
+            }
+
+            var enabledButtons = group.Buttons.Where(b => b.IsEnabled).ToList();
+            if (enabledButtons.Count == 0)
+            {
+                // If no buttons remain, treat as removal
+                BuildToolbarFromStore();
+                ResizeToContent();
+                return;
+            }
+
+            Border newContainer = new Border
+            {
+                CornerRadius = new CornerRadius(15),
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(10, 0, 0, 0)),
+                Padding = new Thickness(4, 2, 4, 2),
+                Margin = new Thickness(2, 0, 2, 0),
+                Tag = group.Id,
+            };
+            var groupShadow = new Microsoft.UI.Xaml.Media.ThemeShadow();
+            newContainer.Shadow = groupShadow;
+            newContainer.Translation = new System.Numerics.Vector3(0, 0, 1);
+
+            var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
+            foreach (var btn in enabledButtons)
+            {
+                panel.Children.Add(CreateIconButton(group, btn));
+            }
+
+            newContainer.Child = panel;
+
+            if (existingContainer == null)
+            {
+                // Find settings separator anchor
+                int anchorIndex = -1;
+                for (int i = 0; i < mainStack.Children.Count; i++)
+                {
+                    if (mainStack.Children[i] is Border b && b.Tag as string == "__SETTINGS_SEPARATOR__")
+                    {
+                        anchorIndex = i;
+                        break;
+                    }
+                }
+
+                int insertIndex = anchorIndex >= 0 ? anchorIndex : mainStack.Children.Count;
+                mainStack.Children.Insert(insertIndex, newContainer);
+            }
+            else
+            {
+                int idx = mainStack.Children.IndexOf(existingContainer);
+                if (idx >= 0)
+                {
+                    mainStack.Children.RemoveAt(idx);
+                    mainStack.Children.Insert(idx, newContainer);
+                }
+                else
+                {
+                    mainStack.Children.Add(newContainer);
+                }
+            }
+
+            ResizeToContent();
         }
 
         private void ResizeToContent()
@@ -578,14 +933,16 @@ namespace TopToolbar
 
                 mainStack.Measure(new Windows.Foundation.Size(double.PositiveInfinity, double.PositiveInfinity));
                 double desiredWidth = mainStack.DesiredSize.Width + _toolbarContainer.Padding.Left + _toolbarContainer.Padding.Right;
-                double desiredHeight = _toolbarContainer.ActualHeight > 0 ? _toolbarContainer.ActualHeight : 48;
+                double desiredHeight = _toolbarContainer.ActualHeight > 0 ? _toolbarContainer.ActualHeight : 75;
 
                 var displayArea = DisplayArea.GetFromWindowId(this.AppWindow.Id, DisplayAreaFallback.Primary);
                 double maxWidth = displayArea.WorkArea.Width / 2.0;
                 double widthToSet = Math.Min(desiredWidth, maxWidth);
 
-                int width = (int)Math.Ceiling(widthToSet);
-                int height = (int)Math.Ceiling(desiredHeight);
+                // Add symmetric space for shadow
+                int shadowPadding = 12; // Symmetric padding on all sides
+                int width = (int)Math.Ceiling(widthToSet) + (shadowPadding * 2);
+                int height = (int)Math.Ceiling(desiredHeight) + (shadowPadding * 2);
 
                 this.AppWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
             }
@@ -667,52 +1024,11 @@ namespace TopToolbar
             MakeTopMost();
         }
 
-        private void OnHomeClick(object sender, RoutedEventArgs e)
+        // Incremental diff update for workspace group to avoid full rebuild.
+        // Obsolete: old incremental workspace diff path (replaced by store). Retained temporarily for reference.
+        private void ReplaceOrInsertWorkspaceGroup(ButtonGroup newGroup, ProviderChangedEventArgs changeArgs = null)
         {
-        }
-
-        private void OnSearchClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnFilesClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnCalcClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnCameraClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnMusicClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnMailClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnCalendarClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnDisplayClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnSoundClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnNetworkClick(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void OnSettingsClick(object sender, RoutedEventArgs e)
-        {
+            // Intentionally left empty (legacy path). Will be removed after confirming store path stability.
         }
 
         [DllImport("user32.dll")]
@@ -794,6 +1110,18 @@ namespace TopToolbar
                 _configWatcher.Dispose();
             }
 
+            foreach (var disposable in _providerDisposables)
+            {
+                try
+                {
+                    disposable.Dispose();
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            _providerDisposables.Clear();
             GC.SuppressFinalize(this);
         }
     }

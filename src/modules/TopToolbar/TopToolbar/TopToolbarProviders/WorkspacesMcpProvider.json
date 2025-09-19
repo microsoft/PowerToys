@@ -1,0 +1,67 @@
+{
+  "id": "WorkspacesMcp",
+  "groupName": "Workspaces MCP",
+  "description": "Remote tools served by the Workspaces MCP daemon.",
+  "layout": {
+    "style": "capsule",
+    "overflow": "menu",
+    "showLabels": true
+  },
+  "actions": [
+    {
+      "id": "WorkspacesMcp::snapshot",
+      "name": "Create Snapshot",
+      "description": "Capture the current workspace layout.",
+      "iconGlyph": "\\uE71D",
+      "sortOrder": 0,
+      "action": {
+        "type": "provider",
+        "providerActionId": "create_workspace_snapshot"
+      }
+    },
+    {
+      "id": "WorkspacesMcp::list",
+      "name": "List Workspaces",
+      "description": "Enumerate saved workspace definitions.",
+      "iconGlyph": "\\uE8C8",
+      "sortOrder": 1,
+      "action": {
+        "type": "provider",
+        "providerActionId": "list_workspaces"
+      }
+    },
+    {
+      "id": "WorkspacesMcp::launch",
+      "name": "Launch Workspace",
+      "description": "Launch a saved workspace.",
+      "iconGlyph": "\\uE8F1",
+      "sortOrder": 2,
+      "action": {
+        "type": "provider",
+        "providerActionId": "launch_workspace"
+      },
+      "input": {
+        "hideBaseAction": true,
+        "labelTemplate": "Launch {{label}}",
+        "enum": [],
+        "dynamic": {
+          "sourceTool": "list_workspaces",
+          "itemsPath": "content[0].data",
+          "labelField": "displayName",
+          "descriptionField": "name",
+          "valueField": "id",
+          "argsTemplate": {
+            "workspaceId": "{{value}}"
+          },
+          "cacheSeconds": 10
+        }
+      }
+    }
+  ],
+  "external": {
+    "type": "mcp",
+    "executablePath": "C:\\PowerToys\\ARM64\\Debug\\PowerToys.WorkspacesMCP.exe",
+    "workingDirectory": "C:\\PowerToys\\ARM64\\Debug",
+    "startupTimeoutSeconds": 10
+  }
+}
