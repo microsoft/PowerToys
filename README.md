@@ -101,6 +101,7 @@ winget install --scope machine Microsoft.PowerToys -s winget
 
 <details>
 <summary>Other methods</summary>
+
 There are [community driven install methods](./doc/unofficialInstallMethods.md) such as Chocolatey and Scoop. If these are your preferred install solutions, you can find the install instructions there.
 </details>
 
@@ -245,7 +246,7 @@ For [v0.95][github-next-release-work], we'll work on the items below:
  - New UI automation tests
  - Stability, bug fixes
 
-## PowerToys Community
+## ❤️ PowerToys Community
 
 The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn't be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work. Your contributions and feedback improve PowerToys month after month!
 
