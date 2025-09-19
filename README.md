@@ -6,9 +6,7 @@
 </p>
 
 <h1 align="center">
-  <img src="doc/images/icons/PowerToys icon/PNG/PowerToysAppList.targetsize-30.png"
-       alt="PowerToys logo" height="30" style="vertical-align:middle;margin-right:8px;">
-  <span style="vertical-align:middle;">Microsoft PowerToys</span>
+  <span>Microsoft PowerToys</span>
 </h1>
 
 <h3 align="center">
