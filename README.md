@@ -39,6 +39,8 @@ Microsoft PowerToys is a collection of utilities that help you customize Windows
 
 ## 📋 Installation
 
+For detailed installation instructions, visit the [installation docs](https://learn.microsoft.com/windows/powertoys/install). 
+
 Before you begin, make sure your device meets the system requirements:
 
 > [!NOTE]
@@ -49,7 +51,7 @@ Before you begin, make sure your device meets the system requirements:
 Choose one of the installation methods below:
 
 <details>
-<summary>Via GitHub with .exe</summary>
+<summary>Download .exe from GitHub</summary>
 
 Go to the [PowerToys GitHub releases][github-release-link], click Assets to reveal the downloads, and choose the installer that matches your architecture and install scope. For most devices, that's the x64 per-user installer.
 
