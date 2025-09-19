@@ -21,7 +21,7 @@
   <a href="#-whats-new">Release notes</a>
 </h3>
 <br/><br/>
-Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks. To learn more about each utility, visit the [PowerToys docs](https://aka.ms/powertoys-docs).
+Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks.
 <br/><br/>
 
 |   |   |   |
