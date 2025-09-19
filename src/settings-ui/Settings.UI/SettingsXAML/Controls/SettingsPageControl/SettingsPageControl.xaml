@@ -22,27 +22,27 @@
             TrueValue="Visible" />
         <animations:ImplicitAnimationSet x:Name="ShowTransitions">
             <animations:OffsetAnimation
-                EasingMode="EaseOut"
-                From="0,24,0"
-                To="0"
-                Duration="0:0:0.4" />
+                    EasingMode="EaseOut"
+                    From="0,24,0"
+                    To="0"
+                    Duration="0:0:0.4" />
             <animations:OpacityAnimation
-                EasingMode="EaseOut"
-                From="0"
-                To="1"
-                Duration="0:0:0.2" />
+                    EasingMode="EaseOut"
+                    From="0"
+                    To="1"
+                    Duration="0:0:0.2" />
         </animations:ImplicitAnimationSet>
         <animations:ImplicitAnimationSet x:Name="HideTransitions">
             <animations:OffsetAnimation
-                EasingMode="EaseOut"
-                From="0"
-                To="0,24,0"
-                Duration="0:0:0.2" />
+                    EasingMode="EaseOut"
+                    From="0"
+                    To="0,24,0"
+                    Duration="0:0:0.2" />
             <animations:OpacityAnimation
-                EasingMode="EaseOut"
-                From="1"
-                To="0"
-                Duration="0:0:0.1" />
+                    EasingMode="EaseOut"
+                    From="1"
+                    To="0"
+                    Duration="0:0:0.1" />
         </animations:ImplicitAnimationSet>
         <converters:UriToImageSourceConverter x:Key="UriToImageSourceConverter" />
     </UserControl.Resources>
@@ -74,10 +74,7 @@
                 </Grid.RowDefinitions>
 
                 <!--  Top panel  -->
-                <Grid
-                    MaxWidth="{StaticResource PageMaxWidth}"
-                    ColumnSpacing="16"
-                    RowSpacing="16">
+                <Grid MaxWidth="{StaticResource PageMaxWidth}" ColumnSpacing="16" RowSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -103,13 +100,12 @@
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Text="{x:Bind ModuleDescription}"
                             TextWrapping="Wrap" />
-                        <ToggleSwitch IsOn="True" />
-                        <ItemsControl
+                        <ToggleSwitch IsOn="True"/>
+                        <ItemsControl Visibility="Collapsed"
                             x:Name="PrimaryLinksControl"
                             Margin="0,8,0,0"
                             IsTabStop="False"
-                            ItemsSource="{x:Bind PrimaryLinks}"
-                            Visibility="Collapsed">
+                            ItemsSource="{x:Bind PrimaryLinks}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="controls:PageLink">
                                     <HyperlinkButton NavigateUri="{x:Bind Link}" Style="{StaticResource TextButtonStyle}">
