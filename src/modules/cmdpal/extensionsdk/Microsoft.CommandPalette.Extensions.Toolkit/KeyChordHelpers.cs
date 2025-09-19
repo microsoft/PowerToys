@@ -6,7 +6,7 @@ using Windows.System;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class KeyChordHelpers
+public static partial class KeyChordHelpers
 {
     public static KeyChord FromModifiers(
         bool ctrl = false,
@@ -33,5 +33,29 @@ public partial class KeyChordHelpers
         int scanCode = 0)
     {
         return FromModifiers(ctrl, alt, shift, win, (int)vkey, scanCode);
+    }
+
+    public static string FormatForDebug(KeyChord value)
+    {
+        var result = string.Empty;
+
+        if (value.Modifiers.HasFlag(VirtualKeyModifiers.Control))
+        {
+            result += "Ctrl+";
+        }
+
+        if (value.Modifiers.HasFlag(VirtualKeyModifiers.Shift))
+        {
+            result += "Shift+";
+        }
+
+        if (value.Modifiers.HasFlag(VirtualKeyModifiers.Menu))
+        {
+            result += "Alt+";
+        }
+
+        result += (VirtualKey)value.Vkey;
+
+        return result;
     }
 }

@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -94,6 +95,7 @@ namespace Microsoft.PowerToys.UITest
                 {
                     Task.Delay(1000).Wait();
                     AddScreenShotsToTestResultsDirectory();
+                    AddLogFilesToTestResultsDirectory();
                 }
             }
 
@@ -595,6 +597,92 @@ namespace Microsoft.PowerToys.UITest
                 {
                     this.TestContext.AddResultFile(file);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Copies PowerToys log files to test results directory when test fails.
+        /// Renames files to include the directory structure after \PowerToys.
+        /// </summary>
+        protected void AddLogFilesToTestResultsDirectory()
+        {
+            try
+            {
+                var localAppDataLow = Path.Combine(
+                    Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty,
+                    "AppData",
+                    "LocalLow",
+                    "Microsoft",
+                    "PowerToys");
+
+                if (Directory.Exists(localAppDataLow))
+                {
+                    CopyLogFilesFromDirectory(localAppDataLow, string.Empty);
+                }
+
+                var localAppData = Path.Combine(
+                    Environment.GetEnvironmentVariable("LOCALAPPDATA") ?? string.Empty,
+                    "Microsoft",
+                    "PowerToys");
+
+                if (Directory.Exists(localAppData))
+                {
+                    CopyLogFilesFromDirectory(localAppData, string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Don't fail the test if log file copying fails
+                Console.WriteLine($"Failed to copy log files: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Recursively copies log files from a directory and renames them with directory structure.
+        /// </summary>
+        /// <param name="sourceDir">Source directory to copy from</param>
+        /// <param name="relativePath">Relative path from PowerToys folder</param>
+        private void CopyLogFilesFromDirectory(string sourceDir, string relativePath)
+        {
+            if (!Directory.Exists(sourceDir))
+            {
+                return;
+            }
+
+            // Process log files in current directory
+            var logFiles = Directory.GetFiles(sourceDir, "*.log");
+            foreach (var logFile in logFiles)
+            {
+                try
+                {
+                    var fileName = Path.GetFileName(logFile);
+                    var fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+                    var extension = Path.GetExtension(fileName);
+
+                    // Create new filename with directory structure
+                    var directoryPart = string.IsNullOrEmpty(relativePath) ? string.Empty : relativePath.Replace("\\", "-") + "-";
+                    var newFileName = $"{directoryPart}{fileNameWithoutExt}{extension}";
+
+                    // Copy file to test results directory with new name
+                    var testResultsDir = TestContext.TestResultsDirectory ?? Path.GetTempPath();
+                    var destinationPath = Path.Combine(testResultsDir, newFileName);
+
+                    File.Copy(logFile, destinationPath, true);
+                    TestContext.AddResultFile(destinationPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to copy log file {logFile}: {ex.Message}");
+                }
+            }
+
+            // Recursively process subdirectories
+            var subdirectories = Directory.GetDirectories(sourceDir);
+            foreach (var subdir in subdirectories)
+            {
+                var dirName = Path.GetFileName(subdir);
+                var newRelativePath = string.IsNullOrEmpty(relativePath) ? dirName : Path.Combine(relativePath, dirName);
+                CopyLogFilesFromDirectory(subdir, newRelativePath);
             }
         }
 
