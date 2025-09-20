@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
-    xmlns:toolkitconverters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="RootPage"
     AutomationProperties.LandmarkType="Main"
@@ -23,7 +23,7 @@
         <converters:ImageResizerDoubleToAutoConverter x:Key="ImageResizerDoubleToAutoConverter" />
         <converters:ImageResizerNumberBoxValueConverter x:Key="ImageResizerNumberBoxValueConverter" />
         <converters:ImageResizerZeroToEmptyStringNumberFormatter x:Key="ImageResizerZeroToEmptyStringNumberFormatter" />
-        <toolkitconverters:BoolToObjectConverter
+        <tkconverters:BoolToObjectConverter
             x:Key="BoolToComboBoxIndexConverter"
             FalseValue="1"
             TrueValue="0" />
