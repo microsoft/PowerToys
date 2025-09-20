@@ -15,4 +15,7 @@ public:
     // Event to send settings telemetry.
     static void Trace::SettingsTelemetry(PowertoyModuleIface::Hotkey& hotkey) noexcept;
 
+    // Space mode telemetry (single-key activation toggle)
+    static void SpaceModeEnabled(bool enabled) noexcept;
+
 };
