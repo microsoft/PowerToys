@@ -93,6 +93,7 @@
             Grid.Column="4"
             VerticalAlignment="Center"
             Command="{x:Bind PinCommand, Mode=OneWay}"
+            Style="{StaticResource SubtleButtonStyle}"
             ToolTipService.ToolTip="{x:Bind PinToolTip(Pinned), Mode=OneWay}">
             <Button.Content>
                 <FontIcon
