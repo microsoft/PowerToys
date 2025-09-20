@@ -117,19 +117,12 @@
                         IsEnabled="{x:Bind ViewModel.IsFindMyMouseEnabled, Mode=OneWay}"
                         IsExpanded="False">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseOverlayOpacity" x:Uid="MouseUtils_FindMyMouse_OverlayOpacity">
-                                <Slider
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    AutomationProperties.AutomationId="MouseUtils_FindMyMouseOverlayOpacityId"
-                                    Maximum="100"
-                                    Minimum="1"
-                                    Value="{x:Bind ViewModel.FindMyMouseOverlayOpacity, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
+                            <!--  Overlay opacity removed; alpha now encoded in colors  -->
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseBackgroundColor" x:Uid="MouseUtils_FindMyMouse_BackgroundColor">
-                                <controls:ColorPickerButton AutomationProperties.AutomationId="MouseUtils_FindMyMouseBackgroundColorId" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseBackgroundColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightColor" x:Uid="MouseUtils_FindMyMouse_SpotlightColor">
-                                <controls:ColorPickerButton AutomationProperties.AutomationId="MouseUtils_FindMyMouseSpotlightColorId" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.FindMyMouseSpotlightColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsFindMyMouseSpotlightRadius" x:Uid="MouseUtils_FindMyMouse_SpotlightRadius">
                                 <NumberBox
@@ -230,13 +223,13 @@
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterAlwaysColor" x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
-                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
+                                <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="HighlightMode">
                                 <ComboBox

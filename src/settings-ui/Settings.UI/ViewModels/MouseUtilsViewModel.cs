@@ -55,7 +55,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string spotlightColor = FindMyMouseSettingsConfig.Properties.SpotlightColor.Value;
             _findMyMouseSpotlightColor = !string.IsNullOrEmpty(spotlightColor) ? spotlightColor : "#FFFFFF";
 
-            _findMyMouseOverlayOpacity = FindMyMouseSettingsConfig.Properties.OverlayOpacity.Value;
             _findMyMouseSpotlightRadius = FindMyMouseSettingsConfig.Properties.SpotlightRadius.Value;
             _findMyMouseAnimationDurationMs = FindMyMouseSettingsConfig.Properties.AnimationDurationMs.Value;
             _findMyMouseSpotlightInitialZoom = FindMyMouseSettingsConfig.Properties.SpotlightInitialZoom.Value;
@@ -279,7 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#000000";
+                value = (value != null) ? SettingsUtilities.ToARGBHex(value) : "#FF000000";
                 if (!value.Equals(_findMyMouseBackgroundColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _findMyMouseBackgroundColor = value;
@@ -298,29 +297,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
-                value = (value != null) ? SettingsUtilities.ToRGBHex(value) : "#FFFFFF";
+                value = (value != null) ? SettingsUtilities.ToARGBHex(value) : "#FFFFFFFF";
                 if (!value.Equals(_findMyMouseSpotlightColor, StringComparison.OrdinalIgnoreCase))
                 {
                     _findMyMouseSpotlightColor = value;
                     FindMyMouseSettingsConfig.Properties.SpotlightColor.Value = value;
-                    NotifyFindMyMousePropertyChanged();
-                }
-            }
-        }
-
-        public int FindMyMouseOverlayOpacity
-        {
-            get
-            {
-                return _findMyMouseOverlayOpacity;
-            }
-
-            set
-            {
-                if (value != _findMyMouseOverlayOpacity)
-                {
-                    _findMyMouseOverlayOpacity = value;
-                    FindMyMouseSettingsConfig.Properties.OverlayOpacity.Value = value;
                     NotifyFindMyMousePropertyChanged();
                 }
             }
@@ -978,7 +959,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _findMyMouseDoNotActivateOnGameMode;
         private string _findMyMouseBackgroundColor;
         private string _findMyMouseSpotlightColor;
-        private int _findMyMouseOverlayOpacity;
         private int _findMyMouseSpotlightRadius;
         private int _findMyMouseAnimationDurationMs;
         private int _findMyMouseSpotlightInitialZoom;
