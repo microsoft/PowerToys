@@ -148,7 +148,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
             var item = clipboardHistory[i];
             if (item is not null)
             {
-                listItems.Add(item.ToListItem());
+                listItems.Add(new ClipboardListItem(item, _settingsManager));
             }
         }
 

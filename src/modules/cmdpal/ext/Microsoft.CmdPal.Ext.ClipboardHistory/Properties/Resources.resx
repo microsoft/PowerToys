@@ -168,4 +168,19 @@
   <data name="delete_confirmation_message" xml:space="preserve">
     <value>Are you sure you want to delete this item from clipboard history? This action cannot be undone.</value>
   </data>
+  <data name="settings_primary_action_title" xml:space="preserve">
+    <value>Primary action</value>
+  </data>
+  <data name="settings_primary_action_description" xml:space="preserve">
+    <value>Primary action (Enter key)</value>
+  </data>
+  <data name="settings_primary_action_default" xml:space="preserve">
+    <value>Default (Copy to Clipboard)</value>
+  </data>
+  <data name="settings_primary_action_paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="settings_primary_action_copy" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+  </data>
 </root>
