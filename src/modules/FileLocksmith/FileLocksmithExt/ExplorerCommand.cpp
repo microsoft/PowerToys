@@ -287,7 +287,17 @@ HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer
     PROCESS_INFORMATION processInformation;
     std::wstring command_line = L"\"";
     command_line += exe_path;
-    command_line += L"\"\0";
+    command_line += L"\"";
+    
+    // Add pipe name as command line argument if using pipes
+    std::wstring pipe_name = writer->get_pipe_name();
+    if (!pipe_name.empty())
+    {
+        command_line += L" ";
+        command_line += pipe_name;
+    }
+    
+    command_line += L"\0";
 
     CreateProcessW(
         NULL,
