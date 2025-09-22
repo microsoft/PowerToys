@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-//
+
 // Abstraction for text recognition backends (legacy OCR vs AI model)
 // This minimal interface supports asynchronous recognition from a bitmap capture.
 // Future: extend with layout/blocks or table extraction if AI backend provides richer structure.

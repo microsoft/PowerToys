@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-//
+
 // Stub AI text recognizer backend. This will later integrate Windows AI Foundry Text Recognition APIs.
 // For now it delegates to legacy OcrEngine to keep behavior identical while wiring selection logic.
 using System;
@@ -10,7 +10,7 @@ using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
- 
+
 // Removed ManagedCommon dependency for now (logger not yet referenced by project)
 using Windows.Globalization;
 using Windows.Graphics.Imaging;

@@ -16,14 +16,13 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using PowerOCR.Helpers;
 using PowerOCR.Models;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
-using ManagedCommon;
-using Microsoft.PowerToys.Telemetry;
 
 using BitmapDecoder = Windows.Graphics.Imaging.BitmapDecoder;
 
@@ -164,7 +163,7 @@ internal sealed class ImageMethods
         XmlLanguage lang = XmlLanguage.GetLanguage(selectedLanguage.LanguageTag);
         CultureInfo culture = lang.GetEquivalentCulture();
 
-        bool isSpaceJoiningLang = LanguageHelper.IsLanguageSpaceJoining(selectedLanguage);
+        bool isSpaceJoiningLang = PowerOCR.Helpers.LanguageHelper.IsLanguageSpaceJoining(selectedLanguage);
 
         bool scaleBMP = true;
 
