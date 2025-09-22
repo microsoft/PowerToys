@@ -24,10 +24,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TitleBar x:Name="TitleBar">
+        <TitleBar x:Name="AppTitleBar" PaneToggleRequested="AppTitleBar_PaneToggleRequested">
             <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
             <TitleBar.LeftHeader>
                 <ImageIcon
+                    x:Name="WorkAroundIcon"
                     Height="16"
                     Margin="16,0,0,0"
                     Source="ms-appx:///Assets/icon.svg" />
@@ -36,8 +37,11 @@
         <NavigationView
             x:Name="NavView"
             Grid.Row="1"
+            CompactModeThresholdWidth="1007"
             DisplayModeChanged="NavView_DisplayModeChanged"
+            ExpandedModeThresholdWidth="1007"
             IsBackButtonVisible="Collapsed"
+            IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
             ItemInvoked="NavView_ItemInvoked"
             Loaded="NavView_Loaded"
@@ -47,7 +51,6 @@
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
                 <Thickness x:Key="NavigationViewHeaderMargin">15,0,0,0</Thickness>
             </NavigationView.Resources>
-
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Uid="Settings_GeneralPage_NavigationViewItem_General"
@@ -58,17 +61,15 @@
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
             </NavigationView.MenuItems>
-
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-
                 <BreadcrumbBar
                     x:Name="NavigationBreadcrumbBar"
-                    Grid.Row="0"
                     MaxWidth="1000"
+                    Margin="16,0,0,0"
                     ItemClicked="NavigationBreadcrumbBar_ItemClicked"
                     ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
                     <BreadcrumbBar.ItemTemplate>
@@ -85,7 +86,6 @@
                         </ResourceDictionary>
                     </BreadcrumbBar.Resources>
                 </BreadcrumbBar>
-
                 <Frame x:Name="NavFrame" Grid.Row="1" />
             </Grid>
         </NavigationView>
