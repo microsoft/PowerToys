@@ -518,7 +518,8 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         {
             foreach (var item in Items)
             {
-                if (item is ParameterValueRunViewModel val && val.NeedsValue)
+                if (item is ParameterValueRunViewModel val &&
+                    val.NeedsValue)
                 {
                     return true;
                 }
@@ -526,6 +527,49 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         }
 
         return false;
+    }
+
+    public void TrySubmit()
+    {
+        if (ShowCommand)
+        {
+            PerformCommandMessage m = new(this.Command.Command.Model);
+            WeakReferenceMessenger.Default.Send(m);
+        }
+    }
+
+    public void FocusNextParameter(ParameterValueRunViewModel lastParam)
+    {
+        lock (_listLock)
+        {
+            var found = false;
+            ParameterValueRunViewModel? firstWithoutValue = null;
+            foreach (var param in Items)
+            {
+                if (param == lastParam)
+                {
+                    found = true;
+                    continue;
+                }
+                else if (param is ParameterValueRunViewModel pv)
+                {
+                    if (found)
+                    {
+                        WeakReferenceMessenger.Default.Send(new FocusParamMessage(pv));
+                        return;
+                    }
+                    else if (firstWithoutValue is null && pv.NeedsValue)
+                    {
+                        firstWithoutValue = pv;
+                    }
+                }
+            }
+
+            if (firstWithoutValue is not null)
+            {
+                WeakReferenceMessenger.Default.Send(new FocusParamMessage(firstWithoutValue));
+            }
+        }
     }
 
     public void Dispose()
