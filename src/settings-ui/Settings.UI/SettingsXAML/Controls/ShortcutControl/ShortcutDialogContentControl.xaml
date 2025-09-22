@@ -43,11 +43,13 @@
                         FontSize="16"
                         FontWeight="SemiBold"
                         IsTabStop="False"
-                        State="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Warning}"
+                        State="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Error}"
                         Style="{StaticResource AccentKeyVisualStyle}" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+
+        <tk7controls:MarkdownTextBlock x:Uid="InvalidShortcutWarningLabel" Background="Transparent" />
 
         <StackPanel
             Grid.Row="2"
@@ -58,6 +60,7 @@
             <Grid Height="62">
                 <InfoBar
                     x:Uid="InvalidShortcut"
+                    Padding="8"
                     IsClosable="False"
                     IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
@@ -76,13 +79,6 @@
                     Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
                     Severity="Warning" />
             </Grid>
-
-            <tk7controls:MarkdownTextBlock
-                x:Uid="InvalidShortcutWarningLabel"
-                Background="Transparent"
-                FontSize="12"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-
             <CheckBox
                 x:Name="IgnoreConflictsCheckBox"
                 x:Uid="IgnoreShortcutConflicts"
