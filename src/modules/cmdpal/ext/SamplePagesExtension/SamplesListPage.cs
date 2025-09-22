@@ -85,7 +85,7 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Markdown with images",
             Subtitle = "A page with rendered markdown and images",
-            Icon = new IconInfo("ms-appdata:///temp/Space.png"),
+            Icon = new IconInfo("\uee71"),
         },
 
         // Settings helpers
