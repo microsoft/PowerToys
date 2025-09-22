@@ -525,3 +525,21 @@ class CreateNoteCommand : IRichSearchPage {
     }
 }
 ```
+
+### Miscellaneous notes
+
+We shouldn't put a `set`ter on IRichSearch::SearchTokens. That would allow the
+host to instantiate ITokens and give them to the extension. The extension
+shouldn't have to lifetime manage the host's objects. 
+
+It would be really great if we could have the setting of the value of the last
+token "commit" the whole command, and let the user invoke the command
+immediately when picking a value. Not sure if that's reasonable though. 
+
+`IRichSearchPage` probably needs a way to go back, that's not driven by user input. Or not driven by backspacing tokens. For example, in our previous `CreateNoteCommand` example, if the user backspaces from:
+* The filled `folder` param: the extension will get a `RemoveToken` call for the
+  `folder` token, which we'll use to clear it's value, and trigger focus to move
+  back into it.
+* The empty `folder` param: we'll move focus back to the `title` token.
+* the filled `title` param: we'll backspace a character.
+* the empty `title` param: **TODO! WHAT DO WE DO HERE?**

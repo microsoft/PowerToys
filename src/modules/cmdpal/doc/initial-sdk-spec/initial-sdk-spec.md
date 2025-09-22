@@ -2048,31 +2048,25 @@ for them.
 
 ## Addenda II: Rich Search
 
-This addenda is broken into multiple draft specs currently. These represent different approaches to the same goals. 
+This addenda is broken into multiple draft specs currently. These represent
+different approaches to the same goals. 
 
-* [Rich Search Box](./RichSearchBox-draft-A.md)
-* [Prefix Search](./PrefixSearch-draft-B.md)
-* [ZWSP tokens](./PlainRichSearch-draft-C.md)
-* [Parameter Page](./ParameterPage-draft-D.md)
+* **A**: [Rich Search Box](./RichSearchBox-draft-A.md)
+* **B**: [Prefix Search](./PrefixSearch-draft-B.md)
+* **C**: [ZWSP tokens](./PlainRichSearch-draft-C.md)
+* **D**: [Parameter Page](./ParameterPage-draft-D.md)
+
+Upon evaluating a bunch of options, we're going to go with a combination of
+parts **C** and **D**. 
+* For pages that want to support rich content in their search box, we'll allow
+  them to use zero-width space characters to indicate token boundaries. This
+  allows for a simple, low-friction way for extensions to provide rich search
+  experiences.
+* For extensions that want to accept rich inline parameters for a command, but
+  not necessarily a full rich search box, we'll provide a parameter page
+  experience. 
 
 
-### Miscellaneous notes
-
-We shouldn't put a `set`ter on IRichSearch::SearchTokens. That would allow the
-host to instantiate ITokens and give them to the extension. The extension
-shouldn't have to lifetime manage the host's objects. 
-
-It would be really great if we could have the setting of the value of the last
-token "commit" the whole command, and let the user invoke the command
-immediately when picking a value. Not sure if that's reasonable though. 
-
-`IRichSearchPage` probably needs a way to go back, that's not driven by user input. Or not driven by backspacing tokens. For example, in our previous `CreateNoteCommand` example, if the user backspaces from:
-* The filled `folder` param: the extension will get a `RemoveToken` call for the
-  `folder` token, which we'll use to clear it's value, and trigger focus to move
-  back into it.
-* The empty `folder` param: we'll move focus back to the `title` token.
-* the filled `title` param: we'll backspace a character.
-* the empty `title` param: **TODO! WHAT DO WE DO HERE?**
 
 ## Class diagram
 

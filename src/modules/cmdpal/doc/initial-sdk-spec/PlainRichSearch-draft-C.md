@@ -11,9 +11,15 @@ What if adding a whole bunch of new interfaces, we just _fake it_.
 
 We'll just use embedded zero-width space (ZWSP) characters in the search text to "bracket" tokens.
 
-We'll add an extended attribute to the page - something like `TokenSearch`. If that's set to true, CmdPal will render the search box as a rich text box that can contain tokens. When we do that, we'll trezt text between ZWSP characters as tokens, and give them special UI treatment (like a link).
+We'll add an extended attribute to the page - something like `TokenSearch`. If
+that's set to true, CmdPal will render the search box as a rich text box that
+can contain tokens. When we do that, we'll trezt text between ZWSP characters as
+tokens, and give them special UI treatment (like a link).
 
-When the user types a special prefix (like `@`), the extension page will internally swap it's items with a list of suggestions. When the user picks one, the page will raise a search update event with the new search text. That new text will have the "token" embedded in it, bracketed by ZWSP characters.
+When the user types a special prefix (like `@`), the extension page will
+internally swap it's items with a list of suggestions. When the user picks one,
+the page will raise a search update event with the new search text. That new
+text will have the "token" embedded in it, bracketed by ZWSP characters.
 
 > [!INFO] 
 > 
