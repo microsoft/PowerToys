@@ -5253,13 +5253,13 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Conflicts found for</value>
   </data>
   <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
-    <value>System</value>
+    <value>System shortcut</value>
   </data>
   <data name="ShortcutConflictWindow_SystemCard.Description" xml:space="preserve">
-    <value>Windows system shortcut</value>
+    <value>This shortcut is reserved by Windows and can't be reassigned.</value>
   </data>
-  <data name="ShortcutConflictWindow_SystemShortcutMessage.Text" xml:space="preserve">
-    <value>This shortcut can't be changed.</value>
+  <data name="ShortcutConflictWindow_SystemShortcutLink.Content" xml:space="preserve">
+    <value>See all Windows shortcuts</value>
   </data>
   <data name="ShortcutConflictWindow_SystemShortcutTooltip.Content" xml:space="preserve">
     <value>This shortcut is used by Windows and can't be changed.</value>

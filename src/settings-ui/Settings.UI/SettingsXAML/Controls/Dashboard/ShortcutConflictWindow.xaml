@@ -69,6 +69,7 @@
             x:Uid="ShortcutConflictWindow_Description"
             Grid.Row="1"
             Margin="16,8,16,24"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Style="{StaticResource BodyTextBlockStyle}"
             TextWrapping="Wrap" />
 
@@ -86,12 +87,15 @@
                         <DataTemplate x:DataType="hotkeyConflicts:HotkeyConflictGroupData">
                             <StackPanel Orientation="Vertical">
                                 <!--  Hotkey Header  -->
-                                <controls:ShortcutWithTextLabelControl
-                                    x:Uid="ShortcutConflictWindow_ModulesUsingShortcut"
-                                    Margin="0,0,0,8"
-                                    FontWeight="SemiBold"
-                                    Keys="{x:Bind Hotkey.GetKeysList()}"
-                                    LabelPlacement="Before" />
+                                <Grid>
+                                    <controls:ShortcutWithTextLabelControl
+                                        x:Uid="ShortcutConflictWindow_ModulesUsingShortcut"
+                                        Margin="0,0,0,8"
+                                        FontWeight="SemiBold"
+                                        Keys="{x:Bind Hotkey.GetKeysList()}"
+                                        LabelPlacement="Before" />
+                                    <CheckBox HorizontalAlignment="Right" Content="Ignote shortcut" />
+                                </Grid>
 
                                 <!--  PowerToys Module Cards  -->
                                 <ItemsControl Grid.Row="1" ItemsSource="{x:Bind Modules}">
@@ -129,10 +133,7 @@
                                         <PathIcon Data="M9 20H0V11H9V20ZM20 20H11V11H20V20ZM9 9H0V0H9V9ZM20 9H11V0H20V9Z" Foreground="{ThemeResource WindowsLogoGradient}" />
                                     </tkcontrols:SettingsCard.HeaderIcon>
                                     <!--  System shortcut message  -->
-                                    <TextBlock
-                                        x:Uid="ShortcutConflictWindow_SystemShortcutMessage"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        TextWrapping="Wrap" />
+                                    <HyperlinkButton x:Uid="ShortcutConflictWindow_SystemShortcutLink" NavigateUri="https://support.microsoft.com/windows/keyboard-shortcuts-in-windows-dcc61a57-8ff0-cffe-9796-cb9706c75eec" />
                                 </tkcontrols:SettingsCard>
                             </StackPanel>
                         </DataTemplate>
