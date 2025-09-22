@@ -45,6 +45,7 @@
                             <ComboBoxItem x:Uid="Awake_TemporaryKeepAwakeSelector" />
                             <ComboBoxItem x:Uid="Awake_ExpirableKeepAwakeSelector" />
                             <ComboBoxItem x:Uid="Awake_ActivityKeepAwakeSelector" />
+                            <ComboBoxItem x:Uid="Awake_ProcessKeepAwakeSelector" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
@@ -170,6 +171,36 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+
+                    <!-- Process mode configuration -->
+                    <tkcontrols:SettingsExpander
+                        Name="AwakeProcessSettingsExpander"
+                        x:Uid="Awake_ProcessSettingsExpander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE9A2;}"
+                        IsExpanded="True"
+                        Visibility="{x:Bind ViewModel.IsProcessConfigurationEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="AwakeProcessListCard" x:Uid="Awake_ProcessListCard">
+                                <TextBox
+                                    x:Uid="Awake_ProcessListInput"
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Text="{x:Bind ViewModel.ProcessMonitoringList, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="AwakeProcessCheckIntervalCard" x:Uid="Awake_ProcessCheckIntervalCard">
+                                <StackPanel Orientation="Horizontal" MinWidth="{StaticResource SettingActionControlMinWidth}">
+                                    <NumberBox
+                                        x:Uid="Awake_ProcessCheckIntervalInput"
+                                        Width="120"
+                                        Minimum="1"
+                                        Maximum="300"
+                                        SmallChange="1"
+                                        SpinButtonPlacementMode="Compact"
+                                        Value="{x:Bind ViewModel.ProcessCheckIntervalSeconds, Mode=TwoWay}" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
                     <!-- Usage tracking settings -->
                     <tkcontrols:SettingsCard
                         Name="AwakeUsageTrackingEnabledCard"

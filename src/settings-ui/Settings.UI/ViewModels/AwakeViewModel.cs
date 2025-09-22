@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using ManagedCommon;
@@ -98,6 +100,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsActivityConfigurationEnabled => ModuleSettings.Properties.Mode == AwakeMode.ACTIVITY && IsEnabled;
 
+        public bool IsProcessConfigurationEnabled => ModuleSettings.Properties.Mode == AwakeMode.PROCESS && IsEnabled;
+
         public AwakeMode Mode
         {
             get => ModuleSettings.Properties.Mode;
@@ -131,6 +135,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
                     OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
                     OnPropertyChanged(nameof(IsActivityConfigurationEnabled));
+                    OnPropertyChanged(nameof(IsProcessConfigurationEnabled));
 
                     NotifyPropertyChanged();
                 }
@@ -241,6 +246,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsScreenConfigurationPossibleEnabled));
             OnPropertyChanged(nameof(IsExpirationConfigurationEnabled));
             OnPropertyChanged(nameof(IsActivityConfigurationEnabled));
+            OnPropertyChanged(nameof(IsProcessConfigurationEnabled));
         }
 
         public void RefreshModuleSettings()
@@ -255,6 +261,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(ActivityNetworkThresholdKBps));
             OnPropertyChanged(nameof(ActivitySampleIntervalSeconds));
             OnPropertyChanged(nameof(ActivityInactivityTimeoutSeconds));
+            OnPropertyChanged(nameof(ProcessMonitoringList));
+            OnPropertyChanged(nameof(ProcessCheckIntervalSeconds));
             OnPropertyChanged(nameof(TrackUsageEnabled));
             OnPropertyChanged(nameof(UsageRetentionDays));
         }
@@ -320,6 +328,37 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (ModuleSettings.Properties.ActivityInactivityTimeoutSeconds != value)
                 {
                     ModuleSettings.Properties.ActivityInactivityTimeoutSeconds = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        // Process monitoring configuration bindables
+        public string ProcessMonitoringList
+        {
+            get => string.Join(", ", ModuleSettings.Properties.ProcessMonitoringList);
+            set
+            {
+                var processList = string.IsNullOrWhiteSpace(value)
+                    ? new List<string>()
+                    : value.Split(',').Select(p => p.Trim()).Where(p => !string.IsNullOrEmpty(p)).ToList();
+
+                if (!ModuleSettings.Properties.ProcessMonitoringList.SequenceEqual(processList))
+                {
+                    ModuleSettings.Properties.ProcessMonitoringList = processList;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public uint ProcessCheckIntervalSeconds
+        {
+            get => ModuleSettings.Properties.ProcessCheckIntervalSeconds;
+            set
+            {
+                if (ModuleSettings.Properties.ProcessCheckIntervalSeconds != value)
+                {
+                    ModuleSettings.Properties.ProcessCheckIntervalSeconds = value;
                     NotifyPropertyChanged();
                 }
             }

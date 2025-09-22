@@ -31,6 +31,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // Usage tracking defaults (opt-in, disabled by default)
             TrackUsageEnabled = false; // default off
             UsageRetentionDays = 14; // two weeks default retention
+
+            // Process monitoring defaults
+            ProcessMonitoringList = new List<string>();
+            ProcessCheckIntervalSeconds = 5; // Check every 5 seconds
         }
 
         [JsonPropertyName("keepDisplayOn")]
@@ -75,5 +79,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Retention window for usage data (days)
         [JsonPropertyName("usageRetentionDays")]
         public int UsageRetentionDays { get; set; }
+
+        // Process monitoring configuration
+        [JsonPropertyName("processMonitoringList")]
+        public List<string> ProcessMonitoringList { get; set; }
+
+        [JsonPropertyName("processCheckIntervalSeconds")]
+        public uint ProcessCheckIntervalSeconds { get; set; }
     }
 }

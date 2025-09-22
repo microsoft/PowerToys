@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -48,6 +49,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     ExpirationDateTime = Properties.ExpirationDateTime.Year < 2 ? DateTimeOffset.Now : Properties.ExpirationDateTime,
                     TrackUsageEnabled = Properties.TrackUsageEnabled,
                     UsageRetentionDays = Properties.UsageRetentionDays,
+
+                    // Process monitoring properties
+                    ProcessMonitoringList = Properties.ProcessMonitoringList != null ? new List<string>(Properties.ProcessMonitoringList) : new List<string>(),
+                    ProcessCheckIntervalSeconds = Properties.ProcessCheckIntervalSeconds,
                 },
             };
         }

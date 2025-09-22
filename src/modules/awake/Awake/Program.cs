@@ -645,6 +645,13 @@ namespace Awake
                             settings.Properties.KeepDisplayOn);
                         break;
 
+                    case AwakeMode.PROCESS:
+                        Manager.SetProcessBasedKeepAwake(
+                            settings.Properties.ProcessMonitoringList,
+                            settings.Properties.ProcessCheckIntervalSeconds,
+                            settings.Properties.KeepDisplayOn);
+                        break;
+
                     default:
                         Logger.LogError("Unknown mode of operation. Check config file.");
                         break;

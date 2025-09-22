@@ -2360,6 +2360,9 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_ActivityKeepAwakeSelector.Content" xml:space="preserve">
     <value>Keep awake while system is active</value>
   </data>
+  <data name="Awake_ProcessKeepAwakeSelector.Content" xml:space="preserve">
+    <value>Keep awake while process is running</value>
+  </data>
   <data name="Awake_DisplaySettingsCard.Header" xml:space="preserve">
     <value>Keep screen on</value>
   </data>
@@ -2422,6 +2425,27 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_ActivityInactivityTimeoutInput.Header" xml:space="preserve">
     <value>Timeout</value>
+  </data>
+  <data name="Awake_ProcessSettingsExpander.Header" xml:space="preserve">
+    <value>Process monitoring</value>
+  </data>
+  <data name="Awake_ProcessSettingsExpander.Description" xml:space="preserve">
+    <value>Stay awake while any monitored process is running</value>
+  </data>
+  <data name="Awake_ProcessListCard.Header" xml:space="preserve">
+    <value>Process names</value>
+  </data>
+  <data name="Awake_ProcessListInput.Header" xml:space="preserve">
+    <value>Process names (comma-separated)</value>
+  </data>
+  <data name="Awake_ProcessListInput.PlaceholderText" xml:space="preserve">
+    <value>e.g. notepad, chrome, myapp.exe</value>
+  </data>
+  <data name="Awake_ProcessCheckIntervalCard.Header" xml:space="preserve">
+    <value>Check interval (s)</value>
+  </data>
+  <data name="Awake_ProcessCheckIntervalInput.Header" xml:space="preserve">
+    <value>Seconds</value>
   </data>
   <data name="Oobe_Awake.Title" xml:space="preserve">
     <value>Awake</value>

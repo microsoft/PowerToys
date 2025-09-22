@@ -69,6 +69,13 @@ namespace Awake.Core
         private static string? _originalPowerSchemeGuid;
         private static bool _powerSchemeSwitched;
 
+        // Process monitoring fields
+        private static List<string> _processMonitoringList = [];
+        private static bool _processMonitoringActive;
+        private static IDisposable? _processMonitoringSubscription;
+        private static uint _processCheckInterval;
+        private static bool _processKeepDisplay;
+
         static Manager()
         {
             _tokenSource = new CancellationTokenSource();
@@ -157,6 +164,10 @@ namespace Awake.Core
             // Reset the thread state and handle cancellation.
             _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
 
+            // Clean up process monitoring subscription if active
+            _processMonitoringSubscription?.Dispose();
+            _processMonitoringSubscription = null;
+
             if (_tokenSource != null)
             {
                 _tokenSource.Cancel();
@@ -204,6 +215,11 @@ namespace Awake.Core
                 case AwakeMode.ACTIVITY:
                     iconText = $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_ACTIVITY}][{ScreenStateString}]";
                     icon = TrayHelper.IndefiniteIcon; // Placeholder icon
+                    break;
+                case AwakeMode.PROCESS:
+                    string processesText = _processMonitoringList.Count > 0 ? string.Join(", ", _processMonitoringList) : "None";
+                    iconText = $"{Constants.FullAppName} [Process Monitor][{ScreenStateString}][{processesText}]";
+                    icon = TrayHelper.IndefiniteIcon; // Use same icon as indefinite for now
                     break;
             }
 
@@ -775,6 +791,125 @@ namespace Awake.Core
                 _tokenSource.Token);
         }
 
+        internal static void SetProcessBasedKeepAwake(
+            List<string> processNames,
+            uint checkIntervalSeconds,
+            bool keepDisplayOn,
+            [CallerMemberName] string callerName = "")
+        {
+            Logger.LogInfo($"Process-based keep-awake invoked by {callerName}. Processes: [{string.Join(", ", processNames)}], CheckInterval: {checkIntervalSeconds}s, Display: {keepDisplayOn}.");
+
+            CancelExistingThread();
+
+            if (IsUsingPowerToysConfig)
+            {
+                try
+                {
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    bool settingsChanged =
+                        currentSettings.Properties.Mode != AwakeMode.PROCESS ||
+                        !currentSettings.Properties.ProcessMonitoringList.SequenceEqual(processNames) ||
+                        currentSettings.Properties.ProcessCheckIntervalSeconds != checkIntervalSeconds ||
+                        currentSettings.Properties.KeepDisplayOn != keepDisplayOn;
+
+                    if (settingsChanged)
+                    {
+                        currentSettings.Properties.Mode = AwakeMode.PROCESS;
+                        currentSettings.Properties.ProcessMonitoringList = new List<string>(processNames);
+                        currentSettings.Properties.ProcessCheckIntervalSeconds = checkIntervalSeconds;
+                        currentSettings.Properties.KeepDisplayOn = keepDisplayOn;
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        return; // Settings will be processed triggering this again
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to persist process monitoring settings: {ex.Message}");
+                }
+            }
+
+            _processMonitoringList = [.. processNames];
+            _processCheckInterval = Math.Max(1, checkIntervalSeconds);
+            _processKeepDisplay = keepDisplayOn;
+            _processMonitoringActive = true;
+
+            CurrentOperatingMode = AwakeMode.PROCESS;
+            IsDisplayOn = keepDisplayOn;
+            SetModeShellIcon();
+
+            TimeSpan checkInterval = TimeSpan.FromSeconds(_processCheckInterval);
+
+            Observable.Interval(checkInterval).Subscribe(
+                _ =>
+                {
+                    if (!_processMonitoringActive)
+                    {
+                        return;
+                    }
+
+                    bool anyTargetProcessRunning = false;
+                    List<string> runningProcesses = new();
+
+                    try
+                    {
+                        foreach (string processName in _processMonitoringList)
+                        {
+                            if (string.IsNullOrWhiteSpace(processName))
+                            {
+                                continue;
+                            }
+
+                            // Remove .exe extension if present for process name comparison
+                            string processNameWithoutExt = processName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                                ? processName.Substring(0, processName.Length - 4)
+                                : processName;
+
+                            Process[] processes = Process.GetProcessesByName(processNameWithoutExt);
+                            if (processes.Length > 0)
+                            {
+                                anyTargetProcessRunning = true;
+                                runningProcesses.Add(processNameWithoutExt);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Process monitoring check failure: {ex.Message}");
+                    }
+
+                    if (anyTargetProcessRunning)
+                    {
+                        _stateQueue.Add(ComputeAwakeState(_processKeepDisplay));
+
+                        TrayHelper.SetShellIcon(
+                            TrayHelper.WindowHandle,
+                            $"{Constants.FullAppName} [Process Monitor][{ScreenStateString}][Running: {string.Join(", ", runningProcesses)}]",
+                            TrayHelper.IndefiniteIcon,
+                            TrayIconAction.Update);
+                    }
+                    else
+                    {
+                        Logger.LogInfo("No target processes running. Ending process monitoring mode.");
+                        _processMonitoringActive = false;
+                        CancelExistingThread();
+
+                        if (IsUsingPowerToysConfig)
+                        {
+                            SetPassiveKeepAwake();
+                        }
+                        else
+                        {
+                            CompleteExit(Environment.ExitCode);
+                        }
+                    }
+                },
+                ex =>
+                {
+                    Logger.LogError($"Process monitoring observable failure: {ex.Message}");
+                },
+                _tokenSource.Token);
+        }
+
         /// <summary>
         /// Sets the display settings.
         /// </summary>
@@ -872,6 +1007,16 @@ namespace Awake.Core
                         inactivityTimeoutSeconds = currentSettings.Properties.ActivityInactivityTimeoutSeconds,
                         activityActive = _activityActive,
                         lastHighActivity = _activityLastHigh,
+                        baseConfig.processId,
+                        baseConfig.isUsingPowerToysConfig,
+                    },
+                    AwakeMode.PROCESS => new
+                    {
+                        baseConfig.mode,
+                        baseConfig.keepDisplayOn,
+                        processMonitoringList = currentSettings.Properties.ProcessMonitoringList,
+                        processCheckIntervalSeconds = currentSettings.Properties.ProcessCheckIntervalSeconds,
+                        processMonitoringActive = _processMonitoringActive,
                         baseConfig.processId,
                         baseConfig.isUsingPowerToysConfig,
                     },
