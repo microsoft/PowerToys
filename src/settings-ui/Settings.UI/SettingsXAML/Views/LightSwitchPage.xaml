@@ -195,9 +195,9 @@
                             <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="To calculate the sunrise and sunset, LightSwitch needs a location." />
                             <AutoSuggestBox
                                 x:Name="CityAutoSuggestBox"
-                                AutomationProperties.AutomationId="CitySearchBox_LightSwitch"
                                 Grid.Row="1"
                                 Margin="0,16,0,8"
+                                AutomationProperties.AutomationId="CitySearchBox_LightSwitch"
                                 ItemsSource="{x:Bind ViewModel.SearchLocations, Mode=OneWay}"
                                 PlaceholderText="Search for a city near you.."
                                 QueryIcon="Find"
