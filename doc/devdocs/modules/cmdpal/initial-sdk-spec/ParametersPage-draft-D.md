@@ -8,10 +8,6 @@ issue id: n/a
 ## Addenda II-D: Parameters page
 
 
-
-
-
-
 ```c#
 [uuid("a2590cc9-510c-4af7-b562-a6b56fe37f55")]
 interface IParameterRun requires INotifyPropChanged
