@@ -185,16 +185,18 @@ public sealed partial class MainWindow : WindowEx,
     // other Shell surfaces are using, this cannot be set in XAML however.
     private void SetAcrylic()
     {
-        if (DesktopAcrylicController.IsSupported())
-        {
-            // Hooking up the policy object.
-            _configurationSource = new SystemBackdropConfiguration
-            {
-                // Initial configuration state.
-                IsInputActive = true,
-            };
-            UpdateAcrylic();
-        }
+        // if (DesktopAcrylicController.IsSupported())
+        // {
+        //    // Hooking up the policy object.
+        //    _configurationSource = new SystemBackdropConfiguration
+        //    {
+        //        // Initial configuration state.
+        //        IsInputActive = true,
+        //    };
+        //    UpdateAcrylic();
+        // }
+        // this.SystemBackdrop = new MicaBackdrop();
+        // this.SystemBackdrop = new MicaBackdrop();
     }
 
     private void UpdateAcrylic()
@@ -419,7 +421,8 @@ public sealed partial class MainWindow : WindowEx,
     private void UpdateRegionsForCustomTitleBar()
     {
         // Specify the interactive regions of the title bar.
-        var scaleAdjustment = RootShellPage.XamlRoot.RasterizationScale;
+        // var scaleAdjustment = RootShellPage.XamlRoot.RasterizationScale;
+        var scaleAdjustment = (float)this.GetDpiForWindow() / 96.0f;
 
         // Get the rectangle around our XAML content. We're going to mark this
         // rectangle as "Passthrough", so that the normal window operations
