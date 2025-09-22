@@ -157,17 +157,15 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <Grid Grid.Row="0" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-
             <!--  Back button and search box  -->
             <Grid
                 Padding="0,12,0,12"
@@ -349,6 +347,19 @@
                 </animations:Implicit.HideAnimations>
             </ProgressBar>
 
+        </Grid>
+
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+            Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+
             <Grid
                 x:Name="ContentGrid"
                 Grid.Row="1"
@@ -472,12 +483,13 @@
             See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
         -->
         <StackPanel
-            Grid.Row="0"
+            Grid.Row="1"
             Margin="16,8,16,8"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Bottom"
             Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-            CornerRadius="{ThemeResource ControlCornerRadius}">
+            CornerRadius="{ThemeResource ControlCornerRadius}"
+            Visibility="Collapsed">
             <InfoBar
                 CornerRadius="{ThemeResource ControlCornerRadius}"
                 IsOpen="{x:Bind ViewModel.CurrentPage.HasStatusMessage, Mode=OneWay}"
@@ -495,7 +507,10 @@
             </InfoBar>
         </StackPanel>
 
-        <Grid Grid.Row="1" Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}">
+        <Grid
+            Grid.Row="2"
+            Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
+            Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
             <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 

@@ -46,6 +46,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
+    IRecipient<ExpandCompactModeMessage>,
     IDisposable
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_")]
@@ -87,6 +88,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -175,6 +177,8 @@ public sealed partial class MainWindow : WindowEx,
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
 
         this.SetVisibilityInSwitchers(Debugger.IsAttached);
+
+        HandleExpandCompactOnUiThread(false);
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -746,5 +750,26 @@ public sealed partial class MainWindow : WindowEx,
     {
         _localKeyboardListener.Dispose();
         DisposeAcrylic();
+    }
+
+    public void Receive(ExpandCompactModeMessage message)
+    {
+        this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
+    }
+
+    private void HandleExpandCompactOnUiThread(bool expanded)
+    {
+        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        if (settings.CompactMode == false)
+        {
+            return;
+        }
+
+        // Cloak();
+        this.MinHeight = expanded ? 240 : 64;
+        this.Height = expanded ? 480 : 64;
+
+        // Uncloak();
+        // PInvoke.SetWindowPos(_hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
     }
 }

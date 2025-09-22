@@ -163,6 +163,13 @@ public partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        var oldWasEmpty = string.IsNullOrEmpty(oldSearch);
+        var newWasEmpty = string.IsNullOrEmpty(newSearch);
+        if (oldWasEmpty != newWasEmpty)
+        {
+            WeakReferenceMessenger.Default.Send<ExpandCompactModeMessage>(new(!newWasEmpty));
+        }
+
         // Handle changes to the filter text here
         if (!string.IsNullOrEmpty(SearchText))
         {

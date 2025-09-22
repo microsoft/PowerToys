@@ -12,6 +12,7 @@ using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -42,6 +43,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ShowConfirmationMessage>,
     IRecipient<ShowToastMessage>,
     IRecipient<NavigateToPageMessage>,
+    IRecipient<ExpandCompactModeMessage>,
     INotifyPropertyChanged
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -61,8 +63,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public bool ExpandedMode { get; set; }
+
     public ShellPage()
     {
+        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        this.ExpandedMode = !settings.CompactMode;
+
         this.InitializeComponent();
 
         // how we are doing navigation around
@@ -82,6 +89,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowToastMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
+
+        WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
 
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
@@ -478,5 +487,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             Logger.LogError("Error handling mouse button press event", ex);
         }
+    }
+
+    public void Receive(ExpandCompactModeMessage message)
+    {
+        this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
+    }
+
+    private void HandleExpandCompactOnUiThread(bool expanded)
+    {
+        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        this.ExpandedMode = settings.CompactMode ? expanded : true;
+        PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
     }
 }
