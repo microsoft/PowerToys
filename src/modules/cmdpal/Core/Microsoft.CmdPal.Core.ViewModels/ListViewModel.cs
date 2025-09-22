@@ -70,10 +70,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private Task? _initializeItemsTask;
 
-    // For cancelling the the task to load the properties from the items in the list
+    // For cancelling the task to load the properties from the items in the list
     private CancellationTokenSource? _cancellationTokenSource;
 
-    // For cancelling the the task for calling GetItems on the extension
+    // For cancelling the task for calling GetItems on the extension
     private CancellationTokenSource? _fetchItemsCancellationTokenSource;
 
     // For cancelling ongoing calls to update the extension's SearchText
@@ -114,9 +114,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
             filterCancellationTokenSource?.Dispose();
             filterCancellationTokenSource = new CancellationTokenSource();
 
-            // Hop off to an exclusive scheduler background thread to update the extension. We do
-            // this to ensure that all filter update requests are serialized and in-order, so providers
-            // know to cancel previous requests when a new one comes in, otherwise they may execute concurrently.
+            // Hop off to an exclusive scheduler background thread to update the
+            // extension. We do this to ensure that all filter update requests
+            // are serialized and in-order, so providers know to cancel previous
+            // requests when a new one comes in. Otherwise, they may execute
+            // concurrently.
             _ = filterTaskFactory.StartNew(
                 () =>
             {
