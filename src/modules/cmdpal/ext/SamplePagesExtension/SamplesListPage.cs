@@ -100,6 +100,21 @@ public partial class SamplesListPage : ListPage
             Title = "Button parameters page",
             Subtitle = "A demo of a command that takes simple parameters",
         },
+        new ListItem(new MixedParamTestPage(stringFirst: true))
+        {
+            Title = "Mixed parameter types (string first)",
+            Subtitle = "A demo of a command that takes multiple types of parameters",
+        },
+        new ListItem(new MixedParamTestPage(stringFirst: false))
+        {
+            Title = "Mixed parameter types (file first)",
+            Subtitle = "A demo of a command that takes multiple types of parameters",
+        },
+        new ListItem(new CreateNoteParametersPage())
+        {
+            Title = "Create note sample",
+            Subtitle = "A parameter page with both a string and list parameter",
+        },
 
         // Evil edge cases
         // Anything weird that might break the palette - put that in here.

@@ -21,6 +21,7 @@ public sealed partial class SimpleParameterTest : ParametersPage
     public SimpleParameterTest()
     {
         Name = "Open";
+        Icon = new("\uE933");
         _stringParameter = new StringParameterRun()
         {
             PlaceholderText = "Type something",
@@ -57,6 +58,7 @@ public sealed partial class ButtonParameterTest : ParametersPage
     public ButtonParameterTest()
     {
         Name = "Open";
+        Icon = new("\uE8E5");
         _fileParameter = new FilePickerParameterRun();
 
         _command = new AnonymousCommand(HandleInvoke)
@@ -90,6 +92,84 @@ public sealed partial class ButtonParameterTest : ParametersPage
             toast = new ToastStatusMessage(new StatusMessage() { Message = $"no file selected", State = MessageState.Warning });
         }
 
+        _fileParameter.ClearValue();
+        toast?.Show();
+    }
+}
+
+public sealed partial class MixedParamTestPage : ParametersPage
+{
+    private readonly CommandParameterRun _fileParameter;
+    private readonly StringParameterRun _stringParameter;
+    private readonly InvokableCommand _command;
+    private readonly ListItem _item;
+    private bool _stringFirst;
+
+    public MixedParamTestPage(bool stringFirst = false)
+    {
+        _stringFirst = stringFirst;
+        Name = "Open";
+        Icon = new("\uED58");
+        _fileParameter = new FilePickerParameterRun();
+        _stringParameter = new StringParameterRun()
+        {
+            PlaceholderText = "Add a string",
+        };
+
+        _command = new AnonymousCommand(HandleInvoke)
+        {
+            Name = "Submit",
+            Icon = new IconInfo("\uE724"), // Send
+            Result = CommandResult.KeepOpen(),
+        };
+        _item = new(_command);
+
+        _fileParameter.PropChanged += (s, e) => ChangeCommandSubtitle();
+        _stringParameter.PropChanged += (s, e) => ChangeCommandSubtitle();
+    }
+
+    public override IParameterRun[] Parameters
+    {
+        get
+        {
+            return _stringFirst
+                ? (new IParameterRun[]
+                {
+                    new LabelRun("Add a string:"),
+                    _stringParameter,
+                    new LabelRun("and pick a file:"),
+                    _fileParameter,
+                })
+                : (new IParameterRun[]
+                {
+                    new LabelRun("Pick a file:"),
+                    _fileParameter,
+                    new LabelRun("and add a string:"),
+                    _stringParameter,
+                });
+        }
+    }
+
+    public override IListItem Command => _item;
+
+    private void ChangeCommandSubtitle()
+    {
+        // set the subtitle to show the current values
+        var filePart = _fileParameter.Value is Windows.Storage.StorageFile file ? $"file='{file.Name}'" : "no file";
+        var stringPart = !string.IsNullOrWhiteSpace(_stringParameter.Text) ? $"string='{_stringParameter.Text}'" : "no string";
+        _item.Subtitle = $"{filePart}, {stringPart}";
+    }
+
+    private void HandleInvoke()
+    {
+        var input = (Windows.Storage.StorageFile?)_fileParameter.Value;
+        var toast = _fileParameter.Value is Windows.Storage.StorageFile file
+            ? new ToastStatusMessage(new StatusMessage()
+            {
+                Message = $"You entered: '{file.Path}', '{_stringParameter.Text}'",
+                State = MessageState.Success,
+            })
+            : new ToastStatusMessage(new StatusMessage() { Message = $"no file selected", State = MessageState.Warning });
         _fileParameter.ClearValue();
         toast?.Show();
     }

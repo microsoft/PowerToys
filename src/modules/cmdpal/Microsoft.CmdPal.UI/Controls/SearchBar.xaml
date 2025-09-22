@@ -35,12 +35,13 @@
             <DataTemplate x:Key="StringParamTemplate" x:DataType="coreVm:StringParameterRunViewModel">
                 <TextBox
                     MinHeight="32"
-                    Padding="4,2"
-                    VerticalAlignment="Center"
+                    Padding="4"
+                    VerticalAlignment="Bottom"
                     VerticalContentAlignment="Stretch"
                     BorderBrush="{ThemeResource AccentTextFillColorPrimaryBrush}"
                     BorderThickness="1"
                     Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                    KeyDown="StringParameter_KeyDown"
                     PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
                     Style="{StaticResource SearchTextBoxStyle}"
                     Text="{x:Bind TextForUI, Mode=OneWay}"

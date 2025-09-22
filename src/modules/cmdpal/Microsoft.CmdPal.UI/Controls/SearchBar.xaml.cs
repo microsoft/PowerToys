@@ -25,6 +25,7 @@ public sealed partial class SearchBar : UserControl,
     IRecipient<GoHomeMessage>,
     IRecipient<FocusSearchBoxMessage>,
     IRecipient<UpdateSuggestionMessage>,
+    IRecipient<FocusParamMessage>,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -95,6 +96,7 @@ public sealed partial class SearchBar : UserControl,
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
+        WeakReferenceMessenger.Default.Register<FocusParamMessage>(this);
     }
 
     public void ClearSearch()
@@ -394,7 +396,7 @@ public sealed partial class SearchBar : UserControl,
         {
             if (FocusManager.FindFirstFocusableElement(this) is DependencyObject focusable)
             {
-                FocusManager.TryFocusAsync(focusable, FocusState.Programmatic).Wait();
+                FocusManager.TryFocusAsync(focusable, FocusState.Keyboard).Wait();
             }
         });
     }
@@ -496,6 +498,39 @@ public sealed partial class SearchBar : UserControl,
         if (sender is TextBox textBox && textBox.DataContext is StringParameterRunViewModel stringParam)
         {
             stringParam.SetTextFromUi(textBox.Text);
+        }
+    }
+
+    private void StringParameter_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (sender is TextBox textBox &&
+            textBox.DataContext is StringParameterRunViewModel stringParam &&
+            CurrentPageViewModel is ParametersPageViewModel parametersPage)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                if (parametersPage.ShowCommand)
+                {
+                    parametersPage.TrySubmit();
+                }
+                else
+                {
+                    parametersPage.FocusNextParameter(stringParam);
+                }
+            }
+        }
+    }
+
+    public void Receive(FocusParamMessage message)
+    {
+        var parameter = message.Parameter;
+        if (parameter != null)
+        {
+            var container = ParametersBar.ContainerFromItem(parameter);
+            if (container is FrameworkElement fwe)
+            {
+                fwe.Focus(FocusState.Keyboard);
+            }
         }
     }
 }
