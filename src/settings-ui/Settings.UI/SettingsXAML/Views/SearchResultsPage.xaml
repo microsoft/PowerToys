@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Settings.UI.Library"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:vm="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     x:Name="RootPage"
@@ -16,13 +17,20 @@
 
     <Page.Resources>
         <converters:IconConverter x:Key="IconConverter" />
+        <tkconverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
     </Page.Resources>
 
     <controls:SettingsPageControl x:Name="PageControl" x:Uid="SearchResults_Title">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Margin="0,-40,0,0" Orientation="Vertical">
-                <controls:SettingsGroup x:Uid="SearchResults_ModulesTitle" Margin="0,-10,0,0">
-                    <ItemsControl x:Name="ModulesItemsControl" ItemsSource="{x:Bind ViewModel.ModuleResults, Mode=OneWay}">
+                <controls:SettingsGroup
+                    x:Uid="SearchResults_ModulesTitle"
+                    Margin="0,-10,0,0"
+                    Visibility="{x:Bind ViewModel.ModuleResults, Mode=OneWay, Converter={StaticResource CollectionVisibilityConverter}}">
+                    <ItemsControl
+                        x:Name="ModulesItemsControl"
+                        IsTabStop="False"
+                        ItemsSource="{x:Bind ViewModel.ModuleResults, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models:SettingEntry">
                                 <tkcontrols:SettingsCard
@@ -37,11 +45,14 @@
                 </controls:SettingsGroup>
 
                 <!--  Settings Groups  -->
-                <ItemsControl x:Name="SettingsGroupsItemsControl" ItemsSource="{x:Bind ViewModel.GroupedSettingsResults, Mode=OneWay}">
+                <ItemsControl
+                    x:Name="SettingsGroupsItemsControl"
+                    IsTabStop="False"
+                    ItemsSource="{x:Bind ViewModel.GroupedSettingsResults, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:SettingsGroup">
                             <controls:SettingsGroup Header="{x:Bind GroupName}">
-                                <ItemsControl ItemsSource="{x:Bind Settings}">
+                                <ItemsControl IsTabStop="False" ItemsSource="{x:Bind Settings}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="models:SettingEntry">
                                             <tkcontrols:SettingsCard
@@ -72,6 +83,7 @@
                         Glyph="&#xE71C;" />
                     <TextBlock HorizontalAlignment="Center" TextAlignment="Center">
                         <Run x:Uid="SearchResults_NoResultsHeader" FontWeight="SemiBold" />
+                        <LineBreak />
                         <Run x:Uid="SearchResults_NoResultsDescription" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </TextBlock>
                 </StackPanel>

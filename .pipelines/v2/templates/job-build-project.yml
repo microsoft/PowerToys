@@ -411,9 +411,28 @@ jobs:
           !**\obj\**
 
   - pwsh: |-
-      $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix" | Select -First 1)
-      $PackageFilename = $Package.FullName
-      Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
+      $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix"
+      Write-Host "Found $($Packages.Count) CmdPal MSIX package(s):"
+      foreach ($pkg in $Packages) {
+          Write-Host "  - $($pkg.FullName)"
+      }
+      
+      if ($Packages.Count -gt 0) {
+          # Priority: Look for platform-specific MSIX (x64/arm64) first, then fallback to any
+          $PlatformPackage = $Packages | Where-Object { $_.Name -match "Microsoft\.CmdPal\.UI_.*_(x64|arm64)\.msix$" } | Select-Object -First 1
+          if ($PlatformPackage) {
+              $Package = $PlatformPackage
+              Write-Host "Using platform-specific package: $($Package.FullName)"
+          } else {
+              $Package = $Packages | Select-Object -First 1
+              Write-Host "Using first available package: $($Package.FullName)"
+          }
+          
+          $PackageFilename = $Package.FullName
+          Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
+      } else {
+          Write-Warning "No CmdPal MSIX packages found!"
+      }
     displayName: Locate the CmdPal MSIX
 
   - ${{ if eq(parameters.codeSign, true) }}:
