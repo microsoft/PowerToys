@@ -171,12 +171,12 @@ internal static class RtbInlineImageFactory
                 }
 
                 // Commit sizes
-                if (desiredWidth is double w)
+                if (desiredWidth.HasValue)
                 {
-                    img.Width = Math.Max(0, w);
+                    img.Width = Math.Max(0, desiredWidth.Value);
                 }
 
-                img.MaxWidth = maxW is double mwv && mwv > 0 ? mwv : maxConstraint;
+                img.MaxWidth = maxW > 0 ? maxW : maxConstraint;
             }
 
             if (externalHeight.HasValue && !double.IsNaN(externalHeight.Value))

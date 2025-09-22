@@ -8,7 +8,7 @@ using Windows.Storage.Streams;
 namespace Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders;
 
 /// <summary>
-/// Reimplementation of IImageProvider to handle http/https images, but adds
+/// Implementation of IImageProvider to handle http/https images, but adds
 /// a new functionality to handle image scaling.
 /// </summary>
 internal sealed partial class HttpImageSourceProvider : IImageSourceProvider

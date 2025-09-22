@@ -85,7 +85,7 @@ internal sealed partial class LocalImageSourceProvider : IImageSourceProvider
             var ext = Path.GetExtension(pathOrUri);
             if (string.IsNullOrEmpty(ext))
             {
-                // try queryless URI path portion
+                // try query-less URI path portion
                 if (Uri.TryCreate(pathOrUri, UriKind.RelativeOrAbsolute, out var u))
                 {
                     ext = Path.GetExtension(u.IsAbsoluteUri ? u.AbsolutePath : u.OriginalString);

@@ -24,7 +24,7 @@ internal sealed partial class DataImageSourceProvider : IImageSourceProvider
             throw new ArgumentException("URL is not a data: URI.", nameof(url));
         }
 
-        // data:[<mediatype>][;base64],<data>
+        // data:[<media type>][;base64],<data>
         var comma = url.IndexOf(',');
         if (comma < 0)
         {
