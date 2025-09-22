@@ -53,35 +53,22 @@
         </Grid.RowDefinitions>
 
         <!--  Title Bar Area  -->
-        <Grid
-            x:Name="titleBar"
-            Height="48"
-            ColumnSpacing="16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
-                <ColumnDefinition x:Name="IconColumn" Width="Auto" />
-                <ColumnDefinition x:Name="TitleColumn" Width="Auto" />
-                <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
-            </Grid.ColumnDefinitions>
-            <Image
-                Grid.Column="1"
-                Width="16"
-                Height="16"
-                VerticalAlignment="Center"
-                Source="/Assets/Settings/icon.ico" />
-            <TextBlock
-                x:Uid="ShortcutConflictWindow_TitleTxt"
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}" />
-        </Grid>
+        <TitleBar x:Name="titleBar" x:Uid="ShortcutConflictWindow_TitleTxt">
+            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
+            <TitleBar.LeftHeader>
+                <ImageIcon
+                    Height="16"
+                    Margin="16,0,0,0"
+                    Source="/Assets/Settings/icon.ico" />
+            </TitleBar.LeftHeader>
+        </TitleBar>
 
         <!--  Description text  -->
+
         <TextBlock
             x:Uid="ShortcutConflictWindow_Description"
             Grid.Row="1"
-            Margin="16,24,16,24"
-            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Margin="16,8,16,24"
             Style="{StaticResource BodyTextBlockStyle}"
             TextWrapping="Wrap" />
 

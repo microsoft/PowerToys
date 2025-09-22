@@ -40,7 +40,8 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
             // Set localized window title
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            this.ExtendsContentIntoTitleBar = true;
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(titleBar);
 
             this.Title = resourceLoader.GetString("ShortcutConflictWindow_Title");
             this.CenterOnScreen();
@@ -82,10 +83,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
         private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
         {
             // Set window icon
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\Settings\\icon.ico");
+            AppWindow.SetIcon("Assets\\Settings\\icon.ico");
         }
     }
 }
