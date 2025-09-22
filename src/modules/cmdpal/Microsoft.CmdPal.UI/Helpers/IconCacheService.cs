@@ -199,8 +199,8 @@ public sealed class IconCacheService
             };
             var rect = new RECT { };
             renderTarget3.DrawGlyphRunWithColorSupport(
-                -size / 9,
-                (float)32.0f,
+                -4,
+                (float)30.0f,
                 DWRITE_MEASURING_MODE.DWRITE_MEASURING_MODE_NATURAL,
                 in run,
                 renderingParams,
