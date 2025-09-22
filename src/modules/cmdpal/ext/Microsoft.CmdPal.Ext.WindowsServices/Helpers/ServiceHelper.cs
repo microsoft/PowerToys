@@ -88,11 +88,11 @@ public static class ServiceHelper
                 ];
             }
 
-            IconInfo icon = Icons.GreenCircleIcon;
+            IconInfo icon = Icons.PlayIcon;
             switch (s.Status)
             {
                 case ServiceControllerStatus.Stopped:
-                    icon = Icons.RedCircleIcon;
+                    icon = Icons.StopIcon;
                     break;
                 case ServiceControllerStatus.Running:
                     break;
