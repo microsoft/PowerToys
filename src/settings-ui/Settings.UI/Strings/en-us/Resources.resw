@@ -5243,11 +5243,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ShortcutConflictWindow_Title" xml:space="preserve">
     <value>PowerToys shortcut conflicts</value>
   </data>
-  <data name="ShortcutConflictWindow_TitleTxt.Text" xml:space="preserve">
+  <data name="ShortcutConflictWindow_TitleTxt.Title" xml:space="preserve">
     <value>PowerToys shortcut conflicts</value>
   </data>
   <data name="ShortcutConflictWindow_Description.Text" xml:space="preserve">
-    <value>Conflicting shortcuts may cause unexpected behavior. Edit them here or go to the module settings to update them.</value>
+    <value>If any shortcut conflicts are detected, they’ll appear below. Conflicts can happen between PowerToys utilities or Windows system shortcuts, and may cause unexpected behavior. If everything works as expected, you can safely ignore the conflict.</value>
   </data>
   <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
     <value>Conflicts found for</value>
