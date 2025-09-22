@@ -39,6 +39,8 @@
 
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxBundle>Never</AppxBundle>
+    <AppxPackageTestDir>$(OutputPath)\AppPackages\Microsoft.CmdPal.UI_$(Version)_Test\</AppxPackageTestDir>
   </PropertyGroup>
 
   <PropertyGroup>
