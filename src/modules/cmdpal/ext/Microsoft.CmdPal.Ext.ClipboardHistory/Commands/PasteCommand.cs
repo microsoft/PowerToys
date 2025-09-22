@@ -15,9 +15,9 @@ internal sealed partial class PasteCommand : InvokableCommand
 {
     private readonly ClipboardItem _clipboardItem;
     private readonly ClipboardFormat _clipboardFormat;
-    private readonly ISettingOptions _settings;
+    private readonly ISettingOptions? _settings;
 
-    internal PasteCommand(ClipboardItem clipboardItem, ClipboardFormat clipboardFormat, ISettingOptions settings)
+    internal PasteCommand(ClipboardItem clipboardItem, ClipboardFormat clipboardFormat, ISettingOptions? settings)
     {
         _clipboardItem = clipboardItem;
         _clipboardFormat = clipboardFormat;
@@ -42,7 +42,9 @@ internal sealed partial class PasteCommand : InvokableCommand
 
         ClipboardHelper.SendPasteKeyCombination();
 
-        if (!_settings.KeepAfterPaste)
+        // If there were settings passed in, AND the setting was set to not keep
+        // after paste, remove the item from history.
+        if (_settings is not null && !_settings.KeepAfterPaste)
         {
             Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
         }

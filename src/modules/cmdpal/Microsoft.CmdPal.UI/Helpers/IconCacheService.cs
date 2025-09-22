@@ -124,6 +124,9 @@ public sealed class IconCacheService
         return completionSource.Task;
     }
 
+    /// <summary>
+    /// Initializes DirectWrite and related objects needed for rendering emoji.
+    /// </summary>
     private void InitDwrite()
     {
         unsafe
@@ -150,6 +153,16 @@ public sealed class IconCacheService
         }
     }
 
+    /// <summary>
+    /// Renders an emoji glyph to an ImageSource. Unbelievably, it is faster to
+    /// MANUALLY render the emoji using DirectWrite than it is to ask the normal
+    /// WinUI font icon renderer to render it.
+    ///
+    /// Big shoutout to @lhecker for writing this for us
+    /// </summary>
+    /// <param name="glyph">The emoji glyph to render.</param>
+    /// <returns>An ImageSource containing the rendered emoji, or null if
+    /// rendering failed.</returns>
     private ImageSource? MagicEmoji(string glyph)
     {
         if (string.IsNullOrEmpty(glyph))
@@ -167,7 +180,7 @@ public sealed class IconCacheService
             return null;
         }
 
-        var size = 36;
+        var size = 54;
         unsafe
         {
             interop.CreateBitmapRenderTarget(HDC.Null, (uint)size, (uint)size, out var renderTarget);
@@ -189,7 +202,7 @@ public sealed class IconCacheService
             var run = new DWRITE_GLYPH_RUN
             {
                 fontFace = fontFace,
-                fontEmSize = 32,
+                fontEmSize = 48,
                 glyphCount = 1,
                 glyphIndices = &glyphIndex,
                 glyphAdvances = &advance,
@@ -199,8 +212,8 @@ public sealed class IconCacheService
             };
             var rect = new RECT { };
             renderTarget3.DrawGlyphRunWithColorSupport(
-                -4,
-                (float)30.0f,
+                -6,
+                (float)45.0f,
                 DWRITE_MEASURING_MODE.DWRITE_MEASURING_MODE_NATURAL,
                 in run,
                 renderingParams,
