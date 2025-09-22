@@ -51,6 +51,36 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject
         DoOnUiThread(() => OnPropertyChanged(propertyName));
     }
 
+    protected void UpdateProperty(string propertyName1, string propertyName2)
+    {
+        DoOnUiThread(() =>
+        {
+            OnPropertyChanged(propertyName1);
+            OnPropertyChanged(propertyName2);
+        });
+    }
+
+    protected void UpdateProperty(string propertyName1, string propertyName2, string propertyName3)
+    {
+        DoOnUiThread(() =>
+        {
+            OnPropertyChanged(propertyName1);
+            OnPropertyChanged(propertyName2);
+            OnPropertyChanged(propertyName3);
+        });
+    }
+
+    protected void UpdateProperty(params string[] propertyNames)
+    {
+        DoOnUiThread(() =>
+        {
+            foreach (var propertyName in propertyNames)
+            {
+                OnPropertyChanged(propertyName);
+            }
+        });
+    }
+
     protected void ShowException(Exception ex, string? extensionHint = null)
     {
         if (PageContext.TryGetTarget(out var pageContext))
