@@ -17,7 +17,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
-    xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -27,7 +27,7 @@
                 x:Key="DefaultMarkdownThemeConfig"
                 H3FontSize="12"
                 H3FontWeight="Normal" />
-            <helpers:ImageProvider x:Key="ImageProvider" />
+            <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
             <labToolkit:MarkdownConfig x:Key="DefaultMarkdownConfig" Themes="{StaticResource DefaultMarkdownThemeConfig}" ImageProvider="{StaticResource ImageProvider}" />
 
             <StackLayout

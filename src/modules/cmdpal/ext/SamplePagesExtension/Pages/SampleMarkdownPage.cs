@@ -2,218 +2,165 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.ApplicationModel;
-using Windows.Storage;
 
 namespace SamplePagesExtension;
 
 internal sealed partial class SampleMarkdownPage : ContentPage
 {
-    public static readonly string SampleMarkdownText;
+    public static readonly string SampleMarkdownText = @"
+# Markdown Guide
 
-    static SampleMarkdownPage()
-    {
-        // TODO: cleanup
-        // Copy file to temp location for file:// testing
-        string tempFileUri = "temp://nada";
-        try
-        {
-            var tempFolder = ApplicationData.Current.TemporaryFolder;
-            var tempFileTask = tempFolder
-                .CreateFileAsync("GreenRectangle.png", CreationCollisionOption.ReplaceExisting)
-                .GetResults();
-            var fileTask = Windows.Storage.StorageFile
-                .GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/Win-Digital.png"))
-                .AsTask()
-                .GetAwaiter()
-                .GetResult();
-            var copyTask = fileTask.CopyAndReplaceAsync(tempFileTask);
-            copyTask.GetResults();
-            var tempFile = tempFileTask.Path;
-            tempFileUri = new Uri(tempFile).AbsoluteUri;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-        }
+Markdown is a lightweight markup language with plain text formatting syntax. It's often used to format readme files, for writing messages in online forums, and to create rich text using a simple, plain text editor.
 
-        SampleMarkdownText =
-          $$"""
-            # Markdown Guide
+## Basic Markdown Formatting
 
-            {{Package.Current.Id.FamilyName}}
+### Headings
 
-            Markdown is a lightweight markup language with plain text formatting syntax. It's often used to format readme files, for writing messages in online forums, and to create rich text using a simple, plain text editor.
+    # This is an <h1> tag
+    ## This is an <h2> tag
+    ### This is an <h3> tag
+    #### This is an <h4> tag
+    ##### This is an <h5> tag
+    ###### This is an <h6> tag
 
-            ## Basic Markdown Formatting
+### Emphasis
 
-            ### Headings
+    *This text will be italic*
+    _This will also be italic_
 
-                # This is an <h1> tag
-                ## This is an <h2> tag
-                ### This is an <h3> tag
-                #### This is an <h4> tag
-                ##### This is an <h5> tag
-                ###### This is an <h6> tag
+    **This text will be bold**
+    __This will also be bold__
 
-            ### Emphasis
+    _You **can** combine them_
 
-                *This text will be italic*
-                _This will also be italic_
+Result:
 
-                **This text will be bold**
-                __This will also be bold__
+*This text will be italic*
 
-                _You **can** combine them_
+_This will also be italic_
 
-            Result:
+**This text will be bold**
 
-            *This text will be italic*
+__This will also be bold__
 
-            _This will also be italic_
+_You **can** combine them_
 
-            **This text will be bold**
+### Lists
 
-            __This will also be bold__
+**Unordered:**
 
-            _You **can** combine them_
+    * Milk
+    * Bread
+        * Whole grain
+    * Butter
 
-            ### Lists
+Result:
 
-            **Unordered:**
+* Milk
+* Bread
+    * Whole grain
+* Butter
 
-                * Milk
-                * Bread
-                    * Whole grain
-                * Butter
+**Ordered:**
 
-            Result:
+    1. Tidy the kitchen
+    2. Prepare ingredients
+    3. Cook delicious things
 
-            * Milk
-            * Bread
-                * Whole grain
-            * Butter
+Result:
 
-            **Ordered:**
+1. Tidy the kitchen
+2. Prepare ingredients
+3. Cook delicious things
 
-                1. Tidy the kitchen
-                2. Prepare ingredients
-                3. Cook delicious things
+### Images
 
-            Result:
+    ![Alt Text](url)
 
-            1. Tidy the kitchen
-            2. Prepare ingredients
-            3. Cook delicious things
+Result:
 
-            ### Images
+![painting](https://i.imgur.com/93XJSNh.png)
 
-                ![Alt Text](https://url)
+### Links
 
-                ![Alt Text](ms-appx:///url)
+    [example](http://example.com)
 
-                ![Alt Text](file://url)
+Result:
 
-                ![Alt Text](ms-appdata://url)Q
+[example](http://example.com)
 
-            Result:
+### Blockquotes
 
-            Web URL:
+    As Albert Einstein said:
 
-            ![painting](https://i.imgur.com/93XJSNh.png)
+    > If we knew what it was we were doing,
+    > it would not be called research, would it?
 
-            MS-APPX URL:
-            ![red rectangle](ms-appx:///Assets/StoreLogo.png)
+Result:
 
-            MS-APPDATA URL:
-            ![Space](ms-appdata://temp/Space.png)
+As Albert Einstein said:
 
-            File URL:
-            ![green rectangle](file:///X:/source/App8/App8/Assets/Square44x44Logo.scale-200.png)
+> If we knew what it was we were doing,
+> it would not be called research, would it?
 
-            ### Links
+### Horizontal Rules
 
-                [example](http://example.com)
+```markdown
+    ---
+```
 
-            Result:
+Result:
 
-            [example](http://example.com)
+---
 
-            ### Blockquotes
+### Code Snippets
 
-                As Albert Einstein said:
+    Indenting by 4 spaces will turn an entire paragraph into a code-block.
 
-                > If we knew what it was we were doing,
-                > it would not be called research, would it?
+Result:
 
-            Result:
-
-            As Albert Einstein said:
-
-            > If we knew what it was we were doing,
-            > it would not be called research, would it?
-
-            ### Horizontal Rules
-
-            ```markdown
-                ---
-            ```
-
-            Result:
-
-            ---
-
-            ### Code Snippets
-
-                Indenting by 4 spaces will turn an entire paragraph into a code-block.
-
-            Result:
-
-                .my-link {
-                    text-decoration: underline;
-                }
-
-            ### Reference Lists & Titles
-
-                **The quick brown [fox][1], jumped over the lazy [dog][2].**
-
-                [1]: https://en.wikipedia.org/wiki/Fox "Wikipedia: Fox"
-                [2]: https://en.wikipedia.org/wiki/Dog "Wikipedia: Dog"
-
-            Result:
-
-            **The quick brown [fox][1], jumped over the lazy [dog][2].**
-
-            [1]: https://en.wikipedia.org/wiki/Fox "Wikipedia: Fox"
-            [2]: https://en.wikipedia.org/wiki/Dog "Wikipedia: Dog"
-
-            ### Escaping
-
-                \*literally\*
-                Q
-            Result:
-
-            \*literally\*
-
-            ## Advanced Markdown
-
-            Note: Some syntax which is not standard to native Markdown. They're extensions of the language.
-
-            ### Strike-throughs
-
-                ~~deleted words~~
-
-            Result:
-
-            ~~deleted words~~
-
-
-
-            """;
+    .my-link {
+        text-decoration: underline;
     }
+
+### Reference Lists & Titles
+
+    **The quick brown [fox][1], jumped over the lazy [dog][2].**
+
+    [1]: https://en.wikipedia.org/wiki/Fox ""Wikipedia: Fox""
+    [2]: https://en.wikipedia.org/wiki/Dog ""Wikipedia: Dog""
+
+Result:
+
+**The quick brown [fox][1], jumped over the lazy [dog][2].**
+
+[1]: https://en.wikipedia.org/wiki/Fox ""Wikipedia: Fox""
+[2]: https://en.wikipedia.org/wiki/Dog ""Wikipedia: Dog""
+
+### Escaping
+
+    \*literally\*
+
+Result:
+
+\*literally\*
+
+## Advanced Markdown
+
+Note: Some syntax which is not standard to native Markdown. They're extensions of the language.
+
+### Strike-throughs
+
+    ~~deleted words~~
+
+Result:
+
+~~deleted words~~
+
+
+";
 
     public SampleMarkdownPage()
     {
