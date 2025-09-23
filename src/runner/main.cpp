@@ -49,7 +49,6 @@
 #include <common/version/version.h>
 #include <common/utils/string_utils.h>
 #include <common/utils/gpo.h>
-#include <MddBootstrap.h>
 
 // disabling warning 4458 - declaration of 'identifier' hides class member
 // to avoid warnings from GDI files - can't add winRT directory to external code
@@ -328,23 +327,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
     winrt::init_apartment();
 
-    // Windows App SDK bootstrap is required for unpackaged process before using WinUI / DispatcherQueue in modules.
-    // If already packaged, Initialize2 will no-op (OnPackageIdentity_NOOP option).
-    {
-        constexpr uint32_t c_majorMinorVersion{ 0x00010007 }; // 1.7 (MAJOR<<16 | MINOR)
-        PCWSTR c_versionTag{ L"" };                           // empty = latest
-        const PACKAGE_VERSION c_minVersion{};                  // 0.0.0.0 minimum
-        MddBootstrapInitializeOptions options = MddBootstrapInitializeOptions_OnPackageIdentity_NOOP;
-        const HRESULT hr = MddBootstrapInitialize2(c_majorMinorVersion, c_versionTag, c_minVersion, options);
-        if (FAILED(hr))
-        {
-            Logger::error("MddBootstrapInitialize2 failed hr=0x{:08X}", hr);
-        }
-        else
-        {
-            Logger::info("Windows App SDK bootstrap initialized (1.7).");
-        }
-    }
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator
         L"G:BA" // Group: Builtin (local) administrator
@@ -537,7 +519,5 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     }
     stop_tray_icon();
 
-    // Shutdown Windows App SDK bootstrap (if initialized)
-    MddBootstrapShutdown();
     return result;
 }
