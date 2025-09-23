@@ -432,7 +432,7 @@ public sealed partial class ListPage : Page,
     {
         if (args.Item is ListItemViewModel item)
         {
-            item.SafeInitializeProperties();
+            _ = Task.Run(() => item.SafeInitializeProperties());
         }
     }
 }
