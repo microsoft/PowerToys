@@ -16,6 +16,7 @@ public partial class OpenInConsoleCommand : InvokableCommand
     internal static IconInfo OpenInConsoleIcon { get; } = new("\uE756");
 
     private readonly string _path;
+    private bool _isDirectory;
 
     public OpenInConsoleCommand(string fullPath)
     {
@@ -24,11 +25,15 @@ public partial class OpenInConsoleCommand : InvokableCommand
         this.Icon = OpenInConsoleIcon;
     }
 
+    public static OpenInConsoleCommand FromDirectory(string directory) => new(directory) { _isDirectory = true };
+
+    public static OpenInConsoleCommand FromFile(string file) => new(file);
+
     public override CommandResult Invoke()
     {
         using (var process = new Process())
         {
-            process.StartInfo.WorkingDirectory = Path.GetDirectoryName(_path);
+            process.StartInfo.WorkingDirectory = _isDirectory ? _path : Path.GetDirectoryName(_path);
             process.StartInfo.FileName = "cmd.exe";
 
             try

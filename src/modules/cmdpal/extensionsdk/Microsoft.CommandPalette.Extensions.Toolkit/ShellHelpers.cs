@@ -4,11 +4,44 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Win32;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public static class ShellHelpers
 {
+    /// <summary>
+    /// These are the executable file extensions that Windows Shell recognizes. Unline CMD/PowerShell,
+    /// Shell does not use PATHEXT, but has a magic fixed list.
+    /// </summary>
+    public static string[] ExecutableExtensions { get; } = [".PIF", ".COM", ".EXE", ".BAT", ".CMD"];
+
+    public static bool IsExecutableFile(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return false;
+        }
+
+        var fileExtension = Path.GetExtension(fileName);
+        if (string.IsNullOrWhiteSpace(fileExtension))
+        {
+            // Shell won't execute app with a filename without an extension
+            return false;
+        }
+
+        foreach (var extension in ExecutableExtensions)
+        {
+            if (string.Equals(fileExtension, extension, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static bool OpenCommandInShell(string? path, string? pattern, string? arguments, string? workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
     {
         if (string.IsNullOrEmpty(pattern))
@@ -127,7 +160,7 @@ public static class ShellHelpers
             var values = Environment.GetEnvironmentVariable("PATH");
             if (values is not null)
             {
-                foreach (var path in values.Split(';'))
+                foreach (var path in values.Split(Path.PathSeparator))
                 {
                     var path1 = Path.Combine(path, filename);
                     if (File.Exists(path1))
@@ -147,13 +180,78 @@ public static class ShellHelpers
 
                     token?.ThrowIfCancellationRequested();
                 }
-
-                return false;
             }
-            else
+
+            return false;
+        }
+    }
+
+    private static bool TryResolveFromAppPaths(string name, [NotNullWhen(true)] out string? fullPath)
+    {
+        try
+        {
+            fullPath = TryHiveView(RegistryHive.CurrentUser, RegistryView.Registry64) ??
+                       TryHiveView(RegistryHive.CurrentUser, RegistryView.Registry32) ??
+                       TryHiveView(RegistryHive.LocalMachine, RegistryView.Registry64) ??
+                       TryHiveView(RegistryHive.LocalMachine, RegistryView.Registry32) ?? string.Empty;
+
+            return !string.IsNullOrEmpty(fullPath);
+
+            string? TryHiveView(RegistryHive hive, RegistryView view)
             {
-                return false;
+                using var baseKey = RegistryKey.OpenBaseKey(hive, view);
+                using var k1 = baseKey.OpenSubKey($@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{name}.exe");
+                var val = (k1?.GetValue(null) as string)?.Trim('"');
+                if (!string.IsNullOrEmpty(val))
+                {
+                    return val;
+                }
+
+                // Some vendors create keys without .exe in the subkey name; check that too.
+                using var k2 = baseKey.OpenSubKey($@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{name}");
+                return (k2?.GetValue(null) as string)?.Trim('"');
             }
         }
+        catch (Exception)
+        {
+            fullPath = null;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Mimics Windows Shell behavior to resolve an executable name to a full path.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="fullPath"></param>
+    /// <returns></returns>
+    public static bool TryResolveExecutableAsShell(string name, out string fullPath)
+    {
+        // First check if we can find the file in the registry
+        if (TryResolveFromAppPaths(name, out var path))
+        {
+            fullPath = path;
+            return true;
+        }
+
+        // If the name does not have an extension, try adding common executable extensions
+        // this order mimics Windows Shell behavior
+        // Note: HasExtension check follows Shell behavior, but differs from the
+        // Start Menu search results, which will offer file name with extensions + ".exe"
+        var nameHasExtension = Path.HasExtension(name);
+        if (!nameHasExtension)
+        {
+            foreach (var ext in ExecutableExtensions)
+            {
+                var nameWithExt = name + ext;
+                if (FileExistInPath(nameWithExt, out fullPath))
+                {
+                    return true;
+                }
+            }
+        }
+
+        fullPath = string.Empty;
+        return false;
     }
 }
