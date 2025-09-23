@@ -76,8 +76,8 @@
                                     AutomationProperties.AutomationId="Timeline_LightSwitch"
                                     EndTime="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}"
                                     StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
-                                       Sunrise="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}"
-                            Sunset="{x:Bind ViewModel.SunsetTimeSpan, Mode=OneWay}"  />
+                                    Sunrise="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}"
+                                    Sunset="{x:Bind ViewModel.SunsetTimeSpan, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Header="Turn on dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
                                 <TimePicker
@@ -217,20 +217,21 @@
                             </AutoSuggestBox>-->
                             <StackPanel
                                 Grid.Row="2"
+                                Margin="0,24,0,0"
                                 HorizontalAlignment="Center"
                                 Orientation="Horizontal"
                                 Spacing="16">
-                                <HyperlinkButton
+                                <Button
                                     x:Name="SyncButton"
-                                    Padding="0"
                                     HorizontalAlignment="Right"
                                     AutomationProperties.AutomationId="SyncLocationButton_LightSwitch"
-                                    Click="GetLocation_Click">
+                                    Click="GetLocation_Click"
+                                    Style="{StaticResource AccentButtonStyle}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <FontIcon FontSize="14" Glyph="&#xECAF;" />
-                                        <TextBlock Text="Use current location" />
+                                        <TextBlock Text="Get current location" />
                                     </StackPanel>
-                                </HyperlinkButton>
+                                </Button>
                                 <ProgressRing
                                     x:Name="SyncLoader"
                                     Width="16"
