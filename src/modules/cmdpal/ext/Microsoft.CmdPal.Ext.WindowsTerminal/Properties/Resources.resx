@@ -182,13 +182,13 @@
   <data name="profile_sort_order_item_default" xml:space="preserve">
     <value>Default (alphabetical)</value>
   </data>
-  <data name="profile_sort_order_item_lexi" xml:space="preserve">
-    <value>Alphabetical</value>
-  </data>
   <data name="profile_sort_order_item_mru" xml:space="preserve">
     <value>Most recently used</value>
   </data>
   <data name="profile_sort_order_item_as_in_terminal" xml:space="preserve">
     <value>As defined in Terminal</value>
+  </data>
+  <data name="profile_sort_order_item_alphabetical" xml:space="preserve">
+    <value>Alphabetical</value>
   </data>
 </root>

@@ -46,7 +46,7 @@ public class SettingsManager : JsonSettingsManager
         Resources.profile_sort_order_description!,
         [
             new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_default!, ProfileSortOrder.Default.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_lexi!, ProfileSortOrder.Alphabetical.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_alphabetical!, ProfileSortOrder.Alphabetical.ToString("G")),
             new ChoiceSetSetting.Choice(Resources.profile_sort_order_item_mru!, ProfileSortOrder.MostRecentlyUsed.ToString("G")),
         ]);
 

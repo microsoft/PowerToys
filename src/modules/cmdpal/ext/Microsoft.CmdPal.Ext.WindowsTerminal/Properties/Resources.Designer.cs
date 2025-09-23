@@ -178,6 +178,15 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Alphabetical.
+        /// </summary>
+        internal static string profile_sort_order_item_alphabetical {
+            get {
+                return ResourceManager.GetString("profile_sort_order_item_alphabetical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to As defined in Terminal.
         /// </summary>
         internal static string profile_sort_order_item_as_in_terminal {
@@ -192,15 +201,6 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         internal static string profile_sort_order_item_default {
             get {
                 return ResourceManager.GetString("profile_sort_order_item_default", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Alphabetical.
-        /// </summary>
-        internal static string profile_sort_order_item_lexi {
-            get {
-                return ResourceManager.GetString("profile_sort_order_item_lexi", resourceCulture);
             }
         }
         
