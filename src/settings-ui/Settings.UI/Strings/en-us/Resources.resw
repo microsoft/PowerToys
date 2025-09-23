@@ -2667,23 +2667,20 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Press a combination of keys to change this shortcut.
 Right-click to remove the key combination, thereby deactivating the shortcut.</value>
   </data>
-  <data name="Activation_Shortcut_Reset" xml:space="preserve">
-    <value>Reset</value>
-  </data>
   <data name="Activation_Shortcut_Save" xml:space="preserve">
     <value>Save</value>
   </data>
   <data name="Activation_Shortcut_Title" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="InvalidShortcut.Title" xml:space="preserve">
+  <data name="InvalidShortcut.Message" xml:space="preserve">
     <value>Invalid shortcut</value>
   </data>
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
-    <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+    <value>A shortcut should start with **Windows key**, **Ctrl**, **Alt** or **Shift**.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
-  <data name="WarningShortcutAltGr.Title" xml:space="preserve">
+  <data name="WarningShortcutAltGr.Message" xml:space="preserve">
     <value>Possible shortcut interference with Alt Gr</value>
     <comment>Alt Gr refers to the right alt key on some international keyboards</comment>
   </data>
@@ -2691,8 +2688,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
-  <data name="WarningShortcutConflict.Title" xml:space="preserve">
-    <value>Shortcut conflict</value>
+  <data name="WarningShortcutConflict.Message" xml:space="preserve">
+    <value>Potential shortcut conflict</value>
   </data>
   <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
     <value>A conflict has been detected for this shortcut.</value>
@@ -5305,7 +5302,17 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="DismissText.Text" xml:space="preserve">
     <value>Dismiss</value>
   </data>
-  <data name="IgnoreShortcutConflicts.Content" xml:space="preserve">
-    <value>Ignore conflict warnings for this shortcut</value>
+  <data name="Shortcut_ResetToolTip.Text" xml:space="preserve">
+    <value>Reset to the default shortcut</value>
   </data>
+	<data name="Shortcut_ClearBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Clear shortcut</value>
+  </data>
+	<data name="Shortcut_ClearToolTip.Text" xml:space="preserve">
+    <value>Clear and unassign this shortcut</value>
+  </data>
+	<data name="Shortcut_Clear.Text" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+	
 </root>

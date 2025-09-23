@@ -71,6 +71,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(IsWarningAltGrProperty, value);
         }
 
+        public event RoutedEventHandler ResetClick;
+
+        public event RoutedEventHandler ClearClick;
+
         private static void OnIgnoreConflictChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = d as ShortcutDialogContentControl;
@@ -98,6 +102,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void UpdateShouldShowConflict()
         {
             ShouldShowConflict = !IgnoreConflict && HasConflict;
+        }
+
+        private void ResetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ResetClick?.Invoke(this, new RoutedEventArgs());
+        }
+
+        private void ClearBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ClearClick?.Invoke(this, new RoutedEventArgs());
         }
     }
 }

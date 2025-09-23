@@ -258,6 +258,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.Loaded += ShortcutControl_Loaded;
 
             c.IgnoreConflictChanged += OnDialogIgnoreConflictChanged;
+            c.ResetClick += C_ResetClick;
+            c.ClearClick += C_ClearClick;
 
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
@@ -266,11 +268,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 Title = resourceLoader.GetString("Activation_Shortcut_Title"),
                 Content = c,
                 PrimaryButtonText = resourceLoader.GetString("Activation_Shortcut_Save"),
-                SecondaryButtonText = resourceLoader.GetString("Activation_Shortcut_Reset"),
                 CloseButtonText = resourceLoader.GetString("Activation_Shortcut_Cancel"),
                 DefaultButton = ContentDialogButton.Primary,
             };
-            shortcutDialog.SecondaryButtonClick += ShortcutDialog_Reset;
             shortcutDialog.RightTapped += ShortcutDialog_Disable;
 
             AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
@@ -598,16 +598,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             shortcutDialog.IsPrimaryButtonEnabled = true;
             c.IsError = false;
-
-            // WarningLabel.Style = (Style)App.Current.Resources["SecondaryTextStyle"];
         }
 
         private void DisableKeys()
         {
             shortcutDialog.IsPrimaryButtonEnabled = false;
             c.IsError = true;
-
-            // WarningLabel.Style = (Style)App.Current.Resources["SecondaryWarningTextStyle"];
         }
 
         private void Hotkey_KeyUp(int key)
@@ -681,7 +677,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             await shortcutDialog.ShowAsync();
         }
 
-        private void ShortcutDialog_Reset(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void C_ResetClick(object sender, RoutedEventArgs e)
         {
             hotkeySettings = null;
 
@@ -693,6 +689,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             // Send RequestAllConflicts IPC to update the UI after changed hotkey settings.
             GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+        }
+
+        private void C_ClearClick(object sender, RoutedEventArgs e)
+        {
+            // TO DO: Add clear event code here
         }
 
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -751,7 +752,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             args.Handled = true;
             if (args.WindowActivationState != WindowActivationState.Deactivated && (hook == null || hook.GetDisposedState() == true))
             {
-                // If the PT settings window gets focussed/activated again, we enable the keyboard hook to catch the keyboard input.
+                // If the PT settings window gets focused/activated again, we enable the keyboard hook to catch the keyboard input.
                 hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
             }
             else if (args.WindowActivationState == WindowActivationState.Deactivated && hook != null && hook.GetDisposedState() == false)
