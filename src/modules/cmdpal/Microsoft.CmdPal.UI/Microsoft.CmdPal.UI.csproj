@@ -100,12 +100,6 @@
 
     <PackageReference Include="Microsoft.Extensions.Hosting" />
 
-    <PackageReference Include="System.Net.Http" />
-
-    <PackageReference Include="System.Private.Uri" />
-    <PackageReference Include="System.Text.Json" />
-
-    <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
   <!--

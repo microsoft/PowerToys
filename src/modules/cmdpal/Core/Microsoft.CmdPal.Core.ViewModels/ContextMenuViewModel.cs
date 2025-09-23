@@ -5,7 +5,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -141,7 +141,7 @@ public partial class ContextMenuViewModel : ObservableObject,
                 var added = result.TryAdd(key, cmd);
                 if (!added)
                 {
-                    Logger.LogWarning($"Ignoring duplicate keyboard shortcut {KeyChordHelpers.FormatForDebug(key)} on command '{cmd.Title ?? cmd.Name ?? "(unknown)"}'");
+                    CoreLogger.LogWarning($"Ignoring duplicate keyboard shortcut {KeyChordHelpers.FormatForDebug(key)} on command '{cmd.Title ?? cmd.Name ?? "(unknown)"}'");
                 }
             }
         }
@@ -155,12 +155,7 @@ public partial class ContextMenuViewModel : ObservableObject,
 
         // Does the pressed key match any of the keybindings?
         var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
-        if (keybindings.TryGetValue(pressedKeyChord, out var item))
-        {
-            return InvokeCommand(item);
-        }
-
-        return null;
+        return keybindings.TryGetValue(pressedKeyChord, out var item) ? InvokeCommand(item) : null;
     }
 
     public bool CanPopContextStack()
