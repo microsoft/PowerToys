@@ -10,7 +10,7 @@
     <!-- Light Switch background service -->
 
     <!-- Create a directory for the service binaries -->
-    <DirectoryRef Id="BaseApplicationsAssetsFolder">
+    <DirectoryRef Id="INSTALLFOLDER">
       <Directory Id="LightSwitchServiceFolder" Name="LightSwitchService" />
     </DirectoryRef>
 
