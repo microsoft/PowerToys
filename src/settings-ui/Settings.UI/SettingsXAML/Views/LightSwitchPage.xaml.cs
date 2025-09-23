@@ -85,22 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
 
-            if (ViewModel.ScheduleMode == "SunsetToSunrise" &&
-                double.TryParse(ViewModel.Latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLat) &&
-                double.TryParse(ViewModel.Longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLng))
-            {
-                var match = ViewModel.SearchLocations.FirstOrDefault(c =>
-                    Math.Abs(c.Latitude - savedLat) < 0.0001 &&
-                    Math.Abs(c.Longitude - savedLng) < 0.0001);
-
-                if (match != null)
-                {
-                    ViewModel.SelectedCity = match;
-                }
-
-                // ViewModel.CityTimesText = $"Sunrise: {ViewModel.LightTime / 60:D2}:{ViewModel.LightTime % 60:D2}\n" + $"Sunset: {ViewModel.DarkTime / 60:D2}:{ViewModel.DarkTime % 60:D2}";
-                ViewModel.SyncButtonInformation = ViewModel.SelectedCity != null ? ViewModel.SelectedCity.City : $"{ViewModel.Latitude},{ViewModel.Longitude}";
-            }
+            ViewModel.InitializeScheduleMode();
         }
 
         private async void GetLocation_Click(object sender, RoutedEventArgs e)

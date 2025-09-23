@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Input;
@@ -148,8 +149,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 if (ModuleSettings.Properties.ScheduleMode.Value == "FixedHours" && oldMode != "FixedHours")
                 {
-                    SunriseOffset = 0;
-                    SunsetOffset = 0;
                     LightTime = 360;
                     DarkTime = 1080;
                     SunsetTimeSpan = null;
@@ -157,6 +156,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     OnPropertyChanged(nameof(LightTimePickerValue));
                     OnPropertyChanged(nameof(DarkTimePickerValue));
+                }
+
+                if (ModuleSettings.Properties.ScheduleMode.Value == "SunsetToSunrise")
+                {
+                    if (ModuleSettings.Properties.Latitude != "0.0" && ModuleSettings.Properties.Longitude != "0.0")
+                    {
+                        double lat = double.Parse(ModuleSettings.Properties.Latitude.Value, CultureInfo.InvariantCulture);
+                        double lon = double.Parse(ModuleSettings.Properties.Longitude.Value, CultureInfo.InvariantCulture);
+                        UpdateSunTimes(lat, lon);
+                    }
                 }
             }
         }
@@ -256,9 +265,35 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         // === Computed projections (OneWay bindings only) ===
-        public TimeSpan LightTimeTimeSpan => TimeSpan.FromMinutes(LightTime + SunriseOffset);
+        public TimeSpan LightTimeTimeSpan
+        {
+            get
+            {
+                if (ScheduleMode == "SunsetToSunrise")
+                {
+                    return TimeSpan.FromMinutes(LightTime + SunriseOffset);
+                }
+                else
+                {
+                    return TimeSpan.FromMinutes(LightTime);
+                }
+            }
+        }
 
-        public TimeSpan DarkTimeTimeSpan => TimeSpan.FromMinutes(DarkTime + SunsetOffset);
+        public TimeSpan DarkTimeTimeSpan
+        {
+            get
+            {
+                if (ScheduleMode == "SunsetToSunrise")
+                {
+                    return TimeSpan.FromMinutes(DarkTime + SunsetOffset);
+                }
+                else
+                {
+                    return TimeSpan.FromMinutes(DarkTime);
+                }
+            }
+        }
 
         // === Values to pass to timeline ===
         public TimeSpan? SunriseTimeSpan
@@ -338,7 +373,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _selectedSearchLocation = value;
                     NotifyPropertyChanged();
 
-                    UpdateSunTimesForSelectedCity();
+                    UpdateSunTimes(_selectedSearchLocation.Latitude, _selectedSearchLocation.Longitude, _selectedSearchLocation.City);
                 }
             }
         }
@@ -412,27 +447,52 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(ScheduleMode));
         }
 
-        public void UpdateSunTimesForSelectedCity()
+        private void UpdateSunTimes(double latitude, double longitude, string city = "n/a")
         {
-            if (SelectedCity == null)
-            {
-                return;
-            }
-
             SunTimes result = SunCalc.CalculateSunriseSunset(
-                SelectedCity.Latitude,
-                SelectedCity.Longitude,
+                latitude,
+                longitude,
                 DateTime.Now.Year,
                 DateTime.Now.Month,
                 DateTime.Now.Day);
 
             LightTime = (result.SunriseHour * 60) + result.SunriseMinute;
             DarkTime = (result.SunsetHour * 60) + result.SunsetMinute;
-            Latitude = SelectedCity.Latitude.ToString(CultureInfo.InvariantCulture);
-            Longitude = SelectedCity.Longitude.ToString(CultureInfo.InvariantCulture);
+            Latitude = latitude.ToString(CultureInfo.InvariantCulture);
+            Longitude = longitude.ToString(CultureInfo.InvariantCulture);
 
-            // CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
-            SyncButtonInformation = SelectedCity.City;
+            if (city != "n/a")
+            {
+                SyncButtonInformation = city;
+            }
+        }
+
+        public void InitializeScheduleMode()
+        {
+            if (ScheduleMode == "SunsetToSunrise" &&
+                double.TryParse(Latitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLat) &&
+                double.TryParse(Longitude, NumberStyles.Float, CultureInfo.InvariantCulture, out double savedLng))
+            {
+                var match = SearchLocations.FirstOrDefault(c =>
+                    Math.Abs(c.Latitude - savedLat) < 0.0001 &&
+                    Math.Abs(c.Longitude - savedLng) < 0.0001);
+
+                if (match != null)
+                {
+                    SelectedCity = match;
+                }
+
+                SyncButtonInformation = SelectedCity != null
+                    ? SelectedCity.City
+                    : $"{Latitude},{Longitude}";
+
+                double lat = double.Parse(ModuleSettings.Properties.Latitude.Value, CultureInfo.InvariantCulture);
+                double lon = double.Parse(ModuleSettings.Properties.Longitude.Value, CultureInfo.InvariantCulture);
+                UpdateSunTimes(lat, lon);
+
+                SunriseTimeSpan = TimeSpan.FromMinutes(LightTime);
+                SunsetTimeSpan = TimeSpan.FromMinutes(DarkTime);
+            }
         }
 
         private bool _enabledStateIsGPOConfigured;
