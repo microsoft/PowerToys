@@ -418,7 +418,7 @@ jobs:
       }
       
       if ($Packages.Count -gt 0) {
-          # Priority: Look for platform-specific MSIX (x64/arm64) first, then fallback to any
+          # Priority: Look for platform-specific MSIX (x64/arm64) first, then fall back to any
           $PlatformPackage = $Packages | Where-Object { $_.Name -match "Microsoft\.CmdPal\.UI_.*_(x64|arm64)\.msix$" } | Select-Object -First 1
           if ($PlatformPackage) {
               $Package = $PlatformPackage
