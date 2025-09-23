@@ -200,13 +200,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // Check for cancellation before initializing first twenty items
             cancellationToken.ThrowIfCancellationRequested();
 
-            var firstTwenty = newViewModels.Take(20);
-            foreach (var item in firstTwenty)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                item?.SafeInitializeProperties();
-            }
-
             // Cancel any ongoing search
             _cancellationTokenSource?.Cancel();
 

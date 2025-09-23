@@ -427,4 +427,12 @@ public sealed partial class ListPage : Page,
         Keyboard,
         Pointer,
     }
+
+    private void ItemsList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (args.Item is ListItemViewModel item)
+        {
+            item.SafeInitializeProperties();
+        }
+    }
 }
