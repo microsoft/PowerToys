@@ -219,11 +219,11 @@
                                 Grid.Row="2"
                                 Margin="0,24,0,0"
                                 HorizontalAlignment="Center"
-                                Orientation="Horizontal"
-                                Spacing="16">
+                                Orientation="Vertical"
+                                Spacing="32">
                                 <Button
                                     x:Name="SyncButton"
-                                    HorizontalAlignment="Right"
+                                    HorizontalAlignment="Stretch"
                                     AutomationProperties.AutomationId="SyncLocationButton_LightSwitch"
                                     Click="GetLocation_Click"
                                     Style="{StaticResource AccentButtonStyle}">
@@ -234,8 +234,8 @@
                                 </Button>
                                 <ProgressRing
                                     x:Name="SyncLoader"
-                                    Width="16"
-                                    Height="16"
+                                    Width="24"
+                                    Height="24"
                                     IsActive="False"
                                     Visibility="Collapsed" />
                             </StackPanel>
