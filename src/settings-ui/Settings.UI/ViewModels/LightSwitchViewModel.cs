@@ -305,21 +305,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private string _cityTimesText = "Please sync your location";
-
-        public string CityTimesText
-        {
-            get => _cityTimesText;
-            set
-            {
-                if (_cityTimesText != value)
-                {
-                    _cityTimesText = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
         private string _syncButtonInformation = "Please sync your location";
 
         public string SyncButtonInformation

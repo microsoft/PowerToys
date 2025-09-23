@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -104,6 +105,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void GetLocation_Click(object sender, RoutedEventArgs e)
         {
+            await GetGeoLocation();
+        }
+
+        private async Task GetGeoLocation()
+        {
             SyncButton.IsEnabled = false;
             SyncLoader.IsActive = true;
             SyncLoader.Visibility = Visibility.Visible;
@@ -139,8 +145,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 // Since we use this mode, we can remove the selected city data.
                 ViewModel.SelectedCity = null;
-                CityAutoSuggestBox.Text = string.Empty;
 
+                // CityAutoSuggestBox.Text = string.Empty;
                 ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
 
                 // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
@@ -169,12 +175,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
             }
-        }
-
-        private void ScheduleMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var combo = (ComboBox)sender;
-            var selectedTag = (combo.SelectedItem as ComboBoxItem)?.Tag?.ToString();
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -309,7 +309,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (args.SelectedItem is SearchLocation location)
             {
                 ViewModel.SelectedCity = location;
-                CityAutoSuggestBox.Text = $"{location.City}, {location.Country}";
+
+                // CityAutoSuggestBox.Text = $"{location.City}, {location.Country}";
                 LocationDialog.IsPrimaryButtonEnabled = true;
                 LocationResultPanel.Visibility = Visibility.Visible;
             }
