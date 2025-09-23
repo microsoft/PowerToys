@@ -58,7 +58,7 @@ public partial class AllAppsCommandProvider : CommandProvider
 
             if (int.TryParse(limitSetting, out var result))
             {
-                quantity = result;
+                quantity = result < 0 ? quantity : result;
             }
 
             return quantity;
