@@ -27,6 +27,7 @@ admx
 advancedpaste
 advancedpasteui
 advancedpasteuishortcut
+advapi32
 advfirewall
 AFeature
 affordances
