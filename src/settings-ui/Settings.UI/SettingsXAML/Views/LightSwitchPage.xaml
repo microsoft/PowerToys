@@ -62,7 +62,7 @@
                             EndTime="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}"
                             StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
                             Sunrise="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}"
-                            Sunset="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}" />
+                            Sunset="{x:Bind ViewModel.SunsetTimeSpan, Mode=OneWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsExpander
