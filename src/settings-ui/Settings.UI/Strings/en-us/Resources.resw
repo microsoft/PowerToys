@@ -5302,8 +5302,14 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="DismissText.Text" xml:space="preserve">
     <value>Dismiss</value>
   </data>
+	<data name="Shortcut_ResetBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Reset shortcut</value>
+  </data>
   <data name="Shortcut_ResetToolTip.Text" xml:space="preserve">
     <value>Reset to the default shortcut</value>
+  </data>
+	<data name="Shortcut_Reset.Text" xml:space="preserve">
+    <value>Reset</value>
   </data>
 	<data name="Shortcut_ClearBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Clear shortcut</value>
@@ -5312,6 +5318,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Clear and unassign this shortcut</value>
   </data>
 	<data name="Shortcut_Clear.Text" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+	<data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Clear</value>
   </data>
 	
