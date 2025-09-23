@@ -61,8 +61,8 @@
                             AutomationProperties.AutomationId="Timeline_LightSwitch"
                             EndTime="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}"
                             StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
-                            Sunrise="07:00"
-                            Sunset="21:00" />
+                            Sunrise="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}"
+                            Sunset="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsExpander

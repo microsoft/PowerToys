@@ -197,6 +197,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
 
                     OnPropertyChanged(nameof(LightTimeTimeSpan));
+                    OnPropertyChanged(nameof(SunriseTimeSpan));
                     /* OnPropertyChanged(nameof(LightTimePickerValue)); */
                 }
             }
@@ -213,7 +214,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
 
                     OnPropertyChanged(nameof(DarkTimeTimeSpan));
-                    OnPropertyChanged(nameof(DarkTimePickerValue));
+                    OnPropertyChanged(nameof(SunriseTimeSpan));
+                    /* OnPropertyChanged(nameof(DarkTimePickerValue)); */
                 }
             }
         }
@@ -248,6 +250,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public TimeSpan LightTimeTimeSpan => TimeSpan.FromMinutes(LightTime + SunriseOffset);
 
         public TimeSpan DarkTimeTimeSpan => TimeSpan.FromMinutes(DarkTime + SunsetOffset);
+
+        public TimeSpan SunriseTimeSpan => TimeSpan.FromMinutes(LightTime);
+
+        public TimeSpan SunsetTimeSpan => TimeSpan.FromMinutes(DarkTime);
 
         // === Picker values (TwoWay binding targets for TimePickers) ===
         public TimeSpan LightTimePickerValue
