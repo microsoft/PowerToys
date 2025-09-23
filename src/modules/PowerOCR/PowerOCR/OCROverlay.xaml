@@ -119,6 +119,7 @@
                 <ComboBox
                     x:Name="LanguagesComboBox"
                     Margin="4,0"
+                    AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
                     AutomationProperties.Name="{x:Static p:Resources.SelectedLang}"
                     SelectionChanged="LanguagesComboBox_SelectionChanged">
                     <ComboBox.ItemTemplate>

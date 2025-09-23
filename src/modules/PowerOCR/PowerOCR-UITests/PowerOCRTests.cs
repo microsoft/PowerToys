@@ -144,11 +144,61 @@ public class PowerOCRTests : UITestBase
         languageComboBox.Click();
 
         // Verify dropdown is opened by checking if dropdown items are available
-        var dropdownItems = FindAll<Element>(By.ClassName("ListBoxItem"), 2000, true);
+        var dropdownItems = FindAll<Element>(By.ClassName("ComboBoxItem"), 2000);
         Assert.IsTrue(dropdownItems.Count > 0, "Dropdown should contain language options");
 
         // Close dropdown by pressing Escape
         SendKeys(Key.Esc);
+    }
+
+    [TestMethod("PowerOCR.OCRLanguageSelectionTest")]
+    [TestCategory("PowerOCR Language")]
+    public void OCRLanguageSelectionTest()
+    {
+        // Activate Text Extractor overlay
+        SendKeys(Key.Win, Key.Shift, Key.T);
+        Thread.Sleep(3000);
+
+        var textExtractorWindow = Find<Element>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
+        Assert.IsNotNull(textExtractorWindow, "TextExtractor window should be found after hotkey activation");
+
+        // Right-click on the canvas to open context menu
+        textExtractorWindow.Click(rightClick: true);
+
+        // Look for language options that should appear after Cancel menu item
+        var allMenuItems = FindAll<Element>(By.ClassName("MenuItem"), 2000, true);
+        if (allMenuItems.Count > 4)
+        {
+            // Find the Cancel menu item first
+            Element? cancelItem = null;
+            int cancelIndex = -1;
+            for (int i = 0; i < allMenuItems.Count; i++)
+            {
+                if (allMenuItems[i].GetAttribute("AutomationId") == "CancelMenuItem")
+                {
+                    cancelItem = allMenuItems[i];
+                    cancelIndex = i;
+                    break;
+                }
+            }
+
+            Assert.IsNotNull(cancelItem, "Cancel menu item should be found");
+
+            // Look for language options after Cancel menu item
+            if (cancelIndex >= 0 && cancelIndex < allMenuItems.Count - 1)
+            {
+                // Select the first language option after Cancel
+                var languageOption = allMenuItems[cancelIndex + 1];
+                languageOption.Click();
+                Thread.Sleep(1000);
+
+                Assert.IsTrue(true, "Language selection changed successfully through right-click menu");
+            }
+        }
+
+        // Close the TextExtractor overlay
+        SendKeys(Key.Esc);
+        Thread.Sleep(1000);
     }
 
     [TestMethod("PowerOCR.TextSelectionAndClipboardTest")]

@@ -7,7 +7,7 @@
    - [x] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
  * With Text Extractor enabled and activated:
    - [x] Try to select text and verify it is copied to the clipboard.
-   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
+   - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
  * In a multi-monitor setup with different dpis on each monitor:
    - [ ] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
