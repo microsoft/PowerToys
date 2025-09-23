@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -26,9 +27,21 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
         Resources.settings_confirm_delete_description!,
         true);
 
+    private readonly ChoiceSetSetting _primaryAction = new(
+        Namespaced(nameof(PrimaryAction)),
+        Resources.settings_primary_action_title!,
+        Resources.settings_primary_action_description!,
+        [
+            new ChoiceSetSetting.Choice(Resources.settings_primary_action_default!, PrimaryAction.Default.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.settings_primary_action_paste!, PrimaryAction.Paste.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.settings_primary_action_copy!, PrimaryAction.Copy.ToString("G"))
+        ]);
+
     public bool KeepAfterPaste => _keepAfterPaste.Value;
 
     public bool DeleteFromHistoryRequiresConfirmation => _confirmDelete.Value;
+
+    public PrimaryAction PrimaryAction => Enum.TryParse<PrimaryAction>(_primaryAction.Value, out var action) ? action : PrimaryAction.Default;
 
     private static string SettingsJsonPath()
     {
@@ -45,6 +58,7 @@ internal sealed class SettingsManager : JsonSettingsManager, ISettingOptions
 
         Settings.Add(_keepAfterPaste);
         Settings.Add(_confirmDelete);
+        Settings.Add(_primaryAction);
 
         // Load settings from file upon initialization
         LoadSettings();
