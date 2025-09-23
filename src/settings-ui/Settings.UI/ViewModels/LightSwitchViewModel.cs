@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Newtonsoft.Json.Linq;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
 
@@ -151,6 +152,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SunsetOffset = 0;
                     LightTime = 360;
                     DarkTime = 1080;
+                    SunsetTimeSpan = null;
+                    SunriseTimeSpan = null;
 
                     OnPropertyChanged(nameof(LightTimePickerValue));
                     OnPropertyChanged(nameof(DarkTimePickerValue));
@@ -197,7 +200,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
 
                     OnPropertyChanged(nameof(LightTimeTimeSpan));
-                    /* OnPropertyChanged(nameof(LightTimePickerValue)); */
+
+                    if (ScheduleMode == "SunsetToSunrise")
+                    {
+                        SunriseTimeSpan = TimeSpan.FromMinutes(value);
+                    }
                 }
             }
         }
@@ -213,7 +220,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifyPropertyChanged();
 
                     OnPropertyChanged(nameof(DarkTimeTimeSpan));
-                    OnPropertyChanged(nameof(DarkTimePickerValue));
+
+                    if (ScheduleMode == "SunsetToSunrise")
+                    {
+                        SunsetTimeSpan = TimeSpan.FromMinutes(value);
+                    }
                 }
             }
         }
@@ -248,6 +259,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public TimeSpan LightTimeTimeSpan => TimeSpan.FromMinutes(LightTime + SunriseOffset);
 
         public TimeSpan DarkTimeTimeSpan => TimeSpan.FromMinutes(DarkTime + SunsetOffset);
+
+        // === Values to pass to timeline ===
+        public TimeSpan? SunriseTimeSpan
+        {
+            get => _sunriseTimeSpan;
+            set
+            {
+                if (_sunriseTimeSpan != value)
+                {
+                    _sunriseTimeSpan = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public TimeSpan? SunsetTimeSpan
+        {
+            get => _sunsetTimeSpan;
+            set
+            {
+                if (_sunsetTimeSpan != value)
+                {
+                    _sunsetTimeSpan = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
 
         // === Picker values (TwoWay binding targets for TimePickers) ===
         public TimeSpan LightTimePickerValue
@@ -402,6 +440,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private LightSwitchSettings _moduleSettings;
         private bool _isEnabled;
         private HotkeySettings _toggleThemeHotkey;
+        private TimeSpan? _sunriseTimeSpan;
+        private TimeSpan? _sunsetTimeSpan;
 
         public ICommand ForceLightCommand { get; }
 

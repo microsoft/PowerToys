@@ -51,8 +51,6 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup Header="Schedule" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-
-
                     <tkcontrols:SettingsExpander
                         Description="Determine when dark mode should be turned on"
                         Header="Mode"
@@ -74,13 +72,12 @@
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <controls:Timeline
-                                    x:Name="TimeLineChart"
                                     Margin="0,24,0,24"
                                     AutomationProperties.AutomationId="Timeline_LightSwitch"
                                     EndTime="{x:Bind ViewModel.DarkTimeTimeSpan, Mode=OneWay}"
                                     StartTime="{x:Bind ViewModel.LightTimeTimeSpan, Mode=OneWay}"
-                                    Sunrise="07:00"
-                                    Sunset="21:00" />
+                                       Sunrise="{x:Bind ViewModel.SunriseTimeSpan, Mode=OneWay}"
+                            Sunset="{x:Bind ViewModel.SunsetTimeSpan, Mode=OneWay}"  />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Header="Turn on dark mode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
                                 <TimePicker
