@@ -14,6 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using WinUIEx;
 
@@ -21,8 +22,6 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 {
     public sealed partial class ShortcutConflictWindow : WindowEx
     {
-        public ShortcutConflictViewModel DataContext { get; }
-
         public ShortcutConflictViewModel ViewModel { get; private set; }
 
         public ShortcutConflictWindow()
@@ -33,8 +32,10 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
 
-            DataContext = ViewModel;
             InitializeComponent();
+
+            // Set DataContext on the root Grid instead of the Window
+            RootGrid.DataContext = ViewModel;
 
             this.Activated += Window_Activated_SetIcon;
 
@@ -72,6 +73,62 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
                 var moduleType = moduleData.ModuleType;
                 NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
                 this.Close();
+            }
+        }
+
+        private void OnIgnoreConflictClicked(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && checkBox.DataContext is HotkeyConflictGroupData conflictGroup)
+            {
+                // The Click event only fires from user interaction, not programmatic changes
+                if (checkBox.IsChecked == true)
+                {
+                    IgnoreConflictGroup(conflictGroup);
+                }
+                else
+                {
+                    UnignoreConflictGroup(conflictGroup);
+                }
+            }
+        }
+
+        private void IgnoreConflictGroup(HotkeyConflictGroupData conflictGroup)
+        {
+            try
+            {
+                foreach (var module in conflictGroup.Modules)
+                {
+                    if (module.HotkeySettings != null)
+                    {
+                        module.HotkeySettings.IgnoreConflict = true;
+                    }
+                }
+
+                // Ignore all hotkey settings in this conflict group
+                if (conflictGroup.Modules != null)
+                {
+                    HotkeySettings hotkey = new(conflictGroup.Hotkey.Win, conflictGroup.Hotkey.Ctrl, conflictGroup.Hotkey.Alt, conflictGroup.Hotkey.Shift, conflictGroup.Hotkey.Key);
+                    ViewModel.IgnoreShortcut(hotkey);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private void UnignoreConflictGroup(HotkeyConflictGroupData conflictGroup)
+        {
+            try
+            {
+                // Unignore all hotkey settings in this conflict group
+                if (conflictGroup.Modules != null)
+                {
+                    HotkeySettings hotkey = new(conflictGroup.Hotkey.Win, conflictGroup.Hotkey.Ctrl, conflictGroup.Hotkey.Alt, conflictGroup.Hotkey.Shift, conflictGroup.Hotkey.Key);
+                    ViewModel.UnignoreShortcut(hotkey);
+                }
+            }
+            catch
+            {
             }
         }
 

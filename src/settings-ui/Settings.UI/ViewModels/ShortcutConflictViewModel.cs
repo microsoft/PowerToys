@@ -31,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly SettingsFactory _settingsFactory;
         private readonly Func<string, int> _ipcMSGCallBackFunc;
         private readonly Dispatcher _dispatcher;
+        private readonly ISettingsRepository<ShortcutConflictSettings> _shortcutConflictRepository;
+        private readonly ISettingsUtils _settingsUtils;
 
         private bool _disposed;
         private AllHotkeyConflictsData _conflictsData = new();
@@ -44,10 +46,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             _dispatcher = Dispatcher.CurrentDispatcher;
             _ipcMSGCallBackFunc = ipcMSGCallBackFunc ?? throw new ArgumentNullException(nameof(ipcMSGCallBackFunc));
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
             // Create SettingsFactory
-            _settingsFactory = new SettingsFactory(settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils)));
+            _settingsFactory = new SettingsFactory(settingsUtils);
+
+            // Initialize shortcut conflict settings repository
+            _shortcutConflictRepository = SettingsRepository<ShortcutConflictSettings>.GetInstance(settingsUtils);
         }
 
         public AllHotkeyConflictsData ConflictsData
@@ -68,7 +74,187 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             private set => Set(ref _conflictItems, value);
         }
 
-        protected override string ModuleName => "ShortcutConflictsWindow";
+        protected override string ModuleName => ShortcutConflictSettings.ModuleName;
+
+        /// <summary>
+        /// Ignore a specific HotkeySettings
+        /// </summary>
+        /// <param name="hotkeySettings">The HotkeySettings to ignore</param>
+        public void IgnoreShortcut(HotkeySettings hotkeySettings)
+        {
+            if (hotkeySettings == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var settings = _shortcutConflictRepository.SettingsConfig;
+
+                // Check if already ignored (avoid duplicates)
+                if (!IsShortcutIgnored(hotkeySettings))
+                {
+                    settings.Properties.IgnoredShortcuts.Add(hotkeySettings);
+                    SaveShortcutConflictSettings();
+
+                    System.Diagnostics.Debug.WriteLine($"Ignored shortcut: {hotkeySettings.ToString()}");
+
+                    GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error ignoring shortcut: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Remove a HotkeySettings from the ignored list
+        /// </summary>
+        /// <param name="hotkeySettings">The HotkeySettings to unignore</param>
+        public void UnignoreShortcut(HotkeySettings hotkeySettings)
+        {
+            if (hotkeySettings == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var settings = _shortcutConflictRepository.SettingsConfig;
+                var ignoredShortcut = settings.Properties.IgnoredShortcuts
+                    .FirstOrDefault(h => HotkeySettingsEqual(h, hotkeySettings));
+
+                if (ignoredShortcut != null)
+                {
+                    settings.Properties.IgnoredShortcuts.Remove(ignoredShortcut);
+                    SaveShortcutConflictSettings();
+
+                    System.Diagnostics.Debug.WriteLine($"Unignored shortcut: {ignoredShortcut.ToString()}");
+
+                    GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error unignoring shortcut: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Check if a HotkeySettings is in the ignored list
+        /// </summary>
+        /// <param name="hotkeySettings">The HotkeySettings to check</param>
+        /// <returns>True if the shortcut is ignored, false otherwise</returns>
+        public bool IsShortcutIgnored(HotkeySettings hotkeySettings)
+        {
+            if (hotkeySettings == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                var settings = _shortcutConflictRepository.SettingsConfig;
+                return settings.Properties.IgnoredShortcuts
+                    .Any(h => HotkeySettingsEqual(h, hotkeySettings));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error checking if shortcut is ignored: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Get all ignored shortcuts
+        /// </summary>
+        /// <returns>List of ignored HotkeySettings</returns>
+        public List<HotkeySettings> GetIgnoredShortcuts()
+        {
+            try
+            {
+                var settings = _shortcutConflictRepository.SettingsConfig;
+                return new List<HotkeySettings>(settings.Properties.IgnoredShortcuts);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error getting ignored shortcuts: {ex.Message}");
+                return new List<HotkeySettings>();
+            }
+        }
+
+        /// <summary>
+        /// Clear all ignored shortcuts
+        /// </summary>
+        public void ClearIgnoredShortcuts()
+        {
+            try
+            {
+                var settings = _shortcutConflictRepository.SettingsConfig;
+                settings.Properties.IgnoredShortcuts.Clear();
+                SaveShortcutConflictSettings();
+
+                System.Diagnostics.Debug.WriteLine("Cleared all ignored shortcuts");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error clearing ignored shortcuts: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Check if a conflict group should be visible (not ignored)
+        /// </summary>
+        /// <param name="conflictGroup">The conflict group to check</param>
+        /// <returns>True if the group should be visible, false if it should be hidden</returns>
+        public bool ShouldShowConflictGroup(HotkeyConflictGroupData conflictGroup)
+        {
+            if (conflictGroup?.Modules == null || conflictGroup.Modules.Count == 0)
+            {
+                return true;
+            }
+
+            // Check if any of the hotkey settings in this group are ignored
+            return !conflictGroup.Modules.Any(module =>
+                module.HotkeySettings != null && IsShortcutIgnored(module.HotkeySettings));
+        }
+
+        /// <summary>
+        /// Compare two HotkeySettings for equality
+        /// </summary>
+        /// <param name="hotkey1">First HotkeySettings</param>
+        /// <param name="hotkey2">Second HotkeySettings</param>
+        /// <returns>True if they represent the same shortcut, false otherwise</returns>
+        private bool HotkeySettingsEqual(HotkeySettings hotkey1, HotkeySettings hotkey2)
+        {
+            if (hotkey1 == null || hotkey2 == null)
+            {
+                return false;
+            }
+
+            return hotkey1.Win == hotkey2.Win &&
+                   hotkey1.Ctrl == hotkey2.Ctrl &&
+                   hotkey1.Alt == hotkey2.Alt &&
+                   hotkey1.Shift == hotkey2.Shift &&
+                   hotkey1.Code == hotkey2.Code;
+        }
+
+        /// <summary>
+        /// Save the shortcut conflict settings to file
+        /// </summary>
+        private void SaveShortcutConflictSettings()
+        {
+            try
+            {
+                var settings = _shortcutConflictRepository.SettingsConfig;
+                _settingsUtils.SaveSettings(settings.ToJsonString(), ShortcutConflictSettings.ModuleName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error saving shortcut conflict settings: {ex.Message}");
+            }
+        }
 
         private IHotkeyConfig GetModuleSettings(string moduleKey)
         {
@@ -120,20 +306,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             foreach (var conflict in conflicts)
             {
-                ProcessConflictGroup(conflict, isSystemConflict);
+                HotkeySettings hotkey = new(conflict.Hotkey.Win, conflict.Hotkey.Ctrl, conflict.Hotkey.Alt, conflict.Hotkey.Shift, conflict.Hotkey.Key);
+                var isIgnored = IsShortcutIgnored(hotkey);
+                conflict.ConflictIgnored = isIgnored;
+
+                ProcessConflictGroup(conflict, isSystemConflict, isIgnored);
                 items.Add(conflict);
             }
         }
 
-        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, bool isSystemConflict)
+        private void ProcessConflictGroup(HotkeyConflictGroupData conflict, bool isSystemConflict, bool isIgnored)
         {
             foreach (var module in conflict.Modules)
             {
-                SetupModuleData(module, isSystemConflict);
+                SetupModuleData(module, isSystemConflict, isIgnored);
             }
         }
 
-        private void SetupModuleData(ModuleHotkeyData module, bool isSystemConflict)
+        private void SetupModuleData(ModuleHotkeyData module, bool isSystemConflict, bool isIgnored)
         {
             try
             {
@@ -145,6 +335,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     // Get current hotkey settings (fresh from file) using the accessor's getter
                     module.HotkeySettings = hotkeyAccessor.Value;
+
+                    if (isIgnored != module.HotkeySettings.IgnoreConflict)
+                    {
+                        var hotkey = module.HotkeySettings with { IgnoreConflict = isIgnored };
+                        hotkeyAccessor.Value = hotkey;
+                        module.HotkeySettings = hotkey;
+                    }
+
                     module.HotkeySettings.ConflictDescription = isSystemConflict
                         ? ResourceLoaderInstance.ResourceLoader.GetString("SysHotkeyConflictTooltipText")
                         : ResourceLoaderInstance.ResourceLoader.GetString("InAppHotkeyConflictTooltipText");
