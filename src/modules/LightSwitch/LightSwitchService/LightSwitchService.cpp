@@ -31,25 +31,6 @@ int _tmain(int argc, TCHAR* argv[])
             parentPid = _tstoi(argv[++i]);
     }
 
-    if (debug)
-    {
-        // Create a console window for debug output
-        AllocConsole();
-        FILE* f;
-        freopen_s(&f, "CONOUT$", "w", stdout);
-        freopen_s(&f, "CONOUT$", "w", stderr);
-
-        SetConsoleTitle(L"LightSwitchService Debug");
-
-        // Console mode (debug)
-        g_ServiceStopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-        ServiceWorkerThread(reinterpret_cast<void*>(static_cast<ULONG_PTR>(parentPid)));
-        CloseHandle(g_ServiceStopEvent);
-
-        FreeConsole();
-        return 0;
-    }
-
     // Try to connect to SCM
     wchar_t serviceName[] = L"LightSwitchService";
     SERVICE_TABLE_ENTRYW table[] = { { serviceName, ServiceMain }, { nullptr, nullptr } };
