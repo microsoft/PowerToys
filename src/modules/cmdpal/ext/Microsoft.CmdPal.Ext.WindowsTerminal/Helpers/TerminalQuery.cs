@@ -61,7 +61,7 @@ public class TerminalQuery : ITerminalQuery
         return profiles.OrderBy(p => p.Name);
     }
 
-    private IEnumerable<TerminalPackage> GetTerminals()
+    public IEnumerable<TerminalPackage> GetTerminals()
     {
         var user = WindowsIdentity.GetCurrent().User;
         var localAppDataPath = Environment.GetEnvironmentVariable("LOCALAPPDATA");
