@@ -51,10 +51,10 @@ public partial class AllAppsCommandProvider : CommandProvider
 
             if (limitSetting is null)
             {
-                return -1;
+                return 10;
             }
 
-            var quantity = -1;
+            var quantity = 10;
 
             if (int.TryParse(limitSetting, out var result))
             {
@@ -65,7 +65,7 @@ public partial class AllAppsCommandProvider : CommandProvider
         }
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_listItem, .._page.GetPinnedApps()];
+    public override ICommandItem[] TopLevelCommands() => [_listItem, .. _page.GetPinnedApps()];
 
     public ICommandItem? LookupApp(string displayName)
     {

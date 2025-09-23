@@ -173,12 +173,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
         try
         {
             // Check for cancellation before starting expensive operations
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
             var newItems = _model.Unsafe!.GetItems();
 
             // Check for cancellation after getting items from extension
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
@@ -186,7 +192,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
             foreach (var item in newItems)
             {
                 // Check for cancellation during item processing
-                cancellationToken.ThrowIfCancellationRequested();
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 ListItemViewModel viewModel = new(item, new(this));
 
@@ -198,12 +207,19 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             // Check for cancellation before initializing first twenty items
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
             var firstTwenty = newViewModels.Take(20);
             foreach (var item in firstTwenty)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 item?.SafeInitializeProperties();
             }
 
@@ -211,7 +227,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
             _cancellationTokenSource?.Cancel();
 
             // Check for cancellation before updating the list
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
             List<ListItemViewModel> removedItems = [];
             lock (_listLock)
@@ -264,13 +283,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         _initializeItemsTask = new Task(() =>
         {
-            try
-            {
-                InitializeItemsTask(_cancellationTokenSource.Token);
-            }
-            catch (OperationCanceledException)
-            {
-            }
+            InitializeItemsTask(_cancellationTokenSource.Token);
         });
         _initializeItemsTask.Start();
 
@@ -304,7 +317,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void InitializeItemsTask(CancellationToken ct)
     {
         // Were we already canceled?
-        ct.ThrowIfCancellationRequested();
+        if (ct.IsCancellationRequested)
+        {
+            return;
+        }
 
         ListItemViewModel[] iterable;
         lock (_listLock)
@@ -314,7 +330,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         foreach (var item in iterable)
         {
-            ct.ThrowIfCancellationRequested();
+            if (ct.IsCancellationRequested)
+            {
+                return;
+            }
 
             // TODO: GH #502
             // We should probably remove the item from the list if it
@@ -323,7 +342,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // at once.
             item.SafeInitializeProperties();
 
-            ct.ThrowIfCancellationRequested();
+            if (ct.IsCancellationRequested)
+            {
+                return;
+            }
         }
     }
 

@@ -132,7 +132,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
             {
                 // Tags being an ObservableCollection instead of a List lead to
                 // many COM exception issues.
-                Tags = new(newTags);
+                Tags = [.. newTags];
 
                 UpdateProperty(nameof(Tags));
                 UpdateProperty(nameof(HasTags));
