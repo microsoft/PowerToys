@@ -58,4 +58,9 @@ public enum CommandKind
     /// Bare command resolved via PATH/PATHEXT (e.g., "wt", "git").
     /// </summary>
     PathCommand,
+
+    /// <summary>
+    /// Shell item not matching other types (e.g., Control Panel item, purely virtual directory).
+    /// </summary>
+    VirtualShellItem,
 }

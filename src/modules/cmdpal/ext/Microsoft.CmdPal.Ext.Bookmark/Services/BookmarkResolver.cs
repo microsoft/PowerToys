@@ -281,7 +281,40 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             return true;
         }
 
-        // 9) Fallback: let ShellExecute try the whole input
+        // 9) It's a virtual shell item (e.g. Control Panel, Recycle Bin, This PC)
+        //    Shell items that are backed by filesystem paths (e.g. Downloads) should be already handled above.
+        if (HasShellPrefix(head))
+        {
+            if (ShellNames.TryGetFriendlyName(input, out var displayName))
+            {
+                ShellNames.TryGetFileSystemPath(input, out var fsPath);
+                result = new Classification(
+                    CommandKind.VirtualShellItem,
+                    input,
+                    input,
+                    string.Empty,
+                    LaunchMethod.ShellExecute,
+                    fsPath is not null && Directory.Exists(fsPath) ? fsPath : null,
+                    isPlaceholder,
+                    fsPath,
+                    displayName);
+                return true;
+            }
+            else
+            {
+                result = new Classification(
+                    CommandKind.VirtualShellItem,
+                    input,
+                    input,
+                    string.Empty,
+                    LaunchMethod.ShellExecute,
+                    null,
+                    isPlaceholder);
+                return true;
+            }
+        }
+
+        // 10) Fallback: let ShellExecute try the whole input
         result = new Classification(
             CommandKind.Unknown,
             input,
@@ -293,6 +326,8 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
 
         return true;
     }
+
+    private static bool HasShellPrefix(string head) => head.StartsWith("shell:", StringComparison.OrdinalIgnoreCase) || head.StartsWith("::", StringComparison.OrdinalIgnoreCase);
 
     private static (string Head, string Tail) SplitHeadAndArgs(string input)
     {
@@ -378,6 +413,10 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                         if (ShellNames.TryGetFileSystemPath(firstSegment, out var fsPath))
                         {
                             expanded = fsPath + rest;
+                        }
+                        else
+                        {
+                            return (null, null);
                         }
                     }
 

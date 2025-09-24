@@ -37,6 +37,7 @@ internal class IconLocator : IBookmarkIconLocator
             CommandKind.WebUrl => await TryGetWebIcon(classification.Target),
             CommandKind.Protocol => await TryGetProtocolIcon(classification.Target),
             CommandKind.FileExecutable => await TryGetExecutableIcon(classification.Target),
+            CommandKind.Unknown => FallbackIcon(classification),
             _ => await MaybeGetIconForPath(classification.Target),
         };
 
