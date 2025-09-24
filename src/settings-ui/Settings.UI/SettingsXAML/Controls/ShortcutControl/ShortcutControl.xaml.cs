@@ -52,6 +52,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
         public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnHasConflictChanged));
         public static readonly DependencyProperty TooltipProperty = DependencyProperty.Register("Tooltip", typeof(string), typeof(ShortcutControl), new PropertyMetadata(null, OnTooltipChanged));
+        public static readonly DependencyProperty KeyVisualShouldShowConflictProperty = DependencyProperty.Register("KeyVisualShouldShowConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false));
+        public static readonly DependencyProperty IgnoreConflictProperty = DependencyProperty.Register("IgnoreConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false));
 
         // Dependency property to track the source/context of the ShortcutControl
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(ShortcutControlSource), typeof(ShortcutControl), new PropertyMetadata(ShortcutControlSource.SettingsPage));
@@ -162,6 +164,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(TooltipProperty, value);
         }
 
+        public bool KeyVisualShouldShowConflict
+        {
+            get => (bool)GetValue(KeyVisualShouldShowConflictProperty);
+            set => SetValue(KeyVisualShouldShowConflictProperty, value);
+        }
+
+        public bool IgnoreConflict
+        {
+            get => (bool)GetValue(IgnoreConflictProperty);
+            set => SetValue(IgnoreConflictProperty, value);
+        }
+
         public ShortcutControlSource Source
         {
             get => (ShortcutControlSource)GetValue(SourceProperty);
@@ -242,6 +256,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 // Update the ShortcutControl's conflict properties from HotkeySettings
                 HasConflict = hotkeySettings.HasConflict;
                 Tooltip = hotkeySettings.HasConflict ? hotkeySettings.ConflictDescription : null;
+                IgnoreConflict = hotkeySettings.IgnoreConflict;
+                KeyVisualShouldShowConflict = !IgnoreConflict && HasConflict;
             }
             else
             {

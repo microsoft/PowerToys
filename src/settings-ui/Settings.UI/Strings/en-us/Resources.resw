@@ -2688,7 +2688,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
-  <data name="WarningShortcutConflict.Message" xml:space="preserve">
+  <data name="WarningShortcutConflict.Title" xml:space="preserve">
+    <value>Shortcut conflict</value>
+  </data>
+  <data name="WarningPotentialShortcutConflict.Message" xml:space="preserve">
     <value>Potential shortcut conflict</value>
   </data>
   <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">

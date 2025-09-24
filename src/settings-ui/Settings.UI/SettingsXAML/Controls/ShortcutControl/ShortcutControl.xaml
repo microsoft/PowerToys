@@ -44,7 +44,7 @@
                                 CornerRadius="{StaticResource ControlCornerRadius}"
                                 FontWeight="SemiBold"
                                 IsTabStop="False"
-                                State="{Binding ElementName=LayoutRoot, Path=HasConflict, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Warning}"
+                                State="{Binding ElementName=LayoutRoot, Path=KeyVisualShouldShowConflict, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Warning}"
                                 Style="{StaticResource AccentKeyVisualStyle}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

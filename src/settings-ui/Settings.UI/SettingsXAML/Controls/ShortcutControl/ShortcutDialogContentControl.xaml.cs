@@ -21,6 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty IgnoreConflictProperty = DependencyProperty.Register("IgnoreConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false, OnIgnoreConflictChanged));
 
         public static readonly DependencyProperty ShouldShowConflictProperty = DependencyProperty.Register("ShouldShowConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
+        public static readonly DependencyProperty ShouldShowPotentialConflictProperty = DependencyProperty.Register("ShouldShowPotentialConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
 
         public event EventHandler<bool> IgnoreConflictChanged;
 
@@ -48,6 +49,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             get => (bool)GetValue(ShouldShowConflictProperty);
             private set => SetValue(ShouldShowConflictProperty, value);
+        }
+
+        public bool ShouldShowPotentialConflict
+        {
+            get => (bool)GetValue(ShouldShowPotentialConflictProperty);
+            private set => SetValue(ShouldShowPotentialConflictProperty, value);
         }
 
         public ShortcutDialogContentControl()
@@ -105,6 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void UpdateShouldShowConflict()
         {
             ShouldShowConflict = !IgnoreConflict && HasConflict;
+            ShouldShowPotentialConflict = IgnoreConflict && HasConflict;
         }
 
         private void ResetBtn_Click(object sender, RoutedEventArgs e)
