@@ -325,7 +325,7 @@ public sealed partial class ListPage : Page,
 
         if (itemHeight <= 0)
         {
-            // fallback to 1 item if we can't measure
+            // fall back to 1 item if we can't measure
             itemHeight = 1;
         }
 
