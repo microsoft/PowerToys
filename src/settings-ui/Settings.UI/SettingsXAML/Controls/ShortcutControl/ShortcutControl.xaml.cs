@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
@@ -260,6 +261,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             c.IgnoreConflictChanged += OnDialogIgnoreConflictChanged;
             c.ResetClick += C_ResetClick;
             c.ClearClick += C_ClearClick;
+            c.LearnMoreClick += C_LearnMoreClick;
 
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
@@ -276,6 +278,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
 
             OnAllowDisableChanged(this, null);
+        }
+
+        private void C_LearnMoreClick(object sender, RoutedEventArgs e)
+        {
+            // Close the current shortcut dialog
+            shortcutDialog.Hide();
+
+            // Create and show the ShortcutConflictWindow
+            var conflictWindow = new ShortcutConflictWindow();
+            conflictWindow.Activate();
         }
 
         private void OnDialogIgnoreConflictChanged(object sender, bool newValue)
@@ -323,6 +335,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.Closing -= ShortcutDialog_Closing;
 
             c.IgnoreConflictChanged -= OnDialogIgnoreConflictChanged;
+            c.LearnMoreClick -= C_LearnMoreClick;
 
             if (App.GetSettingsWindow() != null)
             {
@@ -693,7 +706,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void C_ClearClick(object sender, RoutedEventArgs e)
         {
-            // TO DO: Add clear event code here
+            hotkeySettings = new HotkeySettings();
+
+            SetValue(HotkeySettingsProperty, hotkeySettings);
+            SetKeys();
+
+            lastValidSettings = hotkeySettings;
+            shortcutDialog.Hide();
+
+            // Send RequestAllConflicts IPC to update the UI after changed hotkey settings.
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -708,8 +730,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     lastValidSettings = lastValidSettings with { HasConflict = false };
                 }
-
-                lastValidSettings = lastValidSettings with { IgnoreConflict = c.IgnoreConflict };
 
                 HotkeySettings = lastValidSettings;
             }

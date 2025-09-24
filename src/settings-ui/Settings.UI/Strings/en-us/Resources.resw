@@ -5321,7 +5321,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Clear</value>
   </data>
 	<data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
-    <value>Clear</value>
+    <value>Learn more</value>
   </data>
 	
 </root>

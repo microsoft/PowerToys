@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
+using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -22,6 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty ShouldShowConflictProperty = DependencyProperty.Register("ShouldShowConflict", typeof(bool), typeof(ShortcutDialogContentControl), new PropertyMetadata(false));
 
         public event EventHandler<bool> IgnoreConflictChanged;
+
+        public event RoutedEventHandler LearnMoreClick;
 
         public bool IgnoreConflict
         {
@@ -112,6 +115,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void ClearBtn_Click(object sender, RoutedEventArgs e)
         {
             ClearClick?.Invoke(this, new RoutedEventArgs());
+        }
+
+        private void LearnMoreBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LearnMoreClick?.Invoke(this, new RoutedEventArgs());
         }
     }
 }

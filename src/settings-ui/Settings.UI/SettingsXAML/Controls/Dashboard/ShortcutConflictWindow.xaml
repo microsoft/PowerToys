@@ -96,13 +96,16 @@
                                         LabelPlacement="Before" />
                                     <CheckBox
                                         HorizontalAlignment="Right"
-                                        Content="Ignore shortcut" 
-                                        IsChecked="{x:Bind ConflictIgnored, Mode=OneWay}"
-                                        Click="OnIgnoreConflictClicked" />
+                                        Click="OnIgnoreConflictClicked"
+                                        Content="Ignore shortcut"
+                                        IsChecked="{x:Bind ConflictIgnored, Mode=OneWay}" />
                                 </Grid>
 
                                 <!--  PowerToys Module Cards  -->
-                                <ItemsControl Grid.Row="1" ItemsSource="{x:Bind Modules}" Visibility="{x:Bind ConflictVisible}">
+                                <ItemsControl
+                                    Grid.Row="1"
+                                    ItemsSource="{x:Bind Modules}"
+                                    Visibility="{x:Bind ConflictVisible}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="hotkeyConflicts:ModuleHotkeyData">
                                             <tkcontrols:SettingsCard

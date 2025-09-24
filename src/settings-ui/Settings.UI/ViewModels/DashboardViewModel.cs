@@ -29,6 +29,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         protected override string ModuleName => "Dashboard";
 
+        private readonly ISettingsRepository<ShortcutConflictSettings> _shortcutConflictRepository;
+        private readonly ISettingsUtils _settingsUtils;
+
         private const string JsonFileType = ".json";
         private Dispatcher dispatcher;
 
@@ -66,12 +69,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings generalSettingsConfig;
         private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
-        public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public DashboardViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             dispatcher = Dispatcher.CurrentDispatcher;
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
+            _shortcutConflictRepository = SettingsRepository<ShortcutConflictSettings>.GetInstance(settingsUtils);
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -84,10 +89,59 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GetShortcutModules();
         }
 
+        public bool IsShortcutIgnored(HotkeySettings hotkeySettings)
+        {
+            if (hotkeySettings == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                var settings = _shortcutConflictRepository.SettingsConfig;
+                return settings.Properties.IgnoredShortcuts
+                    .Any(h => HotkeySettingsEqual(h, hotkeySettings));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error checking if shortcut is ignored: {ex.Message}");
+                return false;
+            }
+        }
+
+        private bool HotkeySettingsEqual(HotkeySettings hotkey1, HotkeySettings hotkey2)
+        {
+            if (hotkey1 == null || hotkey2 == null)
+            {
+                return false;
+            }
+
+            return hotkey1.Win == hotkey2.Win &&
+                   hotkey1.Ctrl == hotkey2.Ctrl &&
+                   hotkey1.Alt == hotkey2.Alt &&
+                   hotkey1.Shift == hotkey2.Shift &&
+                   hotkey1.Code == hotkey2.Code;
+        }
+
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
             dispatcher.BeginInvoke(() =>
             {
+                var allConflictData = e.Conflicts;
+                foreach (var inAppConflict in allConflictData.InAppConflicts)
+                {
+                    var hotkey = inAppConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    inAppConflict.ConflictIgnored = IsShortcutIgnored(hotkeySetting);
+                }
+
+                foreach (var systemConflict in allConflictData.SystemConflicts)
+                {
+                    var hotkey = systemConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    systemConflict.ConflictIgnored = IsShortcutIgnored(hotkeySetting);
+                }
+
                 AllHotkeyConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
             });
         }

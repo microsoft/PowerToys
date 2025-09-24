@@ -301,13 +301,16 @@
                 x:Uid="WarningShortcutConflict"
                 BorderThickness="0"
                 IsClosable="False"
-                IsOpen="True"
+                IsOpen="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
                 IsTabStop="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
                 Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
                 Severity="Warning"
                 Style="{StaticResource CondensedInfoBarStyle}">
                 <InfoBar.ActionButton>
-                    <HyperlinkButton x:Uid="Shortcut_Conflict_LearnMore" Padding="0" />
+                    <HyperlinkButton
+                        x:Uid="Shortcut_Conflict_LearnMore"
+                        Padding="0"
+                        Click="LearnMoreBtn_Click" />
                 </InfoBar.ActionButton>
             </InfoBar>
         </Grid>
