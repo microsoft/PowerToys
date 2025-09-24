@@ -138,17 +138,9 @@ If you prefer, you can alternatively build prerequisite projects for the install
 1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
 1. From the `Build` menu choose `Build Solution`.
 
-The resulting `PowerToysSetup.msi` installer will be available in the `installer\PowerToysSetup\x64\Release\` folder.
+The resulting installer will be available in the `installer\PowerToysSetupVNext\x64\Release\` folder.
 
-For WiX3 project, run `Developer Command Prompt for VS 2022` in admin mode and execute the following command to build the installer. The generated installer package will be located at `\installer\PowerToysSetup\{platform}\Release\MachineSetup`.
-
-```
-git clean -xfd  -e *exe -- .\installer\
-MSBuild -t:restore  .\installer\PowerToysSetup.sln -p:RestorePackagesConfig=true /p:Platform="x64" /p:Configuration=Release
-MSBuild -m .\installer\PowerToysSetup.sln /t:PowerToysInstaller /p:Configuration=Release /p:Platform="x64" 
-MSBuild -m .\installer\PowerToysSetup.sln /t:PowerToysBootstrapper /p:Configuration=Release /p:Platform="x64" 
-```
-For WiX5 project, run `Developer Command Prompt for VS 2022` in admin mode and execute the following command to build the installer. The generated installer package will be located at `\installer\PowerToysSetupVNext\{platform}\Release\MachineSetup`.
+To build the installer from the command line, run `Developer Command Prompt for VS 2022` in admin mode and execute the following commands. The generated installer package will be located at `\installer\PowerToysSetupVNext\{platform}\Release\MachineSetup`.
 
 ```
 git clean -xfd  -e *exe -- .\installer\

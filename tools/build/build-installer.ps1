@@ -97,7 +97,7 @@ if (-not $repoRoot -or -not (Test-Path (Join-Path $repoRoot "PowerToys.sln"))) {
 }
 
 Write-Host "PowerToys repository root detected: $repoRoot"
-# WiX v5 projects use WixToolset.Sdk via NuGet/MSBuild; a separate WiX 3 installation is not required here.
+# WiX v5 projects use WixToolset.Sdk via NuGet/MSBuild; no separate WiX installation is required.
 Write-Host ("[PIPELINE] Start | Platform={0} Configuration={1} PerUser={2}" -f $Platform, $Configuration, $PerUser)
 Write-Host ''
 
