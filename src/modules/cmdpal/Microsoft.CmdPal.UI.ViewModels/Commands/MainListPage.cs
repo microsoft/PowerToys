@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -183,6 +184,9 @@ public partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        var timer = new Stopwatch();
+        timer.Start();
+
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = new CancellationTokenSource();
@@ -367,6 +371,9 @@ public partial class MainListPage : DynamicListPage,
             }
 
             RaiseItemsChanged();
+
+            timer.Stop();
+            Logger.LogDebug($"Filter with '{newSearch}' in {timer.ElapsedMilliseconds}ms");
         }
     }
 
