@@ -157,7 +157,7 @@ namespace Peek.UI.Helpers
                     }
                     else
                     {
-                        ManagedCommon.Logger.LogInfo($"Peek suppression: focus class{focusClass}");
+                        ManagedCommon.Logger.LogDebug($"Peek suppression: focus class{focusClass}");
                     }
                 }
             }
