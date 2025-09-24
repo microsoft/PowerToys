@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// Stub AI text recognizer backend. This will later integrate Windows AI Foundry Text Recognition APIs.
-// For now it delegates to legacy OcrEngine to keep behavior identical while wiring selection logic.
+// AI text recognizer backend using Windows AI Foundry Text Recognition APIs.
+// Returns empty string on failure/unavailability so caller can fall back to legacy Windows.Media.Ocr.
 using System;
 using System.Drawing;
 using System.IO;
@@ -11,10 +11,12 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Removed ManagedCommon dependency for now (logger not yet referenced by project)
+using ManagedCommon; // PowerToys logger
+using Microsoft.Graphics.Imaging; // ImageBuffer
+using Microsoft.Windows.AI; // AIFeatureReadyState
+using Microsoft.Windows.AI.Imaging; // TextRecognizer APIs
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
-using Windows.Media.Ocr;
 
 namespace PowerOCR.Helpers
 {
@@ -26,6 +28,7 @@ namespace PowerOCR.Helpers
 
         private bool _initialized;
         private bool _usable;
+        private TextRecognizer? _session;
 
         public string Name => "AI";
 
@@ -35,29 +38,53 @@ namespace PowerOCR.Helpers
         {
         }
 
-        private Task EnsureInitializedAsync(CancellationToken ct)
+        private async Task EnsureInitializedAsync(CancellationToken ct)
         {
             if (_initialized)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             try
             {
+                Logger.LogDebug("Initializing AI Text Recognizer backend");
                 var osVersion = Environment.OSVersion.Version;
-                _usable = osVersion.Major >= 10; // placeholder capability check
+                bool osOk = osVersion.Major >= 10; // Basic gate
+                if (osOk)
+                {
+                    var readyState = TextRecognizer.GetReadyState();
+                    if (readyState == AIFeatureReadyState.NotReady)
+                    {
+                        Logger.LogInfo("TextRecognizer not ready. Calling EnsureReadyAsync().");
+                        var op = TextRecognizer.EnsureReadyAsync();
+                        using var registration = ct.Register(() => op.Cancel());
+                        await op; // propagate cancellation if any
+                    }
+
+                    _session = await TextRecognizer.CreateAsync();
+                    _usable = _session is not null;
+                }
+                else
+                {
+                    _usable = false;
+                }
+
+                Logger.LogInfo($"AI Text Recognizer initialized. OS={osVersion} usable={_usable}");
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.LogInfo("AI Text Recognizer initialization canceled");
+                throw;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Trace.TraceError($"AI Text Recognizer initialization failed: {ex.Message}");
-                _usable = false; // leave unusable for remainder of process lifetime
+                Logger.LogError("AI Text Recognizer initialization failed", ex);
+                _usable = false;
             }
             finally
             {
                 _initialized = true;
             }
-
-            return Task.CompletedTask;
         }
 
         public async Task<string> RecognizeAsync(Bitmap bitmap, Language language, bool singleLine, CancellationToken ct)
@@ -65,34 +92,73 @@ namespace PowerOCR.Helpers
             await EnsureInitializedAsync(ct).ConfigureAwait(false);
             if (!_usable)
             {
+                Logger.LogWarning("AI Text Recognizer requested while unusable. Returning empty result to trigger caller fallback.");
+                return string.Empty; // caller will fallback to legacy path
+            }
+
+            if (ct.IsCancellationRequested)
+            {
+                Logger.LogInfo("AI Text Recognizer recognize canceled before start");
+                ct.ThrowIfCancellationRequested();
+            }
+
+            if (_session is null)
+            {
+                Logger.LogWarning("AI Text Recognizer session null after initialization. Fallback.");
                 return string.Empty;
             }
 
-            // TEMP IMPLEMENTATION: Use legacy OCR until AI integration added.
-            // Convert bitmap to SoftwareBitmap then run OcrEngine like legacy path.
-            using var memStream = new MemoryStream();
-            bitmap.Save(memStream, System.Drawing.Imaging.ImageFormat.Bmp);
-            memStream.Position = 0;
-            var ras = memStream.AsRandomAccessStream();
-            var decoder = await BitmapDecoder.CreateAsync(ras);
-            var softwareBmp = await decoder.GetSoftwareBitmapAsync();
-            var ocr = OcrEngine.TryCreateFromLanguage(language);
-            var result = await ocr.RecognizeAsync(softwareBmp).AsTask(ct);
-
-            var isSpaceJoining = LanguageHelper.IsLanguageSpaceJoining(language);
-            System.Text.StringBuilder sb = new();
-            foreach (var line in result.Lines)
+            try
             {
-                line.GetTextFromOcrLine(isSpaceJoining, sb);
-            }
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                using var memStream = new MemoryStream();
+                bitmap.Save(memStream, System.Drawing.Imaging.ImageFormat.Bmp);
+                memStream.Position = 0;
+                var ras = memStream.AsRandomAccessStream();
+                var decoder = await BitmapDecoder.CreateAsync(ras);
+                var softwareBmp = await decoder.GetSoftwareBitmapAsync();
+                using var imageBuffer = ImageBuffer.CreateForSoftwareBitmap(softwareBmp);
 
-            var text = sb.ToString();
-            if (singleLine)
+                var recognized = _session.RecognizeTextFromImage(imageBuffer);
+                sw.Stop();
+                var lineCount = recognized.Lines?.Length ?? 0;
+                Logger.LogDebug($"AI text recognition completed in {sw.ElapsedMilliseconds} ms lines={lineCount}");
+
+                if (lineCount == 0)
+                {
+                    return string.Empty; // trigger fallback
+                }
+
+                bool isSpaceJoining = LanguageHelper.IsLanguageSpaceJoining(language);
+                System.Text.StringBuilder sb = new();
+                for (int i = 0; i < recognized?.Lines?.Length; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(isSpaceJoining ? ' ' : '\n');
+                    }
+
+                    sb.Append(recognized.Lines[i].Text);
+                }
+
+                var text = sb.ToString();
+                if (singleLine)
+                {
+                    text = text.MakeStringSingleLine();
+                }
+
+                return text.Trim();
+            }
+            catch (OperationCanceledException)
             {
-                text = text.MakeStringSingleLine();
+                Logger.LogInfo("AI Text recognition canceled");
+                throw;
             }
-
-            return text.Trim();
+            catch (Exception ex)
+            {
+                Logger.LogError("AI Text recognition failed", ex);
+                return string.Empty; // fallback
+            }
         }
     }
 }

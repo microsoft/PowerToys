@@ -115,6 +115,7 @@ internal sealed class ImageMethods
 
     public static async Task<string> ExtractText(Bitmap bmp, Language? preferredLanguage, System.Windows.Point? singlePoint = null)
     {
+        Logger.LogInfo($"ExtractText called");
         Language? selectedLanguage = preferredLanguage ?? GetOCRLanguage();
         if (selectedLanguage == null)
         {
@@ -128,7 +129,8 @@ internal sealed class ImageMethods
             if (singlePoint == null)
             {
                 var userSettings = new Settings.UserSettings(new ThrottledActionInvoker());
-                if (userSettings.UseAITextRecognition.Value && Helpers.AiTextRecognizer.Instance.IsUsable)
+                Logger.LogInfo($"AI OCR setting={userSettings.UseAITextRecognition.Value} pre_init_usable={Helpers.AiTextRecognizer.Instance.IsUsable}");
+                if (userSettings.UseAITextRecognition.Value)
                 {
                     aiTried = true;
                     var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -148,6 +150,10 @@ internal sealed class ImageMethods
                     {
                         PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRAIFallbackEvent { Reason = "EmptyResult" });
                     }
+                }
+                else
+                {
+                    Logger.LogDebug("AI OCR disabled by setting; skipping AI path");
                 }
             }
         }

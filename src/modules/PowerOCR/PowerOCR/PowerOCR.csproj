@@ -32,6 +32,7 @@
     <PackageReference Include="System.ComponentModel.Composition" />
     <PackageReference Include="System.Drawing.Common" />
     <PackageReference Include="WPF-UI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
   </ItemGroup>
 	
   <ItemGroup>
