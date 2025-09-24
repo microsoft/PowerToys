@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.ReleaseNotesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:DateTimeOffsetToStringConverter x:Key="DateTimeOffsetToStringConverter" />
+    </Page.Resources>
+    <Grid Loaded="Grid_Loaded">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="286" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ListView
+            x:Name="ReleasesList"
+            IsItemClickEnabled="False"
+            ItemsSource="{x:Bind ReleaseItems, Mode=OneWay}"
+            SelectionChanged="ReleasesList_SelectionChanged"
+            SelectionMode="Single">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="helpers:ReleaseNotesItem">
+                    <StackPanel Padding="12" Spacing="4">
+                        <TextBlock FontWeight="SemiBold" Text="{x:Bind Title}" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind PublishedDate}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <Frame x:Name="ContentFrame" Grid.Column="1" />
+    </Grid>
+</Page>

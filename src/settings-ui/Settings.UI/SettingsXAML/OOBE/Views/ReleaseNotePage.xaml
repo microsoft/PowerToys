@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.ReleaseNotePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <tkcontrols:MarkdownThemes
+            x:Key="ReleaseNotesMarkdownThemeConfig"
+            H1FontSize="22"
+            H1FontWeight="SemiBold"
+            H1Margin="0, 36, 0, 8"
+            H2FontSize="16"
+            H2FontWeight="SemiBold"
+            H2Margin="0, 16, 0, 4"
+            H3FontSize="16"
+            H3FontWeight="SemiBold"
+            H3Margin="0, 16, 0, 4"
+            HeadingForeground="{StaticResource TextFillColorPrimaryBrush}" />
+        <tkcontrols:MarkdownConfig x:Key="ReleaseNotesMarkdownConfig" Themes="{StaticResource ReleaseNotesMarkdownThemeConfig}" />
+    </Page.Resources>
+    <ScrollViewer>
+        <StackPanel Padding="24" Spacing="12">
+            <!--  Header image  -->
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12">
+                <Image
+                    x:Name="HeaderImage"
+                    Height="180"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Stretch="UniformToFill"
+                    Visibility="Collapsed" />
+            </Border>
+
+            <tkcontrols:MarkdownTextBlock
+                x:Name="MarkdownBlock"
+                Config="{StaticResource ReleaseNotesMarkdownConfig}"
+                UseAutoLinks="True"
+                UseEmphasisExtras="True"
+                UseListExtras="True"
+                UsePipeTables="True"
+                UseTaskLists="True" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

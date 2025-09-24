@@ -26,6 +26,8 @@
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
 		<None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
 		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
+		<None Remove="SettingsXAML\OOBE\Views\ReleaseNotesPage.xaml" />
+		<None Remove="SettingsXAML\ScoobeWindow.xaml" />
 	</ItemGroup>
 	<ItemGroup>
 		<Page Remove="SettingsXAML\App.xaml" />
@@ -156,7 +158,16 @@
 		</None>
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+		</None>
+		<Page Update="SettingsXAML\OOBE\Views\ReleaseNotesPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\Views\ReleaseNotePage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\ScoobeWindow.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
 		</Page>
 		<Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
 			<Generator>MSBuild:Compile</Generator>

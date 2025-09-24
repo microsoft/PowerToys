@@ -14,6 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.SettingsXAML;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -373,7 +374,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void WhatIsNewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            OpenWhatIsNewWindowCallback();
+            // OpenWhatIsNewWindowCallback();
+            ScoobeWindow window = new ScoobeWindow();
+            window.Activate();
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
