@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -95,7 +94,7 @@ public sealed partial class AllAppsPage : ListPage
 
     private AppItem[] GetAllApps()
     {
-        List<AppItem> allApps = [];
+        List<AppItem> allApps = new();
 
         foreach (var uwpApp in _appCache.UWPs)
         {
@@ -113,7 +112,7 @@ public sealed partial class AllAppsPage : ListPage
             }
         }
 
-        return allApps.ToArray();
+        return [.. allApps];
     }
 
     internal (AppItem[] AllApps, AppListItem[] PinnedItems, AppListItem[] UnpinnedItems) GetPrograms()
@@ -142,7 +141,7 @@ public sealed partial class AllAppsPage : ListPage
         unpinned.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.Ordinal));
 
         return (
-                allApps.ToArray(),
+                allApps,
                 pinned.ToArray(),
                 unpinned.ToArray()
         );
@@ -155,44 +154,55 @@ public sealed partial class AllAppsPage : ListPage
          * So, instead, we'll just compare pinned items to move existing
          * items between the two lists.
         */
-        var existingAppItem = allApps.FirstOrDefault(f => f.AppIdentifier == e.AppIdentifier);
+        AppItem? existingAppItem = null;
+
+        foreach (var app in allApps)
+        {
+            if (app.AppIdentifier == e.AppIdentifier)
+            {
+                existingAppItem = app;
+                break;
+            }
+        }
 
         if (existingAppItem is not null)
         {
             var appListItem = new AppListItem(existingAppItem, true, e.IsPinned);
 
+            var newPinned = new List<AppListItem>(pinnedApps);
+            var newUnpinned = new List<AppListItem>(unpinnedApps);
+
             if (e.IsPinned)
             {
-                // Remove it from the unpinned apps array
-                this.unpinnedApps = this.unpinnedApps
-                                            .Where(app => app.AppIdentifier != existingAppItem.AppIdentifier)
-                                            .OrderBy(app => app.Title)
-                                            .ToArray();
-
-                var newPinned = this.pinnedApps.ToList();
                 newPinned.Add(appListItem);
 
-                this.pinnedApps = newPinned
-                                        .OrderBy(app => app.Title)
-                                        .ToArray();
+                foreach (var app in newUnpinned)
+                {
+                    if (app.AppIdentifier == e.AppIdentifier)
+                    {
+                        newUnpinned.Remove(app);
+                        break;
+                    }
+                }
             }
             else
             {
-                // Remove it from the pinned apps array
-                this.pinnedApps = this.pinnedApps
-                                            .Where(app => app.AppIdentifier != existingAppItem.AppIdentifier)
-                                            .OrderBy(app => app.Title)
-                                            .ToArray();
-
-                var newUnpinned = this.unpinnedApps.ToList();
                 newUnpinned.Add(appListItem);
 
-                this.unpinnedApps = newUnpinned
-                                        .OrderBy(app => app.Title)
-                                        .ToArray();
+                foreach (var app in newPinned)
+                {
+                    if (app.AppIdentifier == e.AppIdentifier)
+                    {
+                        newPinned.Remove(app);
+                        break;
+                    }
+                }
             }
 
-            RaiseItemsChanged(0);
+            pinnedApps = newPinned.ToArray();
+            unpinnedApps = newUnpinned.ToArray();
         }
+
+        RaiseItemsChanged(0);
     }
 }

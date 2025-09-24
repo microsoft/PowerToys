@@ -1033,20 +1033,7 @@ public class Win32Program : IProgram
                 }
             });
 
-            var allPrograms = new List<Win32Program>();
-
-            var programs = new List<Win32Program>();
-            foreach (var program in programsList)
-            {
-                allPrograms.Add(program);
-            }
-
-            var runCommandPrograms = new List<Win32Program>();
-            foreach (var program in runCommandProgramsList)
-            {
-                allPrograms.Add(program);
-            }
-
+            List<Win32Program> allPrograms = [.. programsList, .. runCommandProgramsList];
             return DeduplicatePrograms(allPrograms);
         }
         catch (Exception e)

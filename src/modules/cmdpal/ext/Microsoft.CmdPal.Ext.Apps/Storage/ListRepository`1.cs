@@ -21,7 +21,7 @@ public class ListRepository<T> : IRepository<T>, IEnumerable<T>
     {
         get
         {
-            var items = new List<T>();
+            var items = new List<T>(_items.Count);
             foreach (var item in _items.Values)
             {
                 items.Add(item);

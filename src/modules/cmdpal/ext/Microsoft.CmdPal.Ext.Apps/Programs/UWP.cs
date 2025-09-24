@@ -99,7 +99,7 @@ public partial class UWP
         var z = XDocument.Load(path);
         if (z.Root is not null)
         {
-            var namespaces = new List<string>();
+            var namespaces = new HashSet<string>();
 
             var attributes = z.Root.Attributes();
             foreach (var attribute in attributes)
@@ -109,28 +109,16 @@ public partial class UWP
                     // Extract namespace
                     var key = attribute.Name.Namespace == XNamespace.None ? string.Empty : attribute.Name.LocalName;
                     XNamespace ns = XNamespace.Get(attribute.Value);
+                    var nsString = ns.ToString();
 
-                    // Check if we already have a namespace with this key
-                    var alreadyExists = false;
-                    foreach (var existingNs in namespaces)
-                    {
-                        // If we find the namespace value already in our list, skip adding it again
-                        if (existingNs == ns.ToString())
-                        {
-                            alreadyExists = true;
-                            break;
-                        }
-                    }
-
-                    // Add the first namespace found for each key (equivalent to .GroupBy().Select(g => g.First()))
-                    if (!alreadyExists)
-                    {
-                        namespaces.Add(ns.ToString());
-                    }
+                    // Use HashSet to check for duplicates
+                    namespaces.Add(nsString);
                 }
             }
 
-            return namespaces.ToArray();
+            var uniqueNamespaces = new string[namespaces.Count];
+            namespaces.CopyTo(uniqueNamespaces);
+            return uniqueNamespaces;
         }
         else
         {

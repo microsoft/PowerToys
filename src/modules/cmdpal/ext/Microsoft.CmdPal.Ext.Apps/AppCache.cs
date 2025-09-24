@@ -31,11 +31,7 @@ public sealed partial class AppCache : IAppCache, IDisposable
     {
         _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
 
-        var watchers = new List<IFileSystemWatcherWrapper>();
-        foreach (var watcher in _win32ProgramRepositoryHelper.FileSystemWatchers)
-        {
-            watchers.Add(watcher);
-        }
+        var watchers = new List<IFileSystemWatcherWrapper>(_win32ProgramRepositoryHelper.FileSystemWatchers);
 
         _win32ProgramRepository = new Win32ProgramRepository(watchers, AllAppsSettings.Instance, _win32ProgramRepositoryHelper.PathsToWatch);
 
