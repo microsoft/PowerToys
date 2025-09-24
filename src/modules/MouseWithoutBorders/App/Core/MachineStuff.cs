@@ -992,7 +992,7 @@ internal static class MachineStuff
                 Setting.Values.MatrixOneRow = !((package.Type & PackageType.MatrixTwoRowFlag) == PackageType.MatrixTwoRowFlag);
                 MachineMatrix = MachineMatrix; // Save
 
-                Common.ReopenSocketDueToReadError = true;
+                InitAndCleanup.ReopenSocketDueToReadError = true;
 
                 UpdateClientSockets("UpdateMachineMatrix");
 
@@ -1044,7 +1044,7 @@ internal static class MachineStuff
             Common.MoveMouseToCenter();
         }
 
-        Common.ReleaseAllKeys();
+        InitAndCleanup.ReleaseAllKeys();
 
         Common.UpdateMultipleModeIconAndMenu();
     }
