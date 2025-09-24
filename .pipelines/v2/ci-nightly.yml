@@ -25,9 +25,14 @@ parameters:
     type: boolean
     displayName: "Enable MSBuild Caching"
     default: true
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    displayName: "MSBuild Cache Read Only"
+    default: false
 
 extends:
   template: templates/pipeline-ci-build.yml
   parameters:
     buildPlatforms: ${{ parameters.buildPlatforms }}
     enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+    msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}

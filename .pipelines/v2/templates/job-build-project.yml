@@ -50,6 +50,9 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    default: true
   - name: runTests
     type: boolean
     default: true
@@ -154,15 +157,9 @@ jobs:
         $MSBuildCacheParameters += " -reportfileaccesses"
         $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
         $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(LogOutputDirectory)\MSBuildCacheLogs"
-        # Branch-based cache policy:
-        # Always use a stable universe name (main). Make non-main branches read-only so they don't poison cache.
-        $sourceBranch = "$env:BUILD_SOURCEBRANCH"  # e.g. refs/heads/main or refs/pull/123/merge
-        $isMain = $false
-        if ($sourceBranch -match "refs/heads/main$") { $isMain = $true }
-        if ($isMain) {
-          $MSBuildCacheParameters += " /p:MSBuildCacheRemoteCacheIsReadOnly=false"
-        }
-        else {
+        # Cache read-only policy controlled by parameter
+        $cacheIsReadOnly = "${{ parameters.msBuildCacheIsReadOnly }}"
+        if ($cacheIsReadOnly -eq "True") {
           $MSBuildCacheParameters += " /p:MSBuildCacheRemoteCacheIsReadOnly=true"
         }
         Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
