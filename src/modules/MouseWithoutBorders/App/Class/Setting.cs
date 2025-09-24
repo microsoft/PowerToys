@@ -118,7 +118,7 @@ namespace MouseWithoutBorders.Class
                         if (shouldReopenSockets)
                         {
                             SocketStuff.InvalidKeyFound = false;
-                            Common.ReopenSocketDueToReadError = true;
+                            InitAndCleanup.ReopenSocketDueToReadError = true;
                             Common.ReopenSockets(true);
                         }
 
