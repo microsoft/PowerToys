@@ -29,6 +29,10 @@
   <PropertyGroup>
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
     <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
+    <!-- Enhanced build performance settings -->
+    <MaxCpuCount Condition="'$(MaxCpuCount)' == ''">$(NUMBER_OF_PROCESSORS)</MaxCpuCount>
+    <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
+    <UseSharedCompilation Condition="'$(UseSharedCompilation)' == ''">true</UseSharedCompilation>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -73,8 +77,8 @@
 
   <!-- MSBuildCache -->
   <PropertyGroup>
-    <!-- Off by default -->
-    <MSBuildCacheEnabled Condition="'$(MSBuildCacheEnabled)' == ''">false</MSBuildCacheEnabled>
+    <!-- Enable by default for better build performance -->
+    <MSBuildCacheEnabled Condition="'$(MSBuildCacheEnabled)' == ''">true</MSBuildCacheEnabled>
 
     <!-- In Azure pipelines, use Pipeline Caching as the cache storage backend. Otherwise, use the local cache. -->
     <MSBuildCachePackageName Condition="'$(TF_BUILD)' != ''">Microsoft.MSBuildCache.AzurePipelines</MSBuildCachePackageName>
