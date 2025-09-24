@@ -2914,6 +2914,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_GlidingCursor_DelaySpeed.Description" xml:space="preserve">
     <value>Speed after slowing down the line with a second shortcut press</value>
   </data>
+  <data name="MouseUtils_GlidingCursor_Shortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_GlidingCursor_Shortcut.Description" xml:space="preserve">
+    <value>Shortcut to activate gliding cursor</value>
+  </data>
   <data name="FancyZones_Radio_Custom_Colors.Content" xml:space="preserve">
     <value>Custom colors</value>
   </data>

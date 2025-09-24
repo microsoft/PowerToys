@@ -33,6 +33,7 @@ namespace
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_GLIDE_TRAVEL_SPEED[] = L"gliding_travel_speed";
     const wchar_t JSON_KEY_GLIDE_DELAY_SPEED[] = L"gliding_delay_speed";
+    const wchar_t JSON_KEY_GLIDING_CURSOR_ENABLED[] = L"gliding_cursor_enabled";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -105,6 +106,9 @@ private:
 
     // Gliding cursor state machine
     std::atomic<int> m_glideState{ 0 }; // 0..4 like the AHK script
+
+    // Gliding cursor enabled state
+    bool m_glidingCursorEnabled = true;
 
     // Timer configuration: 10ms tick, speeds are defined per 200ms base window
     static constexpr int kTimerTickMs = 10;
@@ -387,6 +391,11 @@ private:
 
     void HandleGlidingHotkey()
     {
+        if (!m_glidingCursorEnabled)
+        {
+            return;
+        }
+        
         auto s = m_state;
         if (!s)
         {
@@ -733,6 +742,17 @@ private:
                     m_state->slowHSpeed = 5;
                     m_state->slowVSpeed = 5;
                 }
+            }
+            try
+            {
+                // Parse Gliding Cursor Enabled
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_GLIDING_CURSOR_ENABLED);
+                m_glidingCursorEnabled = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::info("Failed to initialize gliding cursor enabled from settings. Using default true.");
+                m_glidingCursorEnabled = true;
             }
         }
         else

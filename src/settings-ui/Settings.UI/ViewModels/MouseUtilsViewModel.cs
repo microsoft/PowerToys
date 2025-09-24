@@ -102,6 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
+            _glidingCursorEnabled = MousePointerCrosshairsSettingsConfig.Properties.GlidingCursorEnabled.Value;
 
             int isEnabled = 0;
 
@@ -949,6 +950,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool GlidingCursorEnabled
+        {
+            get
+            {
+                return _glidingCursorEnabled;
+            }
+
+            set
+            {
+                if (value != _glidingCursorEnabled)
+                {
+                    _glidingCursorEnabled = value;
+                    MousePointerCrosshairsSettingsConfig.Properties.GlidingCursorEnabled.Value = value;
+                    NotifyMousePointerCrosshairsPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMousePointerCrosshairsPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1012,6 +1031,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mousePointerCrosshairsIsFixedLengthEnabled;
         private int _mousePointerCrosshairsFixedLength;
         private bool _mousePointerCrosshairsAutoActivate;
+        private bool _glidingCursorEnabled;
         private bool _isAnimationEnabledBySystem;
     }
 }

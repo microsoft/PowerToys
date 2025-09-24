@@ -58,6 +58,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("gliding_delay_speed")]
         public IntProperty GlidingDelaySpeed { get; set; }
 
+        [JsonPropertyName("gliding_cursor_enabled")]
+        public BoolProperty GlidingCursorEnabled { get; set; }
+
         public MousePointerCrosshairsProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
@@ -74,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AutoActivate = new BoolProperty(false);
             GlidingTravelSpeed = new IntProperty(25);
             GlidingDelaySpeed = new IntProperty(5);
+            GlidingCursorEnabled = new BoolProperty(true);
         }
     }
 }

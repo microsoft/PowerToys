@@ -389,15 +389,26 @@
                         x:Uid="MouseUtils_GlidingCursor"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE7;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.GlidingCursorActivationShortcut, Mode=TwoWay}" />
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            IsOn="{x:Bind ViewModel.GlidingCursorEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_GlidingCursor_InitialSpeed">
+                            <tkcontrols:SettingsCard
+                                x:Uid="MouseUtils_GlidingCursor_Shortcut"
+                                IsEnabled="{x:Bind ViewModel.GlidingCursorEnabled, Mode=OneWay}">
+                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.GlidingCursorActivationShortcut, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard 
+                                x:Uid="MouseUtils_GlidingCursor_InitialSpeed"
+                                IsEnabled="{x:Bind ViewModel.GlidingCursorEnabled, Mode=OneWay}">
                                 <Slider
                                     Maximum="60"
                                     Minimum="5"
                                     Value="{x:Bind ViewModel.GlidingCursorTravelSpeed, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_GlidingCursor_DelaySpeed">
+                            <tkcontrols:SettingsCard 
+                                x:Uid="MouseUtils_GlidingCursor_DelaySpeed"
+                                IsEnabled="{x:Bind ViewModel.GlidingCursorEnabled, Mode=OneWay}">
                                 <Slider
                                     Maximum="60"
                                     Minimum="5"
