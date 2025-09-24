@@ -93,7 +93,7 @@ public class PlaceholderParserTests
         var actualNames = placeholders.Select(p => p.Name).ToArray();
         var actualIndexes = placeholders.Select(p => p.Index).ToArray();
 
-        // Validate names and indexes as multisets (allow duplicates, ignore order)
+        // Validate names and indexes (allow duplicates, ignore order)
         CollectionAssert.AreEquivalent(expectedPlaceholderNames, actualNames);
         CollectionAssert.AreEquivalent(expectedIndexes, actualIndexes);
 
