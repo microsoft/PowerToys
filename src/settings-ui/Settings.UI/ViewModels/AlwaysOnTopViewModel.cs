@@ -128,14 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _hotkey)
                 {
-                    if (value == null)
-                    {
-                        _hotkey = AlwaysOnTopProperties.DefaultHotkeyValue;
-                    }
-                    else
-                    {
-                        _hotkey = value;
-                    }
+                    _hotkey = value ?? AlwaysOnTopProperties.DefaultHotkeyValue;
 
                     Settings.Properties.Hotkey.Value = _hotkey;
                     NotifyPropertyChanged();

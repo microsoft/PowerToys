@@ -258,7 +258,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.Unloaded += ShortcutControl_Unloaded;
             this.Loaded += ShortcutControl_Loaded;
 
-            c.IgnoreConflictChanged += OnDialogIgnoreConflictChanged;
             c.ResetClick += C_ResetClick;
             c.ClearClick += C_ClearClick;
             c.LearnMoreClick += C_LearnMoreClick;
@@ -290,21 +289,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             conflictWindow.Activate();
         }
 
-        private void OnDialogIgnoreConflictChanged(object sender, bool newValue)
-        {
-            if (hotkeySettings != null)
-            {
-                HotkeySettings = hotkeySettings with { IgnoreConflict = c.IgnoreConflict };
-
-                if (lastValidSettings != null)
-                {
-                    c.Keys = lastValidSettings.GetKeysList();
-                }
-
-                UpdateConflictStatusFromHotkeySettings();
-            }
-        }
-
         private void UpdateKeyVisualStyles()
         {
             if (PreviewKeysControl?.ItemsSource != null)
@@ -334,7 +318,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.Opened -= ShortcutDialog_Opened;
             shortcutDialog.Closing -= ShortcutDialog_Closing;
 
-            c.IgnoreConflictChanged -= OnDialogIgnoreConflictChanged;
             c.LearnMoreClick -= C_LearnMoreClick;
 
             if (App.GetSettingsWindow() != null)
