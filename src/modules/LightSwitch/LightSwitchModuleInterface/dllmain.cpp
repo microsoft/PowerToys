@@ -106,9 +106,9 @@ public:
     {
         LoggerHelpers::init_logger(L"LightSwitch", L"ModuleInterface", LogSettings::lightSwitchLoggerName);
 
-        m_force_light_event_handle = CreateDefaultEvent(L"POWEROYS_LIGHTSWITCH_FORCE_LIGHT");
-        m_force_dark_event_handle = CreateDefaultEvent(L"POWEROYS_LIGHTSWITCH_FORCE_DARK");
-        m_manual_override_event_handle = CreateDefaultEvent(L"POWEROYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+        m_force_light_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_LIGHT");
+        m_force_dark_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_FORCE_DARK");
+        m_manual_override_event_handle = CreateDefaultEvent(L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
 
         init_settings();
     };

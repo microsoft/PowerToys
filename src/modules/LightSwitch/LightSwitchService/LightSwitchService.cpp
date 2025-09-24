@@ -148,7 +148,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     LightSwitchSettings::instance().InitFileWatcher();
 
     // Open the manual override event created by the module interface
-    HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWEROYS_LIGHTSWITCH_MANUAL_OVERRIDE");
+    HANDLE hManualOverride = OpenEventW(SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, L"POWERTOYS_LIGHTSWITCH_MANUAL_OVERRIDE");
 
     auto applyTheme = [](int nowMinutes, int lightMinutes, int darkMinutes, const auto& settings) {
         bool isLightActive = false;
