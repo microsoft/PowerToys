@@ -157,16 +157,18 @@ public partial class MainListPage : DynamicListPage,
         {
             lock (_tlcManager.TopLevelCommands)
             {
+                IEnumerable<Scored<IListItem>> limitedApps = Enumerable.Empty<Scored<IListItem>>();
+
                 // Fuzzy matching can produce a lot of results, so we want to limit the
                 // number of apps we show at once if it's a large set.
-                if (_filteredApps is not null)
+                if (_filteredApps?.Any() == true)
                 {
-                    _filteredApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit);
+                    limitedApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit);
                 }
 
                 var items = Enumerable.Empty<Scored<IListItem>>()
                                 .Concat(_filteredItems is not null ? _filteredItems : [])
-                                .Concat(_filteredApps is not null ? _filteredApps : [])
+                                .Concat(limitedApps)
                                 .OrderByDescending(o => o.Score)
 
                                 // Add fallback items post-sort so they are always at the end of the list
@@ -357,8 +359,9 @@ public partial class MainListPage : DynamicListPage,
                     return;
                 }
 
+                // We'll apply this limit in the GetItems method after merging with commands
+                // but we need to know the limit now to avoid re-scoring apps
                 var appLimit = AllAppsCommandProvider.TopLevelResultLimit;
-                _appResultLimit = appLimit < 0 || appLimit > 10 ? 10 : appLimit;
 
                 _filteredApps = scoredApps;
             }
@@ -449,19 +452,19 @@ public partial class MainListPage : DynamicListPage,
         // * otherwise full weight match
         var nameMatch = isWhiteSpace ?
             (title.Contains(query) ? 1 : 0) :
-               StringMatcher.FuzzySearch(query, title).Score;
+               FuzzyStringMatcher.ScoreFuzzy(query, title);
 
         // Subtitle:
         // * whitespace query: 1/2 point
         // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
         var descriptionMatch = isWhiteSpace ?
             (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
-            (StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle).Score - 4) / 2.0;
+            (FuzzyStringMatcher.ScoreFuzzy(query, topLevelOrAppItem.Subtitle) - 4) / 2.0;
 
         // Extension title: despite not being visible, give the extension name itself some weight
         // * whitespace query: 0 points
         // * otherwise more weight than a subtitle, but not much
-        var extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName).Score / 1.5;
+        var extensionTitleMatch = isWhiteSpace ? 0 : FuzzyStringMatcher.ScoreFuzzy(query, extensionDisplayName) / 1.5;
 
         var scores = new[]
         {

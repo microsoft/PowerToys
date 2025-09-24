@@ -367,9 +367,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return 1;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
-        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
-        return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
+        var nameMatch = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Title);
+        var descriptionMatch = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Subtitle);
+        return new[] { nameMatch, (descriptionMatch - 4) / 2, 0 }.Max();
     }
 
     private struct ScoredListItemViewModel
