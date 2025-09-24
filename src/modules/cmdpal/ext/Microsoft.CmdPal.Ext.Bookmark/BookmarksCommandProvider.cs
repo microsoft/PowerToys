@@ -72,11 +72,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
     {
         lock (_bookmarksLock)
         {
-            var itemToRemove = _bookmarks.FirstOrDefault(b => b.BookmarkTitle == bookmarkData.Name && b.BookmarkAddress == bookmarkData.Bookmark);
-            if (itemToRemove != null)
-            {
-                _bookmarks.Remove(itemToRemove);
-            }
+            _bookmarks.RemoveAll(t => t.BookmarkId == bookmarkData.Id);
         }
 
         NotifyChange();

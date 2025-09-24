@@ -35,6 +35,8 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
 
     public string BookmarkTitle => _bookmark.Name;
 
+    public Guid BookmarkId => _bookmark.Id;
+
     public BookmarkListItem(BookmarkData bookmark, IBookmarksManager bookmarksManager, IBookmarkResolver commandResolver, IBookmarkIconLocator iconLocator, IPlaceholderParser placeholderParser)
     {
         ArgumentNullException.ThrowIfNull(bookmark);
