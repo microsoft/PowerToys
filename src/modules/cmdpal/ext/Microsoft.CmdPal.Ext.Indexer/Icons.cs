@@ -19,4 +19,8 @@ internal sealed class Icons
     internal static IconInfo DocumentIcon { get; } = new("\uE8A5"); // Document
 
     internal static IconInfo FolderOpenIcon { get; } = new("\uE838"); // FolderOpen
+
+    internal static IconInfo RunAsUserIcon => new("\uE7EE"); // OtherUser icon
+
+    internal static IconInfo RunAsAdminIcon => new("\uE7EF"); // Admin icon
 }
