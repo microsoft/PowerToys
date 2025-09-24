@@ -14,11 +14,11 @@ internal sealed partial class BookmarkPlaceholderPage : ContentPage, IDisposable
     private readonly FormContent _bookmarkPlaceholder;
     private readonly SupersedingAsyncValueGate<IIconInfo?> _iconReloadGate;
 
-    public BookmarkPlaceholderPage(BookmarkData bookmarkData, IBookmarkIconLocator iconLocator, IBookmarkResolver resolver)
+    public BookmarkPlaceholderPage(BookmarkData bookmarkData, IBookmarkIconLocator iconLocator, IBookmarkResolver resolver, IPlaceholderParser placeholderParser)
     {
         Name = Resources.bookmarks_command_name_open;
 
-        _bookmarkPlaceholder = new BookmarkPlaceholderForm(bookmarkData, resolver);
+        _bookmarkPlaceholder = new BookmarkPlaceholderForm(bookmarkData, resolver, placeholderParser);
 
         _iconReloadGate = new(
             async ct =>

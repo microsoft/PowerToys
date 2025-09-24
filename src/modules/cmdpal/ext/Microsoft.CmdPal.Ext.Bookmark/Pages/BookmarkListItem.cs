@@ -23,6 +23,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
     private readonly IBookmarksManager _bookmarksManager;
     private readonly IBookmarkResolver _commandResolver;
     private readonly IBookmarkIconLocator _iconLocator;
+    private readonly IPlaceholderParser _placeholderParser;
     private readonly SupersedingAsyncValueGate<BookmarkListItemReclassifyResult> _classificationGate;
     private readonly TaskCompletionSource _initializationTcs = new();
 
@@ -34,7 +35,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
 
     public string BookmarkTitle => _bookmark.Name;
 
-    public BookmarkListItem(BookmarkData bookmark, IBookmarksManager bookmarksManager, IBookmarkResolver commandResolver, IBookmarkIconLocator iconLocator)
+    public BookmarkListItem(BookmarkData bookmark, IBookmarksManager bookmarksManager, IBookmarkResolver commandResolver, IBookmarkIconLocator iconLocator, IPlaceholderParser placeholderParser)
     {
         ArgumentNullException.ThrowIfNull(bookmark);
         ArgumentNullException.ThrowIfNull(bookmarksManager);
@@ -45,6 +46,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         _bookmarksManager.BookmarkUpdated += BookmarksManagerOnBookmarkUpdated;
         _commandResolver = commandResolver;
         _iconLocator = iconLocator;
+        _placeholderParser = placeholderParser;
         _classificationGate = new SupersedingAsyncValueGate<BookmarkListItemReclassifyResult>(ClassifyAsync, ApplyClassificationResult);
         _ = _classificationGate.ExecuteAsync();
     }
@@ -97,7 +99,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         var subtitle = BuildSubtitle(_bookmark);
 
         ICommand command = classification.IsPlaceholder
-            ? new BookmarkPlaceholderPage(_bookmark, _iconLocator, _commandResolver)
+            ? new BookmarkPlaceholderPage(_bookmark, _iconLocator, _commandResolver, _placeholderParser)
             : new LaunchBookmarkCommand(_bookmark, classification, _iconLocator, _commandResolver);
 
         BuildSpecificContextMenuItems(classification, contextMenu);

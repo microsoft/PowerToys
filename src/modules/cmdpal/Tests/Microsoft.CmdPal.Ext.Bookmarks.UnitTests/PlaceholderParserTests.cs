@@ -27,31 +27,36 @@ public class PlaceholderParserTests
             "Hello {name}!",
                 true,
                 "Hello ",
-                new[] { "name" }
+                new[] { "name" },
+                new[] { 6 }
         ],
         [
             "User {user_name} has {count} items",
                 true,
                 "User ",
-                new[] { "user_name", "count" }
+                new[] { "user_name", "count" },
+                new[] { 5, 21 }
         ],
         [
             "Order {order-id} for {name} by {name}",
                 true,
                 "Order ",
-                new[] { "order-id", "name" } // unique only
+                new[] { "order-id", "name", "name" },
+                new[] { 6, 21, 31 }
         ],
         [
             "{start} and {end}",
                 true,
                 string.Empty,
-                new[] { "start", "end" }
+                new[] { "start", "end" },
+                new[] { 0, 12 }
         ],
         [
             "Number {123} and text {abc}",
                 true,
                 "Number ",
-                new[] { "123", "abc" }
+                new[] { "123", "abc" },
+                new[] { 7, 22 }
         ]
     ];
 
@@ -74,7 +79,8 @@ public class PlaceholderParserTests
         string input,
         bool expectedResult,
         string expectedHead,
-        string[] expectedPlaceholderNames)
+        string[] expectedPlaceholderNames,
+        int[] expectedIndexes)
     {
         // Act
         var result = _parser.ParsePlaceholders(input, out var head, out var placeholders);
@@ -85,7 +91,21 @@ public class PlaceholderParserTests
         Assert.AreEqual(expectedPlaceholderNames.Length, placeholders.Count);
 
         var actualNames = placeholders.Select(p => p.Name).ToArray();
+        var actualIndexes = placeholders.Select(p => p.Index).ToArray();
+
+        // Validate names and indexes as multisets (allow duplicates, ignore order)
         CollectionAssert.AreEquivalent(expectedPlaceholderNames, actualNames);
+        CollectionAssert.AreEquivalent(expectedIndexes, actualIndexes);
+
+        // Validate name-index pairing exists for each expected placeholder occurrence
+        for (var i = 0; i < expectedPlaceholderNames.Length; i++)
+        {
+            var expectedName = expectedPlaceholderNames[i];
+            var expectedIndex = expectedIndexes[i];
+            Assert.IsTrue(
+                placeholders.Any(p => p.Name == expectedName && p.Index == expectedIndex),
+                $"Expected placeholder '{{{expectedName}}}' at index {expectedIndex} was not found.");
+        }
     }
 
     [TestMethod]
@@ -118,21 +138,24 @@ public class PlaceholderParserTests
     public void Placeholder_Equality_WorksCorrectly()
     {
         // Arrange
-        var placeholder1 = new PlaceholderInfo("name");
-        var placeholder2 = new PlaceholderInfo("name");
-        var placeholder3 = new PlaceholderInfo("other");
+        var placeholder1 = new PlaceholderInfo("name", 0);
+        var placeholder2 = new PlaceholderInfo("name", 0);
+        var placeholder3 = new PlaceholderInfo("other", 0);
+        var placeholder4 = new PlaceholderInfo("name", 1);
 
         // Assert
         Assert.AreEqual(placeholder1, placeholder2);
         Assert.AreNotEqual(placeholder1, placeholder3);
         Assert.AreEqual(placeholder1.GetHashCode(), placeholder2.GetHashCode());
+        Assert.AreNotEqual(placeholder1, placeholder4);
+        Assert.AreNotEqual(placeholder1.GetHashCode(), placeholder4.GetHashCode());
     }
 
     [TestMethod]
     public void Placeholder_ToString_ReturnsName()
     {
         // Arrange
-        var placeholder = new PlaceholderInfo("userName");
+        var placeholder = new PlaceholderInfo("userName", 0);
 
         // Assert
         Assert.AreEqual("userName", placeholder.ToString());
@@ -142,6 +165,13 @@ public class PlaceholderParserTests
     public void Placeholder_Constructor_ThrowsOnNull()
     {
         // Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new PlaceholderInfo(null!));
+        Assert.ThrowsException<ArgumentNullException>(() => new PlaceholderInfo(null!, 0));
+    }
+
+    [TestMethod]
+    public void Placeholder_Constructor_ThrowsArgumentOutOfRange()
+    {
+        // Assert
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => new PlaceholderInfo("Name", -1));
     }
 }

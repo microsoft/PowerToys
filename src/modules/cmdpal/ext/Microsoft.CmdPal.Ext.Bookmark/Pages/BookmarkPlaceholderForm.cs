@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
@@ -20,24 +19,23 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
     private readonly BookmarkData _bookmarkData;
     private readonly IBookmarkResolver _commandResolver;
 
-    public BookmarkPlaceholderForm(BookmarkData data, IBookmarkResolver commandResolver)
+    public BookmarkPlaceholderForm(BookmarkData data, IBookmarkResolver commandResolver, IPlaceholderParser placeholderParser)
     {
         ArgumentNullException.ThrowIfNull(data);
         ArgumentNullException.ThrowIfNull(commandResolver);
 
         _bookmarkData = data;
         _commandResolver = commandResolver;
-        var matches = CurlyContent().Matches(data.Bookmark);
-        var placeholderNames = matches.Select(m => m.Groups[1].Value).ToList();
-        var inputs = placeholderNames.Select(placeholderName =>
+        placeholderParser.ParsePlaceholders(data.Bookmark, out _, out var placeholders);
+        var inputs = placeholders.Distinct(PlaceholderInfoNameEqualityComparer.Instance).Select(placeholder =>
         {
-            var errorMessage = string.Format(CultureInfo.CurrentCulture, ErrorMessage, placeholderName);
+            var errorMessage = string.Format(CultureInfo.CurrentCulture, ErrorMessage, placeholder.Name);
             return $$"""
                      {
                          "type": "Input.Text",
                          "style": "text",
-                         "id": "{{placeholderName}}",
-                         "label": "{{placeholderName}}",
+                         "id": "{{placeholder.Name}}",
+                         "label": "{{placeholder.Name}}",
                          "isRequired": true,
                          "errorMessage": "{{errorMessage}}"
                      }
@@ -102,12 +100,9 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
         foreach (var (key, value) in placeholders)
         {
             var placeholderString = $"{{{key}}}";
-            result = result.Replace(placeholderString, value);
+            result = result.Replace(placeholderString, value, StringComparison.OrdinalIgnoreCase);
         }
 
         return result;
     }
-
-    [GeneratedRegex(@"\{(.*?)\}", RegexOptions.Compiled)]
-    private static partial Regex CurlyContent();
 }

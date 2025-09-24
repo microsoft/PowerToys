@@ -10,6 +10,8 @@ public class PlaceholderParser : IPlaceholderParser
 {
     public bool ParsePlaceholders(string input, out string head, out List<PlaceholderInfo> placeholders)
     {
+        ArgumentNullException.ThrowIfNull(input);
+
         head = string.Empty;
         placeholders = [];
 
@@ -19,7 +21,7 @@ public class PlaceholderParser : IPlaceholderParser
             return false;
         }
 
-        var foundPlaceholders = new HashSet<string>();
+        var foundPlaceholders = new List<PlaceholderInfo>();
         var searchStart = 0;
         var firstPlaceholderStart = -1;
         var hasValidPlaceholder = false;
@@ -47,7 +49,7 @@ public class PlaceholderParser : IPlaceholderParser
                 IsValidPlaceholderName(placeholderContent))
             {
                 // Valid placeholder found
-                foundPlaceholders.Add(placeholderContent);
+                foundPlaceholders.Add(new PlaceholderInfo(placeholderContent, openBrace));
                 hasValidPlaceholder = true;
 
                 // Remember the first valid placeholder position
@@ -62,7 +64,7 @@ public class PlaceholderParser : IPlaceholderParser
         }
 
         // Convert to Placeholder objects
-        placeholders = foundPlaceholders.Select(name => new PlaceholderInfo(name)).ToList();
+        placeholders = foundPlaceholders;
 
         if (hasValidPlaceholder)
         {

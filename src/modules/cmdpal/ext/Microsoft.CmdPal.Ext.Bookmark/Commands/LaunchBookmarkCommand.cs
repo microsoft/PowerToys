@@ -87,7 +87,7 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
             foreach (var (key, value) in _placeholders)
             {
                 var placeholderString = $"{{{key}}}";
-                result = result.Replace(placeholderString, value);
+                result = result.Replace(placeholderString, value, StringComparison.OrdinalIgnoreCase);
             }
         }
 

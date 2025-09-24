@@ -79,10 +79,10 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
 
         // is placeholder?
         var isPlaceholder = _placeholderParser.ParsePlaceholders(input, out var inputUntilFirstPlaceholder, out _);
-        return ClassifyWithoutPlaceholder(input, out result, isPlaceholder, inputUntilFirstPlaceholder);
+        return ClassifyWithoutPlaceholder(input, out result, isPlaceholder, inputUntilFirstPlaceholder, _placeholderParser);
     }
 
-    private static bool ClassifyWithoutPlaceholder(string input, out Classification result, bool isPlaceholder, string inputUntilFirstPlaceholder)
+    private static bool ClassifyWithoutPlaceholder(string input, out Classification result, bool isPlaceholder, string inputUntilFirstPlaceholder, IPlaceholderParser placeholderParser)
     {
         // 1) UWP/AppX via AppsFolder/AUMID or pkgfamily!app
         if (IsUwpAumidLike(input))
@@ -179,7 +179,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
 
         // 6) Existing file/dir or "longest plausible prefix"
         // Try to grow head (only for unquoted original) to include spaces until a path exists.
-        var (headPath, tailArgs) = ExpandToBestExistingPath(input, isPlaceholder);
+        var (headPath, tailArgs) = ExpandToBestExistingPath(input, isPlaceholder, placeholderParser);
         if (headPath is not null)
         {
             var args = tailArgs ?? string.Empty;
@@ -324,7 +324,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
     // Finds the best existing path prefix in an *unquoted* input by scanning
     // whitespace boundaries. Prefers files over directories; for same kind,
     // prefers the longer path. Returns (head, tail) or (null, null) if nothing found.
-    private static (string? Head, string? Tail) ExpandToBestExistingPath(string input, bool containsPlaceholders = false)
+    private static (string? Head, string? Tail) ExpandToBestExistingPath(string input, bool containsPlaceholders, IPlaceholderParser placeholderParser)
     {
         try
         {
@@ -358,7 +358,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                 }
 
                 // If we have placeholders, check if this candidate would contain a non-path placeholder
-                if (containsPlaceholders && ContainsNonPathPlaceholder(candidate))
+                if (containsPlaceholders && ContainsNonPathPlaceholder(candidate, placeholderParser))
                 {
                     continue; // Skip this candidate, try a shorter one
                 }
@@ -406,13 +406,10 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         }
     }
 
-    private static bool ContainsNonPathPlaceholder(string candidate)
+    private static bool ContainsNonPathPlaceholder(string candidate, IPlaceholderParser placeholderParser)
     {
-        // Look for placeholders that are likely command arguments rather than path components
-        var regex = new Regex(@"\{[a-zA-Z0-9_-]+\}");
-        var matches = regex.Matches(candidate);
-
-        foreach (Match match in matches)
+        placeholderParser.ParsePlaceholders(candidate, out _, out var placeholders);
+        foreach (var match in placeholders)
         {
             var placeholderContext = GetPlaceholderContextInFileSystemPath(candidate, match.Index);
 

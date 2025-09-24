@@ -14,8 +14,9 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public sealed partial class BookmarksCommandProvider : CommandProvider
 {
+    private readonly IPlaceholderParser _placeholderParser = new PlaceholderParser();
     private readonly IBookmarksManager _bookmarksManager;
-    private readonly IBookmarkResolver _commandResolver = new BookmarkResolver(new PlaceholderParser());
+    private readonly IBookmarkResolver _commandResolver;
     private readonly IBookmarkIconLocator _iconLocator = new IconLocator();
 
     private readonly ListItem _addNewItem;
@@ -45,6 +46,8 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         _bookmarksManager.BookmarkAdded += OnBookmarkAdded;
         _bookmarksManager.BookmarkRemoved += OnBookmarkRemoved;
 
+        _commandResolver = new BookmarkResolver(_placeholderParser);
+
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
         Icon = Icons.PinIcon;
@@ -56,7 +59,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     private void OnBookmarkAdded(BookmarkData bookmarkData)
     {
-        var newItem = new BookmarkListItem(bookmarkData, _bookmarksManager, _commandResolver, _iconLocator);
+        var newItem = new BookmarkListItem(bookmarkData, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser);
         lock (_bookmarksLock)
         {
             _bookmarks.Add(newItem);
@@ -86,7 +89,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
             _isLoading = true;
             lock (_bookmarksLock)
             {
-                _bookmarks = [.. _bookmarksManager.Bookmarks.Select(bookmark => new BookmarkListItem(bookmark, _bookmarksManager, _commandResolver, _iconLocator))];
+                _bookmarks = [.. _bookmarksManager.Bookmarks.Select(bookmark => new BookmarkListItem(bookmark, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser))];
             }
 
             _isLoaded = true;

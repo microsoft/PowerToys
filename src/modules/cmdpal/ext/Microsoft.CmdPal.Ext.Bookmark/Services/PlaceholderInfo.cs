@@ -4,27 +4,54 @@
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
 
-public class PlaceholderInfo
+public sealed class PlaceholderInfo
 {
     public string Name { get; }
 
-    public PlaceholderInfo(string name)
+    public int Index { get; }
+
+    public PlaceholderInfo(string name, int index)
     {
-        Name = name ?? throw new ArgumentNullException(nameof(name));
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentOutOfRangeException.ThrowIfLessThan(index, 0);
+
+        Name = name;
+        Index = index;
     }
+
+    private bool Equals(PlaceholderInfo other) => Name == other.Name && Index == other.Index;
 
     public override bool Equals(object? obj)
     {
-        return obj is PlaceholderInfo other && Name == other.Name;
+        if (obj is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        if (obj.GetType() != GetType())
+        {
+            return false;
+        }
+
+        return Equals((PlaceholderInfo)obj);
     }
 
-    public override int GetHashCode()
+    public override int GetHashCode() => HashCode.Combine(Name, Index);
+
+    public static bool operator ==(PlaceholderInfo? left, PlaceholderInfo? right)
     {
-        return Name.GetHashCode();
+        return Equals(left, right);
     }
 
-    public override string ToString()
+    public static bool operator !=(PlaceholderInfo? left, PlaceholderInfo? right)
     {
-        return Name;
+        return !Equals(left, right);
     }
+
+    public override string ToString() => Name;
 }
