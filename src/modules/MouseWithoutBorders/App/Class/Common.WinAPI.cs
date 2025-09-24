@@ -36,7 +36,7 @@ namespace MouseWithoutBorders
 
         internal static string ActiveDesktop => Common.activeDesktop;
 
-        private static void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
+        internal static void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
         {
             GetScreenConfig();
         }
@@ -340,7 +340,7 @@ namespace MouseWithoutBorders
                         Setting.Values.LastX = JUST_GOT_BACK_FROM_SCREEN_SAVER;
                         if (cleanupIfExit)
                         {
-                            Common.Cleanup();
+                            InitAndCleanup.Cleanup();
                         }
 
                         Process.GetCurrentProcess().KillProcess();
