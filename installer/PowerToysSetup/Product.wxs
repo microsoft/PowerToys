@@ -80,11 +80,23 @@
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
       <ComponentGroupRef Id="CmdPalComponentGroup" />
+      <ComponentRef Id="InstallLocationRegistryComponent" />
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    
+    <!-- Ensure InstallLocation is set in registry for winget configure export -->
+    <!-- The existing ARPINSTALLLOCATION should handle this, but we add explicit registry value as backup -->
+    <Component Id="InstallLocationRegistryComponent" Directory="INSTALLFOLDER" Guid="*">
+      <RegistryValue Root="$(var.RegistryScope)" 
+                     Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\[ProductCode]" 
+                     Name="InstallLocation" 
+                     Type="string" 
+                     Value="[INSTALLFOLDER]"
+                     KeyPath="yes" />
+    </Component>
 
     <UI>
       <UIRef Id="WixUI_InstallDir"/>
