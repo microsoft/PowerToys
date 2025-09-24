@@ -22,6 +22,8 @@ using Microsoft.PowerToys.Telemetry;
 // </history>
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
+
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.frmMatrix.#buttonOK_Click(System.Object,System.EventArgs)", Justification = "Dotnet port with style preservation")]
@@ -110,7 +112,7 @@ namespace MouseWithoutBorders
             {
                 SocketStuff.InvalidKeyFound = false;
                 showInvalidKeyMessage = false;
-                Common.ReopenSocketDueToReadError = true;
+                InitAndCleanup.ReopenSocketDueToReadError = true;
                 Common.ReopenSockets(true);
 
                 for (int i = 0; i < 10; i++)
@@ -780,7 +782,7 @@ namespace MouseWithoutBorders
 
             ShowUpdateMessage();
 
-            Common.HasSwitchedMachineSinceLastCopy = true;
+            Clipboard.HasSwitchedMachineSinceLastCopy = true;
         }
 
         private void CheckBoxDisableCAD_CheckedChanged(object sender, EventArgs e)
