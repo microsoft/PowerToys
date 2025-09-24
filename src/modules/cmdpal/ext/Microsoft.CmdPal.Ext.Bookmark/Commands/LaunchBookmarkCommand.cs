@@ -40,7 +40,7 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
         _placeholders = placeholders;
         _bookmarkResolver = bookmarkResolver;
 
-        Id = "Bookmarks.Launch." + bookmarkData.Id;
+        Id = CommandIds.GetLaunchBookmarkItemId(bookmarkData.Id);
         Name = Resources.bookmarks_command_name_open;
 
         _iconReloadGate = new(

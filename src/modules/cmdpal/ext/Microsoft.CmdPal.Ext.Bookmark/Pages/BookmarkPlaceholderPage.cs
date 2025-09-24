@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -17,6 +18,7 @@ internal sealed partial class BookmarkPlaceholderPage : ContentPage, IDisposable
     public BookmarkPlaceholderPage(BookmarkData bookmarkData, IBookmarkIconLocator iconLocator, IBookmarkResolver resolver, IPlaceholderParser placeholderParser)
     {
         Name = Resources.bookmarks_command_name_open;
+        Id = CommandIds.GetLaunchBookmarkItemId(bookmarkData.Id);
 
         _bookmarkPlaceholder = new BookmarkPlaceholderForm(bookmarkData, resolver, placeholderParser);
 
