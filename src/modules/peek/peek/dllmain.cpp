@@ -649,7 +649,16 @@ public:
                 SetEvent(m_hInvokeEvent);
 
                 Trace::PeekInvoked();
-                return true;
+
+
+                if (spaceMode)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
 

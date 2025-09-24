@@ -115,19 +115,55 @@ namespace Peek.UI.Helpers
         }
 
         /// <summary>
-        /// Returns whether the caret is visible in the specified window.
+        /// Heuristic to decide whether the user is actively typing so we should suppress Peek activation.
+        /// Current logic:
+        ///  - If the focused control class name contains "Edit" or "Input" (e.g. Explorer search box or in-place rename), return true.
+        ///  - Otherwise fall back to the legacy GUI_CARETBLINKING flag (covers other text contexts where class name differs but caret blinks).
+        ///  - If we fail to retrieve GUI thread info, we default to false (do not suppress) to avoid blocking activation due to transient failures.
+        /// NOTE: This intentionally no longer walks ancestor chains; any Edit/Input focus inside the same top-level Explorer/Desktop window is treated as typing.
         /// </summary>
-        private static bool CaretVisible(HWND hwnd)
+        private static unsafe bool CaretVisible(HWND hwnd)
         {
-            GUITHREADINFO guiThreadInfo = new() { cbSize = (uint)Marshal.SizeOf<GUITHREADINFO>() };
-
-            // Get information for the foreground thread
-            if (PInvoke_PeekUI.GetGUIThreadInfo(0, ref guiThreadInfo))
+            GUITHREADINFO gi = new() { cbSize = (uint)Marshal.SizeOf<GUITHREADINFO>() };
+            if (!PInvoke_PeekUI.GetGUIThreadInfo(0, ref gi))
             {
-                return guiThreadInfo.hwndActive == hwnd && (guiThreadInfo.flags & GUITHREADINFO_FLAGS.GUI_CARETBLINKING) != 0;
+                return false; // fail open (allow activation)
             }
 
-            return false;
+            // Quick sanity: restrict to same top-level window (match prior behavior)
+            if (gi.hwndActive != hwnd)
+            {
+                return false;
+            }
+
+            HWND focus = gi.hwndFocus;
+            if (focus == HWND.Null)
+            {
+                return false;
+            }
+
+            // Get focused window class (96 chars buffer; GetClassNameW bounds writes). Treat any class containing
+            // "Edit" or "Input" as a text field (search / titlebar) and suppress Peek.
+            Span<char> buf = stackalloc char[96];
+            fixed (char* p = buf)
+            {
+                int len = PInvoke_PeekUI.GetClassName(focus, p, buf.Length);
+                if (len > 0)
+                {
+                    var focusClass = new string(p, 0, len);
+                    if (focusClass.Contains("Edit", StringComparison.OrdinalIgnoreCase) || focusClass.Contains("Input", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true; // treat any Edit/Input focus as typing.
+                    }
+                    else
+                    {
+                        ManagedCommon.Logger.LogInfo($"Peek suppression: focus class{focusClass}");
+                    }
+                }
+            }
+
+            // Fallback: original caret blinking heuristic for other text-entry contexts
+            return (gi.flags & GUITHREADINFO_FLAGS.GUI_CARETBLINKING) != 0;
         }
     }
 }
