@@ -64,6 +64,9 @@ const static wchar_t* MODULE_NAME = L"MousePointerCrosshairs";
 // Add a description that will we shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"<no description>";
 
+class MousePointerCrosshairs; // fwd
+static std::atomic<MousePointerCrosshairs*> g_instance{ nullptr }; // for hook callback
+
 // Implement the PowerToy Module Interface and all the required methods.
 class MousePointerCrosshairs : public PowertoyModuleIface
 {
@@ -74,6 +77,9 @@ private:
     // Additional hotkeys (legacy API) to support multiple shortcuts
     Hotkey m_activationHotkey{};    // Crosshairs toggle
     Hotkey m_glidingHotkey{};       // Gliding cursor state machine
+
+    // Low-level keyboard hook (Escape to cancel gliding)
+    HHOOK m_keyboardHook = nullptr;
 
     // Shared state for worker threads (decoupled from this lifetime)
     struct State
@@ -122,13 +128,16 @@ public:
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mousePointerCrosshairsLoggerName);
         m_state = std::make_shared<State>();
         init_settings();
+        g_instance.store(this, std::memory_order_release);
     };
 
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        UninstallKeyboardHook();
         StopXTimer();
         StopYTimer();
+        g_instance.store(nullptr, std::memory_order_release);
         // Release shared state so worker threads (if any) exit when weak_ptr lock fails
         m_state.reset();
         delete this;
@@ -191,6 +200,7 @@ public:
         m_enabled = true;
         Trace::EnableMousePointerCrosshairs(true);
         std::thread([=]() { InclusiveCrosshairsMain(m_hModule, m_inclusiveCrosshairsSettings); }).detach();
+        InstallKeyboardHook();
     }
 
     // Disable the powertoy
@@ -198,6 +208,7 @@ public:
     {
         m_enabled = false;
         Trace::EnableMousePointerCrosshairs(false);
+        UninstallKeyboardHook();
         StopXTimer();
         StopYTimer();
         m_glideState = 0;
@@ -256,6 +267,27 @@ private:
         inputs[1].type = INPUT_MOUSE;
         inputs[1].mi.dwFlags = MOUSEEVENTF_LEFTUP;
         SendInput(2, inputs, sizeof(INPUT));
+    }
+
+    // Cancel gliding without performing the final click (Escape handling)
+    void CancelGliding()
+    {
+        int state = m_glideState.load();
+        if (state == 0)
+        {
+            return; // nothing to cancel
+        }
+        StopXTimer();
+        StopYTimer();
+        m_glideState = 0;
+        InclusiveCrosshairsEnsureOff();
+        InclusiveCrosshairsSetExternalControl(false);
+        if (auto s = m_state)
+        {
+            s->xFraction = 0.0;
+            s->yFraction = 0.0;
+        }
+        Logger::debug("Gliding cursor cancelled via Escape key");
     }
 
     // Stateless helpers operating on shared State
@@ -460,6 +492,49 @@ private:
             s->yFraction = 0.0;
             break;
         }
+        }
+    }
+
+    // Low-level keyboard hook procedures
+    static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+    {
+        if (nCode == HC_ACTION)
+        {
+            const KBDLLHOOKSTRUCT* kb = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+            if (kb && kb->vkCode == VK_ESCAPE && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
+            {
+                if (auto inst = g_instance.load(std::memory_order_acquire))
+                {
+                    if (inst->m_enabled && inst->m_glideState.load() != 0)
+                    {
+                        inst->CancelGliding();
+                        // Do not swallow Escape; pass it through
+                    }
+                }
+            }
+        }
+        return CallNextHookEx(nullptr, nCode, wParam, lParam);
+    }
+
+    void InstallKeyboardHook()
+    {
+        if (m_keyboardHook)
+        {
+            return; // already installed
+        }
+        m_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, m_hModule, 0);
+        if (!m_keyboardHook)
+        {
+            Logger::error("Failed to install low-level keyboard hook for MousePointerCrosshairs (Escape cancel). GetLastError={}.", GetLastError());
+        }
+    }
+
+    void UninstallKeyboardHook()
+    {
+        if (m_keyboardHook)
+        {
+            UnhookWindowsHookEx(m_keyboardHook);
+            m_keyboardHook = nullptr;
         }
     }
 
