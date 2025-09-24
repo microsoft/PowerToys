@@ -2691,8 +2691,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="WarningShortcutConflict.Title" xml:space="preserve">
     <value>Shortcut conflict</value>
   </data>
-  <data name="WarningPotentialShortcutConflict.Message" xml:space="preserve">
+  <data name="WarningPotentialShortcutConflict.Title" xml:space="preserve">
     <value>Potential shortcut conflict</value>
+  </data>
+  <data name="WarningPotentialShortcutConflict.Message" xml:space="preserve">
+    <value>This shortcut has a conflict, but the warning is ignored.</value>
   </data>
   <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
     <value>A conflict has been detected for this shortcut.</value>
