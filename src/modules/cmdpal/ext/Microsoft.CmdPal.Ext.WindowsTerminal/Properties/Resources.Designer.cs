@@ -160,6 +160,60 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Profiles order.
+        /// </summary>
+        internal static string profile_sort_order {
+            get {
+                return ResourceManager.GetString("profile_sort_order", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profiles order.
+        /// </summary>
+        internal static string profile_sort_order_description {
+            get {
+                return ResourceManager.GetString("profile_sort_order_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alphabetical.
+        /// </summary>
+        internal static string profile_sort_order_item_alphabetical {
+            get {
+                return ResourceManager.GetString("profile_sort_order_item_alphabetical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to As defined in Terminal.
+        /// </summary>
+        internal static string profile_sort_order_item_as_in_terminal {
+            get {
+                return ResourceManager.GetString("profile_sort_order_item_as_in_terminal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default (alphabetical).
+        /// </summary>
+        internal static string profile_sort_order_item_default {
+            get {
+                return ResourceManager.GetString("profile_sort_order_item_default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Most recently used.
+        /// </summary>
+        internal static string profile_sort_order_item_mru {
+            get {
+                return ResourceManager.GetString("profile_sort_order_item_mru", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows Terminal Profiles.
         /// </summary>
         internal static string profiles_list_page_name {

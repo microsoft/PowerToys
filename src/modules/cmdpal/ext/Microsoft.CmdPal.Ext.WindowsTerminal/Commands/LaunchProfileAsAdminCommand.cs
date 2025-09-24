@@ -20,13 +20,15 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
     private readonly string _profile;
     private readonly bool _openNewTab;
     private readonly bool _openQuake;
+    private readonly AppSettingsManager _appSettingsManager;
 
-    internal LaunchProfileAsAdminCommand(string id, string profile, bool openNewTab, bool openQuake)
+    internal LaunchProfileAsAdminCommand(string id, string profile, bool openNewTab, bool openQuake, AppSettingsManager appSettingsManager)
     {
         this._id = id;
         this._profile = profile;
         this._openNewTab = openNewTab;
         this._openQuake = openQuake;
+        this._appSettingsManager = appSettingsManager;
 
         this.Name = Resources.launch_profile_as_admin;
         this.Icon = Icons.AdminIcon;
@@ -58,6 +60,17 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
             //Log.Exception("Failed to open Windows Terminal", ex, GetType());
             //_context.API.ShowMsg(name, message, string.Empty);
             Logger.LogError($"Failed to open Windows Terminal: {ex.Message}");
+        }
+
+        try
+        {
+            _appSettingsManager.Current.AddRecentlyUsedProfile(id, profile);
+            _appSettingsManager.Save();
+        }
+        catch (Exception ex)
+        {
+            // We don't want to fail the whole operation if we can't save the recently used profile
+            Logger.LogError($"Failed to save recently used profile: {ex.Message}");
         }
     }
 #pragma warning restore IDE0059, CS0168, SA1005

@@ -50,6 +50,9 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    default: true
   - name: runTests
     type: boolean
     default: true
@@ -154,6 +157,11 @@ jobs:
         $MSBuildCacheParameters += " -reportfileaccesses"
         $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
         $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(LogOutputDirectory)\MSBuildCacheLogs"
+        # Cache read-only policy controlled by parameter
+        $cacheIsReadOnly = "${{ parameters.msBuildCacheIsReadOnly }}"
+        if ($cacheIsReadOnly -eq "True") {
+          $MSBuildCacheParameters += " /p:MSBuildCacheRemoteCacheIsReadOnly=true"
+        }
         Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
         Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
       displayName: Prepare MSBuildCache variables
