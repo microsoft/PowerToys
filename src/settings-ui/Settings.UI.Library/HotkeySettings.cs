@@ -58,6 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HasConflict = false;
         }
 
+        [JsonPropertyName("ignoreConflict")]
         public bool IgnoreConflict
         {
             get => _ignoreConflict;
@@ -74,7 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonIgnore]
         public bool HasConflict
         {
-            get => !_ignoreConflict && _hasConflict;
+            get => _hasConflict;
             set
             {
                 if (_hasConflict != value)

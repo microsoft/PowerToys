@@ -272,7 +272,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <FontIcon FontSize="12" Glyph="&#xE894;" />
                     <TextBlock
-                        x:Uid="Shortcut_Clear.Text"
+                        x:Uid="Shortcut_Clear"
                         Margin="0,-1,0,0"
                         VerticalAlignment="Center"
                         FontSize="12" />
@@ -301,13 +301,26 @@
                 x:Uid="WarningShortcutConflict"
                 BorderThickness="0"
                 IsClosable="False"
-                IsOpen="True"
+                IsOpen="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
                 IsTabStop="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
                 Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
                 Severity="Warning"
                 Style="{StaticResource CondensedInfoBarStyle}">
+            </InfoBar>
+            <InfoBar
+                x:Uid="WarningPotentialShortcutConflict"
+                BorderThickness="0"
+                IsClosable="False"
+                IsOpen="{Binding ElementName=ShortcutContentControl, Path=ShouldShowPotentialConflict, Mode=OneWay}"
+                IsTabStop="{Binding ElementName=ShortcutContentControl, Path=ShouldShowPotentialConflict, Mode=OneWay}"
+                Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
+                Severity="Warning"
+                Style="{StaticResource CondensedInfoBarStyle}">
                 <InfoBar.ActionButton>
-                    <HyperlinkButton x:Uid="Shortcut_Conflict_LearnMore" Padding="0" />
+                    <HyperlinkButton
+                        x:Uid="Shortcut_Conflict_LearnMore"
+                        Padding="0"
+                        Click="LearnMoreBtn_Click" />
                 </InfoBar.ActionButton>
             </InfoBar>
         </Grid>

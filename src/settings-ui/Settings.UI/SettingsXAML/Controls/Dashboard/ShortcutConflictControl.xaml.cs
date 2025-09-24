@@ -47,12 +47,24 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 int count = 0;
                 if (AllHotkeyConflictsData.InAppConflicts != null)
                 {
-                    count += AllHotkeyConflictsData.InAppConflicts.Count;
+                    foreach (var inAppConflict in AllHotkeyConflictsData.InAppConflicts)
+                    {
+                        if (!inAppConflict.ConflictIgnored)
+                        {
+                            count++;
+                        }
+                    }
                 }
 
                 if (AllHotkeyConflictsData.SystemConflicts != null)
                 {
-                    count += AllHotkeyConflictsData.SystemConflicts.Count;
+                    foreach (var systemConflict in AllHotkeyConflictsData.SystemConflicts)
+                    {
+                        if (!systemConflict.ConflictIgnored)
+                        {
+                            count++;
+                        }
+                    }
                 }
 
                 return count;

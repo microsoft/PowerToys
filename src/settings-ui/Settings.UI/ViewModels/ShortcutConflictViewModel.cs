@@ -12,12 +12,10 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using System.Windows;
 using System.Windows.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -341,6 +339,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         var hotkey = module.HotkeySettings with { IgnoreConflict = isIgnored };
                         hotkeyAccessor.Value = hotkey;
                         module.HotkeySettings = hotkey;
+                        SaveSettingsToFile(settings);
                     }
 
                     module.HotkeySettings.ConflictDescription = isSystemConflict
@@ -418,47 +417,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private void SaveModuleSettingsAndNotify(string moduleName)
-        {
-            try
-            {
-                var settings = GetModuleSettings(moduleName);
-
-                if (settings is ISettingsConfig settingsConfig)
-                {
-                    // No need to save settings here, the runner will call module interface to save it
-                    // SaveSettingsToFile(settings);
-
-                    // Send IPC notification using the same format as other ViewModels
-                    SendConfigMSG(settingsConfig, moduleName);
-
-                    System.Diagnostics.Debug.WriteLine($"Saved settings and sent IPC notification for module: {moduleName}");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error saving settings and notifying for {moduleName}: {ex.Message}");
-            }
-        }
-
         private void SaveSettingsToFile(IHotkeyConfig settings)
         {
             try
             {
-                // Get the repository for this settings type using reflection
-                var settingsType = settings.GetType();
-                var repositoryMethod = typeof(SettingsFactory).GetMethod("GetRepository");
-                if (repositoryMethod != null)
+                if (settings is ISettingsConfig settingsConfig)
                 {
-                    var genericMethod = repositoryMethod.MakeGenericMethod(settingsType);
-                    var repository = genericMethod.Invoke(_settingsFactory, null);
-
-                    if (repository != null)
-                    {
-                        var saveMethod = repository.GetType().GetMethod("SaveSettingsToFile");
-                        saveMethod?.Invoke(repository, null);
-                        System.Diagnostics.Debug.WriteLine($"Saved settings to file for type: {settingsType.Name}");
-                    }
+                    // Use the SettingsUtils to save the settings
+                    _settingsUtils.SaveSettings(settingsConfig.ToJsonString(), settingsConfig.GetModuleName());
                 }
             }
             catch (Exception ex)

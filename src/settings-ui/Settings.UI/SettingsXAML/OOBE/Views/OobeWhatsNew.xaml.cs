@@ -18,7 +18,9 @@ using CommunityToolkit.WinUI.UI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -32,11 +34,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
     public sealed partial class OobeWhatsNew : Page, INotifyPropertyChanged
     {
+        private readonly ISettingsRepository<ShortcutConflictSettings> _shortcutConflictRepository;
+        private readonly ISettingsUtils _settingsUtils;
+
         public OobePowerToysModule ViewModel { get; set; }
 
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
 
         public bool ShowDataDiagnosticsInfoBar => GetShowDataDiagnosticsInfoBar();
+
+        private int _conflictCount;
 
         public AllHotkeyConflictsData AllHotkeyConflictsData
         {
@@ -46,34 +53,52 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 if (_allHotkeyConflictsData != value)
                 {
                     _allHotkeyConflictsData = value;
+
+                    UpdateConflictCount();
+
                     OnPropertyChanged(nameof(AllHotkeyConflictsData));
                     OnPropertyChanged(nameof(HasConflicts));
                 }
             }
         }
 
-        public bool HasConflicts
+        public bool HasConflicts => _conflictCount > 0;
+
+        private void UpdateConflictCount()
         {
-            get
+            int count = 0;
+            if (AllHotkeyConflictsData == null)
             {
-                if (AllHotkeyConflictsData == null)
-                {
-                    return false;
-                }
-
-                int count = 0;
-                if (AllHotkeyConflictsData.InAppConflicts != null)
-                {
-                    count += AllHotkeyConflictsData.InAppConflicts.Count;
-                }
-
-                if (AllHotkeyConflictsData.SystemConflicts != null)
-                {
-                    count += AllHotkeyConflictsData.SystemConflicts.Count;
-                }
-
-                return count > 0;
+                _conflictCount = count;
             }
+
+            if (AllHotkeyConflictsData.InAppConflicts != null)
+            {
+                foreach (var inAppConflict in AllHotkeyConflictsData.InAppConflicts)
+                {
+                    var hotkey = inAppConflict.Hotkey;
+                    var hotkeySettings = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    if (!IsShortcutIgnored(hotkeySettings))
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            if (AllHotkeyConflictsData.SystemConflicts != null)
+            {
+                foreach (var systemConflict in AllHotkeyConflictsData.SystemConflicts)
+                {
+                    var hotkey = systemConflict.Hotkey;
+                    var hotkeySettings = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    if (!IsShortcutIgnored(hotkeySettings))
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            _conflictCount = count;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -87,12 +112,48 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
             DataContext = this;
 
+            _settingsUtils = new SettingsUtils();
+            _shortcutConflictRepository = SettingsRepository<ShortcutConflictSettings>.GetInstance(_settingsUtils);
+
             // Subscribe to hotkey conflict updates
             if (GlobalHotkeyConflictManager.Instance != null)
             {
                 GlobalHotkeyConflictManager.Instance.ConflictsUpdated += OnConflictsUpdated;
                 GlobalHotkeyConflictManager.Instance.RequestAllConflicts();
             }
+        }
+
+        public bool IsShortcutIgnored(HotkeySettings hotkeySettings)
+        {
+            if (hotkeySettings == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                var settings = _shortcutConflictRepository.SettingsConfig;
+                return settings.Properties.IgnoredShortcuts
+                    .Any(h => HotkeySettingsEqual(h, hotkeySettings));
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool HotkeySettingsEqual(HotkeySettings hotkey1, HotkeySettings hotkey2)
+        {
+            if (hotkey1 == null || hotkey2 == null)
+            {
+                return false;
+            }
+
+            return hotkey1.Win == hotkey2.Win &&
+                   hotkey1.Ctrl == hotkey2.Ctrl &&
+                   hotkey1.Alt == hotkey2.Alt &&
+                   hotkey1.Shift == hotkey2.Shift &&
+                   hotkey1.Code == hotkey2.Code;
         }
 
         private void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)

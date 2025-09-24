@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
 using Microsoft.PowerToys.Settings.UI.Services;
+using Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
@@ -51,6 +52,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
         public static readonly DependencyProperty HasConflictProperty = DependencyProperty.Register("HasConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnHasConflictChanged));
         public static readonly DependencyProperty TooltipProperty = DependencyProperty.Register("Tooltip", typeof(string), typeof(ShortcutControl), new PropertyMetadata(null, OnTooltipChanged));
+        public static readonly DependencyProperty KeyVisualShouldShowConflictProperty = DependencyProperty.Register("KeyVisualShouldShowConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false));
+        public static readonly DependencyProperty IgnoreConflictProperty = DependencyProperty.Register("IgnoreConflict", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false));
 
         // Dependency property to track the source/context of the ShortcutControl
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(ShortcutControlSource), typeof(ShortcutControl), new PropertyMetadata(ShortcutControlSource.SettingsPage));
@@ -161,6 +164,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             set => SetValue(TooltipProperty, value);
         }
 
+        public bool KeyVisualShouldShowConflict
+        {
+            get => (bool)GetValue(KeyVisualShouldShowConflictProperty);
+            set => SetValue(KeyVisualShouldShowConflictProperty, value);
+        }
+
+        public bool IgnoreConflict
+        {
+            get => (bool)GetValue(IgnoreConflictProperty);
+            set => SetValue(IgnoreConflictProperty, value);
+        }
+
         public ShortcutControlSource Source
         {
             get => (ShortcutControlSource)GetValue(SourceProperty);
@@ -241,6 +256,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 // Update the ShortcutControl's conflict properties from HotkeySettings
                 HasConflict = hotkeySettings.HasConflict;
                 Tooltip = hotkeySettings.HasConflict ? hotkeySettings.ConflictDescription : null;
+                IgnoreConflict = hotkeySettings.IgnoreConflict;
+                KeyVisualShouldShowConflict = !IgnoreConflict && HasConflict;
             }
             else
             {
@@ -257,9 +274,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.Unloaded += ShortcutControl_Unloaded;
             this.Loaded += ShortcutControl_Loaded;
 
-            c.IgnoreConflictChanged += OnDialogIgnoreConflictChanged;
             c.ResetClick += C_ResetClick;
             c.ClearClick += C_ClearClick;
+            c.LearnMoreClick += C_LearnMoreClick;
 
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
@@ -278,19 +295,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             OnAllowDisableChanged(this, null);
         }
 
-        private void OnDialogIgnoreConflictChanged(object sender, bool newValue)
+        private void C_LearnMoreClick(object sender, RoutedEventArgs e)
         {
-            if (hotkeySettings != null)
-            {
-                HotkeySettings = hotkeySettings with { IgnoreConflict = c.IgnoreConflict };
+            // Close the current shortcut dialog
+            shortcutDialog.Hide();
 
-                if (lastValidSettings != null)
-                {
-                    c.Keys = lastValidSettings.GetKeysList();
-                }
-
-                UpdateConflictStatusFromHotkeySettings();
-            }
+            // Create and show the ShortcutConflictWindow
+            var conflictWindow = new ShortcutConflictWindow();
+            conflictWindow.Activate();
         }
 
         private void UpdateKeyVisualStyles()
@@ -322,7 +334,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             shortcutDialog.Opened -= ShortcutDialog_Opened;
             shortcutDialog.Closing -= ShortcutDialog_Closing;
 
-            c.IgnoreConflictChanged -= OnDialogIgnoreConflictChanged;
+            c.LearnMoreClick -= C_LearnMoreClick;
 
             if (App.GetSettingsWindow() != null)
             {
@@ -693,7 +705,16 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void C_ClearClick(object sender, RoutedEventArgs e)
         {
-            // TO DO: Add clear event code here
+            hotkeySettings = new HotkeySettings();
+
+            SetValue(HotkeySettingsProperty, hotkeySettings);
+            SetKeys();
+
+            lastValidSettings = hotkeySettings;
+            shortcutDialog.Hide();
+
+            // Send RequestAllConflicts IPC to update the UI after changed hotkey settings.
+            GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 
         private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -708,8 +729,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 {
                     lastValidSettings = lastValidSettings with { HasConflict = false };
                 }
-
-                lastValidSettings = lastValidSettings with { IgnoreConflict = c.IgnoreConflict };
 
                 HotkeySettings = lastValidSettings;
             }
