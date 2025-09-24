@@ -4,7 +4,7 @@
 trigger: none
 pr: none
 
-# 02:00 SGT daily (18:00 UTC previous day) — adjust as you like
+# (18:00 UTC) — adjust as you like
 schedules:
   - cron: "0 18 * * *"   # UTC
     displayName: Nightly pre-warm (main)
