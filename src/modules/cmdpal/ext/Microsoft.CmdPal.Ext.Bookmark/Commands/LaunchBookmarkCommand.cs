@@ -87,7 +87,14 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
             foreach (var (key, value) in _placeholders)
             {
                 var placeholderString = $"{{{key}}}";
-                result = result.Replace(placeholderString, value, StringComparison.OrdinalIgnoreCase);
+
+                var encodedValue = value;
+                if (_classification.Kind is CommandKind.Protocol or CommandKind.WebUrl)
+                {
+                    encodedValue = Uri.EscapeDataString(value);
+                }
+
+                result = result.Replace(placeholderString, encodedValue, StringComparison.OrdinalIgnoreCase);
             }
         }
 

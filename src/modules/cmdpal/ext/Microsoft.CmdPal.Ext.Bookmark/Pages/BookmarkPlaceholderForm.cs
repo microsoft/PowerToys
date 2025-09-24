@@ -81,6 +81,11 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
             return CommandResult.GoHome();
         }
 
+        // we need to classify this twice:
+        // first we need to know if the original bookmark is a URL or protocol, because that determines how we encode the placeholders
+        // then we need to classify the final target to be sure the classification didn't change by adding the placeholders
+        var placeholderClassification = _commandResolver.ClassifyOrUnknown(_bookmarkData.Bookmark);
+
         var placeholders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var (key, value) in formObject)
         {
@@ -88,19 +93,25 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
             placeholders[key] = placeholderData ?? string.Empty;
         }
 
-        var target = ReplacePlaceholders(_bookmarkData.Bookmark, placeholders);
+        var target = ReplacePlaceholders(_bookmarkData.Bookmark, placeholders, placeholderClassification);
         var classification = _commandResolver.ClassifyOrUnknown(target);
         var success = CommandLauncher.Launch(classification);
         return success ? CommandResult.Dismiss() : CommandResult.KeepOpen();
     }
 
-    private static string ReplacePlaceholders(string input, Dictionary<string, string> placeholders)
+    private static string ReplacePlaceholders(string input, Dictionary<string, string> placeholders, Classification classification)
     {
         var result = input;
         foreach (var (key, value) in placeholders)
         {
             var placeholderString = $"{{{key}}}";
-            result = result.Replace(placeholderString, value, StringComparison.OrdinalIgnoreCase);
+            var encodedValue = value;
+            if (classification.Kind is CommandKind.Protocol or CommandKind.WebUrl)
+            {
+                encodedValue = Uri.EscapeDataString(value);
+            }
+
+            result = result.Replace(placeholderString, encodedValue, StringComparison.OrdinalIgnoreCase);
         }
 
         return result;
