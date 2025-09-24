@@ -24,6 +24,7 @@
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
 
   <PropertyGroup>
