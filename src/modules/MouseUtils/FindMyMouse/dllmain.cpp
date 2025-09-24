@@ -204,6 +204,22 @@ void FindMyMouse::init_settings()
     }
 }
 
+inline static uint8_t LegacyOpacityToAlpha(int overlayOpacityPercent)
+{
+    if (overlayOpacityPercent < 0)
+    {
+        return 255; // fallback: fully opaque
+    }
+
+    if (overlayOpacityPercent > 100)
+    {
+        overlayOpacityPercent = 100;
+    }
+
+    // Round to nearest integer (0–255)
+    return static_cast<uint8_t>((overlayOpacityPercent * 255 + 50) / 100);
+}
+
 void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
 {
     auto settingsObject = settings.get_raw_json();
@@ -287,6 +303,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else if (checkValidRGB(backgroundColorStr, &r, &g, &b))
             {
+                a = LegacyOpacityToAlpha(legacyOverlayOpacity);
                 parsed = true; // Old schema (no alpha component)
             }
             if (parsed)
@@ -315,6 +332,7 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
             }
             else if (checkValidRGB(spotlightColorStr, &r, &g, &b))
             {
+                a = LegacyOpacityToAlpha(legacyOverlayOpacity);
                 parsed = true;
             }
             if (parsed)
@@ -329,20 +347,6 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         catch (...)
         {
             Logger::warn("Failed to initialize spotlight color from settings. Will use default value");
-        }
-        if (legacyOverlayOpacity >= 0)
-        {
-            uint8_t alpha = static_cast<uint8_t>((legacyOverlayOpacity * 255 + 50) / 100);
-            auto applyLegacy = [alpha](winrt::Windows::UI::Color c, bool hadExplicitAlpha) {
-                // Only apply legacy opacity if the original color did NOT specify an explicit alpha.
-                if (!hadExplicitAlpha)
-                {
-                    return winrt::Windows::UI::ColorHelper::FromArgb(alpha, c.R, c.G, c.B);
-                }
-                return c;
-            };
-            findMyMouseSettings.backgroundColor = applyLegacy(findMyMouseSettings.backgroundColor, backgroundColorHadExplicitAlpha);
-            findMyMouseSettings.spotlightColor = applyLegacy(findMyMouseSettings.spotlightColor, spotlightColorHadExplicitAlpha);
         }
         try
         {
