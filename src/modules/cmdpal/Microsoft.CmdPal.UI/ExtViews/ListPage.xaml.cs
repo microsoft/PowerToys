@@ -19,7 +19,6 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
-using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -299,13 +298,13 @@ public sealed partial class ListPage : Page,
     public void Receive(NavigatePageDownCommand message)
     {
         var scroll = FindScrollViewer(ItemView);
-        if ( scroll is null )
+        if (scroll is null)
         {
             return;
         }
 
         var viewportHeight = scroll.ViewportHeight;
-        if ( viewportHeight <= 0 )
+        if (viewportHeight <= 0)
         {
             return;
         }
@@ -315,16 +314,16 @@ public sealed partial class ListPage : Page,
 
         // Estimate items per page using the first available container height
         double itemHeight = 0;
-        for ( var i = currentIndex; i < itemCount; i++ )
+        for (var i = currentIndex; i < itemCount; i++)
         {
-            if ( ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c )
+            if (ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c)
             {
                 itemHeight = c.ActualHeight;
                 break;
             }
         }
 
-        if ( itemHeight <= 0 )
+        if (itemHeight <= 0)
         {
             // fallback to 1 item if we can't measure
             itemHeight = 1;
@@ -333,7 +332,7 @@ public sealed partial class ListPage : Page,
         var itemsPerPage = Math.Max(1, (int)Math.Floor(viewportHeight / itemHeight));
         var targetIndex = Math.Min(itemCount - 1, currentIndex + itemsPerPage);
 
-        if ( targetIndex != currentIndex )
+        if (targetIndex != currentIndex)
         {
             ItemView.SelectedIndex = targetIndex;
             ItemView.ScrollIntoView(ItemView.SelectedItem);
@@ -343,13 +342,13 @@ public sealed partial class ListPage : Page,
     public void Receive(NavigatePageUpCommand message)
     {
         var scroll = FindScrollViewer(ItemView);
-        if ( scroll is null )
+        if (scroll is null)
         {
             return;
         }
 
         var viewportHeight = scroll.ViewportHeight;
-        if ( viewportHeight <= 0 )
+        if (viewportHeight <= 0)
         {
             return;
         }
@@ -357,16 +356,16 @@ public sealed partial class ListPage : Page,
         var currentIndex = ItemView.SelectedIndex >= 0 ? ItemView.SelectedIndex : 0;
 
         double itemHeight = 0;
-        for ( var i = currentIndex; i >= 0; i-- )
+        for (var i = currentIndex; i >= 0; i--)
         {
-            if ( ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c )
+            if (ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c)
             {
                 itemHeight = c.ActualHeight;
                 break;
             }
         }
 
-        if ( itemHeight <= 0 )
+        if (itemHeight <= 0)
         {
             itemHeight = 1;
         }
@@ -374,7 +373,7 @@ public sealed partial class ListPage : Page,
         var itemsPerPage = Math.Max(1, (int)Math.Floor(viewportHeight / itemHeight));
         var targetIndex = Math.Max(0, currentIndex - itemsPerPage);
 
-        if ( targetIndex != currentIndex )
+        if (targetIndex != currentIndex)
         {
             ItemView.SelectedIndex = targetIndex;
             ItemView.ScrollIntoView(ItemView.SelectedItem);
