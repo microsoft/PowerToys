@@ -126,6 +126,16 @@ public sealed partial class MainWindow : WindowEx,
 
         // Force window to be created, and then cloaked. This will offset initial animation when the window is shown.
         HideWindow();
+
+        ApplyWindowStyle();
+    }
+
+    private void ApplyWindowStyle()
+    {
+        // Tool windows don't show up in ALT+TAB, and don't show up in the taskbar
+        // Since tool windows have smaller corner radii, we need to force the normal ones
+        this.ToggleExtendedWindowStyle(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW, !Debugger.IsAttached);
+        this.SetCornerPreference(DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND);
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -173,8 +183,6 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
-
-        this.SetVisibilityInSwitchers(Debugger.IsAttached);
     }
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
@@ -251,6 +259,13 @@ public sealed partial class MainWindow : WindowEx,
 
         var display = GetScreen(hwnd, target);
         PositionCentered(display);
+
+        // Check if the debugger is attached. If it is, we don't want to apply the tool window style,
+        // because that would make it hard to debug the app
+        if (Debugger.IsAttached)
+        {
+            ApplyWindowStyle();
+        }
 
         // Just to be sure, SHOW our hwnd.
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
