@@ -24,12 +24,17 @@
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
 
   <PropertyGroup>
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
     <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
+  </PropertyGroup>
+
+  <PropertyGroup>
+      <WindowsSdkDir Condition="'$(WindowsSdkDir)'==''">C:\Program Files (x86)\Windows Kits\10\</WindowsSdkDir>
+      <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+      <ManifestTool>$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
