@@ -7,4 +7,6 @@ namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 /// <summary>
 /// Used to navigate up one page in the page when pressing the PageUp key in the SearchBox.
 /// </summary>
-public record NavigatePageUpCommand { }
+public record NavigatePageUpCommand
+{
+}
