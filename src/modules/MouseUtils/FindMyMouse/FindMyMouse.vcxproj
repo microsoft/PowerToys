@@ -18,7 +18,7 @@
     <CppWinRTEnableComponentProjection>false</CppWinRTEnableComponentProjection>
     <CppWinRTGenerateWindowsMetadata>false</CppWinRTGenerateWindowsMetadata>
     <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
-    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <WindowsAppSDKVerifyTransitiveDependencies>false</WindowsAppSDKVerifyTransitiveDependencies>
     <!-- Force NuGet to treat this project strictly as packages.config style -->
     <RestoreProjectStyle>packages.config</RestoreProjectStyle>
