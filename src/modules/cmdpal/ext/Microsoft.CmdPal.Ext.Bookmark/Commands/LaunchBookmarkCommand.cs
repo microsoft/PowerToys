@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
@@ -12,6 +14,8 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Commands;
 
 internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokableCommand, IDisposable
 {
+    private static readonly CompositeFormat FailedToOpenMessageFormat = CompositeFormat.Parse(Resources.bookmark_toast_failed_open_text!);
+
     private readonly BookmarkData _bookmarkData;
     private readonly Dictionary<string, string>? _placeholders;
     private readonly IBookmarkResolver _bookmarkResolver;
@@ -61,8 +65,18 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
     {
         var bookmarkAddress = ReplacePlaceholders(_bookmarkData.Bookmark);
         var classification = _bookmarkResolver.ClassifyOrUnknown(bookmarkAddress);
+
         var success = CommandLauncher.Launch(classification);
-        return success ? CommandResult.Dismiss() : CommandResult.KeepOpen();
+
+        return success
+            ? CommandResult.Dismiss()
+            : CommandResult.ShowToast(new ToastArgs
+            {
+                Message = !string.IsNullOrWhiteSpace(_bookmarkData.Name)
+                    ? string.Format(CultureInfo.CurrentCulture, FailedToOpenMessageFormat, _bookmarkData.Name + ": " + bookmarkAddress)
+                    : string.Format(CultureInfo.CurrentCulture, FailedToOpenMessageFormat, bookmarkAddress),
+                Result = CommandResult.KeepOpen(),
+            });
     }
 
     private string ReplacePlaceholders(string input)

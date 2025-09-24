@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to open {0}.
+        /// </summary>
+        public static string bookmark_toast_failed_open_text {
+            get {
+                return ResourceManager.GetString("bookmark_toast_failed_open_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add bookmark.
         /// </summary>
         public static string bookmarks_add_name {

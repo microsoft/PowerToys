@@ -182,4 +182,7 @@
   <data name="bookmarks_unpin_name" xml:space="preserve">
     <value>Unpin</value>
   </data>
+  <data name="bookmark_toast_failed_open_text" xml:space="preserve">
+    <value>Failed to open {0}</value>
+  </data>
 </root>
