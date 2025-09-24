@@ -326,11 +326,6 @@
                         x:Name="FiltersDropDown"
                         HorizontalAlignment="Right"
                         CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
-                    <Grid.Transitions>
-                        <TransitionCollection>
-                            <RepositionThemeTransition />
-                        </TransitionCollection>
-                    </Grid.Transitions>
                 </Grid>
             </Grid>
 
