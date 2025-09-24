@@ -26,15 +26,26 @@
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="helpers:ReleaseNotesItem">
                     <StackPanel Padding="12" Spacing="4">
-                        <TextBlock FontWeight="SemiBold" Text="{x:Bind Title}" />
+                        <TextBlock FontWeight="SemiBold">
+                            <Run Text="Version" />
+                            <Run Text="{x:Bind Title}" />
+                        </TextBlock>
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind PublishedDate}" />
+                            Text="{x:Bind PublishedDate, Converter={StaticResource DateTimeOffsetToStringConverter}}" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Frame x:Name="ContentFrame" Grid.Column="1" />
+        <Grid
+            Grid.Column="1"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8,0,0,0">
+            <Frame x:Name="ContentFrame" />
+        </Grid>
+
     </Grid>
 </Page>
