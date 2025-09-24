@@ -30,12 +30,6 @@
     <_PropertySheetDisplayName>PowerToys.Root.Props</_PropertySheetDisplayName>
     <ForceImportBeforeCppProps>$(MsbuildThisFileDirectory)\Cpp.Build.props</ForceImportBeforeCppProps>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
-    <ManifestTool Condition="'$(WindowsSdkDir)' != '' and Exists('$(WindowsSdkDir)bin\\x64\\mt.exe')">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
-  </PropertyGroup>
-
   <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <PackageReference Include="StyleCop.Analyzers">
       <PrivateAssets>all</PrivateAssets>

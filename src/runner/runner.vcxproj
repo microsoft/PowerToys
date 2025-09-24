@@ -41,6 +41,10 @@
   <PropertyGroup>
     <TargetName>PowerToys</TargetName>
   </PropertyGroup>
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <ManifestTool Condition="'$(WindowsSdkDir)' != '' and Exists('$(WindowsSdkDir)bin\\x64\\mt.exe')">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>..\common\inc;..\common\os-detection;..\common\Telemetry;..;..\modules;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
