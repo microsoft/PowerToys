@@ -1,0 +1,33 @@
+# .pipelines/v2/nightly-prewarm.yml
+# Nightly pre-warm that reuses your existing ci.yml as-is
+
+trigger: none
+pr: none
+
+# 02:00 SGT daily (18:00 UTC previous day) — adjust as you like
+schedules:
+  - cron: "0 18 * * *"   # UTC
+    displayName: Nightly pre-warm (main)
+    branches:
+      include:
+        - main
+    always: true
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+parameters:
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - arm64
+  - name: enableMsBuildCaching
+    type: boolean
+    displayName: "Enable MSBuild Caching"
+    default: true
+
+extends:
+  template: templates/pipeline-ci-build.yml
+  parameters:
+    buildPlatforms: ${{ parameters.buildPlatforms }}
+    enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}

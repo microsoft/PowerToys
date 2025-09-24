@@ -154,6 +154,17 @@ jobs:
         $MSBuildCacheParameters += " -reportfileaccesses"
         $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
         $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(LogOutputDirectory)\MSBuildCacheLogs"
+        # Branch-based cache policy:
+        # Always use a stable universe name (main). Make non-main branches read-only so they don't poison cache.
+        $sourceBranch = "$env:BUILD_SOURCEBRANCH"  # e.g. refs/heads/main or refs/pull/123/merge
+        $isMain = $false
+        if ($sourceBranch -match "refs/heads/main$") { $isMain = $true }
+        if ($isMain) {
+          $MSBuildCacheParameters += " /p:MSBuildCacheRemoteCacheIsReadOnly=false"
+        }
+        else {
+          $MSBuildCacheParameters += " /p:MSBuildCacheRemoteCacheIsReadOnly=true"
+        }
         Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
         Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
       displayName: Prepare MSBuildCache variables
@@ -418,7 +429,7 @@ jobs:
       }
       
       if ($Packages.Count -gt 0) {
-          # Priority: Look for platform-specific MSIX (x64/arm64) first, then fall back to any
+          # Priority: Look for platform-specific MSIX (x64/arm64) first, then fallback to any
           $PlatformPackage = $Packages | Where-Object { $_.Name -match "Microsoft\.CmdPal\.UI_.*_(x64|arm64)\.msix$" } | Select-Object -First 1
           if ($PlatformPackage) {
               $Package = $PlatformPackage
