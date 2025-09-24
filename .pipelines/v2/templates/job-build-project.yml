@@ -240,9 +240,7 @@ jobs:
       parameters:
         directory: $(build.sourcesdirectory)\src\modules\cmdpal
 
-  - pwsh: |-
-      & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
-    displayName: Download and install WiX 3.14 development build
+
 
   - ${{ parameters.beforeBuildSteps }}
 
@@ -491,20 +489,7 @@ jobs:
       Copy-Item -Verbose -Force "$(CmdPalPackagePath)" "$(JobOutputDirectory)"
     displayName: Stage the final CmdPal package
 
-  - template: steps-build-installer.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
-  - template: steps-build-installer.yml
-    parameters:
-      codeSign: ${{ parameters.codeSign }}
-      signingIdentity: ${{ parameters.signingIdentity }}
-      versionNumber: ${{ parameters.versionNumber }}
-      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
-      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
   - template: steps-build-installer-vnext.yml
     parameters:

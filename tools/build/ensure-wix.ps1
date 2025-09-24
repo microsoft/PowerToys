@@ -1,18 +1,23 @@
 <#
 .SYNOPSIS
-    Ensure WiX Toolset 3.14 (build 3141) is installed and ready to use.
+    [DEPRECATED] Ensure WiX Toolset 3.14 (build 3141) is installed and ready to use.
 
 .DESCRIPTION
-    - Skips installation if the toolset is already installed (unless -Force is used).
-    - Otherwise downloads the official installer and binaries, verifies SHA-256, installs silently,
-      and copies wix.targets into the installation directory.
+    This script is deprecated as PowerToys has migrated to WiX v5.
+    WiX v3 is no longer used for building PowerToys installers as of release 0.94.
+    This script is kept as a no-op to avoid breaking any existing local workflows.
+    
+    For WiX v5 tools, they are automatically installed via: dotnet tool install --global wix --version 5.0.2
+
 .PARAMETER Force
-    Forces reinstallation even if the toolset is already detected.
+    [Deprecated] Previously forced reinstallation even if the toolset was already detected.
+
 .PARAMETER InstallDir
-    The target installation path. Default is 'C:\Program Files (x86)\WiX Toolset v3.14'.
+    [Deprecated] Previously specified the target installation path.
+
 .EXAMPLE
-    .\EnsureWix.ps1          # Ensure WiX is installed
-    .\EnsureWix.ps1 -Force   # Force reinstall
+    .\EnsureWix.ps1          # Displays deprecation warning
+    .\EnsureWix.ps1 -Force   # Displays deprecation warning
 #>
 [CmdletBinding()]
 param(
@@ -21,6 +26,14 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+Write-Warning "ensure-wix.ps1 is deprecated. PowerToys now uses WiX v5 exclusively."
+Write-Host "WiX v5 tools are automatically installed during the build process."
+Write-Host "If you need WiX tools locally, use: dotnet tool install --global wix --version 5.0.2"
+return
+
+# Legacy WiX v3 installation code (disabled)
+<#
 $ProgressPreference    = 'SilentlyContinue'
 
 # Download URLs and expected SHA-256 hashes
@@ -69,3 +82,4 @@ Copy-Item -Path (Join-Path $expandDir 'wix.targets') `
           -Destination (Join-Path $InstallDir  'wix.targets') -Force
 
 Write-Host "WiX Toolset has been successfully installed at: $InstallDir"
+#>

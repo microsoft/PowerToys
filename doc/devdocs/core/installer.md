@@ -1,6 +1,6 @@
 # PowerToys Installer
 
-## Installer Architecture (WiX 3/ WiX 5)
+## Installer Architecture (WiX 5)
 
 - Uses a bootstrapper to check dependencies and close PowerToys
 - MSI defined in product.wxs
@@ -22,7 +22,7 @@
 
 ### MSI Installer Build Process
 
-- First builds `PowerToysSetupCustomActions` DLL and signs it, for WiX5 project, installer will build `PowerToysSetupCustomActionsVNext` DLL.
+- First builds `PowerToysSetupCustomActionsVNext` DLL and signs it
 - Then builds the installer without cleaning, to reuse the signed DLL
 - Uses PowerShell scripts to modify .wxs files before build
 - Restores original .wxs files after build completes
@@ -96,9 +96,14 @@ The following manual steps will not install the MSIX apps (such as Command Palet
 
 #### Prerequisites for building the MSI installer
 
-1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
-1. Install the [WiX Toolset build tools](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm). (installer [direct link](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe))
-1. Download [WiX binaries](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
+PowerToys uses WiX v5 for creating installers. The WiX v5 tools are automatically installed during the build process via dotnet tool.
+
+For manual installation of WiX v5 tools:
+```powershell
+dotnet tool install --global wix --version 5.0.2
+```
+
+> **Note:** As of release 0.94, PowerToys has migrated from WiX v3 to WiX v5. The WiX v3 toolset is no longer required.
 
 #### Building prerequisite projects
 
