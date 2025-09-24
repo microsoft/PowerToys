@@ -30,10 +30,6 @@
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup>
-    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
-    <ManifestTool Condition="'$(WindowsSdkDir)' != '' and Exists('$(WindowsSdkDir)bin\\x64\\mt.exe')">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
