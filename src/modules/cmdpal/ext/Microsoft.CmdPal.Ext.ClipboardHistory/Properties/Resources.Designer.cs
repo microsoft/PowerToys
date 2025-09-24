@@ -212,5 +212,50 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
                 return ResourceManager.GetString("settings_keep_after_paste_title", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy to Clipboard.
+        /// </summary>
+        public static string settings_primary_action_copy {
+            get {
+                return ResourceManager.GetString("settings_primary_action_copy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default (Copy to Clipboard).
+        /// </summary>
+        public static string settings_primary_action_default {
+            get {
+                return ResourceManager.GetString("settings_primary_action_default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Primary action (Enter key).
+        /// </summary>
+        public static string settings_primary_action_description {
+            get {
+                return ResourceManager.GetString("settings_primary_action_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paste.
+        /// </summary>
+        public static string settings_primary_action_paste {
+            get {
+                return ResourceManager.GetString("settings_primary_action_paste", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Primary action.
+        /// </summary>
+        public static string settings_primary_action_title {
+            get {
+                return ResourceManager.GetString("settings_primary_action_title", resourceCulture);
+            }
+        }
     }
 }
