@@ -27,6 +27,7 @@ admx
 advancedpaste
 advancedpasteui
 advancedpasteuishortcut
+advapi
 advfirewall
 AFeature
 affordances
@@ -247,6 +248,7 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
+coreclr
 constexpr
 contentdialog
 contentfiles
@@ -268,6 +270,8 @@ cpcontrols
 cph
 cplusplus
 CPower
+cpptools
+cppvsdbg
 cppwinrt
 createdump
 CREATEPROCESS
@@ -279,6 +283,7 @@ CRH
 critsec
 cropandlock
 Crossdevice
+csdevkit
 CSearch
 CSettings
 cso
@@ -1451,7 +1456,6 @@ rstringalnum
 rstringalpha
 rstringdigit
 rtb
-RTB
 RTLREADING
 rtm
 runas
@@ -1798,6 +1802,7 @@ UIA
 UIEx
 uild
 uitests
+UITo
 ULONGLONG
 ums
 uncompilable
@@ -2012,6 +2017,7 @@ XButton
 xclip
 xcopy
 XDeployment
+xdf
 XDocument
 XElement
 xfd

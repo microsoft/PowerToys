@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -23,19 +24,26 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// </summary>
 public partial class MainListPage : DynamicListPage,
     IRecipient<ClearSearchMessage>,
-    IRecipient<UpdateFallbackItemsMessage>
+    IRecipient<UpdateFallbackItemsMessage>, IDisposable
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly string[] _specialFallbacks = [
+        "com.microsoft.cmdpal.builtin.run",
+        "com.microsoft.cmdpal.builtin.calculator"
+    ];
 
+    private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
     private IEnumerable<Scored<IListItem>>? _filteredItems;
     private IEnumerable<Scored<IListItem>>? _filteredApps;
-    private IEnumerable<IListItem>? _allApps;
+    private IEnumerable<Scored<IListItem>>? _fallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
+    private int _appResultLimit = 10;
 
     private InterlockedBoolean _refreshRunning;
     private InterlockedBoolean _refreshRequested;
+
+    private CancellationTokenSource? _cancellationTokenSource;
 
     public MainListPage(IServiceProvider serviceProvider)
     {
@@ -52,12 +60,12 @@ public partial class MainListPage : DynamicListPage,
         // We just want to know when it is done.
         var allApps = AllAppsCommandProvider.Page;
         allApps.PropChanged += (s, p) =>
-        {
-            if (p.PropertyName == nameof(allApps.IsLoading))
             {
-                IsLoading = ActuallyLoading();
-            }
-        };
+                if (p.PropertyName == nameof(allApps.IsLoading))
+                {
+                    IsLoading = ActuallyLoading();
+                }
+            };
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -152,10 +160,23 @@ public partial class MainListPage : DynamicListPage,
         {
             lock (_tlcManager.TopLevelCommands)
             {
+                IEnumerable<Scored<IListItem>> limitedApps = Enumerable.Empty<Scored<IListItem>>();
+
+                // Fuzzy matching can produce a lot of results, so we want to limit the
+                // number of apps we show at once if it's a large set.
+                if (_filteredApps?.Any() == true)
+                {
+                    limitedApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit);
+                }
+
                 var items = Enumerable.Empty<Scored<IListItem>>()
                                 .Concat(_filteredItems is not null ? _filteredItems : [])
-                                .Concat(_filteredApps is not null ? _filteredApps : [])
+                                .Concat(limitedApps)
                                 .OrderByDescending(o => o.Score)
+
+                                // Add fallback items post-sort so they are always at the end of the list
+                                // and eventually ordered based on user preference
+                                .Concat(_fallbackItems is not null ? _fallbackItems.Where(w => !string.IsNullOrEmpty(w.Item.Title)) : [])
                                 .Select(s => s.Item)
                                 .ToArray();
                 return items;
@@ -165,10 +186,29 @@ public partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        var timer = new Stopwatch();
+        timer.Start();
+
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        var token = _cancellationTokenSource.Token;
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
         // Handle changes to the filter text here
         if (!string.IsNullOrEmpty(SearchText))
         {
             var aliases = _serviceProvider.GetService<AliasManager>()!;
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
             if (aliases.CheckAlias(newSearch))
             {
                 if (_filteredItemsIncludesApps != _includeApps)
@@ -178,7 +218,6 @@ public partial class MainListPage : DynamicListPage,
                         _filteredItemsIncludesApps = _includeApps;
                         _filteredItems = null;
                         _filteredApps = null;
-                        _allApps = null;
                     }
                 }
 
@@ -186,10 +225,20 @@ public partial class MainListPage : DynamicListPage,
             }
         }
 
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
         var commands = _tlcManager.TopLevelCommands;
         lock (commands)
         {
-            UpdateFallbacks(newSearch, commands.ToImmutableArray());
+            UpdateFallbacks(SearchText, commands.ToImmutableArray(), token);
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
 
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
             if (string.IsNullOrEmpty(newSearch))
@@ -197,7 +246,7 @@ public partial class MainListPage : DynamicListPage,
                 _filteredItemsIncludesApps = _includeApps;
                 _filteredItems = null;
                 _filteredApps = null;
-                _allApps = null;
+                _fallbackItems = null;
                 RaiseItemsChanged(commands.Count);
                 return;
             }
@@ -208,7 +257,7 @@ public partial class MainListPage : DynamicListPage,
             {
                 _filteredItems = null;
                 _filteredApps = null;
-                _allApps = null;
+                _fallbackItems = null;
             }
 
             // If the internal state has changed, reset _filteredItems to reset the list.
@@ -216,61 +265,149 @@ public partial class MainListPage : DynamicListPage,
             {
                 _filteredItems = null;
                 _filteredApps = null;
-                _allApps = null;
+                _fallbackItems = null;
             }
 
-            var newFilteredItems = _filteredItems?.Select(s => s.Item);
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            IEnumerable<IListItem> newFilteredItems = Enumerable.Empty<IListItem>();
+            IEnumerable<IListItem> newFallbacks = Enumerable.Empty<IListItem>();
+            IEnumerable<IListItem> newApps = Enumerable.Empty<IListItem>();
+
+            if (_filteredItems is not null)
+            {
+                newFilteredItems = _filteredItems.Select(s => s.Item);
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (_filteredApps is not null)
+            {
+                newApps = _filteredApps.Select(s => s.Item);
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (_fallbackItems is not null)
+            {
+                newFallbacks = _fallbackItems.Select(s => s.Item);
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
 
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
-            if (newFilteredItems is null && _filteredApps is null)
+            if (!newFilteredItems.Any() && !newApps.Any())
             {
-                newFilteredItems = commands;
+                // We're going to start over with our fallbacks
+                newFallbacks = Enumerable.Empty<IListItem>();
+
+                newFilteredItems = commands.Where(s => !s.IsFallback || _specialFallbacks.Contains(s.CommandProviderId));
+
+                // Fallbacks are always included in the list, even if they
+                // don't match the search text. But we don't want to
+                // consider them when filtering the list.
+                newFallbacks = commands.Where(s => s.IsFallback && !_specialFallbacks.Contains(s.CommandProviderId));
+
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 _filteredItemsIncludesApps = _includeApps;
 
                 if (_includeApps)
                 {
-                    _allApps = AllAppsCommandProvider.Page.GetItems();
+                    newApps = AllAppsCommandProvider.Page.GetItems().ToList();
                 }
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
             }
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem);
 
-            // Produce a list of filtered apps with the appropriate limit
-            if (_allApps is not null)
-            {
-                _filteredApps = ListHelpers.FilterListWithScores<IListItem>(_allApps, SearchText, ScoreTopLevelItem);
+            // Defaulting scored to 1 but we'll eventually use user rankings
+            _fallbackItems = newFallbacks.Select(f => new Scored<IListItem> { Item = f, Score = 1 });
 
-                var appResultLimit = AllAppsCommandProvider.TopLevelResultLimit;
-                if (appResultLimit >= 0)
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // Produce a list of filtered apps with the appropriate limit
+            if (newApps.Any())
+            {
+                var scoredApps = ListHelpers.FilterListWithScores<IListItem>(newApps, SearchText, ScoreTopLevelItem);
+
+                if (token.IsCancellationRequested)
                 {
-                    _filteredApps = _filteredApps.Take(appResultLimit);
+                    return;
                 }
+
+                // We'll apply this limit in the GetItems method after merging with commands
+                // but we need to know the limit now to avoid re-scoring apps
+                var appLimit = AllAppsCommandProvider.TopLevelResultLimit;
+
+                _filteredApps = scoredApps;
             }
 
             RaiseItemsChanged();
+
+            timer.Stop();
+            Logger.LogDebug($"Filter with '{newSearch}' in {timer.ElapsedMilliseconds}ms");
         }
     }
 
-    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands)
+    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands, CancellationToken token)
     {
-        // fire and forget
-        _ = Task.Run(() =>
+        _ = Task.Run(
+            () =>
         {
             var needsToUpdate = false;
 
             foreach (var command in commands)
             {
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
                 needsToUpdate = needsToUpdate || changedVisibility;
             }
 
             if (needsToUpdate)
             {
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 RaiseItemsChanged();
             }
-        });
+        },
+            token);
     }
 
     private bool ActuallyLoading()
@@ -324,19 +461,19 @@ public partial class MainListPage : DynamicListPage,
         // * otherwise full weight match
         var nameMatch = isWhiteSpace ?
             (title.Contains(query) ? 1 : 0) :
-            StringMatcher.FuzzySearch(query, title).Score;
+               FuzzyStringMatcher.ScoreFuzzy(query, title);
 
         // Subtitle:
         // * whitespace query: 1/2 point
         // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
         var descriptionMatch = isWhiteSpace ?
             (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
-            (StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle).Score - 4) / 2.0;
+            (FuzzyStringMatcher.ScoreFuzzy(query, topLevelOrAppItem.Subtitle) - 4) / 2.0;
 
         // Extension title: despite not being visible, give the extension name itself some weight
         // * whitespace query: 0 points
         // * otherwise more weight than a subtitle, but not much
-        var extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName).Score / 1.5;
+        var extensionTitleMatch = isWhiteSpace ? 0 : FuzzyStringMatcher.ScoreFuzzy(query, extensionDisplayName) / 1.5;
 
         var scores = new[]
         {
@@ -399,4 +536,22 @@ public partial class MainListPage : DynamicListPage,
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
+
+    public void Dispose()
+    {
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+
+        _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
+        _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
+
+        var settings = _serviceProvider.GetService<SettingsModel>();
+        if (settings is not null)
+        {
+            settings.SettingsChanged -= SettingsChangedHandler;
+        }
+
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+        GC.SuppressFinalize(this);
+    }
 }

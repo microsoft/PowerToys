@@ -13,6 +13,9 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    default: true
   - name: runTests
     type: boolean
     default: true
@@ -52,6 +55,7 @@ stages:
             buildConfigurations: [Release]
             enablePackageCaching: true
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            msBuildCacheIsReadOnly: ${{ parameters.msBuildCacheIsReadOnly }}
             runTests: ${{ parameters.runTests }}
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
