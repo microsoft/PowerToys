@@ -2,7 +2,7 @@
     <picture>
       <source media="(prefers-color-scheme: light)" srcset="./doc/images/readme/pt-hero.light.png" />
       <img src="./doc/images/readme/pt-hero.dark.png" />
-  </picture></a>
+  </picture>
 </p>
 
 <h1 align="center">
