@@ -1380,6 +1380,128 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     return WcaFinalize(er);
 }
 
+UINT __stdcall SetBundleInstallLocationCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+    
+    // Declare variables at the beginning to avoid goto issues
+    std::wstring bundleName;
+    HKEY rootKey = HKEY_LOCAL_MACHINE;
+    LPWSTR installScopeBuffer = nullptr;
+    std::wstring uninstallPath;
+    HKEY uninstallKey = nullptr;
+    bool bundleFound = false;
+
+    hr = WcaInitialize(hInstall, "SetBundleInstallLocationCA");
+    ExitOnFailure(hr, "Failed to initialize");
+    
+    WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Starting custom action");
+    
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+    
+    WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Installation folder: %ls", installationFolder.c_str());
+    
+    // Get bundle name with platform
+    bundleName = L"PowerToys (Preview) ";
+#ifdef _M_ARM64
+    bundleName += L"ARM64";
+#else
+    bundleName += L"x64";
+#endif
+    
+    WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Looking for Bundle: %ls", bundleName.c_str());
+    
+    // Get InstallScope property to determine if per-user or per-machine
+    hr = WcaGetProperty(L"InstallScope", &installScopeBuffer);
+    if (SUCCEEDED(hr) && installScopeBuffer && wcscmp(installScopeBuffer, L"perUser") == 0)
+    {
+        rootKey = HKEY_CURRENT_USER;
+        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Using HKEY_CURRENT_USER");
+    }
+    else
+    {
+        rootKey = HKEY_LOCAL_MACHINE;
+        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Using HKEY_LOCAL_MACHINE");
+    }
+    
+    // Search for Bundle registry entry
+    uninstallPath = L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+    
+    LONG result = RegOpenKeyExW(rootKey, uninstallPath.c_str(), 0, KEY_READ | KEY_ENUMERATE_SUB_KEYS, &uninstallKey);
+    WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: RegOpenKeyExW result: %ld", result);
+    
+    if (result == ERROR_SUCCESS)
+    {
+        DWORD index = 0;
+        wchar_t subKeyName[256];
+        DWORD subKeyNameSize = sizeof(subKeyName) / sizeof(wchar_t);
+        
+        while (RegEnumKeyExW(uninstallKey, index, subKeyName, &subKeyNameSize, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
+        {
+            HKEY productKey;
+            if (RegOpenKeyExW(uninstallKey, subKeyName, 0, KEY_READ | KEY_WRITE, &productKey) == ERROR_SUCCESS)
+            {
+                wchar_t displayName[512];
+                DWORD displayNameSize = sizeof(displayName);
+                DWORD valueType;
+                
+                if (RegQueryValueExW(productKey, L"DisplayName", nullptr, &valueType, 
+                                   reinterpret_cast<LPBYTE>(displayName), &displayNameSize) == ERROR_SUCCESS)
+                {
+                    WcaLog(LOGMSG_VERBOSE, "SetBundleInstallLocationCA: Found entry: %ls", displayName);
+                    
+                    // Check if this matches our Bundle name (case-insensitive and flexible)
+                    if (wcsstr(displayName, L"PowerToys") && wcsstr(displayName, L"Preview"))
+                    {
+                        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Found PowerToys Bundle: %ls", displayName);
+                        
+                        // Found the Bundle entry, add InstallLocation
+                        LONG setResult = RegSetValueExW(productKey, L"InstallLocation", 0, REG_SZ,
+                                     reinterpret_cast<const BYTE*>(installationFolder.c_str()),
+                                     static_cast<DWORD>((installationFolder.length() + 1) * sizeof(wchar_t)));
+                                     
+                        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: RegSetValueExW result: %ld", setResult);
+                        
+                        if (setResult == ERROR_SUCCESS)
+                        {
+                            bundleFound = true;
+                            WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Successfully set InstallLocation to: %ls", installationFolder.c_str());
+                        }
+                        else
+                        {
+                            WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Failed to set InstallLocation, error: %ld", setResult);
+                        }
+                        
+                        RegCloseKey(productKey);
+                        break;
+                    }
+                }
+                RegCloseKey(productKey);
+            }
+            
+            index++;
+            subKeyNameSize = sizeof(subKeyName) / sizeof(wchar_t);
+        }
+        RegCloseKey(uninstallKey);
+    }
+    
+    if (!bundleFound)
+    {
+        WcaLog(LOGMSG_STANDARD, "SetBundleInstallLocationCA: Bundle entry not found");
+    }
+    
+LExit:
+    if (installScopeBuffer)
+    {
+        ReleaseStr(installScopeBuffer);
+    }
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 void initSystemLogger()
 {
     static std::once_flag initLoggerFlag;
