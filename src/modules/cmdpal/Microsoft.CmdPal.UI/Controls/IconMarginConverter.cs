@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
-public sealed class IconMarginConverter : IValueConverter
+public sealed partial class IconMarginConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {

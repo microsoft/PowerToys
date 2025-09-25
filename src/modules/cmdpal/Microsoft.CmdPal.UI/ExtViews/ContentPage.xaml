@@ -55,7 +55,9 @@
                     <labToolkit:MarkdownTextBlock
                         Background="Transparent"
                         Config="{StaticResource DefaultMarkdownConfig}"
-                        Text="{x:Bind Body, Mode=OneWay}" />
+                        Text="{x:Bind Body, Mode=OneWay}"
+                        UseEmphasisExtras="True"
+                        UsePipeTables="True" />
                 </Grid>
             </DataTemplate>
 

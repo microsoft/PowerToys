@@ -5,7 +5,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -117,8 +116,6 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
 
     // TODO: Do we want filters to match descriptions and other properties? Tags, etc... Yes?
     // TODO: Do we want to save off the score here so we can sort by it in our ListViewModel?
-    public bool MatchesFilter(string filter) => StringMatcher.FuzzySearch(filter, Title).Success || StringMatcher.FuzzySearch(filter, Subtitle).Success;
-
     public override string ToString() => $"{Name} ListItemViewModel";
 
     public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
@@ -140,7 +137,7 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
             {
                 // Tags being an ObservableCollection instead of a List lead to
                 // many COM exception issues.
-                Tags = new(newTags);
+                Tags = [.. newTags];
 
                 UpdateProperty(nameof(Tags));
                 UpdateProperty(nameof(HasTags));

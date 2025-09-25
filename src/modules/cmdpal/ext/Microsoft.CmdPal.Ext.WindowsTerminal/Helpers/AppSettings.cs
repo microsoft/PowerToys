@@ -4,7 +4,9 @@
 
 #nullable enable
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 
@@ -15,10 +17,30 @@ namespace Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 /// </summary>
 public sealed class AppSettings
 {
+    private const int MaxRecentProfilesCount = 64;
+
     /// <summary>
     /// Gets or sets the last selected channel identifier for the Windows Terminal extension.
     /// Empty string when no channel has been selected yet.
     /// </summary>
     [JsonPropertyName("lastSelectedChannel")]
     public string LastSelectedChannel { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the list of recently used profile identifiers.
+    /// </summary>
+    [JsonPropertyName("recentlyUsedProfiles")]
+    public List<TerminalProfileKey> RecentlyUsedProfiles { get; init; } = [];
+
+    public void AddRecentlyUsedProfile(string appId, string profileName)
+    {
+        var key = new TerminalProfileKey(appId, profileName);
+        RecentlyUsedProfiles.Remove(key);
+        RecentlyUsedProfiles.Insert(0, key);
+
+        if (RecentlyUsedProfiles.Count > MaxRecentProfilesCount)
+        {
+            RecentlyUsedProfiles.RemoveRange(MaxRecentProfilesCount, RecentlyUsedProfiles.Count - MaxRecentProfilesCount);
+        }
+    }
 }

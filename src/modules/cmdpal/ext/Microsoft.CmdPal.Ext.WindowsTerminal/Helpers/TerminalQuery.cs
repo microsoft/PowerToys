@@ -58,7 +58,7 @@ public class TerminalQuery : ITerminalQuery
             profiles.AddRange(TerminalHelper.ParseSettings(terminal, settingsJson));
         }
 
-        return profiles.OrderBy(p => p.Name);
+        return profiles;
     }
 
     public IEnumerable<TerminalPackage> GetTerminals()

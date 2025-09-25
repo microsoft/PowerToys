@@ -122,7 +122,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
                 if (viewModel is not null)
                 {
                     viewModel.InitializeProperties();
-                    newContent.Add(viewModel);
+                    newContent.Add((ContentViewModel)viewModel);
                 }
             }
         }
