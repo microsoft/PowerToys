@@ -572,8 +572,8 @@
   <data name="DarkColor" xml:space="preserve">
     <value>Dark color</value>
   </data>
-  <data name="LightSwitch" xml:space="preserve">
-    <value>Light Switch</value>
+  <data name="DarkMode" xml:space="preserve">
+    <value>Dark Mode</value>
   </data>
   <data name="DataUsage" xml:space="preserve">
     <value>Data usage</value>
