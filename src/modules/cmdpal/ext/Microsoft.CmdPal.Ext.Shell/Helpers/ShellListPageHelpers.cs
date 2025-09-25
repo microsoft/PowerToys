@@ -133,4 +133,75 @@ public class ShellListPageHelpers
 
         return li;
     }
+
+    /// <summary>
+    /// This is a version of ParseExecutableAndArgs that handles whitespace in
+    /// paths better. It will try to find the first matching executable in the
+    /// input string.
+    ///
+    /// If the input is quoted, it will treat everything inside the quotes as
+    /// the executable. If the input is not quoted, it will try to find the
+    /// first segment that matches
+    /// </summary>
+    public static void ParseExecutableAndArgsWithWhiteSpace(string input, out string executable, out string arguments)
+    {
+        input = input.Trim();
+        executable = string.Empty;
+        arguments = string.Empty;
+
+        if (string.IsNullOrEmpty(input))
+        {
+            return;
+        }
+
+        if (input.StartsWith("\"", System.StringComparison.InvariantCultureIgnoreCase))
+        {
+            // Find the closing quote
+            var closingQuoteIndex = input.IndexOf('\"', 1);
+            if (closingQuoteIndex > 0)
+            {
+                executable = input.Substring(1, closingQuoteIndex - 1);
+                if (closingQuoteIndex + 1 < input.Length)
+                {
+                    arguments = input.Substring(closingQuoteIndex + 1).TrimStart();
+                }
+            }
+        }
+        else
+        {
+            // Look for the first space.
+            // Treat everything before the first space as the executable.
+            // Check the filesystem if that file exists.
+            // If it does, treat everything after the first space as arguments.
+            // if it doesn't, then try again with the next space.
+            var segments = input.Split(' ');
+            var sb = new StringBuilder();
+            for (var i = 0; i < segments.Length; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append(' ');
+                }
+
+                sb.Append(segments[i]);
+                var candidateExe = sb.ToString();
+                if (ShellHelpers.FileExistInPath(candidateExe, out var _))
+                {
+                    executable = candidateExe;
+                    if (i + 1 < segments.Length)
+                    {
+                        arguments = string.Join(' ', segments[(i + 1)..]);
+                    }
+
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(executable))
+            {
+                // If we didn't find any match, just treat the whole input as the executable.
+                executable = input;
+            }
+        }
+    }
 }

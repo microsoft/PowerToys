@@ -152,13 +152,11 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             return;
         }
 
-        ShellHelpers.ParseExecutableAndArgs(expanded, out var exe, out var args);
-
-        // Check for cancellation before file system operations
-        cancellationToken.ThrowIfCancellationRequested();
-
         // Reset the path resolution flag
         var couldResolvePath = false;
+
+        string exe = string.Empty;
+        string args = string.Empty;
 
         var exeExists = false;
         var fullExePath = string.Empty;
@@ -175,6 +173,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             var pathResolutionTask = Task.Run(
                 () =>
             {
+                ShellListPageHelpers.ParseExecutableAndArgsWithWhiteSpace(expanded, out exe, out args);
+
                 // Don't check cancellation token here - let the Task timeout handle it
                 exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
                 pathIsDir = Directory.Exists(expanded);
