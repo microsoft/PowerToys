@@ -131,3 +131,4 @@
 ignore$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
 ^src/common/CalculatorEngineCommon/exprtk\.hpp$
+^src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage.cs‎$
