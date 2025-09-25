@@ -19,7 +19,9 @@ namespace ManagedCommon
         private static readonly string Error = "Error";
         private static readonly string Warning = "Warning";
         private static readonly string Info = "Info";
+#if DEBUG
         private static readonly string Debug = "Debug";
+#endif
         private static readonly string TraceFlag = "Trace";
 
         private static readonly string Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "Unknown";
