@@ -240,6 +240,13 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="12"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextAlignment="Center"
+                Visibility="{x:Bind Keys.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
         </Grid>
         <StackPanel
             Grid.Row="2"
@@ -265,7 +272,8 @@
             <HyperlinkButton
                 x:Name="ClearBtn"
                 x:Uid="Shortcut_ClearBtn"
-                Click="ClearBtn_Click">
+                Click="ClearBtn_Click"
+                Visibility="{x:Bind Keys.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}">
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="Shortcut_ClearToolTip" TextWrapping="Wrap" />
                 </ToolTipService.ToolTip>
@@ -305,8 +313,7 @@
                 IsTabStop="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
                 Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
                 Severity="Warning"
-                Style="{StaticResource CondensedInfoBarStyle}">
-            </InfoBar>
+                Style="{StaticResource CondensedInfoBarStyle}" />
             <InfoBar
                 x:Uid="WarningPotentialShortcutConflict"
                 BorderThickness="0"

@@ -2688,14 +2688,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
-  <data name="WarningShortcutConflict.Title" xml:space="preserve">
-    <value>Shortcut conflict</value>
-  </data>
-  <data name="WarningPotentialShortcutConflict.Title" xml:space="preserve">
-    <value>Potential shortcut conflict</value>
+  <data name="WarningShortcutConflict.Message" xml:space="preserve">
+    <value>Shortcut conflict detected</value>
   </data>
   <data name="WarningPotentialShortcutConflict.Message" xml:space="preserve">
-    <value>This shortcut has a conflict, but the warning is ignored.</value>
+    <value>This shortcut has a potential conflict, but the warning is ignored.</value>
   </data>
   <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
     <value>A conflict has been detected for this shortcut.</value>
@@ -5308,26 +5305,25 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="DismissText.Text" xml:space="preserve">
     <value>Dismiss</value>
   </data>
-	<data name="Shortcut_ResetBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="Shortcut_ResetBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Reset shortcut</value>
   </data>
   <data name="Shortcut_ResetToolTip.Text" xml:space="preserve">
     <value>Reset to the default shortcut</value>
   </data>
-	<data name="Shortcut_Reset.Text" xml:space="preserve">
+  <data name="Shortcut_Reset.Text" xml:space="preserve">
     <value>Reset</value>
   </data>
-	<data name="Shortcut_ClearBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="Shortcut_ClearBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Clear shortcut</value>
   </data>
-	<data name="Shortcut_ClearToolTip.Text" xml:space="preserve">
+  <data name="Shortcut_ClearToolTip.Text" xml:space="preserve">
     <value>Clear and unassign this shortcut</value>
   </data>
-	<data name="Shortcut_Clear.Text" xml:space="preserve">
+  <data name="Shortcut_Clear.Text" xml:space="preserve">
     <value>Clear</value>
   </data>
-	<data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
+  <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
-	
 </root>
