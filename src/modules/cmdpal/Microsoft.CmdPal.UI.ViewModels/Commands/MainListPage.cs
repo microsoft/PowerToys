@@ -158,13 +158,13 @@ public partial class MainListPage : DynamicListPage,
         {
             lock (_tlcManager.TopLevelCommands)
             {
-                IEnumerable<Scored<IListItem>> limitedApps = Enumerable.Empty<Scored<IListItem>>();
+                List<Scored<IListItem>> limitedApps = new List<Scored<IListItem>>();
 
                 // Fuzzy matching can produce a lot of results, so we want to limit the
                 // number of apps we show at once if it's a large set.
                 if (_filteredApps?.Count > 0)
                 {
-                    limitedApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit);
+                    limitedApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit).ToList();
                 }
 
                 var items = Enumerable.Empty<Scored<IListItem>>()
@@ -330,20 +330,20 @@ public partial class MainListPage : DynamicListPage,
                 {
                     newApps = AllAppsCommandProvider.Page.GetItems().ToList();
                 }
-            }
 
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (token.IsCancellationRequested)
-            {
-                return;
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem)];
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
 
             // Defaulting scored to 1 but we'll eventually use user rankings
             _fallbackItems = [.. newFallbacks.Select(f => new Scored<IListItem> { Item = f, Score = 1 })];
@@ -368,6 +368,11 @@ public partial class MainListPage : DynamicListPage,
                 var appLimit = AllAppsCommandProvider.TopLevelResultLimit;
 
                 _filteredApps = [.. scoredApps];
+
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
             RaiseItemsChanged();
