@@ -10,8 +10,11 @@ using System.Text;
 namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 
 /// <summary>
-/// Provides command line normalization functionality compatible with .NET Native AOT.
-/// This is a C# port of the Profile::NormalizeCommandLine C++ function.
+/// Provides command line normalization functionality compatible with .NET
+/// Native AOT. This is a C# port of the Profile::NormalizeCommandLine function
+/// from the Windows Terminal codebase.
+///
+/// It was ported from 7055b99ac on 2025-09-25
 /// </summary>
 public static class CommandLineNormalizer
 {
