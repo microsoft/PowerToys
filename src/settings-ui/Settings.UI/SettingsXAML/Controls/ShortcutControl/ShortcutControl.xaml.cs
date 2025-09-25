@@ -676,7 +676,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             c.Keys = null;
             c.Keys = HotkeySettings.GetKeysList();
 
-            c.IgnoreConflict = hotkeySettings.IgnoreConflict;
+            c.IgnoreConflict = IgnoreConflict;
             c.HasConflict = hotkeySettings.HasConflict;
             c.ConflictMessage = hotkeySettings.ConflictDescription;
 

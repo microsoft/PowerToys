@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using System.Linq;
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -94,7 +94,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 {
                     var hotkey = inAppConflict.Hotkey;
                     var hotkeySettings = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
-                    if (!IsShortcutIgnored(hotkeySettings))
+                    if (!HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySettings))
                     {
                         count++;
                     }
@@ -107,7 +107,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 {
                     var hotkey = systemConflict.Hotkey;
                     var hotkeySettings = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
-                    if (!IsShortcutIgnored(hotkeySettings))
+                    if (!HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySettings))
                     {
                         count++;
                     }
@@ -243,25 +243,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 GlobalHotkeyConflictManager.Instance.ConflictsUpdated += OnConflictsUpdated;
                 GlobalHotkeyConflictManager.Instance.RequestAllConflicts();
-            }
-        }
-
-        public bool IsShortcutIgnored(HotkeySettings hotkeySettings)
-        {
-            if (hotkeySettings == null)
-            {
-                return false;
-            }
-
-            try
-            {
-                var settings = _shortcutConflictRepository.SettingsConfig;
-                return settings.Properties.IgnoredShortcuts
-                    .Any(h => HotkeySettingsEqual(h, hotkeySettings));
-            }
-            catch
-            {
-                return false;
             }
         }
 

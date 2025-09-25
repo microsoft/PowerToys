@@ -89,40 +89,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GetShortcutModules();
         }
 
-        public bool IsShortcutIgnored(HotkeySettings hotkeySettings)
-        {
-            if (hotkeySettings == null)
-            {
-                return false;
-            }
-
-            try
-            {
-                var settings = _shortcutConflictRepository.SettingsConfig;
-                return settings.Properties.IgnoredShortcuts
-                    .Any(h => HotkeySettingsEqual(h, hotkeySettings));
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Error checking if shortcut is ignored: {ex.Message}");
-                return false;
-            }
-        }
-
-        private bool HotkeySettingsEqual(HotkeySettings hotkey1, HotkeySettings hotkey2)
-        {
-            if (hotkey1 == null || hotkey2 == null)
-            {
-                return false;
-            }
-
-            return hotkey1.Win == hotkey2.Win &&
-                   hotkey1.Ctrl == hotkey2.Ctrl &&
-                   hotkey1.Alt == hotkey2.Alt &&
-                   hotkey1.Shift == hotkey2.Shift &&
-                   hotkey1.Code == hotkey2.Code;
-        }
-
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
             dispatcher.BeginInvoke(() =>
@@ -132,14 +98,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     var hotkey = inAppConflict.Hotkey;
                     var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
-                    inAppConflict.ConflictIgnored = IsShortcutIgnored(hotkeySetting);
+                    inAppConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
                 }
 
                 foreach (var systemConflict in allConflictData.SystemConflicts)
                 {
                     var hotkey = systemConflict.Hotkey;
                     var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
-                    systemConflict.ConflictIgnored = IsShortcutIgnored(hotkeySetting);
+                    systemConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
                 }
 
                 AllHotkeyConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();

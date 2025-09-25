@@ -76,9 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 foreach (var inAppConflict in AllHotkeyConflictsData.InAppConflicts)
                 {
-                    var hotkey = inAppConflict.Hotkey;
-                    var hotkeySettings = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
-                    if (!IsShortcutIgnored(hotkeySettings))
+                    if (!inAppConflict.ConflictIgnored)
                     {
                         count++;
                     }
@@ -89,9 +87,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 foreach (var systemConflict in AllHotkeyConflictsData.SystemConflicts)
                 {
-                    var hotkey = systemConflict.Hotkey;
-                    var hotkeySettings = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
-                    if (!IsShortcutIgnored(hotkeySettings))
+                    if (!systemConflict.ConflictIgnored)
                     {
                         count++;
                     }
@@ -123,43 +119,25 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        public bool IsShortcutIgnored(HotkeySettings hotkeySettings)
-        {
-            if (hotkeySettings == null)
-            {
-                return false;
-            }
-
-            try
-            {
-                var settings = _shortcutConflictRepository.SettingsConfig;
-                return settings.Properties.IgnoredShortcuts
-                    .Any(h => HotkeySettingsEqual(h, hotkeySettings));
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool HotkeySettingsEqual(HotkeySettings hotkey1, HotkeySettings hotkey2)
-        {
-            if (hotkey1 == null || hotkey2 == null)
-            {
-                return false;
-            }
-
-            return hotkey1.Win == hotkey2.Win &&
-                   hotkey1.Ctrl == hotkey2.Ctrl &&
-                   hotkey1.Alt == hotkey2.Alt &&
-                   hotkey1.Shift == hotkey2.Shift &&
-                   hotkey1.Code == hotkey2.Code;
-        }
-
         private void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
             this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
             {
+                var allConflictData = e.Conflicts;
+                foreach (var inAppConflict in allConflictData.InAppConflicts)
+                {
+                    var hotkey = inAppConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    inAppConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
+                foreach (var systemConflict in allConflictData.SystemConflicts)
+                {
+                    var hotkey = systemConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    systemConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
                 AllHotkeyConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
             });
         }
