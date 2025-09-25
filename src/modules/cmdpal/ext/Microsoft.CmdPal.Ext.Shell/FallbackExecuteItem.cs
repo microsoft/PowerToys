@@ -92,7 +92,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             return;
         }
 
-        ShellHelpers.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        ShellListPageHelpers.NormalizeCommandLineAndArgs(searchText, out var exe, out var args);
 
         // Check for cancellation before file system operations
         cancellationToken.ThrowIfCancellationRequested();

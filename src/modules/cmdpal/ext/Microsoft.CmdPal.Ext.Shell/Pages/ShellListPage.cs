@@ -173,7 +173,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             var pathResolutionTask = Task.Run(
                 () =>
             {
-                ShellListPageHelpers.ParseExecutableAndArgsWithWhiteSpace(expanded, out exe, out args);
+                ShellListPageHelpers.NormalizeCommandLineAndArgs(expanded, out exe, out args);
 
                 // Don't check cancellation token here - let the Task timeout handle it
                 exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
