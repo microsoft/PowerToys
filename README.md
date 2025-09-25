@@ -93,7 +93,7 @@ Download PowerToys from [WinGet][winget-link]. Updating PowerToys via winget wil
 winget install Microsoft.PowerToys -s winget
 ```
 
-*User scope installer [default]*
+*Machine-wide scope installer*
 ```powershell
 winget install --scope machine Microsoft.PowerToys -s winget
 ```
