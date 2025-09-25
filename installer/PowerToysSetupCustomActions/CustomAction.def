@@ -20,7 +20,6 @@ EXPORTS
 	InstallDSCModuleCA
 	InstallCmdPalPackageCA
 	UnApplyModulesRegistryChangeSetsCA
-	DeleteDscJsonFilesCA
 	UnRegisterCmdPalPackageCA
 	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA

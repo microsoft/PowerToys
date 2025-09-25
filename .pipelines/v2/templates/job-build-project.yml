@@ -263,6 +263,10 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  - pwsh: |-
+      & '.pipelines/generate-dsc-manifests.ps1' -BuildPlatform '$(BuildPlatform)' -BuildConfiguration '$(BuildConfiguration)' -RepoRoot '$(Build.SourcesDirectory)'
+    displayName: Generate DSC manifests
+
   - task: CopyFiles@2
     displayName: Stage SDK/build
     inputs:

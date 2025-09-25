@@ -62,6 +62,7 @@
       <ComponentGroupRef Id="NewPlusComponentGroup" />
       <ComponentGroupRef Id="NewPlusTemplatesComponentGroup" />
       <ComponentGroupRef Id="ResourcesComponentGroup" />
+      <ComponentGroupRef Id="DscResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
@@ -119,8 +120,6 @@
       <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
-      <Custom Action="SetGenerateDscManifestParam" Before="GenerateDscManifest" />
-      <Custom Action="GenerateDscManifest" After="InstallFiles" Condition="NOT Installed AND NOT WIX_UPGRADE_DETECTED" />
       <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
       <!-- TODO: Use to activate embedded MSIX -->
@@ -132,10 +131,8 @@
         <?endif?>
         <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize" Condition="NOT Installed" />
       <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize" Condition="Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
-      <Custom Action="UnApplyModulesRegistryChangeSets" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
-      <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
-  <Custom Action="SetDeleteDscJsonFilesParam" Before="DeleteDscJsonFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
-  <Custom Action="DeleteDscJsonFiles" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+    <Custom Action="UnApplyModulesRegistryChangeSets" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+    <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="CleanImageResizerRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="CleanFileLocksmithRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="CleanPowerRenameRuntimeRegistry" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
@@ -247,14 +244,6 @@
     <CustomAction Id="CheckGPO" Return="check" Impersonate="yes" DllEntry="CheckGPOCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="InstallCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallCmdPalPackageCA" BinaryRef="PTCustomActions" />
-
-  <!-- Generate DSC manifests by invoking PowerToys.DSC.exe during install -->
-  <CustomAction Id="SetGenerateDscManifestParam" Property="GenerateDscManifest" Value="[INSTALLFOLDER]" />
-  <CustomAction Id="GenerateDscManifest" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="GenerateDscManifestCA" BinaryRef="PTCustomActions" />
-
-  <!-- Delete *.dsc.json files on uninstall -->
-  <CustomAction Id="SetDeleteDscJsonFilesParam" Property="DeleteDscJsonFiles" Value="[INSTALLFOLDER]" />
-  <CustomAction Id="DeleteDscJsonFiles" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="DeleteDscJsonFilesCA" BinaryRef="PTCustomActions" />
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />

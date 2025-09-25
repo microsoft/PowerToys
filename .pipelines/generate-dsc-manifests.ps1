@@ -1,0 +1,110 @@
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory = $true)]
+    [string]$BuildPlatform,
+
+    [Parameter(Mandatory = $true)]
+    [string]$BuildConfiguration,
+
+    [Parameter()]
+    [string]$RepoRoot = (Get-Location).Path,
+
+    [switch]$ForceRebuildExecutable
+)
+
+$ErrorActionPreference = 'Stop'
+
+function Resolve-PlatformDirectory {
+    param(
+        [string]$Root,
+        [string]$Platform
+    )
+
+    $normalized = $Platform.Trim()
+    $candidates = @()
+    $candidates += Join-Path $Root $normalized
+    $candidates += Join-Path $Root ($normalized.ToUpperInvariant())
+    $candidates += Join-Path $Root ($normalized.ToLowerInvariant())
+    $candidates = $candidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique
+
+    foreach ($candidate in $candidates) {
+        if (Test-Path $candidate) {
+            return $candidate
+        }
+    }
+
+    return $candidates[0]
+}
+
+Write-Host "Repo root: $RepoRoot"
+Write-Host "Requested build platform: $BuildPlatform"
+Write-Host "Requested configuration: $BuildConfiguration"
+
+$exePlatform = 'x64'
+$exeRoot = Resolve-PlatformDirectory -Root $RepoRoot -Platform $exePlatform
+$exeOutputDir = Join-Path $exeRoot $BuildConfiguration
+$exePath = Join-Path $exeOutputDir 'PowerToys.DSC.exe'
+
+if ($ForceRebuildExecutable -or -not (Test-Path $exePath)) {
+    Write-Host "PowerToys.DSC.exe not found at '$exePath'. Building $exePlatform binary..."
+
+    $msbuild = Get-Command msbuild.exe -ErrorAction SilentlyContinue
+    if ($null -eq $msbuild) {
+        throw "msbuild.exe was not found on the PATH."
+    }
+
+    $projectPath = Join-Path $RepoRoot 'src\dsc\v3\PowerToys.DSC\PowerToys.DSC.csproj'
+    $msbuildArgs = @(
+        $projectPath,
+        '/t:Build',
+        '/m',
+        "/p:Configuration=$BuildConfiguration",
+        "/p:Platform=$exePlatform",
+        '/restore'
+    )
+
+    & $msbuild.Path @msbuildArgs
+    $msbuildExitCode = $LASTEXITCODE
+
+    if ($msbuildExitCode -ne 0) {
+        throw "msbuild build failed with exit code $msbuildExitCode"
+    }
+
+    if (-not (Test-Path $exePath)) {
+        throw "Expected PowerToys.DSC.exe at '$exePath' after build but it was not found."
+    }
+} else {
+    Write-Host "Using existing PowerToys.DSC.exe at '$exePath'."
+}
+
+$outputRoot = Resolve-PlatformDirectory -Root $RepoRoot -Platform $BuildPlatform
+if (-not (Test-Path $outputRoot)) {
+    Write-Host "Creating missing platform output root at '$outputRoot'."
+    New-Item -Path $outputRoot -ItemType Directory -Force | Out-Null
+}
+
+$outputDir = Join-Path $outputRoot $BuildConfiguration
+if (-not (Test-Path $outputDir)) {
+    Write-Host "Creating missing configuration output directory at '$outputDir'."
+    New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
+}
+
+Write-Host "Cleaning previously generated DSC manifest files from '$outputDir'."
+Get-ChildItem -Path $outputDir -Filter 'microsoft.powertoys.*.settings.dsc.resource.json' -ErrorAction SilentlyContinue | Remove-Item -Force
+
+$arguments = @('manifest', '--resource', 'settings', '--outputDir', $outputDir)
+Write-Host "Invoking DSC manifest generator: '$exePath' $($arguments -join ' ')"
+& $exePath @arguments
+if ($LASTEXITCODE -ne 0) {
+    throw "PowerToys.DSC.exe exited with code $LASTEXITCODE"
+}
+
+$generatedFiles = Get-ChildItem -Path $outputDir -Filter 'microsoft.powertoys.*.settings.dsc.resource.json' -ErrorAction Stop
+if ($generatedFiles.Count -eq 0) {
+    throw "No DSC manifest files were generated in '$outputDir'."
+}
+
+Write-Host "Generated $($generatedFiles.Count) DSC manifest file(s):"
+foreach ($file in $generatedFiles) {
+    Write-Host "  - $($file.FullName)"
+}

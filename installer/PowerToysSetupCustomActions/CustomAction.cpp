@@ -398,54 +398,6 @@ LExit:
     return WcaFinalize(er);
 }
 
-// Delete any *.dsc.json files under the install folder on uninstall (legacy installer)
-UINT __stdcall DeleteDscJsonFilesCA(MSIHANDLE hInstall)
-{
-    HRESULT hr = S_OK;
-    UINT er = ERROR_SUCCESS;
-    std::wstring installationFolder;
-
-    hr = WcaInitialize(hInstall, "DeleteDscJsonFiles");
-    ExitOnFailure(hr, "Failed to initialize");
-
-    hr = getInstallFolder(hInstall, installationFolder);
-    ExitOnFailure(hr, "Failed to get installFolder.");
-
-    try
-    {
-        std::filesystem::path root{ installationFolder };
-        if (std::filesystem::exists(root) && std::filesystem::is_directory(root))
-        {
-            for (auto const &entry : std::filesystem::recursive_directory_iterator(root, std::filesystem::directory_options::skip_permission_denied))
-            {
-                if (!entry.is_regular_file()) continue;
-                const auto &p = entry.path();
-                if (p.has_extension() && _wcsicmp(p.extension().c_str(), L".json") == 0)
-                {
-                    auto name = p.filename().wstring();
-                    if (name.size() >= 9 && _wcsicmp(name.c_str() + (name.size() - 9), L".dsc.json") == 0)
-                    {
-                        std::error_code ec;
-                        std::filesystem::remove(p, ec);
-                        if (ec)
-                        {
-                            Logger::warn(L"DeleteDscJsonFilesCA: failed to delete {}", p.c_str());
-                        }
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        Logger::warn(L"DeleteDscJsonFilesCA: exception while deleting files");
-    }
-
-LExit:
-    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
-    return WcaFinalize(er);
-}
-
 const wchar_t *DSC_CONFIGURE_PSD1_NAME = L"Microsoft.PowerToys.Configure.psd1";
 const wchar_t *DSC_CONFIGURE_PSM1_NAME = L"Microsoft.PowerToys.Configure.psm1";
 
