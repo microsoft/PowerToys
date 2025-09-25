@@ -427,7 +427,9 @@
                             Margin="0,4,0,24"
                             Background="Transparent"
                             Config="{StaticResource DefaultMarkdownConfig}"
-                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
+                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
+                            UseEmphasisExtras="True"
+                            UsePipeTables="True" />
 
                         <ItemsRepeater
                             Grid.Row="3"
