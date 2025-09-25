@@ -487,18 +487,35 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             }
         }
 
-        bool replacedSomething = false;
+        bool shouldIncrementCounter = false;
         if (m_flags & UseRegularExpressions)
         {
             replaceTerm = regex_replace(replaceTerm, zeroGroupRegex, L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, otherGroupsRegex, L"$1$0$4");
 
             res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, !(m_flags & CaseSensitive));
-            replacedSomething = originalSource != res;
+
+            // Use regex search to determine if a match exists. This is the basis for incrementing
+            // the counter.
+            if (_useBoostLib)
+            {
+                boost::wregex pattern(m_searchTerm, boost::wregex::ECMAScript | (!(m_flags & CaseSensitive) ? boost::wregex::icase : boost::wregex::normal));
+                shouldIncrementCounter = boost::regex_search(sourceToUse, pattern);
+            }
+            else
+            {
+                auto regexFlags = std::wregex::ECMAScript;
+                if (!(m_flags & CaseSensitive))
+                {
+                    regexFlags |= std::wregex::icase;
+                }
+                std::wregex pattern(m_searchTerm, regexFlags);
+                shouldIncrementCounter = std::regex_search(sourceToUse, pattern);
+            }
         }
         else
         {
-            // Simple search and replace
+            // Simple search and replace.
             size_t pos = 0;
             do
             {
@@ -507,7 +524,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
                 {
                     res = sourceToUse.replace(pos, searchTerm.length(), replaceTerm);
                     pos += replaceTerm.length();
-                    replacedSomething = true;
+                    shouldIncrementCounter = true;
                 }
                 if (!(m_flags & MatchAllOccurrences))
                 {
@@ -516,7 +533,8 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             } while (pos != std::string::npos);
         }
         hr = SHStrDup(res.c_str(), result);
-        if (replacedSomething)
+
+        if (shouldIncrementCounter)
             enumIndex++;
     }
     catch (regex_error e)
