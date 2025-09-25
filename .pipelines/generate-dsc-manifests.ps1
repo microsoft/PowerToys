@@ -40,13 +40,16 @@ Write-Host "Repo root: $RepoRoot"
 Write-Host "Requested build platform: $BuildPlatform"
 Write-Host "Requested configuration: $BuildConfiguration"
 
+# Always use x64 PowerToys.DSC.exe since CI/CD machines are x64
 $exePlatform = 'x64'
 $exeRoot = Resolve-PlatformDirectory -Root $RepoRoot -Platform $exePlatform
 $exeOutputDir = Join-Path $exeRoot $BuildConfiguration
 $exePath = Join-Path $exeOutputDir 'PowerToys.DSC.exe'
 
+Write-Host "Using x64 PowerToys.DSC.exe to generate DSC manifests for $BuildPlatform build"
+
 if ($ForceRebuildExecutable -or -not (Test-Path $exePath)) {
-    Write-Host "PowerToys.DSC.exe not found at '$exePath'. Building $exePlatform binary..."
+    Write-Host "PowerToys.DSC.exe not found at '$exePath'. Building x64 binary..."
 
     $msbuild = Get-Command msbuild.exe -ErrorAction SilentlyContinue
     if ($null -eq $msbuild) {
@@ -59,7 +62,7 @@ if ($ForceRebuildExecutable -or -not (Test-Path $exePath)) {
         '/t:Build',
         '/m',
         "/p:Configuration=$BuildConfiguration",
-        "/p:Platform=$exePlatform",
+        "/p:Platform=x64",
         '/restore'
     )
 
@@ -77,6 +80,7 @@ if ($ForceRebuildExecutable -or -not (Test-Path $exePath)) {
     Write-Host "Using existing PowerToys.DSC.exe at '$exePath'."
 }
 
+# Output DSC manifests to the target build platform directory (x64, ARM64, etc.)
 $outputRoot = Resolve-PlatformDirectory -Root $RepoRoot -Platform $BuildPlatform
 if (-not (Test-Path $outputRoot)) {
     Write-Host "Creating missing platform output root at '$outputRoot'."
@@ -88,6 +92,8 @@ if (-not (Test-Path $outputDir)) {
     Write-Host "Creating missing configuration output directory at '$outputDir'."
     New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
 }
+
+Write-Host "DSC manifests will be generated to: '$outputDir'"
 
 Write-Host "Cleaning previously generated DSC manifest files from '$outputDir'."
 Get-ChildItem -Path $outputDir -Filter 'microsoft.powertoys.*.settings.dsc.resource.json' -ErrorAction SilentlyContinue | Remove-Item -Force
