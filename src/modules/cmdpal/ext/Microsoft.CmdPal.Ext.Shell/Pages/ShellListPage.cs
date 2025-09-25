@@ -155,8 +155,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // Reset the path resolution flag
         var couldResolvePath = false;
 
-        string exe = string.Empty;
-        string args = string.Empty;
+        var exe = string.Empty;
+        var args = string.Empty;
 
         var exeExists = false;
         var fullExePath = string.Empty;
