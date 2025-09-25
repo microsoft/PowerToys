@@ -154,8 +154,7 @@ HRESULT CPowerRenameRegEx::_OnEnumerateOrRandomizeItemsChanged()
                 std::find_if(
                     m_randomizer.begin(),
                     m_randomizer.end(),
-                    [option](const Randomizer& r) -> bool { return r.options.replaceStrSpan.offset == option.replaceStrSpan.offset; }
-                ))
+                    [option](const Randomizer& r) -> bool { return r.options.replaceStrSpan.offset == option.replaceStrSpan.offset; }))
             {
                 // Only add as enumerator if we didn't find a randomizer already at this offset.
                 // Every randomizer will also be a valid enumerator according to the definition of enumerators, which allows any string to mean the default enumerator, so it should be interpreted that the user wanted a randomizer if both were found at the same offset of the replace string.
@@ -396,9 +395,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
 
         std::wstring sourceToUse;
         sourceToUse.reserve(MAX_PATH);
-        originalSource.reserve(MAX_PATH);
         sourceToUse = source;
-        originalSource = sourceToUse;
 
         std::wstring searchTerm(m_searchTerm);
         std::wstring replaceTerm;
