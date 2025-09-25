@@ -32,3 +32,4 @@ EXPORTS
 	CleanFileLocksmithRuntimeRegistryCA
 	CleanPowerRenameRuntimeRegistryCA
 	CleanNewPlusRuntimeRegistryCA
+	SetBundleInstallLocationCA
