@@ -52,7 +52,7 @@ foreach ($file in $dscFiles) {
     
     $wxsContent += @"
 
-      <Component Id="$componentId" Guid="{$guid}" Directory="DSCModulesReferenceFolder">
+      <Component Id="$componentId" Guid="{$guid}">
         <RegistryKey Root="`$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="$componentId" Value="" KeyPath="yes"/>
         </RegistryKey>
