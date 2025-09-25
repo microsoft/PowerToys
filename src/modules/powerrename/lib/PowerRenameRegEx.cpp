@@ -397,9 +397,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         std::wstring sourceToUse;
         std::wstring originalSource;
         sourceToUse.reserve(MAX_PATH);
-        originalSource.reserve(MAX_PATH);
         sourceToUse = source;
-        originalSource = sourceToUse;
 
         std::wstring searchTerm(m_searchTerm);
         std::wstring replaceTerm;
