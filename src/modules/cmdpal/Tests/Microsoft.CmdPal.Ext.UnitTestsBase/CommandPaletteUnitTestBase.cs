@@ -24,4 +24,17 @@ public class CommandPaletteUnitTestBase
 
         return listItems;
     }
+
+    public async Task UpdatePageAndWaitForItems(IDynamicListPage page, Action modification)
+    {
+        // Add an event handler for the ItemsChanged event,
+        // Then call the modification action,
+        // and wait for the event to be raised.
+        var tcs = new TaskCompletionSource<object>();
+
+        page.ItemsChanged += (sender, args) => tcs.SetResult(null);
+
+        modification();
+        await tcs.Task;
+    }
 }

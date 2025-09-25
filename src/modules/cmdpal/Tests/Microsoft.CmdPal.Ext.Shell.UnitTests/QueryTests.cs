@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -74,6 +75,8 @@ public class QueryTests : CommandPaletteUnitTestBase
     [DataRow("ping bing.com", "ping.exe")]
     [DataRow("curl bing.com", "curl.exe")]
     [DataRow("ipconfig /all", "ipconfig.exe")]
+    [DataRow("\"C:\\Program Files\\Windows Defender\\MsMpEng.exe\"", "MsMpEng.exe")]
+    [DataRow("C:\\Program Files\\Windows Defender\\MsMpEng.exe", "MsMpEng.exe")]
     public async Task QueryWithoutHistoryCommand(string command, string exeName)
     {
         // Setup
@@ -82,19 +85,24 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         var pages = new ShellListPage(settings, mockHistory.Object);
 
-        pages.UpdateSearchText(string.Empty, command);
-
-        // wait for about 1s.
-        await Task.Delay(1000);
+        await UpdatePageAndWaitForItems(pages, () =>
+        {
+            // Test: Search for a command that exists in history
+            pages.UpdateSearchText(string.Empty, command);
+        });
 
         var commandList = pages.GetItems();
 
         Assert.AreEqual(1, commandList.Length);
 
-        var executeCommand = commandList.FirstOrDefault();
-        Assert.IsNotNull(executeCommand);
-        Assert.IsNotNull(executeCommand.Icon);
-        Assert.IsTrue(executeCommand.Title.Contains(exeName), $"expect ${exeName} but got ${executeCommand.Title}");
+        var listItem = commandList.FirstOrDefault();
+        Assert.IsNotNull(listItem);
+
+        var runExeListItem = listItem as RunExeItem;
+        Assert.IsNotNull(runExeListItem);
+        Assert.AreEqual(exeName, runExeListItem.Exe);
+        Assert.IsTrue(listItem.Title.Contains(exeName), $"expect ${exeName} but got ${listItem.Title}");
+        Assert.IsNotNull(listItem.Icon);
     }
 
     [TestMethod]
@@ -109,10 +117,11 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         var pages = new ShellListPage(settings, mockHistoryService.Object);
 
-        // Test: Search for a command that exists in history
-        pages.UpdateSearchText(string.Empty, command);
-
-        await Task.Delay(1000);
+        await UpdatePageAndWaitForItems(pages, () =>
+        {
+            // Test: Search for a command that exists in history
+            pages.UpdateSearchText(string.Empty, command);
+        });
 
         var commandList = pages.GetItems();
 
@@ -134,9 +143,11 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         var pages = new ShellListPage(settings, mockHistoryService.Object);
 
-        pages.UpdateSearchText("abcdefg", string.Empty);
-
-        await Task.Delay(1000);
+        await UpdatePageAndWaitForItems(pages, () =>
+        {
+            // Test: Search for a command that exists in history
+            pages.UpdateSearchText("abcdefg", string.Empty);
+        });
 
         var commandList = pages.GetItems();
 
