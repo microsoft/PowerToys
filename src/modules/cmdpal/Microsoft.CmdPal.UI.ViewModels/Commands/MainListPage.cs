@@ -32,9 +32,9 @@ public partial class MainListPage : DynamicListPage,
 
     private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
-    private IEnumerable<Scored<IListItem>>? _filteredItems;
-    private IEnumerable<Scored<IListItem>>? _filteredApps;
-    private IEnumerable<Scored<IListItem>>? _fallbackItems;
+    private List<Scored<IListItem>>? _filteredItems;
+    private List<Scored<IListItem>>? _filteredApps;
+    private List<Scored<IListItem>>? _fallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
@@ -162,7 +162,7 @@ public partial class MainListPage : DynamicListPage,
 
                 // Fuzzy matching can produce a lot of results, so we want to limit the
                 // number of apps we show at once if it's a large set.
-                if (_filteredApps?.Any() == true)
+                if (_filteredApps?.Count > 0)
                 {
                     limitedApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit);
                 }
@@ -343,10 +343,10 @@ public partial class MainListPage : DynamicListPage,
             }
 
             // Produce a list of everything that matches the current filter.
-            _filteredItems = ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem);
+            _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem)];
 
             // Defaulting scored to 1 but we'll eventually use user rankings
-            _fallbackItems = newFallbacks.Select(f => new Scored<IListItem> { Item = f, Score = 1 });
+            _fallbackItems = [.. newFallbacks.Select(f => new Scored<IListItem> { Item = f, Score = 1 })];
 
             if (token.IsCancellationRequested)
             {
@@ -367,7 +367,7 @@ public partial class MainListPage : DynamicListPage,
                 // but we need to know the limit now to avoid re-scoring apps
                 var appLimit = AllAppsCommandProvider.TopLevelResultLimit;
 
-                _filteredApps = scoredApps;
+                _filteredApps = [.. scoredApps];
             }
 
             RaiseItemsChanged();
