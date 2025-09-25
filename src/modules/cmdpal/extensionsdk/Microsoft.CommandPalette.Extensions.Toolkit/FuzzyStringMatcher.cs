@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
-
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 // Inspired by the fuzzy.rs from edit.exe
@@ -32,10 +30,10 @@ public static class FuzzyStringMatcher
             return (NOMATCH, new List<int>());
         }
 
-        var targetLower = FoldCase(haystack);
-        var queryLower = FoldCase(needle);
-        var targetLowerChars = targetLower.ToCharArray();
-        var queryLowerChars = queryLower.ToCharArray();
+        var targetUpper = FoldCase(haystack);
+        var queryUpper = FoldCase(needle);
+        var targetUpperChars = targetUpper.ToCharArray();
+        var queryUpperChars = queryUpper.ToCharArray();
 
         var area = query.Length * target.Length;
         var scores = new int[area];
@@ -119,7 +117,7 @@ public static class FuzzyStringMatcher
 
     private static string FoldCase(string input)
     {
-        return input.ToLower(CultureInfo.InvariantCulture);
+        return input.ToUpperInvariant();
     }
 
     private static int ComputeCharScore(
