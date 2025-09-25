@@ -55,15 +55,15 @@ public static class FuzzyStringMatcher
                 var score = (diagScore == 0 && qi != 0) ? 0 :
                     ComputeCharScore(
                         query[qi],
-                        queryLowerChars[qi],
+                        queryUpperChars[qi],
                         ti != 0 ? target[ti - 1] : null,
                         target[ti],
-                        targetLowerChars[ti],
+                        targetUpperChars[ti],
                         matchSeqLen);
 
                 var isValidScore = score != 0 && diagScore + score >= leftScore &&
                     (allowNonContiguousMatches || qi > 0 ||
-                     targetLowerChars.Skip(ti).Take(queryLowerChars.Length).SequenceEqual(queryLowerChars));
+                     targetUpperChars.Skip(ti).Take(queryUpperChars.Length).SequenceEqual(queryUpperChars));
 
                 if (isValidScore)
                 {
