@@ -24,7 +24,7 @@ public partial class ShellCommandsProvider : CommandProvider
     {
         _historyService = runHistoryService;
 
-        Id = "Run";
+        Id = "com.microsoft.cmdpal.builtin.run";
         DisplayName = Resources.cmd_plugin_name;
         Icon = Icons.RunV2Icon;
         Settings = _settingsManager.Settings;

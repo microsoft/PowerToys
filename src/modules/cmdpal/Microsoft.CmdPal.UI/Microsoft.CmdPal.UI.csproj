@@ -74,7 +74,6 @@
     <None Remove="Pages\Settings\GeneralPage.xaml" />
     <None Remove="SettingsWindow.xaml" />
     <None Remove="ShellPage.xaml" />
-    <None Remove="Styles\Button.xaml" />
     <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
     <None Remove="Styles\TextBox.xaml" />
@@ -99,13 +98,6 @@
     </PackageReference>
 
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-
-    <PackageReference Include="System.Net.Http" />
-
-    <PackageReference Include="System.Private.Uri" />
-    <PackageReference Include="System.Text.Json" />
-
-    <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
   <!--
@@ -168,9 +160,6 @@
     </Page>
     <Page Update="Controls\SearchBar.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Styles\Button.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Styles\TextBox.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
