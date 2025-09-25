@@ -13,11 +13,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:local="using:Microsoft.CmdPal.UI"
+    xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
-    xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -28,7 +28,10 @@
                 H3FontSize="12"
                 H3FontWeight="Normal" />
             <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
-            <labToolkit:MarkdownConfig x:Key="DefaultMarkdownConfig" Themes="{StaticResource DefaultMarkdownThemeConfig}" ImageProvider="{StaticResource ImageProvider}" />
+            <labToolkit:MarkdownConfig
+                x:Key="DefaultMarkdownConfig"
+                ImageProvider="{StaticResource ImageProvider}"
+                Themes="{StaticResource DefaultMarkdownThemeConfig}" />
 
             <StackLayout
                 x:Name="VerticalStackLayout"
