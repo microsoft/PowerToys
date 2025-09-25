@@ -67,7 +67,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private bool _isDynamic;
 
-    private Task? _initializeItemsTask;
     private CancellationTokenSource? _cancellationTokenSource;
     private CancellationTokenSource? _fetchItemsCancellationTokenSource;
 
@@ -200,13 +199,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // Check for cancellation before initializing first twenty items
             cancellationToken.ThrowIfCancellationRequested();
 
-            var firstTwenty = newViewModels.Take(20);
-            foreach (var item in firstTwenty)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                item?.SafeInitializeProperties();
-            }
-
             // Cancel any ongoing search
             _cancellationTokenSource?.Cancel();
 
@@ -262,18 +254,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         _cancellationTokenSource = new CancellationTokenSource();
 
-        _initializeItemsTask = new Task(() =>
-        {
-            try
-            {
-                InitializeItemsTask(_cancellationTokenSource.Token);
-            }
-            catch (OperationCanceledException)
-            {
-            }
-        });
-        _initializeItemsTask.Start();
-
         DoOnUiThread(
             () =>
             {
@@ -299,32 +279,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
                 _isLoading.Clear();
             });
-    }
-
-    private void InitializeItemsTask(CancellationToken ct)
-    {
-        // Were we already canceled?
-        ct.ThrowIfCancellationRequested();
-
-        ListItemViewModel[] iterable;
-        lock (_listLock)
-        {
-            iterable = Items.ToArray();
-        }
-
-        foreach (var item in iterable)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            // TODO: GH #502
-            // We should probably remove the item from the list if it
-            // entered the error state. I had issues doing that without having
-            // multiple threads muck with `Items` (and possibly FilteredItems!)
-            // at once.
-            item.SafeInitializeProperties();
-
-            ct.ThrowIfCancellationRequested();
-        }
     }
 
     /// <summary>
