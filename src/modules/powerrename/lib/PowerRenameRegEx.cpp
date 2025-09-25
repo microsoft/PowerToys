@@ -395,7 +395,6 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         }
 
         std::wstring sourceToUse;
-        std::wstring originalSource;
         sourceToUse.reserve(MAX_PATH);
         sourceToUse = source;
 
@@ -486,24 +485,26 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         }
 
         bool shouldIncrementCounter = false;
+        const bool isCaseInsensitive = !(m_flags & CaseSensitive);
+
         if (m_flags & UseRegularExpressions)
         {
             replaceTerm = regex_replace(replaceTerm, zeroGroupRegex, L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, otherGroupsRegex, L"$1$0$4");
 
-            res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, !(m_flags & CaseSensitive));
+            res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, isCaseInsensitive);
 
             // Use regex search to determine if a match exists. This is the basis for incrementing
             // the counter.
             if (_useBoostLib)
             {
-                boost::wregex pattern(m_searchTerm, boost::wregex::ECMAScript | (!(m_flags & CaseSensitive) ? boost::wregex::icase : boost::wregex::normal));
+                boost::wregex pattern(m_searchTerm, boost::wregex::ECMAScript | (isCaseInsensitive ? boost::wregex::icase : boost::wregex::normal));
                 shouldIncrementCounter = boost::regex_search(sourceToUse, pattern);
             }
             else
             {
                 auto regexFlags = std::wregex::ECMAScript;
-                if (!(m_flags & CaseSensitive))
+                if (isCaseInsensitive)
                 {
                     regexFlags |= std::wregex::icase;
                 }
@@ -517,7 +518,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             size_t pos = 0;
             do
             {
-                pos = _Find(sourceToUse, searchTerm, (!(m_flags & CaseSensitive)), pos);
+                pos = _Find(sourceToUse, searchTerm, isCaseInsensitive, pos);
                 if (pos != std::string::npos)
                 {
                     res = sourceToUse.replace(pos, searchTerm.length(), replaceTerm);
