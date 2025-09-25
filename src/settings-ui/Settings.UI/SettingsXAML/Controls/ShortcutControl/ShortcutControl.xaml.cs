@@ -256,7 +256,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 // Update the ShortcutControl's conflict properties from HotkeySettings
                 HasConflict = hotkeySettings.HasConflict;
                 Tooltip = hotkeySettings.HasConflict ? hotkeySettings.ConflictDescription : null;
-                IgnoreConflict = hotkeySettings.IgnoreConflict;
+                IgnoreConflict = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySettings);
                 KeyVisualShouldShowConflict = !IgnoreConflict && HasConflict;
             }
             else
