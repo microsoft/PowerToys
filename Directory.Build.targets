@@ -6,10 +6,6 @@
 
   <!-- Override ManifestTool to the x64 host tool under WindowsSdkDir for all projects once the SDK path is known. -->
   <PropertyGroup Label="ManifestToolOverride">
-    <ManifestTool Condition="'$(WindowsSdkDir)' != ''">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
+    <ManifestTool Condition="Exists('$(WindowsSdkDir)bin\x64\mt.exe')">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
   </PropertyGroup>
-
-  <Target Name="LogWindowsSdkDir" BeforeTargets="PrepareForBuild">
-    <Message Importance="High" Text="WindowsSdkDir=$(WindowsSdkDir)" />
-  </Target>
 </Project>
