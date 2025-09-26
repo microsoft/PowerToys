@@ -171,6 +171,7 @@ type_pMagSetInputTransform	pMagSetInputTransform;
 type_pMagShowSystemCursor	pMagShowSystemCursor;
 type_pMagSetWindowFilterList pMagSetWindowFilterList;
 type_MagSetFullscreenUseBitmapSmoothing pMagSetFullscreenUseBitmapSmoothing;
+type_pMagSetLensUseBitmapSmoothing pMagSetLensUseBitmapSmoothing;
 type_pMagInitialize			pMagInitialize;
 type_pDwmIsCompositionEnabled	pDwmIsCompositionEnabled;
 type_pGetPointerType		pGetPointerType;
@@ -3935,11 +3936,6 @@ LRESULT APIENTRY MainWndProc(
                 SetWindowLongPtr(hWnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
                 SetLayeredWindowAttributes(hWnd, COLORREF(RGB(0, 0, 0)), 0, LWA_COLORKEY);
                 pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 0, nullptr );
-                OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
-                if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
-                {
-                    OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
-                }
             }
             [[fallthrough]];
         }
@@ -4163,11 +4159,6 @@ LRESULT APIENTRY MainWndProc(
                         0, 0, 0, 0, NULL, NULL, g_hInstance, static_cast<PVOID>(GetForegroundWindow()) );
                     pSetLayeredWindowAttributes( hWnd, 0, 0, LWA_ALPHA );
                     EnableWindow( g_hWndLiveZoom, FALSE );
-                    OutputDebug(L"Livezoom SMOOTHING: %d\n", g_SmoothImage);
-                    if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
-                    {                    
-                        OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
-                    }
                     pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 1, &hWnd );
 
                 } else {
@@ -4191,16 +4182,16 @@ LRESULT APIENTRY MainWndProc(
                     } else {
                     
                         OutputDebug(L"Show liveZoom\n");
-                        OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
-                        if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
-                        {
-                            OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
-                        }
                         ShowWindow( g_hWndLiveZoom, SW_SHOW );
                     }
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
                     }
 #endif
+                }
+                OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
+                if (!pMagSetLensUseBitmapSmoothing(g_hWndLiveZoomMag, g_SmoothImage))
+                {
+                    OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
                 }
 
                 if ( g_RecordToggle )
@@ -7142,11 +7133,6 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
                     pMagSetWindowTransform(g_hWndLiveZoomMag, &matrix);
                 }
-                OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
-                if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
-                {
-                    OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
-                }
             }
 
             if( !g_fullScreenWorkaround ) {
@@ -7341,12 +7327,6 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             else {
 
                 pMagSetWindowTransform(g_hWndLiveZoomMag, &matrix);
-            }
-            OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
-
-            if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
-            {
-                OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
             }
         }
         break;
@@ -7607,6 +7587,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     "MagSetFullscreenTransform");
     pMagSetFullscreenUseBitmapSmoothing = (type_MagSetFullscreenUseBitmapSmoothing)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
                     "MagSetFullscreenUseBitmapSmoothing");
+    pMagSetLensUseBitmapSmoothing = (type_pMagSetLensUseBitmapSmoothing)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetLensUseBitmapSmoothing");
     pMagSetInputTransform = (type_pMagSetInputTransform)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
                     "MagSetInputTransform");
     pMagShowSystemCursor = (type_pMagShowSystemCursor)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),

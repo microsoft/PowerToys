@@ -143,6 +143,10 @@ typedef BOOL(__stdcall *type_pMagSetWindowFilterList)(
     int   count,
     HWND* pHWND
 );
+typedef BOOL(__stdcall* type_pMagSetLensUseBitmapSmoothing)(
+    _In_ HWND, 
+    _In_ BOOL
+);
 typedef BOOL(__stdcall* type_MagSetFullscreenUseBitmapSmoothing)(
     BOOL fUseBitmapSmoothing
 );
