@@ -97,6 +97,26 @@
                             IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander
+                            x:Uid="AdvancedPaste_AdvancedSettings"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}"
+                            IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}"
+                            IsExpanded="False">
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard 
+                                    x:Uid="AdvancedPaste_AdvancedSettings_CustomEndpoint">
+                                    <TextBox Text="{x:Bind ViewModel.CustomEndpoint, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard 
+                                    x:Uid="AdvancedPaste_AdvancedSettings_CustomModelName">
+                                    <TextBox Text="{x:Bind ViewModel.CustomModelName, Mode=TwoWay}"/>
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="AdvancedPaste_AdvancedSettings_DisableModeration">
+                                    <ToggleSwitch IsOn="{x:Bind ViewModel.DisableModeration, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
                     </controls:SettingsGroup>
                     <controls:SettingsGroup x:Uid="AdvancedPaste_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.ShowClipboardHistoryIsGpoConfiguredInfoBar, Mode=OneWay}">

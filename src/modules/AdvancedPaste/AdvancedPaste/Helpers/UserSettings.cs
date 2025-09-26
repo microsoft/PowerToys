@@ -35,6 +35,12 @@ namespace AdvancedPaste.Settings
 
         public bool IsAdvancedAIEnabled { get; private set; }
 
+        public string CustomEndpoint { get; private set; }
+
+        public string CustomModelName { get; private set; }
+
+        public bool DisableModeration { get; private set; }
+
         public bool ShowCustomPreview { get; private set; }
 
         public bool CloseAfterLosingFocus { get; private set; }
@@ -48,6 +54,9 @@ namespace AdvancedPaste.Settings
             _settingsUtils = new SettingsUtils(fileSystem);
 
             IsAdvancedAIEnabled = false;
+            CustomEndpoint = string.Empty;
+            CustomModelName = string.Empty;
+            DisableModeration = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
             _additionalActions = [];
@@ -99,6 +108,9 @@ namespace AdvancedPaste.Settings
                                 var properties = settings.Properties;
 
                                 IsAdvancedAIEnabled = properties.IsAdvancedAIEnabled;
+                                CustomEndpoint = properties.CustomEndpoint;
+                                CustomModelName = properties.CustomModelName;
+                                DisableModeration = properties.DisableModeration;
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
 

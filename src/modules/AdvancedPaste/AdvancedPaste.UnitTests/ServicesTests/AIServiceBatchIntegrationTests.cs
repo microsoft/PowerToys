@@ -14,9 +14,11 @@ using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services.OpenAI;
+using AdvancedPaste.Settings;
 using AdvancedPaste.UnitTests.Mocks;
 using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.UnitTests.ServicesTests;
@@ -130,10 +132,11 @@ public sealed class AIServiceBatchIntegrationTests
 
     private static async Task<DataPackage> GetOutputDataPackageAsync(BatchTestInput batchTestInput, PasteFormats format)
     {
+        Mock<IUserSettings> userSettings = new();
         VaultCredentialsProvider credentialsProvider = new();
-        PromptModerationService promptModerationService = new(credentialsProvider);
+        PromptModerationService promptModerationService = new(userSettings.Object, credentialsProvider);
         NoOpProgress progress = new();
-        CustomTextTransformService customTextTransformService = new(credentialsProvider, promptModerationService);
+        CustomTextTransformService customTextTransformService = new(userSettings.Object, credentialsProvider, promptModerationService);
 
         switch (format)
         {
@@ -142,7 +145,7 @@ public sealed class AIServiceBatchIntegrationTests
 
             case PasteFormats.KernelQuery:
                 var clipboardData = DataPackageHelpers.CreateFromText(batchTestInput.Clipboard).GetView();
-                KernelService kernelService = new(new NoOpKernelQueryCacheService(), credentialsProvider, promptModerationService, customTextTransformService);
+                KernelService kernelService = new(userSettings.Object, new NoOpKernelQueryCacheService(), credentialsProvider, promptModerationService, customTextTransformService);
                 return await kernelService.TransformClipboardAsync(batchTestInput.Prompt, clipboardData, isSavedQuery: false, CancellationToken.None, progress);
 
             default:

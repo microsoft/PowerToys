@@ -638,6 +638,30 @@ opera.exe</value>
   <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
     <value>Additional actions</value>
   </data>
+  <data name="AdvancedPaste_AdvancedSettings.Header" xml:space="preserve">
+    <value>Advanced settings</value>
+  </data>
+  <data name="AdvancedPaste_AdvancedSettings.Description" xml:space="preserve">
+    <value>These settings allow you to connect to self-hosted models or alternative providers, which are compatible with the OpenAI API specification.</value>
+  </data>
+  <data name="AdvancedPaste_AdvancedSettings_CustomEndpoint.Header" xml:space="preserve">
+    <value>Custom endpoint</value>
+  </data>
+  <data name="AdvancedPaste_AdvancedSettings_CustomEndpoint.Description" xml:space="preserve">
+    <value>Enter the base URL of the OpenAI API-compatible service you wish to use (e.g., https://generativelanguage.googleapis.com/v1beta or https://api.anthropic.com/v1). This will override the default endpoint.</value>
+  </data>
+  <data name="AdvancedPaste_AdvancedSettings_CustomModelName.Header" xml:space="preserve">
+    <value>Custom model name</value>
+  </data>
+  <data name="AdvancedPaste_AdvancedSettings_CustomModelName.Description" xml:space="preserve">
+    <value>Specify the exact model identifier that your custom endpoint expects (e.g., claude-3-7-sonnet, gemini-2.5-flash, my-custom-finetune). Consult your provider's documentation for the correct name.</value>
+  </data>
+  <data name="AdvancedPaste_AdvancedSettings_DisableModeration.Header" xml:space="preserve">
+    <value>Disable moderation</value>
+  </data>
+  <data name="AdvancedPaste_AdvancedSettings_DisableModeration.Description" xml:space="preserve">
+    <value>Disable the built-in moderation checks for the selected model. This is not recommended unless you are using a custom model that has its own moderation capabilities.</value>
+  </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current key remappings</value>
   </data>

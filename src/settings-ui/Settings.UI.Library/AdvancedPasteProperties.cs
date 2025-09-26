@@ -24,12 +24,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CustomActions = new();
             AdditionalActions = new();
             IsAdvancedAIEnabled = false;
+            CustomEndpoint = string.Empty;
+            CustomModelName = string.Empty;
+            DisableModeration = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool IsAdvancedAIEnabled { get; set; }
+
+        public string CustomEndpoint { get; set; }
+
+        public string CustomModelName { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool DisableModeration { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowCustomPreview { get; set; }

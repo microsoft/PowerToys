@@ -361,6 +361,47 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string CustomEndpoint
+        {
+            get => _advancedPasteSettings.Properties.CustomEndpoint;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.CustomEndpoint)
+                {
+                    _advancedPasteSettings.Properties.CustomEndpoint = value;
+                    OnPropertyChanged(nameof(CustomEndpoint));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public string CustomModelName
+        {
+            get => _advancedPasteSettings.Properties.CustomModelName;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.CustomModelName)
+                {
+                    _advancedPasteSettings.Properties.CustomModelName = value;
+                    OnPropertyChanged(nameof(CustomModelName));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool DisableModeration
+        {
+            get => _advancedPasteSettings.Properties.DisableModeration;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.DisableModeration)
+                {
+                    _advancedPasteSettings.Properties.DisableModeration = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool ShowCustomPreview
         {
             get => _advancedPasteSettings.Properties.ShowCustomPreview;

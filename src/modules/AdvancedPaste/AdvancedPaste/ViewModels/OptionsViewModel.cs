@@ -85,6 +85,12 @@ namespace AdvancedPaste.ViewModels
 
         public bool IsAdvancedAIEnabled => IsCustomAIServiceEnabled && _userSettings.IsAdvancedAIEnabled;
 
+        public string CustomEndpoint => _userSettings.CustomEndpoint;
+
+        public string CustomModelName => _userSettings.CustomModelName;
+
+        public bool DisableModeration => _userSettings.DisableModeration;
+
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
         public bool ClipboardHasDataForCustomAI => PasteFormat.SupportsClipboardFormats(CustomAIFormat, AvailableClipboardFormats);
@@ -167,6 +173,9 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(ClipboardHasDataForCustomAI));
             OnPropertyChanged(nameof(IsCustomAIAvailable));
             OnPropertyChanged(nameof(IsAdvancedAIEnabled));
+            OnPropertyChanged(nameof(CustomEndpoint));
+            OnPropertyChanged(nameof(CustomModelName));
+            OnPropertyChanged(nameof(DisableModeration));
 
             EnqueueRefreshPasteFormats();
         }
@@ -275,6 +284,9 @@ namespace AdvancedPaste.ViewModels
                     OnPropertyChanged(nameof(CustomAIUnavailableErrorText));
                     OnPropertyChanged(nameof(IsCustomAIServiceEnabled));
                     OnPropertyChanged(nameof(IsAdvancedAIEnabled));
+                    OnPropertyChanged(nameof(CustomEndpoint));
+                    OnPropertyChanged(nameof(CustomModelName));
+                    OnPropertyChanged(nameof(DisableModeration));
                     OnPropertyChanged(nameof(IsCustomAIAvailable));
                 });
             }

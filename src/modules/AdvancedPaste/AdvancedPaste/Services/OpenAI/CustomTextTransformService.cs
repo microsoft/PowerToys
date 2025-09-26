@@ -3,54 +3,62 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ClientModel;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Settings;
 using AdvancedPaste.Telemetry;
-using Azure;
-using Azure.AI.OpenAI;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using OpenAI;
+using OpenAI.Chat;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class CustomTextTransformService(IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService) : ICustomTextTransformService
+public sealed class CustomTextTransformService(IUserSettings userSettings, IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService) : ICustomTextTransformService
 {
-    private const string ModelName = "gpt-3.5-turbo-instruct";
+    private readonly IUserSettings _userSettings = userSettings;
+
+    private string ModelName => string.IsNullOrEmpty(_userSettings.CustomModelName) ? "gpt-3.5-turbo-instruct" : _userSettings.CustomModelName;
 
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
     private readonly IPromptModerationService _promptModerationService = promptModerationService;
 
-    private async Task<Completions> GetAICompletionAsync(string systemInstructions, string userMessage, CancellationToken cancellationToken)
+    private async Task<ChatCompletion> GetAICompletionAsync(string systemInstructions, string userMessage, CancellationToken cancellationToken)
     {
         var fullPrompt = systemInstructions + "\n\n" + userMessage;
-
         await _promptModerationService.ValidateAsync(fullPrompt, cancellationToken);
 
-        OpenAIClient azureAIClient = new(_aiCredentialsProvider.Key);
+        OpenAIClientOptions clientOptions = new();
+        if (!string.IsNullOrEmpty(_userSettings.CustomEndpoint))
+        {
+            clientOptions.Endpoint = new Uri(_userSettings.CustomEndpoint);
+        }
 
-        var response = await azureAIClient.GetCompletionsAsync(
+        OpenAIClient openAIClient = new(new ApiKeyCredential(_aiCredentialsProvider.Key), clientOptions);
+
+        var response = await openAIClient.GetChatClient(ModelName).CompleteChatAsync(
+            [
+                new SystemChatMessage(systemInstructions),
+                new SystemChatMessage(userMessage)
+            ],
             new()
             {
-                DeploymentName = ModelName,
-                Prompts =
-                {
-                    fullPrompt,
-                },
                 Temperature = 0.01F,
-                MaxTokens = 2000,
+                MaxOutputTokenCount = 2000,
             },
             cancellationToken);
 
-        if (response.Value.Choices[0].FinishReason == "length")
+        if (response.Value.FinishReason == ChatFinishReason.Length)
         {
             Logger.LogDebug("Cut off due to length constraints");
         }
 
-        return response;
+        return response.Value;
     }
 
     public async Task<string> TransformTextAsync(string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress)
@@ -85,13 +93,13 @@ Output:
             var response = await GetAICompletionAsync(systemInstructions, userMessage, cancellationToken);
 
             var usage = response.Usage;
-            AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.PromptTokens, usage.CompletionTokens, ModelName);
+            AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.InputTokenCount, usage.OutputTokenCount, ModelName);
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
             var logEvent = new AIServiceFormatEvent(telemetryEvent);
 
             Logger.LogDebug($"{nameof(TransformTextAsync)} complete; {logEvent.ToJsonString()}");
 
-            return response.Choices[0].Text;
+            return response.Content[0].Text;
         }
         catch (Exception ex)
         {
@@ -106,7 +114,7 @@ Output:
             }
             else
             {
-                throw new PasteActionException(ErrorHelpers.TranslateErrorText((ex as RequestFailedException)?.Status ?? -1), ex);
+                throw new PasteActionException(ErrorHelpers.TranslateErrorText((ex as ClientResultException)?.Status ?? -1), ex);
             }
         }
     }
