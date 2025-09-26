@@ -18,7 +18,9 @@ using CommunityToolkit.WinUI.UI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
+using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -38,6 +40,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         public bool ShowDataDiagnosticsInfoBar => GetShowDataDiagnosticsInfoBar();
 
+        private int _conflictCount;
+
         public AllHotkeyConflictsData AllHotkeyConflictsData
         {
             get => _allHotkeyConflictsData;
@@ -46,34 +50,48 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 if (_allHotkeyConflictsData != value)
                 {
                     _allHotkeyConflictsData = value;
+
+                    UpdateConflictCount();
+
                     OnPropertyChanged(nameof(AllHotkeyConflictsData));
                     OnPropertyChanged(nameof(HasConflicts));
                 }
             }
         }
 
-        public bool HasConflicts
+        public bool HasConflicts => _conflictCount > 0;
+
+        private void UpdateConflictCount()
         {
-            get
+            int count = 0;
+            if (AllHotkeyConflictsData == null)
             {
-                if (AllHotkeyConflictsData == null)
-                {
-                    return false;
-                }
-
-                int count = 0;
-                if (AllHotkeyConflictsData.InAppConflicts != null)
-                {
-                    count += AllHotkeyConflictsData.InAppConflicts.Count;
-                }
-
-                if (AllHotkeyConflictsData.SystemConflicts != null)
-                {
-                    count += AllHotkeyConflictsData.SystemConflicts.Count;
-                }
-
-                return count > 0;
+                _conflictCount = count;
             }
+
+            if (AllHotkeyConflictsData.InAppConflicts != null)
+            {
+                foreach (var inAppConflict in AllHotkeyConflictsData.InAppConflicts)
+                {
+                    if (!inAppConflict.ConflictIgnored)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            if (AllHotkeyConflictsData.SystemConflicts != null)
+            {
+                foreach (var systemConflict in AllHotkeyConflictsData.SystemConflicts)
+                {
+                    if (!systemConflict.ConflictIgnored)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            _conflictCount = count;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -99,6 +117,21 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         {
             this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
             {
+                var allConflictData = e.Conflicts;
+                foreach (var inAppConflict in allConflictData.InAppConflicts)
+                {
+                    var hotkey = inAppConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    inAppConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
+                foreach (var systemConflict in allConflictData.SystemConflicts)
+                {
+                    var hotkey = systemConflict.Hotkey;
+                    var hotkeySetting = new HotkeySettings(hotkey.Win, hotkey.Ctrl, hotkey.Alt, hotkey.Shift, hotkey.Key);
+                    systemConflict.ConflictIgnored = HotkeyConflictIgnoreHelper.IsIgnoringConflicts(hotkeySetting);
+                }
+
                 AllHotkeyConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
             });
         }

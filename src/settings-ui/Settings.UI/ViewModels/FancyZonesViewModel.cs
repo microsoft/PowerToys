@@ -776,7 +776,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _editorHotkey)
                 {
-                    if (value == null || value.IsEmpty())
+                    if (value == null)
                     {
                         _editorHotkey = FZConfigProperties.DefaultEditorHotkeyValue;
                     }
@@ -822,7 +822,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _nextTabHotkey)
                 {
-                    if (value == null || value.IsEmpty())
+                    if (value == null)
                     {
                         _nextTabHotkey = FZConfigProperties.DefaultNextTabHotkeyValue;
                     }
@@ -848,7 +848,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _prevTabHotkey)
                 {
-                    if (value == null || value.IsEmpty())
+                    if (value == null)
                     {
                         _prevTabHotkey = FZConfigProperties.DefaultPrevTabHotkeyValue;
                     }

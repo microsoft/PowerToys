@@ -258,16 +258,6 @@ private:
         {
             Logger::info("AlwaysOnTop settings are empty");
         }
-
-        if (!m_hotkey.key)
-        {
-            Logger::info("AlwaysOnTop is going to use default shortcut");
-            m_hotkey.win = true;
-            m_hotkey.alt = false;
-            m_hotkey.shift = false;
-            m_hotkey.ctrl = true;
-            m_hotkey.key = 'T';
-        }
     }
 
     bool is_process_running()
