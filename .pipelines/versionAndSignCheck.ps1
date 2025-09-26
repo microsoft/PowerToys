@@ -53,10 +53,6 @@ $nullVersionExceptions = @(
     "Microsoft.Windows.Widgets.dll",
     "AdaptiveCards.ObjectModel.WinUI3.dll",
     "AdaptiveCards.Rendering.WinUI3.dll") -join '|';
-$signatureExceptions = @(
-    "Namotion.Reflection.dll",
-    "NJsonSchema.Annotations.dll",
-    "NJsonSchema.dll") -join '|';
 $totalFailure = 0;
 
 Write-Host $DirPath;
@@ -90,7 +86,7 @@ $items | ForEach-Object {
     }
     else {
         $auth = Get-AuthenticodeSignature $_.FullName
-        if ($auth.SignerCertificate -eq $null -and $_.Name -notmatch $signatureExceptions) {
+        if ($auth.SignerCertificate -eq $null) {
             Write-Host "Not Signed: " + $_.FullName
             $totalFailure++;
         }
