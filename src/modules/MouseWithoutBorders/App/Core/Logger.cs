@@ -247,22 +247,24 @@ internal static class Logger
 
     internal static void DumpStaticTypes(StringBuilder sb, int level)
     {
-        sb.AppendLine($"[{nameof(DragDrop)}]\r\n===============");
-        Logger.DumpType(sb, typeof(DragDrop), 0, level);
-        sb.AppendLine($"[{nameof(Event)}]\r\n===============");
-        Logger.DumpType(sb, typeof(Event), 0, level);
-        sb.AppendLine($"[{nameof(Helper)}]\r\n===============");
-        Logger.DumpType(sb, typeof(Helper), 0, level);
-        sb.AppendLine($"[{nameof(Launch)}]\r\n===============");
-        Logger.DumpType(sb, typeof(Launch), 0, level);
-        sb.AppendLine($"[{nameof(Logger)}]\r\n===============");
-        Logger.DumpType(sb, typeof(Logger), 0, level);
-        sb.AppendLine($"[{nameof(MachineStuff)}]\r\n===============");
-        Logger.DumpType(sb, typeof(MachineStuff), 0, level);
-        sb.AppendLine($"[{nameof(Receiver)}]\r\n===============");
-        Logger.DumpType(sb, typeof(Receiver), 0, level);
-        sb.AppendLine($"[{nameof(Service)}]\r\n===============");
-        Logger.DumpType(sb, typeof(Service), 0, level);
+        var staticTypes = new List<Type>
+        {
+            typeof(Clipboard),
+            typeof(DragDrop),
+            typeof(Event),
+            typeof(InitAndCleanup),
+            typeof(Helper),
+            typeof(Launch),
+            typeof(Logger),
+            typeof(MachineStuff),
+            typeof(Receiver),
+            typeof(Service),
+        };
+        foreach (var staticType in staticTypes)
+        {
+            sb.AppendLine(CultureInfo.InvariantCulture, $"[{staticType.Name}]\r\n===============");
+            Logger.DumpType(sb, staticType, 0, level);
+        }
     }
 
     internal static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool stop)

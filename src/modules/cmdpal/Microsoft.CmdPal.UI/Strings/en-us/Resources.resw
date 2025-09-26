@@ -441,4 +441,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="NavigationPaneOpened" xml:space="preserve">
     <value>Navigation page opened</value>
   </data>
+  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Header" xml:space="preserve">
+    <value>Enable external reload</value>
+  </data>
+  <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Description" xml:space="preserve">
+    <value>Trigger reload of the extension externally with the x-cmdpal://reload command</value>
+  </data>
+  <data name="ForDevelopersSettingsHeader.Text" xml:space="preserve">
+    <value>For Developers</value>
+  </data>
 </root>
