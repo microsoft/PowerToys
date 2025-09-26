@@ -68,6 +68,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     // `IsLoading` property as a combo of this value and `IsInitialized`
     public bool ModelIsLoading { get; protected set; } = true;
 
+    public bool HasSearchBox { get; protected set; }
+
     public IconInfoViewModel Icon { get; protected set; }
 
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost)
@@ -144,12 +146,15 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         Icon = new(page.Icon);
         Icon.InitializeProperties();
 
+        HasSearchBox = page is IListPage;
+
         // Let the UI know about our initial properties too.
         UpdateProperty(nameof(Name));
         UpdateProperty(nameof(Title));
         UpdateProperty(nameof(ModelIsLoading));
         UpdateProperty(nameof(IsLoading));
         UpdateProperty(nameof(Icon));
+        UpdateProperty(nameof(HasSearchBox));
 
         page.PropChanged += Model_PropChanged;
     }
