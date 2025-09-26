@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Linq;
-
 namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
 
 public class PlaceholderParser : IPlaceholderParser
@@ -80,12 +78,15 @@ public class PlaceholderParser : IPlaceholderParser
 
     private static bool IsValidPlaceholderName(string name)
     {
-        for (int i = 0; i < name.Length; i++)
+        for (var i = 0; i < name.Length; i++)
         {
             var c = name[i];
             if (!(char.IsLetterOrDigit(c) || c == '_' || c == '-'))
+            {
                 return false;
+            }
         }
+
         return true;
     }
 
