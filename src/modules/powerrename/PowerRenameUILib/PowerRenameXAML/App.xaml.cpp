@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 
 #include "App.xaml.h"
 #include "MainWindow.xaml.h"
@@ -117,6 +117,18 @@ App::App()
 /// <param name="e">Details about the launch request and process.</param>
 void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
+    try
+    {
+        winrt::init_apartment(winrt::apartment_type::single_threaded);
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        if (e.code() != RPC_E_CHANGED_MODE)
+        {
+            throw;
+        }
+    }
+
     LoggerHelpers::init_logger(moduleName, L"", LogSettings::powerRenameLoggerName);
 
     if (powertoys_gpo::getConfiguredPowerRenameEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)

@@ -1,9 +1,13 @@
 #include "pch.h"
 #include "Helpers.h"
+#include "MetadataTypes.h"
 #include <regex>
 #include <ShlGuid.h>
 #include <cstring>
 #include <filesystem>
+#include <unordered_map>
+#include <unordered_set>
+#include <algorithm>
 
 namespace fs = std::filesystem;
 
@@ -271,6 +275,28 @@ bool isFileTimeUsed(_In_ PCWSTR source)
     return used;
 }
 
+bool isMetadataUsed(_In_ PCWSTR source)
+{
+    if (!source) return false;
+    
+    std::wstring str(source);
+    
+    // Get all possible metadata patterns from the extractor
+    auto allPatterns = PowerRenameLib::MetadataPatternExtractor::GetAllPossiblePatterns();
+    
+    // Check if any metadata pattern exists in the source string
+    for (const auto& pattern : allPatterns)
+    {
+        std::wstring searchPattern = L"$" + pattern;
+        if (str.find(searchPattern) != std::wstring::npos)
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SYSTEMTIME fileTime)
 {
     std::locale::global(std::locale(""));
@@ -378,6 +404,97 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
 
     return hr;
 }
+
+HRESULT GetMetadataFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, const PowerRenameLib::MetadataPatternMap& patterns)
+{
+    HRESULT hr = E_INVALIDARG;
+    if (source && wcslen(source) > 0)
+    {
+        std::wstring res(source);
+        std::wstring output;
+        output.reserve(res.length() * 2); // Reserve space to avoid frequent reallocations
+
+        // Precompute pattern lookup for fast validation
+        auto allPatterns = PowerRenameLib::MetadataPatternExtractor::GetAllPossiblePatterns();
+        std::unordered_set<std::wstring> patternLookup;
+        patternLookup.reserve(allPatterns.size());
+        size_t maxPatternLength = 0;
+        for (const auto& pattern : allPatterns)
+        {
+            maxPatternLength = std::max(maxPatternLength, pattern.length());
+            patternLookup.insert(pattern);
+        }
+
+        size_t i = 0;
+        while (i < res.length())
+        {
+            if (res[i] == L'$')
+            {
+                size_t dollarCount = 0;
+                while (i < res.length() && res[i] == L'$')
+                {
+                    dollarCount++;
+                    i++;
+                }
+
+                bool patternFound = false;
+
+                if ((dollarCount % 2) == 1 && i < res.length())
+                {
+                    const size_t remaining = res.length() - i;
+                    const size_t maxSearchLength = std::min(maxPatternLength, remaining);
+                    std::wstring matchedPattern;
+
+                    for (size_t length = maxSearchLength; length > 0; --length)
+                    {
+                        std::wstring candidate = res.substr(i, length);
+                        if (patternLookup.find(candidate) != patternLookup.end())
+                        {
+                            matchedPattern = std::move(candidate);
+                            break;
+                        }
+                    }
+
+                    if (!matchedPattern.empty())
+                    {
+                        size_t escapedDollarPairs = (dollarCount - 1) / 2;
+                        output.append(escapedDollarPairs, L'$');
+
+                        auto it = patterns.find(matchedPattern);
+                        if (it != patterns.end() && !it->second.empty() && it->second != L"unsupported")
+                        {
+                            // Pattern found with a valid value - use the actual value
+                            output += it->second;
+                        }
+                        else
+                        {
+                            // Pattern not found, unsupported, or empty - return the pattern name itself
+                            output += matchedPattern;
+                        }
+
+                        i += matchedPattern.length();
+                        patternFound = true;
+                    }
+                }
+
+                if (!patternFound)
+                {
+                    output.append(dollarCount, L'$');
+                }
+            }
+            else
+            {
+                output += res[i];
+                i++;
+            }
+        }
+
+        hr = StringCchCopy(result, cchMax, output.c_str());
+    }
+
+    return hr;
+}
+
 
 HRESULT GetShellItemArrayFromDataObject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
 {

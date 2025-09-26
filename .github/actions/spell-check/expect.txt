@@ -166,7 +166,9 @@ BYPOSITION
 CALCRECT
 CALG
 callbackptr
+cabstr
 calpwstr
+caub
 Cangjie
 CANRENAME
 Canvascustomlayout
@@ -494,6 +496,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+FNumber
 FARPROC
 fesf
 fff
@@ -699,6 +702,7 @@ IDD
 idk
 idl
 idlist
+ifd
 IDOK
 IDOn
 IDR
@@ -851,6 +855,7 @@ LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+lon
 LOGPIXELSX
 LOGPIXELSY
 LOn
@@ -1257,6 +1262,7 @@ pnid
 PNMLINK
 Poc
 Podcasts
+Photoshop
 POINTERID
 POINTERUPDATE
 Pokedex
@@ -2000,7 +2006,9 @@ XAxis
 XButton
 xclip
 xcopy
+xap
 XDeployment
+XDimension
 XDocument
 XElement
 xfd
@@ -2017,6 +2025,7 @@ xsi
 XSpeed
 XStr
 xstyler
+xmp
 XTimer
 XUP
 XVIRTUALSCREEN
@@ -2024,6 +2033,7 @@ xxxxxx
 YAxis
 ycombinator
 YIncrement
+YDimension
 yinle
 yinyue
 YPels
