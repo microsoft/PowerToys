@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,8 @@ namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
+    private static readonly TimeSpan WaitForAsyncUpdate = TimeSpan.FromSeconds(5);
+
     private static Mock<IRunHistoryService> CreateMockHistoryService(IList<string> historyItems = null)
     {
         var mockHistoryService = new Mock<IRunHistoryService>();
@@ -84,8 +87,8 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         pages.UpdateSearchText(string.Empty, command);
 
-        // wait for about 1s.
-        await Task.Delay(1000);
+        // wait for update to complete
+        await Task.Delay(WaitForAsyncUpdate);
 
         var commandList = pages.GetItems();
 
@@ -112,7 +115,8 @@ public class QueryTests : CommandPaletteUnitTestBase
         // Test: Search for a command that exists in history
         pages.UpdateSearchText(string.Empty, command);
 
-        await Task.Delay(1000);
+        // wait for update to complete
+        await Task.Delay(WaitForAsyncUpdate);
 
         var commandList = pages.GetItems();
 
@@ -136,7 +140,8 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         pages.UpdateSearchText("abcdefg", string.Empty);
 
-        await Task.Delay(1000);
+        // wait for update to complete
+        await Task.Delay(WaitForAsyncUpdate);
 
         var commandList = pages.GetItems();
 
