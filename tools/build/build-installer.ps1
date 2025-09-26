@@ -23,7 +23,7 @@ Specifies whether to build a per-user installer (true) or machine-wide installer
 
 .EXAMPLE
 .\build-installer.ps1
-Runs the installer build pipeline for x64 Release with default suffix (wix5).
+Runs the installer build pipeline for x64 Release.
 
 .EXAMPLE
 .\build-installer.ps1 -Platform x64 -Configuration Release
