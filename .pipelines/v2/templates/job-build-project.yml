@@ -65,6 +65,12 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: useLatestWinAppSDK
+    type: boolean
+    default: false
+  - name: winAppSDKVersionNumber
+    type: string
+    default: 1.6
   - name: useExperimentalVersion
     type: boolean
     default: false
