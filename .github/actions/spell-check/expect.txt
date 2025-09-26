@@ -482,6 +482,7 @@ examplehandler
 examplepowertoy
 EXAND
 EXCLUDEFROMCAPTURE
+EXECUTEDEFAULT
 executionpolicy
 exename
 exf
