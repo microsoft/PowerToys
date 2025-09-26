@@ -190,10 +190,19 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             {
                 std::wstring errorMessage = POWER_TOYS_MODULE_LOAD_FAIL;
                 errorMessage += moduleSubdir;
+                
+#ifdef _DEBUG
+                // In debug mode, simply log the warning and continue execution.
+                // This contrasts with the past approach where developers had to build all modules
+                // without errors before debugging—slowing down quick clone-and-fix iterations.
+                Logger::warn(L"Debug mode: {}", errorMessage);
+#else
+                // In release mode, show error dialog as before
                 MessageBoxW(NULL,
                             errorMessage.c_str(),
                             L"PowerToys",
                             MB_OK | MB_ICONERROR);
+#endif
             }
         }
         // Start initial powertoys
@@ -326,6 +335,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     GdiplusStartup(&gpToken, &gpStartupInput, NULL);
 
     winrt::init_apartment();
+
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator
         L"G:BA" // Group: Builtin (local) administrator
@@ -517,5 +527,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         }
     }
     stop_tray_icon();
+
     return result;
 }

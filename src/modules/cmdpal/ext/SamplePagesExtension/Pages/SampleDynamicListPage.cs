@@ -70,7 +70,7 @@ public partial class SampleFilters : Filters
         [
             new Filter() { Id = "all", Name = "All" },
             new Filter() { Id = "mod2", Name = "Every 2nd", Icon = new IconInfo("2") },
-            new Filter() { Id = "mod3", Name = "Every 3rd", Icon = new IconInfo("3") },
+            new Filter() { Id = "mod3", Name = "Every 3rd (and long name)", Icon = new IconInfo("3") },
         ];
     }
 }
