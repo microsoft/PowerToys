@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class MeasureToolPage : NavigatablePage, IRefreshablePage
+    public sealed partial class MeasureToolPage : NavigablePage, IRefreshablePage
     {
         private MeasureToolViewModel ViewModel { get; set; }
 

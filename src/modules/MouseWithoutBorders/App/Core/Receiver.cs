@@ -157,7 +157,7 @@ internal static class Receiver
 
                             if (!p.IsEmpty)
                             {
-                                Common.HasSwitchedMachineSinceLastCopy = true;
+                                Clipboard.HasSwitchedMachineSinceLastCopy = true;
 
                                 Logger.LogDebug(string.Format(
                                     CultureInfo.CurrentCulture,
@@ -274,7 +274,7 @@ internal static class Receiver
                 Common.PackageReceived.Clipboard++;
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                 {
-                    Common.clipboardCopiedTime = Common.GetTick();
+                    Clipboard.clipboardCopiedTime = Common.GetTick();
                     GetNameOfMachineWithClipboardData(package);
                     SignalBigClipboardData();
                 }
@@ -282,10 +282,10 @@ internal static class Receiver
                 break;
 
             case PackageType.MachineSwitched:
-                if (Common.GetTick() - Common.clipboardCopiedTime < Common.BIG_CLIPBOARD_DATA_TIMEOUT && (package.Des == Common.MachineID))
+                if (Common.GetTick() - Clipboard.clipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT && (package.Des == Common.MachineID))
                 {
-                    Common.clipboardCopiedTime = 0;
-                    Common.GetRemoteClipboard("PackageType.MachineSwitched");
+                    Clipboard.clipboardCopiedTime = 0;
+                    Clipboard.GetRemoteClipboard("PackageType.MachineSwitched");
                 }
 
                 break;
@@ -297,7 +297,7 @@ internal static class Receiver
                     if (package.Des == Common.MachineID || package.Des == ID.ALL)
                     {
                         GetNameOfMachineWithClipboardData(package);
-                        Common.GetRemoteClipboard("mspaint," + Common.LastMachineWithClipboardData);
+                        Clipboard.GetRemoteClipboard("mspaint," + Clipboard.LastMachineWithClipboardData);
                     }
                 }
 
@@ -326,10 +326,10 @@ internal static class Receiver
                             Thread.UpdateThreads(thread);
 
                             string remoteMachine = package.MachineName;
-                            System.Net.Sockets.TcpClient client = Common.ConnectToRemoteClipboardSocket(remoteMachine);
+                            System.Net.Sockets.TcpClient client = Clipboard.ConnectToRemoteClipboardSocket(remoteMachine);
                             bool clientPushData = true;
 
-                            if (Common.ShakeHand(ref remoteMachine, client.Client, out Stream enStream, out Stream deStream, ref clientPushData, ref package.PostAction))
+                            if (Clipboard.ShakeHand(ref remoteMachine, client.Client, out Stream enStream, out Stream deStream, ref clientPushData, ref package.PostAction))
                             {
                                 SocketStuff.SendClipboardData(client.Client, enStream);
                             }
@@ -360,7 +360,7 @@ internal static class Receiver
 
             case PackageType.ClipboardText:
             case PackageType.ClipboardImage:
-                Common.clipboardCopiedTime = 0;
+                Clipboard.clipboardCopiedTime = 0;
                 if (package.Type == PackageType.ClipboardImage)
                 {
                     Common.PackageReceived.ClipboardImage++;
@@ -372,7 +372,7 @@ internal static class Receiver
 
                 if (tcp != null)
                 {
-                    Common.ReceiveClipboardDataUsingTCP(
+                    Clipboard.ReceiveClipboardDataUsingTCP(
                         package,
                         package.Type == PackageType.ClipboardImage,
                         tcp);
@@ -381,10 +381,10 @@ internal static class Receiver
                 break;
 
             case PackageType.HideMouse:
-                Common.HasSwitchedMachineSinceLastCopy = true;
+                Clipboard.HasSwitchedMachineSinceLastCopy = true;
                 Common.HideMouseCursor(true);
                 Helper.MainFormDotEx(false);
-                Common.ReleaseAllKeys();
+                InitAndCleanup.ReleaseAllKeys();
                 break;
 
             default:
@@ -405,11 +405,11 @@ internal static class Receiver
 
     internal static void GetNameOfMachineWithClipboardData(DATA package)
     {
-        Common.LastIDWithClipboardData = package.Src;
-        List<MachineInf> matchingMachines = MachineStuff.MachinePool.TryFindMachineByID(Common.LastIDWithClipboardData);
+        Clipboard.LastIDWithClipboardData = package.Src;
+        List<MachineInf> matchingMachines = MachineStuff.MachinePool.TryFindMachineByID(Clipboard.LastIDWithClipboardData);
         if (matchingMachines.Count >= 1)
         {
-            Common.LastMachineWithClipboardData = matchingMachines[0].Name.Trim();
+            Clipboard.LastMachineWithClipboardData = matchingMachines[0].Name.Trim();
         }
 
         /*

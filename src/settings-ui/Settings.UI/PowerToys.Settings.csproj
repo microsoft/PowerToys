@@ -25,6 +25,7 @@
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
 		<None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
+		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
 	</ItemGroup>
 	<ItemGroup>
 		<Page Remove="SettingsXAML\App.xaml" />
@@ -62,8 +63,7 @@
 		<PackageReference Include="CommunityToolkit.WinUI.Animations" />
 		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
 		<PackageReference Include="CommunityToolkit.WinUI.Converters" />
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
-		<PackageReference Include="CommunityToolkit.Labs.WinUI.TitleBar" />
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" />
 		<PackageReference Include="System.Net.Http" />
 		<PackageReference Include="System.Private.Uri" />
 		<PackageReference Include="System.Text.RegularExpressions" />
@@ -156,8 +156,12 @@
 		</None>
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
+		</None>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+		</Page>
 		<Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\Controls\GPOInfoControl.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml">
@@ -180,14 +184,8 @@
 		</Page>
 	</ItemGroup>
 
-	<!-- Removed nested publish/exec and copy targets. -->
-
-	<!-- Build XamlIndexBuilder before compiling Settings to ensure the search index exists without taking a project reference. -->
-	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile">
+	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
-		<MSBuild
-			Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj"
-			Targets="Build"
-			Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
+		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>
 </Project>

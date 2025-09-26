@@ -11,8 +11,8 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyVisual.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/KeyVisual/KeyCharPresenter.xaml" />
+                <ResourceDictionary Source="/SettingsXAML/Controls/TitleBar/TitleBar.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/TextBlock.xaml" />
-                <ResourceDictionary Source="/SettingsXAML/Styles/Button.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/InfoBadge.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Generic.xaml" />

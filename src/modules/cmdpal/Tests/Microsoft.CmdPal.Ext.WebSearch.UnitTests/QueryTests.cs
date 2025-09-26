@@ -45,7 +45,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task LoadHistoryReturnsExpectedItems()
+    public async Task HistoryReturnsExpectedItems()
     {
         // Setup
         var mockHistoryItems = new List<HistoryItem>
@@ -54,7 +54,7 @@ public class QueryTests : CommandPaletteUnitTestBase
             new HistoryItem("another search", DateTime.Parse("2024-01-02 13:00:00", CultureInfo.CurrentCulture)),
         };
 
-        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, showHistory: "5");
+        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, historyItemCount: 5);
 
         var page = new WebSearchListPage(settings);
 
@@ -77,7 +77,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task LoadHistoryMoreThanLimitation()
+    public async Task HistoryExceedingLimitReturnsMaxItems()
     {
         // Setup
         var mockHistoryItems = new List<HistoryItem>
@@ -89,7 +89,7 @@ public class QueryTests : CommandPaletteUnitTestBase
             new HistoryItem("another search4", DateTime.Parse("2024-01-05 13:00:00", CultureInfo.CurrentCulture)),
         };
 
-        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, showHistory: "5");
+        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, historyItemCount: 5);
 
         var page = new WebSearchListPage(settings);
 
@@ -109,7 +109,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task LoadHistoryWithDisableSetting()
+    public async Task HistoryWhenSetToNoneReturnEmptyList()
     {
         // Setup
         var mockHistoryItems = new List<HistoryItem>
@@ -122,7 +122,7 @@ public class QueryTests : CommandPaletteUnitTestBase
             new HistoryItem("another search5", DateTime.Parse("2024-01-06 13:00:00", CultureInfo.CurrentCulture)),
         };
 
-        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, showHistory: "None");
+        var settings = new MockSettingsInterface(mockHistory: mockHistoryItems, historyItemCount: 0);
 
         var page = new WebSearchListPage(settings);
 

@@ -5,7 +5,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
     <Grid MinWidth="498" MinHeight="220">
@@ -64,16 +64,15 @@
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
                     Severity="Warning" />
                 <InfoBar
-                    Title="Hotkey Conflict"
+                    x:Uid="WarningShortcutConflict"
                     IsClosable="False"
                     IsOpen="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
                     IsTabStop="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
                     Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
                     Severity="Warning" />
             </Grid>
-            <tk7controls:MarkdownTextBlock
+            <tkcontrols:MarkdownTextBlock
                 x:Uid="InvalidShortcutWarningLabel"
-                Background="Transparent"
                 FontSize="12"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </StackPanel>

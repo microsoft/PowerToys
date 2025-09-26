@@ -1499,7 +1499,6 @@ SOFTWARE.
 - CoenM.ImageSharp.ImageHash
 - CommunityToolkit.Common
 - CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock
-- CommunityToolkit.Labs.WinUI.TitleBar
 - CommunityToolkit.Mvvm
 - CommunityToolkit.WinUI.Animations
 - CommunityToolkit.WinUI.Collections
@@ -1510,7 +1509,6 @@ SOFTWARE.
 - CommunityToolkit.WinUI.Converters
 - CommunityToolkit.WinUI.Extensions
 - CommunityToolkit.WinUI.UI.Controls.DataGrid
-- CommunityToolkit.WinUI.UI.Controls.Markdown
 - ControlzEx
 - HelixToolkit
 - HelixToolkit.Core.Wpf
