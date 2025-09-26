@@ -7,7 +7,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -32,9 +32,9 @@ public partial class MainListPage : DynamicListPage,
 
     private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
-    private IEnumerable<Scored<IListItem>>? _filteredItems;
-    private IEnumerable<Scored<IListItem>>? _filteredApps;
-    private IEnumerable<Scored<IListItem>>? _fallbackItems;
+    private List<Scored<IListItem>>? _filteredItems;
+    private List<Scored<IListItem>>? _filteredApps;
+    private List<Scored<IListItem>>? _fallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
@@ -158,13 +158,13 @@ public partial class MainListPage : DynamicListPage,
         {
             lock (_tlcManager.TopLevelCommands)
             {
-                IEnumerable<Scored<IListItem>> limitedApps = Enumerable.Empty<Scored<IListItem>>();
+                List<Scored<IListItem>> limitedApps = new List<Scored<IListItem>>();
 
                 // Fuzzy matching can produce a lot of results, so we want to limit the
                 // number of apps we show at once if it's a large set.
-                if (_filteredApps?.Any() == true)
+                if (_filteredApps?.Count > 0)
                 {
-                    limitedApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit);
+                    limitedApps = _filteredApps.OrderByDescending(s => s.Score).Take(_appResultLimit).ToList();
                 }
 
                 var items = Enumerable.Empty<Scored<IListItem>>()
@@ -330,23 +330,23 @@ public partial class MainListPage : DynamicListPage,
                 {
                     newApps = AllAppsCommandProvider.Page.GetItems().ToList();
                 }
-            }
 
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (token.IsCancellationRequested)
-            {
-                return;
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
             // Produce a list of everything that matches the current filter.
-            _filteredItems = ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem);
+            _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem)];
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
 
             // Defaulting scored to 1 but we'll eventually use user rankings
-            _fallbackItems = newFallbacks.Select(f => new Scored<IListItem> { Item = f, Score = 1 });
+            _fallbackItems = [.. newFallbacks.Select(f => new Scored<IListItem> { Item = f, Score = 1 })];
 
             if (token.IsCancellationRequested)
             {
@@ -367,7 +367,12 @@ public partial class MainListPage : DynamicListPage,
                 // but we need to know the limit now to avoid re-scoring apps
                 var appLimit = AllAppsCommandProvider.TopLevelResultLimit;
 
-                _filteredApps = scoredApps;
+                _filteredApps = [.. scoredApps];
+
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
             }
 
             RaiseItemsChanged();

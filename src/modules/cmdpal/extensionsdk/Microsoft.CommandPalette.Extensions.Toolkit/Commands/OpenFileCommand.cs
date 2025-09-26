@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using Microsoft.CommandPalette.Extensions.Toolkit.Properties;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -18,7 +19,7 @@ public partial class OpenFileCommand : InvokableCommand
     public OpenFileCommand(string fullPath)
     {
         this._fullPath = fullPath;
-        this.Name = "Open";
+        this.Name = Resources.OpenFileCommand_Name;
         this.Icon = OpenFile;
     }
 

@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\CoreCommonProps.props" />
+	
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Common" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+		
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CmdPal.Core.Common\Microsoft.CmdPal.Core.Common.csproj" />
+  </ItemGroup>
+
+</Project>
