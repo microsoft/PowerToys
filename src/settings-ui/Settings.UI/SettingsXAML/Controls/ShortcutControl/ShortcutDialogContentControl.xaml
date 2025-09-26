@@ -306,7 +306,6 @@
                 Severity="Warning"
                 Style="{StaticResource CondensedInfoBarStyle}" />
             <InfoBar
-                x:Uid="WarningShortcutConflict"
                 BorderThickness="0"
                 IsClosable="False"
                 IsOpen="{Binding ElementName=ShortcutContentControl, Path=ShouldShowConflict, Mode=OneWay}"
