@@ -50,7 +50,11 @@
 
             <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewModels:ContentMarkdownViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
-                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DefaultMarkdownConfig}" Text="{x:Bind Body, Mode=OneWay}" />
+                    <tkcontrols:MarkdownTextBlock
+                        Config="{StaticResource DefaultMarkdownConfig}"
+                        Text="{x:Bind Body, Mode=OneWay}"
+                        UseEmphasisExtras="True"
+                        UsePipeTables="True" />
                 </Grid>
             </DataTemplate>
 
