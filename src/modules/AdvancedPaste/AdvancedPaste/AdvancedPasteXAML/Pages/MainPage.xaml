@@ -204,7 +204,7 @@
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Style="{StaticResource CaptionTextBlockStyle}">
-                            <Run x:Uid="CustomAIMistakeNote"/>
+                            <Run x:Uid="CustomAIMistakeNote" />
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
