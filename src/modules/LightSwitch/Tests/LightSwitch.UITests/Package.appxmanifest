@@ -9,7 +9,7 @@
 
   <Identity
     Name="ad22010c-e33e-4459-848e-a1ed976bfd3b"
-    Publisher="CN=jaylynbarbee"
+    Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="ad22010c-e33e-4459-848e-a1ed976bfd3b" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
