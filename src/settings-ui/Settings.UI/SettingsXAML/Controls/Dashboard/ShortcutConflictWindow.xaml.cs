@@ -96,14 +96,6 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
         {
             try
             {
-                foreach (var module in conflictGroup.Modules)
-                {
-                    if (module.HotkeySettings != null)
-                    {
-                        module.HotkeySettings.IgnoreConflict = true;
-                    }
-                }
-
                 // Ignore all hotkey settings in this conflict group
                 if (conflictGroup.Modules != null)
                 {

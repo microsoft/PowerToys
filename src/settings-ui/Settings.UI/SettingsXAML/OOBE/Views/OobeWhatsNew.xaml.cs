@@ -34,9 +34,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
     public sealed partial class OobeWhatsNew : Page, INotifyPropertyChanged
     {
-        private readonly ISettingsRepository<ShortcutConflictSettings> _shortcutConflictRepository;
-        private readonly ISettingsUtils _settingsUtils;
-
         public OobePowerToysModule ViewModel { get; set; }
 
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
@@ -107,9 +104,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
             DataContext = this;
-
-            _settingsUtils = new SettingsUtils();
-            _shortcutConflictRepository = SettingsRepository<ShortcutConflictSettings>.GetInstance(_settingsUtils);
 
             // Subscribe to hotkey conflict updates
             if (GlobalHotkeyConflictManager.Instance != null)

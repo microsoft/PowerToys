@@ -22,9 +22,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
     public sealed partial class OobeOverview : Page, INotifyPropertyChanged
     {
-        private readonly ISettingsRepository<ShortcutConflictSettings> _shortcutConflictRepository;
-        private readonly ISettingsUtils _settingsUtils;
-
         public OobePowerToysModule ViewModel { get; set; }
 
         private bool _enableDataDiagnostics;
@@ -235,29 +232,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Overview]);
             DataContext = this;
 
-            _settingsUtils = new SettingsUtils();
-            _shortcutConflictRepository = SettingsRepository<ShortcutConflictSettings>.GetInstance(_settingsUtils);
-
             // Subscribe to hotkey conflict updates
             if (GlobalHotkeyConflictManager.Instance != null)
             {
                 GlobalHotkeyConflictManager.Instance.ConflictsUpdated += OnConflictsUpdated;
                 GlobalHotkeyConflictManager.Instance.RequestAllConflicts();
             }
-        }
-
-        private bool HotkeySettingsEqual(HotkeySettings hotkey1, HotkeySettings hotkey2)
-        {
-            if (hotkey1 == null || hotkey2 == null)
-            {
-                return false;
-            }
-
-            return hotkey1.Win == hotkey2.Win &&
-                   hotkey1.Ctrl == hotkey2.Ctrl &&
-                   hotkey1.Alt == hotkey2.Alt &&
-                   hotkey1.Shift == hotkey2.Shift &&
-                   hotkey1.Code == hotkey2.Code;
         }
 
         private void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)

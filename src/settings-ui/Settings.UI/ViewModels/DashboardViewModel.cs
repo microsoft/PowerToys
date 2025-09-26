@@ -29,10 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         protected override string ModuleName => "Dashboard";
 
-        private readonly ISettingsRepository<ShortcutConflictSettings> _shortcutConflictRepository;
-        private readonly ISettingsUtils _settingsUtils;
-
-        private const string JsonFileType = ".json";
         private Dispatcher dispatcher;
 
         public Func<string, int> SendConfigMSG { get; }
@@ -69,14 +65,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings generalSettingsConfig;
         private Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
-        public DashboardViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             dispatcher = Dispatcher.CurrentDispatcher;
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
             generalSettingsConfig.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
-            _shortcutConflictRepository = SettingsRepository<ShortcutConflictSettings>.GetInstance(settingsUtils);
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;

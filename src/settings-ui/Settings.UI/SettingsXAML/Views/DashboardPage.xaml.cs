@@ -37,9 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var settingsUtils = new SettingsUtils();
 
             ViewModel = new DashboardViewModel(
-                settingsUtils,
-                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
-                ShellPage.SendDefaultIPCMessage);
+               SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
 
             Loaded += (s, e) => ViewModel.OnPageLoaded();
