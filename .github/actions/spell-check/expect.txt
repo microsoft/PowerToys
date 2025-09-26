@@ -918,6 +918,7 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
+MAJORMINOR
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -996,6 +997,9 @@ mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
+muxx
+muxxc
+muxxh
 MRM
 MRT
 mru
@@ -1807,6 +1811,7 @@ ULONGLONG
 ums
 uncompilable
 UNCPRIORITY
+undefining
 UNDNAME
 UNICODETEXT
 unins
