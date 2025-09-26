@@ -18,7 +18,6 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Pages;
 
 internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
 {
-    private readonly IconInfo _newSearchIcon = new(string.Empty);
     private readonly ISettingsInterface _settingsManager;
     private readonly Lock _sync = new();
     private static readonly CompositeFormat PluginInBrowserName = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_in_browser_name);
@@ -70,6 +69,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
                 var historyItem = items[index];
                 history.Add(new ListItem(new SearchWebCommand(historyItem.SearchString, _settingsManager))
                 {
+                    Icon = Icons.History,
                     Title = historyItem.SearchString,
                     Subtitle = historyItem.Timestamp.ToString("g", CultureInfo.InvariantCulture),
                 });
@@ -82,7 +82,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
         }
     }
 
-    private static IListItem[] Query(string query, List<ListItem> historySnapshot, ISettingsInterface settingsManager, IconInfo newSearchIcon)
+    private static IListItem[] Query(string query, List<ListItem> historySnapshot, ISettingsInterface settingsManager)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -99,7 +99,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
             {
                 Title = searchTerm,
                 Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpen, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
-                Icon = newSearchIcon,
+                Icon = Icons.Search,
             };
             results.Add(result);
         }
@@ -117,7 +117,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
             historySnapshot = _historyItems;
         }
 
-        var items = Query(search ?? string.Empty, historySnapshot, _settingsManager, _newSearchIcon);
+        var items = Query(search ?? string.Empty, historySnapshot, _settingsManager);
 
         lock (_sync)
         {
