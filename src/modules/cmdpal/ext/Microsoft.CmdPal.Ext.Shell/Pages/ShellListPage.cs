@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -263,7 +263,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var filterHistory = (string query, KeyValuePair<string, ListItem> pair) =>
         {
             // Fuzzy search on the key (command string)
-            var score = StringMatcher.FuzzySearch(query, pair.Key).Score;
+            var score = FuzzyStringMatcher.ScoreFuzzy(query, pair.Key);
             return score;
         };
 

@@ -27,9 +27,9 @@
             <DropDownButton.Flyout>
                 <Flyout ShouldConstrainToRootBounds="False">
                     <ColorPicker
-                        IsAlphaEnabled="False"
-                        IsAlphaSliderVisible="False"
-                        IsAlphaTextInputVisible="False"
+                        IsAlphaEnabled="{x:Bind IsAlphaEnabled, Mode=OneWay}"
+                        IsAlphaSliderVisible="{x:Bind IsAlphaEnabled, Mode=OneWay}"
+                        IsAlphaTextInputVisible="{x:Bind IsAlphaEnabled, Mode=OneWay}"
                         IsColorChannelTextInputVisible="True"
                         IsColorSliderVisible="True"
                         IsHexInputVisible="True"

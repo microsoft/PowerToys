@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
