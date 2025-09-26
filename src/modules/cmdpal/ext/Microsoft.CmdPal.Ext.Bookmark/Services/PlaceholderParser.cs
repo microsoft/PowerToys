@@ -78,7 +78,16 @@ public class PlaceholderParser : IPlaceholderParser
         }
     }
 
-    private static bool IsValidPlaceholderName(string name) => name.All(c => char.IsLetterOrDigit(c) || c == '_' || c == '-');
+    private static bool IsValidPlaceholderName(string name)
+    {
+        for (int i = 0; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (!(char.IsLetterOrDigit(c) || c == '_' || c == '-'))
+                return false;
+        }
+        return true;
+    }
 
     private static bool IsGuidFormat(string content) => Guid.TryParse(content, out _);
 }
