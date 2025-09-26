@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Core.ViewModels;
 
@@ -73,6 +75,8 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
             UpdateProperty(nameof(HasDetails));
         }
 
+        AddShowDetailsCommands();
+
         TextToSuggest = model.TextToSuggest;
         UpdateProperty(nameof(TextToSuggest));
     }
@@ -104,6 +108,10 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details));
                 UpdateProperty(nameof(HasDetails));
+                UpdateShowDetailsCommand();
+                break;
+            case nameof(MoreCommands):
+                AddShowDetailsCommands();
                 break;
             case nameof(Title):
             case nameof(Subtitle):
@@ -121,6 +129,65 @@ public partial class ListItemViewModel(IListItem model, WeakReference<IPageConte
     public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
 
     public override int GetHashCode() => Model.GetHashCode();
+
+    private void AddShowDetailsCommands()
+    {
+        // If the parent page has ShowDetails = false and we have details,
+        // then we should add a show details action in the context menu.
+        if (HasDetails &&
+            PageContext.TryGetTarget(out var pageContext) &&
+            pageContext is ListViewModel listViewModel &&
+            !listViewModel.ShowDetails)
+        {
+            // Check if "Show Details" action already exists to prevent duplicates
+            if (!MoreCommands.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
+                                        contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
+            {
+                // Create the view model for the show details command
+                var showDetailsCommand = new ShowDetailsCommand(Details);
+                var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
+                var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
+                showDetailsContextItemViewModel.SlowInitializeProperties();
+                MoreCommands.Add(showDetailsContextItemViewModel);
+            }
+
+            UpdateProperty(nameof(MoreCommands));
+            UpdateProperty(nameof(AllCommands));
+        }
+    }
+
+    // This method is called when the details change to make sure we
+    // have the latest details in the show details command.
+    private void UpdateShowDetailsCommand()
+    {
+        // If the parent page has ShowDetails = false and we have details,
+        // then we should add a show details action in the context menu.
+        if (HasDetails &&
+            PageContext.TryGetTarget(out var pageContext) &&
+            pageContext is ListViewModel listViewModel &&
+            !listViewModel.ShowDetails)
+        {
+            var existingCommand = MoreCommands.FirstOrDefault(cmd =>
+                                        cmd is CommandContextItemViewModel contextItemViewModel &&
+                                        contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId);
+
+            // If the command already exists, remove it to update with the new details
+            if (existingCommand is not null)
+            {
+                MoreCommands.Remove(existingCommand);
+            }
+
+            // Create the view model for the show details command
+            var showDetailsCommand = new ShowDetailsCommand(Details);
+            var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
+            var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
+            showDetailsContextItemViewModel.SlowInitializeProperties();
+            MoreCommands.Add(showDetailsContextItemViewModel);
+
+            UpdateProperty(nameof(MoreCommands));
+            UpdateProperty(nameof(AllCommands));
+        }
+    }
 
     private void UpdateTags(ITag[]? newTagsFromModel)
     {
