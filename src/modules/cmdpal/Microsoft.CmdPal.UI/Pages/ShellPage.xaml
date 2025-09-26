@@ -11,9 +11,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:h="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
-    xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
-    xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     Background="Transparent"
@@ -145,11 +144,11 @@
                     </ItemsControl>
                 </StackPanel>
             </DataTemplate>
-            <markdownTextBlockRns:MarkdownThemes
+            <tkcontrols:MarkdownThemes
                 x:Key="DefaultMarkdownThemeConfig"
                 H3FontSize="12"
                 H3FontWeight="Normal" />
-            <labToolkit:MarkdownConfig x:Key="DefaultMarkdownConfig" Themes="{StaticResource DefaultMarkdownThemeConfig}" />
+            <tkcontrols:MarkdownConfig x:Key="DefaultMarkdownConfig" Themes="{StaticResource DefaultMarkdownThemeConfig}" />
         </ResourceDictionary>
     </Page.Resources>
 
@@ -422,7 +421,7 @@
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
-                        <labToolkit:MarkdownTextBlock
+                        <tkcontrols:MarkdownTextBlock
                             Grid.Row="2"
                             Margin="0,4,0,24"
                             Background="Transparent"

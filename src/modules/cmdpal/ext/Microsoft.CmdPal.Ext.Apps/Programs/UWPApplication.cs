@@ -95,14 +95,14 @@ public class UWPApplication : IUWPApplication
 
         commands.Add(
             new CommandContextItem(
-                new CopyTextCommand(Location) { Name = Resources.copy_path })
+                new CopyPathCommand(Location))
             {
                 RequestedShortcut = KeyChords.CopyFilePath,
             });
 
         commands.Add(
             new CommandContextItem(
-                new OpenPathCommand(Location)
+                new OpenFileCommand(Location)
                 {
                     Name = Resources.open_containing_folder,
                 })

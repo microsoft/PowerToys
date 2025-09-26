@@ -335,6 +335,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
     GdiplusStartup(&gpToken, &gpStartupInput, NULL);
 
     winrt::init_apartment();
+
     const wchar_t* securityDescriptor =
         L"O:BA" // Owner: Builtin (local) administrator
         L"G:BA" // Group: Builtin (local) administrator
@@ -526,5 +527,6 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         }
     }
     stop_tray_icon();
+
     return result;
 }

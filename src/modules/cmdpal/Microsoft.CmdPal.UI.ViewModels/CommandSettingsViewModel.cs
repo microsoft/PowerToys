@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
+using Microsoft.CmdPal.Core.Common;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -44,7 +44,7 @@ public partial class CommandSettingsViewModel(ICommandSettings? _unsafeSettings,
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Failed to load settings page", ex: ex);
+            CoreLogger.LogError($"Failed to load settings page", ex: ex);
         }
 
         Initialized = true;
