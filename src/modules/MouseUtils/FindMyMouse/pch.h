@@ -5,15 +5,22 @@
 #include <windows.h>
 #include <strsafe.h>
 #include <hIdUsage.h>
+// Required for IUnknown and DECLARE_INTERFACE_* used by interop headers
+#include <Unknwn.h>
 
 #ifdef COMPOSITION
-#include <windows.ui.composition.interop.h>
 #include <DispatcherQueue.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.UI.Composition.Desktop.h>
+#include <winrt/Microsoft.UI.Composition.h>
+#include <winrt/Microsoft.UI.h>
+#include <winrt/Windows.UI.h>
 #endif
 
 #include <winrt/Windows.Foundation.Collections.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
+
+#ifdef GetCurrentTime
+#undef GetCurrentTime
+#endif

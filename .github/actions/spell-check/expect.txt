@@ -27,6 +27,7 @@ admx
 advancedpaste
 advancedpasteui
 advancedpasteuishortcut
+advapi
 advfirewall
 AFeature
 affordances
@@ -49,6 +50,7 @@ ALPHATYPE
 AModifier
 amr
 ANDSCANS
+animatedvisuals
 Animnate
 ANull
 AOC
@@ -69,6 +71,7 @@ APPMODEL
 APPNAME
 appref
 appsettings
+appsfeatures
 appwindow
 appwiz
 appxpackage
@@ -245,6 +248,7 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
+coreclr
 constexpr
 contentdialog
 contentfiles
@@ -266,6 +270,8 @@ cpcontrols
 cph
 cplusplus
 CPower
+cpptools
+cppvsdbg
 cppwinrt
 createdump
 CREATEPROCESS
@@ -277,6 +283,7 @@ CRH
 critsec
 cropandlock
 Crossdevice
+csdevkit
 CSearch
 CSettings
 cso
@@ -304,6 +311,7 @@ CXVIRTUALSCREEN
 CYSCREEN
 CYSMICON
 CYVIRTUALSCREEN
+Czechia
 cziplib
 Dac
 dacl
@@ -328,6 +336,7 @@ Deact
 debugbreak
 decryptor
 Dedup
+Deduplicator
 Deeplink
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
@@ -400,6 +409,7 @@ DString
 DSVG
 DTo
 DUMMYUNIONNAME
+dutil
 DVASPECT
 DVASPECTINFO
 DVD
@@ -432,6 +442,7 @@ EDITSHORTCUTS
 EDITTEXT
 EFile
 ekus
+emojis
 ENABLEDELAYEDEXPANSION
 ENABLEDPOPUP
 ENABLETAB
@@ -796,6 +807,7 @@ KEYBOARDMANAGEREDITORLIBRARYWRAPPER
 keyboardmanagerstate
 keyboardmanagerui
 keyboardtester
+keycap
 KEYEVENTF
 KEYIMAGE
 keynum
@@ -906,6 +918,7 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
+MAJORMINOR
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -984,6 +997,9 @@ mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
+muxx
+muxxc
+muxxh
 MRM
 MRT
 mru
@@ -1313,6 +1329,7 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
+projitems
 PROPERTYKEY
 Propset
 PROPVARIANT
@@ -1392,6 +1409,7 @@ regkey
 regroot
 regsvr
 REINSTALLMODE
+releaseblog
 reloadable
 Relogger
 remappings
@@ -1442,7 +1460,6 @@ rstringalnum
 rstringalpha
 rstringdigit
 rtb
-RTB
 RTLREADING
 rtm
 runas
@@ -1500,6 +1517,7 @@ SETRULES
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
+settingscard
 SETTINGCHANGE
 SETTINGSCHANGED
 settingsheader
@@ -1757,11 +1775,13 @@ transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
+Tru
 trl
 trx
 tsa
 tskill
 tstoi
+tweakable
 TWF
 tymed
 TYPEKEYBOARD
@@ -1772,10 +1792,13 @@ UACUI
 UAL
 uap
 UBR
+UBreak
+ubrk
 UCallback
 ucrt
 ucrtd
 uefi
+UError
 uesc
 UFlags
 UHash
@@ -1783,12 +1806,15 @@ UIA
 UIEx
 uild
 uitests
+UITo
 ULONGLONG
 ums
 uncompilable
 UNCPRIORITY
+undefining
 UNDNAME
 UNICODETEXT
+unins
 uninstalls
 Uniquifies
 unitconverter
@@ -1844,6 +1870,7 @@ VFT
 vget
 vgetq
 viewmodels
+virama
 VIRTKEY
 VIRTUALDESK
 VISEGRADRELAY
@@ -1995,6 +2022,7 @@ XButton
 xclip
 xcopy
 XDeployment
+xdf
 XDocument
 XElement
 xfd

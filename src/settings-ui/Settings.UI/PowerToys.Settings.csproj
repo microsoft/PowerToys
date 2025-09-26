@@ -1,161 +1,191 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\Common.SelfContained.props" />
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\Common.SelfContained.props" />
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <UseWinUI>true</UseWinUI>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <WindowsPackageType>None</WindowsPackageType>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <ApplicationIcon>Assets\Settings\icon.ico</ApplicationIcon>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
-    <OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
-    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
-    <ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
-    <None Remove="Assets\Settings\Modules\APDialog.light.png" />
-    <None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
-    <None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
-    <None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Remove="SettingsXAML\App.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="SettingsXAML\App.xaml" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<RootNamespace>Microsoft.PowerToys.Settings.UI</RootNamespace>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<UseWinUI>true</UseWinUI>
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+		<WindowsPackageType>None</WindowsPackageType>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<ApplicationIcon>Assets\Settings\icon.ico</ApplicationIcon>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<!-- OutputPath looks like this because it has to be called both by settings and publish.cmd -->
+		<OutputPath>..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
+		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
+		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
+		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
+		<None Remove="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml" />
+		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
+	</ItemGroup>
+	<ItemGroup>
+		<Page Remove="SettingsXAML\App.xaml" />
+	</ItemGroup>
+	<ItemGroup>
+		<ApplicationDefinition Include="SettingsXAML\App.xaml" />
+	</ItemGroup>
 
 
-  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
-  <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.ZoomItSettingsInterop</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
+	<!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+	<PropertyGroup>
+		<CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.ZoomItSettingsInterop</CsWinRTIncludes>
+		<CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="Assets\Settings\SplashScreen.scale-200.png" />
-    <Content Include="Assets\Settings\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Settings\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Settings\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Settings\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\Settings\StoreLogo.png" />
-    <Content Include="Assets\Settings\Wide310x150Logo.scale-200.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="Assets\Settings\SplashScreen.scale-200.png" />
+		<Content Include="Assets\Settings\LockScreenLogo.scale-200.png" />
+		<Content Include="Assets\Settings\Square150x150Logo.scale-200.png" />
+		<Content Include="Assets\Settings\Square44x44Logo.scale-200.png" />
+		<Content Include="Assets\Settings\Square44x44Logo.targetsize-24_altform-unplated.png" />
+		<Content Include="Assets\Settings\StoreLogo.png" />
+		<Content Include="Assets\Settings\Wide310x150Logo.scale-200.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Images\MouseJump-Desktop.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Images\MouseJump-Desktop.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
-    <PackageReference Include="CommunityToolkit.WinUI.Animations" />
-    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
-    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="System.Private.Uri" />
-    <PackageReference Include="System.Text.RegularExpressions" />
-    <PackageReference Include="WinUIEx" />
-    <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
-    <PackageReference Include="MessagePack" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
-    <PackageReference Include="StreamJsonRpc" />
-    <!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since the Experimentation APIs that are added in CI reference some net standard 2.0 assemblies. -->
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
-    <PackageReference Include="System.Text.Json" />
-    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
-    <PackageReference Include="Microsoft.Web.WebView2" />
-    <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
-    <PackageReference Include="CommunityToolkit.Common" />
-    <!-- HACK: MWB and Advanced Paste. Align the version.  got flagged when https://github.com/microsoft/PowerToys/pull/38779 was done -->
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <Manifest Include="$(ApplicationManifest)" />
-  </ItemGroup>
-  <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
-       Tools extension to be activated for this project even if the Windows App SDK Nuget
-       package has not yet been restored -->
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+		<PackageReference Include="CommunityToolkit.WinUI.Animations" />
+		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
+		<PackageReference Include="CommunityToolkit.WinUI.Converters" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
+		<PackageReference Include="System.Net.Http" />
+		<PackageReference Include="System.Private.Uri" />
+		<PackageReference Include="System.Text.RegularExpressions" />
+		<PackageReference Include="WinUIEx" />
+		<!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
+		<PackageReference Include="MessagePack" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" />
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
+		<PackageReference Include="StreamJsonRpc" />
+		<!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since the Experimentation APIs that are added in CI reference some net standard 2.0 assemblies. -->
+		<PackageReference Include="Microsoft.Extensions.Hosting" />
+		<!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
+		<PackageReference Include="System.Text.Json" />
+		<!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
+		<PackageReference Include="Microsoft.Web.WebView2" />
+		<!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
+		<PackageReference Include="CommunityToolkit.Common" />
+		<!-- HACK: MWB and Advanced Paste. Align the version.  got flagged when https://github.com/microsoft/PowerToys/pull/38779 was done -->
+		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+		<Manifest Include="$(ApplicationManifest)" />
+	</ItemGroup>
+	<!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+		   Tools extension to be activated for this project even if the Windows App SDK Nuget
+		   package has not yet been restored -->
 
-  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
-    <ProjectCapability Include="Msix" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+		<ProjectCapability Include="Msix" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
-    <ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
-    <ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
-    <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
-    <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
-    <ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
-    <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
-    <ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
-    <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
+		<ProjectReference Include="..\..\common\Common.Search\Common.Search.csproj" />
+		<ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
+		<ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
+		<ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
+		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
+		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+		<ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
+		<ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
+	</ItemGroup>
 
-  <PropertyGroup>
-    <!-- TODO: fix issues and reenable -->
-    <!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
-    <!-- We might want to add that to the project and fix the issues as well -->
-    <NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
-  </PropertyGroup>
+	<!-- XamlIndexBuilder now outputs directly to Assets\Settings -->
+	<PropertyGroup>
+		<GeneratedJsonFile>$(MSBuildProjectDirectory)\Assets\Settings\search.index.json</GeneratedJsonFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Update="Assets\Settings\icon.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<!-- No RID/Platform plumbing needed here. XamlIndexBuilder handles generation after its own Build. -->
 
-  <ItemGroup>
-    <None Update="Assets\Settings\Scripts\CheckCmdNotFoundRequirements.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\Settings\Scripts\InstallWinGetClientModule.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\Settings\Scripts\InstallPowerShell7.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\Settings\Scripts\EnableModule.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\Settings\Scripts\DisableModule.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
+	<PropertyGroup>
+		<!-- TODO: fix issues and reenable -->
+		<!-- These are caused by streamjsonrpc dependency on Microsoft.VisualStudio.Threading.Analyzers -->
+		<!-- We might want to add that to the project and fix the issues as well -->
+		<NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Page Update="SettingsXAML\OOBE\Views\OobeWorkspaces.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="SettingsXAML\Panels\MouseJumpPanel.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-    <Page Update="SettingsXAML\Views\WorkspacesPage.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-    </Page>
-  </ItemGroup>
+	<!-- Removed hard-coded resource exclusion. -->
 
+	<ItemGroup>
+		<!-- Ensure the generated search index is present in the project; only if it exists to prevent CS1566 in clean CI -->
+		<Content Include="$(GeneratedJsonFile)" Condition="Exists('$(GeneratedJsonFile)')">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<!-- Embed the generated search index; logical name must match PrebuiltIndexResourceName -->
+		<EmbeddedResource Include="$(GeneratedJsonFile)" Condition="Exists('$(GeneratedJsonFile)')">
+			<LogicalName>Microsoft.PowerToys.Settings.UI.Assets.search.index.json</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Assets\Settings\icon.ico">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Assets\Settings\Scripts\CheckCmdNotFoundRequirements.ps1">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\Settings\Scripts\InstallWinGetClientModule.ps1">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\Settings\Scripts\InstallPowerShell7.ps1">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\Settings\Scripts\EnableModule.ps1">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
+		</Page>
+		<Page Update="SettingsXAML\Controls\KeyVisual\KeyCharPresenter.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\Controls\GPOInfoControl.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Page Update="SettingsXAML\OOBE\Views\OobeWorkspaces.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
+		<Page Update="SettingsXAML\Panels\MouseJumpPanel.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
+		<Page Update="SettingsXAML\Views\WorkspacesPage.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
+	</ItemGroup>
+
+	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
+		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
+		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
+	</Target>
 </Project>

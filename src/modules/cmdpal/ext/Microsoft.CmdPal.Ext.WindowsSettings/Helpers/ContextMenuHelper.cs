@@ -23,7 +23,7 @@ internal static class ContextMenuHelper
     {
         var list = new List<CommandContextItem>(1)
         {
-            new(new CopySettingCommand(entry)),
+            new(new CopyTextCommand(entry.Command) { Name = Resources.CopyCommand }),
         };
 
         return list;

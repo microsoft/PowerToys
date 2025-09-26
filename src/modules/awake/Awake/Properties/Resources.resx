@@ -123,6 +123,10 @@
   <data name="AWAKE_EXIT" xml:space="preserve">
     <value>Exit</value>
   </data>
+  <data name="AWAKE_HOUR" xml:space="preserve">
+    <value>{0} hour</value>
+    <comment>{0} shouldn't be removed. It will be replaced by the number 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
+  </data>
   <data name="AWAKE_HOURS" xml:space="preserve">
     <value>{0} hours</value>
     <comment>{0} shouldn't be removed. It will be replaced by a number greater than 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
@@ -141,6 +145,10 @@
   <data name="AWAKE_KEEP_UNTIL_EXPIRATION" xml:space="preserve">
     <value>Keep awake until expiration date and time</value>
     <comment>Keep the system awake until expiration date and time</comment>
+  </data>
+  <data name="AWAKE_MINUTE" xml:space="preserve">
+    <value>{0} minute</value>
+    <comment>{0} shouldn't be removed. It will be replaced by the number 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
   </data>
   <data name="AWAKE_MINUTES" xml:space="preserve">
     <value>{0} minutes</value>
@@ -217,5 +225,14 @@
   </data>
   <data name="AWAKE_SCREEN_OFF" xml:space="preserve">
     <value>Off</value>
+  </data>
+  <data name="AWAKE_EXIT_PARENT_BINDING_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the parent process ID could not be found.</value>
+  </data>
+  <data name="AWAKE_EXIT_PROCESS_BINDING_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the requested process ID could not be found.</value>
+  </data>
+  <data name="AWAKE_EXIT_BIND_TO_SELF_FAILURE_MESSAGE" xml:space="preserve">
+    <value>Exiting because the provided process ID is Awake's own.</value>
   </data>
 </root>
