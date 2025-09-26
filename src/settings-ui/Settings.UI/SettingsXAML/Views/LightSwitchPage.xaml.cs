@@ -88,11 +88,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.InitializeScheduleMode();
         }
 
-        private async void GetLocation_Click(object sender, RoutedEventArgs e)
-        {
-            await GetGeoLocation();
-        }
-
         private async Task GetGeoLocation()
         {
             SyncButton.IsEnabled = false;
@@ -146,7 +141,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SyncButton.IsEnabled = true;
                 SyncLoader.IsActive = false;
                 System.Diagnostics.Debug.WriteLine("Location error: " + ex.Message);
-                VisualStateManager.GoToState(this, "DisabledLocationState", true);
             }
         }
 
@@ -160,6 +154,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 ViewModel.SyncButtonInformation = $"{ViewModel.Latitude}°, {ViewModel.Longitude}°";
             }
+
+            SunriseModeChartState();
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -299,6 +295,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 LocationDialog.IsPrimaryButtonEnabled = true;
                 LocationResultPanel.Visibility = Visibility.Visible;
             }
+        }
+
+        private void ModeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ModeSelector.SelectedIndex == 1)
+            {
+                SunriseModeChartState();
+            }
+        }
+
+        private void SunriseModeChartState()
+        {
+            if (ViewModel.Latitude == "0.0")
+            {
+                TimelineCard.Visibility = Visibility.Collapsed;
+                LocationWarningBar.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                TimelineCard.Visibility = Visibility.Visible;
+                LocationWarningBar.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private async void LocationDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+        {
+            await GetGeoLocation();
         }
     }
 }

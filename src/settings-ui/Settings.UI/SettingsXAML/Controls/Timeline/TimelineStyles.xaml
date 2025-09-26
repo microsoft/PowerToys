@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style x:Key="HourTickStyle" TargetType="Line">
@@ -51,7 +51,12 @@
 
     <!--  ===== Bands =====  -->
     <Style x:Key="DarkBandStyle" TargetType="Border">
-        <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+        <!--<Setter Property="Background">
+            <Setter.Value>
+                <SolidColorBrush Opacity="0.6" Color="{ThemeResource SystemAccentColorDark1}"/>
+            </Setter.Value>
+        </Setter>-->
+        <Setter Property="Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="Padding" Value="4" />
         <Setter Property="ToolTipService.ToolTip" Value="Dark mode" />
