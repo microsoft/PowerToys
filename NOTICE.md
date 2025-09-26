@@ -1512,6 +1512,7 @@ SOFTWARE.
 - ControlzEx
 - HelixToolkit
 - HelixToolkit.Core.Wpf
+- HtmlAgilityPack
 - hyjiacan.pinyin4net
 - Interop.Microsoft.Office.Interop.OneNote
 - LazyCache
