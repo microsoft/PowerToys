@@ -30,24 +30,42 @@ std::wstring CommandLineArgsHelper::GetCommandLineArgs(DWORD processID) const
         auto quotedPos = commandLineArgs.find(quotedPath);
         if (quotedPos != std::wstring::npos)
         {
-            commandLineArgs = commandLineArgs.substr(quotedPos + quotedPath.size());
-            // Remove leading space if present
-            if (!commandLineArgs.empty() && commandLineArgs[0] == L' ')
+            // Ensure this is at the beginning or after whitespace (not a substring)
+            if (quotedPos == 0 || std::iswspace(commandLineArgs[quotedPos - 1]))
             {
-                commandLineArgs = commandLineArgs.substr(1);
+                commandLineArgs = commandLineArgs.substr(quotedPos + quotedPath.size());
+                // Remove leading space if present
+                if (!commandLineArgs.empty() && commandLineArgs[0] == L' ')
+                {
+                    commandLineArgs = commandLineArgs.substr(1);
+                }
+            }
+            else
+            {
+                // Fall back to unquoted path logic
+                goto try_unquoted;
             }
         }
         else
         {
+try_unquoted:
             // Fall back to unquoted executable path (original behavior)
             auto pos = commandLineArgs.find(executablePath);
             if (pos != std::wstring::npos)
             {
-                commandLineArgs = commandLineArgs.substr(pos + executablePath.size());
-                auto spacePos = commandLineArgs.find_first_of(' ');
-                if (spacePos != std::wstring::npos)
+                // Ensure this is at the beginning or after whitespace (not a substring)
+                if (pos == 0 || std::iswspace(commandLineArgs[pos - 1]))
                 {
-                    commandLineArgs = commandLineArgs.substr(spacePos + 1);
+                    commandLineArgs = commandLineArgs.substr(pos + executablePath.size());
+                    auto spacePos = commandLineArgs.find_first_of(' ');
+                    if (spacePos != std::wstring::npos)
+                    {
+                        commandLineArgs = commandLineArgs.substr(spacePos + 1);
+                    }
+                    else
+                    {
+                        commandLineArgs = L"";
+                    }
                 }
             }
         }
