@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -16,7 +18,7 @@ public class CommandPaletteUnitTestBase
 
     public IListItem[] Query(string query, IListItem[] candidates)
     {
-        IListItem[] listItems = candidates
+        var listItems = candidates
             .Where(item => MatchesFilter(query, item))
             .ToArray();
 
