@@ -2,15 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.UI.Xaml.Media;
 
-public enum Theme
-{
-    System,
-    Light,
-    Dark,
-    HighContrastOne,
-    HighContrastTwo,
-    HighContrastBlack,
-    HighContrastWhite,
-}
+namespace Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders;
+
+internal sealed record ImageSourceInfo(ImageSource ImageSource, ImageHints Hints);

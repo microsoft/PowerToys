@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Storage;
@@ -31,7 +30,10 @@ public sealed partial class AppCache : IAppCache, IDisposable
     public AppCache()
     {
         _win32ProgramRepositoryHelper = new Win32ProgramFileSystemWatchers();
-        _win32ProgramRepository = new Win32ProgramRepository(_win32ProgramRepositoryHelper.FileSystemWatchers.Cast<IFileSystemWatcherWrapper>().ToList(), AllAppsSettings.Instance, _win32ProgramRepositoryHelper.PathsToWatch);
+
+        var watchers = new List<IFileSystemWatcherWrapper>(_win32ProgramRepositoryHelper.FileSystemWatchers);
+
+        _win32ProgramRepository = new Win32ProgramRepository(watchers, AllAppsSettings.Instance, _win32ProgramRepositoryHelper.PathsToWatch);
 
         _packageRepository = new PackageRepository(new PackageCatalogWrapper());
 

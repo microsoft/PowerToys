@@ -256,32 +256,46 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowDetailsMessage message)
     {
-        // TERRIBLE HACK TODO GH #245
-        // There's weird wacky bugs with debounce currently.
-        if (!ViewModel.IsDetailsVisible)
+        if (ViewModel is not null &&
+            ViewModel.CurrentPage is not null)
         {
-            ViewModel.Details = message.Details;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-            ViewModel.IsDetailsVisible = true;
-            return;
+            if (ViewModel.CurrentPage.PageContext.TryGetTarget(out var pageContext))
+            {
+                Task.Factory.StartNew(
+                    () =>
+                    {
+                        // TERRIBLE HACK TODO GH #245
+                        // There's weird wacky bugs with debounce currently.
+                        if (!ViewModel.IsDetailsVisible)
+                        {
+                            ViewModel.Details = message.Details;
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
+                            ViewModel.IsDetailsVisible = true;
+                            return;
+                        }
+
+                        // GH #322:
+                        // For inexplicable reasons, if you try to change the details too fast,
+                        // we'll explode. This seemingly only happens if you change the details
+                        // while we're also scrolling a new list view item into view.
+                        _debounceTimer.Debounce(
+                            () =>
+                            {
+                                ViewModel.Details = message.Details;
+
+                                // Trigger a re-evaluation of whether we have a hero image based on
+                                // the current theme
+                                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
+                            },
+                            interval: TimeSpan.FromMilliseconds(50),
+                            immediate: ViewModel.IsDetailsVisible == false);
+                        ViewModel.IsDetailsVisible = true;
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    pageContext.Scheduler);
+            }
         }
-
-        // GH #322:
-        // For inexplicable reasons, if you try to change the details too fast,
-        // we'll explode. This seemingly only happens if you change the details
-        // while we're also scrolling a new list view item into view.
-        _debounceTimer.Debounce(
-            () =>
-        {
-            ViewModel.Details = message.Details;
-
-            // Trigger a re-evaluation of whether we have a hero image based on
-            // the current theme
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-        },
-            interval: TimeSpan.FromMilliseconds(50),
-            immediate: ViewModel.IsDetailsVisible == false);
-        ViewModel.IsDetailsVisible = true;
     }
 
     public void Receive(HideDetailsMessage message) => HideDetails();

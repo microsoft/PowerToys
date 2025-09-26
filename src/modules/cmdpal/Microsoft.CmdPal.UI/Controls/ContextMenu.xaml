@@ -50,6 +50,7 @@
                         MaxWidth="200"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Text="{x:Bind Title}"
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap">
@@ -90,6 +91,7 @@
                         MaxWidth="200"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
                         Text="{x:Bind Title}"
                         TextTrimming="WordEllipsis"
