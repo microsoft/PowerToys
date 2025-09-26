@@ -94,6 +94,7 @@
         <controls:TitleBar
             x:Name="AppTitleBar"
             AutoConfigureCustomTitleBar="True"
+            IsTabStop="False"
             PaneButtonClick="PaneToggleBtn_Click">
             <controls:TitleBar.Resources>
                 <x:Double x:Key="TitleBarContentMinWidth">516</x:Double>
