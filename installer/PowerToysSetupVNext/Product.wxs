@@ -164,7 +164,7 @@
     <CustomAction Id="SetInstallCmdPalPackageParam" Property="InstallCmdPalPackage" Value="[INSTALLFOLDER]" />
 
     <!-- Set InstallLocation for Bundle entry as well -->
-    <CustomAction Id="SetBundleInstallLocationData" Property="SetBundleInstallLocation" Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetBundleInstallLocationData" Property="SetBundleInstallLocation" Value="[INSTALLFOLDER];[BUNDLEINFO];[InstallScope]" />
 
     <CustomAction Id="LaunchPowerToys" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="LaunchPowerToysCA" BinaryRef="PTCustomActions" />
 
