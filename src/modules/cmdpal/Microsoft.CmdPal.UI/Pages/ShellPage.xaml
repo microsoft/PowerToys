@@ -12,8 +12,8 @@
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
-    xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
@@ -148,12 +148,12 @@
                     </ItemsControl>
                 </StackPanel>
             </DataTemplate>
-            <markdownTextBlockRns:MarkdownThemes
+            <tkcontrols:MarkdownThemes
                 x:Key="DefaultMarkdownThemeConfig"
                 H3FontSize="12"
                 H3FontWeight="Normal" />
             <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
-            <labToolkit:MarkdownConfig
+            <tkcontrols:MarkdownConfig
                 x:Key="DefaultMarkdownConfig"
                 ImageProvider="{StaticResource ImageProvider}"
                 Themes="{StaticResource DefaultMarkdownThemeConfig}" />
@@ -427,12 +427,14 @@
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
-                        <labToolkit:MarkdownTextBlock
+                        <tkcontrols:MarkdownTextBlock
                             Grid.Row="2"
                             Margin="0,4,0,24"
                             Background="Transparent"
                             Config="{StaticResource DefaultMarkdownConfig}"
-                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
+                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}"
+                            UseEmphasisExtras="True"
+                            UsePipeTables="True" />
 
                         <ItemsRepeater
                             Grid.Row="3"
