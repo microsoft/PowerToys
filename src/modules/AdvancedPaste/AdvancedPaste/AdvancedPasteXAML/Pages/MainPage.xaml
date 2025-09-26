@@ -153,49 +153,60 @@
             x:FieldModifier="public"
             TabIndex="0">
             <controls:PromptBox.Footer>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock
-                        Margin="0,0,2,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}">
-                        <Run x:Uid="AIMistakeNote" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    </TextBlock>
-                    <TextBlock
-                        Margin="4,0,2,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}">
-                        <Hyperlink
-                            x:Name="TermsHyperlink"
-                            NavigateUri="https://openai.com/policies/terms-of-use"
-                            TabIndex="3">
-                            <Run x:Uid="TermsLink" />
-                        </Hyperlink>
-                        <ToolTipService.ToolTip>
-                            <TextBlock Text="https://openai.com/policies/terms-of-use" />
-                        </ToolTipService.ToolTip>
-                    </TextBlock>
-                    <TextBlock
-                        Margin="0,0,2,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        ToolTipService.ToolTip="">
-                        <Run x:Uid="AIFooterSeparator" Foreground="{ThemeResource TextFillColorSecondaryBrush}">|</Run>
-                    </TextBlock>
-                    <TextBlock
-                        Margin="0,0,2,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}">
-                        <Hyperlink NavigateUri="https://openai.com/policies/privacy-policy" TabIndex="3">
-                            <Run x:Uid="PrivacyLink" />
-                        </Hyperlink>
-                        <ToolTipService.ToolTip>
-                            <TextBlock Text="https://openai.com/policies/privacy-policy" />
-                        </ToolTipService.ToolTip>
-                    </TextBlock>
+                <StackPanel Orientation="Vertical" Spacing="2">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            Margin="0,0,2,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource CaptionTextBlockStyle}">
+                            <Run x:Uid="AIMistakeNote" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </TextBlock>
+                        <TextBlock
+                            Margin="4,0,2,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource CaptionTextBlockStyle}">
+                            <Hyperlink
+                                x:Name="TermsHyperlink"
+                                NavigateUri="https://openai.com/policies/terms-of-use"
+                                TabIndex="3">
+                                <Run x:Uid="TermsLink" />
+                            </Hyperlink>
+                            <ToolTipService.ToolTip>
+                                <TextBlock Text="https://openai.com/policies/terms-of-use" />
+                            </ToolTipService.ToolTip>
+                        </TextBlock>
+                        <TextBlock
+                            Margin="0,0,2,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            ToolTipService.ToolTip="">
+                            <Run x:Uid="AIFooterSeparator" Foreground="{ThemeResource TextFillColorSecondaryBrush}">|</Run>
+                        </TextBlock>
+                        <TextBlock
+                            Margin="0,0,2,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource CaptionTextBlockStyle}">
+                            <Hyperlink NavigateUri="https://openai.com/policies/privacy-policy" TabIndex="3">
+                                <Run x:Uid="PrivacyLink" />
+                            </Hyperlink>
+                            <ToolTipService.ToolTip>
+                                <TextBlock Text="https://openai.com/policies/privacy-policy" />
+                            </ToolTipService.ToolTip>
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.IsLocalModelMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock
+                            Margin="0,0,2,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource CaptionTextBlockStyle}">
+                            <Run x:Uid="CustomAIMistakeNote"/>
+                        </TextBlock>
+                    </StackPanel>
                 </StackPanel>
             </controls:PromptBox.Footer>
         </controls:PromptBox>

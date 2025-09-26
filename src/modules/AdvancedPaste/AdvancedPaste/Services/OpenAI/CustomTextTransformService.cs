@@ -23,7 +23,7 @@ public sealed class CustomTextTransformService(IUserSettings userSettings, IAICr
 {
     private readonly IUserSettings _userSettings = userSettings;
 
-    private string ModelName => string.IsNullOrEmpty(_userSettings.CustomModelName) ? "gpt-3.5-turbo-instruct" : _userSettings.CustomModelName;
+    private string ModelName => string.IsNullOrWhiteSpace(_userSettings.CustomModelName) ? "gpt-3.5-turbo-instruct" : _userSettings.CustomModelName;
 
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
     private readonly IPromptModerationService _promptModerationService = promptModerationService;
@@ -34,9 +34,14 @@ public sealed class CustomTextTransformService(IUserSettings userSettings, IAICr
         await _promptModerationService.ValidateAsync(fullPrompt, cancellationToken);
 
         OpenAIClientOptions clientOptions = new();
-        if (!string.IsNullOrEmpty(_userSettings.CustomEndpoint))
+        if (!string.IsNullOrWhiteSpace(_userSettings.CustomEndpoint))
         {
-            clientOptions.Endpoint = new Uri(_userSettings.CustomEndpoint);
+            if (!Uri.TryCreate(_userSettings.CustomEndpoint, UriKind.Absolute, out var endpoint))
+            {
+                throw new ArgumentException($"Invalid custom endpoint URL: '{_userSettings.CustomEndpoint}'. Please ensure the URL includes the protocol (e.g., https://your-server.com/api) and is properly formatted.");
+            }
+
+            clientOptions.Endpoint = endpoint;
         }
 
         OpenAIClient openAIClient = new(new ApiKeyCredential(_aiCredentialsProvider.Key), clientOptions);
@@ -44,7 +49,7 @@ public sealed class CustomTextTransformService(IUserSettings userSettings, IAICr
         var response = await openAIClient.GetChatClient(ModelName).CompleteChatAsync(
             [
                 new SystemChatMessage(systemInstructions),
-                new SystemChatMessage(userMessage)
+                new UserChatMessage(userMessage)
             ],
             new()
             {

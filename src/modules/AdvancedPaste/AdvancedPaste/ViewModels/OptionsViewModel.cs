@@ -85,6 +85,8 @@ namespace AdvancedPaste.ViewModels
 
         public bool IsAdvancedAIEnabled => IsCustomAIServiceEnabled && _userSettings.IsAdvancedAIEnabled;
 
+        public bool IsLocalModelMode => _userSettings.IsLocalModelMode;
+
         public string CustomEndpoint => _userSettings.CustomEndpoint;
 
         public string CustomModelName => _userSettings.CustomModelName;
@@ -173,6 +175,7 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(ClipboardHasDataForCustomAI));
             OnPropertyChanged(nameof(IsCustomAIAvailable));
             OnPropertyChanged(nameof(IsAdvancedAIEnabled));
+            OnPropertyChanged(nameof(IsLocalModelMode));
             OnPropertyChanged(nameof(CustomEndpoint));
             OnPropertyChanged(nameof(CustomModelName));
             OnPropertyChanged(nameof(DisableModeration));

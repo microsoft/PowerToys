@@ -35,9 +35,14 @@ public sealed class PromptModerationService(IUserSettings userSettings, IAICrede
         try
         {
             OpenAIClientOptions clientOptions = new();
-            if (!string.IsNullOrEmpty(_userSettings.CustomEndpoint))
+            if (!string.IsNullOrWhiteSpace(_userSettings.CustomEndpoint))
             {
-                clientOptions.Endpoint = new Uri(_userSettings.CustomEndpoint);
+                if (!Uri.TryCreate(_userSettings.CustomEndpoint, UriKind.Absolute, out var endpoint))
+                {
+                    throw new ArgumentException($"Invalid custom endpoint URL: {_userSettings.CustomEndpoint}");
+                }
+
+                clientOptions.Endpoint = endpoint;
             }
 
             ModerationClient moderationClient = new(ModelName, new(_aiCredentialsProvider.Key), clientOptions);

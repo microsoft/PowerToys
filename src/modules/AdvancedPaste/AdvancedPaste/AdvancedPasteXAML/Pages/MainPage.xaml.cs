@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,24 +23,42 @@ using Windows.System;
 
 namespace AdvancedPaste.Pages
 {
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage : Page, INotifyPropertyChanged
     {
         private readonly ObservableCollection<ClipboardItem> clipboardHistory;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
         private (VirtualKey Key, DateTime Timestamp) _lastKeyEvent = (VirtualKey.None, DateTime.MinValue);
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public OptionsViewModel ViewModel { get; private set; }
+
+        public bool IsLocalModelModeVisible => ViewModel?.IsLocalModelMode == true;
 
         public MainPage()
         {
             this.InitializeComponent();
 
             ViewModel = App.GetService<OptionsViewModel>();
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
             clipboardHistory = new ObservableCollection<ClipboardItem>();
 
             LoadClipboardHistoryEvent(null, null);
             Clipboard.HistoryChanged += LoadClipboardHistoryEvent;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(OptionsViewModel.IsLocalModelMode))
+            {
+                OnPropertyChanged(nameof(IsLocalModelModeVisible));
+            }
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void LoadClipboardHistoryEvent(object sender, object e)

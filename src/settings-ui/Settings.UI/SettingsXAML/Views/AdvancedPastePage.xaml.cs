@@ -48,26 +48,53 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private async void AdvancedPaste_EnableAIButton_Click(object sender, RoutedEventArgs e)
+        private async void AIModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            EnableAIDialog.PrimaryButtonText = resourceLoader.GetString("EnableAIDialog_SaveBtnText");
-            EnableAIDialog.SecondaryButtonText = resourceLoader.GetString("EnableAIDialog_CancelBtnText");
-            EnableAIDialog.PrimaryButtonCommand = SaveOpenAIKeyCommand;
+            var comboBox = sender as ComboBox;
+            var selectedItem = comboBox?.SelectedItem as AdvancedPasteViewModel.AIModeItem;
 
-            AdvancedPaste_EnableAIDialogOpenAIApiKey.Text = string.Empty;
+            if (selectedItem == null)
+            {
+                return;
+            }
 
-            await ShowEnableDialogAsync();
-        }
+            // Prevent recursion when updating the ViewModel
+            if (selectedItem.Mode == ViewModel.AIMode)
+            {
+                return;
+            }
 
-        private async Task ShowEnableDialogAsync()
-        {
-            await EnableAIDialog.ShowAsync();
-        }
+            // If user selects OpenAI but doesn't have a key, show the setup dialog
+            if (selectedItem.Mode == AdvancedPasteAIMode.OpenAI && !ViewModel.IsOpenAIEnabled)
+            {
+                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                EnableAIDialog.PrimaryButtonText = resourceLoader.GetString("EnableAIDialog_SaveBtnText");
+                EnableAIDialog.SecondaryButtonText = resourceLoader.GetString("EnableAIDialog_CancelBtnText");
+                EnableAIDialog.PrimaryButtonCommand = SaveOpenAIKeyCommand;
 
-        private void AdvancedPaste_DisableAIButton_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.DisableAI();
+                AdvancedPaste_EnableAIDialogOpenAIApiKey.Text = string.Empty;
+
+                var result = await EnableAIDialog.ShowAsync();
+
+                // If user canceled the dialog, revert the selection
+                if (result != ContentDialogResult.Primary || string.IsNullOrEmpty(AdvancedPaste_EnableAIDialogOpenAIApiKey.Text))
+                {
+                    // Revert ComboBox selection without triggering change event
+                    comboBox.SelectionChanged -= AIModeComboBox_SelectionChanged;
+                    comboBox.SelectedItem = ViewModel.SelectedAIMode;
+                    comboBox.SelectionChanged += AIModeComboBox_SelectionChanged;
+                    return;
+                }
+            }
+
+            // If user selects Disabled and had OpenAI enabled, disable it
+            if (selectedItem.Mode == AdvancedPasteAIMode.Disabled && ViewModel.IsOpenAIEnabled)
+            {
+                ViewModel.DisableAI();
+            }
+
+            // Update the ViewModel (this will handle the actual mode change)
+            ViewModel.AIMode = selectedItem.Mode;
         }
 
         private void AdvancedPaste_EnableAIDialogOpenAIApiKey_TextChanged(object sender, TextChangedEventArgs e)

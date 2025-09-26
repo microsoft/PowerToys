@@ -20,7 +20,7 @@ public sealed class KernelService(IUserSettings userSettings, IKernelQueryCacheS
     private readonly IUserSettings _userSettings = userSettings;
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
 
-    protected override string ModelName => string.IsNullOrEmpty(_userSettings.CustomModelName) ? "gpt-4o" : _userSettings.CustomModelName;
+    protected override string ModelName => string.IsNullOrWhiteSpace(_userSettings.CustomModelName) ? "gpt-4o" : _userSettings.CustomModelName;
 
     protected override PromptExecutionSettings PromptExecutionSettings =>
         new OpenAIPromptExecutionSettings()
@@ -31,13 +31,18 @@ public sealed class KernelService(IUserSettings userSettings, IKernelQueryCacheS
 
     protected override void AddChatCompletionService(IKernelBuilder kernelBuilder)
     {
-        if (string.IsNullOrEmpty(_userSettings.CustomEndpoint))
+        if (string.IsNullOrWhiteSpace(_userSettings.CustomEndpoint))
         {
             kernelBuilder.AddOpenAIChatCompletion(ModelName, _aiCredentialsProvider.Key);
         }
         else
         {
-            kernelBuilder.AddOpenAIChatCompletion(ModelName, new Uri(_userSettings.CustomEndpoint), _aiCredentialsProvider.Key);
+            if (!Uri.TryCreate(_userSettings.CustomEndpoint, UriKind.Absolute, out var endpoint))
+            {
+                throw new ArgumentException($"Invalid custom endpoint URL: '{_userSettings.CustomEndpoint}'. Please ensure the URL includes the protocol (e.g., https://your-server.com/api) and is properly formatted.");
+            }
+
+            kernelBuilder.AddOpenAIChatCompletion(ModelName, endpoint, _aiCredentialsProvider.Key);
         }
     }
 

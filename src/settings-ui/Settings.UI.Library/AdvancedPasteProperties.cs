@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PasteAsJsonShortcut = new();
             CustomActions = new();
             AdditionalActions = new();
+            AIMode = AdvancedPasteAIMode.Disabled;
             IsAdvancedAIEnabled = false;
             CustomEndpoint = string.Empty;
             CustomModelName = string.Empty;
@@ -33,6 +34,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool IsAdvancedAIEnabled { get; set; }
+
+        public AdvancedPasteAIMode AIMode { get; set; }
 
         public string CustomEndpoint { get; set; }
 

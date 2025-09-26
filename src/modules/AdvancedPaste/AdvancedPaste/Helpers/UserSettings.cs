@@ -35,6 +35,10 @@ namespace AdvancedPaste.Settings
 
         public bool IsAdvancedAIEnabled { get; private set; }
 
+        public AdvancedPasteAIMode AIMode { get; private set; }
+
+        public bool IsLocalModelMode => AIMode == AdvancedPasteAIMode.LocalModel;
+
         public string CustomEndpoint { get; private set; }
 
         public string CustomModelName { get; private set; }
@@ -54,6 +58,7 @@ namespace AdvancedPaste.Settings
             _settingsUtils = new SettingsUtils(fileSystem);
 
             IsAdvancedAIEnabled = false;
+            AIMode = AdvancedPasteAIMode.Disabled;
             CustomEndpoint = string.Empty;
             CustomModelName = string.Empty;
             DisableModeration = false;
@@ -108,6 +113,31 @@ namespace AdvancedPaste.Settings
                                 var properties = settings.Properties;
 
                                 IsAdvancedAIEnabled = properties.IsAdvancedAIEnabled;
+
+                                // Handle backwards compatibility for AIMode
+                                if (properties.AIMode == AdvancedPasteAIMode.Disabled)
+                                {
+                                    // Check if user has custom endpoint/model configured (local model mode)
+                                    if (!string.IsNullOrWhiteSpace(properties.CustomEndpoint) || !string.IsNullOrWhiteSpace(properties.CustomModelName))
+                                    {
+                                        AIMode = AdvancedPasteAIMode.LocalModel;
+                                    }
+
+                                    // Check if user has OpenAI key configured
+                                    else if (IsOpenAIKeyConfigured())
+                                    {
+                                        AIMode = AdvancedPasteAIMode.OpenAI;
+                                    }
+                                    else
+                                    {
+                                        AIMode = AdvancedPasteAIMode.Disabled;
+                                    }
+                                }
+                                else
+                                {
+                                    AIMode = properties.AIMode;
+                                }
+
                                 CustomEndpoint = properties.CustomEndpoint;
                                 CustomModelName = properties.CustomModelName;
                                 DisableModeration = properties.DisableModeration;
@@ -153,6 +183,20 @@ namespace AdvancedPaste.Settings
                         Thread.Sleep(500);
                     }
                 }
+            }
+        }
+
+        private static bool IsOpenAIKeyConfigured()
+        {
+            try
+            {
+                var vault = new Windows.Security.Credentials.PasswordVault();
+                vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 

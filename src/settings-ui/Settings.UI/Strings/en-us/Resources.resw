@@ -3955,6 +3955,12 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
     <value>Add advanced capabilities when using 'Paste with AI' including the power to 'chain' multiple transformations together and work with images and files. This feature may consume more API credits when used.</value>
   </data>
+  <data name="AdvancedPaste_LocalModelWarning.Title" xml:space="preserve">
+    <value>Local Model Warning</value>
+  </data>
+  <data name="AdvancedPaste_LocalModelWarning.Message" xml:space="preserve">
+    <value>When using a local model, PowerToys will send your clipboard data to the endpoint you specify. Ensure you trust the endpoint and understand the privacy implications. Moderation is automatically disabled for local models.</value>
+  </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
   </data>

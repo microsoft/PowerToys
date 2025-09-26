@@ -361,6 +361,71 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public AdvancedPasteAIMode AIMode
+        {
+            get => _advancedPasteSettings.Properties.AIMode;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.AIMode)
+                {
+                    _advancedPasteSettings.Properties.AIMode = value;
+
+                    // Auto-disable moderation for local models
+                    if (value == AdvancedPasteAIMode.LocalModel)
+                    {
+                        _advancedPasteSettings.Properties.DisableModeration = true;
+                    }
+                    else if (value == AdvancedPasteAIMode.OpenAI)
+                    {
+                        _advancedPasteSettings.Properties.DisableModeration = false;
+                    }
+
+                    OnPropertyChanged(nameof(AIMode));
+                    OnPropertyChanged(nameof(IsAIEnabled));
+                    OnPropertyChanged(nameof(IsLocalModelMode));
+                    OnPropertyChanged(nameof(ShowAdvancedSettings));
+                    OnPropertyChanged(nameof(DisableModeration));
+                    OnPropertyChanged(nameof(SelectedAIMode));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool IsAIEnabled => AIMode != AdvancedPasteAIMode.Disabled && IsOpenAIEnabled;
+
+        public bool IsLocalModelMode => AIMode == AdvancedPasteAIMode.LocalModel;
+
+        public bool ShowAdvancedSettings => IsLocalModelMode;
+
+        public class AIModeItem
+        {
+            public AdvancedPasteAIMode Mode { get; set; }
+
+            public string DisplayName { get; set; }
+
+            public string Description { get; set; }
+        }
+
+        public AIModeItem[] AIModeOptions { get; } = new[]
+        {
+            new AIModeItem { Mode = AdvancedPasteAIMode.Disabled, DisplayName = "Disabled", Description = "AI features are disabled" },
+            new AIModeItem { Mode = AdvancedPasteAIMode.OpenAI, DisplayName = "OpenAI", Description = "Use OpenAI cloud service" },
+            new AIModeItem { Mode = AdvancedPasteAIMode.LocalModel, DisplayName = "Local model", Description = "Use a local AI model endpoint" },
+        };
+
+        public AIModeItem SelectedAIMode
+        {
+            get => AIModeOptions.FirstOrDefault(x => x.Mode == AIMode) ?? AIModeOptions[0];
+            set
+            {
+                if (value != null && value.Mode != AIMode)
+                {
+                    AIMode = value.Mode;
+                    OnPropertyChanged(nameof(SelectedAIMode));
+                }
+            }
+        }
+
         public string CustomEndpoint
         {
             get => _advancedPasteSettings.Properties.CustomEndpoint;
@@ -397,6 +462,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _advancedPasteSettings.Properties.DisableModeration)
                 {
                     _advancedPasteSettings.Properties.DisableModeration = value;
+                    OnPropertyChanged(nameof(DisableModeration));
                     NotifySettingsChanged();
                 }
             }
@@ -501,7 +567,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PasswordVault vault = new PasswordVault();
                 PasswordCredential cred = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
                 vault.Remove(cred);
+                AIMode = AdvancedPasteAIMode.Disabled;
                 OnPropertyChanged(nameof(IsOpenAIEnabled));
+                OnPropertyChanged(nameof(SelectedAIMode));
                 NotifySettingsChanged();
             }
             catch (Exception)
@@ -516,7 +584,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PasswordVault vault = new();
                 PasswordCredential cred = new("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey", password);
                 vault.Add(cred);
+                AIMode = AdvancedPasteAIMode.OpenAI; // Default to OpenAI when enabling
                 OnPropertyChanged(nameof(IsOpenAIEnabled));
+                OnPropertyChanged(nameof(SelectedAIMode));
                 IsAdvancedAIEnabled = true; // new users should get Semantic Kernel benefits immediately
                 NotifySettingsChanged();
             }
