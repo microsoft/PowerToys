@@ -19,3 +19,4 @@
 #include <WorkspacesLib/Result.h>
 #include <WorkspacesLib/AppUtils.h>
 #include <WorkspacesLib/PwaHelper.h>
+#include <WorkspacesLib/CommandLineArgsHelper.h>

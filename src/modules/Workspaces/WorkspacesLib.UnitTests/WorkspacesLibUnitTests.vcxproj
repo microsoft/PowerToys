@@ -50,6 +50,7 @@
     <ClCompile Include="JsonUtilsTests.cpp" />
     <ClCompile Include="AppUtilsTests.cpp" />
     <ClCompile Include="PwaHelperTests.cpp" />
+    <ClCompile Include="CommandLineArgsHelperTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
