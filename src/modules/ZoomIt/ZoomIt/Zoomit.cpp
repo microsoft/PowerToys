@@ -170,6 +170,7 @@ type_pMagSetFullscreenTransform pMagSetFullscreenTransform;
 type_pMagSetInputTransform	pMagSetInputTransform;
 type_pMagShowSystemCursor	pMagShowSystemCursor;
 type_pMagSetWindowFilterList pMagSetWindowFilterList;
+type_MagSetFullscreenUseBitmapSmoothing pMagSetFullscreenUseBitmapSmoothing;
 type_pMagInitialize			pMagInitialize;
 type_pDwmIsCompositionEnabled	pDwmIsCompositionEnabled;
 type_pGetPointerType		pGetPointerType;
@@ -1284,7 +1285,12 @@ void ScaleImage( HDC hdcDst, float xDst, float yDst, float wDst, float hDst,
     {
         Gdiplus::Bitmap		srcBitmap( bmSrc, NULL );
 
-        dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeLowQuality );
+        // Use high quality interpolation when smooth image is enabled
+        if (g_SmoothImage) {
+            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeHighQualityBicubic );
+        } else {
+            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeLowQuality );
+        }
         dstGraphics.SetPixelOffsetMode( Gdiplus::PixelOffsetModeHalf );
 
         dstGraphics.DrawImage( &srcBitmap, Gdiplus::RectF(xDst,yDst,wDst,hDst), xSrc, ySrc, wSrc, hSrc, Gdiplus::UnitPixel );
@@ -2071,6 +2077,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             IsAutostartConfigured() ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ANIMATE_ZOOM, 
             g_AnimateZoom ? BST_CHECKED: BST_UNCHECKED );
+        CheckDlgButton( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_SMOOTH_IMAGE, 
+            g_SmoothImage ? BST_CHECKED: BST_UNCHECKED );
 
         SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_SETRANGE, false, MAKELONG(0,_countof(g_ZoomLevels)-1) );
         SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_SETPOS, true, g_SliderZoomLevel );
@@ -2210,6 +2218,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             }
             g_ShowTrayIcon = IsDlgButtonChecked( hDlg, IDC_SHOW_TRAY_ICON ) == BST_CHECKED;
             g_AnimateZoom = IsDlgButtonChecked( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ANIMATE_ZOOM ) == BST_CHECKED;
+            g_SmoothImage = IsDlgButtonChecked( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_SMOOTH_IMAGE ) == BST_CHECKED;
             g_DemoTypeUserDriven = IsDlgButtonChecked( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_USER_DRIVEN ) == BST_CHECKED;
 
             newToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[ZOOM_PAGE].hPage, IDC_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
@@ -3926,6 +3935,11 @@ LRESULT APIENTRY MainWndProc(
                 SetWindowLongPtr(hWnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
                 SetLayeredWindowAttributes(hWnd, COLORREF(RGB(0, 0, 0)), 0, LWA_COLORKEY);
                 pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 0, nullptr );
+                OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
+                if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
+                {
+                    OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
+                }
             }
             [[fallthrough]];
         }
@@ -4149,6 +4163,11 @@ LRESULT APIENTRY MainWndProc(
                         0, 0, 0, 0, NULL, NULL, g_hInstance, static_cast<PVOID>(GetForegroundWindow()) );
                     pSetLayeredWindowAttributes( hWnd, 0, 0, LWA_ALPHA );
                     EnableWindow( g_hWndLiveZoom, FALSE );
+                    OutputDebug(L"Livezoom SMOOTHING: %d\n", g_SmoothImage);
+                    if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
+                    {                    
+                        OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
+                    }
                     pMagSetWindowFilterList( g_hWndLiveZoomMag, MW_FILTERMODE_EXCLUDE, 1, &hWnd );
 
                 } else {
@@ -4172,6 +4191,11 @@ LRESULT APIENTRY MainWndProc(
                     } else {
                     
                         OutputDebug(L"Show liveZoom\n");
+                        OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
+                        if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
+                        {
+                            OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
+                        }
                         ShowWindow( g_hWndLiveZoom, SW_SHOW );
                     }
 #if WINDOWS_CURSOR_RECORDING_WORKAROUND
@@ -6185,8 +6209,14 @@ LRESULT APIENTRY MainWndProc(
             SetStretchBltMode( hInterimSaveDc, HALFTONE );
             SetStretchBltMode( hSaveDc, HALFTONE );
 #else
-            SetStretchBltMode( hInterimSaveDc, COLORONCOLOR );
-            SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            // Use HALFTONE for better quality when smooth image is enabled
+            if (g_SmoothImage) {
+                SetStretchBltMode( hInterimSaveDc, HALFTONE );
+                SetStretchBltMode( hSaveDc, HALFTONE );
+            } else {
+                SetStretchBltMode( hInterimSaveDc, COLORONCOLOR );
+                SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            }
 #endif
             StretchBlt( hInterimSaveDc,
                         0, 0,
@@ -6309,7 +6339,12 @@ LRESULT APIENTRY MainWndProc(
 #if SCALE_HALFTONE
             SetStretchBltMode( hSaveDc, HALFTONE );
 #else
-            SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            // Use HALFTONE for better quality when smooth image is enabled
+            if (g_SmoothImage) {
+                SetStretchBltMode( hSaveDc, HALFTONE );
+            } else {
+                SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            }
 #endif
 			StretchBlt( hSaveDc,
                         0, 0,
@@ -6646,8 +6681,8 @@ LRESULT APIENTRY MainWndProc(
                             (float)x, (float)y, 
                             width/zoomLevel, height/zoomLevel ); 
             } else {
-                // do a fast, less accurate render
-                SetStretchBltMode( hDc, HALFTONE );
+                // do a fast, less accurate render (but use smooth if enabled)
+                SetStretchBltMode( hDc, g_SmoothImage ? HALFTONE : COLORONCOLOR );
                 StretchBlt( ps.hdc, 
                         0, 0, 
                         bmp.bmWidth, bmp.bmHeight, 
@@ -6660,7 +6695,12 @@ LRESULT APIENTRY MainWndProc(
 #if SCALE_HALFTONE
             SetStretchBltMode( hDc, zoomLevel == zoomTelescopeTarget ? HALFTONE : COLORONCOLOR );
 #else
-            SetStretchBltMode( hDc, COLORONCOLOR );
+            // Use HALFTONE for better quality when smooth image is enabled
+            if (g_SmoothImage) {
+                SetStretchBltMode( hDc, HALFTONE );
+            } else {
+                SetStretchBltMode( hDc, COLORONCOLOR );
+            }
 #endif
             StretchBlt( ps.hdc, 
                     0, 0, 
@@ -6683,7 +6723,7 @@ LRESULT APIENTRY MainWndProc(
 
                 BITMAP local_bmp;
                 GetObject(g_hBackgroundBmp, sizeof(local_bmp), &local_bmp);
-                SetStretchBltMode( hdcScreenCompat, HALFTONE );
+                SetStretchBltMode( hdcScreenCompat, g_SmoothImage ? HALFTONE : COLORONCOLOR );
                 if( g_BreakBackgroundStretch ) {
                     StretchBlt( hdcScreenCompat, 0, 0, width, height,
                         g_hDcBackgroundFile, 0, 0, local_bmp.bmWidth, local_bmp.bmHeight, SRCCOPY|CAPTUREBLT  );
@@ -6842,7 +6882,6 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
                                         WS_CHILD | MS_SHOWMAGNIFIEDCURSOR | WS_VISIBLE,
                                         0, 0, 0, 0, hWnd, NULL, g_hInstance, NULL );
         }
-
         ShowWindow( hWnd, SW_SHOW );
         InvalidateRect( g_hWndLiveZoomMag, NULL, TRUE );
 
@@ -7103,6 +7142,11 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
                     pMagSetWindowTransform(g_hWndLiveZoomMag, &matrix);
                 }
+                OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
+                if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
+                {
+                    OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
+                }
             }
 
             if( !g_fullScreenWorkaround ) {
@@ -7297,6 +7341,12 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             else {
 
                 pMagSetWindowTransform(g_hWndLiveZoomMag, &matrix);
+            }
+            OutputDebug(L"LIVEDRAW SMOOTHING: %d\n", g_SmoothImage);
+
+            if (!pMagSetFullscreenUseBitmapSmoothing(g_SmoothImage))
+            {
+                OutputDebug(L"MagSetLensUseBitmapSmoothing failed: %d\n", GetLastError());
             }
         }
         break;
@@ -7555,6 +7605,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     "MagSetWindowTransform" );
     pMagSetFullscreenTransform = (type_pMagSetFullscreenTransform)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
                     "MagSetFullscreenTransform");
+    pMagSetFullscreenUseBitmapSmoothing = (type_MagSetFullscreenUseBitmapSmoothing)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
+                    "MagSetFullscreenUseBitmapSmoothing");
     pMagSetInputTransform = (type_pMagSetInputTransform)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),
                     "MagSetInputTransform");
     pMagShowSystemCursor = (type_pMagShowSystemCursor)GetProcAddress(LoadLibrarySafe(L"magnification.dll", DLL_LOAD_LOCATION_SYSTEM),

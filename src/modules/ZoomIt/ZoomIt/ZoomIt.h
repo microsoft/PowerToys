@@ -143,7 +143,10 @@ typedef BOOL(__stdcall *type_pMagSetWindowFilterList)(
     int   count,
     HWND* pHWND
 );
-typedef BOOL (__stdcall *type_pMagInitialize)(VOID);
+typedef BOOL(__stdcall* type_MagSetFullscreenUseBitmapSmoothing)(
+    BOOL fUseBitmapSmoothing
+);
+typedef BOOL(__stdcall* type_pMagInitialize)(VOID);
 
 typedef BOOL(__stdcall *type_pGetPointerType)(
     _In_   UINT32 pointerId,
