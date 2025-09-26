@@ -219,12 +219,18 @@ public partial class EvilSamplesPage : ListPage
                 }
             ],
         },
+        new ListItem(
+            new ToastCommand("Primary command invoked", MessageState.Info) { Name = "H W\r\nE O\r\nL R\r\nL L\r\nO D", Icon = new IconInfo("\uF146") })
+        {
+            Title = "noop third command test",
+            Icon = new IconInfo("\uE712"),  // "More" dots
+        },
         new ListItem(new EvilDuplicateRequestedShortcut())
         {
             Title = "Evil keyboard shortcuts",
             Subtitle = "Two commands with the same shortcut and more...",
             Icon = new IconInfo("\uE765"),
-        }
+        },
     ];
 
     public EvilSamplesPage()

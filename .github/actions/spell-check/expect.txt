@@ -393,6 +393,7 @@ DNLEN
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
+downscale
 DPICHANGED
 DPIs
 DPSAPI
@@ -1384,7 +1385,7 @@ QUNS
 RAII
 RAlt
 randi
-Rasterization
+rasterization
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
