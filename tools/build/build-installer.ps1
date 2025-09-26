@@ -126,7 +126,7 @@ else {
 
 # Generate DSC manifest files
 Write-Host '[DSC] Generating DSC manifest files...'
-$dscScriptPath = Join-Path $repoRoot '.pipelines\generate-dsc-manifests.ps1'
+$dscScriptPath = Join-Path $repoRoot '.\tools\build\generate-dsc-manifests.ps1'
 if (Test-Path $dscScriptPath) {
     & $dscScriptPath -BuildPlatform $Platform -BuildConfiguration $Configuration -RepoRoot $repoRoot
     if ($LASTEXITCODE -ne 0) {
