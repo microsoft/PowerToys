@@ -29,7 +29,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private MousePointerCrosshairsSettings MousePointerCrosshairsSettingsConfig { get; set; }
 
-        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private CursorWrapSettings CursorWrapSettingsConfig { get; set; }
+
+        public MouseUtilsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<FindMyMouseSettings> findMyMouseSettingsRepository, ISettingsRepository<MouseHighlighterSettings> mouseHighlighterSettingsRepository, ISettingsRepository<MouseJumpSettings> mouseJumpSettingsRepository, ISettingsRepository<MousePointerCrosshairsSettings> mousePointerCrosshairsSettingsRepository, ISettingsRepository<CursorWrapSettings> cursorWrapSettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
             SettingsUtils = settingsUtils;
 
@@ -102,6 +104,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
 
+            ArgumentNullException.ThrowIfNull(cursorWrapSettingsRepository);
+
+            CursorWrapSettingsConfig = cursorWrapSettingsRepository.SettingsConfig;
+            _cursorWrapAutoActivate = CursorWrapSettingsConfig.Properties.AutoActivate.Value;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -143,12 +150,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (_mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.
-                _mousePointerCrosshairsEnabledStateIsGPOConfigured = true;
+                _mousePointerCrosshairsEnabledStateGPOConfigured = true;
                 _isMousePointerCrosshairsEnabled = _mousePointerCrosshairsEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
             else
             {
                 _isMousePointerCrosshairsEnabled = GeneralSettingsConfig.Enabled.MousePointerCrosshairs;
+            }
+
+            _cursorWrapEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredCursorWrapEnabledValue();
+            if (_cursorWrapEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _cursorWrapEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _cursorWrapEnabledStateIsGPOConfigured = true;
+                _isCursorWrapEnabled = _cursorWrapEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _isCursorWrapEnabled = GeneralSettingsConfig.Enabled.CursorWrap;
             }
         }
 
@@ -162,6 +181,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     MousePointerCrosshairsActivationShortcut,
                     GlidingCursorActivationShortcut],
                 [MouseJumpSettings.ModuleName] = [MouseJumpActivationShortcut],
+                [CursorWrapSettings.ModuleName] = [CursorWrapActivationShortcut],
             };
 
             return hotkeysDict;
@@ -662,7 +682,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _isMousePointerCrosshairsEnabled;
             set
             {
-                if (_mousePointerCrosshairsEnabledStateIsGPOConfigured)
+                if (_mousePointerCrosshairsEnabledStateGPOConfigured)
                 {
                     // If it's GPO configured, shouldn't be able to change this state.
                     return;
@@ -685,7 +705,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsMousePointerCrosshairsEnabledGpoConfigured
         {
-            get => _mousePointerCrosshairsEnabledStateIsGPOConfigured;
+            get => _mousePointerCrosshairsEnabledStateGPOConfigured;
         }
 
         public HotkeySettings MousePointerCrosshairsActivationShortcut
@@ -940,6 +960,82 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SettingsUtils.SaveSettings(MousePointerCrosshairsSettingsConfig.ToJsonString(), MousePointerCrosshairsSettings.ModuleName);
         }
 
+        public bool IsCursorWrapEnabled
+        {
+            get => _isCursorWrapEnabled;
+            set
+            {
+                if (_cursorWrapEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (_isCursorWrapEnabled != value)
+                {
+                    _isCursorWrapEnabled = value;
+
+                    GeneralSettingsConfig.Enabled.CursorWrap = value;
+                    OnPropertyChanged(nameof(IsCursorWrapEnabled));
+
+                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+                    SendConfigMSG(outgoing.ToString());
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsCursorWrapEnabledGpoConfigured
+        {
+            get => _cursorWrapEnabledStateIsGPOConfigured;
+        }
+
+        public HotkeySettings CursorWrapActivationShortcut
+        {
+            get
+            {
+                return CursorWrapSettingsConfig.Properties.ActivationShortcut;
+            }
+
+            set
+            {
+                if (CursorWrapSettingsConfig.Properties.ActivationShortcut != value)
+                {
+                    CursorWrapSettingsConfig.Properties.ActivationShortcut = value ?? CursorWrapSettingsConfig.Properties.DefaultActivationShortcut;
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
+        public bool CursorWrapAutoActivate
+        {
+            get
+            {
+                return _cursorWrapAutoActivate;
+            }
+
+            set
+            {
+                if (value != _cursorWrapAutoActivate)
+                {
+                    _cursorWrapAutoActivate = value;
+                    CursorWrapSettingsConfig.Properties.AutoActivate.Value = value;
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
+        public void NotifyCursorWrapPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            OnPropertyChanged(propertyName);
+
+            SndCursorWrapSettings outsettings = new SndCursorWrapSettings(CursorWrapSettingsConfig);
+            SndModuleSettings<SndCursorWrapSettings> ipcMessage = new SndModuleSettings<SndCursorWrapSettings>(outsettings);
+            SendConfigMSG(ipcMessage.ToJsonString());
+            SettingsUtils.SaveSettings(CursorWrapSettingsConfig.ToJsonString(), CursorWrapSettings.ModuleName);
+        }
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValues();
@@ -947,6 +1043,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IsMouseHighlighterEnabled));
             OnPropertyChanged(nameof(IsMouseJumpEnabled));
             OnPropertyChanged(nameof(IsMousePointerCrosshairsEnabled));
+            OnPropertyChanged(nameof(IsCursorWrapEnabled));
         }
 
         private Func<string, int> SendConfigMSG { get; }
@@ -980,7 +1077,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _highlighterAutoActivate;
 
         private GpoRuleConfigured _mousePointerCrosshairsEnabledGpoRuleConfiguration;
-        private bool _mousePointerCrosshairsEnabledStateIsGPOConfigured;
+        private bool _mousePointerCrosshairsEnabledStateGPOConfigured;
         private bool _isMousePointerCrosshairsEnabled;
         private string _mousePointerCrosshairsColor;
         private int _mousePointerCrosshairsOpacity;
@@ -993,5 +1090,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _mousePointerCrosshairsFixedLength;
         private bool _mousePointerCrosshairsAutoActivate;
         private bool _isAnimationEnabledBySystem;
+
+        private GpoRuleConfigured _cursorWrapEnabledGpoRuleConfiguration;
+        private bool _cursorWrapEnabledStateIsGPOConfigured;
+        private bool _isCursorWrapEnabled;
+        private bool _cursorWrapAutoActivate;
     }
 }

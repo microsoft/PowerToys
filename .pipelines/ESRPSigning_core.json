@@ -179,6 +179,7 @@
             "PowerToys.MousePointerCrosshairs.dll",
             "PowerToys.MouseJumpUI.dll",
             "PowerToys.MouseJumpUI.exe",
+            "PowerToys.CursorWrap.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",
