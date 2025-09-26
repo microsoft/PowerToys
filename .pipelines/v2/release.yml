@@ -105,7 +105,7 @@ extends:
                 clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
               installerSuffix: ${{ parameters.installerSuffix }}
-              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:InstallerSuffix=${{ parameters.installerSuffix }}
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:InstallerSuffix=${{ parameters.installerSuffix }}  /p:EnableCmdPalAOT=true
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
