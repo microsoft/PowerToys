@@ -31,7 +31,7 @@ internal sealed partial class WebSearchListPage : DynamicListPage, IDisposable
 
         Name = Resources.command_item_title;
         Title = Resources.command_item_title;
-        Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
+        Icon = Icons.WebSearch;
         Id = "com.microsoft.cmdpal.websearch";
 
         _settingsManager = settingsManager;
