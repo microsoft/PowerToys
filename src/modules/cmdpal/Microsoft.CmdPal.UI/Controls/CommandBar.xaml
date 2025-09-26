@@ -176,6 +176,7 @@
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap"
                         MaxWidth="160"
+                        MaxLines="1"
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
@@ -198,6 +199,7 @@
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap"
                         MaxWidth="160"
+                        MaxLines="1"
                         VerticalAlignment="Center"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
