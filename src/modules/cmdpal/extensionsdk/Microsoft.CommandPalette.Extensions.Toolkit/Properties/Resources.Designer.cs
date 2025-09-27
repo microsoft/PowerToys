@@ -160,15 +160,6 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open.
-        /// </summary>
-        internal static string Page_Name {
-            get {
-                return ResourceManager.GetString("Page_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Settings.
         /// </summary>
         internal static string Settings {
