@@ -133,4 +133,31 @@ public class ShellListPageHelpers
 
         return li;
     }
+
+    /// <summary>
+    /// This is a version of ParseExecutableAndArgs that handles whitespace in
+    /// paths better. It will try to find the first matching executable in the
+    /// input string.
+    ///
+    /// If the input is quoted, it will treat everything inside the quotes as
+    /// the executable. If the input is not quoted, it will try to find the
+    /// first segment that matches
+    /// </summary>
+    public static void NormalizeCommandLineAndArgs(string input, out string executable, out string arguments)
+    {
+        var normalized = CommandLineNormalizer.NormalizeCommandLine(input);
+        var segments = normalized.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+        executable = string.Empty;
+        arguments = string.Empty;
+        if (segments.Length == 0)
+        {
+            return;
+        }
+
+        executable = segments[0];
+        if (segments.Length > 1)
+        {
+            arguments = string.Join(' ', segments[1..]);
+        }
+    }
 }

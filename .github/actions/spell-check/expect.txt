@@ -28,6 +28,7 @@ admx
 advancedpaste
 advancedpasteui
 advancedpasteuishortcut
+advapi
 advfirewall
 AFeature
 affordances
@@ -249,6 +250,7 @@ CONFIGW
 CONFLICTINGMODIFIERKEY
 CONFLICTINGMODIFIERSHORTCUT
 CONOUT
+coreclr
 constexpr
 contentdialog
 contentfiles
@@ -270,6 +272,8 @@ cpcontrols
 cph
 cplusplus
 CPower
+cpptools
+cppvsdbg
 cppwinrt
 createdump
 CREATEPROCESS
@@ -281,6 +285,7 @@ CRH
 critsec
 cropandlock
 Crossdevice
+csdevkit
 CSearch
 CSettings
 cso
@@ -390,6 +395,7 @@ DNLEN
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
+downscale
 DPICHANGED
 DPIs
 DPSAPI
@@ -480,6 +486,7 @@ examplehandler
 examplepowertoy
 EXAND
 EXCLUDEFROMCAPTURE
+EXECUTEDEFAULT
 executionpolicy
 exename
 exf
@@ -922,6 +929,7 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
+MAJORMINOR
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -1000,6 +1008,9 @@ mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
+muxx
+muxxc
+muxxh
 MRM
 MRT
 mru
@@ -1379,7 +1390,7 @@ RAII
 RAlt
 RAquadrant
 randi
-Rasterization
+rasterization
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
@@ -1815,6 +1826,7 @@ ULONGLONG
 ums
 uncompilable
 UNCPRIORITY
+undefining
 UNDNAME
 UNICODETEXT
 unins
@@ -2025,6 +2037,7 @@ XButton
 xclip
 xcopy
 XDeployment
+xdf
 XDocument
 XElement
 xfd

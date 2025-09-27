@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Xml;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
@@ -95,14 +94,14 @@ public class UWPApplication : IUWPApplication
 
         commands.Add(
             new CommandContextItem(
-                new CopyTextCommand(Location) { Name = Resources.copy_path })
+                new CopyPathCommand(Location))
             {
                 RequestedShortcut = KeyChords.CopyFilePath,
             });
 
         commands.Add(
             new CommandContextItem(
-                new OpenPathCommand(Location)
+                new OpenFileCommand(Location)
                 {
                     Name = Resources.open_containing_folder,
                 })
@@ -348,20 +347,22 @@ public class UWPApplication : IUWPApplication
             //
             // FirstOrDefault would result in us using the 1x scaled icon
             // always, which is usually too small for our needs.
-            var selectedIconPath = paths.LastOrDefault(File.Exists);
-            if (!string.IsNullOrEmpty(selectedIconPath))
+            for (var i = paths.Count - 1; i >= 0; i--)
             {
-                LogoPath = selectedIconPath;
-                if (highContrast)
+                if (File.Exists(paths[i]))
                 {
-                    LogoType = LogoType.HighContrast;
-                }
-                else
-                {
-                    LogoType = LogoType.Colored;
-                }
+                    LogoPath = paths[i];
+                    if (highContrast)
+                    {
+                        LogoType = LogoType.HighContrast;
+                    }
+                    else
+                    {
+                        LogoType = LogoType.Colored;
+                    }
 
-                return true;
+                    return true;
+                }
             }
         }
 
@@ -402,7 +403,23 @@ public class UWPApplication : IUWPApplication
                 }
             }
 
-            var selectedIconPath = paths.OrderBy(x => Math.Abs(pathFactorPairs.GetValueOrDefault(x) - appIconSize)).FirstOrDefault(File.Exists);
+            // Sort paths by distance to desired app icon size
+            var selectedIconPath = string.Empty;
+            var closestDistance = int.MaxValue;
+
+            foreach (var p in paths)
+            {
+                if (File.Exists(p) && pathFactorPairs.TryGetValue(p, out var factor))
+                {
+                    var distance = Math.Abs(factor - appIconSize);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        selectedIconPath = p;
+                    }
+                }
+            }
+
             if (!string.IsNullOrEmpty(selectedIconPath))
             {
                 LogoPath = selectedIconPath;
