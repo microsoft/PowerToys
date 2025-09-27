@@ -65,26 +65,27 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <BreadcrumbBar
-                    x:Name="NavigationBreadcrumbBar"
-                    MaxWidth="1000"
-                    Margin="16,0,0,0"
-                    ItemClicked="NavigationBreadcrumbBar_ItemClicked"
-                    ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
-                    <BreadcrumbBar.ItemTemplate>
-                        <DataTemplate x:DataType="local:Crumb">
-                            <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
-                        </DataTemplate>
-                    </BreadcrumbBar.ItemTemplate>
-                    <BreadcrumbBar.Resources>
-                        <ResourceDictionary>
-                            <x:Double x:Key="BreadcrumbBarItemThemeFontSize">28</x:Double>
-                            <Thickness x:Key="BreadcrumbBarChevronPadding">7,4,8,0</Thickness>
-                            <FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</FontWeight>
-                            <x:Double x:Key="BreadcrumbBarChevronFontSize">16</x:Double>
-                        </ResourceDictionary>
-                    </BreadcrumbBar.Resources>
-                </BreadcrumbBar>
+                <Grid Padding="16,0">
+                    <BreadcrumbBar
+                        x:Name="NavigationBreadcrumbBar"
+                        MaxWidth="1000"
+                        ItemClicked="NavigationBreadcrumbBar_ItemClicked"
+                        ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
+                        <BreadcrumbBar.ItemTemplate>
+                            <DataTemplate x:DataType="local:Crumb">
+                                <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
+                            </DataTemplate>
+                        </BreadcrumbBar.ItemTemplate>
+                        <BreadcrumbBar.Resources>
+                            <ResourceDictionary>
+                                <x:Double x:Key="BreadcrumbBarItemThemeFontSize">28</x:Double>
+                                <Thickness x:Key="BreadcrumbBarChevronPadding">7,4,8,0</Thickness>
+                                <FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</FontWeight>
+                                <x:Double x:Key="BreadcrumbBarChevronFontSize">16</x:Double>
+                            </ResourceDictionary>
+                        </BreadcrumbBar.Resources>
+                    </BreadcrumbBar>
+                </Grid>
                 <Frame x:Name="NavFrame" Grid.Row="1" />
             </Grid>
         </NavigationView>
