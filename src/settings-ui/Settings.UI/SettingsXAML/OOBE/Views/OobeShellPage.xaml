@@ -118,6 +118,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}"
                     Tag="KBM" />
                 <NavigationViewItem
+                    x:Uid="Shell_LightSwitch"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}"
+                    Tag="LightSwitch" />
+                <NavigationViewItem
                     x:Uid="Shell_MouseUtilities"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}"
                     Tag="MouseUtils" />

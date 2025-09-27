@@ -513,6 +513,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool lightSwitch;
+
+        [JsonPropertyName("LightSwitch")]
+        public bool LightSwitch
+        {
+            get => lightSwitch;
+            set
+            {
+                if (lightSwitch != value)
+                {
+                    LogTelemetryEvent(value);
+                    lightSwitch = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

@@ -77,7 +77,18 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
                 return ResourceManager.GetString("Action_Run_As_Administrator", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Light Switch.
+        /// </summary>
+        internal static string Light_Switch
+        {
+            get
+            {
+                return ResourceManager.GetString("Light_Switch", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Color Picker.
         /// </summary>

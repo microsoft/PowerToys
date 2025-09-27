@@ -257,7 +257,10 @@ inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params,
         exec_info.nShow = SW_HIDE;
     }
 
-    return ShellExecuteExW(&exec_info) ? exec_info.hProcess : nullptr;
+    // failing bc using "runas" with PowerToys.exe already running?
+    BOOL result = ShellExecuteExW(&exec_info);
+
+    return result  ? exec_info.hProcess : nullptr;
 }
 
 // Run command as non-elevated user, returns true if succeeded, puts the process id into returnPid if returnPid != NULL

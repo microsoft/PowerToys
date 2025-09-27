@@ -245,6 +245,7 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityCmdNotFound">Command Not Found: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCmdPal">CmdPal: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCropAndLock">Crop And Lock: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityLightSwitch">Light Switch: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityEnvironmentVariables">Environment Variables: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>

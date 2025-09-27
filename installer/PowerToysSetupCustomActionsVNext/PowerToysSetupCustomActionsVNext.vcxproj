@@ -65,6 +65,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Hosts.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ImageResizer.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\KeyboardManager.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\LightSwitch.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\LightSwitch.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\MouseWithoutBorders.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\MouseWithoutBorders.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\NewPlus.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\NewPlus.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Peek.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Peek.wxs.bk""""

@@ -52,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CmdPal: return generalSettingsConfig.Enabled.CmdPal;
                 case ModuleType.ColorPicker: return generalSettingsConfig.Enabled.ColorPicker;
                 case ModuleType.CropAndLock: return generalSettingsConfig.Enabled.CropAndLock;
+                case ModuleType.LightSwitch: return generalSettingsConfig.Enabled.LightSwitch;
                 case ModuleType.EnvironmentVariables: return generalSettingsConfig.Enabled.EnvironmentVariables;
                 case ModuleType.FancyZones: return generalSettingsConfig.Enabled.FancyZones;
                 case ModuleType.FileLocksmith: return generalSettingsConfig.Enabled.FileLocksmith;
@@ -88,6 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CmdPal: generalSettingsConfig.Enabled.CmdPal = isEnabled; break;
                 case ModuleType.ColorPicker: generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
                 case ModuleType.CropAndLock: generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
+                case ModuleType.LightSwitch: generalSettingsConfig.Enabled.LightSwitch = isEnabled; break;
                 case ModuleType.EnvironmentVariables: generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
                 case ModuleType.FancyZones: generalSettingsConfig.Enabled.FancyZones = isEnabled; break;
                 case ModuleType.FileLocksmith: generalSettingsConfig.Enabled.FileLocksmith = isEnabled; break;
@@ -159,6 +161,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.CmdPal => typeof(CmdPalPage),
                 ModuleType.ColorPicker => typeof(ColorPickerPage),
                 ModuleType.CropAndLock => typeof(CropAndLockPage),
+                ModuleType.LightSwitch => typeof(LightSwitchPage),
                 ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
                 ModuleType.FancyZones => typeof(FancyZonesPage),
                 ModuleType.FileLocksmith => typeof(FileLocksmithPage),

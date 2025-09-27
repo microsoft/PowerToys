@@ -28,7 +28,7 @@
             Style="{StaticResource TitleTextBlockStyle}"
             Text="{x:Bind ModuleTitle}" />
 
-        <ScrollViewer Grid.Row="1">
+        <ScrollViewer Grid.Row="1" AutomationProperties.AutomationId="PageScrollViewer">
             <Grid
                 Padding="0,0,20,48"
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"

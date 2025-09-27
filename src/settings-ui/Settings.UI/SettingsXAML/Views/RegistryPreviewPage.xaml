@@ -30,7 +30,6 @@
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
-
                     <tkcontrols:SettingsCard
                         Name="RegistryPreviewDefaultRegApp"
                         x:Uid="RegistryPreview_DefaultRegApp"
