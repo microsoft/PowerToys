@@ -117,7 +117,11 @@ public:
 
         HRESULT result;
 
-        if (!RunNonElevatedEx(path.c_str(), L"", get_module_folderpath(g_hInst)))
+        // Get pipe name from writer if using pipes
+        std::wstring pipe_name = writer.get_pipe_name();
+        std::wstring command_args = pipe_name.empty() ? L"" : pipe_name;
+
+        if (!RunNonElevatedEx(path.c_str(), command_args.c_str(), get_module_folderpath(g_hInst)))
         {
             result = E_FAIL;
             Trace::InvokedRet(result);
