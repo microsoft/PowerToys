@@ -3253,10 +3253,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Pin a window</value>
   </data>
   <data name="LightSwitch_ThemeToggle_Shortcut.Header" xml:space="preserve">
-    <value>Toggle theme shortcut</value>
+    <value>Theme toggle shortcut</value>
   </data>
   <data name="LightSwitch_ThemeToggle_Shortcut.Description" xml:space="preserve">
-    <value>Toggle between light and dark mode</value>
+    <value>Switch between light and dark mode</value>
   </data>
   <data name="LightSwitch_ForceDarkMode" xml:space="preserve">
     <value>Toggle theme</value>
@@ -5318,7 +5318,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Get current location</value>
   </data>
   <data name="LightSwitch_LocationDialog_Description.Text" xml:space="preserve">
-    <value>To calculate the sunrise and sunset, LightSwitch needs a location.</value>
+    <value>To calculate the sunrise and sunset, Light Switch needs a location.</value>
   </data>
   <data name="LightSwitch_SunriseText.Text" xml:space="preserve">
     <value>Sunrise</value>
@@ -5431,5 +5431,21 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="UtilitiesHeader.Title" xml:space="preserve">
     <value>Utilities</value>
+  </data>
+  <data name="Oobe_LightSwitch.Title" xml:space="preserve">
+    <value>Light Switch</value>
+    <comment>Product name. Do not localize this string</comment>
+  </data>
+  <data name="Oobe_LightSwitch.Description" xml:space="preserve">
+    <value>Light Switch automatically manages your Windows light and dark mode based on schedules, sunrise/sunset times, or manual control. Keep your system theme synchronized with your preferences and daily rhythm.</value>
+    <comment>Light Switch is a product name, do not localize</comment>
+  </data>
+  <data name="Oobe_LightSwitch_HowToUse.Text" xml:space="preserve">
+    <value>Open **PowerToys Settings** and enable Light Switch to set up automatic theme switching</value>
+    <comment>Light Switch is a product name, do not localize</comment>
+  </data>
+  <data name="Oobe_LightSwitch_TipsAndTricks.Text" xml:space="preserve">
+    <value>Use the **keyboard shortcut** to instantly toggle between light and dark modes, or set up **sunrise/sunset automation** for natural theme transitions.</value>
+    <comment>Light Switch is a product name, do not localize</comment>
   </data>
 </root>

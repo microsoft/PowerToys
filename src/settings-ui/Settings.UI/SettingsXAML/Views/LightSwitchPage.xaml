@@ -23,7 +23,7 @@
     <controls:SettingsPageControl
         x:Uid="LightSwitch"
         IsTabStop="False"
-        ModuleImageSource="ms-appx:///Assets/Settings/Modules/Awake.png">
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/LightSwitch.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
@@ -310,7 +310,7 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_LightSwitch" Link="https://aka.ms/PowerToysOverview_ZoomIt" />
+            <controls:PageLink x:Uid="LearnMore_LightSwitch" Link="https://aka.ms/PowerToysOverview_LightSwitch" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
     <VisualStateManager.VisualStateGroups>
