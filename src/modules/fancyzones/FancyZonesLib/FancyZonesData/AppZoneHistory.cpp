@@ -12,6 +12,16 @@
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/util.h>
 
+#include <wrl/client.h>
+#pragma comment(lib, "Shell32.lib")
+#include <Shobjidl.h>
+#pragma comment(lib, "Propsys.lib")
+#include <propsys.h>
+#include <propkey.h>
+#include <wil/resource.h>
+
+using namespace Microsoft::WRL;
+
 namespace JsonUtils
 {
     struct AppZoneHistoryJSON
@@ -314,6 +324,26 @@ void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
     }
 }
 
+
+std::wstring AppZoneHistory::GetProcessPathWithAUMID(HWND window) noexcept
+{
+    auto processPath = get_process_path_waiting_uwp(window);
+
+    ComPtr<IPropertyStore> propStore;
+    HRESULT hr = SHGetPropertyStoreForWindow(window, IID_PPV_ARGS(&propStore));
+    if (SUCCEEDED(hr))
+    {
+        wil::unique_prop_variant pv;
+        hr = propStore->GetValue(PKEY_AppUserModel_ID, &pv);
+        if (SUCCEEDED(hr) && pv.vt == VT_LPWSTR && pv.pwszVal != nullptr)
+        {
+            processPath.append(L"?").append(pv.pwszVal);
+        }
+    }
+    
+    return processPath;
+}
+
 bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const GUID& layoutId, const ZoneIndexSet& zoneIndexSet)
 {
     if (IsAnotherWindowOfApplicationInstanceZoned(window, workAreaId))
@@ -321,7 +351,7 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Wor
         return false;
     }
 
-    auto processPath = get_process_path_waiting_uwp(window);
+    auto processPath = GetProcessPathWithAUMID(window);
     if (processPath.empty())
     {
         return false;
@@ -378,7 +408,7 @@ bool AppZoneHistory::SetAppLastZones(HWND window, const FancyZonesDataTypes::Wor
 
 bool AppZoneHistory::RemoveAppLastZone(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const GUID& layoutId)
 {
-    auto processPath = get_process_path_waiting_uwp(window);
+    auto processPath = GetProcessPathWithAUMID(window);
     if (processPath.empty())
     {
         return false;
@@ -494,7 +524,7 @@ std::optional<FancyZonesDataTypes::AppZoneHistoryData> AppZoneHistory::GetZoneHi
 
 bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId) const noexcept
 {
-    auto processPath = get_process_path_waiting_uwp(window);
+    auto processPath = GetProcessPathWithAUMID(window);
     if (!processPath.empty())
     {
         auto history = m_history.find(processPath);
@@ -528,7 +558,7 @@ bool AppZoneHistory::IsAnotherWindowOfApplicationInstanceZoned(HWND window, cons
 
 ZoneIndexSet AppZoneHistory::GetAppLastZoneIndexSet(HWND window, const FancyZonesDataTypes::WorkAreaId& workAreaId, const GUID& layoutId) const
 {
-    auto processPath = get_process_path_waiting_uwp(window);
+    auto processPath = GetProcessPathWithAUMID(window);
     if (processPath.empty())
     {
         Logger::error("Process path is empty");
