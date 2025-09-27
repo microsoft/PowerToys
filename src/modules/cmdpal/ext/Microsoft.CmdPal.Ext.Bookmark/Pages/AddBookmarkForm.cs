@@ -4,23 +4,22 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.CmdPal.Ext.Bookmarks.Properties;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Windows.Foundation;
 
-namespace Microsoft.CmdPal.Ext.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks.Pages;
 
 internal sealed partial class AddBookmarkForm : FormContent
 {
-    internal event TypedEventHandler<object, BookmarkData>? AddedCommand;
-
     private readonly BookmarkData? _bookmark;
+
+    internal event TypedEventHandler<object, BookmarkData>? AddedCommand;
 
     public AddBookmarkForm(BookmarkData? bookmark)
     {
         _bookmark = bookmark;
-        var name = _bookmark?.Name ?? string.Empty;
-        var url = _bookmark?.Bookmark ?? string.Empty;
+        var name = bookmark?.Name ?? string.Empty;
+        var url = bookmark?.Bookmark ?? string.Empty;
         TemplateJson = $$"""
 {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
@@ -30,20 +29,20 @@ internal sealed partial class AddBookmarkForm : FormContent
         {
             "type": "Input.Text",
             "style": "text",
-            "id": "name",
-            "label": "{{Resources.bookmarks_form_name_label}}",
-            "value": {{JsonSerializer.Serialize(name, BookmarkSerializationContext.Default.String)}},
-            "isRequired": true,
-            "errorMessage": "{{Resources.bookmarks_form_name_required}}"
-        },
-        {
-            "type": "Input.Text",
-            "style": "text",
             "id": "bookmark",
             "value": {{JsonSerializer.Serialize(url, BookmarkSerializationContext.Default.String)}},
             "label": "{{Resources.bookmarks_form_bookmark_label}}",
             "isRequired": true,
             "errorMessage": "{{Resources.bookmarks_form_bookmark_required}}"
+        },
+        {
+            "type": "Input.Text",
+            "style": "text",
+            "id": "name",
+            "label": "{{Resources.bookmarks_form_name_label}}",
+            "value": {{JsonSerializer.Serialize(name, BookmarkSerializationContext.Default.String)}},
+            "isRequired": false,
+            "errorMessage": "{{Resources.bookmarks_form_name_required}}"
         }
     ],
     "actions": [
@@ -71,13 +70,7 @@ internal sealed partial class AddBookmarkForm : FormContent
         // get the name and url out of the values
         var formName = formInput["name"] ?? string.Empty;
         var formBookmark = formInput["bookmark"] ?? string.Empty;
-        var hasPlaceholder = formBookmark.ToString().Contains('{') && formBookmark.ToString().Contains('}');
-
-        var updated = _bookmark ?? new BookmarkData();
-        updated.Name = formName.ToString();
-        updated.Bookmark = formBookmark.ToString();
-
-        AddedCommand?.Invoke(this, updated);
+        AddedCommand?.Invoke(this, new BookmarkData(formName.ToString(), formBookmark.ToString()) { Id = _bookmark?.Id ?? Guid.Empty });
         return CommandResult.GoHome();
     }
 }

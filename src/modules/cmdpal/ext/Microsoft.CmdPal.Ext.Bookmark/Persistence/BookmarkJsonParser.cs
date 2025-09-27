@@ -2,11 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Text.Json;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.Ext.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 
 public class BookmarkJsonParser
 {
@@ -14,32 +12,32 @@ public class BookmarkJsonParser
     {
     }
 
-    public Bookmarks ParseBookmarks(string json)
+    public BookmarksData ParseBookmarks(string json)
     {
         if (string.IsNullOrWhiteSpace(json))
         {
-            return new Bookmarks();
+            return new BookmarksData();
         }
 
         try
         {
-            var bookmarks = JsonSerializer.Deserialize<Bookmarks>(json, BookmarkSerializationContext.Default.Bookmarks);
-            return bookmarks ?? new Bookmarks();
+            var bookmarks = JsonSerializer.Deserialize<BookmarksData>(json, BookmarkSerializationContext.Default.BookmarksData);
+            return bookmarks ?? new BookmarksData();
         }
         catch (JsonException ex)
         {
             ExtensionHost.LogMessage($"parse bookmark data failed. ex: {ex.Message}");
-            return new Bookmarks();
+            return new BookmarksData();
         }
     }
 
-    public string SerializeBookmarks(Bookmarks? bookmarks)
+    public string SerializeBookmarks(BookmarksData? bookmarks)
     {
         if (bookmarks == null)
         {
             return string.Empty;
         }
 
-        return JsonSerializer.Serialize(bookmarks, BookmarkSerializationContext.Default.Bookmarks);
+        return JsonSerializer.Serialize(bookmarks, BookmarkSerializationContext.Default.BookmarksData);
     }
 }

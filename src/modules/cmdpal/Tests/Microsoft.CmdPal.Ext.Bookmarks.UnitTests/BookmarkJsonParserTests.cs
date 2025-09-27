@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+
+using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
@@ -191,7 +193,7 @@ public class BookmarkJsonParserTests
     public void SerializeBookmarks_ValidBookmarks_ReturnsJsonString()
     {
         // Arrange
-        var bookmarks = new Bookmarks
+        var bookmarks = new BookmarksData
         {
             Data = new List<BookmarkData>
             {
@@ -216,7 +218,7 @@ public class BookmarkJsonParserTests
     public void SerializeBookmarks_EmptyBookmarks_ReturnsValidJson()
     {
         // Arrange
-        var bookmarks = new Bookmarks();
+        var bookmarks = new BookmarksData();
 
         // Act
         var result = _parser.SerializeBookmarks(bookmarks);
@@ -241,7 +243,7 @@ public class BookmarkJsonParserTests
     public void ParseBookmarks_RoundTripSerialization_PreservesData()
     {
         // Arrange
-        var originalBookmarks = new Bookmarks
+        var originalBookmarks = new BookmarksData
         {
             Data = new List<BookmarkData>
             {
@@ -263,7 +265,6 @@ public class BookmarkJsonParserTests
         {
             Assert.AreEqual(originalBookmarks.Data[i].Name, parsedBookmarks.Data[i].Name);
             Assert.AreEqual(originalBookmarks.Data[i].Bookmark, parsedBookmarks.Data[i].Bookmark);
-            Assert.AreEqual(originalBookmarks.Data[i].IsPlaceholder, parsedBookmarks.Data[i].IsPlaceholder);
         }
     }
 
@@ -296,70 +297,6 @@ public class BookmarkJsonParserTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(3, result.Data.Count);
-
-        Assert.IsFalse(result.Data[0].IsPlaceholder);
-        Assert.IsTrue(result.Data[1].IsPlaceholder);
-        Assert.IsTrue(result.Data[2].IsPlaceholder);
-    }
-
-    [TestMethod]
-    public void ParseBookmarks_IsWebUrl_CorrectlyIdentifiesWebUrls()
-    {
-        // Arrange
-        var json = """
-        {
-            "Data": [
-                {
-                    "Name": "HTTPS Website",
-                    "Bookmark": "https://www.google.com"
-                },
-                {
-                    "Name": "HTTP Website",
-                    "Bookmark": "http://example.com"
-                },
-                {
-                    "Name": "Website without protocol",
-                    "Bookmark": "www.github.com"
-                },
-                {
-                    "Name": "Local File Path",
-                    "Bookmark": "C:\\Users\\test\\Documents\\file.txt"
-                },
-                {
-                    "Name": "Network Path",
-                    "Bookmark": "\\\\server\\share\\file.txt"
-                },
-                {
-                    "Name": "Executable",
-                    "Bookmark": "notepad.exe"
-                },
-                {
-                    "Name": "File URI",
-                    "Bookmark": "file:///C:/temp/file.txt"
-                }
-            ]
-        }
-        """;
-
-        // Act
-        var result = _parser.ParseBookmarks(json);
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual(7, result.Data.Count);
-
-        // Web URLs should return true
-        Assert.IsTrue(result.Data[0].IsWebUrl(), "HTTPS URL should be identified as web URL");
-        Assert.IsTrue(result.Data[1].IsWebUrl(), "HTTP URL should be identified as web URL");
-
-        // This case will fail. We need to consider if we need to support pure domain value in bookmark.
-        // Assert.IsTrue(result.Data[2].IsWebUrl(), "Domain without protocol should be identified as web URL");
-
-        // Non-web URLs should return false
-        Assert.IsFalse(result.Data[3].IsWebUrl(), "Local file path should not be identified as web URL");
-        Assert.IsFalse(result.Data[4].IsWebUrl(), "Network path should not be identified as web URL");
-        Assert.IsFalse(result.Data[5].IsWebUrl(), "Executable should not be identified as web URL");
-        Assert.IsFalse(result.Data[6].IsWebUrl(), "File URI should not be identified as web URL");
     }
 
     [TestMethod]
@@ -415,23 +352,10 @@ public class BookmarkJsonParserTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(9, result.Data.Count);
-
-        // Should be identified as placeholders
-        Assert.IsTrue(result.Data[0].IsPlaceholder, "Simple placeholder should be identified");
-        Assert.IsTrue(result.Data[1].IsPlaceholder, "Multiple placeholders should be identified");
-        Assert.IsTrue(result.Data[2].IsPlaceholder, "Web URL with placeholder should be identified");
-        Assert.IsTrue(result.Data[3].IsPlaceholder, "Complex placeholder should be identified");
-        Assert.IsTrue(result.Data[8].IsPlaceholder, "Empty placeholder should be identified");
-
-        // Should NOT be identified as placeholders
-        Assert.IsFalse(result.Data[4].IsPlaceholder, "Regular URL should not be placeholder");
-        Assert.IsFalse(result.Data[5].IsPlaceholder, "Local file should not be placeholder");
-        Assert.IsFalse(result.Data[6].IsPlaceholder, "Only opening brace should not be placeholder");
-        Assert.IsFalse(result.Data[7].IsPlaceholder, "Only closing brace should not be placeholder");
     }
 
     [TestMethod]
-    public void ParseBookmarks_MixedProperties_CorrectlyIdentifiesBothWebUrlAndPlaceholder()
+    public void ParseBookmarks_MixedProperties_CorrectlyIdentifiesPlaceholder()
     {
         // Arrange
         var json = """
@@ -463,73 +387,5 @@ public class BookmarkJsonParserTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(4, result.Data.Count);
-
-        // Web URL with placeholder
-        Assert.IsTrue(result.Data[0].IsWebUrl(), "Web URL with placeholder should be identified as web URL");
-        Assert.IsTrue(result.Data[0].IsPlaceholder, "Web URL with placeholder should be identified as placeholder");
-
-        // Web URL without placeholder
-        Assert.IsTrue(result.Data[1].IsWebUrl(), "Web URL without placeholder should be identified as web URL");
-        Assert.IsFalse(result.Data[1].IsPlaceholder, "Web URL without placeholder should not be identified as placeholder");
-
-        // Local file with placeholder
-        Assert.IsFalse(result.Data[2].IsWebUrl(), "Local file with placeholder should not be identified as web URL");
-        Assert.IsTrue(result.Data[2].IsPlaceholder, "Local file with placeholder should be identified as placeholder");
-
-        // Local file without placeholder
-        Assert.IsFalse(result.Data[3].IsWebUrl(), "Local file without placeholder should not be identified as web URL");
-        Assert.IsFalse(result.Data[3].IsPlaceholder, "Local file without placeholder should not be identified as placeholder");
-    }
-
-    [TestMethod]
-    public void ParseBookmarks_EdgeCaseUrls_CorrectlyIdentifiesWebUrls()
-    {
-        // Arrange
-        var json = """
-        {
-            "Data": [
-                {
-                    "Name": "FTP URL",
-                    "Bookmark": "ftp://files.example.com"
-                },
-                {
-                    "Name": "HTTPS with port",
-                    "Bookmark": "https://localhost:8080"
-                },
-                {
-                    "Name": "IP Address",
-                    "Bookmark": "http://192.168.1.1"
-                },
-                {
-                    "Name": "Subdomain",
-                    "Bookmark": "https://api.github.com"
-                },
-                {
-                    "Name": "Domain only",
-                    "Bookmark": "example.com"
-                },
-                {
-                    "Name": "Not a URL - no dots",
-                    "Bookmark": "localhost"
-                }
-            ]
-        }
-        """;
-
-        // Act
-        var result = _parser.ParseBookmarks(json);
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual(6, result.Data.Count);
-
-        Assert.IsFalse(result.Data[0].IsWebUrl(), "FTP URL should not be identified as web URL");
-        Assert.IsTrue(result.Data[1].IsWebUrl(), "HTTPS with port should be identified as web URL");
-        Assert.IsTrue(result.Data[2].IsWebUrl(), "IP Address with HTTP should be identified as web URL");
-        Assert.IsTrue(result.Data[3].IsWebUrl(), "Subdomain should be identified as web URL");
-
-        // This case will fail. We need to consider if we need to support pure domain value in bookmark.
-        // Assert.IsTrue(result.Data[4].IsWebUrl(), "Domain only should be identified as web URL");
-        Assert.IsFalse(result.Data[5].IsWebUrl(), "Single word without dots should not be identified as web URL");
     }
 }

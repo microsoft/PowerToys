@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.Core.Common.Helpers;
 /// If ExecuteAsync is called while already executing, it cancels the current execution
 /// and starts the operation again (superseding behavior).
 /// </summary>
-public partial class SupersedingAsyncGate : IDisposable
+public sealed partial class SupersedingAsyncGate : IDisposable
 {
     private readonly Func<CancellationToken, Task> _action;
     private readonly Lock _lock = new();

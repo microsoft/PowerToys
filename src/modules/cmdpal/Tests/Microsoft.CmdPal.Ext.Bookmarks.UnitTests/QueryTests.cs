@@ -40,16 +40,4 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(githubBookmark);
         Assert.AreEqual("https://github.com", githubBookmark.Bookmark);
     }
-
-    [TestMethod]
-    public void ValidateWebUrlDetection()
-    {
-        // Setup
-        var bookmarks = Settings.CreateDefaultBookmarks();
-        var microsoftBookmark = bookmarks.Data.FirstOrDefault(b => b.Name == "Microsoft");
-
-        // Assert
-        Assert.IsNotNull(microsoftBookmark);
-        Assert.IsTrue(microsoftBookmark.IsWebUrl());
-    }
 }
