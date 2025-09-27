@@ -162,7 +162,7 @@
                         Severity="Informational"
                         Visibility="{x:Bind ViewModel.IsAnimationEnabledBySystem, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <InfoBar.ActionButton>
-                            <HyperlinkButton x:Uid="OpenSettings" Click="OpenAnimationsSettings_Click" />
+                            <HyperlinkButton x:Uid="OpenAnimationsSettings" Click="OpenAnimationsSettings_Click" />
                         </InfoBar.ActionButton>
                     </InfoBar>
                     <tkcontrols:SettingsExpander
@@ -353,6 +353,14 @@
                                     SmallChange="1"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MousePointerCrosshairsBorderSize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard Name="MouseUtilsMousePointerCrosshairsCrosshairsOrientation" x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.MousePointerCrosshairsOrientation, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both" />
+                                    <ComboBoxItem x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Vertical" />
+                                    <ComboBoxItem x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Horizontal" />
+                                </ComboBox>
                             </tkcontrols:SettingsCard>
 
                             <tkcontrols:SettingsCard ContentAlignment="Left">
