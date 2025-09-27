@@ -281,21 +281,7 @@ namespace Awake.Core
             TimeSpan remainingTime = expireAt - DateTimeOffset.Now;
 
             Observable.Timer(remainingTime).Subscribe(
-                _ =>
-                {
-                    Logger.LogInfo("Completed expirable keep-awake.");
-                    CancelExistingThread();
-
-                    if (IsUsingPowerToysConfig)
-                    {
-                        SetPassiveKeepAwake();
-                    }
-                    else
-                    {
-                        Logger.LogInfo("Exiting after expirable keep awake.");
-                        CompleteExit(Environment.ExitCode);
-                    }
-                },
+                _ => HandleTimerCompletion("expirable"),
                 _tokenSource.Token);
         }
 
@@ -348,49 +334,46 @@ namespace Awake.Core
 
             SetModeShellIcon();
 
-            ulong desiredDuration = (ulong)seconds * 1000;
-            ulong targetDuration = Math.Min(desiredDuration, uint.MaxValue - 1) / 1000;
+            var targetExpiryTime = DateTimeOffset.Now.AddSeconds(seconds);
 
-            if (desiredDuration > uint.MaxValue)
-            {
-                Logger.LogInfo($"The desired interval of {seconds} seconds ({desiredDuration}ms) exceeds the limit. Defaulting to maximum possible value: {targetDuration} seconds. Read more about existing limits in the official documentation: https://aka.ms/powertoys/awake");
-            }
-
-            IObservable<long> timerObservable = Observable.Timer(TimeSpan.FromSeconds(targetDuration));
-            IObservable<long> intervalObservable = Observable.Interval(TimeSpan.FromSeconds(1)).TakeUntil(timerObservable);
-            IObservable<long> combinedObservable = Observable.CombineLatest(intervalObservable, timerObservable.StartWith(0), (elapsedSeconds, _) => elapsedSeconds + 1);
-
-            combinedObservable.Subscribe(
-                elapsedSeconds =>
-                {
-                    TimeRemaining = (uint)targetDuration - (uint)elapsedSeconds;
-                    if (TimeRemaining >= 0)
+            Observable.Interval(TimeSpan.FromSeconds(1))
+                .Select(_ => targetExpiryTime - DateTimeOffset.Now)
+                .TakeWhile(remaining => remaining.TotalSeconds > 0)
+                .Subscribe(
+                    remainingTimeSpan =>
                     {
+                        TimeRemaining = (uint)remainingTimeSpan.TotalSeconds;
+
                         TrayHelper.SetShellIcon(
                             TrayHelper.WindowHandle,
-                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{TimeSpan.FromSeconds(TimeRemaining).ToHumanReadableString()}]",
+                            $"{Constants.FullAppName} [{Resources.AWAKE_TRAY_TEXT_TIMED}][{ScreenStateString}][{remainingTimeSpan.ToHumanReadableString()}]",
                             TrayHelper.TimedIcon,
                             TrayIconAction.Update);
-                    }
-                },
-                () =>
-                {
-                    Logger.LogInfo("Completed timed thread.");
-                    CancelExistingThread();
+                    },
+                    _ => HandleTimerCompletion("timed"),
+                    _tokenSource.Token);
+        }
 
-                    if (IsUsingPowerToysConfig)
-                    {
-                        // If we're using PowerToys settings, we need to make sure that
-                        // we just switch over the Passive Keep-Awake.
-                        SetPassiveKeepAwake();
-                    }
-                    else
-                    {
-                        Logger.LogInfo("Exiting after timed keep-awake.");
-                        CompleteExit(Environment.ExitCode);
-                    }
-                },
-                _tokenSource.Token);
+        /// <summary>
+        /// Handles the common logic that should execute when a keep-awake timer completes. Resets
+        /// the application state to Passive if configured; otherwise it exits.
+        /// </summary>
+        private static void HandleTimerCompletion(string timerType)
+        {
+            Logger.LogInfo($"Completed {timerType} keep-awake.");
+            CancelExistingThread();
+
+            if (IsUsingPowerToysConfig)
+            {
+                // If running under PowerToys settings, just revert to the default Passive state.
+                SetPassiveKeepAwake();
+            }
+            else
+            {
+                // If running as a standalone process, exit cleanly.
+                Logger.LogInfo($"Exiting after {timerType} keep-awake.");
+                CompleteExit(Environment.ExitCode);
+            }
         }
 
         /// <summary>
