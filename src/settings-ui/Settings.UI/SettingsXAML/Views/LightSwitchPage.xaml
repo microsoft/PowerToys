@@ -98,7 +98,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="20">
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <!--<FontIcon Glyph="&#xED39;" FontSize="16" />-->
-                                        <TextBlock x:Uid="LightSwitch_SunriseText" VerticalAlignment="Center" />
+                                        <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunriseText" VerticalAlignment="Center" />
                                         <NumberBox
                                             AutomationProperties.AutomationId="SunriseOffset_LightSwitch"
                                             Maximum="60"
@@ -107,7 +107,7 @@
                                             Value="{x:Bind ViewModel.SunriseOffset, Mode=TwoWay}" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Spacing="4">
-                                        <TextBlock x:Uid="LightSwitch_SunsetText" VerticalAlignment="Center" />
+                                        <controls:IsEnabledTextBlock x:Uid="LightSwitch_SunsetText" VerticalAlignment="Center" />
                                         <NumberBox
                                             AutomationProperties.AutomationId="SunsetOffset_LightSwitch"
                                             Maximum="60"
