@@ -1101,6 +1101,8 @@ void DrawHighlightedShape( DWORD Shape, HDC hdcScreenCompat, Gdiplus::Brush *pBr
     // Create a new bitmap that's the size of the area covered by the line + 2 * g_PenWidth
     Gdiplus::Rect lineBounds(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1));
 
+    OutputDebug(L"DrawHighlightedShape\n");
+
     // Expand for line drawing
     if (Shape == DRAW_LINE)
         lineBounds.Inflate(static_cast<int>(g_PenWidth / 2), static_cast<int>(g_PenWidth / 2));
@@ -1188,7 +1190,7 @@ void DrawHighlightedShape( DWORD Shape, HDC hdcScreenCompat, Gdiplus::Brush *pBr
     DeleteDC(hdcDIBOrig);
 
     // Invalidate the updated rectangle
-    // InvalidateGdiplusRect(hWnd, lineBounds);
+    //InvalidateGdiplusRect(hWnd, lineBounds);
 }
 
 //----------------------------------------------------------------------------
@@ -2733,7 +2735,6 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
     bool	isBlur = false;
 
     Gdiplus::Graphics	dstGraphics(hDc);
-
 	if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
 	{
 		dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
@@ -2756,6 +2757,7 @@ VOID DrawShape( DWORD Shape, HDC hDc, RECT *Rect, bool UseGdiPlus = false )
             InflateRect(Rect, g_PenWidth / 2, g_PenWidth / 2);
         isBlur = true;
     }
+    OutputDebug(L"Draw shape: highlight: %d pbrush: %d\n", PEN_COLOR_HIGHLIGHT(g_PenColor), pBrush != NULL);
 
     switch (Shape) {
     case DRAW_RECTANGLE:
@@ -5311,6 +5313,8 @@ LRESULT APIENTRY MainWndProc(
 
             if( g_Drawing ) {
 
+                OutputDebug(L"Mousemove: Drawing\n");
+
                 POINT currentPt;
 
                 // Are we in pen mode on a tablet?
@@ -5349,7 +5353,15 @@ LRESULT APIENTRY MainWndProc(
                         }
                         else
                         {
-                            DrawShape( g_DrawingShape, hdcScreenCompat, &g_rcRectangle );
+                            if (PEN_COLOR_HIGHLIGHT(g_PenColor))
+                            {
+                                // copy original bitmap to screen bitmap to erase previous highlight
+                                BitBlt(hdcScreenCompat, 0, 0, bmp.bmWidth, bmp.bmHeight, drawUndoList->hDc, 0, 0, SRCCOPY | CAPTUREBLT);
+                            }
+                            else
+                            {
+                                DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle, PEN_COLOR_HIGHLIGHT(g_PenColor));
+                            }
                         }
                     }
 
@@ -5395,7 +5407,7 @@ LRESULT APIENTRY MainWndProc(
                         g_rcRectangle.top != g_rcRectangle.bottom) {
 
                         // Draw the new target rectangle. 
-                        DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle);
+                        DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle, PEN_COLOR_HIGHLIGHT(g_PenColor));
                         OutputDebug(L"SHAPE: (%d, %d) - (%d, %d)\n", g_rcRectangle.left, g_rcRectangle.top, 
                             g_rcRectangle.right, g_rcRectangle.bottom);
                     }
@@ -5433,9 +5445,6 @@ LRESULT APIENTRY MainWndProc(
                         Gdiplus::BitmapData* lineData = LockGdiPlusBitmap(lineBitmap);
                         BYTE* pPixels = static_cast<BYTE*>(lineData->Scan0);
 
-                        // Copy the contents of the screen bitmap to the temporary bitmap
-                        GetOldestUndo(drawUndoList);
-
                         // Create a GDI bitmap that's the size of the lineBounds rectangle
                         Gdiplus::Bitmap *blurBitmap = CreateGdiplusBitmap( hdcScreenCompat, // oldestUndo->hDc, 
                                             lineBounds.X, lineBounds.Y, lineBounds.Width, lineBounds.Height);
@@ -5459,6 +5468,8 @@ LRESULT APIENTRY MainWndProc(
                         DrawCursor(hdcScreenCompat, currentPt, zoomLevel, width, height);
                     } 
                     else if(PEN_COLOR_HIGHLIGHT(g_PenColor)) { 
+
+                        OutputDebug(L"HIGHLIGHT\n");
 
                         // This is a highlighting pen color
                         Gdiplus::Rect lineBounds = GetLineBounds(prevPt, currentPt, g_PenWidth);
@@ -5799,26 +5810,30 @@ LRESULT APIENTRY MainWndProc(
             if( !g_DrawingShape ) {
 
                 // If the point has changed, draw a line to it
-                if (prevPt.x != LOWORD(lParam) || prevPt.y != HIWORD(lParam)) {
-                    Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
-                    if ((GetWindowLong(g_hWndMain, GWL_EXSTYLE) & WS_EX_LAYERED) == 0)
+                if (!PEN_COLOR_HIGHLIGHT(g_PenColor))
+                {
+                    if (prevPt.x != LOWORD(lParam) || prevPt.y != HIWORD(lParam))
                     {
-                        dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                        Gdiplus::Graphics dstGraphics(hdcScreenCompat);
+                        if ((GetWindowLong(g_hWndMain, GWL_EXSTYLE) & WS_EX_LAYERED) == 0)
+                        {
+                            dstGraphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+                        }
+                        Gdiplus::Color color = ColorFromColorRef(g_PenColor);
+                        Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
+                        Gdiplus::GraphicsPath path;
+                        pen.SetLineJoin(Gdiplus::LineJoinRound);
+                        path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
+                        dstGraphics.DrawPath(&pen, &path);
                     }
-                    Gdiplus::Color	color = ColorFromColorRef(g_PenColor);
-                    Gdiplus::Pen pen(color, static_cast<Gdiplus::REAL>(g_PenWidth));
-                    Gdiplus::GraphicsPath path;
-                    pen.SetLineJoin(Gdiplus::LineJoinRound);
-                    path.AddLine(prevPt.x, prevPt.y, LOWORD(lParam), HIWORD(lParam));
-                    dstGraphics.DrawPath(&pen, &path);
+                    // Draw a dot at the current point, if the point hasn't changed
+                    else
+                    {
+                        MoveToEx(hdcScreenCompat, prevPt.x, prevPt.y, NULL);
+                        LineTo(hdcScreenCompat, LOWORD(lParam), HIWORD(lParam));
+                        InvalidateRect(hWnd, NULL, FALSE);
+                    }
                 }
-                // Draw a dot at the current point, if the point hasn't changed
-                else {
-                    MoveToEx(hdcScreenCompat, prevPt.x, prevPt.y, NULL);
-                    LineTo(hdcScreenCompat, LOWORD(lParam), HIWORD(lParam));
-                    InvalidateRect(hWnd, NULL, FALSE);
-                }
-
                 prevPt.x = LOWORD( lParam );
                 prevPt.y = HIWORD( lParam );
 
@@ -5833,8 +5848,11 @@ LRESULT APIENTRY MainWndProc(
                         g_rcRectangle.left != g_rcRectangle.right ) {
 
                 // erase previous
-                SetROP2(hdcScreenCompat, R2_NOTXORPEN); 
-                DrawShape( g_DrawingShape, hdcScreenCompat, &g_rcRectangle );
+                if (!PEN_COLOR_HIGHLIGHT(g_PenColor))
+                {
+                    SetROP2(hdcScreenCompat, R2_NOTXORPEN);
+                    DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle);
+                }
 
                 // Draw the final shape
                 HBRUSH hBrush = static_cast<HBRUSH>(GetStockObject( NULL_BRUSH ));

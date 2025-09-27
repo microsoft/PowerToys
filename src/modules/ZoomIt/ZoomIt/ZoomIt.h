@@ -96,7 +96,8 @@ typedef struct {
 #define SHALLOW_DESTROY 2
 #define LIVE_DRAW_ZOOM   3
 
-#define PEN_COLOR_HIGHLIGHT(Pencolor)	(Pencolor >> 24) != 0xFF
+#define PEN_COLOR_HIGHLIGHT(Pencolor)	((Pencolor >> 24) != 0xFF)
+#define PEN_COLOR_BLUR(Pencolor)        ((Pencolor & 0x00FFFFFF) == COLOR_BLUR)
 
 
 typedef BOOL (__stdcall *type_pGetMonitorInfo)(
