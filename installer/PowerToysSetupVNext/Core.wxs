@@ -9,6 +9,11 @@
           <RegistryValue Type="string" Name="InstallScope" Value="$(var.InstallScope)" />
         </RegistryKey>
       </Component>
+      <Component Id="powertoys_uninstall_reg" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductCode]">
+          <RegistryValue Type="string" Name="InstallLocation" Value="[INSTALLFOLDER]" KeyPath="yes" />
+        </RegistryKey>
+      </Component>
       <Component Id="powertoys_toast_clsid" Bitness="always64">
         <RemoveFolder Id="Remove_powertoys_toast_clsid" On="uninstall" />
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
@@ -109,6 +114,7 @@
       <ComponentRef Id="powertoys_exe" />
       <ComponentRef Id="PowerToysStartMenuShortcut" />
       <ComponentRef Id="powertoys_per_machine_comp" />
+      <ComponentRef Id="powertoys_uninstall_reg" />
       <ComponentRef Id="powertoys_toast_clsid" />
       <ComponentRef Id="License_rtf" />
       <ComponentRef Id="Notice_md" />
