@@ -120,6 +120,9 @@
   <data name="AIMistakeNote.Text" xml:space="preserve">
     <value>AI can make mistakes.</value>
   </data>
+  <data name="CustomAIMistakeNote.Text" xml:space="preserve">
+    <value>You are using a custom model endpoint please verify all answers.</value>
+  </data>
   <data name="ClipboardEmptyWarning" xml:space="preserve">
     <value>Clipboard does not contain any usable formats</value>
   </data>

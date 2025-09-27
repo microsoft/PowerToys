@@ -14,6 +14,16 @@ namespace AdvancedPaste.Settings
     {
         public bool IsAdvancedAIEnabled { get; }
 
+        public AdvancedPasteAIMode AIMode { get; }
+
+        public bool IsLocalModelMode { get; }
+
+        public string CustomEndpoint { get; }
+
+        public string CustomModelName { get; }
+
+        public bool DisableModeration { get; }
+
         public bool ShowCustomPreview { get; }
 
         public bool CloseAfterLosingFocus { get; }
