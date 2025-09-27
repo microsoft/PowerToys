@@ -62,6 +62,7 @@
       <ComponentGroupRef Id="NewPlusComponentGroup" />
       <ComponentGroupRef Id="NewPlusTemplatesComponentGroup" />
       <ComponentGroupRef Id="ResourcesComponentGroup" />
+      <ComponentGroupRef Id="DscResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
@@ -69,8 +70,8 @@
       <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>
 
-    <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
-
+    <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" Sequence="execute" />
+    
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
     <UI>
@@ -117,6 +118,8 @@
 
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
+      <Custom Action="SetBundleInstallLocationData" Before="SetBundleInstallLocation" Condition="NOT Installed" />
+      <Custom Action="SetBundleInstallLocation" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
@@ -159,6 +162,9 @@
     <CustomAction Id="SetLaunchPowerToysParam" Property="LaunchPowerToys" Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="SetInstallCmdPalPackageParam" Property="InstallCmdPalPackage" Value="[INSTALLFOLDER]" />
+
+    <!-- Set InstallLocation for Bundle entry as well -->
+    <CustomAction Id="SetBundleInstallLocationData" Property="SetBundleInstallLocation" Value="[INSTALLFOLDER];[BUNDLEINFO];[InstallScope]" />
 
     <CustomAction Id="LaunchPowerToys" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="LaunchPowerToysCA" BinaryRef="PTCustomActions" />
 
@@ -243,6 +249,8 @@
     <CustomAction Id="CheckGPO" Return="check" Impersonate="yes" DllEntry="CheckGPOCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="InstallCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallCmdPalPackageCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="SetBundleInstallLocation" Return="ignore" Impersonate="no" Execute="deferred" DllEntry="SetBundleInstallLocationCA" BinaryRef="PTCustomActions" />
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />

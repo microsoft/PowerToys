@@ -28,6 +28,9 @@
 
         <Log Disable="no" Prefix="powertoys-bootstrapper-msi-$(var.Version)" Extension=".log" />
 
+        <!-- Store Bundle UpgradeCode for CustomAction -->
+        <Variable Name="BundleUpgradeCode" Type="string" Value="$(var.UpgradeCode)" />
+
       <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSI (before WiX bootstrapper was used) -->
       <!-- If the previous installation is a bundle installation, just let WiX run its logic. -->
       <Variable Name="MinimumVersion" Type="version" Value="0.0.0.0" />
@@ -58,6 +61,7 @@
             <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" bal:DisplayInternalUICondition="false">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
                 <MsiProperty Name="MSIRESTARTMANAGERCONTROL" Value="Disable" />
+                <MsiProperty Name="BUNDLEINFO" Value="[BundleUpgradeCode]" />
             </MsiPackage>
         </Chain>
     </Bundle>

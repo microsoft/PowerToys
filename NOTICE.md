@@ -1521,6 +1521,7 @@ SOFTWARE.
 - ModernWpfUI
 - Moq
 - MSTest
+- NJsonSchema
 - NLog
 - NLog.Extensions.Logging
 - NLog.Schema

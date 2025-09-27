@@ -160,6 +160,7 @@ BUILDARCH
 BUILDNUMBER
 buildtransitive
 builttoroam
+BUNDLEINFO
 BVal
 BValue
 byapp
@@ -863,6 +864,7 @@ LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+LOGMSG
 LOGPIXELSX
 LOGPIXELSY
 LOn
@@ -1040,6 +1042,7 @@ MWBEx
 MYICON
 NAMECHANGE
 namespaceanddescendants
+Namotion
 nao
 NCACTIVATE
 ncc
@@ -1077,6 +1080,7 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
+NJson
 NLog
 NLSTEXT
 NMAKE
