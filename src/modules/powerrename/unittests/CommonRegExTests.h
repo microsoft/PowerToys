@@ -611,6 +611,42 @@ TEST_METHOD (VerifyRandomizerRegExAllBackToBack)
     CoTaskMemFree(result);
 }
 
+TEST_METHOD(VerifyCounterIncrementsWhenResultIsUnchanged)
+{
+    CComPtr<IPowerRenameRegEx> renameRegEx;
+    Assert::IsTrue(CPowerRenameRegEx::s_CreateInstance(&renameRegEx) == S_OK);
+    DWORD flags = EnumerateItems | UseRegularExpressions;
+    Assert::IsTrue(renameRegEx->PutFlags(flags) == S_OK);
+
+    renameRegEx->PutSearchTerm(L"(.*)");
+    renameRegEx->PutReplaceTerm(L"NewFile-${start=1}");
+
+    PWSTR result = nullptr;
+    unsigned long index = 0;
+
+    renameRegEx->Replace(L"DocA", &result, index);
+    Assert::AreEqual(1ul, index, L"Counter should advance to 1 on first match.");
+    Assert::AreEqual(L"NewFile-1", result, L"First file should be renamed correctly.");
+    CoTaskMemFree(result);
+
+    renameRegEx->Replace(L"DocB", &result, index);
+    Assert::AreEqual(2ul, index, L"Counter should advance to 2 on second match.");
+    Assert::AreEqual(L"NewFile-2", result, L"Second file should be renamed correctly.");
+    CoTaskMemFree(result);
+
+    // The original term and the replacement are identical.
+    renameRegEx->Replace(L"NewFile-3", &result, index);
+    Assert::AreEqual(3ul, index, L"Counter must advance on a match, even if the new name is identical to the old one.");
+    Assert::AreEqual(L"NewFile-3", result, L"Filename should be unchanged on a coincidental match.");
+    CoTaskMemFree(result);
+
+    // Test that there wasn't a "stall" in the numbering.
+    renameRegEx->Replace(L"DocC", &result, index);
+    Assert::AreEqual(4ul, index, L"Counter should continue sequentially after the coincidental match.");
+    Assert::AreEqual(L"NewFile-4", result, L"The subsequent file should receive the correct next number.");
+    CoTaskMemFree(result);
+}
+
 #ifndef TESTS_PARTIAL
 };
 }
