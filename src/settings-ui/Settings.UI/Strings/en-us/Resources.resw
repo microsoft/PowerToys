@@ -3152,19 +3152,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
     <value>You'll be asked to confirm before files are moved to the Recycle Bin</value>
   </data>
-	<data name="Peek_ActivationMethod.Header" xml:space="preserve">
+  <data name="Peek_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
   </data>
-	<data name="Peek_ActivationMethod.Description" xml:space="preserve">
+  <data name="Peek_ActivationMethod.Description" xml:space="preserve">
     <value>Use a shortcut or press the Spacebar when a file is selected</value>
-	<comment>Spacebar is a physical keyboard key</comment>
+    <comment>Spacebar is a physical keyboard key</comment>
   </data>
-	<data name="Peek_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
+  <data name="Peek_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
     <value>Custom shortcut</value>
   </data>
-	<data name="Peek_ActivationMethod_SpaceBar.Content" xml:space="preserve">
+  <data name="Peek_ActivationMethod_SpaceBar.Content" xml:space="preserve">
     <value>Spacebar</value>
-  </data>	
+  </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable rounded corners when a window is snapped</value>
   </data>
@@ -5231,7 +5231,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Enable Light Switch</value>
   </data>
   <data name="LightSwitch.ModuleDescription" xml:space="preserve">
-    <value>This is a module that allows you to control light/dark theming via set times, sun rise, or directly invoking the change.</value>
+    <value>Easily switch between light and dark mode - on a schedule, automatically, or with a shortcut.</value>
   </data>
   <data name="LightSwitch.ModuleTitle" xml:space="preserve">
     <value>Light Switch</value>
