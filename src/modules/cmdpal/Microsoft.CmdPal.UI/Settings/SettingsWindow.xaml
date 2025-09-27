@@ -44,8 +44,7 @@
             IsPaneToggleButtonVisible="False"
             IsSettingsVisible="False"
             ItemInvoked="NavView_ItemInvoked"
-            Loaded="NavView_Loaded"
-            OpenPaneLength="200">
+            Loaded="NavView_Loaded">
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
