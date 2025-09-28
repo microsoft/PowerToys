@@ -333,6 +333,35 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
+    /// Test copying file path to clipboard by clicking the copy path button
+    /// </summary>
+    [TestMethod("Peek.CopyPath.ClickButton")]
+    [TestCategory("Copy Path")]
+    public void TestCopyPathByButton()
+    {
+        string zipPath = Path.GetFullPath(@".\TestAssets\7.zip");
+
+        // Open zip file with Peek
+        var peekWindow = OpenPeekWindow(zipPath);
+
+        // Find and click the "Copy path" button
+        var copyPathButton = FindCopyPathButton();
+        Assert.IsNotNull(copyPathButton, "Copy path button should be found");
+
+        // Click the button to copy path to clipboard
+        copyPathButton.Click();
+
+        // Wait a moment for the clipboard operation to complete
+        Thread.Sleep(500);
+
+        // Note: We can't directly test clipboard contents in UI tests due to security restrictions
+        // The test verifies that the button exists and can be clicked without exceptions
+        // The actual clipboard functionality is tested through the underlying ClipboardHelper
+
+        ClosePeekAndExplorer();
+    }
+
+    /// <summary>
     /// Test opening file with default program by pressing Enter key
     /// </summary>
     [TestMethod("Peek.OpenWithDefaultProgram.PressEnter")]
@@ -854,6 +883,34 @@ public class PeekFilePreviewTests : UITestBase
         {
             // Try to find button with ID for smaller window
             var button = Find(By.AccessibilityId("LaunchAppButton"), 1000);
+            if (button != null)
+            {
+                return button;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Helper method to find the copy path button with different AccessibilityIds depending on window size
+    /// </summary>
+    /// <returns>The copy path button element</returns>
+    private Element? FindCopyPathButton()
+    {
+        try
+        {
+            // Try to find button with ID for larger window first
+            var button = Find(By.AccessibilityId("CopyPathButton_Text"), 1000);
+            if (button != null)
+            {
+                return button;
+            }
+        }
+        catch
+        {
+            // Try to find button with ID for smaller window
+            var button = Find(By.AccessibilityId("CopyPathButton"), 1000);
             if (button != null)
             {
                 return button;

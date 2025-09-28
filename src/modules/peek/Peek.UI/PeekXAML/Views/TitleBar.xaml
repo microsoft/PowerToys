@@ -93,6 +93,7 @@
             x:Name="CopyPathButton"
             Grid.Column="3"
             VerticalAlignment="Center"
+            AutomationProperties.AutomationId="CopyPathButton"
             Command="{x:Bind CopyPathButtonCommand, Mode=OneWay}"
             Style="{StaticResource SubtleButtonStyle}"
             ToolTipService.ToolTip="{x:Bind CopyPathButtonToolTip, Mode=OneWay}">
@@ -104,6 +105,7 @@
                         Glyph="&#xE8C8;" />
                     <TextBlock
                         x:Name="CopyPathButton_Text"
+                        AutomationProperties.AutomationId="CopyPathButton_Text"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind CopyPathButtonText, Mode=OneWay}" />
                 </StackPanel>
