@@ -55,7 +55,6 @@
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
 
-
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
             "PowerToys.FancyZonesEditorCommon.dll",
@@ -230,7 +229,10 @@
 
             "PowerToys.CmdPalModuleInterface.dll",
             "CmdPalKeyboardService.dll",
-            "*Microsoft.CmdPal.UI_*.msix"
+            "*Microsoft.CmdPal.UI_*.msix",
+
+            "PowerToys.DSC.dll",
+            "PowerToys.DSC.exe"
           ],
             "SigningInfo": {
                 "Operations": [
@@ -297,6 +299,9 @@
                 "msvcp140_1_app.dll",
                 "msvcp140_2_app.dll",
                 "msvcp140_app.dll",
+                "Namotion.Reflection.dll",
+                "NJsonSchema.Annotations.dll",
+                "NJsonSchema.dll",
                 "vcamp140_app.dll",
                 "vccorlib140_app.dll",
                 "vcomp140_app.dll",
