@@ -117,12 +117,6 @@
                                     </StackPanel>
                                 </StackPanel>
                             </tkcontrols:SettingsCard>
-                            <InfoBar
-                                x:Name="LocationWarningBar"
-                                x:Uid="LightSwitch_LocationWarningBar"
-                                IsOpen="True"
-                                Severity="Informational"
-                                Visibility="Collapsed" />
                             <tkcontrols:SettingsCard
                                 x:Name="TimelineCard"
                                 HorizontalContentAlignment="Stretch"
@@ -137,7 +131,12 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-
+                    <InfoBar
+                        x:Name="LocationWarningBar"
+                        x:Uid="LightSwitch_LocationWarningBar"
+                        IsOpen="True"
+                        Severity="Informational"
+                        Visibility="Collapsed" />
                     <controls:SettingsGroup x:Uid="LightSwitch_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander
                             x:Uid="LightSwitch_ApplyDarkModeExpander"
