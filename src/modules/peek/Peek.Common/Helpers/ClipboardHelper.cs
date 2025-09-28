@@ -29,5 +29,17 @@ namespace Peek.Common.Helpers
 
             Clipboard.SetContent(dataPackage);
         }
+
+        public static void CopyTextToClipboard(string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(text);
+            Clipboard.SetContent(dataPackage);
+        }
     }
 }

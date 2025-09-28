@@ -14,6 +14,7 @@
             <ColumnDefinition x:Name="SystemLeftPaddingColumn" Width="0" />
             <ColumnDefinition x:Name="DraggableColumn" Width="*" />
             <ColumnDefinition x:Name="LaunchAppButtonColumn" Width="Auto" />
+            <ColumnDefinition x:Name="CopyPathButtonColumn" Width="Auto" />
             <ColumnDefinition x:Name="AppRightPaddingColumn" Width="8" />
             <ColumnDefinition x:Name="PinButtonColumn" Width="Auto" />
             <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="180" />
@@ -89,8 +90,29 @@
         </Button>
 
         <Button
+            x:Name="CopyPathButton"
+            Grid.Column="3"
+            VerticalAlignment="Center"
+            Command="{x:Bind CopyPathButtonCommand, Mode=OneWay}"
+            Style="{StaticResource SubtleButtonStyle}"
+            ToolTipService.ToolTip="{x:Bind CopyPathButtonToolTip, Mode=OneWay}">
+            <Button.Content>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <FontIcon
+                        x:Name="CopyPathButton_Icon"
+                        FontSize="16"
+                        Glyph="&#xE8C8;" />
+                    <TextBlock
+                        x:Name="CopyPathButton_Text"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind CopyPathButtonText, Mode=OneWay}" />
+                </StackPanel>
+            </Button.Content>
+        </Button>
+
+        <Button
             x:Name="PinButton"
-            Grid.Column="4"
+            Grid.Column="5"
             VerticalAlignment="Center"
             Command="{x:Bind PinCommand, Mode=OneWay}"
             Style="{StaticResource SubtleButtonStyle}"
@@ -111,6 +133,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
+                        <Setter Target="CopyPathButton_Text.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MediumLayout">
@@ -119,6 +142,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="CopyPathButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MinimumLayout">
@@ -128,6 +152,8 @@
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton.Visibility" Value="Collapsed" />
+                        <Setter Target="CopyPathButton_Text.Visibility" Value="Collapsed" />
+                        <Setter Target="CopyPathButton.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
