@@ -6,7 +6,7 @@
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
@@ -250,7 +250,6 @@
         </Grid>
         <StackPanel
             Grid.Row="2"
-<<<<<<< HEAD
             HorizontalAlignment="Center"
             Orientation="Horizontal"
             Spacing="12">
@@ -287,37 +286,6 @@
                         FontSize="12" />
                 </StackPanel>
             </HyperlinkButton>
-=======
-            Margin="0,24,0,0"
-            VerticalAlignment="Top"
-            Orientation="Vertical"
-            Spacing="8">
-            <Grid Height="62">
-                <InfoBar
-                    x:Uid="InvalidShortcut"
-                    IsClosable="False"
-                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
-                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
-                    Severity="Error" />
-                <InfoBar
-                    x:Uid="WarningShortcutAltGr"
-                    IsClosable="False"
-                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
-                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
-                    Severity="Warning" />
-                <InfoBar
-                    x:Uid="WarningShortcutConflict"
-                    IsClosable="False"
-                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
-                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=HasConflict, Mode=OneWay}"
-                    Message="{Binding ElementName=ShortcutContentControl, Path=ConflictMessage, Mode=OneWay}"
-                    Severity="Warning" />
-            </Grid>
-            <tkcontrols:MarkdownTextBlock
-                x:Uid="InvalidShortcutWarningLabel"
-                FontSize="12"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
->>>>>>> origin/main
         </StackPanel>
 
         <Grid Grid.Row="3" Margin="0,12,0,0">
