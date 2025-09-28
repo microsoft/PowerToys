@@ -111,7 +111,8 @@
                 x:Uid="UpdateAvailableInfoBar"
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.IsUpdateAvailable, Mode=OneWay}"
-                Severity="Success" />
+                Severity="Success"
+                Tapped="UpdateInfoBar_Tapped" />
 
             <StackPanel
                 Grid.Row="1"
