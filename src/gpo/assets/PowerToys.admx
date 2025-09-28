@@ -139,7 +139,7 @@
     </policy>
     <policy name="ConfigureEnabledUtilityLightSwitch" class="Both" displayName="$(string.ConfigureEnabledUtilityLightSwitch)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityLightSwitch">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_90_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_95_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
