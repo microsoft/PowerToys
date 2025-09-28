@@ -14,8 +14,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
         ShortcutGuide = 5,
         RegistryPreview = 6,
         CropAndLock = 7,
-        LightSwitch = 8,
-        EnvironmentVariables = 9,
-        Workspaces = 10,
+        EnvironmentVariables = 8,
+        Workspaces = 9,
     }
 }
