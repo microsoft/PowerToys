@@ -8,6 +8,7 @@ using System.Linq;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Views;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
@@ -16,13 +17,26 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     /// </summary>
     public static class HotkeyConflictIgnoreHelper
     {
-        private static readonly ISettingsRepository<ShortcutConflictSettings> _shortcutConflictRepository;
+        private static readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
         private static readonly ISettingsUtils _settingsUtils;
 
         static HotkeyConflictIgnoreHelper()
         {
             _settingsUtils = new SettingsUtils();
-            _shortcutConflictRepository = SettingsRepository<ShortcutConflictSettings>.GetInstance(_settingsUtils);
+            _generalSettingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
+        }
+
+        /// <summary>
+        /// Ensures ignored conflict properties are initialized
+        /// </summary>
+        private static void EnsureInitialized()
+        {
+            var settings = _generalSettingsRepository.SettingsConfig;
+            if (settings.IgnoredConflictProperties == null)
+            {
+                settings.IgnoredConflictProperties = new ShortcutConflictProperties();
+                SaveSettings();
+            }
         }
 
         /// <summary>
@@ -39,8 +53,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
             try
             {
-                var settings = _shortcutConflictRepository.SettingsConfig;
-                return settings.Properties.IgnoredShortcuts
+                EnsureInitialized();
+                var settings = _generalSettingsRepository.SettingsConfig;
+                return settings.IgnoredConflictProperties.IgnoredShortcuts
                     .Any(h => AreHotkeySettingsEqual(h, hotkeySettings));
             }
             catch (Exception ex)
@@ -64,16 +79,18 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
             try
             {
-                var settings = _shortcutConflictRepository.SettingsConfig;
+                EnsureInitialized();
+                var settings = _generalSettingsRepository.SettingsConfig;
 
                 // Check if already ignored (avoid duplicates)
                 if (IsIgnoringConflicts(hotkeySettings))
                 {
+                    Logger.LogInfo($"Hotkey already in ignored list: {hotkeySettings}");
                     return false;
                 }
 
                 // Add to ignored list
-                settings.Properties.IgnoredShortcuts.Add(hotkeySettings);
+                settings.IgnoredConflictProperties.IgnoredShortcuts.Add(hotkeySettings);
                 SaveSettings();
 
                 Logger.LogInfo($"Added hotkey to ignored list: {hotkeySettings}");
@@ -100,19 +117,21 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
             try
             {
-                var settings = _shortcutConflictRepository.SettingsConfig;
-                var ignoredShortcut = settings.Properties.IgnoredShortcuts
+                EnsureInitialized();
+                var settings = _generalSettingsRepository.SettingsConfig;
+                var ignoredShortcut = settings.IgnoredConflictProperties.IgnoredShortcuts
                     .FirstOrDefault(h => AreHotkeySettingsEqual(h, hotkeySettings));
 
                 if (ignoredShortcut != null)
                 {
-                    settings.Properties.IgnoredShortcuts.Remove(ignoredShortcut);
+                    settings.IgnoredConflictProperties.IgnoredShortcuts.Remove(ignoredShortcut);
                     SaveSettings();
 
                     Logger.LogInfo($"Removed hotkey from ignored list: {ignoredShortcut}");
                     return true;
                 }
 
+                Logger.LogInfo($"Hotkey not found in ignored list: {hotkeySettings}");
                 return false;
             }
             catch (Exception ex)
@@ -130,8 +149,9 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             try
             {
-                var settings = _shortcutConflictRepository.SettingsConfig;
-                return new List<HotkeySettings>(settings.Properties.IgnoredShortcuts);
+                EnsureInitialized();
+                var settings = _generalSettingsRepository.SettingsConfig;
+                return new List<HotkeySettings>(settings.IgnoredConflictProperties.IgnoredShortcuts);
             }
             catch (Exception ex)
             {
@@ -148,9 +168,10 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         {
             try
             {
-                var settings = _shortcutConflictRepository.SettingsConfig;
-                var count = settings.Properties.IgnoredShortcuts.Count;
-                settings.Properties.IgnoredShortcuts.Clear();
+                EnsureInitialized();
+                var settings = _generalSettingsRepository.SettingsConfig;
+                var count = settings.IgnoredConflictProperties.IgnoredShortcuts.Count;
+                settings.IgnoredConflictProperties.IgnoredShortcuts.Clear();
                 SaveSettings();
 
                 Logger.LogInfo($"Cleared all {count} ignored shortcuts");
@@ -184,18 +205,23 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         }
 
         /// <summary>
-        /// Saves the shortcut conflict settings to file
+        /// Saves the general settings using PowerToys standard settings persistence
         /// </summary>
         private static void SaveSettings()
         {
             try
             {
-                var settings = _shortcutConflictRepository.SettingsConfig;
-                _settingsUtils.SaveSettings(settings.ToJsonString(), ShortcutConflictSettings.ModuleName);
+                var settings = _generalSettingsRepository.SettingsConfig;
+
+                // Send IPC message to notify runner of changes (this is thread-safe)
+                var outgoing = new OutGoingGeneralSettings(settings);
+                ShellPage.SendDefaultIPCMessage(outgoing.ToString());
+                ShellPage.ShellHandler?.SignalGeneralDataUpdate();
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Error saving shortcut conflict settings: {ex.Message}");
+                Logger.LogError($"Stack trace: {ex.StackTrace}");
                 throw;
             }
         }
