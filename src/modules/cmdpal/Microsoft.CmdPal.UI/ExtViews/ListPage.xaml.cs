@@ -435,11 +435,11 @@ public sealed partial class ListPage : Page,
         }
     }
 
-    private ScrollViewer? FindScrollViewer(DependencyObject parent)
+    private static ScrollViewer? FindScrollViewer(DependencyObject parent)
     {
-        if (parent is ScrollViewer)
+        if (parent is ScrollViewer viewer)
         {
-            return (ScrollViewer)parent;
+            return viewer;
         }
 
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
