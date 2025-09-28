@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,6 +11,11 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
+
+    <local:NavigablePage.Resources>
+        <converters:AlwaysOnTopFrameOpacityConverter x:Key="AlwaysOnTopFrameOpacityConverter" />
+        <converters:AlwaysOnTopFrameThicknessConverter x:Key="AlwaysOnTopFrameThicknessConverter" />
+    </local:NavigablePage.Resources>
 
     <controls:SettingsPageControl
         x:Uid="AlwaysOnTop"
@@ -67,16 +73,19 @@
                             <tkcontrols:SettingsCard
                                 Name="AlwaysOnTopFrameOpacity"
                                 x:Uid="AlwaysOnTop_FrameOpacity"
+                                Description="{x:Bind ViewModel.FrameOpacity, Mode=OneWay, Converter={StaticResource AlwaysOnTopFrameOpacityConverter}}"
                                 IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="0"
+                                    ThumbToolTipValueConverter="{StaticResource AlwaysOnTopFrameOpacityConverter}"
                                     Value="{x:Bind ViewModel.FrameOpacity, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="AlwaysOnTopFrameThickness"
                                 x:Uid="AlwaysOnTop_FrameThickness"
+                                Description="{x:Bind ViewModel.FrameThickness, Mode=OneWay, Converter={StaticResource AlwaysOnTopFrameThicknessConverter}}"
                                 IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -84,6 +93,7 @@
                                     Maximum="30"
                                     Minimum="1"
                                     SmallChange="1"
+                                    ThumbToolTipValueConverter="{StaticResource AlwaysOnTopFrameThicknessConverter}"
                                     Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.Windows11, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
