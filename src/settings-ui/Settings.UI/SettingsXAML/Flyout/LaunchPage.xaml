@@ -145,7 +145,6 @@
                 <Button
                     x:Name="SettingsBtn"
                     x:Uid="SettingsBtn"
-                    Padding="8"
                     Click="SettingsBtn_Click"
                     Style="{StaticResource FlyoutButtonStyle}">
                     <ToolTipService.ToolTip>
