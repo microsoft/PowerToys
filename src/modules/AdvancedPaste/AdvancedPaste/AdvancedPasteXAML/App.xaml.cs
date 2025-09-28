@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services;
+using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
@@ -80,6 +81,8 @@ namespace AdvancedPaste
                 services.AddSingleton<IAICredentialsProvider, Services.OpenAI.VaultCredentialsProvider>();
                 services.AddSingleton<IPromptModerationService, Services.OpenAI.PromptModerationService>();
                 services.AddSingleton<IKernelQueryCacheService, CustomActionKernelQueryCacheService>();
+                services.AddSingleton<IPasteAIProviderFactory, PasteAIProviderFactory>();
+                services.AddSingleton<ICustomActionTransformService, CustomActionTransformService>();
                 services.AddSingleton<IKernelService, Services.OpenAI.KernelService>();
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
                 services.AddSingleton<OptionsViewModel>();

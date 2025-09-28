@@ -4,14 +4,20 @@
 
 using System.Collections.Generic;
 using AdvancedPaste.Models;
+using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Settings;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class KernelService(IKernelQueryCacheService queryCacheService, IAICredentialsProvider aiCredentialsProvider, IPromptModerationService promptModerationService, IUserSettings userSettings) :
-    KernelServiceBase(queryCacheService, promptModerationService, userSettings)
+public sealed class KernelService(
+    IKernelQueryCacheService queryCacheService,
+    IAICredentialsProvider aiCredentialsProvider,
+    IPromptModerationService promptModerationService,
+    IUserSettings userSettings,
+    ICustomActionTransformService customActionTransformService) :
+    KernelServiceBase(queryCacheService, promptModerationService, userSettings, customActionTransformService)
 {
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
 
@@ -69,4 +75,13 @@ public sealed class KernelService(IKernelQueryCacheService queryCacheService, IA
 
         return AIServiceUsage.None;
     }
+
+    protected override PasteAIConfig GetCustomActionProviderConfig() => new()
+    {
+        ProviderType = "openai",
+        Model = ChatComplectionModelName,
+        ApiKey = _aiCredentialsProvider.Key,
+        IsLocal = false,
+        UsageExtractor = GetAIServiceUsage,
+    };
 }
