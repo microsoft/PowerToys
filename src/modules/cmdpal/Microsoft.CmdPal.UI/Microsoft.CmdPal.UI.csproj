@@ -30,7 +30,7 @@
     <CIBuild>true</CIBuild>
   </PropertyGroup> -->
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(EnableCmdPalAOT)' == 'true'">
     <SelfContained>true</SelfContained>
     <PublishSingleFile>false</PublishSingleFile>
     <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
