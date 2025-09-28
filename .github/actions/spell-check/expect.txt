@@ -365,6 +365,7 @@ desktopshorcutinstalled
 DESKTOPVERTRES
 devblogs
 devdocs
+devenv
 devmgmt
 DEVMODE
 DEVMODEW

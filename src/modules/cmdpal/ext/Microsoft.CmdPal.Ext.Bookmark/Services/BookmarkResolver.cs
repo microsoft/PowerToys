@@ -436,7 +436,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
     {
         // App ids are a lot of fun, since they can look like anything.
         // And yes, they can contain spaces too, like Zoom:
-        //     shell:appsfolder\zoom.us.Zoom Video Meetings
+        //     shell:AppsFolder\zoom.us.Zoom Video Meetings
         // so unless that thing is quoted, we can't just assume the first token is the AUMID.
         const string appsFolder = "shell:AppsFolder\\";
 

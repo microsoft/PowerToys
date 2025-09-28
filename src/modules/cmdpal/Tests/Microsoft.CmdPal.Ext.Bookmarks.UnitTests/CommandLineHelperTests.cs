@@ -134,15 +134,15 @@ public class CommandLineHelperTests
     }
 
     [TestMethod]
-    [DataRow("C:\\NonExistent\\Path\\That\\Does\\Not\\Exist", false, "C:\\NonExistent\\Path\\That\\Does\\Not\\Exist", DisplayName = "Non-existent absolute path")]
-    [DataRow("NonExistentFile.txt", false, "NonExistentFile.txt", DisplayName = "Non-existent relative path")]
+    [DataRow("C:\\NonExistent\\Path\\That\\Does\\Not\\Exist", false, "C:\\NonExistent\\Path\\That\\Does\\Not\\Exist", DisplayName = "Nonexistent absolute path")]
+    [DataRow("NonExistentFile.txt", false, "NonExistentFile.txt", DisplayName = "Nonexistent relative path")]
     public void Expand_WithNonExistentPath_ReturnsFalse(string input, bool expandShell, string expectedFull)
     {
         // Act
         var result = CommandLineHelper.ExpandPathToPhysicalFile(input, expandShell, out var full);
 
         // Assert
-        Assert.IsFalse(result, "Should return false for non-existent path");
+        Assert.IsFalse(result, "Should return false for nonexistent path");
         Assert.AreEqual(expectedFull, full, "Output should be empty string");
     }
 
