@@ -19,7 +19,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <MinimalCoreWin>true</MinimalCoreWin>
-    <AppContainerApplication>true</AppContainerApplication>
+    <AppContainerApplication>false</AppContainerApplication>
     <WindowsStoreApp>true</WindowsStoreApp>
     <ApplicationType>Windows Store</ApplicationType>
   </PropertyGroup>
