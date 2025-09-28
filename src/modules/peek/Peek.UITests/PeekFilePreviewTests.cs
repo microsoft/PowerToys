@@ -333,29 +333,39 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
-    /// Test copying file path to clipboard by clicking the copy path button
+    /// Test copying file path to clipboard by clicking the copy path menu item from filename dropdown
     /// </summary>
-    [TestMethod("Peek.CopyPath.ClickButton")]
+    [TestMethod("Peek.CopyPath.ClickMenuItem")]
     [TestCategory("Copy Path")]
-    public void TestCopyPathByButton()
+    public void TestCopyPathByMenuItem()
     {
         string zipPath = Path.GetFullPath(@".\TestAssets\7.zip");
 
         // Open zip file with Peek
         var peekWindow = OpenPeekWindow(zipPath);
 
-        // Find and click the "Copy path" button
-        var copyPathButton = FindCopyPathButton();
-        Assert.IsNotNull(copyPathButton, "Copy path button should be found");
+        // Find the filename dropdown button
+        var filenameDropdown = FindFilenameDropdown();
+        Assert.IsNotNull(filenameDropdown, "Filename dropdown button should be found");
 
-        // Click the button to copy path to clipboard
-        copyPathButton.Click();
+        // Click the dropdown to open the menu
+        filenameDropdown.Click();
+
+        // Wait a moment for the menu to appear
+        Thread.Sleep(500);
+
+        // Find and click the "Copy path" menu item
+        var copyPathMenuItem = FindCopyPathMenuItem();
+        Assert.IsNotNull(copyPathMenuItem, "Copy path menu item should be found");
+
+        // Click the menu item to copy path to clipboard
+        copyPathMenuItem.Click();
 
         // Wait a moment for the clipboard operation to complete
         Thread.Sleep(500);
 
         // Note: We can't directly test clipboard contents in UI tests due to security restrictions
-        // The test verifies that the button exists and can be clicked without exceptions
+        // The test verifies that the menu item exists and can be clicked without exceptions
         // The actual clipboard functionality is tested through the underlying ClipboardHelper
 
         ClosePeekAndExplorer();
@@ -893,28 +903,44 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
-    /// Helper method to find the copy path button with different AccessibilityIds depending on window size
+    /// Helper method to find the filename dropdown button
     /// </summary>
-    /// <returns>The copy path button element</returns>
-    private Element? FindCopyPathButton()
+    /// <returns>The filename dropdown button element</returns>
+    private Element? FindFilenameDropdown()
     {
         try
         {
-            // Try to find button with ID for larger window first
-            var button = Find(By.AccessibilityId("CopyPathButton_Text"), 1000);
-            if (button != null)
+            var dropdown = Find(By.AccessibilityId("AppTitle_FileName"), 1000);
+            if (dropdown != null)
             {
-                return button;
+                return dropdown;
             }
         }
         catch
         {
-            // Try to find button with ID for smaller window
-            var button = Find(By.AccessibilityId("CopyPathButton"), 1000);
-            if (button != null)
+            // Could not find dropdown
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Helper method to find the copy path menu item
+    /// </summary>
+    /// <returns>The copy path menu item element</returns>
+    private Element? FindCopyPathMenuItem()
+    {
+        try
+        {
+            var menuItem = Find(By.AccessibilityId("CopyPathMenuItem"), 1000);
+            if (menuItem != null)
             {
-                return button;
+                return menuItem;
             }
+        }
+        catch
+        {
+            // Could not find menu item
         }
 
         return null;

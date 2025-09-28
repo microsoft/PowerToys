@@ -78,9 +78,6 @@ namespace Peek.UI.Views
         [ObservableProperty]
         private string copyPathButtonText = ResourceLoaderInstance.ResourceLoader.GetString("CopyPathButton_Text");
 
-        [ObservableProperty]
-        private string copyPathButtonToolTip = ResourceLoaderInstance.ResourceLoader.GetString("CopyPathButton_ToolTip");
-
         public TitleBar()
         {
             InitializeComponent();
@@ -232,7 +229,7 @@ namespace Peek.UI.Views
                 dragRectangleLeft.Width = (int)(DraggableColumn.ActualWidth * scale);
                 dragRectangleLeft.Height = (int)(TitleBarRootContainer.ActualHeight * scale);
 
-                dragRectangleRight.X = (int)((SystemLeftPaddingColumn.ActualWidth + DraggableColumn.ActualWidth + LaunchAppButtonColumn.ActualWidth + CopyPathButtonColumn.ActualWidth) * scale);
+                dragRectangleRight.X = (int)((SystemLeftPaddingColumn.ActualWidth + DraggableColumn.ActualWidth + LaunchAppButtonColumn.ActualWidth) * scale);
                 dragRectangleRight.Y = 0;
                 dragRectangleRight.Width = (int)(AppRightPaddingColumn.ActualWidth * scale);
                 dragRectangleRight.Height = (int)(TitleBarRootContainer.ActualHeight * scale);

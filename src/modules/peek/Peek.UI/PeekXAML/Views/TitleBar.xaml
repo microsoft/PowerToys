@@ -14,7 +14,6 @@
             <ColumnDefinition x:Name="SystemLeftPaddingColumn" Width="0" />
             <ColumnDefinition x:Name="DraggableColumn" Width="*" />
             <ColumnDefinition x:Name="LaunchAppButtonColumn" Width="Auto" />
-            <ColumnDefinition x:Name="CopyPathButtonColumn" Width="Auto" />
             <ColumnDefinition x:Name="AppRightPaddingColumn" Width="8" />
             <ColumnDefinition x:Name="PinButtonColumn" Width="Auto" />
             <ColumnDefinition x:Name="SystemRightPaddingColumn" Width="180" />
@@ -56,12 +55,38 @@
                     Text="{x:Bind FileCountText, Mode=OneWay}"
                     Visibility="{x:Bind IsMultiSelection, Mode=OneWay}" />
 
-                <TextBlock
+                <DropDownButton
                     x:Name="AppTitle_FileName"
                     Grid.Column="1"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind FileName, Mode=OneWay}"
-                    TextWrapping="NoWrap" />
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AutomationId="AppTitle_FileName"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Content="{x:Bind FileName, Mode=OneWay}"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem
+                                x:Name="CopyPathMenuItem"
+                                AutomationProperties.AutomationId="CopyPathMenuItem"
+                                Command="{x:Bind CopyPathButtonCommand, Mode=OneWay}"
+                                Text="{x:Bind CopyPathButtonText, Mode=OneWay}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE8C8;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <DropDownButton.ContentTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{Binding}"
+                                TextWrapping="NoWrap" />
+                        </DataTemplate>
+                    </DropDownButton.ContentTemplate>
+                </DropDownButton>
             </Grid>
         </Grid>
 
@@ -90,31 +115,8 @@
         </Button>
 
         <Button
-            x:Name="CopyPathButton"
-            Grid.Column="3"
-            VerticalAlignment="Center"
-            AutomationProperties.AutomationId="CopyPathButton"
-            Command="{x:Bind CopyPathButtonCommand, Mode=OneWay}"
-            Style="{StaticResource SubtleButtonStyle}"
-            ToolTipService.ToolTip="{x:Bind CopyPathButtonToolTip, Mode=OneWay}">
-            <Button.Content>
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                    <FontIcon
-                        x:Name="CopyPathButton_Icon"
-                        FontSize="16"
-                        Glyph="&#xE8C8;" />
-                    <TextBlock
-                        x:Name="CopyPathButton_Text"
-                        AutomationProperties.AutomationId="CopyPathButton_Text"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind CopyPathButtonText, Mode=OneWay}" />
-                </StackPanel>
-            </Button.Content>
-        </Button>
-
-        <Button
             x:Name="PinButton"
-            Grid.Column="5"
+            Grid.Column="4"
             VerticalAlignment="Center"
             Command="{x:Bind PinCommand, Mode=OneWay}"
             Style="{StaticResource SubtleButtonStyle}"
@@ -135,7 +137,6 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Visible" />
-                        <Setter Target="CopyPathButton_Text.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MediumLayout">
@@ -144,7 +145,6 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
-                        <Setter Target="CopyPathButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MinimumLayout">
@@ -154,8 +154,6 @@
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton.Visibility" Value="Collapsed" />
-                        <Setter Target="CopyPathButton_Text.Visibility" Value="Collapsed" />
-                        <Setter Target="CopyPathButton.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
