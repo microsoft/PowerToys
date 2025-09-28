@@ -75,9 +75,6 @@ namespace Peek.UI.Views
         [ObservableProperty]
         private bool pinned = false;
 
-        [ObservableProperty]
-        private string copyPathButtonText = ResourceLoaderInstance.ResourceLoader.GetString("CopyPathButton_Text");
-
         public TitleBar()
         {
             InitializeComponent();

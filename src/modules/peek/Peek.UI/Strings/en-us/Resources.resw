@@ -378,12 +378,8 @@
   <data name="VideoCodecStoreLink.Text" xml:space="preserve">
     <value>Search in Microsoft Store</value>
   </data>
-  <data name="CopyPathButton_Text" xml:space="preserve">
+  <data name="CopyPathButton.Text" xml:space="preserve">
     <value>Copy path</value>
     <comment>Text for button to copy the file path to clipboard.</comment>
-  </data>
-  <data name="CopyPathButton_ToolTip" xml:space="preserve">
-    <value>Copy path to clipboard</value>
-    <comment>Tooltip for button to copy the file path to clipboard.</comment>
   </data>
 </root>

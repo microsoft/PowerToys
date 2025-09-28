@@ -50,7 +50,8 @@
                 <TextBlock
                     x:Name="AppTitle_FileCount"
                     Grid.Column="0"
-                    Margin="0,0,8,0"
+                    Margin="0,-1,8,0"
+                    VerticalAlignment="Center"
                     FontWeight="SemiBold"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind FileCountText, Mode=OneWay}"
@@ -59,35 +60,35 @@
                 <TextBlock
                     x:Name="AppTitle_FileName"
                     Grid.Column="1"
+                    Margin="0,-1,0,0"
+                    VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind FileName, Mode=OneWay}"
                     TextWrapping="NoWrap" />
 
-                <DropDownButton
+                <Button
                     x:Name="MoreActionsButton"
                     Grid.Column="2"
                     Margin="4,0,0,0"
                     VerticalAlignment="Center"
                     AutomationProperties.AutomationId="MoreActionsButton"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Content="&#xE712;"
                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                     Style="{StaticResource SubtleButtonStyle}">
-                    <DropDownButton.Flyout>
+                    <FontIcon FontSize="16" Glyph="&#xE712;" />
+                    <Button.Flyout>
                         <MenuFlyout>
                             <MenuFlyoutItem
                                 x:Name="CopyPathMenuItem"
+                                x:Uid="CopyPathButton"
                                 AutomationProperties.AutomationId="CopyPathMenuItem"
-                                Command="{x:Bind CopyPathButtonCommand, Mode=OneWay}"
-                                Text="{x:Bind CopyPathButtonText, Mode=OneWay}">
+                                Command="{x:Bind CopyPathButtonCommand, Mode=OneWay}">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE8C8;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
                         </MenuFlyout>
-                    </DropDownButton.Flyout>
-                </DropDownButton>
+                    </Button.Flyout>
+                </Button>
             </Grid>
         </Grid>
 
