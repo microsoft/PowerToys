@@ -333,7 +333,7 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
-    /// Test copying file path to clipboard by clicking the copy path menu item from filename dropdown
+    /// Test copying file path to clipboard by clicking the copy path menu item from more actions dropdown
     /// </summary>
     [TestMethod("Peek.CopyPath.ClickMenuItem")]
     [TestCategory("Copy Path")]
@@ -344,12 +344,12 @@ public class PeekFilePreviewTests : UITestBase
         // Open zip file with Peek
         var peekWindow = OpenPeekWindow(zipPath);
 
-        // Find the filename dropdown button
-        var filenameDropdown = FindFilenameDropdown();
-        Assert.IsNotNull(filenameDropdown, "Filename dropdown button should be found");
+        // Find the more actions dropdown button
+        var moreActionsButton = FindMoreActionsButton();
+        Assert.IsNotNull(moreActionsButton, "More actions dropdown button should be found");
 
         // Click the dropdown to open the menu
-        filenameDropdown.Click();
+        moreActionsButton.Click();
 
         // Wait a moment for the menu to appear
         Thread.Sleep(500);
@@ -903,22 +903,22 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
-    /// Helper method to find the filename dropdown button
+    /// Helper method to find the more actions dropdown button
     /// </summary>
-    /// <returns>The filename dropdown button element</returns>
-    private Element? FindFilenameDropdown()
+    /// <returns>The more actions dropdown button element</returns>
+    private Element? FindMoreActionsButton()
     {
         try
         {
-            var dropdown = Find(By.AccessibilityId("AppTitle_FileName"), 1000);
-            if (dropdown != null)
+            var button = Find(By.AccessibilityId("MoreActionsButton"), 1000);
+            if (button != null)
             {
-                return dropdown;
+                return button;
             }
         }
         catch
         {
-            // Could not find dropdown
+            // Could not find button
         }
 
         return null;

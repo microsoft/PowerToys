@@ -44,6 +44,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="FileCountColumn" Width="Auto" />
                     <ColumnDefinition x:Name="FileNameColumn" Width="*" />
+                    <ColumnDefinition x:Name="MoreButtonColumn" Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
@@ -55,15 +56,23 @@
                     Text="{x:Bind FileCountText, Mode=OneWay}"
                     Visibility="{x:Bind IsMultiSelection, Mode=OneWay}" />
 
-                <DropDownButton
+                <TextBlock
                     x:Name="AppTitle_FileName"
                     Grid.Column="1"
-                    HorizontalAlignment="Left"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind FileName, Mode=OneWay}"
+                    TextWrapping="NoWrap" />
+
+                <DropDownButton
+                    x:Name="MoreActionsButton"
+                    Grid.Column="2"
+                    Margin="4,0,0,0"
                     VerticalAlignment="Center"
-                    AutomationProperties.AutomationId="AppTitle_FileName"
+                    AutomationProperties.AutomationId="MoreActionsButton"
                     Background="Transparent"
                     BorderThickness="0"
-                    Content="{x:Bind FileName, Mode=OneWay}"
+                    Content="&#xE712;"
+                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <DropDownButton.Flyout>
                         <MenuFlyout>
@@ -78,14 +87,6 @@
                             </MenuFlyoutItem>
                         </MenuFlyout>
                     </DropDownButton.Flyout>
-                    <DropDownButton.ContentTemplate>
-                        <DataTemplate>
-                            <TextBlock
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="{Binding}"
-                                TextWrapping="NoWrap" />
-                        </DataTemplate>
-                    </DropDownButton.ContentTemplate>
                 </DropDownButton>
             </Grid>
         </Grid>
