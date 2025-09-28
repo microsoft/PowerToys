@@ -72,6 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (Set(ref _dashboardSortOrder, value))
                 {
                     generalSettingsConfig.DashboardSortOrder = value;
+                    SettingsUtils.SaveSettings(generalSettingsConfig.ToJsonString(), generalSettingsConfig.GetModuleName());
                     RefreshModuleList();
                 }
             }
