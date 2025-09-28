@@ -187,6 +187,9 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
         private void UpdateInfoBar_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
+            // Hide the flyout before opening settings window
+            App.GetFlyoutWindow()?.Hide();
+            
             // Open Settings window directly to General page where update controls are located
             App.OpenSettingsWindow(typeof(GeneralPage));
         }
