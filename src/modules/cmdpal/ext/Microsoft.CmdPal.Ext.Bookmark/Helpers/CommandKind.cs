@@ -25,9 +25,9 @@ public enum CommandKind
     Protocol,
 
     /// <summary>
-    /// UWP app identifier (e.g., shell:AppsFolder\AUMID or pkgfamily!app).
+    /// Application User Model ID (e.g., shell:AppsFolder\AUMID or pkgfamily!app).
     /// </summary>
-    UwpAumid,
+    Aumid,
 
     /// <summary>
     /// Existing folder path.

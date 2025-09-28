@@ -25,6 +25,12 @@ internal static partial class NativeMethods
     [LibraryImport("ole32.dll")]
     internal static partial void CoTaskMemFree(nint pv);
 
+    [LibraryImport("shell32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    internal static partial IntPtr CommandLineToArgvW(string lpCmdLine, out int pNumArgs);
+
+    [LibraryImport("kernel32.dll")]
+    internal static partial IntPtr LocalFree(IntPtr hMem);
+
     internal enum SIGDN : uint
     {
         NORMALDISPLAY = 0x00000000,

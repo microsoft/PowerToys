@@ -2,10 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -51,60 +48,45 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         return TryClassify(input, out var c) ? c : Classification.Unknown(input);
     }
 
-    private bool TryClassify(string? input, [NotNullWhen(true)] out Classification result)
+    private bool TryClassify(string? input, out Classification result)
     {
         try
         {
-            var success = TryClassifyCore(input, out result);
+            bool success;
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                result = Classification.Unknown(input ?? string.Empty);
+                success = false;
+            }
+            else
+            {
+                input = input.Trim();
+
+                // is placeholder?
+                var isPlaceholder = _placeholderParser.ParsePlaceholders(input, out var inputUntilFirstPlaceholder, out _);
+                success = ClassifyCore(input, out result, isPlaceholder, inputUntilFirstPlaceholder, _placeholderParser);
+            }
+
             return success;
         }
         catch (Exception ex)
         {
-            Logger.LogError("Failed to classify", ex);
+            Logger.LogError($"Failed to classify bookmark \"{input}\"", ex);
             result = Classification.Unknown(input ?? string.Empty);
             return false;
         }
     }
 
-    private bool TryClassifyCore(string? input, out Classification result)
+    private static bool ClassifyCore(string input, out Classification result, bool isPlaceholder, string inputUntilFirstPlaceholder, IPlaceholderParser placeholderParser)
     {
-        result = Classification.Unknown(input ?? string.Empty);
-
-        if (string.IsNullOrWhiteSpace(input))
-        {
-            return false;
-        }
-
-        input = input.Trim();
-
-        // is placeholder?
-        var isPlaceholder = _placeholderParser.ParsePlaceholders(input, out var inputUntilFirstPlaceholder, out _);
-        return ClassifyWithoutPlaceholder(input, out result, isPlaceholder, inputUntilFirstPlaceholder, _placeholderParser);
-    }
-
-    private static bool ClassifyWithoutPlaceholder(string input, out Classification result, bool isPlaceholder, string inputUntilFirstPlaceholder, IPlaceholderParser placeholderParser)
-    {
-        // 1) UWP/AppX via AppsFolder/AUMID or pkgfamily!app
-        if (IsUwpAumidLike(input))
-        {
-            result = new Classification(
-                CommandKind.UwpAumid,
-                input,
-                NormalizeAumid(input),
-                string.Empty,
-                LaunchMethod.UwpActivate,
-                null,
-                isPlaceholder);
-
-            return true;
-        }
-
-        // 2) Try URI parsing first (accepts custom schemes, e.g., shell:, ms-settings:)
+        // 1) Try URI parsing first (accepts custom schemes, e.g., shell:, ms-settings:)
         //    File URIs must start with "file:" to avoid confusion with local paths - which are handled below, in more sophisticated ways -
         //    as TryCreate would automatically add "file://" to bare paths like "C:\path\to\file.txt" which we don't want.
-        if (Uri.TryCreate(input, UriKind.Absolute, out var uri) && !string.IsNullOrWhiteSpace(uri.Scheme)
-                                                                && (uri.Scheme != Uri.UriSchemeFile || input.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
-                                                                && uri.Scheme != UriSchemeShell)
+        if (Uri.TryCreate(input, UriKind.Absolute, out var uri)
+            && !string.IsNullOrWhiteSpace(uri.Scheme)
+            && (uri.Scheme != Uri.UriSchemeFile || input.StartsWith("file:", StringComparison.OrdinalIgnoreCase))
+            && uri.Scheme != UriSchemeShell)
         {
             // http/https → Url; any other scheme → Protocol (mailto:, ms-settings:, slack://, etc.)
             var isWeb = uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
@@ -121,7 +103,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             return true;
         }
 
-        // 2a) We're a placeholder and start look like a protocol scheme (e.g. "myapp:{{placeholder}}")
+        // 1a) We're a placeholder and start look like a protocol scheme (e.g. "myapp:{{placeholder}}")
         if (isPlaceholder && !string.IsNullOrWhiteSpace(inputUntilFirstPlaceholder) && inputUntilFirstPlaceholder.Contains(':'))
         {
             var indexOfColon = inputUntilFirstPlaceholder.IndexOf(':');
@@ -143,43 +125,17 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             }
         }
 
-        // 5) Shortcuts (.lnk/.url)
-        if (LooksLikeExisting(input, out var existingFull))
+        // 2) Existing file/dir or "longest plausible prefix"
+        // Try to grow head (only for unquoted original) to include spaces until a path exists.
+
+        // Find longest unquoted argument string
+        var (a, b) = CommandLineHelper.SplitLongestHeadBeforeQuotedArg(input);
+        if (a == string.Empty)
         {
-            var ext = Path.GetExtension(existingFull);
-            if (ext.Equals(".lnk", StringComparison.OrdinalIgnoreCase))
-            {
-                result = new Classification(
-                    CommandKind.Shortcut,
-                    input,
-                    existingFull,
-                    string.Empty, // arguments come from the .lnk at launch time
-                    LaunchMethod.ShellExecute,
-                    Path.GetDirectoryName(existingFull),
-                    isPlaceholder);
-
-                return true;
-            }
-
-            if (ext.Equals(".url", StringComparison.OrdinalIgnoreCase))
-            {
-                // ShellExecute on the .url works; if you want, you can read the INI to extract URL.
-                result = new Classification(
-                    CommandKind.InternetShortcut,
-                    input,
-                    existingFull,
-                    string.Empty,
-                    LaunchMethod.ShellExecute,
-                    Path.GetDirectoryName(existingFull),
-                    isPlaceholder);
-
-                return true;
-            }
+            (a, b) = CommandLineHelper.SplitHeadAndArgs(input);
         }
 
-        // 6) Existing file/dir or "longest plausible prefix"
-        // Try to grow head (only for unquoted original) to include spaces until a path exists.
-        var (headPath, tailArgs) = ExpandToBestExistingPath(input, isPlaceholder, placeholderParser);
+        var (headPath, tailArgs) = ExpandToBestExistingPath(a, b, isPlaceholder, placeholderParser);
         if (headPath is not null)
         {
             var args = tailArgs ?? string.Empty;
@@ -213,30 +169,105 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                 }
                 else
                 {
-                    result = new Classification(
-                        CommandKind.FileDocument,
-                        input,
-                        headPath,
-                        args, // docs seldom take args, but keep user intent
-                        LaunchMethod.ShellExecute,
-                        Path.GetDirectoryName(headPath),
-                        isPlaceholder);
+                    var ext = Path.GetExtension(headPath);
+                    var isShellLink = ext.Equals(".lnk", StringComparison.OrdinalIgnoreCase);
+                    var isUrlLink = ext.Equals(".url", StringComparison.OrdinalIgnoreCase);
+
+                    if (isShellLink || isUrlLink)
+                    {
+                        // In the future we can fetch data out of the link
+                        result = new Classification(
+                            isUrlLink ? CommandKind.InternetShortcut : CommandKind.Shortcut,
+                            input,
+                            headPath,
+                            string.Empty,
+                            LaunchMethod.ShellExecute,
+                            Path.GetDirectoryName(headPath),
+                            isPlaceholder);
+
+                        return true;
+                    }
+                    else
+                    {
+                        result = new Classification(
+                            CommandKind.FileDocument,
+                            input,
+                            headPath,
+                            args,
+                            LaunchMethod.ShellExecute,
+                            Path.GetDirectoryName(headPath),
+                            isPlaceholder);
+                    }
                 }
 
                 return true;
             }
         }
 
-        // 7a) Bare command resolution via PATH + executable ext
-        // At this point 'head' is our best intended command token.
-        var (head, tail) = SplitHeadAndArgs(input);
+        if (TryGetAumid(a, out var aumid))
+        {
+            result = new Classification(
+                CommandKind.Aumid,
+                a,
+                aumid,
+                b,
+                LaunchMethod.ActivateAppId,
+                null,
+                isPlaceholder);
 
-        if (TryResolveViaPath(head, out var resolvedExe))
+            return true;
+        }
+
+        // 3) Bare command resolution via PATH + executable ext
+        // At this point 'head' is our best intended command token.
+        var (firstHead, tail) = SplitHeadAndArgs(input);
+        CommandLineHelper.ExpandPathToPhysicalFile(firstHead, true, out var head);
+
+        // 3.1) UWP/AppX via AppsFolder/AUMID or pkgfamily!app
+        //      Since the AUMID can be actually anything, we either take a full shell:AppsFolder\AUMID
+        //      as entered and we try to detect packaged app ids (pkgfamily!app).
+        if (TryGetAumid(head, out var aumid2))
+        {
+            result = new Classification(
+                CommandKind.Aumid,
+                head,
+                aumid2,
+                tail,
+                LaunchMethod.ActivateAppId,
+                null,
+                isPlaceholder);
+
+            return true;
+        }
+
+        // 3.2) It's a virtual shell item (e.g. Control Panel, Recycle Bin, This PC)
+        //    Shell items that are backed by filesystem paths (e.g. Downloads) should be already handled above.
+        if (CommandLineHelper.HasShellPrefix(head))
+        {
+            ShellNames.TryGetFriendlyName(input, out var displayName);
+            ShellNames.TryGetFileSystemPath(input, out var fsPath);
+            result = new Classification(
+                CommandKind.VirtualShellItem,
+                input,
+                input,
+                string.Empty,
+                LaunchMethod.ShellExecute,
+                fsPath is not null && Directory.Exists(fsPath) ? fsPath : null,
+                isPlaceholder,
+                fsPath,
+                displayName);
+            return true;
+        }
+
+        // 3.3) Search paths for the file name (with or without ext)
+        //     If head is a file name with extension, we look only for that. If there's no extension
+        //     we go and follow Windows Shell resolution rules.
+        if (TryResolveViaPath(head, out var resolvedFilePath))
         {
             result = new Classification(
                 CommandKind.PathCommand,
                 input,
-                resolvedExe,
+                resolvedFilePath,
                 tail,
                 LaunchMethod.ShellExecute,
                 null,
@@ -245,7 +276,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             return true;
         }
 
-        // 7b) If it looks like a path with ext but missing file, treat as document (Shell will handle assoc / error)
+        // 3.4) If it looks like a path with ext but missing file, treat as document (Shell will handle assoc / error)
         if (LooksPathy(head) && Path.HasExtension(head))
         {
             // if the path extension contains placeholders, we can't assume what it is so, skip it and treat it as unknown
@@ -265,7 +296,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             }
         }
 
-        // 8) looks like a web URL without scheme, but not like a file with extension
+        // 4) looks like a web URL without scheme, but not like a file with extension
         if (head.Contains('.', StringComparison.OrdinalIgnoreCase) && head.StartsWith("www", StringComparison.OrdinalIgnoreCase))
         {
             // treat as URL, add https://
@@ -281,45 +312,12 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             return true;
         }
 
-        // 9) It's a virtual shell item (e.g. Control Panel, Recycle Bin, This PC)
-        //    Shell items that are backed by filesystem paths (e.g. Downloads) should be already handled above.
-        if (HasShellPrefix(head))
-        {
-            if (ShellNames.TryGetFriendlyName(input, out var displayName))
-            {
-                ShellNames.TryGetFileSystemPath(input, out var fsPath);
-                result = new Classification(
-                    CommandKind.VirtualShellItem,
-                    input,
-                    input,
-                    string.Empty,
-                    LaunchMethod.ShellExecute,
-                    fsPath is not null && Directory.Exists(fsPath) ? fsPath : null,
-                    isPlaceholder,
-                    fsPath,
-                    displayName);
-                return true;
-            }
-            else
-            {
-                result = new Classification(
-                    CommandKind.VirtualShellItem,
-                    input,
-                    input,
-                    string.Empty,
-                    LaunchMethod.ShellExecute,
-                    null,
-                    isPlaceholder);
-                return true;
-            }
-        }
-
-        // 10) Fallback: let ShellExecute try the whole input
+        // 5) Fallback: let ShellExecute try the whole input
         result = new Classification(
             CommandKind.Unknown,
             input,
-            input,
-            string.Empty,
+            head,
+            tail,
             LaunchMethod.ShellExecute,
             null,
             isPlaceholder);
@@ -327,122 +325,67 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         return true;
     }
 
-    private static bool HasShellPrefix(string head) => head.StartsWith("shell:", StringComparison.OrdinalIgnoreCase) || head.StartsWith("::", StringComparison.OrdinalIgnoreCase);
-
-    private static (string Head, string Tail) SplitHeadAndArgs(string input)
-    {
-        if (input.StartsWith('"'))
-        {
-            var token = ReadQuoted(input, out var consumed);
-            if (consumed > 0)
-            {
-                var head = token;
-                var tail = consumed < input.Length ? input[consumed..].TrimStart() : string.Empty;
-                return (head, tail);
-            }
-
-            return (input, string.Empty); // no closing quote
-        }
-
-        // take until first whitespace
-        for (var i = 0; i < input.Length; i++)
-        {
-            if (char.IsWhiteSpace(input[i]))
-            {
-                return (input[..i], input[(i + 1)..].TrimStart());
-            }
-        }
-
-        return (input, string.Empty);
-    }
+    private static (string Head, string Tail) SplitHeadAndArgs(string input) => CommandLineHelper.SplitHeadAndArgs(input);
 
     // Finds the best existing path prefix in an *unquoted* input by scanning
     // whitespace boundaries. Prefers files over directories; for same kind,
-    // prefers the longer path. Returns (head, tail) or (null, null) if nothing found.
-    private static (string? Head, string? Tail) ExpandToBestExistingPath(string input, bool containsPlaceholders, IPlaceholderParser placeholderParser)
+    // prefers the longer path.
+    // Returns (head, tail) or (null, null) if nothing found.
+    private static (string? Head, string? Tail) ExpandToBestExistingPath(string head, string tail, bool containsPlaceholders, IPlaceholderParser placeholderParser)
     {
         try
         {
-            // Quick exit if input starts with a quote – we don't handle quoted here
-            if (input.StartsWith('"'))
-            {
-                return (null, null);
-            }
+            // This goes greedy from the longest head down to shortest; exactly opposite of what
+            // CreateProcess rules are for the first token. But here we operate with a slightly different goal.
+            var (greedyHead, greedyTail) = GreedyFind(head, containsPlaceholders, placeholderParser);
 
-            var head = input;
-
-            // Find the next quote and ignore anything after it
-            var quoteIndex = head.IndexOf('"');
-            if (quoteIndex >= 0)
-            {
-                head = head[..quoteIndex].TrimEnd();
-            }
-
-            // Be greedy: try to find the longest existing path prefix
-            for (var i = head.Length; i >= 0; i--)
-            {
-                if (i < head.Length && !char.IsWhiteSpace(head[i]))
-                {
-                    continue;
-                }
-
-                var candidate = head.AsSpan(0, i).TrimEnd().ToString();
-                if (candidate.Length == 0)
-                {
-                    continue;
-                }
-
-                // If we have placeholders, check if this candidate would contain a non-path placeholder
-                if (containsPlaceholders && ContainsNonPathPlaceholder(candidate, placeholderParser))
-                {
-                    continue; // Skip this candidate, try a shorter one
-                }
-
-                try
-                {
-                    // Expand environment variables to help discovery
-                    var expanded = Environment.ExpandEnvironmentVariables(candidate);
-
-                    if (input.StartsWith("shell:", StringComparison.OrdinalIgnoreCase) ||
-                        input.StartsWith("::", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // shell:Downloads, shell:::{GUID}, ::{GUID}
-                        var firstSeparator = expanded.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]);
-                        var firstSegment = firstSeparator >= 0 ? expanded[..firstSeparator] : expanded;
-                        var rest = firstSeparator >= 0 ? expanded[firstSeparator..] : string.Empty;
-                        if (ShellNames.TryGetFileSystemPath(firstSegment, out var fsPath))
-                        {
-                            expanded = fsPath + rest;
-                        }
-                        else
-                        {
-                            return (null, null);
-                        }
-                    }
-
-                    // Check if this candidate exists as file or dir
-                    var isFile = File.Exists(expanded);
-                    var isDir = !isFile && Directory.Exists(expanded);
-                    if (isFile || isDir)
-                    {
-                        var full = Path.GetFullPath(expanded);
-                        var tail = i < input.Length ? input[i..].TrimStart() : string.Empty;
-                        return (full, tail);
-                    }
-                }
-                catch
-                {
-                    // Ignore malformed paths; keep scanning
-                }
-            }
-
-            return (null, null);
+            // put tails back together:
+            return (Head: greedyHead, string.Join(" ", greedyTail, tail).Trim());
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to find best path", ex);
             throw;
         }
+    }
+
+    private static (string? Head, string? Tail) GreedyFind(string input, bool containsPlaceholders, IPlaceholderParser placeholderParser)
+    {
+        // Be greedy: try to find the longest existing path prefix
+        for (var i = input.Length; i >= 0; i--)
+        {
+            if (i < input.Length && !char.IsWhiteSpace(input[i]))
+            {
+                continue;
+            }
+
+            var candidate = input.AsSpan(0, i).TrimEnd().ToString();
+            if (candidate.Length == 0)
+            {
+                continue;
+            }
+
+            // If we have placeholders, check if this candidate would contain a non-path placeholder
+            if (containsPlaceholders && ContainsNonPathPlaceholder(candidate, placeholderParser))
+            {
+                continue; // Skip this candidate, try a shorter one
+            }
+
+            try
+            {
+                if (CommandLineHelper.ExpandPathToPhysicalFile(candidate, true, out var full))
+                {
+                    var tail = i < input.Length ? input[i..].TrimStart() : string.Empty;
+                    return (full, tail);
+                }
+            }
+            catch
+            {
+                // Ignore malformed paths; keep scanning
+            }
+        }
+
+        return (null, null);
     }
 
     private static bool ContainsNonPathPlaceholder(string candidate, IPlaceholderParser placeholderParser)
@@ -489,47 +432,29 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         return new PlaceholderContext(isAfterFlag, looksLikePathComponent);
     }
 
-    private static bool IsUwpAumidLike(string s)
+    private static bool TryGetAumid(string input, out string aumid)
     {
-        // Examples:
-        //   shell:AppsFolder\Microsoft.WindowsTerminal_8wekyb3d8bbwe!App
-        //   Microsoft.WindowsTerminal_8wekyb3d8bbwe!App
-        if (s.StartsWith("shell:AppsFolder\\", StringComparison.OrdinalIgnoreCase))
+        // App ids are a lot of fun, since they can look like anything.
+        // And yes, they can contain spaces too, like Zoom:
+        //     shell:appsfolder\zoom.us.Zoom Video Meetings
+        // so unless that thing is quoted, we can't just assume the first token is the AUMID.
+        const string appsFolder = "shell:AppsFolder\\";
+
+        // Guard against null or empty input
+        if (string.IsNullOrEmpty(input))
         {
+            aumid = string.Empty;
+            return false;
+        }
+
+        // Already a fully qualified AUMID path
+        if (input.StartsWith(appsFolder, StringComparison.OrdinalIgnoreCase))
+        {
+            aumid = input;
             return true;
         }
 
-        return s.Contains('!') && s.Contains('_'); // cheap heuristic for pkgfamily!app
-    }
-
-    private static string NormalizeAumid(string s)
-    {
-        if (s.StartsWith("shell:AppsFolder\\", StringComparison.OrdinalIgnoreCase))
-        {
-            return s; // already fully qualified
-        }
-
-        return "shell:AppsFolder\\" + s;
-    }
-
-    private static bool LooksLikeExisting(string path, out string fullPath)
-    {
-        try
-        {
-            // Expand environment variables for convenience
-            path = Environment.ExpandEnvironmentVariables(path);
-            if (File.Exists(path) || Directory.Exists(path))
-            {
-                fullPath = Path.GetFullPath(path);
-                return true;
-            }
-        }
-        catch
-        {
-            /* ignore */
-        }
-
-        fullPath = path;
+        aumid = string.Empty;
         return false;
     }
 
@@ -556,16 +481,16 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
 
     private static bool HasDir(string path) => !string.IsNullOrEmpty(Path.GetDirectoryName(path));
 
-    private static bool TryResolveViaPath(string head, out string resolvedExe)
+    private static bool TryResolveViaPath(string head, out string resolvedFile)
     {
-        resolvedExe = string.Empty;
+        resolvedFile = string.Empty;
 
         if (string.IsNullOrWhiteSpace(head))
         {
             return false;
         }
 
-        if (Path.HasExtension(head) && ShellHelpers.FileExistInPath(head, out resolvedExe))
+        if (Path.HasExtension(head) && ShellHelpers.FileExistInPath(head, out resolvedFile))
         {
             return true;
         }
@@ -578,7 +503,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                 var p = TryProbe(Environment.CurrentDirectory, head);
                 if (p is not null)
                 {
-                    resolvedExe = p;
+                    resolvedFile = p;
                     return true;
                 }
 
@@ -590,7 +515,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                 var p = TryProbe(null, head + ext);
                 if (p is not null)
                 {
-                    resolvedExe = p;
+                    resolvedFile = p;
                     return true;
                 }
             }
@@ -598,7 +523,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             return false;
         }
 
-        return ShellHelpers.TryResolveExecutableAsShell(head, out resolvedExe);
+        return ShellHelpers.TryResolveExecutableAsShell(head, out resolvedFile);
     }
 
     private static string? TryProbe(string? dir, string name)
@@ -617,41 +542,6 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         }
 
         return null;
-    }
-
-    private static string ReadQuoted(string input, out int consumed)
-    {
-        var sb = new StringBuilder(input.Length);
-        var i = 1;
-        while (i < input.Length)
-        {
-            var c = input[i];
-            if (c == '"')
-            {
-                // double quote -> escaped
-                if (i + 1 < input.Length && input[i + 1] == '"')
-                {
-                    sb.Append('"');
-                    i += 2;
-                    continue;
-                }
-
-                i++; // consume closing quote
-                while (i < input.Length && char.IsWhiteSpace(input[i]))
-                {
-                    i++;
-                }
-
-                consumed = i;
-                return sb.ToString();
-            }
-
-            sb.Append(c);
-            i++;
-        }
-
-        consumed = 0; // no closing quote
-        return sb.ToString();
     }
 
     private record PlaceholderContext(bool IsAfterFlag, bool LooksLikePathComponent);

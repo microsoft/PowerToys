@@ -8,5 +8,5 @@ public enum LaunchMethod
 {
     ShellExecute, // UseShellExecute = true (Explorer/associations/protocols)
     ExplorerOpen, // explorer.exe <folder/shell:uri>
-    UwpActivate, // IApplicationActivationManager (AUMID / pkgfamily!app)
+    ActivateAppId, // IApplicationActivationManager (AUMID / pkgfamily!app)
 }

@@ -21,10 +21,13 @@ internal static class CommandLauncher
         {
             case LaunchMethod.ExplorerOpen:
                 // Folders and shell: URIs are best handled by explorer.exe
+                // You can notice the difference with Recycle Bin for example:
+                // - "explorer ::{645FF040-5081-101B-9F08-00AA002F954E}"
+                // - "::{645FF040-5081-101B-9F08-00AA002F954E}"
                 return ShellHelpers.OpenInShell("explorer.exe", classification.Target);
 
-            case LaunchMethod.UwpActivate:
-                return ActivateUwp(classification.Target);
+            case LaunchMethod.ActivateAppId:
+                return ActivateAppId(classification.Target, classification.Arguments);
 
             case LaunchMethod.ShellExecute:
             default:
@@ -32,25 +35,35 @@ internal static class CommandLauncher
         }
     }
 
-    private static bool ActivateUwp(string aumidOrAppsFolder)
+    private static bool ActivateAppId(string aumidOrAppsFolder, string? arguments)
     {
+        const string shellAppsFolder = "shell:AppsFolder\\";
         try
         {
-            // If caller already has "shell:AppsFolder\…" we can just ask explorer to open it.
-            if (aumidOrAppsFolder.StartsWith("shell:AppsFolder\\", StringComparison.OrdinalIgnoreCase))
+            if (aumidOrAppsFolder.StartsWith(shellAppsFolder, StringComparison.OrdinalIgnoreCase))
             {
-                return ShellHelpers.OpenInShell("explorer.exe", aumidOrAppsFolder);
+                aumidOrAppsFolder = aumidOrAppsFolder[shellAppsFolder.Length..];
             }
 
-            // Otherwise, activate via ApplicationActivationManager
-            ApplicationActivationManager.ActivateApplication(aumidOrAppsFolder, null, 0, out _);
+            ApplicationActivationManager.ActivateApplication(aumidOrAppsFolder, arguments, 0, out _);
             return true;
         }
         catch (Exception ex)
         {
-            Logger.LogError("Can't activate UWP application " + aumidOrAppsFolder, ex);
-            return false;
+            Logger.LogError($"Can't activate AUMID using app store '{aumidOrAppsFolder}'", ex);
         }
+
+        try
+        {
+            ShellHelpers.OpenInShell(shellAppsFolder + aumidOrAppsFolder, arguments);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Can't activate AUMID using shell '{aumidOrAppsFolder}'", ex);
+        }
+
+        return false;
     }
 
     private static class ApplicationActivationManager

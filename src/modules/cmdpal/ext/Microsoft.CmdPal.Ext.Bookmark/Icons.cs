@@ -26,7 +26,7 @@ internal static class Icons
 
         internal static IconInfo FolderPath { get; } = new("\uE8B7"); // OpenFolder
 
-        internal static IconInfo Application { get; } = new("\uECAA"); // AppIconDefault
+        internal static IconInfo Application { get; } = new("\uE737"); // FavIcon (~looks like empty window)
 
         internal static IconInfo Command { get; } = new("\uE756"); // CommandPrompt
 

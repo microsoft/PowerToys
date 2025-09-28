@@ -149,7 +149,7 @@ internal class IconLocator : IBookmarkIconLocator
             CommandKind.FileDocument => Icons.BookmarkTypes.FilePath,
             CommandKind.Directory => Icons.BookmarkTypes.FolderPath,
             CommandKind.PathCommand => Icons.BookmarkTypes.Command,
-            CommandKind.UwpAumid => Icons.BookmarkTypes.Application,
+            CommandKind.Aumid => Icons.BookmarkTypes.Application,
             CommandKind.Shortcut => Icons.BookmarkTypes.Application,
             CommandKind.InternetShortcut => Icons.BookmarkTypes.WebUrl,
             CommandKind.WebUrl => Icons.BookmarkTypes.WebUrl,

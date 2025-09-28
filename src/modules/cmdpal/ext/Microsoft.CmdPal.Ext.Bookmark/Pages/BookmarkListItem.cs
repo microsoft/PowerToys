@@ -98,7 +98,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
 
         var classification = (await _commandResolver.TryClassifyAsync(_bookmark.Bookmark, ct)).Result;
 
-        var title = ResolveTitle(_bookmark, classification);
+        var title = BuildTitle(_bookmark, classification);
         var subtitle = BuildSubtitle(_bookmark, classification);
 
         ICommand command = classification.IsPlaceholder
@@ -174,7 +174,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
                 break;
             case CommandKind.WebUrl:
             case CommandKind.Protocol:
-            case CommandKind.UwpAumid:
+            case CommandKind.Aumid:
             case CommandKind.PathCommand:
             case CommandKind.Unknown:
             default:
@@ -210,9 +210,24 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
 
     private static string BuildSubtitle(BookmarkData bookmark, Classification classification)
     {
+        var subtitle = BuildSubtitleCore(bookmark, classification);
+#if DEBUG
+        subtitle = $" ({classification.Kind}) • " + subtitle;
+#endif
+        return subtitle;
+    }
+
+    private static string BuildSubtitleCore(BookmarkData bookmark, Classification classification)
+    {
         if (classification.Kind == CommandKind.Unknown)
         {
             return bookmark.Bookmark;
+        }
+
+        if (classification.Kind is CommandKind.VirtualShellItem &&
+            ShellNames.TryGetFriendlyName(classification.Target, out var friendlyName))
+        {
+            return friendlyName;
         }
 
         if (ShellNames.TryGetFileSystemPath(bookmark.Bookmark, out var displayName) &&
@@ -221,27 +236,22 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
             return displayName;
         }
 
-        if (ShellNames.TryGetFriendlyName(bookmark.Bookmark, out var friendlyName))
-        {
-            return friendlyName;
-        }
-
         return bookmark.Bookmark;
     }
 
-    private static string ResolveTitle(BookmarkData bookmark, Classification classification)
+    private static string BuildTitle(BookmarkData bookmark, Classification classification)
     {
         if (!string.IsNullOrWhiteSpace(bookmark.Name))
         {
             return bookmark.Name;
         }
 
-        if (classification.Kind == CommandKind.Unknown)
+        if (classification.Kind is CommandKind.Unknown or CommandKind.WebUrl or CommandKind.Protocol)
         {
             return bookmark.Bookmark;
         }
 
-        if (ShellNames.TryGetFriendlyName(bookmark.Bookmark, out var friendlyName))
+        if (ShellNames.TryGetFriendlyName(classification.Target, out var friendlyName))
         {
             return friendlyName;
         }
