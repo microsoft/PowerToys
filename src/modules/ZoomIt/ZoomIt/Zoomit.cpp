@@ -1290,7 +1290,7 @@ void ScaleImage( HDC hdcDst, float xDst, float yDst, float wDst, float hDst,
 
         // Use high quality interpolation when smooth image is enabled
         if (g_SmoothImage) {
-            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeBilinear );
+            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeHighQuality );
         } else {
             dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeLowQuality );
         }
