@@ -43,7 +43,8 @@
             FileIndex="{x:Bind ViewModel.DisplayIndex, Mode=OneWay}"
             IsMultiSelection="{x:Bind ViewModel.NeighboringItemsQuery.IsMultipleFilesActivation, Mode=OneWay}"
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
-            NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}" />
+            NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
+            DefaultAppName="{x:Bind ViewModel.DefaultAppName, Mode=OneWay}" />
 
         <fp:FilePreview
             Grid.Row="1"
@@ -51,7 +52,8 @@
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
             DeleteRequested="FilePreviewer_DeleteRequested"
-            ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
+            ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}"
+            DefaultAppName="{x:Bind ViewModel.DefaultAppName, Mode=OneWay}" />
 
         <InfoBar
             x:Name="ErrorInfoBar"

@@ -57,6 +57,13 @@ namespace Peek.UI.Views
                typeof(TitleBar),
                new PropertyMetadata(null, (d, e) => ((TitleBar)d).OnNumberOfFilesPropertyChanged()));
 
+        public static readonly DependencyProperty DefaultAppNameProperty =
+            DependencyProperty.Register(
+               nameof(DefaultAppName),
+               typeof(string),
+               typeof(TitleBar),
+               new PropertyMetadata(string.Empty, (d, e) => ((TitleBar)d).OnDefaultAppNamePropertyChanged()));
+
         [ObservableProperty]
         private string openWithAppText = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWith_Text");
 
@@ -68,9 +75,6 @@ namespace Peek.UI.Views
 
         [ObservableProperty]
         private string fileName = string.Empty;
-
-        [ObservableProperty]
-        private string defaultAppName = string.Empty;
 
         [ObservableProperty]
         private bool pinned = false;
@@ -105,6 +109,12 @@ namespace Peek.UI.Views
         {
             get => (int)GetValue(NumberOfFilesProperty);
             set => SetValue(NumberOfFilesProperty, value);
+        }
+
+        public string DefaultAppName
+        {
+            get => (string)GetValue(DefaultAppNameProperty);
+            set => SetValue(DefaultAppNameProperty, value);
         }
 
         private Window? MainWindow { get; set; }
@@ -256,7 +266,6 @@ namespace Peek.UI.Views
         {
             UpdateFileCountText();
             UpdateFilename();
-            UpdateDefaultAppToLaunch();
         }
 
         private void UpdateFilename()
@@ -272,6 +281,11 @@ namespace Peek.UI.Views
         private void OnNumberOfFilesPropertyChanged()
         {
             UpdateFileCountText();
+        }
+
+        private void OnDefaultAppNamePropertyChanged()
+        {
+            UpdateDefaultAppToLaunch();
         }
 
         /// <summary>
@@ -292,11 +306,8 @@ namespace Peek.UI.Views
 
         private void UpdateDefaultAppToLaunch()
         {
-            if (Item is FileItem)
+            if (!string.IsNullOrEmpty(DefaultAppName))
             {
-                // Update the name of default app to launch
-                DefaultAppName = DefaultAppHelper.TryGetDefaultAppName(Item.Extension);
-
                 string openWithAppTextFormat = ResourceLoaderInstance.ResourceLoader.GetString("LaunchAppButton_OpenWithApp_Text");
                 OpenWithAppText = string.Format(CultureInfo.InvariantCulture, openWithAppTextFormat, DefaultAppName);
 
@@ -305,7 +316,6 @@ namespace Peek.UI.Views
             }
             else
             {
-                DefaultAppName = string.Empty;
                 OpenWithAppText = string.Empty;
                 OpenWithAppToolTip = string.Empty;
             }

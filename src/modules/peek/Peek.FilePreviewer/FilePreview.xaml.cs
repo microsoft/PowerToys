@@ -74,6 +74,21 @@ namespace Peek.FilePreviewer
         [ObservableProperty]
         private string noMoreFilesText = ResourceLoaderInstance.ResourceLoader.GetString("NoMoreFiles");
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(OpenWithDefaultAppText))]
+        private string defaultAppName = string.Empty;
+
+        public string OpenWithDefaultAppText
+        {
+            get
+            {
+                var openWithText = ResourceLoaderInstance.ResourceLoader.GetString("ContextMenu_OpenWith/Text");
+                return string.IsNullOrEmpty(DefaultAppName)
+                    ? openWithText
+                    : $"{openWithText} {DefaultAppName}";
+            }
+        }
+
         private CancellationTokenSource _cancellationTokenSource = new();
 
         public FilePreview()
@@ -424,10 +439,29 @@ namespace Peek.FilePreviewer
         }
 
         /// <summary>
+        /// Event handler for the Open With Default App context menu item.
+        /// Opens the file with the default application.
+        /// </summary>
+        private async void OpenWithDefaultApp_Click(object sender, RoutedEventArgs e)
+        {
+            await HandleLaunchFile(showAppPicker: false, "with default app");
+        }
+
+        /// <summary>
         /// Event handler for the Open With context menu item.
         /// Shows the Windows "Open with" dialog to let the user choose an application.
         /// </summary>
         private async void OpenWith_Click(object sender, RoutedEventArgs e)
+        {
+            await HandleLaunchFile(showAppPicker: true, string.Empty);
+        }
+
+        /// <summary>
+        /// Common handler for launching files with error handling.
+        /// </summary>
+        /// <param name="showAppPicker">Whether to show the app picker dialog.</param>
+        /// <param name="errorSuffix">Additional text for error messages.</param>
+        private async Task HandleLaunchFile(bool showAppPicker, string errorSuffix)
         {
             if (Item is not FileItem fileItem)
             {
@@ -436,11 +470,11 @@ namespace Peek.FilePreviewer
 
             try
             {
-                await LaunchFileWithOpenWithDialog(fileItem);
+                await LaunchFile(fileItem, showAppPicker);
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to open file {Item.Path}: {ex.Message}");
+                Logger.LogError($"Failed to open file {Item.Path}{(string.IsNullOrEmpty(errorSuffix) ? string.Empty : $" {errorSuffix}")}: {ex.Message}");
             }
         }
 
@@ -455,29 +489,38 @@ namespace Peek.FilePreviewer
         }
 
         /// <summary>
-        /// Shows the Windows "Open with" dialog for the specified file.
+        /// Launches the specified file with optional app picker dialog.
         /// </summary>
         /// <param name="fileItem">The file item to open.</param>
-        private static async Task LaunchFileWithOpenWithDialog(FileItem fileItem)
+        /// <param name="showAppPicker">Whether to show the "Open with" dialog.</param>
+        private static async Task LaunchFile(FileItem fileItem, bool showAppPicker)
         {
             StorageFile? storageFile = await fileItem.GetStorageFileAsync();
-            LauncherOptions options = new()
-            {
-                // Always show the application picker (Open with dialog)
-                DisplayApplicationPicker = true,
-            };
-
-            PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = string.Empty });
+            LauncherOptions? options = showAppPicker ? new LauncherOptions { DisplayApplicationPicker = true } : null;
 
             // StorageFile objects can't represent files that are ".lnk", ".url", or ".wsh" file types.
             // https://learn.microsoft.com/uwp/api/windows.storage.storagefile?view=winrt-22621
             if (storageFile == null)
             {
-                await Launcher.LaunchUriAsync(new Uri(fileItem.Path), options);
+                if (options != null)
+                {
+                    await Launcher.LaunchUriAsync(new Uri(fileItem.Path), options);
+                }
+                else
+                {
+                    await Launcher.LaunchUriAsync(new Uri(fileItem.Path));
+                }
             }
             else
             {
-                await Launcher.LaunchFileAsync(storageFile, options);
+                if (options != null)
+                {
+                    await Launcher.LaunchFileAsync(storageFile, options);
+                }
+                else
+                {
+                    await Launcher.LaunchFileAsync(storageFile);
+                }
             }
         }
     }
