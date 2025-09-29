@@ -443,38 +443,6 @@ namespace Peek.FilePreviewer
         }
 
         /// <summary>
-        /// Launches the file with its default application using the same logic as the TitleBar button.
-        /// </summary>
-        /// <param name="fileItem">The file item to launch.</param>
-        private static async Task LaunchFileWithDefaultApp(FileItem fileItem)
-        {
-            StorageFile? storageFile = await fileItem.GetStorageFileAsync();
-            LauncherOptions options = new();
-
-            PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = string.Empty });
-
-            // StorageFile objects can't represent files that are ".lnk", ".url", or ".wsh" file types.
-            // https://learn.microsoft.com/uwp/api/windows.storage.storagefile?view=winrt-22621
-            if (storageFile == null)
-            {
-                options.DisplayApplicationPicker = true;
-                await Launcher.LaunchUriAsync(new Uri(fileItem.Path), options);
-            }
-            else
-            {
-                // Try to launch with default app first
-                bool result = await Launcher.LaunchFileAsync(storageFile, options);
-
-                if (!result)
-                {
-                    // If we couldn't successfully open the default app, open the App picker as a fallback
-                    options.DisplayApplicationPicker = true;
-                    await Launcher.LaunchFileAsync(storageFile, options);
-                }
-            }
-        }
-
-        /// <summary>
         /// Shows the Windows "Open with" dialog for the specified file.
         /// </summary>
         /// <param name="fileItem">The file item to open.</param>
