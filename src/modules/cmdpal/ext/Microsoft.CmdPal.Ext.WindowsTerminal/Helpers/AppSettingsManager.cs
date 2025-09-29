@@ -12,8 +12,6 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 
-#nullable enable
-
 public sealed class AppSettingsManager
 {
     private const string FileName = "appsettings.json";
@@ -42,7 +40,7 @@ public sealed class AppSettingsManager
             if (File.Exists(_filePath))
             {
                 var json = File.ReadAllText(_filePath);
-                var loaded = JsonSerializer.Deserialize(json, AppSettingsJsonContext.Default.AppSettings);
+                var loaded = JsonSerializer.Deserialize(json, AppSettingsJsonContext.Default.AppSettings!);
                 if (loaded is not null)
                 {
                     Current = loaded;
@@ -60,7 +58,7 @@ public sealed class AppSettingsManager
     {
         try
         {
-            var json = JsonSerializer.Serialize(Current, AppSettingsJsonContext.Default.AppSettings);
+            var json = JsonSerializer.Serialize(Current, AppSettingsJsonContext.Default.AppSettings!);
             File.WriteAllText(_filePath, json);
         }
         catch (Exception ex)

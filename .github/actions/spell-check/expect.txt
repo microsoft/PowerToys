@@ -27,6 +27,7 @@ admx
 advancedpaste
 advancedpasteui
 advancedpasteuishortcut
+advapi
 advfirewall
 AFeature
 affordances
@@ -159,6 +160,7 @@ BUILDARCH
 BUILDNUMBER
 buildtransitive
 builttoroam
+BUNDLEINFO
 BVal
 BValue
 byapp
@@ -392,6 +394,7 @@ DNLEN
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
+downscale
 DPICHANGED
 DPIs
 DPSAPI
@@ -481,6 +484,7 @@ examplehandler
 examplepowertoy
 EXAND
 EXCLUDEFROMCAPTURE
+EXECUTEDEFAULT
 executionpolicy
 exename
 exf
@@ -860,6 +864,7 @@ LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+LOGMSG
 LOGPIXELSX
 LOGPIXELSY
 LOn
@@ -917,6 +922,7 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
+MAJORMINOR
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -995,6 +1001,9 @@ mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
+muxx
+muxxc
+muxxh
 MRM
 MRT
 mru
@@ -1033,6 +1042,7 @@ MWBEx
 MYICON
 NAMECHANGE
 namespaceanddescendants
+Namotion
 nao
 NCACTIVATE
 ncc
@@ -1070,6 +1080,7 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
+NJson
 NLog
 NLSTEXT
 NMAKE
@@ -1373,7 +1384,7 @@ QUNS
 RAII
 RAlt
 randi
-Rasterization
+rasterization
 Rasterize
 RAWINPUTDEVICE
 RAWINPUTHEADER
@@ -1806,6 +1817,7 @@ ULONGLONG
 ums
 uncompilable
 UNCPRIORITY
+undefining
 UNDNAME
 UNICODETEXT
 unins

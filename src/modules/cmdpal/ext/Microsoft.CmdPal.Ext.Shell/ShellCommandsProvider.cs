@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.Shell.Properties;
@@ -24,7 +24,7 @@ public partial class ShellCommandsProvider : CommandProvider
     {
         _historyService = runHistoryService;
 
-        Id = "Run";
+        Id = "com.microsoft.cmdpal.builtin.run";
         DisplayName = Resources.cmd_plugin_name;
         Icon = Icons.RunV2Icon;
         Settings = _settingsManager.Settings;

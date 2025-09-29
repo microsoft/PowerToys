@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -152,13 +152,11 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             return;
         }
 
-        ShellHelpers.ParseExecutableAndArgs(expanded, out var exe, out var args);
-
-        // Check for cancellation before file system operations
-        cancellationToken.ThrowIfCancellationRequested();
-
         // Reset the path resolution flag
         var couldResolvePath = false;
+
+        var exe = string.Empty;
+        var args = string.Empty;
 
         var exeExists = false;
         var fullExePath = string.Empty;
@@ -175,6 +173,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             var pathResolutionTask = Task.Run(
                 () =>
             {
+                ShellListPageHelpers.NormalizeCommandLineAndArgs(expanded, out exe, out args);
+
                 // Don't check cancellation token here - let the Task timeout handle it
                 exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
                 pathIsDir = Directory.Exists(expanded);
@@ -263,7 +263,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var filterHistory = (string query, KeyValuePair<string, ListItem> pair) =>
         {
             // Fuzzy search on the key (command string)
-            var score = StringMatcher.FuzzySearch(query, pair.Key).Score;
+            var score = FuzzyStringMatcher.ScoreFuzzy(query, pair.Key);
             return score;
         };
 
