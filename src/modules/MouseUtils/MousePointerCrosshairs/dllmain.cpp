@@ -75,8 +75,8 @@ private:
     bool m_enabled = false;
 
     // Additional hotkeys (legacy API) to support multiple shortcuts
-    Hotkey m_activationHotkey{};    // Crosshairs toggle
-    Hotkey m_glidingHotkey{};       // Gliding cursor state machine
+    Hotkey m_activationHotkey{}; // Crosshairs toggle
+    Hotkey m_glidingHotkey{}; // Gliding cursor state machine
 
     // Low-level keyboard hook (Escape to cancel gliding)
     HHOOK m_keyboardHook = nullptr;
@@ -92,7 +92,7 @@ private:
         int currentYPos{ 0 };
         int currentXSpeed{ 0 }; // pixels per base window
         int currentYSpeed{ 0 }; // pixels per base window
-        int xPosSnapshot{ 0 };  // xPos captured at end of horizontal scan
+        int xPosSnapshot{ 0 }; // xPos captured at end of horizontal scan
 
         // Fractional accumulators to spread movement across 10ms ticks
         double xFraction{ 0.0 };
@@ -100,9 +100,9 @@ private:
 
         // Speeds represent pixels per 200ms (min 5, max 60 enforced by UI/settings)
         int fastHSpeed{ 30 }; // pixels per base window
-        int slowHSpeed{ 5 };  // pixels per base window
+        int slowHSpeed{ 5 }; // pixels per base window
         int fastVSpeed{ 30 }; // pixels per base window
-        int slowVSpeed{ 5 };  // pixels per base window
+        int slowVSpeed{ 5 }; // pixels per base window
     };
 
     std::shared_ptr<State> m_state;
@@ -200,7 +200,6 @@ public:
         m_enabled = true;
         Trace::EnableMousePointerCrosshairs(true);
         std::thread([=]() { InclusiveCrosshairsMain(m_hModule, m_inclusiveCrosshairsSettings); }).detach();
-        InstallKeyboardHook();
     }
 
     // Disable the powertoy
@@ -233,7 +232,7 @@ public:
         if (buffer && buffer_size >= 2)
         {
             buffer[0] = m_activationHotkey; // Crosshairs toggle
-            buffer[1] = m_glidingHotkey;    // Gliding cursor toggle
+            buffer[1] = m_glidingHotkey; // Gliding cursor toggle
         }
         return 2;
     }
@@ -432,6 +431,8 @@ private:
         {
         case 0:
         {
+            // For detect for cancel key
+            InstallKeyboardHook();
             // Ensure crosshairs on (do not toggle off if already on)
             InclusiveCrosshairsEnsureOn();
             // Disable internal mouse hook so we control position updates explicitly
@@ -480,6 +481,7 @@ private:
         case 4:
         default:
         {
+            UninstallKeyboardHook();
             // Stop vertical, click, turn crosshairs off, re-enable internal tracking, reset state
             StopYTimer();
             m_glideState = 0;
@@ -507,12 +509,14 @@ private:
                 {
                     if (inst->m_enabled && inst->m_glideState.load() != 0)
                     {
+                        inst->UninstallKeyboardHook();
                         inst->CancelGliding();
-                        // Do not swallow Escape; pass it through
                     }
                 }
             }
         }
+
+        // Do not swallow Escape; pass it through
         return CallNextHookEx(nullptr, nCode, wParam, lParam);
     }
 
