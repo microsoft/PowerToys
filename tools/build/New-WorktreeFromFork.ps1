@@ -107,7 +107,7 @@ try {
   } else { Info "Local branch $localBranch already exists." }
 
   New-WorktreeForExistingBranch -Branch $localBranch -VSCodeProfile $VSCodeProfile
-  # Ensure upstream so future 'git push' works without refspec
+  # Ensure upstream so future 'git push' works
   Set-BranchUpstream -LocalBranch $localBranch -RemoteName $RemoteName -RemoteBranchPath $ForkBranch
   $after = Get-WorktreeEntries | Where-Object { $_.Branch -eq $localBranch }
   $path = ($after | Select-Object -First 1).Path

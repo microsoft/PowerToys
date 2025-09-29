@@ -11,7 +11,7 @@
     Issue number used to construct the branch name.
 
 .PARAMETER Title
-    Optional descriptive title; slugified into the branch name.
+    Optional descriptive title; slug into the branch name.
 
 .PARAMETER Base
     Base ref to branch from (default origin/main).
