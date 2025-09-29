@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -17,11 +18,15 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Pages;
 
 internal sealed partial class ClipboardHistoryListPage : ListPage
 {
+    private readonly SettingsManager _settingsManager;
     private readonly ObservableCollection<ClipboardItem> clipboardHistory;
     private readonly string _defaultIconPath;
 
-    public ClipboardHistoryListPage()
+    public ClipboardHistoryListPage(SettingsManager settingsManager)
     {
+        ArgumentNullException.ThrowIfNull(settingsManager);
+
+        _settingsManager = settingsManager;
         clipboardHistory = [];
         _defaultIconPath = string.Empty;
         Icon = Icons.ClipboardListIcon;
@@ -84,11 +89,11 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
                 if (item.Content.Contains(StandardDataFormats.Text))
                 {
                     var text = await item.Content.GetTextAsync();
-                    items.Add(new ClipboardItem { Content = text, Item = item });
+                    items.Add(new ClipboardItem { Settings = _settingsManager, Content = text, Item = item });
                 }
                 else if (item.Content.Contains(StandardDataFormats.Bitmap))
                 {
-                    items.Add(new ClipboardItem { Item = item });
+                    items.Add(new ClipboardItem { Settings = _settingsManager, Item = item });
                 }
             }
 
@@ -143,7 +148,7 @@ internal sealed partial class ClipboardHistoryListPage : ListPage
             var item = clipboardHistory[i];
             if (item is not null)
             {
-                listItems.Add(item.ToListItem());
+                listItems.Add(new ClipboardListItem(item, _settingsManager));
             }
         }
 

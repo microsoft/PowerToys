@@ -18,8 +18,8 @@ public partial class ServiceFilters : Filters
         return [
             new Filter() { Id = "all", Name = "All Services" },
             new Separator(),
-            new Filter() { Id = "running", Name = "Running", Icon = Icons.GreenCircleIcon },
-            new Filter() { Id = "stopped", Name = "Stopped", Icon = Icons.RedCircleIcon },
+            new Filter() { Id = "running", Name = "Running", Icon = Icons.PlayIcon },
+            new Filter() { Id = "stopped", Name = "Stopped", Icon = Icons.StopIcon },
             new Filter() { Id = "paused", Name = "Paused", Icon = Icons.PauseIcon },
         ];
     }

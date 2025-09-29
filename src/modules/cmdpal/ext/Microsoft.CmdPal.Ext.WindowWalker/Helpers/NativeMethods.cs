@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-
+using Microsoft.Win32.SafeHandles;
 using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
 
 #pragma warning disable SA1649, CA1051, CA1707, CA1028, CA1714, CA1069, SA1402
@@ -98,6 +98,25 @@ public static partial class NativeMethods
     [DllImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GetFirmwareType(ref FirmwareType FirmwareType);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool OpenProcessToken(SafeProcessHandle processHandle, TokenAccess desiredAccess, out SafeAccessTokenHandle tokenHandle);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetTokenInformation(
+        SafeAccessTokenHandle tokenHandle,
+        TOKEN_INFORMATION_CLASS tokenInformationClass,
+        out int tokenInformation,
+        int tokenInformationLength,
+        out int returnLength);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "GetPackageFullName")]
+    internal static extern int GetPackageFullName(
+        SafeProcessHandle hProcess,
+        ref uint packageFullNameLength,
+        StringBuilder? packageFullName);
 }
 
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "These are the names used by win32.")]
@@ -383,7 +402,7 @@ public enum ShowWindowCommand
 
     /// <summary>
     /// Displays a window in its most recent size and position. This value
-    /// is similar to <see cref="Win32.ShowWindowCommand.Normal"/>, except
+    /// is similar to <see cref="ShowWindowCommand.Normal"/>, except
     /// the window is not activated.
     /// </summary>
     ShowNoActivate = 4,
@@ -401,14 +420,14 @@ public enum ShowWindowCommand
 
     /// <summary>
     /// Displays the window as a minimized window. This value is similar to
-    /// <see cref="Win32.ShowWindowCommand.ShowMinimized"/>, except the
+    /// <see cref="ShowWindowCommand.ShowMinimized"/>, except the
     /// window is not activated.
     /// </summary>
     ShowMinNoActive = 7,
 
     /// <summary>
     /// Displays the window in its current size and position. This value is
-    /// similar to <see cref="Win32.ShowWindowCommand.Show"/>, except the
+    /// similar to <see cref="ShowWindowCommand.Show"/>, except the
     /// window is not activated.
     /// </summary>
     ShowNA = 8,
@@ -1099,4 +1118,15 @@ public enum SIGDN : uint
     DESKTOPABSOLUTEEDITING = 0x8004c000,
     FILESYSPATH = 0x80058000,
     URL = 0x80068000,
+}
+
+internal enum TOKEN_INFORMATION_CLASS
+{
+    TokenIsAppContainer = 29,
+}
+
+[Flags]
+internal enum TokenAccess : uint
+{
+    TOKEN_QUERY = 0x0008,
 }

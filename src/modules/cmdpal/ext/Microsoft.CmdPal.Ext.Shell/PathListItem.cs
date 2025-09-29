@@ -4,7 +4,7 @@
 
 using System;
 using System.IO;
-using Microsoft.CmdPal.Common.Commands;
+using Microsoft.CmdPal.Core.Common.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;

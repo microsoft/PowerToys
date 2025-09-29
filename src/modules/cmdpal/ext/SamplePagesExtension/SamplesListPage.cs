@@ -4,6 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using SamplePagesExtension.Pages;
 
 namespace SamplePagesExtension;
 
@@ -32,10 +33,20 @@ public partial class SamplesListPage : ListPage
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
         },
+        new ListItem(new SampleGalleryListPage())
+        {
+            Title = "Gallery List Page Command",
+            Subtitle = "Displays items as a gallery",
+        },
         new ListItem(new OnLoadPage())
         {
             Title = "Demo of OnLoad/OnUnload",
             Subtitle = "Changes the list of items every time the page is opened / closed",
+        },
+        new ListItem(new SampleIconPage())
+        {
+            Title = "Sample Icon Page",
+            Subtitle = "A demo of using icons in various ways",
         },
 
         // Content pages
@@ -65,10 +76,16 @@ public partial class SamplesListPage : ListPage
             Title = "Markdown with multiple blocks",
             Subtitle = "A page with multiple blocks of rendered markdown",
         },
-            new ListItem(new SampleMarkdownDetails())
+        new ListItem(new SampleMarkdownDetails())
         {
             Title = "Markdown with details",
             Subtitle = "A page with markdown and details",
+        },
+        new ListItem(new SampleMarkdownImagesPage())
+        {
+            Title = "Markdown with images",
+            Subtitle = "A page with rendered markdown and images",
+            Icon = new IconInfo("\uee71"),
         },
 
         // Settings helpers

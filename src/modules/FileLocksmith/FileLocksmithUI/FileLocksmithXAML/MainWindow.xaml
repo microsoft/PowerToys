@@ -20,30 +20,15 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid
-            x:Name="AppTitleBar"
-            Height="32"
-            ColumnSpacing="16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
-                <ColumnDefinition x:Name="IconColumn" Width="Auto" />
-                <ColumnDefinition x:Name="TitleColumn" Width="Auto" />
-                <ColumnDefinition x:Name="RightDragColumn" Width="*" />
-                <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
-            </Grid.ColumnDefinitions>
-            <Image
-                Grid.Column="1"
-                Width="16"
-                Height="16"
-                VerticalAlignment="Center"
-                Source="../Assets/FileLocksmith/Icon.ico" />
-            <TextBlock
-                x:Name="AppTitleTextBlock"
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}" />
-        </Grid>
-
+        <TitleBar x:Name="titleBar">
+            <!--  This is a workaround for https://github.com/microsoft/microsoft-ui-xaml/issues/10374, once fixed we should just be using IconSource  -->
+            <TitleBar.LeftHeader>
+                <ImageIcon
+                    Height="16"
+                    Margin="16,0,0,0"
+                    Source="/Assets/FileLocksmith/Icon.ico" />
+            </TitleBar.LeftHeader>
+        </TitleBar>
         <views:MainPage x:Name="mainPage" Grid.Row="1" />
     </Grid>
 </winuiex:WindowEx>

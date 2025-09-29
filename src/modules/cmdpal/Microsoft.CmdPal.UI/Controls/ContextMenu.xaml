@@ -15,6 +15,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
+    PreviewKeyDown="UserControl_PreviewKeyDown"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -49,6 +50,7 @@
                         MaxWidth="200"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Text="{x:Bind Title}"
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap">
@@ -89,6 +91,7 @@
                         MaxWidth="200"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
+                        MaxLines="1"
                         Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
                         Text="{x:Bind Title}"
                         TextTrimming="WordEllipsis"
