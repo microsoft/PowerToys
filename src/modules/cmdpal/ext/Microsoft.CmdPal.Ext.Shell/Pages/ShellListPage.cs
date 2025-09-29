@@ -11,8 +11,6 @@ namespace Microsoft.CmdPal.Ext.Shell.Pages;
 
 internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 {
-    private readonly ShellListPageHelpers _helper;
-
     private readonly Dictionary<string, ListItem> _historyItems = [];
     private readonly List<ListItem> _currentHistoryItems = [];
 
@@ -41,7 +39,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         Id = "com.microsoft.cmdpal.shell";
         Name = ResourceLoaderInstance.GetString("cmd_plugin_name");
         PlaceholderText = ResourceLoaderInstance.GetString("list_placeholder_text");
-        _helper = new(settingsManager);
         _historyService = runHistoryService;
         _telemetryService = telemetryService;
 

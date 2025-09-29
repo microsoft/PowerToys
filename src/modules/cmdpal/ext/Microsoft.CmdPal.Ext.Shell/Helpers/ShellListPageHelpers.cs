@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Text;
 using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -12,37 +10,6 @@ namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 
 public class ShellListPageHelpers
 {
-    private static readonly CompositeFormat CmdHasBeenExecutedTimes = System.Text.CompositeFormat.Parse(ResourceLoaderInstance.GetString("cmd_has_been_executed_times"));
-    private readonly ISettingsInterface _settings;
-
-    public ShellListPageHelpers(ISettingsInterface settings)
-    {
-        _settings = settings;
-    }
-
-    private ListItem GetCurrentCmd(string cmd)
-    {
-        var result = new ListItem(new ExecuteItem(cmd, _settings))
-        {
-            Title = cmd,
-            Subtitle = ResourceLoaderInstance.GetString("cmd_plugin_name") + ": " + ResourceLoaderInstance.GetString("cmd_execute_through_shell"),
-            Icon = new IconInfo(string.Empty),
-        };
-
-        return result;
-    }
-
-    public List<CommandContextItem> LoadContextMenus(ListItem listItem)
-    {
-        var resultList = new List<CommandContextItem>
-            {
-                new(new ExecuteItem(listItem.Title, _settings, RunAsType.Administrator)),
-                new(new ExecuteItem(listItem.Title, _settings, RunAsType.OtherUser )),
-            };
-
-        return resultList;
-    }
-
     internal static bool FileExistInPath(string filename)
     {
         return FileExistInPath(filename, out var _);
