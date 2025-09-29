@@ -99,6 +99,8 @@ typedef struct {
 #define PEN_COLOR_HIGHLIGHT(Pencolor)	((Pencolor >> 24) != 0xFF)
 #define PEN_COLOR_BLUR(Pencolor)        ((Pencolor & 0x00FFFFFF) == COLOR_BLUR)
 
+#define CURSOR_SAVE_MARGIN  4
+
 
 typedef BOOL (__stdcall *type_pGetMonitorInfo)(
   HMONITOR hMonitor,  // handle to display monitor

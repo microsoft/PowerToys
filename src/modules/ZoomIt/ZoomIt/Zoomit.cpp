@@ -1290,7 +1290,7 @@ void ScaleImage( HDC hdcDst, float xDst, float yDst, float wDst, float hDst,
 
         // Use high quality interpolation when smooth image is enabled
         if (g_SmoothImage) {
-            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeHighQualityBicubic );
+            dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeBilinear );
         } else {
             dstGraphics.SetInterpolationMode( Gdiplus::InterpolationModeLowQuality );
         }
@@ -2932,7 +2932,7 @@ void InvalidateCursorMoveArea( HWND hWnd, float zoomLevel, int width, int height
 {
     int		x, y;
     RECT	rc;
-    int		invWidth = g_PenWidth;
+    int		invWidth = g_PenWidth + CURSOR_SAVE_MARGIN;
 
     if( DrawHighlightedCursor( zoomLevel, width, height ) ) {
         
@@ -2957,7 +2957,7 @@ void InvalidateCursorMoveArea( HWND hWnd, float zoomLevel, int width, int height
 void SaveCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
 {
     OutputDebug( L"SaveCursorArea\n");
-    int penWidth = g_PenWidth + 2;
+    int penWidth = g_PenWidth + CURSOR_SAVE_MARGIN;
     BitBlt( hDcTarget, 0, 0, penWidth +CURSOR_ARM_LENGTH*2, penWidth +CURSOR_ARM_LENGTH*2,
         hDcSource, static_cast<INT> (pt.x- penWidth /2)-CURSOR_ARM_LENGTH,
         static_cast<INT>(pt.y- penWidth /2)-CURSOR_ARM_LENGTH, SRCCOPY|CAPTUREBLT );
@@ -2971,7 +2971,7 @@ void SaveCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
 void RestoreCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
 {
     OutputDebug( L"RestoreCursorArea\n");
-    int penWidth = g_PenWidth + 2;
+    int penWidth = g_PenWidth + CURSOR_SAVE_MARGIN;
     BitBlt( hDcTarget, static_cast<INT>(pt.x- penWidth /2)-CURSOR_ARM_LENGTH,
         static_cast<INT>(pt.y- penWidth /2)-CURSOR_ARM_LENGTH, penWidth +CURSOR_ARM_LENGTH*2,
         penWidth + CURSOR_ARM_LENGTH*2, hDcSource, 0, 0, SRCCOPY|CAPTUREBLT );
