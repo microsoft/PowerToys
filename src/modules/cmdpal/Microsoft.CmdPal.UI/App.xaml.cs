@@ -160,7 +160,7 @@ public partial class App : Application
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
-        services.AddSingleton(new TelemetryForwarder());
+        services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();

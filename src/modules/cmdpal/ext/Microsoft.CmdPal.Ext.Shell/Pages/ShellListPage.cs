@@ -14,11 +14,11 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 {
     private readonly ShellListPageHelpers _helper;
 
-    private readonly List<ListItem> _topLevelItems = [];
     private readonly Dictionary<string, ListItem> _historyItems = [];
     private readonly List<ListItem> _currentHistoryItems = [];
 
     private readonly IRunHistoryService _historyService;
+    private readonly ITelemetryService? _telemetryService;
 
     private readonly Dictionary<string, ListItem> _currentPathItems = new();
 
@@ -33,7 +33,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     private string _currentSubdir = string.Empty;
 
-    public ShellListPage(ISettingsInterface settingsManager, IRunHistoryService runHistoryService, bool addBuiltins = false)
+    public ShellListPage(
+        ISettingsInterface settingsManager,
+        IRunHistoryService runHistoryService,
+        ITelemetryService? telemetryService)
     {
         Icon = Icons.RunV2Icon;
         Id = "com.microsoft.cmdpal.shell";
@@ -41,6 +44,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         PlaceholderText = Resources.list_placeholder_text;
         _helper = new(settingsManager);
         _historyService = runHistoryService;
+        _telemetryService = telemetryService;
 
         EmptyContent = new CommandItem()
         {
@@ -115,6 +119,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     private async Task BuildListItemsForSearchAsync(string newSearch, CancellationToken cancellationToken)
     {
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+
         // Check for cancellation at the start
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -271,6 +277,9 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
         // Final cancellation check
         cancellationToken.ThrowIfCancellationRequested();
+
+        timer.Stop();
+        _telemetryService?.LogRunQuery(newSearch, GetItems().Length, (ulong)timer.ElapsedMilliseconds);
     }
 
     private static ListItem PathToListItem(string path, string originalPath, string args = "", Action<string>? addToHistory = null)
@@ -306,13 +315,11 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             LoadInitialHistory();
         }
 
-        var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
         List<ListItem> uriItems = _uriItem is not null ? [_uriItem] : [];
         List<ListItem> exeItems = _exeItem is not null ? [_exeItem] : [];
 
         return
             exeItems
-            .Concat(filteredTopLevel)
             .Concat(_currentHistoryItems)
             .Concat(_pathItems)
             .Concat(uriItems)

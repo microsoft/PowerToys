@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -83,7 +82,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var settings = Settings.CreateDefaultSettings();
         var mockHistory = CreateMockHistoryService();
 
-        var pages = new ShellListPage(settings, mockHistory.Object);
+        var pages = new ShellListPage(settings, mockHistory.Object, telemetryService: null);
 
         await UpdatePageAndWaitForItems(pages, () =>
         {
@@ -115,7 +114,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var settings = Settings.CreateDefaultSettings();
         var mockHistoryService = CreateMockHistoryServiceWithCommonCommands();
 
-        var pages = new ShellListPage(settings, mockHistoryService.Object);
+        var pages = new ShellListPage(settings, mockHistoryService.Object, telemetryService: null);
 
         await UpdatePageAndWaitForItems(pages, () =>
         {
@@ -141,7 +140,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var settings = Settings.CreateDefaultSettings();
         var mockHistoryService = CreateMockHistoryServiceWithCommonCommands();
 
-        var pages = new ShellListPage(settings, mockHistoryService.Object);
+        var pages = new ShellListPage(settings, mockHistoryService.Object, telemetryService: null);
 
         await UpdatePageAndWaitForItems(pages, () =>
         {
