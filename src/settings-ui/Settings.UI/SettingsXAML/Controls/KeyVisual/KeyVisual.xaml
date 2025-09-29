@@ -63,8 +63,16 @@
                                     <VisualState.Setters>
                                         <Setter Target="KeyHolder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
                                         <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
-                                        <Setter Target="KeyHolder.BorderThickness" Value="2" />
+                                        <Setter Target="KeyHolder.BorderThickness" Value="1" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Warning">
+                                    <VisualState.Setters>
+                                        <Setter Target="KeyHolder.Background" Value="{ThemeResource SystemFillColorCautionBackgroundBrush}" />
+                                        <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource SystemFillColorCautionBrush}" />
+                                        <Setter Target="KeyHolder.BorderThickness" Value="1" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -118,6 +126,11 @@
                                 <VisualState x:Name="Invalid">
                                     <VisualState.Setters>
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Warning">
+                                    <VisualState.Setters>
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -177,8 +190,16 @@
                                     <VisualState.Setters>
                                         <Setter Target="KeyHolder.Background" Value="{ThemeResource SystemFillColorCriticalBackgroundBrush}" />
                                         <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
-                                        <Setter Target="KeyHolder.BorderThickness" Value="2" />
+                                        <Setter Target="KeyHolder.BorderThickness" Value="1" />
                                         <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Warning">
+                                    <VisualState.Setters>
+                                        <Setter Target="KeyHolder.Background" Value="{ThemeResource SystemFillColorCautionBackgroundBrush}" />
+                                        <Setter Target="KeyHolder.BorderBrush" Value="{ThemeResource SystemFillColorCautionBrush}" />
+                                        <Setter Target="KeyHolder.BorderThickness" Value="1" />
+                                        <Setter Target="KeyPresenter.Foreground" Value="{ThemeResource SystemFillColorCautionBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
