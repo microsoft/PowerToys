@@ -338,7 +338,10 @@
 
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
-                "Wpf.Ui.dll"
+                "Wpf.Ui.dll",
+                "CommunityToolkit.WinUI.Controls.MarkdownTextBlock.dll",
+                "Markdig.dll",
+                "RomanNumerals.dll"
             ],
             "SigningInfo": {
                 "Operations": [
