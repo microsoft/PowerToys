@@ -33,7 +33,7 @@ public partial class ShellCommandsProvider : CommandProvider
 
         _shellListPage = new ShellListPage(_settingsManager, _historyService, _telemetryService);
 
-        _fallbackItem = new FallbackExecuteItem(_settingsManager, _shellListPage.AddToHistory);
+        _fallbackItem = new FallbackExecuteItem(_settingsManager, _shellListPage.AddToHistory, _telemetryService);
 
         _shellPageItem = new CommandItem(_shellListPage)
         {

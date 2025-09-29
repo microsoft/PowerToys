@@ -282,9 +282,9 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         _telemetryService?.LogRunQuery(newSearch, GetItems().Length, (ulong)timer.ElapsedMilliseconds);
     }
 
-    private static ListItem PathToListItem(string path, string originalPath, string args = "", Action<string>? addToHistory = null)
+    private static ListItem PathToListItem(string path, string originalPath, string args = "", Action<string>? addToHistory = null, ITelemetryService? telemetryService = null)
     {
-        var pathItem = new PathListItem(path, originalPath, addToHistory);
+        var pathItem = new PathListItem(path, originalPath, addToHistory, telemetryService);
 
         if (pathItem.IsDirectory)
         {
@@ -294,7 +294,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         // Is this path an executable? If so, then make a RunExeItem
         if (IsExecutable(path))
         {
-            var exeItem = new RunExeItem(Path.GetFileName(path), args, path, addToHistory)
+            var exeItem = new RunExeItem(Path.GetFileName(path), args, path, addToHistory, telemetryService)
             {
                 TextToSuggest = path,
             };
@@ -326,11 +326,11 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             .ToArray();
     }
 
-    internal static ListItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
+    internal static ListItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory, ITelemetryService? telemetryService)
     {
         // PathToListItem will return a RunExeItem if it can find a executable.
         // It will ALSO add the file search commands to the RunExeItem.
-        return PathToListItem(fullExePath, exe, args, addToHistory);
+        return PathToListItem(fullExePath, exe, args, addToHistory, telemetryService);
     }
 
     private void CreateAndAddExeItems(string exe, string args, string fullExePath)
@@ -342,7 +342,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
         else
         {
-            _exeItem = CreateExeItem(exe, args, fullExePath, AddToHistory);
+            _exeItem = CreateExeItem(exe, args, fullExePath, AddToHistory, _telemetryService);
         }
     }
 
@@ -497,7 +497,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     {
         var hist = _historyService.GetRunHistory();
         var histItems = hist
-            .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h, AddToHistory)))
+            .Select(h => (h, ShellListPageHelpers.ListItemForCommandString(h, AddToHistory, _telemetryService)))
             .Where(tuple => tuple.Item2 is not null)
             .Select(tuple => (tuple.h, tuple.Item2!))
             .ToList();

@@ -2,11 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.Shell.Properties;
@@ -19,10 +15,11 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     private static readonly char[] _systemDirectoryRoots = ['\\', '/'];
 
     private readonly Action<string>? _addToHistory;
+    private readonly ITelemetryService _telemetryService;
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _currentUpdateTask;
 
-    public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory)
+    public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory, ITelemetryService telemetryService)
         : base(
             new NoOpCommand() { Id = "com.microsoft.run.fallback" },
             Resources.shell_command_display_title)
@@ -31,6 +28,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         Subtitle = Properties.Resources.generic_run_command;
         Icon = Icons.RunV2Icon; // Defined in Icons.cs and contains the execute command icon.
         _addToHistory = addToHistory;
+        _telemetryService = telemetryService;
     }
 
     public override void UpdateQuery(string query)
@@ -147,7 +145,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         if (exeExists)
         {
             // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, _addToHistory);
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, _addToHistory, telemetryService: _telemetryService);
             Title = exeItem.Title;
             Subtitle = exeItem.Subtitle;
             Icon = exeItem.Icon;
@@ -156,7 +154,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
         else if (pathIsDir)
         {
-            var pathItem = new PathListItem(exe, query, _addToHistory);
+            var pathItem = new PathListItem(exe, query, _addToHistory, _telemetryService);
             Command = pathItem.Command;
             MoreCommands = pathItem.MoreCommands;
             Title = pathItem.Title;
@@ -165,7 +163,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
         else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
         {
-            Command = new OpenUrlWithHistoryCommand(searchText, _addToHistory) { Result = CommandResult.Dismiss() };
+            Command = new OpenUrlWithHistoryCommand(searchText, _addToHistory, _telemetryService) { Result = CommandResult.Dismiss() };
             Title = searchText;
         }
         else

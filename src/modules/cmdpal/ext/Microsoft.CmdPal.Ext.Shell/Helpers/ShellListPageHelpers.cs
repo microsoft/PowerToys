@@ -2,12 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -58,7 +54,7 @@ public class ShellListPageHelpers
         return ShellHelpers.FileExistInPath(filename, out fullPath, token ?? CancellationToken.None);
     }
 
-    internal static ListItem? ListItemForCommandString(string query, Action<string>? addToHistory)
+    internal static ListItem? ListItemForCommandString(string query, Action<string>? addToHistory, ITelemetryService? telemetryService)
     {
         var li = new ListItem();
 
@@ -100,7 +96,7 @@ public class ShellListPageHelpers
         if (exeExists)
         {
             // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, addToHistory);
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, addToHistory, telemetryService);
             li.Command = exeItem.Command;
             li.Title = exeItem.Title;
             li.Subtitle = exeItem.Subtitle;
@@ -109,7 +105,7 @@ public class ShellListPageHelpers
         }
         else if (pathIsDir)
         {
-            var pathItem = new PathListItem(exe, query, addToHistory);
+            var pathItem = new PathListItem(exe, query, addToHistory, telemetryService);
             li.Command = pathItem.Command;
             li.Title = pathItem.Title;
             li.Subtitle = pathItem.Subtitle;
@@ -118,7 +114,7 @@ public class ShellListPageHelpers
         }
         else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
         {
-            li.Command = new OpenUrlWithHistoryCommand(searchText) { Result = CommandResult.Dismiss() };
+            li.Command = new OpenUrlWithHistoryCommand(searchText, addToHistory, telemetryService) { Result = CommandResult.Dismiss() };
             li.Title = searchText;
         }
         else

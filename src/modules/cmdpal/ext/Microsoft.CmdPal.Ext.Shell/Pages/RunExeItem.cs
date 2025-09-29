@@ -2,8 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Threading.Tasks;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
@@ -15,6 +14,7 @@ internal sealed partial class RunExeItem : ListItem
 {
     private readonly Lazy<IconInfo> _icon;
     private readonly Action<string>? _addToHistory;
+    private readonly ITelemetryService? _telemetryService;
 
     public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
 
@@ -26,7 +26,12 @@ internal sealed partial class RunExeItem : ListItem
 
     private string FullString => string.IsNullOrEmpty(_args) ? Exe : $"{Exe} {_args}";
 
-    public RunExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory)
+    public RunExeItem(
+        string exe,
+        string args,
+        string fullExePath,
+        Action<string>? addToHistory,
+        ITelemetryService? telemetryService = null)
     {
         FullExePath = fullExePath;
         Exe = exe;
@@ -46,6 +51,7 @@ internal sealed partial class RunExeItem : ListItem
         });
 
         _addToHistory = addToHistory;
+        _telemetryService = telemetryService;
 
         UpdateArgs(args);
 
@@ -97,20 +103,26 @@ internal sealed partial class RunExeItem : ListItem
     {
         _addToHistory?.Invoke(FullString);
 
-        ShellHelpers.OpenInShell(FullExePath, _args);
+        var success = ShellHelpers.OpenInShell(FullExePath, _args);
+
+        _telemetryService?.LogRunCommand(FullString, false, success);
     }
 
     public void RunAsAdmin()
     {
         _addToHistory?.Invoke(FullString);
 
-        ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.Administrator);
+        var success = ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.Administrator);
+
+        _telemetryService?.LogRunCommand(FullString, true, success);
     }
 
     public void RunAsOther()
     {
         _addToHistory?.Invoke(FullString);
 
-        ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.OtherUser);
+        var success = ShellHelpers.OpenInShell(FullExePath, _args, runAs: ShellHelpers.ShellRunAsType.OtherUser);
+
+        _telemetryService?.LogRunCommand(FullString, false, success);
     }
 }
