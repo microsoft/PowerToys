@@ -233,4 +233,10 @@
   <data name="builtin_main_list_page_searchbar_placeholder" xml:space="preserve">
     <value>Search for apps, files and commands...</value>
   </data>
+  <data name="fallback_weight_boost_description" xml:space="preserve">
+    <value>Use a higher number to have this fallback's result show higher in the list of fallback commands. Default is 0.</value>
+  </data>
+  <data name="fallback_weight_boost_title" xml:space="preserve">
+    <value>Global sort order score modifier</value>
+  </data>
 </root>

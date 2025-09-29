@@ -10,7 +10,7 @@ public class ProviderSettings
 {
     public bool IsEnabled { get; set; } = true;
 
-    public Dictionary<string, bool> FallbackCommands { get; set; } = [];
+    public Dictionary<string, FallbackSettings> FallbackCommands { get; set; } = [];
 
     [JsonIgnore]
     public string ProviderDisplayName { get; set; } = string.Empty;
@@ -47,11 +47,40 @@ public class ProviderSettings
 
     public bool IsFallbackEnabled(TopLevelViewModel command)
     {
-        return FallbackCommands.TryGetValue(command.Id, out var enabled) ? enabled : true;
+        return FallbackCommands.TryGetValue(command.Id, out var settings) ? settings.IsEnabled : true;
+    }
+
+    public int FallbackWeightBoost(TopLevelViewModel command)
+    {
+        return FallbackCommands.TryGetValue(command.Id, out var settings) ? settings.WeightBoost : 0;
     }
 
     public void SetFallbackEnabled(TopLevelViewModel command, bool enabled)
     {
-        FallbackCommands[command.Id] = enabled;
+        var existingSettings = FallbackCommands.TryGetValue(command.Id, out var settings) ? settings : new FallbackSettings(true, 0);
+        existingSettings.IsEnabled = enabled;
+        FallbackCommands[command.Id] = existingSettings;
+    }
+
+    public void SetFallbackWeightBoost(TopLevelViewModel command, int weightBoost)
+    {
+        var existingSettings = FallbackCommands.TryGetValue(command.Id, out var settings) ? settings : new FallbackSettings(true, 0);
+        existingSettings.WeightBoost = weightBoost;
+        FallbackCommands[command.Id] = existingSettings;
     }
 }
+
+#pragma warning disable SA1402 // File may only contain a single type
+public sealed class FallbackSettings
+{
+    public bool IsEnabled { get; set; } = true;
+
+    public int WeightBoost { get; set; }
+
+    public FallbackSettings(bool isEnabled, int weightBoost)
+    {
+        IsEnabled = isEnabled;
+        WeightBoost = weightBoost;
+    }
+}
+#pragma warning restore SA1402 // File may only contain a single type

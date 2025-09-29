@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.ExtensionPage"
+    x:Name="RootPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
@@ -117,8 +118,8 @@
                                     Visibility="{x:Bind ViewModel.HasFallbackCommands}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="viewModels:TopLevelViewModel">
-                                            <controls:SettingsCard DataContext="{x:Bind}" Header="{x:Bind DisplayTitle, Mode=OneWay}">
-                                                <controls:SettingsCard.HeaderIcon>
+                                            <controls:SettingsExpander Description="{x:Bind DisplayTitle}" Header="{x:Bind Title}">
+                                                <controls:SettingsExpander.HeaderIcon>
                                                     <cpcontrols:ContentIcon>
                                                         <cpcontrols:ContentIcon.Content>
                                                             <cpcontrols:IconBox
@@ -129,13 +130,28 @@
                                                                 SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
                                                         </cpcontrols:ContentIcon.Content>
                                                     </cpcontrols:ContentIcon>
-                                                </controls:SettingsCard.HeaderIcon>
-
-                                                <!--  Content goes here  -->
-                                                <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
-
-
-                                            </controls:SettingsCard>
+                                                </controls:SettingsExpander.HeaderIcon>
+                                                <StackPanel Orientation="Horizontal" Spacing="16">
+                                                    <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                                </StackPanel>
+                                                <controls:SettingsExpander.Items>
+                                                    <controls:SettingsCard
+                                                        Margin="-32,0,0,0"
+                                                        Description="{Binding ViewModel.FallbackSortDescription, ElementName=RootPage}"
+                                                        Header="{Binding ViewModel.FallbackSortHeader, ElementName=RootPage}"
+                                                        HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}"
+                                                        IsEnabled="{x:Bind IsEnabled, Mode=OneWay}">
+                                                        <NumberBox
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                            LargeChange="50"
+                                                            Maximum="1000"
+                                                            Minimum="-1000"
+                                                            SmallChange="10"
+                                                            SpinButtonPlacementMode="Compact"
+                                                            Value="{x:Bind WeightBoost, Mode=TwoWay}" />
+                                                    </controls:SettingsCard>
+                                                </controls:SettingsExpander.Items>
+                                            </controls:SettingsExpander>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>

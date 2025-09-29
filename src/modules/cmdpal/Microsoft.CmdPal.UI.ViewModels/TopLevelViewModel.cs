@@ -170,6 +170,20 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         }
     }
 
+    public int WeightBoost
+    {
+        get => _providerSettings.FallbackWeightBoost(this);
+        set
+        {
+            if (value != WeightBoost)
+            {
+                _providerSettings.SetFallbackWeightBoost(this, value);
+                Save();
+                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+            }
+        }
+    }
+
     public TopLevelViewModel(
         CommandItemViewModel item,
         bool isFallback,

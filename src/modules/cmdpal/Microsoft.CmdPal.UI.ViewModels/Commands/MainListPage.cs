@@ -345,8 +345,8 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            // Defaulting scored to 1 but we'll eventually use user rankings
-            _fallbackItems = [.. newFallbacks.Select(f => new Scored<IListItem> { Item = f, Score = 1 })];
+            List<Scored<IListItem>> scoredFallbacks = [.. ListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], SearchText, ScoreFallbackItem)];
+            _fallbackItems = [.. scoredFallbacks.OrderByDescending(o => o.Score)];
 
             if (token.IsCancellationRequested)
             {
@@ -506,6 +506,19 @@ public partial class MainListPage : DynamicListPage,
             var recentWeightBoost = history.GetCommandHistoryWeight(id);
             finalScore += recentWeightBoost;
         }
+
+        return (int)finalScore;
+    }
+
+    private int ScoreFallbackItem(string query, IListItem topLevelOrAppItem)
+    {
+        var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
+
+        var topLevelVM = topLevelOrAppItem as TopLevelViewModel;
+
+        var fallbackRankings = topLevelVM!.WeightBoost;
+
+        var finalScore = fallbackRankings + 1;
 
         return (int)finalScore;
     }

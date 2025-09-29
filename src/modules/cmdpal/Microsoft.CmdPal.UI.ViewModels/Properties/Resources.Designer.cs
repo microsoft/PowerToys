@@ -401,5 +401,23 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
                 return ResourceManager.GetString("builtin_reload_subtitle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use a higher number to have this fallback&apos;s result show higher in the list of fallback commands. Default is 0..
+        /// </summary>
+        public static string fallback_weight_boost_description {
+            get {
+                return ResourceManager.GetString("fallback_weight_boost_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Global sort order score modifier.
+        /// </summary>
+        public static string fallback_weight_boost_title {
+            get {
+                return ResourceManager.GetString("fallback_weight_boost_title", resourceCulture);
+            }
+        }
     }
 }

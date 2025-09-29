@@ -32,6 +32,10 @@ public partial class ProviderSettingsViewModel(
             $"{ExtensionName}, {TopLevelCommands.Count} commands" :
         Resources.builtin_disabled_extension;
 
+    public string FallbackSortHeader => Resources.fallback_weight_boost_title;
+
+    public string FallbackSortDescription => Resources.fallback_weight_boost_description;
+
     [MemberNotNullWhen(true, nameof(Extension))]
     public bool IsFromExtension => _provider.Extension is not null;
 
