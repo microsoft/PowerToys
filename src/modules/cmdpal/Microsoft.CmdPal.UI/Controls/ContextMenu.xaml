@@ -151,7 +151,7 @@
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
             Margin="1,1,1,-2"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            Background="{ThemeResource SmokeFillColorDefaultBrush}"
             BorderThickness="0,0,0,2"
             CornerRadius="0"
             IsTextScaleFactorEnabled="True"
