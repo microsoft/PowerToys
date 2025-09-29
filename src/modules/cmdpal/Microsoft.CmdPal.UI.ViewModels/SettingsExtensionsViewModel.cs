@@ -4,7 +4,8 @@
 
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -21,6 +22,12 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// </summary>
 public partial class SettingsExtensionsViewModel : ObservableObject
 {
+    private static readonly CompositeFormat LabelNumberExtensionFound
+        = CompositeFormat.Parse(Properties.Resources.builtin_settings_extension_n_extensions_found!);
+
+    private static readonly CompositeFormat LabelNumberExtensionInstalled
+        = CompositeFormat.Parse(Properties.Resources.builtin_settings_extension_n_extensions_installed!);
+
     private readonly ObservableCollection<ProviderSettingsViewModel> _source;
     private readonly TaskScheduler _uiScheduler;
 
@@ -48,8 +55,8 @@ public partial class SettingsExtensionsViewModel : ObservableObject
         {
             var hasQuery = !string.IsNullOrWhiteSpace(_searchText);
             var count = hasQuery ? FilteredProviders.Count : _source.Count;
-            var suffix = hasQuery ? "extensions found" : "extensions installed";
-            return $"{count} {suffix}";
+            var format = hasQuery ? LabelNumberExtensionFound : LabelNumberExtensionInstalled;
+            return string.Format(CultureInfo.CurrentCulture, format, count);
         }
     }
 
