@@ -21,20 +21,20 @@
    - [ ] 4. when PowerToys is running as admin on start-up
    - [ ] 5. when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [] 6. Installed Apps - launch a Win32 application
-   - [] 7. Installed Apps - launch a Win32 application as admin
-   - [] 8. Installed Apps - launch a packaged application
-   - [] 9. Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [] 10. File Search - open a file on the disk.
-   - [] 11. File Search - find a file and copy file path.
-   - [] 12. File Search - find a file and open containing folder.
+   - [ ] 6. Installed Apps - launch a Win32 application
+   - [ ] 7. Installed Apps - launch a Win32 application as admin
+   - [ ] 8. Installed Apps - launch a packaged application
+   - [ ] 9. Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [ ] 10. File Search - open a file on the disk.
+   - [ ] 11. File Search - find a file and copy file path.
+   - [ ] 12. File Search - find a file and open containing folder.
    - [ ] 13. Run Commands - execute a command. (e.g. `ping google.com`).
    - [ ] 14. Windows Walker - Switch to another opening window.
    - [ ] 15. Windows Walker - Switch to another opening window when powertoys run as admin.
    - [ ] 16. WinGet - Search and install application through WinGet. (eg. `vscode`)
    - [ ] 17. Web Search - Search anything by this extension.
-   - [] 18. Windows Terminal Profiles - Open profile.
-   - [] 19. Windows Terminal Profiles - Open profile as Admin.
+   - [ ] 18. Windows Terminal Profiles - Open profile.
+   - [ ] 19. Windows Terminal Profiles - Open profile as Admin.
    - [ ] 20. Windows Settings - Open settings from extension.
    - [ ] 21. Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
    - [ ] 22. Registry - navigate through the registry tree and copy key path.
@@ -43,7 +43,7 @@
    - [ ] 25. Windows System Command - test `lock`.
    - [ ] 26. Windows System Command - test `empty recycle bin`.
    - [ ] 27. Windows System Command - test `shutdown`.
-   - [] 28. Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [ ] 28. Windows System Command - Click your network adapter item and paste the result at notepad.
    - [ ] 29. Bookmark - Add bookmarks to command palette.
    - [ ] 30. Bookmark - Open your bookmarks (in Command Palette).
  - [ ] 31. Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
@@ -140,48 +140,48 @@
 
 ## Hosts File Editor
  * Launch Host File Editor:
-   - [] 1. Verify the application exits if "Quit" is clicked on the initial warning.
+   - [ ] 1. Verify the application exits if "Quit" is clicked on the initial warning.
       - TestMethod("Hosts.Settings.ShowWarningDialogIfRunAsAdmin")
    - [ ] 2. Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
    - [ ] 3. Enable and disable lines and verify they are applied to the file.
-   - [] 4. Add a new entry and verify it's applied.
+   - [ ] 4. Add a new entry and verify it's applied.
       - TestMethod("Hosts.Basic.EmptyViewShouldWork")
       - TestMethod("Hosts.Basic.AddEntryButtonShouldWork")
-   - [] 5. Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
+   - [ ] 5. Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
       - TestMethod("Hosts.Basic.CanNotAddMoreThenNighHosts")
-   - [] 6. Try to filter for lines and verify you can find them.
+   - [ ] 6. Try to filter for lines and verify you can find them.
       - TestMethod("Hosts.Basic.FiltersControlShouldWork")
    - [ ] 7. Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
-   - [] 8. Launch as Administrator.
+   - [ ] 8. Launch as Administrator.
       - TestMethod("Hosts.Basic.ErrorMessageShowupIfNotRunAsAdmin")
       - TestMethod("Hosts.Basic.NoErrorMessageShowupIfRunAsAdmin")
-   - [] 9. Show a warning at startup.
+   - [ ] 9. Show a warning at startup.
       - TestMethod("Hosts.Settings.ShowWarningDialogIfRunAsAdmin")
    - [ ] 10. Additional lines position.
 
 ## [Peek](tests-checklist-template-peek-section.md)
  * Open different files to check that they're shown properly
-   - [] 1. Image
-   - [] 2. Text or dev file
-   - [] 3. Markdown file
+   - [ ] 1. Image
+   - [ ] 2. Text or dev file
+   - [ ] 3. Markdown file
    - [ ] 4. PDF
    - [ ] 5. HTML
-   - [] 6. Archive files (.zip, .tar, .rar)
-   - [] 7. Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
+   - [ ] 6. Archive files (.zip, .tar, .rar)
+   - [ ] 7. Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
    
  * Pinning/unpinning
-   - [] 8. Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
-   - [] 9. Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
-   - [] 10. Unpin the window, switch to a different file, verify the window is moved to the default place.
-   - [] 11. Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
+   - [ ] 8. Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
+   - [ ] 9. Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
+   - [ ] 10. Unpin the window, switch to a different file, verify the window is moved to the default place.
+   - [ ] 11. Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
 
 * Open with a default program
-   - [] 12. By clicking a button.
-   - [] 13. By pressing enter. 
+   - [ ] 12. By clicking a button.
+   - [ ] 13. By pressing enter. 
   
- - [] 14. Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
- - [] 15. Open multiple files, verify you can switch only between selected files.
+ - [ ] 14. Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
+ - [ ] 15. Open multiple files, verify you can switch only between selected files.
  - [ ] 16. Change the shortcut, verify the new one works.
 
 ## [PowerToys Run](tests-checklist-template-powertoys-runner-section.md)
