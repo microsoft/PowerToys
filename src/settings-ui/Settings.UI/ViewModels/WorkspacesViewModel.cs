@@ -127,7 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _hotkey)
                 {
-                    if (value == null || value.IsEmpty())
+                    if (value == null)
                     {
                         _hotkey = WorkspacesProperties.DefaultHotkeyValue;
                     }

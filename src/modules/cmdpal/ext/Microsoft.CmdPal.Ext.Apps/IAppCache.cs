@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 
 namespace Microsoft.CmdPal.Ext.Apps;

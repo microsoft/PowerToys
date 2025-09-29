@@ -43,11 +43,6 @@ parameters:
     displayName: "Build Using Visual Studio Preview"
     default: false
 
-  - name: enableAOT
-    type: boolean
-    displayName: "Enable AOT (Ahead-of-Time) Compilation for CmdPal"
-    default: true
-
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 variables:
@@ -109,8 +104,8 @@ extends:
                 useManagedIdentity: $(SigningUseManagedIdentity)
                 clientId: $(SigningOriginalClientId)
               # Have msbuild use the release nuget config profile
-              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=${{ parameters.enableAOT }} /p:InstallerSuffix=${{ parameters.installerSuffix }}
               installerSuffix: ${{ parameters.installerSuffix }}
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:InstallerSuffix=${{ parameters.installerSuffix }}  /p:EnableCmdPalAOT=true
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
