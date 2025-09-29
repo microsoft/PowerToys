@@ -244,14 +244,9 @@ namespace Peek.UI
             WindowHelpers.BringToForeground(this.GetWindowHandle());
         }
 
-        /// <summary>
-        /// Handle CloseRequested event from FilePreview to properly close the window.
-        /// </summary>
-        /// <param name="sender">object</param>
-        /// <param name="e">EventArgs</param>
-        private void FilePreviewer_CloseRequested(object sender, EventArgs e)
+        private async void FilePreviewer_DeleteRequested(object sender, EventArgs e)
         {
-            Uninitialize();
+            await DeleteItem();
         }
 
         private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)

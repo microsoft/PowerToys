@@ -37,7 +37,7 @@ namespace Peek.FilePreviewer
 
         public event EventHandler<PreviewSizeChangedArgs>? PreviewSizeChanged;
 
-        public event EventHandler? CloseRequested;
+        public event EventHandler? DeleteRequested;
 
         public static readonly DependencyProperty ItemProperty =
         DependencyProperty.Register(
@@ -446,31 +446,12 @@ namespace Peek.FilePreviewer
 
         /// <summary>
         /// Event handler for the Delete context menu item.
-        /// Deletes the current file and closes the Peek window.
+        /// Requests that the main window handle the file deletion.
         /// </summary>
-        private async void Delete_Click(object sender, RoutedEventArgs e)
+        private void Delete_Click(object sender, RoutedEventArgs e)
         {
-            if (Item is not FileItem fileItem)
-            {
-                return;
-            }
-
-            try
-            {
-                StorageFile? storageFile = await fileItem.GetStorageFileAsync();
-                if (storageFile != null)
-                {
-                    await storageFile.DeleteAsync();
-                    Logger.LogInfo($"Deleted file: {fileItem.Path}");
-
-                    // Request the main window to close properly after successful deletion
-                    CloseRequested?.Invoke(this, EventArgs.Empty);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to delete file {Item.Path}: {ex.Message}");
-            }
+            // Let the MainWindow handle the deletion using its existing logic
+            DeleteRequested?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
