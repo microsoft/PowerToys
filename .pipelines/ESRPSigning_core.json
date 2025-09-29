@@ -276,6 +276,9 @@
         },
         {
             "MatchedPath": [
+                "CommunityToolkit.WinUI.Controls.MarkdownTextBlock.dll",
+                "Markdig.dll",
+                "RomanNumerals.dll",
                 "ModernWpf.dll",
                 "ModernWpf.Controls.dll", 
                 "System.IO.Abstractions.dll", 
