@@ -101,6 +101,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
     }
 
+    /// <summary>
+    /// Gets the default page animation, depending on the settings
+    /// </summary>
+    private NavigationTransitionInfo DefaultPageAnimation
+    {
+        get
+        {
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            return settings.DisableAnimations ? _noAnimation : _slideRightTransition;
+        }
+    }
+
     public void Receive(NavigateBackMessage message)
     {
         var settings = App.Current.Services.GetService<SettingsModel>()!;
@@ -142,7 +154,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     _ => throw new NotSupportedException(),
                 },
                 message.Page,
-                message.WithAnimation ? _slideRightTransition : _noAnimation);
+                message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
 
