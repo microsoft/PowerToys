@@ -2,12 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Properties;
@@ -26,6 +20,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     private readonly IRunHistoryService _historyService;
 
+    private readonly Dictionary<string, ListItem> _currentPathItems = new();
+
     private ListItem? _exeItem;
     private List<ListItem> _pathItems = [];
     private ListItem? _uriItem;
@@ -34,6 +30,8 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     private Task? _currentSearchTask;
 
     private bool _loadedInitialHistory;
+
+    private string _currentSubdir = string.Empty;
 
     public ShellListPage(ISettingsInterface settingsManager, IRunHistoryService runHistoryService, bool addBuiltins = false)
     {
@@ -50,12 +48,6 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             Icon = Icons.RunV2Icon,
             Subtitle = Resources.list_placeholder_text,
         };
-
-        if (addBuiltins)
-        {
-            // here, we _could_ add built-in providers if we wanted. links to apps, calc, etc.
-            // That would be a truly run-first experience
-        }
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -285,10 +277,18 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     {
         var pathItem = new PathListItem(path, originalPath, addToHistory);
 
+        if (pathItem.IsDirectory)
+        {
+            return pathItem;
+        }
+
         // Is this path an executable? If so, then make a RunExeItem
         if (IsExecutable(path))
         {
-            var exeItem = new RunExeItem(Path.GetFileName(path), args, path, addToHistory);
+            var exeItem = new RunExeItem(Path.GetFileName(path), args, path, addToHistory)
+            {
+                TextToSuggest = path,
+            };
 
             exeItem.MoreCommands = [
             .. exeItem.MoreCommands,
@@ -410,6 +410,27 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             // Check for cancellation before file system enumeration
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (directoryPath == _currentSubdir)
+            {
+                // Filter the items we already had
+                var fuzzyString = searchPattern.TrimEnd('*');
+                var newMatchedPathItems = new List<ListItem>();
+
+                foreach (var kv in _currentPathItems)
+                {
+                    var score = string.IsNullOrEmpty(fuzzyString) ?
+                        1 :
+                        FuzzyStringMatcher.ScoreFuzzy(fuzzyString, kv.Key);
+                    if (score > 0)
+                    {
+                        newMatchedPathItems.Add(kv.Value);
+                    }
+                }
+
+                ListHelpers.InPlaceUpdateList(_pathItems, newMatchedPathItems);
+                return;
+            }
+
             // Get all the files in the directory that start with the search text
             // Run this on a background thread to avoid blocking
             var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath, searchPattern), cancellationToken);
@@ -418,20 +439,31 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             cancellationToken.ThrowIfCancellationRequested();
 
             var searchPathTrailer = trimmed.Remove(0, Math.Min(directoryPath.Length, trimmed.Length));
-            var originalBeginning = originalPath.Remove(originalPath.Length - searchPathTrailer.Length);
+            var originalBeginning = originalPath.EndsWith(searchPathTrailer, StringComparison.CurrentCultureIgnoreCase) ?
+                                        originalPath.Remove(originalPath.Length - searchPathTrailer.Length) :
+                                        originalPath;
+
             if (isDriveRoot)
             {
                 originalBeginning = string.Concat(originalBeginning, '\\');
             }
 
             // Create a list of commands for each file
-            var commands = files.Select(f => PathToListItem(f, originalBeginning)).ToList();
+            var newPathItems = files
+                .Select(f => PathToListItem(f, originalBeginning))
+                .ToDictionary(item => item.Title, item => item);
 
             // Final cancellation check before updating results
             cancellationToken.ThrowIfCancellationRequested();
 
             // Add the commands to the list
-            _pathItems = commands;
+            _pathItems = newPathItems.Values.ToList();
+            _currentSubdir = directoryPath;
+            _currentPathItems.Clear();
+            foreach ((var k, IListItem v) in newPathItems)
+            {
+                _currentPathItems[k] = (ListItem)v;
+            }
         }
         else
         {
