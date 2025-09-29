@@ -89,10 +89,11 @@
                         Visibility="{x:Bind IsText, Mode=OneWay}" />
                     <HyperlinkButton
                         Padding="0"
-                        Content="{x:Bind Text, Mode=OneWay}"
                         FontSize="12"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
-                        Visibility="{x:Bind IsLink, Mode=OneWay}" />
+                        Visibility="{x:Bind IsLink, Mode=OneWay}">
+                        <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="Wrap" />
+                    </HyperlinkButton>
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="coreViewModels:DetailsCommandsViewModel">
