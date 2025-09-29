@@ -89,6 +89,10 @@ namespace Peek.FilePreviewer
             }
         }
 
+        public bool IsFile => Item is FileItem;
+
+        public Visibility OpenWithMenuVisibility => IsFile ? Visibility.Visible : Visibility.Collapsed;
+
         private CancellationTokenSource _cancellationTokenSource = new();
 
         public FilePreview()
@@ -206,6 +210,10 @@ namespace Peek.FilePreviewer
 
             // Clear up any unmanaged resources before creating a new previewer instance.
             (Previewer as IDisposable)?.Dispose();
+
+            // Notify that IsFile property changed since it depends on Item
+            OnPropertyChanged(nameof(IsFile));
+            OnPropertyChanged(nameof(OpenWithMenuVisibility));
 
             NoMoreFiles.Visibility = NumberOfFiles == 0 ? Visibility.Visible : Visibility.Collapsed;
 

@@ -15,12 +15,12 @@
     <Grid Background="Transparent">
         <Grid.ContextFlyout>
             <MenuFlyout>
-                <MenuFlyoutItem Click="OpenWithDefaultApp_Click" Text="{x:Bind OpenWithDefaultAppText, Mode=OneWay}">
+                <MenuFlyoutItem Click="OpenWithDefaultApp_Click" Text="{x:Bind OpenWithDefaultAppText, Mode=OneWay}" Visibility="{x:Bind OpenWithMenuVisibility, Mode=OneWay}">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE8E5;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
-                <MenuFlyoutItem x:Uid="ContextMenu_OpenWith" Click="OpenWith_Click">
+                <MenuFlyoutItem x:Uid="ContextMenu_OpenWith" Click="OpenWith_Click" Visibility="{x:Bind OpenWithMenuVisibility, Mode=OneWay}">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE7AC;" />
                     </MenuFlyoutItem.Icon>
