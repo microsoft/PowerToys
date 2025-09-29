@@ -1,15 +1,15 @@
 # PowerToys Worktree Helper Scripts
 
-This folder contains helper scripts to create and manage parallel Git worktrees for developing multiple changes (including Copilot suggestions) concurrently without cloning the full repository each time.
+This folder contains helper scripts to create and manage parallel Git worktree for developing multiple changes (including Copilot suggestions) concurrently without cloning the full repository each time.
 
-## Why worktrees?
-Git worktrees let you have several checked‑out branches sharing a single `.git` object store. Benefits:
+## Why worktree?
+Git worktree let you have several checked‑out branches sharing a single `.git` object store. Benefits:
 - Fast context switching: no re-clone, no duplicate large binary/object downloads.
 - Lower disk usage versus multiple full clones.
 - Keeps each change isolated in its own folder so you can run builds/tests independently.
 - Enables working in parallel with Copilot generated branches (e.g., feature + quick fix + perf experiment) while the main clone stays clean.
 
-Recommended: keep active parallel worktrees to **≤ 3** per developer to reduce cognitive load and avoid excessive incremental build invalidations.
+Recommended: keep active parallel worktree(s) to **≤ 3** per developer to reduce cognitive load and avoid excessive incremental build invalidations.
 
 ## Scripts Overview
 | Script | Purpose |
@@ -56,7 +56,7 @@ tools\build\build-essentials.cmd
 4. Finally delete the worktree when done.
 
 ## Naming & Locations
-- Worktrees are created as sibling folders of the repo root (e.g., `PowerToys` + `PowerToys-ab12`), using a hash/short pattern to avoid collisions.
+- Worktree is created as sibling folders of the repo root (e.g., `PowerToys` + `PowerToys-ab12`), using a hash/short pattern to avoid collisions.
 - Fork-based branches get local names `fork-<user>-<sanitized-branch>`.
 - Issue branches: `issue/<number>` or `issue/<number>-<slug>`.
 
@@ -68,13 +68,13 @@ Covered scenarios:
 
 Not covered (manual steps needed):
 - Creating from a non-origin upstream other than a fork (add remote manually then use branch script).
-- Batch creation of multiple worktrees in one command.
-- Automatic rebase / sync of many worktrees at once (do that manually or script separately).
+- Batch creation of multiple worktree in one command.
+- Automatic rebase / sync of many worktree at once (do that manually or script separately).
 
 ## Best Practices
-- Keep ≤ 3 active parallel worktrees (e.g., main dev, a long-lived feature, a quick fix / experiment) plus the root clone.
-- Delete stale worktrees early; each adds file watchers & potential incremental build churn.
-- Avoid editing the same file across multiple worktrees simultaneously to reduce merge friction.
+- Keep ≤ 3 active parallel worktree(s) (e.g., main dev, a long-lived feature, a quick fix / experiment) plus the root clone.
+- Delete stale worktree early; each adds file watchers & potential incremental build churn.
+- Avoid editing the same file across multiple worktree simultaneously to reduce merge friction.
 - Run `git fetch --all --prune` periodically in the primary repo, not in every worktree.
 
 ## Troubleshooting

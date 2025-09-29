@@ -580,6 +580,7 @@ GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
 GETTEXTLENGTH
+gitmodules
 GHND
 GMEM
 GNumber
@@ -1343,6 +1344,7 @@ PRTL
 prvpane
 psapi
 pscid
+pscustomobject
 PSECURITY
 psfgao
 psfi

@@ -84,7 +84,7 @@ try {
         if ($Force) {
             Warn 'Primary removal failed; performing aggressive fallback (Force implies brute).'
             try { git -C $folder submodule deinit -f --all 2>$null | Out-Null } catch {}
-            try { git -C $folder clean -fdx 2>$null | Out-Null } catch {}
+            try { git -C $folder clean -dfx 2>$null | Out-Null } catch {}
             try { Get-ChildItem -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object { try { $_.IsReadOnly = $false } catch {} } } catch {}
             if (Test-Path $folder) { try { Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction Stop } catch { Err "Manual directory removal failed: $($_.Exception.Message)" } }
             git worktree prune 2>$null | Out-Null
