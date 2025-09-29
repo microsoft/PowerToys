@@ -92,10 +92,10 @@ function Get-BranchUpstreamRemote {
 
 function Show-IssueFarmCommonFooter {
   Info '--- Common Manual Steps ---'
-  Info 'List worktrees:      git worktree list --porcelain'
+  Info 'List worktree:      git worktree list --porcelain'
   Info 'List branches:       git branch -vv'
   Info 'List remotes:        git remote -v'
-  Info 'Prune worktrees:     git worktree prune'
+  Info 'Prune worktree:     git worktree prune'
   Info 'Remove worktree dir: Remove-Item -Recurse -Force <path>'
   Info 'Reset branch:        git reset --hard HEAD'
 }
