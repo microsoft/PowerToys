@@ -2667,23 +2667,20 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Press a combination of keys to change this shortcut.
 Right-click to remove the key combination, thereby deactivating the shortcut.</value>
   </data>
-  <data name="Activation_Shortcut_Reset" xml:space="preserve">
-    <value>Reset</value>
-  </data>
   <data name="Activation_Shortcut_Save" xml:space="preserve">
     <value>Save</value>
   </data>
   <data name="Activation_Shortcut_Title" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="InvalidShortcut.Title" xml:space="preserve">
+  <data name="InvalidShortcut.Message" xml:space="preserve">
     <value>Invalid shortcut</value>
   </data>
   <data name="InvalidShortcutWarningLabel.Text" xml:space="preserve">
-    <value>Only shortcuts that start with **Windows key**, **Ctrl**, **Alt** or **Shift** are valid.</value>
+    <value>A shortcut should start with **Windows key**, **Ctrl**, **Alt** or **Shift**.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
-  <data name="WarningShortcutAltGr.Title" xml:space="preserve">
+  <data name="WarningShortcutAltGr.Message" xml:space="preserve">
     <value>Possible shortcut interference with Alt Gr</value>
     <comment>Alt Gr refers to the right alt key on some international keyboards</comment>
   </data>
@@ -2691,8 +2688,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Shortcuts with **Ctrl** and **Alt** may remove functionality from some international keyboards, because **Ctrl** + **Alt** = **Alt Gr** in those keyboards.</value>
     <comment>The ** sequences are used for text formatting of the key names. Don't remove them on translation.</comment>
   </data>
-  <data name="WarningShortcutConflict.Title" xml:space="preserve">
-    <value>Shortcut conflict</value>
+  <data name="WarningPotentialShortcutConflict.Message" xml:space="preserve">
+    <value>This shortcut has a potential conflict, but the warning is ignored.</value>
   </data>
   <data name="WarningShortcutConflict.ToolTipService.ToolTip" xml:space="preserve">
     <value>A conflict has been detected for this shortcut.</value>
@@ -2895,6 +2892,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsFixedLength.Header" xml:space="preserve">
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
+  </data>
+	<data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation" xml:space="preserve">
+    <value>Crosshairs orientation</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both.Content" xml:space="preserve">
+    <value>Vertical and horizontal lines</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Vertical.Content" xml:space="preserve">
+    <value>Vertical only</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Horizontal.Content" xml:space="preserve">
+    <value>Horizontal only</value>
   </data>
   <data name="MouseUtils_GlidingCursor.Header" xml:space="preserve">
     <value>Gliding cursor</value>
@@ -5268,23 +5277,23 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="ShortcutConflictWindow_Title" xml:space="preserve">
     <value>PowerToys shortcut conflicts</value>
   </data>
-  <data name="ShortcutConflictWindow_TitleTxt.Text" xml:space="preserve">
+  <data name="ShortcutConflictWindow_TitleTxt.Title" xml:space="preserve">
     <value>PowerToys shortcut conflicts</value>
   </data>
   <data name="ShortcutConflictWindow_Description.Text" xml:space="preserve">
-    <value>Conflicting shortcuts may cause unexpected behavior. Edit them here or go to the module settings to update them.</value>
+    <value>If any shortcut conflicts are detected, they’ll appear below. Conflicts can happen between PowerToys utilities or Windows system shortcuts, and may cause unexpected behavior. If everything works as expected, you can safely ignore the conflict.</value>
   </data>
   <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
     <value>Conflicts found for</value>
   </data>
   <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
-    <value>System</value>
+    <value>System shortcut</value>
   </data>
   <data name="ShortcutConflictWindow_SystemCard.Description" xml:space="preserve">
-    <value>Windows system shortcut</value>
+    <value>This shortcut is reserved by Windows and can't be reassigned.</value>
   </data>
-  <data name="ShortcutConflictWindow_SystemShortcutMessage.Text" xml:space="preserve">
-    <value>This shortcut can't be changed.</value>
+  <data name="ShortcutConflictWindow_SystemShortcutLink.Content" xml:space="preserve">
+    <value>See all Windows shortcuts</value>
   </data>
   <data name="ShortcutConflictWindow_SystemShortcutTooltip.Content" xml:space="preserve">
     <value>This shortcut is used by Windows and can't be changed.</value>
@@ -5323,5 +5332,32 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="UtilitiesHeader.Title" xml:space="preserve">
     <value>Utilities</value>
+  </data>
+  <data name="DismissConflictBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="DismissText.Text" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="Shortcut_ResetBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Reset shortcut</value>
+  </data>
+  <data name="Shortcut_ResetToolTip.Text" xml:space="preserve">
+    <value>Reset to the default shortcut</value>
+  </data>
+  <data name="Shortcut_Reset.Text" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Shortcut_ClearBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Clear shortcut</value>
+  </data>
+  <data name="Shortcut_ClearToolTip.Text" xml:space="preserve">
+    <value>Clear and unassign this shortcut</value>
+  </data>
+  <data name="Shortcut_Clear.Text" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Shortcut_Conflict_LearnMore.Content" xml:space="preserve">
+    <value>Learn more</value>
   </data>
 </root>

@@ -85,6 +85,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("dashboard_sort_order")]
         public DashboardSortOrder DashboardSortOrder { get; set; }
 
+        [JsonPropertyName("ignored_conflict_properties")]
+        public ShortcutConflictProperties IgnoredConflictProperties { get; set; }
+
         public GeneralSettings()
         {
             Startup = false;
@@ -110,6 +113,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             Enabled = new EnabledModules();
             CustomActionName = string.Empty;
+            IgnoredConflictProperties = new ShortcutConflictProperties();
         }
 
         // converts the current to a json string.
@@ -145,6 +149,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             catch (FormatException)
             {
                 // If there is an issue with the version number format, don't migrate settings.
+            }
+
+            // Ensure IgnoredConflictProperties is initialized (for backward compatibility)
+            if (IgnoredConflictProperties == null)
+            {
+                IgnoredConflictProperties = new ShortcutConflictProperties();
+                return true; // Indicate that settings were upgraded
             }
 
             return false;

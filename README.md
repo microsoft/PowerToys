@@ -4,7 +4,6 @@
       <img src="./doc/images/readme/pt-hero.dark.png" />
   </picture>
 </p>
-
 <h1 align="center">
   <span>Microsoft PowerToys</span>
 </h1>
