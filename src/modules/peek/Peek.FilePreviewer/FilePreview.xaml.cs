@@ -21,9 +21,12 @@ using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
+
 using Peek.FilePreviewer.Previewers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Peek.UI.Telemetry.Events;
+using Windows.Storage;
+using Windows.System;
 
 namespace Peek.FilePreviewer
 {
@@ -416,6 +419,86 @@ namespace Peek.FilePreviewer
         private void CopyPath_Click(object sender, RoutedEventArgs e)
         {
             ClipboardHelper.CopyTextToClipboard(Item?.Path);
+        }
+
+        /// <summary>
+        /// Event handler for the Open With context menu item.
+        /// Shows the Windows "Open with" dialog to let the user choose an application.
+        /// </summary>
+        private async void OpenWith_Click(object sender, RoutedEventArgs e)
+        {
+            if (Item is not FileItem fileItem)
+            {
+                return;
+            }
+
+            try
+            {
+                await LaunchFileWithOpenWithDialog(fileItem);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to open file {Item.Path}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Launches the file with its default application using the same logic as the TitleBar button.
+        /// </summary>
+        /// <param name="fileItem">The file item to launch.</param>
+        private static async Task LaunchFileWithDefaultApp(FileItem fileItem)
+        {
+            StorageFile? storageFile = await fileItem.GetStorageFileAsync();
+            LauncherOptions options = new();
+
+            PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = string.Empty });
+
+            // StorageFile objects can't represent files that are ".lnk", ".url", or ".wsh" file types.
+            // https://learn.microsoft.com/uwp/api/windows.storage.storagefile?view=winrt-22621
+            if (storageFile == null)
+            {
+                options.DisplayApplicationPicker = true;
+                await Launcher.LaunchUriAsync(new Uri(fileItem.Path), options);
+            }
+            else
+            {
+                // Try to launch with default app first
+                bool result = await Launcher.LaunchFileAsync(storageFile, options);
+
+                if (!result)
+                {
+                    // If we couldn't successfully open the default app, open the App picker as a fallback
+                    options.DisplayApplicationPicker = true;
+                    await Launcher.LaunchFileAsync(storageFile, options);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shows the Windows "Open with" dialog for the specified file.
+        /// </summary>
+        /// <param name="fileItem">The file item to open.</param>
+        private static async Task LaunchFileWithOpenWithDialog(FileItem fileItem)
+        {
+            StorageFile? storageFile = await fileItem.GetStorageFileAsync();
+            LauncherOptions options = new()
+            {
+                // Always show the application picker (Open with dialog)
+                DisplayApplicationPicker = true,
+            };
+
+            PowerToysTelemetry.Log.WriteEvent(new OpenWithEvent() { App = string.Empty });
+
+            // StorageFile objects can't represent files that are ".lnk", ".url", or ".wsh" file types.
+            // https://learn.microsoft.com/uwp/api/windows.storage.storagefile?view=winrt-22621
+            if (storageFile == null)
+            {
+                await Launcher.LaunchUriAsync(new Uri(fileItem.Path), options);
+            }
+            else
+            {
+                await Launcher.LaunchFileAsync(storageFile, options);
+            }
         }
     }
 }
