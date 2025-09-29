@@ -1,25 +1,36 @@
 <#!
-New-WorktreeFromIssue.ps1
-Creates (or reuses) a worktree for a new issue branch derived from a base ref.
+.SYNOPSIS
+    Create (or reuse) a worktree for a new issue branch derived from a base ref.
 
-Usage:
-    ./New-WorktreeFromIssue.ps1 -Number <issueNumber> [-Title "Issue title"] [-Base origin/main] [-Profile VS]
+.DESCRIPTION
+    Composes a branch name as issue/<number> or issue/<number>-<slug> (slug from optional -Title).
+    If the branch does not already exist, it is created from -Base (default origin/main). Then a
+    worktree is created or reused.
 
-Behavior:
-    * Slugifies optional title into issue/<number>-<slug>
-    * Fetches remotes; aborts on fetch failure
-    * Creates branch from -Base if missing
-    * Reuses existing worktree for branch if present
+.PARAMETER Number
+    Issue number used to construct the branch name.
 
-Examples:
+.PARAMETER Title
+    Optional descriptive title; slugified into the branch name.
+
+.PARAMETER Base
+    Base ref to branch from (default origin/main).
+
+.PARAMETER VSCodeProfile
+    VS Code profile to open (Default).
+
+.EXAMPLE
     ./New-WorktreeFromIssue.ps1 -Number 1234 -Title "Crash on launch"
+
+.EXAMPLE
     ./New-WorktreeFromIssue.ps1 -Number 42 -Base origin/develop
 
-Manual recovery if this script fails:
-    git fetch origin
-    git checkout -b issue/<num>-<slug> <base>
-    git worktree add ../Repo-XX issue/<num>-<slug>
-    code ../Repo-XX
+.NOTES
+    Manual recovery:
+        git fetch origin
+        git checkout -b issue/<num>-<slug> <base>
+        git worktree add ../Repo-XX issue/<num>-<slug>
+        code ../Repo-XX
 #>
 
 param(

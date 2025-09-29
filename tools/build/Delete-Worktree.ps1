@@ -1,33 +1,43 @@
 <#!
-Delete-Worktree.ps1
-Remove a git worktree (and optionally its local branch and orphan fork remote).
+.SYNOPSIS
+    Remove a git worktree (and optionally its local branch and orphan fork remote).
 
-Usage:
-    ./Delete-Worktree.ps1 -Pattern <branchOrPathFragment> [-Force] [-KeepBranch] [-KeepRemote]
+.DESCRIPTION
+    Locates a worktree by branch/path pattern (supports wildcards). Ensures the primary repository
+    root is never removed. Optionally discards local changes with -Force. Deletes associated branch
+    unless -KeepBranch. If the branch tracked a non-origin remote with no remaining tracking
+    branches, that remote is removed unless -KeepRemote.
 
-Pattern matching:
-    * If no wildcard, treated as substring match on branch or path
-    * Supports *, ? wildcards
-    * Lists matches if multiple found
+.PARAMETER Pattern
+    Branch name or path fragment (wildcards * ? allowed). If multiple matches found they are listed
+    and no deletion occurs.
 
-Behavior:
-    * Validates not deleting primary repo root
-    * If -Force: discards changes (reset/clean) and on failure performs aggressive cleanup
-    * Deletes branch unless -KeepBranch
-    * If deleted branch tracked a non-origin remote with no other tracking branches, removes that remote unless -KeepRemote
+.PARAMETER Force
+    Discard uncommitted changes and attempt aggressive cleanup on failure.
 
-Examples:
+.PARAMETER KeepBranch
+    Preserve the local branch (only remove the worktree directory entry).
+
+.PARAMETER KeepRemote
+    Preserve any orphan fork remote even if no branches still track it.
+
+.EXAMPLE
     ./Delete-Worktree.ps1 -Pattern feature/login
+
+.EXAMPLE
     ./Delete-Worktree.ps1 -Pattern fork-user-featureX -Force
+
+.EXAMPLE
     ./Delete-Worktree.ps1 -Pattern hotfix -KeepBranch
 
-Manual recovery if script cannot clean up:
-    1. List worktrees:              git worktree list --porcelain
-    2. Prune stale links:           git worktree prune
-    3. If directory still present:  Remove-Item -LiteralPath <path> -Recurse -Force
-    4. Detach branch if needed:     git branch -D <branch>
-    5. Remove orphan remote:        git remote remove <remote>
-    6. Final prune:                 git worktree prune
+.NOTES
+    Manual recovery:
+        git worktree list --porcelain
+        git worktree prune
+        Remove-Item -LiteralPath <path> -Recurse -Force
+        git branch -D <branch>
+        git remote remove <remote>
+        git worktree prune
 #>
 
 param(

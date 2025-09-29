@@ -1,25 +1,41 @@
 <#!
-Creates (or reuses) a worktree from a fork branch: <ForkUser>:<ForkBranch>.
+.SYNOPSIS
+  Create (or reuse) a worktree from a branch in a personal fork: <ForkUser>:<ForkBranch>.
 
-Key steps:
-  1. Create unique remote (fork-xxxxx) unless -RemoteName provided.
-  2. Fetch only the specified branch (fallback to full remote if narrow fetch unsupported).
-  3. Create local tracking branch (fork-<user>-<sanitized-branch> or -BranchAlias) if missing.
-  4. Delegate worktree creation/reuse to WorktreeLib.
+.DESCRIPTION
+  Adds a transient uniquely named fork remote (fork-xxxxx) unless -RemoteName specified.
+  Fetches only the target branch (fallback full fetch once if needed), creates a local tracking
+  branch (fork-<user>-<sanitized-branch> or custom alias), and delegates worktree creation/reuse
+  to shared helpers in WorktreeLib.
 
-Usage:
-  ./New-WorktreeFromFork.ps1 -Spec user:feature/awesome [-ForkRepo PowerToys] [-RemoteName custom] [-BranchAlias localName] [-Profile VS]
+.PARAMETER Spec
+  Fork spec in the form <ForkUser>:<ForkBranch>.
 
-Examples:
+.PARAMETER ForkRepo
+  Repository name in the fork (default: PowerToys).
+
+.PARAMETER RemoteName
+  Desired remote name; if left as 'fork' a unique suffix will be generated.
+
+.PARAMETER BranchAlias
+  Optional local branch name override; defaults to fork-<user>-<sanitized-branch>.
+
+.PARAMETER VSCodeProfile
+  VS Code profile to pass through to worktree opening (Default profile by default).
+
+.EXAMPLE
   ./New-WorktreeFromFork.ps1 -Spec alice:feature/new-ui
+
+.EXAMPLE
   ./New-WorktreeFromFork.ps1 -Spec bob:bugfix/crash -BranchAlias fork-bob-crash
 
-Recovery (manual equivalent):
-  git remote add fork-temp https://github.com/<user>/<repo>.git
-  git fetch fork-temp
-  git branch --track fork-<user>-<branch> fork-temp/<branch>
-  git worktree add ../Repo-XX fork-<user>-<branch>
-  code ../Repo-XX
+.NOTES
+  Manual equivalent if this script fails:
+    git remote add fork-temp https://github.com/<user>/<repo>.git
+    git fetch fork-temp
+    git branch --track fork-<user>-<branch> fork-temp/<branch>
+    git worktree add ../Repo-XX fork-<user>-<branch>
+    code ../Repo-XX
 #>
 param(
   [string] $Spec,
@@ -63,7 +79,7 @@ if (-not $existing) {
   if ($currentUrl -ne $forkUrl) { Warn "Remote $RemoteName points to $currentUrl (expected $forkUrl). Using existing." }
 }
 
-## (Removed: automatic stale lock cleanup and verbose fetch; script now stays minimal.)
+## Note: Verbose fetch & stale lock auto-clean removed for simplicity.
 
 try {
   Info "Fetching branch '$ForkBranch' from $RemoteName..."

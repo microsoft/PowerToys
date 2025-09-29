@@ -1,26 +1,35 @@
 <#!
-New-WorktreeFromBranch.ps1
-Create (or reuse) a worktree for an existing or remotely tracked branch.
+.SYNOPSIS
+    Create (or reuse) a worktree for an existing local or remote (origin) branch.
 
-Usage:
-    ./New-WorktreeFromBranch.ps1 -Branch <name> [-Profile VSCodeProfile] [-NoFetch]
+.DESCRIPTION
+    Normalizes origin/<name> to <name>. If the branch does not exist locally (and -NoFetch is not
+    provided) it will fetch and create a tracking branch from origin. Reuses any existing worktree
+    bound to the branch; otherwise creates a new one adjacent to the repository root.
 
-Behavior:
-    * Normalizes origin/<name> to <name>
-    * If branch missing locally and -NoFetch not specified, fetches and creates tracking branch from origin
-    * Reuses an existing worktree if already present for the branch
-    * Places new worktree alongside the repo root with hashed suffix
+.PARAMETER Branch
+    Branch name (local or origin/<name> form) to materialize as a worktree.
 
-Examples:
+.PARAMETER VSCodeProfile
+    VS Code profile to open (Default).
+
+.PARAMETER NoFetch
+    Skip fetch if branch missing locally; script will error instead of creating it.
+
+.EXAMPLE
     ./New-WorktreeFromBranch.ps1 -Branch feature/login
+
+.EXAMPLE
     ./New-WorktreeFromBranch.ps1 -Branch origin/bugfix/nullref
+
+.EXAMPLE
     ./New-WorktreeFromBranch.ps1 -Branch release/v1 -NoFetch
 
-Manual recovery (if this script fails):
-    1. Ensure the branch exists locally:  git fetch origin && git checkout <branch>
-    2. Create worktree manually:         git worktree add ../RepoName-XX <branch>
-    3. Open in VS Code:                  code ../RepoName-XX --profile Default
-    4. If duplicate worktree error:      git worktree list (find existing path and open it)
+.NOTES
+    Manual recovery:
+        git fetch origin && git checkout <branch>
+        git worktree add ../RepoName-XX <branch>
+        code ../RepoName-XX --profile Default
 #>
 
 param(
