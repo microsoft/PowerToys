@@ -4,7 +4,6 @@
 
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
-using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -40,17 +39,17 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
     {
         Icon = Icons.RunV2Icon;
         Id = "com.microsoft.cmdpal.shell";
-        Name = Resources.cmd_plugin_name;
-        PlaceholderText = Resources.list_placeholder_text;
+        Name = ResourceLoaderInstance.GetString("cmd_plugin_name");
+        PlaceholderText = ResourceLoaderInstance.GetString("list_placeholder_text");
         _helper = new(settingsManager);
         _historyService = runHistoryService;
         _telemetryService = telemetryService;
 
         EmptyContent = new CommandItem()
         {
-            Title = Resources.cmd_plugin_name,
+            Title = ResourceLoaderInstance.GetString("cmd_plugin_name"),
             Icon = Icons.RunV2Icon,
-            Subtitle = Resources.list_placeholder_text,
+            Subtitle = ResourceLoaderInstance.GetString("list_placeholder_text"),
         };
     }
 

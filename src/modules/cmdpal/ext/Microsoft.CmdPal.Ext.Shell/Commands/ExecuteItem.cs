@@ -25,17 +25,17 @@ internal sealed partial class ExecuteItem : InvokableCommand
     {
         if (type == RunAsType.Administrator)
         {
-            Name = Properties.Resources.cmd_run_as_administrator;
+            Name = ResourceLoaderInstance.GetString("cmd_run_as_administrator");
             Icon = Icons.AdminIcon;
         }
         else if (type == RunAsType.OtherUser)
         {
-            Name = Properties.Resources.cmd_run_as_user;
+            Name = ResourceLoaderInstance.GetString("cmd_run_as_user");
             Icon = Icons.UserIcon;
         }
         else
         {
-            Name = Properties.Resources.generic_run_command;
+            Name = ResourceLoaderInstance.GetString("generic_run_command");
             Icon = Icons.RunV2Icon;
         }
 
@@ -57,16 +57,16 @@ internal sealed partial class ExecuteItem : InvokableCommand
         }
         catch (FileNotFoundException e)
         {
-            var name = "Plugin: " + Properties.Resources.cmd_plugin_name;
-            var message = $"{Properties.Resources.cmd_command_not_found}: {e.Message}";
+            var name = "Plugin: " + ResourceLoaderInstance.GetString("cmd_plugin_name");
+            var message = $"{ResourceLoaderInstance.GetString("cmd_command_not_found")}: {e.Message}";
 
             // GH TODO #138 -- show this message once that's wired up
             // _context.API.ShowMsg(name, message);
         }
         catch (Win32Exception e)
         {
-            var name = "Plugin: " + Properties.Resources.cmd_plugin_name;
-            var message = $"{Properties.Resources.cmd_command_failed}: {e.Message}";
+            var name = "Plugin: " + ResourceLoaderInstance.GetString("cmd_plugin_name");
+            var message = $"{ResourceLoaderInstance.GetString("cmd_command_failed")}: {e.Message}";
             ExtensionHost.LogMessage(new LogMessage() { Message = name + message });
 
             // GH TODO #138 -- show this message once that's wired up
@@ -116,14 +116,14 @@ internal sealed partial class ExecuteItem : InvokableCommand
             {
                 var arguments = _settings.LeaveShellOpen
                     ? $"-NoExit \"{command}\""
-                    : $"\"{command} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
+                    : $"\"{command} ; Read-Host -Prompt \\\"{ResourceLoaderInstance.GetString("run_plugin_cmd_wait_message")}\\\"\"";
                 info = SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (executionShell == ExecutionShell.PowerShellSeven)
             {
                 var arguments = _settings.LeaveShellOpen
                     ? $"-NoExit -C \"{command}\""
-                    : $"-C \"{command} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
+                    : $"-C \"{command} ; Read-Host -Prompt \\\"{ResourceLoaderInstance.GetString("run_plugin_cmd_wait_message")}\\\"\"";
                 info = SetProcessStartInfo("pwsh.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (executionShell == ExecutionShell.WindowsTerminalCmd)

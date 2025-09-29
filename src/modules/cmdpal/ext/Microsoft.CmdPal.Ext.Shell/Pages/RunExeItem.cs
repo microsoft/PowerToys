@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
@@ -37,7 +38,7 @@ internal sealed partial class RunExeItem : ListItem
         Exe = exe;
         var command = new AnonymousCommand(Run)
         {
-            Name = Properties.Resources.generic_run_command,
+            Name = ResourceLoaderInstance.GetString("generic_run_command"),
             Result = CommandResult.Dismiss(),
         };
         Command = command;
@@ -59,13 +60,13 @@ internal sealed partial class RunExeItem : ListItem
             new CommandContextItem(
                 new AnonymousCommand(RunAsAdmin)
             {
-                Name = Properties.Resources.cmd_run_as_administrator,
+                Name = ResourceLoaderInstance.GetString("cmd_run_as_administrator"),
                 Icon = Icons.AdminIcon,
             }) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Enter) },
             new CommandContextItem(
                 new AnonymousCommand(RunAsOther)
             {
-                Name = Properties.Resources.cmd_run_as_user,
+                Name = ResourceLoaderInstance.GetString("cmd_run_as_user"),
                 Icon = Icons.UserIcon,
             }) { RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.U) },
         ];

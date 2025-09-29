@@ -5,7 +5,6 @@
 using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Pages;
-using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell;
@@ -22,10 +21,10 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory, ITelemetryService telemetryService)
         : base(
             new NoOpCommand() { Id = "com.microsoft.run.fallback" },
-            Resources.shell_command_display_title)
+            ResourceLoaderInstance.GetString("shell_command_display_title"))
     {
         Title = string.Empty;
-        Subtitle = Properties.Resources.generic_run_command;
+        Subtitle = ResourceLoaderInstance.GetString("generic_run_command");
         Icon = Icons.RunV2Icon; // Defined in Icons.cs and contains the execute command icon.
         _addToHistory = addToHistory;
         _telemetryService = telemetryService;

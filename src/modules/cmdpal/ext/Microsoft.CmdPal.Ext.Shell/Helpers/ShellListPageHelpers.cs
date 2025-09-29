@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 
 public class ShellListPageHelpers
 {
-    private static readonly CompositeFormat CmdHasBeenExecutedTimes = System.Text.CompositeFormat.Parse(Properties.Resources.cmd_has_been_executed_times);
+    private static readonly CompositeFormat CmdHasBeenExecutedTimes = System.Text.CompositeFormat.Parse(ResourceLoaderInstance.GetString("cmd_has_been_executed_times"));
     private readonly ISettingsInterface _settings;
 
     public ShellListPageHelpers(ISettingsInterface settings)
@@ -25,7 +25,7 @@ public class ShellListPageHelpers
         var result = new ListItem(new ExecuteItem(cmd, _settings))
         {
             Title = cmd,
-            Subtitle = Properties.Resources.cmd_plugin_name + ": " + Properties.Resources.cmd_execute_through_shell,
+            Subtitle = ResourceLoaderInstance.GetString("cmd_plugin_name") + ": " + ResourceLoaderInstance.GetString("cmd_execute_through_shell"),
             Icon = new IconInfo(string.Empty),
         };
 
