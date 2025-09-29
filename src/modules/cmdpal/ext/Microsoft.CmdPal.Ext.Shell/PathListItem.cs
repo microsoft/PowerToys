@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Core.Common.Commands;
-using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
@@ -94,14 +93,5 @@ internal sealed partial class PathListItem : ListItem
             isDirectory ? Icons.FolderIcon : Icons.RunV2Icon;
         _icon = icon;
         OnPropertyChanged(nameof(Icon));
-    }
-
-    internal class ResourceLoaderInstance
-    {
-        internal static string GetString(string resourceKey)
-        {
-            var s = Resources.ResourceManager.GetString(resourceKey, null);
-            return s is null ? throw new ArgumentNullException(nameof(resourceKey)) : s;
-        }
     }
 }
