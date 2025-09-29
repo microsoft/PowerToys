@@ -1,23 +1,20 @@
 <#!
-New-WorktreeFromFork.ps1
-Create (or reuse) a worktree from a fork branch specified as:
-  <ForkUser>:<ForkBranch>
+Creates (or reuses) a worktree from a fork branch: <ForkUser>:<ForkBranch>.
+
+Key steps:
+  1. Create unique remote (fork-xxxxx) unless -RemoteName provided.
+  2. Fetch only the specified branch (fallback to full remote if narrow fetch unsupported).
+  3. Create local tracking branch (fork-<user>-<sanitized-branch> or -BranchAlias) if missing.
+  4. Delegate worktree creation/reuse to WorktreeLib.
 
 Usage:
   ./New-WorktreeFromFork.ps1 -Spec user:feature/awesome [-ForkRepo PowerToys] [-RemoteName custom] [-BranchAlias localName] [-Profile VS]
 
-Behavior:
-  * Adds a unique remote (fork-xxxxx) if -RemoteName left as default 'fork'
-  * Fetches only that remote
-  * Creates local tracking branch if missing (fork-<user>-<sanitized-branch> or -BranchAlias)
-  * Reuses existing worktree via common library if present
-  * Places worktree alongside repo root (hash-based folder naming)
-
 Examples:
   ./New-WorktreeFromFork.ps1 -Spec alice:feature/new-ui
-  ./New-WorktreeFromFork.ps1 -Spec bob:bugfix/crash -ForkRepo PowerToys -BranchAlias fork-bob-crash
+  ./New-WorktreeFromFork.ps1 -Spec bob:bugfix/crash -BranchAlias fork-bob-crash
 
-Manual recovery if this script fails:
+Recovery (manual equivalent):
   git remote add fork-temp https://github.com/<user>/<repo>.git
   git fetch fork-temp
   git branch --track fork-<user>-<branch> fork-temp/<branch>
@@ -66,10 +63,18 @@ if (-not $existing) {
   if ($currentUrl -ne $forkUrl) { Warn "Remote $RemoteName points to $currentUrl (expected $forkUrl). Using existing." }
 }
 
+## (Removed: automatic stale lock cleanup and verbose fetch; script now stays minimal.)
+
 try {
-  Info "Fetching fork remote $RemoteName..."
-  git fetch $RemoteName --prune 2>$null | Out-Null
-  if ($LASTEXITCODE -ne 0) { throw "Fetch failed for remote $RemoteName" }
+  Info "Fetching branch '$ForkBranch' from $RemoteName..."
+  & git fetch $RemoteName $ForkBranch 1>$null 2>$null
+  $fetchExit = $LASTEXITCODE
+  if ($fetchExit -ne 0) {
+    # Retry full fetch silently once (covers servers not supporting branch-only fetch syntax)
+    & git fetch $RemoteName 1>$null 2>$null
+    $fetchExit = $LASTEXITCODE
+  }
+  if ($fetchExit -ne 0) { throw "Fetch failed for remote $RemoteName (branch $ForkBranch)." }
 
   $remoteRef = "refs/remotes/$RemoteName/$ForkBranch"
   git show-ref --verify --quiet $remoteRef
@@ -91,7 +96,7 @@ try {
   $after = Get-WorktreeEntries | Where-Object { $_.Branch -eq $localBranch }
   $path = ($after | Select-Object -First 1).Path
   Show-WorktreeExecutionSummary -CurrentBranch $localBranch -WorktreePath $path
-  Warn "Remote $RemoteName in place (URL: $forkUrl)"
+  Warn "Remote $RemoteName ready (URL: $forkUrl)"
   $hasUp = git rev-parse --abbrev-ref --symbolic-full-name "$localBranch@{upstream}" 2>$null
   if ($hasUp) { Info "Push with: git push (upstream: $hasUp)" } else { Warn 'Upstream not set; run: git push -u <remote> <local>:<remoteBranch>' }
 } catch {
