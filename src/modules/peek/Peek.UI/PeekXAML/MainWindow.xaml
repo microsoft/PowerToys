@@ -50,6 +50,7 @@
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
+            CloseRequested="FilePreviewer_CloseRequested"
             ScalingFactor="{x:Bind ViewModel.ScalingFactor, Mode=OneWay}" />
 
         <InfoBar

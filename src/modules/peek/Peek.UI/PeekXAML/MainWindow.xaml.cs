@@ -244,6 +244,16 @@ namespace Peek.UI
             WindowHelpers.BringToForeground(this.GetWindowHandle());
         }
 
+        /// <summary>
+        /// Handle CloseRequested event from FilePreview to properly close the window.
+        /// </summary>
+        /// <param name="sender">object</param>
+        /// <param name="e">EventArgs</param>
+        private void FilePreviewer_CloseRequested(object sender, EventArgs e)
+        {
+            Uninitialize();
+        }
+
         private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
         {
             var titleBarHeight = TitleBarControl.ActualHeight;

@@ -17,12 +17,18 @@
             <MenuFlyout>
                 <MenuFlyoutItem x:Uid="ContextMenu_OpenWith" Click="OpenWith_Click">
                     <MenuFlyoutItem.Icon>
-                        <FontIcon Glyph="&#xE8E5;" />
+                        <FontIcon Glyph="&#xE7AC;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
                 <MenuFlyoutItem x:Uid="ContextMenu_CopyPath" Click="CopyPath_Click">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE8C8;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem x:Uid="ContextMenu_Delete" Click="Delete_Click">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE74D;" />
                     </MenuFlyoutItem.Icon>
                 </MenuFlyoutItem>
             </MenuFlyout>

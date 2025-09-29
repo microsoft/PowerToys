@@ -337,6 +337,10 @@
     <value>Open with</value>
     <comment>Context menu item to open file with default application</comment>
   </data>
+  <data name="ContextMenu_Delete.Text" xml:space="preserve">
+    <value>Delete</value>
+    <comment>Context menu item to delete the file</comment>
+  </data>
   <data name="NoMoreFiles" xml:space="preserve">
     <value>No more files to preview.</value>
     <comment>The message to show when there are no files remaining to preview.</comment>
