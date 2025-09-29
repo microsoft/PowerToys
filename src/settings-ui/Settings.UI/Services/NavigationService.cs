@@ -24,12 +24,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
             get
             {
-                if (frame == null)
-                {
-                    frame = Window.Current.Content as Frame;
-                    RegisterFrameEvents();
-                }
-
                 return frame;
             }
 
