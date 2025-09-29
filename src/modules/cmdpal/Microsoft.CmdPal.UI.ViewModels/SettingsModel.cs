@@ -52,7 +52,7 @@ public partial class SettingsModel : ObservableObject
 
     public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
 
-    public bool DisableAnimations { get; set; }
+    public bool DisableAnimations { get; set; } = true;
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
