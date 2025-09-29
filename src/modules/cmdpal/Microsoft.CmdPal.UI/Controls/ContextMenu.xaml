@@ -14,7 +14,6 @@
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
-    Background="Transparent"
     PreviewKeyDown="UserControl_PreviewKeyDown"
     mc:Ignorable="d">
 
@@ -147,13 +146,18 @@
                 </ListView.ItemContainerTransitions>
             </ListView>
         </StackPanel>
+        <Border BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" />
         <TextBox
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
-            Margin="4"
+            Margin="1,1,1,-2"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderThickness="0,0,0,2"
+            CornerRadius="0"
             IsTextScaleFactorEnabled="True"
             KeyDown="ContextFilterBox_KeyDown"
             PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
+            Style="{StaticResource SearchTextBoxStyle}"
             TextChanged="ContextFilterBox_TextChanged" />
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="ContextMenuOrder">
