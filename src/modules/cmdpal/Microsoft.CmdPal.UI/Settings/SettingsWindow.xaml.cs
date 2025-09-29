@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
+using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
