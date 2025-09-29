@@ -119,8 +119,8 @@
                             FontWeight="SemiBold"
                             IsTextSelectionEnabled="True"
                             Text="{x:Bind Key, Mode=OneWay}"
-                            TextWrapping="WrapWholeWords" 
-                            Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), FallbackValue=Collapsed}"/>
+                            TextWrapping="WrapWholeWords"
+                            Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), FallbackValue=Collapsed}" />
                     </Border>
                 </StackPanel>
             </DataTemplate>
