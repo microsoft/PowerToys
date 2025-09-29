@@ -2893,6 +2893,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
   </data>
+	<data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation" xml:space="preserve">
+    <value>Crosshairs orientation</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both.Content" xml:space="preserve">
+    <value>Vertical and horizontal lines</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Vertical.Content" xml:space="preserve">
+    <value>Vertical only</value>
+  </data>
+  <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Horizontal.Content" xml:space="preserve">
+    <value>Horizontal only</value>
+  </data>
   <data name="MouseUtils_GlidingCursor.Header" xml:space="preserve">
     <value>Gliding cursor</value>
   </data>
