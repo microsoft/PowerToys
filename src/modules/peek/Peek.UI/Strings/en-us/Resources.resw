@@ -322,6 +322,10 @@
     <value>Copy</value>
     <comment>Copy selected text to clipboard</comment>
   </data>
+  <data name="ContextMenuLabel_Copy.Text" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Context menu item to copy file or content to clipboard</comment>
+  </data>
   <data name="ContextMenu_ToggleTextWrapping" xml:space="preserve">
     <value>Toggle text wrapping</value>
     <comment>Toggle whether text in pane is word-wrapped</comment>
@@ -329,15 +333,15 @@
   <data name="ContextMenu_ToggleMinimap" xml:space="preserve">
     <value>Toggle minimap</value>
   </data>
-  <data name="ContextMenu_CopyPath.Text" xml:space="preserve">
+  <data name="ContextMenuLabel_CopyPath.Text" xml:space="preserve">
     <value>Copy as path</value>
     <comment>Context menu item to copy the file path to clipboard</comment>
   </data>
-  <data name="ContextMenu_OpenWith.Text" xml:space="preserve">
+  <data name="ContextMenuLabel_OpenWith.Text" xml:space="preserve">
     <value>Open with</value>
     <comment>Context menu item to open file with default application</comment>
   </data>
-  <data name="ContextMenu_Delete.Text" xml:space="preserve">
+  <data name="ContextMenuLabel_Delete.Text" xml:space="preserve">
     <value>Delete</value>
     <comment>Context menu item to delete the file</comment>
   </data>

@@ -82,7 +82,7 @@ namespace Peek.FilePreviewer
         {
             get
             {
-                var openWithText = ResourceLoaderInstance.ResourceLoader.GetString("ContextMenu_OpenWith/Text");
+                var openWithText = ResourceLoaderInstance.ResourceLoader.GetString("ContextMenuLabel_OpenWith/Text");
                 return string.IsNullOrEmpty(DefaultAppName)
                     ? openWithText
                     : $"{openWithText} {DefaultAppName}";
@@ -434,6 +434,18 @@ namespace Peek.FilePreviewer
                     toolTip.Placement = pos.Y < previewControl.ActualHeight / 2 ?
                         PlacementMode.Bottom : PlacementMode.Top;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Event handler for the Copy context menu item.
+        /// Copies the current file or content to the clipboard.
+        /// </summary>
+        private async void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            if (Previewer != null)
+            {
+                await Previewer.CopyAsync();
             }
         }
 
