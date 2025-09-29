@@ -41,12 +41,8 @@ if ($Title) {
     $branch = "issue/$Number"
 }
 
-# Fetch base to ensure up to date (stop on error)
 try {
-    git fetch --all 2>$null | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw 'git fetch failed; aborting worktree creation.' }
-
-# Create branch if missing
+    # Create branch if missing
     git show-ref --verify --quiet "refs/heads/$branch"
     if ($LASTEXITCODE -ne 0) {
         Info "Creating branch $branch from $Base"
