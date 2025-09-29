@@ -111,15 +111,16 @@
             <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="coreViewModels:DetailsSeparatorViewModel">
                 <StackPanel Margin="0,8,8,0" Orientation="Vertical">
                     <Border
-                        Margin="8,0,0,0"
-                        BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
+                        Margin="0,0,0,0"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                         BorderThickness="0,0,0,2">
                         <TextBlock
-                            Margin="-8,0,0,8"
+                            Margin="0,0,0,0"
                             FontWeight="SemiBold"
                             IsTextSelectionEnabled="True"
                             Text="{x:Bind Key, Mode=OneWay}"
-                            TextWrapping="WrapWholeWords" />
+                            TextWrapping="WrapWholeWords" 
+                            Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), FallbackValue=Collapsed}"/>
                     </Border>
                 </StackPanel>
             </DataTemplate>
