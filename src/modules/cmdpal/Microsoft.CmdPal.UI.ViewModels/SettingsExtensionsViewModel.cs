@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -54,16 +53,14 @@ public partial class SettingsExtensionsViewModel : ObservableObject
         }
     }
 
-    private bool _showManualReloadOverlay;
-
     public bool ShowManualReloadOverlay
     {
-        get => _showManualReloadOverlay;
+        get;
         private set
         {
-            if (_showManualReloadOverlay != value)
+            if (field != value)
             {
-                _showManualReloadOverlay = value;
+                field = value;
                 OnPropertyChanged();
             }
         }
@@ -72,8 +69,6 @@ public partial class SettingsExtensionsViewModel : ObservableObject
     public bool ShowNoResultsPanel => !string.IsNullOrWhiteSpace(_searchText) && FilteredProviders.Count == 0;
 
     public bool HasResults => !ShowNoResultsPanel;
-
-    public IRelayCommand<string?> OpenStoreWithExtensionCommand { get; }
 
     public IRelayCommand ReloadExtensionsCommand { get; }
 
@@ -84,7 +79,6 @@ public partial class SettingsExtensionsViewModel : ObservableObject
         _source.CollectionChanged += Source_CollectionChanged;
         ApplyFilter();
 
-        OpenStoreWithExtensionCommand = new RelayCommand<string?>(OpenStoreWithExtension);
         ReloadExtensionsCommand = new RelayCommand(ReloadExtensions);
 
         WeakReferenceMessenger.Default.Register<ReloadFinishedMessage>(this, (_, _) =>
@@ -127,10 +121,11 @@ public partial class SettingsExtensionsViewModel : ObservableObject
         return !string.IsNullOrEmpty(haystack) && haystack.Contains(needle, StringComparison.OrdinalIgnoreCase);
     }
 
+    [RelayCommand]
     private void OpenStoreWithExtension(string? query)
     {
-        const string ExtensionsAssocUri = "ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette";
-        ShellHelpers.OpenInShell(ExtensionsAssocUri);
+        const string extensionsAssocUri = "ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette";
+        ShellHelpers.OpenInShell(extensionsAssocUri);
     }
 
     private void ReloadExtensions()

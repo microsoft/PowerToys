@@ -483,7 +483,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionsPage_SearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.AcceleratorKey" xml:space="preserve">
     <value>Ctrl+F</value>
   </data>
-	<data name="Settings_ExtensionsPage_SearchBox.AccessKey" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_SearchBox.AccessKey" xml:space="preserve">
     <value>S</value>
   </data>
   <data name="Settings_ExtensionsPage_NoResults_Hyperlink.AccessKey" xml:space="preserve">
@@ -496,7 +496,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>See more</value>
   </data>
   <data name="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem.Text" xml:space="preserve">
-    <value>Reload extensions</value>
+    <value>Reload all extensions</value>
   </data>
   <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
     <value>Reloading extensions…</value>
