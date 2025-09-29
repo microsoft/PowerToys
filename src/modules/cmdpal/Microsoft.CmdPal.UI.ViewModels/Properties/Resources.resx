@@ -233,6 +233,9 @@
   <data name="builtin_main_list_page_searchbar_placeholder" xml:space="preserve">
     <value>Search for apps, files and commands...</value>
   </data>
+  <data name="builtin_home_name" xml:space="preserve">
+    <value>Home</value>
+  </data>
   <data name="fallback_weight_boost_description" xml:space="preserve">
     <value>Use a higher number to have this fallback's result show higher in the list of fallback commands. Default is 0.</value>
   </data>

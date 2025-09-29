@@ -9,6 +9,7 @@
     xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:h="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:markdownImageProviders="using:Microsoft.CmdPal.UI.Helpers.MarkdownImageProviders"
@@ -16,7 +17,6 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -26,8 +26,6 @@
                 x:Key="StringNotEmptyToVisibilityConverter"
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
-
-            <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
 
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
 
@@ -91,10 +89,11 @@
                         Visibility="{x:Bind IsText, Mode=OneWay}" />
                     <HyperlinkButton
                         Padding="0"
-                        Content="{x:Bind Text, Mode=OneWay}"
                         FontSize="12"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
-                        Visibility="{x:Bind IsLink, Mode=OneWay}" />
+                        Visibility="{x:Bind IsLink, Mode=OneWay}">
+                        <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="Wrap" />
+                    </HyperlinkButton>
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="coreViewModels:DetailsCommandsViewModel">
@@ -175,9 +174,12 @@
 
             <!--  Back button and search box  -->
             <Grid
+                x:Name="TopBarGrid"
                 Padding="0,12,0,12"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch">
+                VerticalAlignment="Stretch"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -354,11 +356,7 @@
                 </animations:Implicit.HideAnimations>
             </ProgressBar>
 
-            <Grid
-                x:Name="ContentGrid"
-                Grid.Row="1"
-                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,1">
+            <Grid x:Name="ContentGrid" Grid.Row="1">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="3*" />
@@ -367,6 +365,9 @@
 
                 <Frame
                     Name="RootFrame"
+                    AutomationProperties.AutomationControlType="Pane"
+                    AutomationProperties.LandmarkType="Navigation"
+                    AutomationProperties.LiveSetting="Assertive"
                     IsNavigationStackEnabled="True"
                     Navigated="RootFrame_Navigated" />
 
@@ -502,7 +503,11 @@
             </InfoBar>
         </StackPanel>
 
-        <Grid Grid.Row="1" Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}">
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
+            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0">
             <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 
@@ -516,6 +521,26 @@
                     <VisualState.Setters>
                         <Setter Target="DetailsContent.Visibility" Value="Visible" />
                         <Setter Target="DetailsColumn.Width" Value="2*" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <VisualStateGroup>
+                <!--
+                    Why disable it and make it transparent?
+                    To prevent the container from collapsing, ensuring the layout metrics remain unchanged.
+                -->
+                <VisualStateGroup.Transitions>
+                    <VisualTransition GeneratedDuration="0:0:0.187" To="SearchBarCollapsed" />
+                </VisualStateGroup.Transitions>
+                <VisualState x:Name="SearchBarVisible" />
+                <VisualState x:Name="SearchBarCollapsed">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind h:BindTransformers.Negate(ViewModel.IsSearchBoxVisible), Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="SearchBox.IsEnabled" Value="False" />
+                        <Setter Target="SearchBox.Opacity" Value="0" />
+                        <Setter Target="TopBarGrid.BorderBrush" Value="Transparent" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
