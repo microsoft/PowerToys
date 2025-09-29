@@ -408,5 +408,14 @@ namespace Peek.FilePreviewer
                 }
             }
         }
+
+        /// <summary>
+        /// Event handler for the Copy Path context menu item.
+        /// Copies the current file's path to the clipboard.
+        /// </summary>
+        private void CopyPath_Click(object sender, RoutedEventArgs e)
+        {
+            ClipboardHelper.CopyTextToClipboard(Item?.Path);
+        }
     }
 }

@@ -12,7 +12,17 @@
     xmlns:previewers="using:Peek.FilePreviewer.Previewers"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Background="Transparent">
+        <Grid.ContextFlyout>
+            <MenuFlyout>
+                <MenuFlyoutItem x:Uid="ContextMenu_CopyPath" Click="CopyPath_Click">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE8C8;" />
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+            </MenuFlyout>
+        </Grid.ContextFlyout>
+
         <ProgressRing
             HorizontalAlignment="Center"
             VerticalAlignment="Center"

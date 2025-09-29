@@ -44,14 +44,12 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="FileCountColumn" Width="Auto" />
                     <ColumnDefinition x:Name="FileNameColumn" Width="*" />
-                    <ColumnDefinition x:Name="MoreButtonColumn" Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
                     x:Name="AppTitle_FileCount"
                     Grid.Column="0"
-                    Margin="0,-1,8,0"
-                    VerticalAlignment="Center"
+                    Margin="0,0,8,0"
                     FontWeight="SemiBold"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind FileCountText, Mode=OneWay}"
@@ -60,35 +58,9 @@
                 <TextBlock
                     x:Name="AppTitle_FileName"
                     Grid.Column="1"
-                    Margin="0,-1,0,0"
-                    VerticalAlignment="Center"
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind FileName, Mode=OneWay}"
                     TextWrapping="NoWrap" />
-
-                <Button
-                    x:Name="MoreActionsButton"
-                    Grid.Column="2"
-                    Margin="4,0,0,0"
-                    VerticalAlignment="Center"
-                    AutomationProperties.AutomationId="MoreActionsButton"
-                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xE712;" />
-                    <Button.Flyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem
-                                x:Name="CopyPathMenuItem"
-                                x:Uid="CopyPathButton"
-                                AutomationProperties.AutomationId="CopyPathMenuItem"
-                                Command="{x:Bind CopyPathButtonCommand, Mode=OneWay}">
-                                <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xE8C8;" />
-                                </MenuFlyoutItem.Icon>
-                            </MenuFlyoutItem>
-                        </MenuFlyout>
-                    </Button.Flyout>
-                </Button>
             </Grid>
         </Grid>
 
@@ -100,7 +72,7 @@
             ToolTipService.ToolTip="{x:Bind OpenWithAppToolTip, Mode=OneWay}"
             Visibility="{x:Bind IsLaunchDefaultAppButtonVisible(DefaultAppName), Mode=OneWay}">
             <Button.Content>
-                <StackPanel Orientation="Horizontal" Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon
                         x:Name="LaunchAppButton_Icon"
                         FontSize="16"

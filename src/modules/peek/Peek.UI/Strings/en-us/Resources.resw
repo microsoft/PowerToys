@@ -142,7 +142,7 @@
     <comment>Tooltip for button to launch default application. 0: name of the default application.</comment>
   </data>
   <data name="UnsupportedFile_FileType" xml:space="preserve">
-    <value>File Type: {0}</value>
+    <value>File type: {0}</value>
     <comment>File Type label for the unsupported files view. {0} is the type.</comment>
   </data>
   <data name="UnsupportedFile_FileSize" xml:space="preserve">
@@ -150,7 +150,7 @@
     <comment>File Size label for the unsupported files view. {0} is the size.</comment>
   </data>
   <data name="UnsupportedFile_DateModified" xml:space="preserve">
-    <value>Date Modified: {0}</value>
+    <value>Date modified: {0}</value>
     <comment>Date Modified label for the unsupported files view. {0} is the date.</comment>
   </data>
   <data name="ReadableString_ByteAbbreviationFormat" xml:space="preserve">
@@ -186,11 +186,11 @@
     <comment>Filename for the tooltip of preview. {0} is the name.</comment>
   </data>
   <data name="PreviewTooltip_FileType" xml:space="preserve">
-    <value>Item Type: {0}</value>
+    <value>Item type: {0}</value>
     <comment>Item Type for the tooltip of preview. {0} is the type.</comment>
   </data>
   <data name="PreviewTooltip_DateModified" xml:space="preserve">
-    <value>Date Modified: {0}</value>
+    <value>Date modified: {0}</value>
     <comment>Date Modified label for the tooltip of preview. {0} is the date.</comment>
   </data>
   <data name="PreviewTooltip_Dimensions" xml:space="preserve">
@@ -278,7 +278,7 @@
     <comment>{0} is the capacity of the drive</comment>
   </data>
   <data name="Drive_FileSystem" xml:space="preserve">
-    <value>File System: {0}</value>
+    <value>File system: {0}</value>
     <comment>{0} is the file system of the drive</comment>
   </data>
   <data name="Drive_Type" xml:space="preserve">
@@ -329,6 +329,10 @@
   <data name="ContextMenu_ToggleMinimap" xml:space="preserve">
     <value>Toggle minimap</value>
   </data>
+  <data name="ContextMenu_CopyPath.Text" xml:space="preserve">
+    <value>Copy as path</value>
+    <comment>Context menu item to copy the file path to clipboard</comment>
+  </data>
   <data name="NoMoreFiles" xml:space="preserve">
     <value>No more files to preview.</value>
     <comment>The message to show when there are no files remaining to preview.</comment>
@@ -377,9 +381,5 @@
   </data>
   <data name="VideoCodecStoreLink.Text" xml:space="preserve">
     <value>Search in Microsoft Store</value>
-  </data>
-  <data name="CopyPathButton.Text" xml:space="preserve">
-    <value>Copy path</value>
-    <comment>Text for button to copy the file path to clipboard.</comment>
   </data>
 </root>
