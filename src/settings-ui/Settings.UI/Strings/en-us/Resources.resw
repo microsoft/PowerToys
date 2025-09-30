@@ -5282,6 +5282,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="ClipPing_OverlayBorder.Content" xml:space="preserve">
     <value>Border</value>
+  </data>
   <data name="SearchResults_Title.ModuleTitle" xml:space="preserve">
     <value>Search results</value>
   </data>
