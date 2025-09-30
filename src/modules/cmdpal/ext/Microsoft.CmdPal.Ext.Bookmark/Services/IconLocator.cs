@@ -107,9 +107,13 @@ internal class IconLocator : IBookmarkIconLocator
 
     private static async Task<IconInfo?> TryGetProtocolIcon(string target)
     {
+        // Special case for steam: protocol - use game icon
+        // Steam protocol have only a file name (steam.exe) associated with it, but is not
+        // in PATH or AppPaths. So we can't resolve it to an executable. But at the same time,
+        // this is a very common protocol, so we special-case it here.
         if (target.StartsWith("steam:", StringComparison.OrdinalIgnoreCase))
         {
-            return Icons.BookmarkTypes.Steam;
+            return Icons.BookmarkTypes.Game;
         }
 
         // extract protocol from classification.Target (until the first ':'):

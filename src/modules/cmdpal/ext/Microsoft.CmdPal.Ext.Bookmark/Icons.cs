@@ -32,7 +32,7 @@ internal static class Icons
 
         internal static IconInfo Unknown { get; } = new("\uE71B"); // Link
 
-        internal static IconInfo Steam { get; } = DualColorFromRelativePath("Steam"); // Steam
+        internal static IconInfo Game { get; } = new("\uE7FC"); // Game controller
     }
 
     private static IconInfo DualColorFromRelativePath(string name)
