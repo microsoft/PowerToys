@@ -1,23 +1,73 @@
-# === CONFIGURATION ===
-$repo = "microsoft/Powertoys"           # e.g., "microsoft/winget-cli"
-$milestone = "PowerToys 0.94"           # Milestone title
-$outputJson = "milestone_prs.json"
-$outputCsv = "sorted_prs.csv"
+<#
+.SYNOPSIS
+    Export merged pull requests for a milestone into JSON and CSV (sorted) with optional Copilot review summarization.
+
+.DESCRIPTION
+    Uses the GitHub CLI (gh) to list merged PRs for the specified milestone, captures basic metadata,
+    attempts to obtain a Copilot review summary (choosing the longest Copilot-authored review body),
+    filters labels to a predefined allow-list, and outputs:
+      * Raw JSON list (for traceability)
+      * Sorted CSV (first label alphabetical) used by downstream grouping scripts.
+
+.PARAMETER Repo
+    GitHub repository in the form 'owner/name'. Default: 'microsoft/PowerToys'.
+
+.PARAMETER Milestone
+    Exact milestone title (as it appears on GitHub), e.g. 'PowerToys 0.95'.
+
+.PARAMETER OutputJson
+    Path for raw JSON output. Default: 'milestone_prs.json'.
+
+.PARAMETER OutputCsv
+    Path for sorted CSV output. Default: 'sorted_prs.csv'.
+
+.EXAMPLE
+    pwsh ./dump-prs-information.ps1 -Milestone 'PowerToys 0.95'
+
+.EXAMPLE
+    pwsh ./dump-prs-information.ps1 -Repo microsoft/PowerToys -Milestone 'PowerToys 0.95' -OutputCsv m1.csv
+
+.NOTES
+    Requires: gh CLI authenticated with repo read access.
+    This script intentionally does NOT use Set-StrictMode (per current repository guidance for release tooling).
+#>
+[CmdletBinding()] param(
+    [Parameter(Mandatory=$false)][string]$Repo = 'microsoft/PowerToys',
+    [Parameter(Mandatory=$true)][string]$Milestone,
+    [Parameter(Mandatory=$false)][string]$OutputJson = 'milestone_prs.json',
+    [Parameter(Mandatory=$false)][string]$OutputCsv  = 'sorted_prs.csv'
+)
+
+$ErrorActionPreference = 'Stop'
+
+function Write-Info($m){ Write-Host "[info] $m" -ForegroundColor Cyan }
+function Write-Warn($m){ Write-Host "[warn] $m" -ForegroundColor Yellow }
+function Write-Err($m){ Write-Host "[error] $m" -ForegroundColor Red }
+
+if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { Write-Err "GitHub CLI 'gh' not found in PATH."; exit 1 }
+
+Write-Info "Fetching merged PRs for milestone '$Milestone' from $Repo ..."
+$searchQuery = "milestone:`"$Milestone`""
+$ghCommand = "gh pr list --repo $Repo --state merged --search '$searchQuery' --json number,title,labels,author,url,body --limit 200"
+try {
+    Invoke-Expression $ghCommand | Out-File -Encoding UTF8 -FilePath $OutputJson
+}
+catch {
+    Write-Err "Failed querying PRs: $_"; exit 1
+}
 
 # === STEP 1: Query PRs from GitHub ===
-Write-Host "Fetching PRs for milestone '$milestone'..."
-$searchQuery = "milestone:`"$($milestone)`""
-$ghCommand = "gh pr list --repo $repo --state merged --search '$searchQuery' --json number,title,labels,author,url,body --limit 200"
-Invoke-Expression "$ghCommand" | Out-File -Encoding UTF8 -FilePath $outputJson
+if (-not (Test-Path -LiteralPath $OutputJson)) { Write-Err "JSON output not created: $OutputJson"; exit 1 }
 
-# === STEP 2: Parse and Sort ===
-$prs = Get-Content $outputJson | ConvertFrom-Json
+Write-Info "Parsing JSON ..."
+$prs = Get-Content $OutputJson | ConvertFrom-Json
+if (-not $prs) { Write-Warn "No PRs returned for milestone '$Milestone'"; exit 0 }
 $sorted = $prs | Sort-Object { $_.labels[0]?.name }
 
-Write-Host "Fetching Copilot reviews for each PR..."
+Write-Info "Fetching Copilot reviews for each PR (longest Copilot-authored body)."
 $csvData = $sorted | ForEach-Object {
     $prNumber = $_.number
-    Write-Host "Processing PR #$prNumber..."
+    Write-Info "Processing PR #$prNumber ..."
     
     # Get Copilot review for this PR
     $copilotOverview = ""
@@ -37,13 +87,13 @@ $csvData = $sorted | ForEach-Object {
         if ($copilotReviews -and $copilotReviews.Count -gt 0) {
             $longest = $copilotReviews | Sort-Object { $_.body.Length } -Descending | Select-Object -First 1
             $copilotOverview = $longest.body.Replace("`r", "").Replace("`n", " ") -replace '\s+', ' '
-            Write-Host "  Selected Copilot review (author=$($longest.author.login) length=$($longest.body.Length))"
+            Write-Info "  Copilot review selected (author=$($longest.author.login) length=$($longest.body.Length))"
         } else {
-            Write-Host "  No Copilot reviews found for PR #$prNumber"
+            Write-Warn "  No Copilot reviews found for PR #$prNumber"
         }
     }
     catch {
-        Write-Host "  Warning: Could not fetch reviews for PR #$prNumber"
+    Write-Warn "  Could not fetch reviews for PR #$prNumber"
     }
     
     # Filter labels to only include specific patterns
@@ -68,6 +118,6 @@ $csvData = $sorted | ForEach-Object {
 }
 
 # === STEP 3: Output CSV ===
-Write-Host "Saving to $outputCsv..."
-$csvData | Export-Csv $outputCsv -NoTypeInformation
-Write-Host "✅ Done. Open '$outputCsv' to group PRs and send them back."
+Write-Info "Saving CSV to $OutputCsv ..."
+$csvData | Export-Csv $OutputCsv -NoTypeInformation -Encoding UTF8
+Write-Info "Done. Rows: $($csvData.Count). CSV: $(Resolve-Path -LiteralPath $OutputCsv)"

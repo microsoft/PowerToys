@@ -1,3 +1,36 @@
+<#
+.SYNOPSIS
+    Export merged PR metadata between two commits (exclusive start, inclusive end) to JSON and CSV.
+
+.DESCRIPTION
+    Identifies merge/squash commits reachable from EndCommit but not StartCommit, extracts PR numbers,
+    queries GitHub for metadata plus (optionally) Copilot review/comment summaries, filters labels, then
+    emits a JSON artifact and a sorted CSV (first label alphabetical) analogous to dump-prs-information.ps1.
+
+.PARAMETER StartCommit
+    Exclusive starting commit (SHA, tag, or ref). Commits AFTER this one are considered.
+
+.PARAMETER EndCommit
+    Inclusive ending commit (SHA, tag, or ref). Default: HEAD.
+
+.PARAMETER Repo
+    GitHub repository (owner/name). Default: microsoft/PowerToys.
+
+.PARAMETER OutputCsv
+    Destination CSV path. Default: sorted_prs.csv.
+
+.PARAMETER OutputJson
+    Destination JSON path containing raw PR objects. Default: milestone_prs.json.
+
+.EXAMPLE
+    pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd
+
+.EXAMPLE
+    pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd -EndCommit 89ef7654 -OutputCsv delta.csv
+
+.NOTES
+    Requires: git, gh (authenticated). No Set-StrictMode to keep parity with existing release scripts.
+#>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string]$StartCommit,  # exclusive start (commits AFTER this one)

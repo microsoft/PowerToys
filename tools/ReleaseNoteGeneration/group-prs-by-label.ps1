@@ -1,6 +1,21 @@
 <#
-Groups PRs from sorted_prs.csv by Labels and emits per-label CSV files.
-Each output CSV keeps the original columns and the same PR order as in the input.
+.SYNOPSIS
+    Group PR rows by their Labels column and emit per-label CSV files.
+
+.DESCRIPTION
+    Reads a milestone PR CSV (usually produced by dump-prs-information / dump-prs-since-commit scripts),
+    splits rows by label list, normalizes/sorts individual labels, and writes one CSV per unique label combination.
+    Each output preserves the original row ordering within that subset and column order from the source.
+
+.PARAMETER CsvPath
+    Input CSV containing PR rows with a 'Labels' column (comma-separated list).
+
+.PARAMETER OutDir
+    Output directory to place grouped CSVs (created if missing). Default: 'grouped_csv'.
+
+.NOTES
+    Label combinations are joined using ' | ' when multiple labels present. Filenames are sanitized (invalid characters,
+    whitespace collapsed) and truncated to <= 120 characters.
 #>
 param(
     [string]$CsvPath = "sorted_prs.csv",
@@ -18,9 +33,13 @@ Write-Info "Reading CSV: $CsvPath"
 $rows = Import-Csv -LiteralPath $CsvPath
 Write-Info ("Loaded {0} rows" -f $rows.Count)
 
-function Sanitize-FileName([string]$name) {
-    if ([string]::IsNullOrWhiteSpace($name)) { return 'Unnamed' }
-    $s = $name -replace '[<>:"/\\|?*]', '-'             # invalid path chars
+function ConvertTo-SafeFileName {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)][string]$Name
+    )
+    if ([string]::IsNullOrWhiteSpace($Name)) { return 'Unnamed' }
+    $s = $Name -replace '[<>:"/\\|?*]', '-'             # invalid path chars
     $s = $s -replace '\s+', '-'                          # spaces to dashes
     $s = $s -replace '-{2,}', '-'                         # collapse dashes
     $s = $s.Trim('-')
@@ -29,7 +48,7 @@ function Sanitize-FileName([string]$name) {
     return $s
 }
 
-# Group rows by label combination; preserve CSV order inside each group
+# Build groups keyed by normalized, sorted label combinations. Preserve original CSV row order.
 $groups = @{}
 foreach ($row in $rows) {
     $labelsRaw = $row.Labels
@@ -55,7 +74,7 @@ Write-Info ("Generating {0} grouped CSV file(s) into: {1}" -f $groups.Count, $Ou
 
 foreach ($key in $groups.Keys) {
     $labelParts = if ($key -eq 'Unlabeled') { @('Unlabeled') } else { $key -split '\s\|\s' }
-    $safeName = ($labelParts | ForEach-Object { Sanitize-FileName $_ }) -join '-'
+    $safeName = ($labelParts | ForEach-Object { ConvertTo-SafeFileName -Name $_ }) -join '-'
     $filePath = Join-Path $OutDir ("$safeName.csv")
 
     # Keep same columns and order
