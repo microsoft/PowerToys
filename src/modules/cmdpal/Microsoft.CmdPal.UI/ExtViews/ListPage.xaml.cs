@@ -409,24 +409,81 @@ public sealed partial class ListPage : Page,
         }
 
         var currentIndex = ItemView.SelectedIndex < 0 ? 0 : ItemView.SelectedIndex;
+        var itemCount = ItemView.Items.Count;
 
-        double itemHeight = 0;
-        for (var i = currentIndex; i >= 0; i--)
+        // Compute visible item heights within the ScrollViewer viewport
+        const int firstVisibleIndexNotFound = -1;
+        var firstVisibleIndex = firstVisibleIndexNotFound;
+        var visibleHeights = new List<double>(itemCount);
+
+        // Find the first visible index
+        // Collect visible item heights
+        for (var i = 0; i < itemCount; i++)
         {
-            if (ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c)
+            if (ItemView.ContainerFromIndex(i) is FrameworkElement container)
             {
-                itemHeight = c.ActualHeight;
-                break;
+                try
+                {
+                    var transform = container.TransformToVisual(scroll);
+                    var topLeft = transform.TransformPoint(new Point(0, 0));
+                    var bottom = topLeft.Y + container.ActualHeight;
+
+                    // If any part of the container is inside the viewport, consider it visible
+                    if (topLeft.Y >= 0 && bottom <= viewportHeight)
+                    {
+                        if (firstVisibleIndex == firstVisibleIndexNotFound)
+                        {
+                            firstVisibleIndex = i;
+                        }
+
+                        visibleHeights.Add(container.ActualHeight > 0 ? container.ActualHeight : 0);
+                    }
+                }
+                catch
+                {
+                    // ignore transform errors and continue
+                }
             }
         }
 
-        if (itemHeight <= 0)
+        var itemsPerPage = 0;
+
+        // Calculate how many items fit in the viewport based on their actual heights
+        if (visibleHeights.Count > 0)
         {
-            itemHeight = 1;
+            double accumulated = 0;
+            for (var i = 0; i < visibleHeights.Count; i++)
+            {
+                accumulated += visibleHeights[i] <= 0 ? 1 : visibleHeights[i];
+                itemsPerPage++;
+                if (accumulated >= viewportHeight)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            // fallback: estimate using previous measured container height
+            double itemHeight = 0;
+            for (var i = currentIndex; i >= 0; i--)
+            {
+                if (ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c)
+                {
+                    itemHeight = c.ActualHeight;
+                    break;
+                }
+            }
+
+            if (itemHeight <= 0)
+            {
+                itemHeight = 1;
+            }
+
+            itemsPerPage = Math.Max(1, (int)Math.Floor(viewportHeight / itemHeight));
         }
 
-        var itemsPerPage = Math.Max(1, (int)Math.Floor(viewportHeight / itemHeight));
-        var targetIndex = Math.Max(0, currentIndex - itemsPerPage);
+        var targetIndex = Math.Max(0, currentIndex - Math.Max(1, itemsPerPage));
 
         if (targetIndex != currentIndex)
         {
