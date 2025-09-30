@@ -20,6 +20,15 @@ internal static class UrlHelper
             return false;
         }
 
+        // Trim whitespace for validation
+        url = url.Trim();
+
+        // URLs should not contain newlines
+        if (url.Contains('\n', StringComparison.Ordinal) || url.Contains('\r', StringComparison.Ordinal))
+        {
+            return false;
+        }
+
         if (!url.Contains('.', StringComparison.OrdinalIgnoreCase))
         {
             // eg: 'com', 'org'. We don't think it's a valid url.
@@ -57,6 +66,9 @@ internal static class UrlHelper
         {
             return url;
         }
+
+        // Trim whitespace
+        url = url.Trim();
 
         if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
         {
