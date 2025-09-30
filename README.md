@@ -132,17 +132,17 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Cleaned and codified .editorconfig without behavior change. Thanks @jiripolasek!
  - Replaced service state color dots with play/pause/stop icons for accessibility. Thanks @samrueby!
  - Fixed filter dropdown sync and crash by binding SelectedValue and raising UI-thread notifications. Thanks @jiripolasek!
- - Ensured long links wrap correctly in details view. Thanks @michaeljolley!
+ - Ensured long links wrap correctly in details view.
  - Removed animation + enforced min width on filter dropdown for clarity. Thanks @jiripolasek!
  - Restored focus to More button after ESC closes context menu improving keyboard flow. Thanks @chatasweetie!
  - Marked main and toast windows as tool windows to keep them out of Alt+Tab while preserving style. Thanks @jiripolasek!
  - Fixed AOT template + theming issues for filter separators. Thanks @jiripolasek!
- - Introduced grid layouts (small/medium/gallery) for richer page presentation. Thanks @michaeljolley!
- - Materialized result lists to avoid rescoring overhead. Thanks @michaeljolley!
+ - Introduced grid layouts (small/medium/gallery) for richer page presentation.
+ - Materialized result lists to avoid rescoring overhead.
  - Disabled problematic selection TextToSuggest behind env flag.
  - Resolved AOT warning by making IconMarginConverter partial. Thanks @samrueby!
- - Major search performance improvements (new fuzzy matcher, smarter fallbacks, fewer exceptions). Thanks @michaeljolley!
- - Added context menu "Show Details" command when details pane hidden. Thanks @michaeljolley!
+ - Major search performance improvements (new fuzzy matcher, smarter fallbacks, fewer exceptions).
+ - Added context menu "Show Details" command when details pane hidden.
  - Reduced window flicker by avoiding unnecessary cloaking. Thanks @jiripolasek!
  - Restored EmptyContent rendering for blank states. Thanks @DevLGuilherme!
  - Saved new state even if prior app state file corrupt (better resilience). Thanks @jiripolasek!
@@ -156,7 +156,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Advanced font/emoji icon classification & alignment improvements. Thanks @jiripolasek!
  - Preserved fallback item icons in Settings by storing initial icon. Thanks @jiripolasek!
  - Fixed breadcrumb margin misalignment (visual polish). Thanks @jiripolasek!
- - Truncated overly long command labels with ellipsis to prevent overflow. Thanks @michaeljolley!
+ - Truncated overly long command labels with ellipsis to prevent overflow.
 
 ### Command Palette Extensions
  - Replaced localized WebSearch setting keys with stable literals and numeric history count. Thanks @jiripolasek!
@@ -168,7 +168,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Added Terminal profile sort order setting including MRU tracking. Thanks @jiripolasek!
  - Added Uninstall Application command (UWP direct, Win32 via Settings). Thanks @mKpwnz!
  - Deferred WinGet details loading and added timing logs.
- - Removed LINQ from All Apps extension for performance. Thanks @michaeljolley!
+ - Removed LINQ from All Apps extension for performance.
  - Added standardized key chord system + shortcuts to File Search commands. Thanks @jiripolasek!
  - Added Terminal channel filter & remembered selection option. Thanks @jiripolasek!
  - Enabled loading local/data/app images in markdown with sizing hints. Thanks @jiripolasek!
