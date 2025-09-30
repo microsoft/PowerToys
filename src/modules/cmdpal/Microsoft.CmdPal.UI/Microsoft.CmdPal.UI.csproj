@@ -179,6 +179,15 @@
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Update="Assets\StoreLogo.dark.svg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\StoreLogo.light.svg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\WinGetLogo.svg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\Colors.xaml">

@@ -15,8 +15,43 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:BoolNegationConverter x:Key="InvertedBoolConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <!--  ControlFillColorQuarternaryBrush does not exist (yet) in WinUI, only in Windows Visual Library (Figma)  -->
+                <ResourceDictionary x:Key="Default">
+                    <LinearGradientBrush x:Key="CardGradient2Brush" StartPoint="0,0" EndPoint="0.5, 1">
+                        <GradientStop Offset="0" Color="#38C8AEC4" />
+                        <GradientStop Offset="1" Color="#383286EE" />
+                    </LinearGradientBrush>
+                    <ImageSource x:Key="StoreLogo">ms-appx:///Assets/StoreLogo.dark.svg</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <LinearGradientBrush x:Key="CardGradient2Brush" StartPoint="0,0" EndPoint="1, 1">
+                        <!--<GradientStop Offset="0" Color="#E6F0FC" />
+                <GradientStop Offset="0.4" Color="#E6F0FC" />
+                <GradientStop Offset="1" Color="#F0F0F7" />-->
+                        <GradientStop Offset="0.0" Color="#FFF6F9FF" />
+                        <!--  Light cool white  -->
+                        <GradientStop Offset="0.4" Color="#FFEFF5FF" />
+                        <!--  Hinted lavender/blue  -->
+                        <GradientStop Offset="0.7" Color="#FFF7FAFD" />
+                        <!--  Very soft neutral white  -->
+                        <GradientStop Offset="1.0" Color="#FFF5F8FA" />
+                        <!--  Slight bluish-gray tint  -->
+                        <!--  Faint peach glow  -->
+                        <!--  Soft peach  -->
+                    </LinearGradientBrush>
+                    <ImageSource x:Key="StoreLogo">ms-appx:///Assets/StoreLogo.light.svg</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="CardGradient2Brush" Color="Transparent" />
+                    <SolidColorBrush x:Key="CardGradient1Brush" Color="Transparent" />
+                    <ImageSource x:Key="StoreLogo">ms-appx:///Assets/StoreLogo.dark.svg</ImageSource>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+            <converters:BoolNegationConverter x:Key="InvertedBoolConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        </ResourceDictionary>
     </Page.Resources>
 
     <Grid>
@@ -31,7 +66,58 @@
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
+                    <Grid
+                        Padding="16"
+                        Background="{ThemeResource CardGradient2Brush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Text="Discover more extensions" />
+                            <TextBlock
+                                Grid.Row="1"
+                                VerticalAlignment="Top"
+                                Text="Find more extensions on the Microsoft Store or WinGet" />
+                        </StackPanel>
 
+                        <StackPanel
+                            HorizontalAlignment="Right"
+                            Orientation="Vertical"
+                            Spacing="4">
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <Button>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Viewbox Width="16">
+                                            <Image AutomationProperties.AccessibilityView="Raw" Source="{ThemeResource StoreLogo}" />
+                                        </Viewbox>
+                                        <TextBlock Text="Microsoft Store" />
+                                    </StackPanel>
+                                </Button>
+                                <Button>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Viewbox Width="16">
+                                            <Image AutomationProperties.AccessibilityView="Raw" Source="ms-appx:///Assets/WinGet.svg" />
+                                        </Viewbox>
+                                        <TextBlock Text="WinGet" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                            <HyperlinkButton
+                                HorizontalAlignment="Right"
+                                Content="Make your own? Check the docs"
+                                FontSize="12" />
+                        </StackPanel>
+                    </Grid>
                     <!--  toolbar 1  -->
                     <Grid Padding="0,0,0,8">
                         <AutoSuggestBox
