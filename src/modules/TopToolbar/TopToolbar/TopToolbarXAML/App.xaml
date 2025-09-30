@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    x:Class="TopToolbar.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:TopToolbar.Models">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+            <!-- For x:Bind x:DataType references in SettingsWindow templates -->
+            <models:ButtonGroup x:Key="_type_ButtonGroup" />
+            <models:ToolbarButton x:Key="_type_ToolbarButton" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
