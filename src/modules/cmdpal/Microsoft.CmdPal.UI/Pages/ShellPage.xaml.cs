@@ -3,12 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -17,9 +20,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.UI.Core;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -55,6 +61,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly ToastWindow _toast = new();
 
+    private readonly CompositeFormat _pageNavigatedAnnouncement;
+
     private SettingsWindow? _settingsWindow;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
@@ -84,9 +92,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
 
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
+        AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
 
         RootFrame.Navigate(typeof(LoadingPage), ViewModel);
+
+        var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
+        _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
     }
 
     public void Receive(NavigateBackMessage message)
@@ -133,9 +145,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 message.WithAnimation ? _slideRightTransition : _noAnimation);
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
-
-            // Refocus on the Search for continual typing on the next search request
-            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 
             if (!ViewModel.IsNested)
             {
@@ -247,32 +256,46 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowDetailsMessage message)
     {
-        // TERRIBLE HACK TODO GH #245
-        // There's weird wacky bugs with debounce currently.
-        if (!ViewModel.IsDetailsVisible)
+        if (ViewModel is not null &&
+            ViewModel.CurrentPage is not null)
         {
-            ViewModel.Details = message.Details;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-            ViewModel.IsDetailsVisible = true;
-            return;
+            if (ViewModel.CurrentPage.PageContext.TryGetTarget(out var pageContext))
+            {
+                Task.Factory.StartNew(
+                    () =>
+                    {
+                        // TERRIBLE HACK TODO GH #245
+                        // There's weird wacky bugs with debounce currently.
+                        if (!ViewModel.IsDetailsVisible)
+                        {
+                            ViewModel.Details = message.Details;
+                            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
+                            ViewModel.IsDetailsVisible = true;
+                            return;
+                        }
+
+                        // GH #322:
+                        // For inexplicable reasons, if you try to change the details too fast,
+                        // we'll explode. This seemingly only happens if you change the details
+                        // while we're also scrolling a new list view item into view.
+                        _debounceTimer.Debounce(
+                            () =>
+                            {
+                                ViewModel.Details = message.Details;
+
+                                // Trigger a re-evaluation of whether we have a hero image based on
+                                // the current theme
+                                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
+                            },
+                            interval: TimeSpan.FromMilliseconds(50),
+                            immediate: ViewModel.IsDetailsVisible == false);
+                        ViewModel.IsDetailsVisible = true;
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    pageContext.Scheduler);
+            }
         }
-
-        // GH #322:
-        // For inexplicable reasons, if you try to change the details too fast,
-        // we'll explode. This seemingly only happens if you change the details
-        // while we're also scrolling a new list view item into view.
-        _debounceTimer.Debounce(
-            () =>
-        {
-            ViewModel.Details = message.Details;
-
-            // Trigger a re-evaluation of whether we have a hero image based on
-            // the current theme
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasHeroImage)));
-        },
-            interval: TimeSpan.FromMilliseconds(50),
-            immediate: ViewModel.IsDetailsVisible == false);
-        ViewModel.IsDetailsVisible = true;
     }
 
     public void Receive(HideDetailsMessage message) => HideDetails();
@@ -427,6 +450,78 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // We just need to reconcile our loading systems a bit more in the future.
             ViewModel.CurrentPage = page;
         }
+
+        if (e.Content is Page element)
+        {
+            element.Loaded += FocusAfterLoaded;
+        }
+    }
+
+    private void FocusAfterLoaded(object sender, RoutedEventArgs e)
+    {
+        var page = (Page)sender;
+        page.Loaded -= FocusAfterLoaded;
+
+        AnnounceNavigationToPage(page);
+
+        var shouldSearchBoxBeVisible = ViewModel.CurrentPage?.HasSearchBox ?? false;
+
+        if (shouldSearchBoxBeVisible || page is not ContentPage)
+        {
+            ViewModel.IsSearchBoxVisible = shouldSearchBoxBeVisible;
+            SearchBox.Focus(FocusState.Programmatic);
+            SearchBox.SelectSearch();
+        }
+        else
+        {
+            _ = Task.Run(async () =>
+            {
+                await page.DispatcherQueue.EnqueueAsync(async () =>
+                {
+                    // I hate this so much, but it can take a while for the page to be ready to accept focus;
+                    // focusing page with MarkdownTextBlock takes up to 5 attempts (* 100ms delay between attempts)
+                    for (var i = 0; i < 10; i++)
+                    {
+                        if (FocusManager.FindFirstFocusableElement(page) is FrameworkElement frameworkElement)
+                        {
+                            var set = frameworkElement.Focus(FocusState.Programmatic);
+                            if (set)
+                            {
+                                break;
+                            }
+                        }
+
+                        await Task.Delay(100);
+                    }
+
+                    // Update the search box visibility based on the current page:
+                    // - We do this here after navigation so the focus is not jumping around too much,
+                    //   it messes with screen readers if we do it too early
+                    // - Since this should hide the search box on content pages, it's not a problem if we
+                    //   wait for the code above to finish trying to focus the content
+                    ViewModel.IsSearchBoxVisible = ViewModel.CurrentPage?.HasSearchBox ?? false;
+                });
+            });
+        }
+    }
+
+    private void AnnounceNavigationToPage(Page page)
+    {
+        var pageTitle = page switch
+        {
+            ListPage listPage => listPage.ViewModel?.Title,
+            ContentPage contentPage => contentPage.ViewModel?.Title,
+            _ => null,
+        };
+
+        if (string.IsNullOrEmpty(pageTitle))
+        {
+            pageTitle = ResourceLoaderInstance.GetString("UntitledPageTitle");
+        }
+
+        var announcement = string.Format(CultureInfo.CurrentCulture, _pageNavigatedAnnouncement.Format, pageTitle);
+
+        UIHelper.AnnounceActionForAccessibility(RootFrame, announcement, "CommandPalettePageNavigatedTo");
     }
 
     /// <summary>
@@ -452,11 +547,54 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private void ShellPage_OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    private static void ShellPage_OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (e.Key == VirtualKey.Left && e.KeyStatus.IsMenuKeyDown)
         {
             WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+            e.Handled = true;
+        }
+        else
+        {
+            var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+            var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+            var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+            var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+                             InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+
+            // The CommandBar is responsible for handling all the item keybindings,
+            // since the bound context item may need to then show another
+            // context menu
+            TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+            WeakReferenceMessenger.Default.Send(msg);
+            e.Handled = msg.Handled;
+        }
+    }
+
+    private static void ShellPage_OnKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        if (ctrlPressed && e.Key == VirtualKey.Enter)
+        {
+            // ctrl+enter
+            WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.Enter)
+        {
+            WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+            e.Handled = true;
+        }
+        else if (ctrlPressed && e.Key == VirtualKey.K)
+        {
+            // ctrl+k
+            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.Escape)
+        {
+            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+            e.Handled = true;
         }
     }
 

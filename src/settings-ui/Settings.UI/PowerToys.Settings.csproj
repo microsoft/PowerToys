@@ -63,7 +63,7 @@
 		<PackageReference Include="CommunityToolkit.WinUI.Animations" />
 		<PackageReference Include="CommunityToolkit.WinUI.Extensions" />
 		<PackageReference Include="CommunityToolkit.WinUI.Converters" />
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" />
 		<PackageReference Include="System.Net.Http" />
 		<PackageReference Include="System.Private.Uri" />
 		<PackageReference Include="System.Text.RegularExpressions" />
@@ -184,7 +184,7 @@
 		</Page>
 	</ItemGroup>
 
-	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile">
+	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=net9.0;XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>
