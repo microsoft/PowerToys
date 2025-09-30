@@ -118,7 +118,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var timer = System.Diagnostics.Stopwatch.StartNew();
 
         // Check for cancellation at the start
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         // If the search text is the start of a path to a file (it might be a
         // UNC path), then we want to list all the files that start with that text:
@@ -130,7 +133,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         var expanded = Environment.ExpandEnvironmentVariables(searchText);
 
         // Check for cancellation after environment expansion
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         // TODO we can be smarter about only re-reading the filesystem if the
         // new search is just the oldSearch+some chars
@@ -200,7 +206,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             couldResolvePath = false;
         }
 
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         _pathItems.Clear();
 
@@ -215,7 +224,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         // Check for cancellation before creating exe items
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         if (couldResolvePath && exeExists)
         {
@@ -272,7 +284,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         _currentHistoryItems.AddRange(filteredHistory);
 
         // Final cancellation check
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         timer.Stop();
         _telemetryService?.LogRunQuery(newSearch, GetItems().Length, (ulong)timer.ElapsedMilliseconds);
@@ -392,7 +407,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         }
 
         // Check for cancellation before directory operations
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         var dirExists = Directory.Exists(directoryPath);
 
@@ -411,7 +429,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         if (dirExists)
         {
             // Check for cancellation before file system enumeration
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
             if (directoryPath == _currentSubdir)
             {
@@ -439,7 +460,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
             var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath, searchPattern), cancellationToken);
 
             // Check for cancellation after file enumeration
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
             var searchPathTrailer = trimmed.Remove(0, Math.Min(directoryPath.Length, trimmed.Length));
             var originalBeginning = originalPath.EndsWith(searchPathTrailer, StringComparison.CurrentCultureIgnoreCase) ?
@@ -457,7 +481,10 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
                 .ToDictionary(item => item.Title, item => item);
 
             // Final cancellation check before updating results
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
             // Add the commands to the list
             _pathItems = newPathItems.Values.ToList();
