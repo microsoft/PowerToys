@@ -25,7 +25,7 @@ $csvData = $sorted | ForEach-Object {
         $reviewsCommand = "gh pr view $prNumber --repo $repo --json reviews"
         $reviewsJson = Invoke-Expression $reviewsCommand | ConvertFrom-Json
         
-        # Find the latest Copilot review - try different possible author names
+        # Collect Copilot reviews (match various author logins). Choose the LONGEST body (more content) vs newest.
         $copilotReviews = $reviewsJson.reviews | Where-Object { 
             ($_.author.login -eq "github-copilot[bot]" -or 
              $_.author.login -eq "copilot" -or 
@@ -33,11 +33,11 @@ $csvData = $sorted | ForEach-Object {
              $_.author.login -like "*copilot*") -and 
             $_.body -and 
             $_.body.Trim() -ne ""
-        } | Sort-Object submittedAt -Descending
-        
+        }
         if ($copilotReviews -and $copilotReviews.Count -gt 0) {
-            $copilotOverview = $copilotReviews[0].body.Replace("`r", "").Replace("`n", " ") -replace '\s+', ' '
-            Write-Host "  Found Copilot review from: $($copilotReviews[0].author.login)"
+            $longest = $copilotReviews | Sort-Object { $_.body.Length } -Descending | Select-Object -First 1
+            $copilotOverview = $longest.body.Replace("`r", "").Replace("`n", " ") -replace '\s+', ' '
+            Write-Host "  Selected Copilot review (author=$($longest.author.login) length=$($longest.body.Length))"
         } else {
             Write-Host "  No Copilot reviews found for PR #$prNumber"
         }

@@ -19,7 +19,7 @@ vanzue
 zadjii-msft
 khmyznikov
 chatasweetie
-MichaelJolley
+michaeljolley
 Jaylyn-Barbee
 zateutsch
 crutkas

@@ -26,11 +26,11 @@ This document describes how to collect pull requests for a milestone, request a 
 1) run `dump-prs-information.ps1` to export PRs for the target milestone (initial run, CopilotSummary likely empty)
 	- Open `dump-prs-information.ps1` and set:
 	  - `$repo` (e.g., `microsoft/PowerToys`)
-	  - `$milestone` (milestone title exactly as in GitHub, e.g., `PowerToys 0.94`)
+	  - `$milestone` (milestone title exactly as in GitHub, e.g., `PowerToys 0.95`)
 	- run the script in PowerShell; it will generate `milestone_prs.json` and `sorted_prs.csv`.
 
 2) Request Copilot reviews for each PR listed in the CSV in Agent mode (MUST NOT generate or run any ps1)
-	- Use MCP tools "MCP Server: github-remote" in current Agent mode to request Copilot reviews for all PR Ids in `sorted_prs.csv`.
+	- Must use MCP tools "MCP Server: github-remote" in current Agent mode to request Copilot reviews for all PR Ids in `sorted_prs.csv`.
 
 3) run `dump-prs-information.ps1` again
 	- This refresh collects the latest Copilot review body into the `CopilotSummary` column in `sorted_prs.csv`.
@@ -39,15 +39,33 @@ This document describes how to collect pull requests for a milestone, request a 
 
 5) Summarize PRs into per‑label Markdown files in Agent mode (MUST NOT generate or run any script in terminal nor ps1)
     - Read the the csv files in the folder grouped_csv one by one
-	- Generate the summary md file as the following instruciton in two parts:
+	- For each label group, create a markdown file under a new folder `grouped_md/` (create if missing). File name: sanitized label group name (same pattern as CSV) with `.md` extension. Example: `Area-Build.md`.
+	- Each markdown file content must follow the structure below (two sections) and preserve the PR order from the source CSV.
+	- Do not embed PR numbers in the bullet list lines; only link them in the table.
+	- If re-running, overwrite existing markdown files (idempotent generation).
+	- After generation, you should have a 1:1 correspondence between files in `grouped_csv/` and `grouped_md/` (excluding any intentionally skipped groups—document if skipped).
+	- Generate the summary md file as the following instruction in two parts:
 	  1. Markdown list: one concise, user‑facing line per PR (no deep technical jargon). Use "Verbed" + "Scenario" + "Impact" as setence structure. Use `Title`, `Body`, and `CopilotSummary` as sources.
-		  - If `Author` is NOT in `MemberList.md`, append a "Thanks @handle!" see `SampleOutput.md` as example.
-		  - Do NOT include PR numbers or IDs in the list line; keep the PR link only in the table mentioned in 2. below, please refer to `SampleOutput.md` as example.
+		  - If `Author` is NOT in `**/MemberList.md`, append a "Thanks @handle!" see `**/SampleOutput.md` as example.
+		  - Do NOT include PR numbers or IDs in the list line; keep the PR link only in the table mentioned in 2. below, please refer to `**/SampleOutput.md` as example.
 		  - If confidence to have enough information for summarization according to guideline above is < 70%, write: `Human Summary Needed: <PR full link>` on that line.
 	  2. Three‑column table (in the same PR order):
 		  - Column 1: The concise, user‑facing summary (the "cut version")
 		  - Column 2: PR link
-		  - Column 3: Confidence (e.g., `High/Medium/Low`) and the reason if < 70%
+		  - Column 3: Confidence (e.g., `High/Medium/Low`) and the reasoning if < 70%
+6) According the generated grouped_md/*.md, update back the repo root's `Readme.md`. Here is the guideline:
+ a. Replace all versioned references in `README.md`:
+	 - Bump current release heading (e.g. **Version 0.xx**) by +0.01.
+	 - Shift link references: previous `[github-current-release-work]` becomes old version; increment `[github-next-release-work]` to point to the following milestone.
+	 - Update download asset filenames (e.g. `PowerToysSetup-0.94.0-...` → `PowerToysSetup-0.95.0-...`).
+ b. Build the What's New content from `grouped_md`:
+	 - Combine `Area-Build` and `Area-Tests` entries under a single `Development` subsection (keep bullet order from CSV).
+	 - Each other `Product-*` group gets its own subsection titled by the module name.
+	 - Order subsections alphabetically by their heading text, with **Highlights** always first and **Development** always last (e.g., Environment Variables, File Locksmith, Find My Mouse, ... , ZoomIt, Development).
+	 - Copy bullet lines verbatim from the corresponding `grouped_md` files (preserve punctuation and any trailing `Thanks @handle!`). Do NOT add, remove, or re‑evaluate thanks in the README stage.
+ c. Highlights: choose up to 10 bullets focused on user-visible feature additions or impactful fixes (avoid purely internal refactors). Use pattern: `Module/Feature <past-tense verb> <scenario> <impact>`.
+ d. Keep wording concise (aim 1 line per bullet), no PR numbers, no deep implementation details.
+ e. After updating, verify total highlight count ≤ 10 and that all internal contributors are not thanked.
 
 ## Notes and conventions
 - Terminal usage: Disabled by default. Do NOT run terminal commands or ps1 scripts unless the user explicitly instructs you to.
