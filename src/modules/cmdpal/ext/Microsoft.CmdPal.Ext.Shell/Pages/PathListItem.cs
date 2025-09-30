@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Core.Common.Commands;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
@@ -21,8 +22,8 @@ internal sealed partial class PathListItem : ListItem
 
     internal bool IsDirectory => isDirectory;
 
-    public PathListItem(string path, string originalDir, Action<string>? addToHistory)
-        : base(new OpenUrlWithHistoryCommand(path, addToHistory))
+    public PathListItem(string path, string originalDir, Action<string>? addToHistory, ITelemetryService? telemetryService = null)
+        : base(new OpenUrlWithHistoryCommand(path, addToHistory, telemetryService))
     {
         var fileName = Path.GetFileName(path);
         if (string.IsNullOrEmpty(fileName))
