@@ -38,7 +38,7 @@ public partial class App : Application, IDisposable
     {
         InitializeComponent();
 
-        _currentSettings = ModuleSettings.GetSettings<ClipPingSettings>(ClipPingSettings.ModuleName);
+        _currentSettings = ModuleSettings.GetSettingsOrDefault<ClipPingSettings>(ClipPingSettings.ModuleName);
 
         var settingsPath = ModuleSettings.GetSettingsFilePath(ClipPingSettings.ModuleName);
 
