@@ -666,3 +666,4 @@ namespace TopToolbar.Providers
         private sealed record WorkspaceRecord(string Id, string Name);
     }
 }
+

@@ -359,6 +359,64 @@ namespace TopToolbar.Services.Workspaces
             }
         }
 
+        public static bool TryGetWindowPlacement(IntPtr hwnd, out WindowBounds normalBounds, out bool isMinimized, out bool isMaximized)
+        {
+            normalBounds = default;
+            isMinimized = false;
+            isMaximized = false;
+
+            if (hwnd == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            var placement = new NativeWindowPlacement
+            {
+                Length = Marshal.SizeOf<NativeWindowPlacement>(),
+            };
+
+            if (!GetWindowPlacement(hwnd, ref placement))
+            {
+                return false;
+            }
+
+            isMinimized = placement.ShowCmd == SwShowMinimized;
+            isMaximized = placement.ShowCmd == SwShowMaximized;
+
+            var rect = placement.NormalPosition;
+            normalBounds = new WindowBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
+            return true;
+        }
+
+        public static bool TryGetWindowPlacement(IntPtr hwnd, out WindowBounds normalBounds, out bool isMinimized, out bool isMaximized)
+        {
+            normalBounds = default;
+            isMinimized = false;
+            isMaximized = false;
+
+            if (hwnd == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            var placement = new NativeWindowPlacement
+            {
+                Length = Marshal.SizeOf<NativeWindowPlacement>(),
+            };
+
+            if (!GetWindowPlacement(hwnd, ref placement))
+            {
+                return false;
+            }
+
+            isMinimized = placement.ShowCmd == SwShowMinimized;
+            isMaximized = placement.ShowCmd == SwShowMaximized;
+
+            var rect = placement.NormalPosition;
+            normalBounds = new WindowBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
+            return true;
+        }
+
         public static void MinimizeWindow(IntPtr hwnd)
         {
             if (hwnd == IntPtr.Zero)
@@ -611,6 +669,12 @@ namespace TopToolbar.Services.Workspaces
         [DllImport("user32.dll")]
         private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool GetWindowPlacement(IntPtr hWnd, ref NativeWindowPlacement lpwndpl);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool GetWindowPlacement(IntPtr hWnd, ref NativeWindowPlacement lpwndpl);
+
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr OpenProcess(ProcessAccess desiredAccess, bool inheritHandle, uint processId);
 
@@ -625,6 +689,55 @@ namespace TopToolbar.Services.Workspaces
 
         [DllImport("ole32.dll")]
         private static extern int PropVariantClear(ref PropVariant pvar);
+
+        
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeWindowPlacement
+        {
+            public int Length;
+
+            public int Flags;
+
+            public int ShowCmd;
+
+            public NativePoint MinPosition;
+
+            public NativePoint MaxPosition;
+
+            public NativeRect NormalPosition;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativePoint
+        {
+            public int X;
+
+            public int Y;
+        }
+
+[StructLayout(LayoutKind.Sequential)]
+        private struct NativeWindowPlacement
+        {
+            public int Length;
+
+            public int Flags;
+
+            public int ShowCmd;
+
+            public NativePoint MinPosition;
+
+            public NativePoint MaxPosition;
+
+            public NativeRect NormalPosition;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativePoint
+        {
+            public int X;
+
+            public int Y;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         private struct NativeRect

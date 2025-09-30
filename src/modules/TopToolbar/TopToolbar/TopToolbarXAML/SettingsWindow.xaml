@@ -479,6 +479,14 @@
                             </StackPanel>
                         </ScrollViewer>
 
+                        <tkcontrols:SettingsCard Header="Workspace snapshot"
+                                                Description="Capture the current window layout as a workspace."
+                                                Visibility="{x:Bind ViewModel.HasSelectedGroup, Mode=OneWay}">
+                            <Button Content="Create snapshot"
+                                    HorizontalAlignment="Left"
+                                    Click="OnSnapshotWorkspace"/>
+                        </tkcontrols:SettingsCard>
+
                         <tkcontrols:SettingsCard Visibility="{x:Bind ViewModel.HasSelectedGroup, Mode=OneWay}" x:Name="GroupNameEnableButton" 
                                                         Header="{x:Bind ViewModel.SelectedGroup.Name, Mode=OneWay}"
                                                         Description="{x:Bind ViewModel.SelectedGroup.Description, Mode=OneWay}">
@@ -608,5 +616,4 @@
         </Grid>
     </Grid>
 </winuiex:WindowEx>
-
 

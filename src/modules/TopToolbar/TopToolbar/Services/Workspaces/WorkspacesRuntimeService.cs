@@ -34,6 +34,72 @@ namespace TopToolbar.Services.Workspaces
             _windowTracker = new WindowTracker();
         }
 
+
+        public async Task<WorkspaceDefinition> SnapshotAsync(string workspaceName, CancellationToken cancellationToken)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, nameof(WorkspacesRuntimeService));
+
+            if (string.IsNullOrWhiteSpace(workspaceName))
+            {
+                throw new ArgumentException("Workspace name cannot be null or empty.", nameof(workspaceName));
+            }
+
+            var trimmedName = workspaceName.Trim();
+            var monitorSnapshots = CaptureMonitorSnapshots();
+            var windows = _windowTracker.GetSnapshot();
+            var applications = new List<ApplicationDefinition>();
+
+            foreach (var window in windows)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (window == null || !window.IsVisible || window.ProcessId == (uint)Environment.ProcessId)
+                {
+                    continue;
+                }
+
+                var app = CreateApplicationDefinitionFromWindow(window, monitorSnapshots);
+                if (app != null)
+                {
+                    applications.Add(app);
+                }
+            }
+
+            if (applications.Count == 0)
+            {
+                return null;
+            }
+
+            var workspace = new WorkspaceDefinition
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Name = trimmedName,
+                CreationTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                IsShortcutNeeded = false,
+                MoveExistingWindows = true,
+                Applications = applications,
+            };
+
+            if (monitorSnapshots.Count > 0)
+            {
+                var monitorDefinitions = new List<MonitorDefinition>(monitorSnapshots.Count);
+                foreach (var snapshot in monitorSnapshots)
+                {
+                    monitorDefinitions.Add(snapshot.Definition);
+                }
+
+                workspace.Monitors = monitorDefinitions;
+            }
+            else
+            {
+                workspace.Monitors = new List<MonitorDefinition>();
+            }
+
+            await _fileLoader.SaveWorkspaceAsync(workspace, cancellationToken).ConfigureAwait(false);
+            return workspace;
+        }
+
+
         public async Task<bool> LaunchWorkspaceAsync(string workspaceId, CancellationToken cancellationToken)
         {
             ObjectDisposedException.ThrowIf(_disposed, nameof(WorkspacesRuntimeService));
@@ -379,6 +445,88 @@ namespace TopToolbar.Services.Workspaces
             NoErrorUI = 0x2,
             NoSplashScreen = 0x4,
         }
+
+        [DllImport("user32.dll")]
+        private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFOEX lpmi);
+
+        [DllImport("shcore.dll")]
+        private static extern int GetDpiForMonitor(IntPtr hmonitor, MonitorDpiType dpiType, out uint dpiX, out uint dpiY);
+
+        private sealed class MonitorSnapshot
+        {
+            public MonitorSnapshot(MonitorDefinition definition, MonitorBounds bounds)
+            {
+                Definition = definition;
+                Bounds = bounds;
+            }
+
+            public MonitorDefinition Definition { get; }
+
+            public MonitorBounds Bounds { get; }
+        }
+
+        private readonly struct MonitorBounds
+        {
+            public MonitorBounds(int left, int top, int right, int bottom)
+            {
+                Left = left;
+                Top = top;
+                Right = right;
+                Bottom = bottom;
+            }
+
+            public int Left { get; }
+
+            public int Top { get; }
+
+            public int Right { get; }
+
+            public int Bottom { get; }
+
+            public int Width => Right - Left;
+
+            public int Height => Bottom - Top;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeMonitorRect
+        {
+            public int Left;
+
+            public int Top;
+
+            public int Right;
+
+            public int Bottom;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private struct MONITORINFOEX
+        {
+            public int CbSize;
+
+            public NativeMonitorRect RcMonitor;
+
+            public NativeMonitorRect RcWork;
+
+            public uint DwFlags;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+            public string SzDevice;
+        }
+
+        private delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref NativeMonitorRect lprcMonitor, IntPtr dwData);
+
+        private enum MonitorDpiType
+        {
+            EffectiveDpi = 0,
+            AngularDpi = 1,
+            RawDpi = 2,
+        }
+
 
         private sealed class WorkspaceExecutionContext
         {

@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using CommunityToolkit.WinUI.Controls;
+using System.Threading.Tasks;
 using Microsoft.UI; // Colors namespace
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -19,6 +21,7 @@ using Microsoft.UI.Xaml.Media; // VisualTreeHelper
 using Microsoft.UI.Xaml.Media.Imaging;
 using TopToolbar.Models;
 using TopToolbar.Services;
+using TopToolbar.Providers;
 using TopToolbar.ViewModels;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -849,6 +852,108 @@ namespace TopToolbar
             }
         }
 
+        private static async Task ShowSimpleMessageAsync(XamlRoot xamlRoot, string title, string message)
+        {
+            if (xamlRoot == null)
+            {
+                return;
+            }
+
+            var dialog = new ContentDialog
+            {
+                XamlRoot = xamlRoot,
+                Title = title ?? string.Empty,
+                Content = new TextBlock
+                {
+                    Text = message ?? string.Empty,
+                    TextWrapping = TextWrapping.Wrap,
+                },
+                CloseButtonText = "Close",
+                DefaultButton = ContentDialogButton.Close,
+            };
+
+            await dialog.ShowAsync();
+        }
+
+        private async void OnSnapshotWorkspace(object sender, RoutedEventArgs e)
+        {
+            if (_disposed || _isClosed)
+            {
+                return;
+            }
+
+            if (Content is not FrameworkElement root)
+            {
+                return;
+            }
+
+            var nameBox = new TextBox
+            {
+                PlaceholderText = "Workspace name",
+            };
+
+            if (root.Resources != null && root.Resources.TryGetValue("StandardTextBoxStyle", out var styleObj) && styleObj is Style textBoxStyle)
+            {
+                nameBox.Style = textBoxStyle;
+            }
+
+            var dialogContent = new StackPanel
+            {
+                Spacing = 12,
+            };
+            dialogContent.Children.Add(new TextBlock
+            {
+                Text = "Enter a name for the new workspace snapshot.",
+                TextWrapping = TextWrapping.Wrap,
+            });
+            dialogContent.Children.Add(nameBox);
+
+            var dialog = new ContentDialog
+            {
+                XamlRoot = root.XamlRoot,
+                Title = "Create workspace snapshot",
+                PrimaryButtonText = "Save",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                Content = dialogContent,
+                IsPrimaryButtonEnabled = false,
+            };
+
+            nameBox.TextChanged += (_, __) =>
+            {
+                dialog.IsPrimaryButtonEnabled = !string.IsNullOrWhiteSpace(nameBox.Text);
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            var workspaceName = nameBox.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(workspaceName))
+            {
+                return;
+            }
+
+            try
+            {
+                using var workspaceProvider = new WorkspaceProvider();
+                var workspace = await workspaceProvider.SnapshotAsync(workspaceName, CancellationToken.None).ConfigureAwait(true);
+                if (workspace == null)
+                {
+                    await ShowSimpleMessageAsync(root.XamlRoot, "Snapshot failed", "No eligible windows were detected to capture.");
+                    return;
+                }
+
+                await ShowSimpleMessageAsync(root.XamlRoot, "Snapshot saved", $"Workspace \"{workspace.Name}\" has been saved.");
+            }
+            catch (Exception ex)
+            {
+                await ShowSimpleMessageAsync(root.XamlRoot, "Snapshot failed", ex.Message);
+            }
+        }
+
         private async void OnRemoveButton(object sender, RoutedEventArgs e)
         {
             if (_vm.SelectedGroup == null)
@@ -1154,3 +1259,4 @@ namespace TopToolbar
         // Inline group description editing removed per design update; now always displays single-line text.
     }
 }
+

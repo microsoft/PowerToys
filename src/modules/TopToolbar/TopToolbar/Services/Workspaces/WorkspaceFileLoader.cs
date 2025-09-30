@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace TopToolbar.Services.Workspaces
 {
@@ -16,6 +17,8 @@ namespace TopToolbar.Services.Workspaces
     {
         private readonly string _workspacesPath;
         private readonly JsonSerializerOptions _serializerOptions;
+        private readonly JsonSerializerOptions _writeSerializerOptions;
+        private readonly JsonSerializerOptions _writeSerializerOptions;
 
         public WorkspaceFileLoader(string workspacesPath = null)
         {
@@ -32,6 +35,17 @@ namespace TopToolbar.Services.Workspaces
             {
                 PropertyNameCaseInsensitive = true,
                 ReadCommentHandling = JsonCommentHandling.Skip,
+            };
+
+            _writeSerializerOptions = new JsonSerializerOptions(_serializerOptions)
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            };
+            _writeSerializerOptions = new JsonSerializerOptions(_serializerOptions)
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             };
         }
 
@@ -60,6 +74,36 @@ namespace TopToolbar.Services.Workspaces
             }
 
             return document.Workspaces.FirstOrDefault(ws => string.Equals(ws.Id, workspaceId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public async Task SaveWorkspaceAsync(WorkspaceDefinition workspace, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(workspace);
+
+            var document = await ReadDocumentAsync(cancellationToken).ConfigureAwait(false) ?? new WorkspaceDocument();
+            document.Workspaces ??= new List<WorkspaceDefinition>();
+
+            document.Workspaces.RemoveAll(ws =>
+                string.Equals(ws.Id, workspace.Id, StringComparison.OrdinalIgnoreCase) ||
+                (!string.IsNullOrWhiteSpace(ws.Name) && !string.IsNullOrWhiteSpace(workspace.Name) && string.Equals(ws.Name, workspace.Name, StringComparison.OrdinalIgnoreCase)));
+
+            document.Workspaces.Insert(0, workspace);
+
+            var directory = Path.GetDirectoryName(_workspacesPath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var tempPath = _workspacesPath + ".tmp";
+
+            await using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                await JsonSerializer.SerializeAsync(stream, document, _writeSerializerOptions, cancellationToken).ConfigureAwait(false);
+            }
+
+            File.Copy(tempPath, _workspacesPath, overwrite: true);
+            File.Delete(tempPath);
         }
 
         private async Task<WorkspaceDocument> ReadDocumentAsync(CancellationToken cancellationToken)
