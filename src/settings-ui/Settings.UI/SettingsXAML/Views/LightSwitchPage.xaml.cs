@@ -299,15 +299,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void ModeSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ModeSelector.SelectedIndex == 1)
-            {
-                SunriseModeChartState();
-            }
+            SunriseModeChartState();
         }
 
         private void SunriseModeChartState()
         {
-            if (ViewModel.Latitude == "0.0")
+            if (ViewModel.Latitude == "0.0" && ViewModel.Longitude == "0.0" && ViewModel.ScheduleMode == "SunsetToSunrise")
             {
                 TimelineCard.Visibility = Visibility.Collapsed;
                 LocationWarningBar.Visibility = Visibility.Visible;
