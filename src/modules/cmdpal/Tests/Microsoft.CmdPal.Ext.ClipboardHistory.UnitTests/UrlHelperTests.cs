@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -181,5 +182,93 @@ public class UrlHelperTests
 
         // Assert
         Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    [DataRow(@"C:\Users\Test\Documents\file.txt")]
+    [DataRow(@"D:\Projects\MyProject\readme.md")]
+    [DataRow(@"E:\")]
+    [DataRow(@"F:")]
+    [DataRow(@"G:\folder\subfolder")]
+    public void IsValidUrl_ReturnsTrue_ForValidLocalPaths(string path)
+    {
+        // Act
+        var result = UrlHelper.IsValidUrl(path);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    [DataRow(@"\\server\share")]
+    [DataRow(@"\\server\share\folder")]
+    [DataRow(@"\\192.168.1.100\public")]
+    [DataRow(@"\\myserver\documents\file.docx")]
+    [DataRow(@"\\domain.com\share\folder\file.pdf")]
+    public void IsValidUrl_ReturnsTrue_ForValidNetworkPaths(string path)
+    {
+        // Act
+        var result = UrlHelper.IsValidUrl(path);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    [DataRow(@"\\")]
+    [DataRow(@":")]
+    [DataRow(@"Z")]
+    [DataRow(@"folder")]
+    [DataRow(@"folder\file.txt")]
+    [DataRow(@"documents\project\readme.md")]
+    [DataRow(@"./config/settings.json")]
+    [DataRow(@"../data/input.csv")]
+    public void IsValidUrl_ReturnsFalse_ForInvalidPathsAndRelativePaths(string path)
+    {
+        // Act
+        var result = UrlHelper.IsValidUrl(path);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    [DataRow(@"C:\Users\Test\Documents\file.txt")]
+    [DataRow(@"D:\Projects\MyProject")]
+    [DataRow(@"E:\")]
+    public void NormalizeUrl_ConvertsLocalPathToFileUri_WhenValidLocalPath(string path)
+    {
+        // Act
+        var result = UrlHelper.NormalizeUrl(path);
+
+        // Assert
+        Assert.IsTrue(result.StartsWith("file:///", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(result.Contains(path.Replace('\\', '/')));
+    }
+
+    [TestMethod]
+    [DataRow(@"\\server\share")]
+    [DataRow(@"\\192.168.1.100\public")]
+    [DataRow(@"\\myserver\documents")]
+    public void NormalizeUrl_ConvertsNetworkPathToFileUri_WhenValidNetworkPath(string path)
+    {
+        // Act
+        var result = UrlHelper.NormalizeUrl(path);
+
+        // Assert
+        Assert.IsTrue(result.StartsWith("file://", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(result.Contains(path.Replace('\\', '/')));
+    }
+
+    [TestMethod]
+    [DataRow("file:///C:/Users/Test/file.txt")]
+    [DataRow("file://server/share/folder")]
+    public void NormalizeUrl_ReturnsUnchanged_WhenAlreadyFileUri(string fileUri)
+    {
+        // Act
+        var result = UrlHelper.NormalizeUrl(fileUri);
+
+        // Assert
+        Assert.AreEqual(fileUri, result);
     }
 }
