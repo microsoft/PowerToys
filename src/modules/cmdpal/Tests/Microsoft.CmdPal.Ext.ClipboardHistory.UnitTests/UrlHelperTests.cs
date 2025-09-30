@@ -17,7 +17,7 @@ public class UrlHelperTests
     [DataRow("   ")]
     [DataRow("\t")]
     [DataRow("\r\n")]
-    public void IsValidUrl_ReturnssFalse_WhenUrlIsNullOrWhitespace(string url)
+    public void IsValidUrl_ReturnsFalse_WhenUrlIsNullOrWhitespace(string url)
     {
         // Act
         var result = UrlHelper.IsValidUrl(url);
