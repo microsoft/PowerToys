@@ -7,7 +7,8 @@ enum class SettingId
     Longitude,
     LightTime,
     DarkTime,
-    Offset,
+    Sunrise_Offset,
+    Sunset_Offset,
     ChangeSystem,
     ChangeApps
 };

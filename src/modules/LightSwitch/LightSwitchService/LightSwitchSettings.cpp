@@ -118,13 +118,23 @@ void LightSwitchSettings::LoadSettings()
         }
 
         // Offset
-        if (const auto jsonVal = values.get_int_value(L"offset")) 
+        if (const auto jsonVal = values.get_int_value(L"sunrise_offset")) 
         {
             auto val = *jsonVal;
-            if (m_settings.offset != val)
+            if (m_settings.sunrise_offset != val)
             {
-                m_settings.offset = val;
-                NotifyObservers(SettingId::Offset);
+                m_settings.sunrise_offset = val;
+                NotifyObservers(SettingId::Sunrise_Offset);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(L"sunset_offset"))
+        {
+            auto val = *jsonVal;
+            if (m_settings.sunset_offset != val)
+            {
+                m_settings.sunset_offset = val;
+                NotifyObservers(SettingId::Sunset_Offset);
             }
         }
 

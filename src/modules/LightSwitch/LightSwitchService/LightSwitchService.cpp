@@ -192,7 +192,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         LightSwitchSettings::instance().LoadSettings();
         const auto& settings = LightSwitchSettings::instance().settings();
 
-        applyTheme(nowMinutes, settings.lightTime + settings.offset, settings.darkTime + settings.offset, settings);
+        applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
     }
 
     // --- Main loop: wakes once per minute or stop/parent death ---
@@ -238,8 +238,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         if (manualOverrideActive)
         {
             // Did we hit a scheduled boundary? (reset override at boundary)
-            if (nowMinutes == (settings.lightTime + settings.offset) % 1440 ||
-                nowMinutes == (settings.darkTime + settings.offset) % 1440)
+            if (nowMinutes == (settings.lightTime + settings.sunrise_offset) % 1440 ||
+                nowMinutes == (settings.darkTime + settings.sunset_offset) % 1440)
             {
                 ResetEvent(hManualOverride);
                 OutputDebugString(L"[LightSwitchService] Manual override cleared at boundary\n");
@@ -252,7 +252,7 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
         }
 
         // Apply theme logic (only runs if no manual override or override just cleared)
-        applyTheme(nowMinutes, settings.lightTime + settings.offset, settings.darkTime + settings.offset, settings);
+        applyTheme(nowMinutes, settings.lightTime + settings.sunrise_offset, settings.darkTime + settings.sunset_offset, settings);
 
     sleep_until_next_minute:
         GetLocalTime(&st);

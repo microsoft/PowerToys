@@ -51,7 +51,8 @@ struct LightSwitchConfig
     int lightTime = 8 * 60; // 08:00 default
     int darkTime = 20 * 60; // 20:00 default
 
-    int offset = 0; // offset in minutes to apply to calculated times
+    int sunrise_offset = 0;
+    int sunset_offset = 0;
 
     bool changeSystem = false;
     bool changeApps = false;
