@@ -8,8 +8,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class LightSwitchProperties
     {
-        public const bool DefaultChangeSystem = false;
-        public const bool DefaultChangeApps = false;
+        public const bool DefaultChangeSystem = true;
+        public const bool DefaultChangeApps = true;
         public const int DefaultLightTime = 480;
         public const int DefaultDarkTime = 1200;
         public const int DefaultSunriseOffset = 0;
