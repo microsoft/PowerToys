@@ -36,6 +36,8 @@ stages:
               name: SHINE-OSS-L
             ${{ if eq(parameters.useVSPreview, true) }}:
               demands: ImageOverride -equals SHINE-VS17-Preview
+            ${{ else }}:
+              image: SHINE-VS17-Latest-2025
           buildPlatforms:
             - ${{ parameters.platform }}
           buildConfigurations: [Release]

@@ -81,7 +81,7 @@ extends:
                 ${{ if eq(parameters.useVSPreview, true) }}:
                   demands: ImageOverride -equals SHINE-VS17-Preview
                 ${{ else }}:
-                  image: SHINE-VS17-Latest
+                  image: SHINE-VS17-Latest-2025
                 os: windows
               variables:
                 IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
@@ -131,7 +131,7 @@ extends:
             parameters:
               pool:
                 name: SHINE-INT-L
-                image: SHINE-VS17-Latest
+                image: SHINE-VS17-Latest-2025
                 os: windows
               official: true
               codeSign: true
