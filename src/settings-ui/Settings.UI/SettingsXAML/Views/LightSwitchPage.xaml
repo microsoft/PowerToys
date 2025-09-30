@@ -67,14 +67,10 @@
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="LightSwitch_TurnOnDarkMode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                                <TimePicker
-                                    AutomationProperties.AutomationId="DarkTimePicker"
-                                    Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
+                                <TimePicker AutomationProperties.AutomationId="DarkTimePicker" Time="{x:Bind ViewModel.DarkTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="LightSwitch_TurnOffDarkMode" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=FixedHours}">
-                                <TimePicker
-                                    AutomationProperties.AutomationId="LightTimePicker"
-                                    Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
+                                <TimePicker AutomationProperties.AutomationId="LightTimePicker" Time="{x:Bind ViewModel.LightTimePickerValue, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
                             <tkcontrols:SettingsCard x:Uid="LightSwitch_LocationSettingsCard" Visibility="{x:Bind ViewModel.ScheduleMode, Mode=OneWay, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=SunsetToSunrise}">
