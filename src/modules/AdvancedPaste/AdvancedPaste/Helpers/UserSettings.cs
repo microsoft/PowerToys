@@ -43,6 +43,10 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
+        public AdvancedAIConfiguration AdvancedAIConfiguration { get; private set; }
+
+        public PasteAIConfiguration PasteAIConfiguration { get; private set; }
+
         public UserSettings(IFileSystem fileSystem)
         {
             _settingsUtils = new SettingsUtils(fileSystem);
@@ -50,6 +54,8 @@ namespace AdvancedPaste.Settings
             IsAdvancedAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
+            AdvancedAIConfiguration = new AdvancedAIConfiguration();
+            PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
             _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
@@ -101,6 +107,8 @@ namespace AdvancedPaste.Settings
                                 IsAdvancedAIEnabled = properties.IsAdvancedAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
+                                AdvancedAIConfiguration = properties.AdvancedAIConfiguration ?? new AdvancedAIConfiguration();
+                                PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =

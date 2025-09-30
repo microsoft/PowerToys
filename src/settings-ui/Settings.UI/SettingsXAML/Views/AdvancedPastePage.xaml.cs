@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -32,7 +33,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
 
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Loaded += (s, e) =>
+            {
+                ViewModel.OnPageLoaded();
+                UpdateAdvancedAIUIVisibility();
+                UpdatePasteAIUIVisibility();
+            };
         }
 
         public void RefreshEnabledState()
@@ -58,12 +64,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             AdvancedPaste_EnableAIDialogOpenAIApiKey.Text = string.Empty;
 
             await ShowEnableDialogAsync();
-        }
-
-        private void SaveAIConfigButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Force save the current AI service configuration
-            ViewModel.SaveAIConfiguration();
         }
 
         private async Task ShowEnableDialogAsync()
@@ -158,5 +158,125 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         private static AdvancedPasteCustomAction GetBoundCustomAction(object sender) => (AdvancedPasteCustomAction)((FrameworkElement)sender).DataContext;
+
+        private void SaveAdvancedAIApiKey_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(AdvancedAIApiKeyPasswordBox.Password))
+            {
+                string serviceType = AdvancedAIServiceTypeComboBox.SelectedValue?.ToString() ?? "OpenAI";
+                ViewModel.SaveAdvancedAICredential(serviceType, AdvancedAIApiKeyPasswordBox.Password);
+                AdvancedAIApiKeyPasswordBox.Password = string.Empty;
+
+                // Show success message
+                ShowApiKeySavedMessage("Advanced AI");
+            }
+        }
+
+        private void SavePasteAIApiKey_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(PasteAIApiKeyPasswordBox.Password))
+            {
+                string serviceType = PasteAIServiceTypeComboBox.SelectedValue?.ToString() ?? "OpenAI";
+                ViewModel.SavePasteAICredential(serviceType, PasteAIApiKeyPasswordBox.Password);
+                PasteAIApiKeyPasswordBox.Password = string.Empty;
+
+                // Show success message
+                ShowApiKeySavedMessage("Paste AI");
+            }
+        }
+
+        private void BrowsePasteAIModelPath_Click(object sender, RoutedEventArgs e)
+        {
+            // Use Win32 file dialog to work around FileOpenPicker issues with elevated permissions
+            string selectedFile = PickFileDialog(
+                "ONNX Model Files\0*.onnx\0All Files\0*.*\0",
+                "Select ONNX Model File");
+
+            if (!string.IsNullOrEmpty(selectedFile))
+            {
+                PasteAIModelPathTextBox.Text = selectedFile;
+                ViewModel.PasteAIConfiguration.ModelPath = selectedFile;
+            }
+        }
+
+        private static string PickFileDialog(string filter, string title, string initialDir = null, int initialFilter = 0)
+        {
+            // Use Win32 OpenFileName dialog as FileOpenPicker doesn't work with elevated permissions
+            OpenFileName openFileName = new OpenFileName();
+            openFileName.StructSize = Marshal.SizeOf(openFileName);
+            openFileName.Filter = filter;
+
+            // Make buffer double MAX_PATH since it can use 2 chars per char
+            openFileName.File = new string(new char[260 * 2]);
+            openFileName.MaxFile = openFileName.File.Length;
+            openFileName.FileTitle = new string(new char[260 * 2]);
+            openFileName.MaxFileTitle = openFileName.FileTitle.Length;
+            openFileName.InitialDir = initialDir;
+            openFileName.Title = title;
+            openFileName.FilterIndex = initialFilter;
+            openFileName.DefExt = null;
+            openFileName.Flags = (int)OpenFileNameFlags.OFN_NOCHANGEDIR; // OFN_NOCHANGEDIR flag is needed
+            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+            openFileName.Hwnd = windowHandle;
+
+            bool result = NativeMethods.GetOpenFileName(openFileName);
+            if (result)
+            {
+                return openFileName.File;
+            }
+
+            return null;
+        }
+
+        private void ShowApiKeySavedMessage(string configType)
+        {
+            // This would typically show a TeachingTip or InfoBar
+            // For now, we'll use a simple approach
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+
+            // In a real implementation, you'd want to show a proper notification
+            System.Diagnostics.Debug.WriteLine($"{configType} API key saved successfully");
+        }
+
+        private void AdvancedAIServiceTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateAdvancedAIUIVisibility();
+        }
+
+        private void PasteAIServiceTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdatePasteAIUIVisibility();
+        }
+
+        private void UpdateAdvancedAIUIVisibility()
+        {
+            if (AdvancedAIServiceTypeComboBox?.SelectedValue == null)
+            {
+                return;
+            }
+
+            string selectedType = AdvancedAIServiceTypeComboBox.SelectedValue.ToString();
+            bool isAzureOpenAI = selectedType == "AzureOpenAI";
+
+            AdvancedAIEndpointCard.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            AdvancedAIDeploymentCard.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void UpdatePasteAIUIVisibility()
+        {
+            if (PasteAIServiceTypeComboBox?.SelectedValue == null)
+            {
+                return;
+            }
+
+            string selectedType = PasteAIServiceTypeComboBox.SelectedValue.ToString();
+            bool isAzureOpenAI = selectedType == "AzureOpenAI";
+            bool isOnnx = selectedType == "Onnx";
+
+            PasteAIEndpointCard.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIDeploymentCard.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIModelPathCard.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIApiKeyCard.Visibility = !isOnnx ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 }

@@ -1956,6 +1956,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="AdvancedPasteUI_CustomAction_Name.Header" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="AdvancedPasteUI_CustomAction_Description.Header" xml:space="preserve">
+    <value>Description</value>
+  </data>
   <data name="AdvancedPasteUI_CustomAction_Prompt.Header" xml:space="preserve">
     <value>Prompt</value>
   </data>

@@ -8,16 +8,17 @@ using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
+using AdvancedPaste.Services;
 using ManagedCommon;
 using OpenAI.Moderations;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class PromptModerationService(IAICredentialsProvider aiCredentialsProvider) : IPromptModerationService
+public sealed class PromptModerationService(IAdvancedAICredentialsProvider aiCredentialsProvider) : IPromptModerationService
 {
     private const string ModelName = "omni-moderation-latest";
 
-    private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
+    private readonly IAdvancedAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
 
     public async Task ValidateAsync(string fullPrompt, CancellationToken cancellationToken)
     {

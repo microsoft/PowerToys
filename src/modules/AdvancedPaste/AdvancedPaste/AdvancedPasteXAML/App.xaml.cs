@@ -78,12 +78,28 @@ namespace AdvancedPaste
             {
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IUserSettings, UserSettings>();
-                services.AddSingleton<IAICredentialsProvider, Services.OpenAI.VaultCredentialsProvider>();
+                services.AddSingleton<IPasteAICredentialsProvider, DynamicPasteAICredentialsProvider>();
+                services.AddSingleton<IAdvancedAICredentialsProvider, DynamicAdvancedAICredentialsProvider>();
                 services.AddSingleton<IPromptModerationService, Services.OpenAI.PromptModerationService>();
                 services.AddSingleton<IKernelQueryCacheService, CustomActionKernelQueryCacheService>();
                 services.AddSingleton<IPasteAIProviderFactory, PasteAIProviderFactory>();
                 services.AddSingleton<ICustomActionTransformService, CustomActionTransformService>();
-                services.AddSingleton<IKernelService, Services.OpenAI.KernelService>();
+                services.AddSingleton<IKernelService>(serviceProvider =>
+                {
+                    var userSettings = serviceProvider.GetRequiredService<IUserSettings>();
+                    var queryCacheService = serviceProvider.GetRequiredService<IKernelQueryCacheService>();
+                    var promptModerationService = serviceProvider.GetRequiredService<IPromptModerationService>();
+                    var customActionTransformService = serviceProvider.GetRequiredService<ICustomActionTransformService>();
+                    var advancedCredentialsProvider = serviceProvider.GetRequiredService<IAdvancedAICredentialsProvider>();
+
+                    return AIServiceFactory.CreateAdvancedAIService(
+                        userSettings.AdvancedAIConfiguration,
+                        advancedCredentialsProvider,
+                        queryCacheService,
+                        promptModerationService,
+                        userSettings,
+                        customActionTransformService);
+                });
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
                 services.AddSingleton<OptionsViewModel>();
             }).Build();

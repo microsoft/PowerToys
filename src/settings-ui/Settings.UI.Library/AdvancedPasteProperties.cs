@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -27,7 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IsAdvancedAIEnabled = false;
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
-            AIServiceConfiguration = new Dictionary<string, object>();
+            AdvancedAIConfiguration = new();
+            PasteAIConfiguration = new();
         }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -59,9 +59,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnoreAttribute]
         public AdvancedPasteAdditionalActions AdditionalActions { get; init; }
 
-        [JsonPropertyName("ai-service-configuration")]
+        [JsonPropertyName("advanced-ai-configuration")]
         [CmdConfigureIgnoreAttribute]
-        public Dictionary<string, object> AIServiceConfiguration { get; set; }
+        public AdvancedAIConfiguration AdvancedAIConfiguration { get; set; }
+
+        [JsonPropertyName("paste-ai-configuration")]
+        [CmdConfigureIgnoreAttribute]
+        public PasteAIConfiguration PasteAIConfiguration { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this);

@@ -29,8 +29,6 @@ namespace AdvancedPaste.Services.CustomActions
 
         public PromptExecutionSettings ExecutionSettings { get; set; }
 
-        public Func<Kernel> KernelFactory { get; set; }
-
         public Func<ChatMessageContent, AIServiceUsage> UsageExtractor { get; set; }
 
         public string SystemPrompt { get; set; }

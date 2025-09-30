@@ -12,14 +12,17 @@ namespace AdvancedPaste.Services.CustomActions
         {
             ArgumentNullException.ThrowIfNull(config);
 
-            if (IsSupportedBySemanticKernel(config.ProviderType))
+            var providerType = NormalizeProviderType(config.ProviderType);
+            config.ProviderType = providerType;
+
+            if (IsSupportedBySemanticKernel(providerType))
             {
                 return new SemanticKernelPasteProvider(config);
             }
 
-            return config.ProviderType switch
+            return providerType switch
             {
-                "local" => new LocalModelPasteProvider(config.LocalModelPath),
+                "local" or "onnx" => new LocalModelPasteProvider(config.LocalModelPath ?? config.ModelPath),
                 _ => throw new NotSupportedException($"Provider {config.ProviderType} not supported"),
             };
         }
@@ -28,8 +31,24 @@ namespace AdvancedPaste.Services.CustomActions
         {
             return providerType switch
             {
-                "openai" or "azure" => true,
+                "openai" or "azureopenai" => true,
                 _ => false,
+            };
+        }
+
+        private static string NormalizeProviderType(string providerType)
+        {
+            if (string.IsNullOrWhiteSpace(providerType))
+            {
+                return "openai";
+            }
+
+            var normalized = providerType.Trim().ToLowerInvariant();
+
+            return normalized switch
+            {
+                "azure" => "azureopenai",
+                _ => normalized,
             };
         }
     }

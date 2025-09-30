@@ -37,7 +37,8 @@ namespace AdvancedPaste.ViewModels
         private readonly DispatcherTimer _clipboardTimer;
         private readonly IUserSettings _userSettings;
         private readonly IPasteFormatExecutor _pasteFormatExecutor;
-        private readonly IAICredentialsProvider _aiCredentialsProvider;
+        private readonly IPasteAICredentialsProvider _pasteAICredentialsProvider;
+        private readonly IAdvancedAICredentialsProvider _advancedAICredentialsProvider;
 
         private CancellationTokenSource _pasteActionCancellationTokenSource;
 
@@ -79,11 +80,22 @@ namespace AdvancedPaste.ViewModels
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
 
-        public bool IsCustomAIServiceEnabled => IsAllowedByGPO && _aiCredentialsProvider.IsConfigured;
+        public bool IsCustomAIServiceEnabled
+        {
+            get
+            {
+                if (!IsAllowedByGPO)
+                {
+                    return false;
+                }
+
+                return _userSettings.IsAdvancedAIEnabled ? _advancedAICredentialsProvider.IsConfigured : _pasteAICredentialsProvider.IsConfigured;
+            }
+        }
 
         public bool IsCustomAIAvailable => IsCustomAIServiceEnabled && ClipboardHasDataForCustomAI;
 
-        public bool IsAdvancedAIEnabled => IsCustomAIServiceEnabled && _userSettings.IsAdvancedAIEnabled;
+        public bool IsAdvancedAIEnabled => IsAllowedByGPO && _userSettings.IsAdvancedAIEnabled && _advancedAICredentialsProvider.IsConfigured;
 
         public bool ClipboardHasData => AvailableClipboardFormats != ClipboardFormat.None;
 
@@ -110,9 +122,10 @@ namespace AdvancedPaste.ViewModels
 
         public event EventHandler PreviewRequested;
 
-        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider aiCredentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
+        public OptionsViewModel(IFileSystem fileSystem, IPasteAICredentialsProvider pasteAICredentialsProvider, IAdvancedAICredentialsProvider advancedAICredentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
         {
-            _aiCredentialsProvider = aiCredentialsProvider;
+            _pasteAICredentialsProvider = pasteAICredentialsProvider;
+            _advancedAICredentialsProvider = advancedAICredentialsProvider;
             _userSettings = userSettings;
             _pasteFormatExecutor = pasteFormatExecutor;
 
@@ -270,7 +283,7 @@ namespace AdvancedPaste.ViewModels
 
                 _dispatcherQueue.TryEnqueue(() =>
                 {
-                    GetMainWindow()?.FinishLoading(_aiCredentialsProvider.IsConfigured);
+                    GetMainWindow()?.FinishLoading(IsCustomAIServiceEnabled);
                     OnPropertyChanged(nameof(InputTxtBoxPlaceholderText));
                     OnPropertyChanged(nameof(CustomAIUnavailableErrorText));
                     OnPropertyChanged(nameof(IsCustomAIServiceEnabled));
@@ -319,7 +332,7 @@ namespace AdvancedPaste.ViewModels
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAIGpoDisabled");
                 }
 
-                if (!_aiCredentialsProvider.IsConfigured)
+                if (!IsCustomAIServiceEnabled)
                 {
                     return ResourceLoaderInstance.ResourceLoader.GetString("OpenAINotConfigured");
                 }
@@ -519,7 +532,10 @@ namespace AdvancedPaste.ViewModels
         {
             UpdateAllowedByGPO();
 
-            return IsAllowedByGPO && _aiCredentialsProvider.Refresh();
+            var pasteKeyChanged = _pasteAICredentialsProvider.Refresh();
+            var advancedKeyChanged = _advancedAICredentialsProvider.Refresh();
+
+            return pasteKeyChanged || advancedKeyChanged;
         }
 
         public async Task CancelPasteActionAsync()

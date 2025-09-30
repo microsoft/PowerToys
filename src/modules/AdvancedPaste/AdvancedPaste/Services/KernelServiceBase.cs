@@ -37,13 +37,7 @@ public abstract class KernelServiceBase(
 
     protected abstract string AdvancedAIModelName { get; }
 
-    protected abstract string ChatComplectionModelName { get; }
-
     protected abstract PromptExecutionSettings PromptExecutionSettings { get; }
-
-    protected abstract PromptExecutionSettings CustomTextTransformExecutionSettings { get; }
-
-    protected abstract PasteAIConfig GetCustomActionProviderConfig();
 
     protected abstract void AddChatCompletionService(IKernelBuilder kernelBuilder);
 
@@ -156,8 +150,7 @@ public abstract class KernelServiceBase(
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
         chatHistory.AddUserMessage(prompt);
 
-        await _promptModerationService.ValidateAsync(GetFullPrompt(chatHistory), cancellationToken);
-
+        // await _promptModerationService.ValidateAsync(GetFullPrompt(chatHistory), cancellationToken);
         var chatResult = await kernel.GetRequiredService<IChatCompletionService>(AdvancedAIModelName)
                                      .GetChatMessageContentAsync(chatHistory, PromptExecutionSettings, kernel, cancellationToken);
         chatHistory.Add(chatResult);
@@ -221,16 +214,21 @@ public abstract class KernelServiceBase(
                 parameters: requiresPrompt ? [new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) }] : null,
                 returnParameter: new() { Description = "Array of available clipboard formats after operation" });
 
+        HashSet<string> usedFunctionNames = new(Enum.GetNames<PasteFormats>(), StringComparer.OrdinalIgnoreCase);
+
         // Get custom action functions
         var customActionFunctions = _userSettings.CustomActions
             .Where(customAction => !string.IsNullOrWhiteSpace(customAction.Name) && !string.IsNullOrWhiteSpace(customAction.Prompt))
-            .Where(customAction => ParseCustomActionName(customAction.Name, out _, out _))
             .Select(customAction =>
             {
-                ParseCustomActionName(customAction.Name, out var functionName, out var description);
+                var sanitizedBaseName = SanitizeFunctionName(customAction.Name);
+                var functionName = GetUniqueFunctionName(sanitizedBaseName, usedFunctionNames, customAction.Id);
+                var description = string.IsNullOrWhiteSpace(customAction.Description)
+                    ? $"Runs the \"{customAction.Name}\" custom action."
+                    : customAction.Description;
                 return KernelFunctionFactory.CreateFromMethod(
                     method: async (Kernel kernel) => await ExecuteCustomActionAsync(kernel, customAction.Prompt),
-                    functionName: SanitizeFunctionName(functionName),
+                    functionName: functionName,
                     description: description,
                     parameters: null,
                     returnParameter: new() { Description = "Array of available clipboard formats after operation" });
@@ -239,30 +237,28 @@ public abstract class KernelServiceBase(
         return standardFunctions.Concat(customActionFunctions);
     }
 
-    private static bool ParseCustomActionName(string name, out string functionName, out string description)
+    private static string GetUniqueFunctionName(string baseName, HashSet<string> usedFunctionNames, int customActionId)
     {
-        functionName = null;
-        description = null;
+        ArgumentNullException.ThrowIfNull(usedFunctionNames);
 
-        if (string.IsNullOrWhiteSpace(name))
+        var candidate = string.IsNullOrEmpty(baseName) ? "_CustomAction" : baseName;
+
+        if (usedFunctionNames.Add(candidate))
         {
-            return false;
+            return candidate;
         }
 
-        // For Test: Check if the name follows the format: Name(Description)
-        var trimmedName = name.Trim();
-        var openParenIndex = trimmedName.IndexOf('(');
-        var closeParenIndex = trimmedName.LastIndexOf(')');
-
-        if (openParenIndex > 0 && closeParenIndex > openParenIndex && closeParenIndex == trimmedName.Length - 1)
+        int suffix = 1;
+        while (true)
         {
-            functionName = trimmedName.Substring(0, openParenIndex).Trim();
-            description = trimmedName.Substring(openParenIndex + 1, closeParenIndex - openParenIndex - 1).Trim();
+            var nextCandidate = $"{candidate}_{customActionId}_{suffix}";
+            if (usedFunctionNames.Add(nextCandidate))
+            {
+                return nextCandidate;
+            }
 
-            return !string.IsNullOrWhiteSpace(functionName) && !string.IsNullOrWhiteSpace(description);
+            suffix++;
         }
-
-        return false;
     }
 
     private static string SanitizeFunctionName(string name)
@@ -287,8 +283,8 @@ public abstract class KernelServiceBase(
             async dataPackageView =>
             {
                 var input = await dataPackageView.GetTextAsync();
-                string output = await TransformTextWithSemanticKernelAsync(fixedPrompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
-                return DataPackageHelpers.CreateFromText(output);
+                var result = await _customActionTransformService.TransformTextAsync(fixedPrompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
+                return DataPackageHelpers.CreateFromText(result?.Content ?? string.Empty);
             });
 
     private Task<string> ExecutePromptTransformAsync(Kernel kernel, PasteFormats format, string prompt) =>
@@ -305,26 +301,9 @@ public abstract class KernelServiceBase(
     private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, CancellationToken cancellationToken, IProgress<double> progress) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => await TransformTextWithSemanticKernelAsync(prompt, input, cancellationToken, progress),
+            PasteFormats.CustomTextTransformation => (await _customActionTransformService.TransformTextAsync(prompt, input, cancellationToken, progress))?.Content ?? string.Empty,
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
-
-    public async Task<string> TransformTextWithSemanticKernelAsync(string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress)
-    {
-        var context = new CustomActionTransformContext
-        {
-            Prompt = prompt,
-            InputText = inputText,
-            ProviderConfig = GetCustomActionProviderConfig(),
-            ExecutionSettings = CustomTextTransformExecutionSettings,
-            KernelFactory = CreateKernel,
-            ModelId = ChatComplectionModelName,
-            UsageExtractor = GetAIServiceUsage,
-        };
-
-        var result = await _customActionTransformService.TransformAsync(context, cancellationToken, progress);
-        return result?.Content ?? string.Empty;
-    }
 
     private Task<string> ExecuteStandardTransformAsync(Kernel kernel, PasteFormats format) =>
         ExecuteTransformAsync(
