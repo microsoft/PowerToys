@@ -16,4 +16,5 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory;
 internal static class KeyChords
 {
     internal static KeyChord DeleteEntry { get; } = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete);
+    internal static KeyChord OpenUrl { get; } = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.O);
 }
