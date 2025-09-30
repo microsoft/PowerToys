@@ -298,16 +298,58 @@ public sealed partial class ListPage : Page,
 
     public void Receive(NavigatePageDownCommand message)
     {
+        var indexes = CalculateTargetIndexPageUpDownScrollTo(true);
+        if (indexes is null)
+        {
+            return;
+        }
+
+        if (indexes.Value.CurrentIndex != indexes.Value.TargetIndex)
+        {
+            ItemView.SelectedIndex = indexes.Value.TargetIndex;
+            ItemView.ScrollIntoView(ItemView.SelectedItem);
+        }
+    }
+
+    public void Receive(NavigatePageUpCommand message)
+    {
+        var indexes = CalculateTargetIndexPageUpDownScrollTo(false);
+        if (indexes is null)
+        {
+            return;
+        }
+
+        if (indexes.Value.CurrentIndex != indexes.Value.TargetIndex)
+        {
+            ItemView.SelectedIndex = indexes.Value.TargetIndex;
+            ItemView.ScrollIntoView(ItemView.SelectedItem);
+        }
+    }
+
+    /// <summary>
+    /// Calculates the item index to target when performing a page up or page down
+    /// navigation. The calculation attempts to estimate how many items fit into
+    /// the visible viewport by measuring actual container heights currently visible
+    /// within the internal ScrollViewer. If measurements are not available a
+    /// fallback estimate is used.
+    /// </summary>
+    /// <param name="isPageDown">True to calculate a page-down target, false for page-up.</param>
+    /// <returns>
+    /// A tuple containing the current index and the calculated target index, or null
+    /// if a valid calculation could not be performed (for example, missing ScrollViewer).
+    /// </returns>
+    private (int CurrentIndex, int TargetIndex)? CalculateTargetIndexPageUpDownScrollTo(bool isPageDown)
+    {
         var scroll = FindScrollViewer(ItemView);
         if (scroll is null)
         {
-            return;
+            return null;
         }
 
         var viewportHeight = scroll.ViewportHeight;
         if (viewportHeight <= 0)
         {
-            return;
+            return null;
         }
 
         var currentIndex = ItemView.SelectedIndex < 0 ? 0 : ItemView.SelectedIndex;
@@ -318,9 +360,26 @@ public sealed partial class ListPage : Page,
         var firstVisibleIndex = firstVisibleIndexNotFound;
         var visibleHeights = new List<double>(itemCount);
 
+        int startIndex;
+        Func<int, bool> condition;
+        Func<int, int> increment;
+
+        if (isPageDown)
+        {
+            startIndex = 0;
+            condition = i => i < itemCount;
+            increment = i => i + 1;
+        }
+        else
+        {
+            startIndex = currentIndex;
+            condition = i => i >= 0;
+            increment = i => i - 1;
+        }
+
         // Find the first visible index
         // Collect visible item heights
-        for (var i = 0; i < itemCount; i++)
+        for (var i = startIndex; condition(i); i = increment(i))
         {
             if (ItemView.ContainerFromIndex(i) is FrameworkElement container)
             {
@@ -331,7 +390,6 @@ public sealed partial class ListPage : Page,
                     var bottom = topLeft.Y + container.ActualHeight;
 
                     // If any part of the container is inside the viewport, consider it visible
-                    // if (0 <= bottom && topLeft.Y <= viewportHeight)
                     if (topLeft.Y >= 0 && bottom <= viewportHeight)
                     {
                         if (firstVisibleIndex == firstVisibleIndexNotFound)
@@ -386,110 +444,11 @@ public sealed partial class ListPage : Page,
             itemsPerPage = Math.Max(1, (int)Math.Floor(viewportHeight / itemHeight));
         }
 
-        var targetIndex = Math.Min(itemCount - 1, currentIndex + Math.Max(1, itemsPerPage));
-        if (targetIndex != currentIndex)
-        {
-            ItemView.SelectedIndex = targetIndex;
-            ItemView.ScrollIntoView(ItemView.SelectedItem);
-        }
-    }
+        var targetIndex = isPageDown
+                              ? Math.Min(itemCount - 1, currentIndex + Math.Max(1, itemsPerPage))
+                              : Math.Max(0, currentIndex - Math.Max(1, itemsPerPage));
 
-    public void Receive(NavigatePageUpCommand message)
-    {
-        var scroll = FindScrollViewer(ItemView);
-        if (scroll is null)
-        {
-            return;
-        }
-
-        var viewportHeight = scroll.ViewportHeight;
-        if (viewportHeight <= 0)
-        {
-            return;
-        }
-
-        var currentIndex = ItemView.SelectedIndex < 0 ? 0 : ItemView.SelectedIndex;
-        var itemCount = ItemView.Items.Count;
-
-        // Compute visible item heights within the ScrollViewer viewport
-        const int firstVisibleIndexNotFound = -1;
-        var firstVisibleIndex = firstVisibleIndexNotFound;
-        var visibleHeights = new List<double>(itemCount);
-
-        // Find the first visible index
-        // Collect visible item heights
-        for (var i = 0; i < itemCount; i++)
-        {
-            if (ItemView.ContainerFromIndex(i) is FrameworkElement container)
-            {
-                try
-                {
-                    var transform = container.TransformToVisual(scroll);
-                    var topLeft = transform.TransformPoint(new Point(0, 0));
-                    var bottom = topLeft.Y + container.ActualHeight;
-
-                    // If any part of the container is inside the viewport, consider it visible
-                    if (topLeft.Y >= 0 && bottom <= viewportHeight)
-                    {
-                        if (firstVisibleIndex == firstVisibleIndexNotFound)
-                        {
-                            firstVisibleIndex = i;
-                        }
-
-                        visibleHeights.Add(container.ActualHeight > 0 ? container.ActualHeight : 0);
-                    }
-                }
-                catch
-                {
-                    // ignore transform errors and continue
-                }
-            }
-        }
-
-        var itemsPerPage = 0;
-
-        // Calculate how many items fit in the viewport based on their actual heights
-        if (visibleHeights.Count > 0)
-        {
-            double accumulated = 0;
-            for (var i = 0; i < visibleHeights.Count; i++)
-            {
-                accumulated += visibleHeights[i] <= 0 ? 1 : visibleHeights[i];
-                itemsPerPage++;
-                if (accumulated >= viewportHeight)
-                {
-                    break;
-                }
-            }
-        }
-        else
-        {
-            // fallback: estimate using previous measured container height
-            double itemHeight = 0;
-            for (var i = currentIndex; i >= 0; i--)
-            {
-                if (ItemView.ContainerFromIndex(i) is FrameworkElement { ActualHeight: > 0 } c)
-                {
-                    itemHeight = c.ActualHeight;
-                    break;
-                }
-            }
-
-            if (itemHeight <= 0)
-            {
-                itemHeight = 1;
-            }
-
-            itemsPerPage = Math.Max(1, (int)Math.Floor(viewportHeight / itemHeight));
-        }
-
-        var targetIndex = Math.Max(0, currentIndex - Math.Max(1, itemsPerPage));
-
-        if (targetIndex != currentIndex)
-        {
-            ItemView.SelectedIndex = targetIndex;
-            ItemView.ScrollIntoView(ItemView.SelectedItem);
-        }
+        return (currentIndex, targetIndex);
     }
 
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
