@@ -67,6 +67,7 @@
     <!-- Moq to stay below v4.20 due to behavior change. need to be sure fixed -->
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="MSTest" Version="3.8.3" />
+    <PackageVersion Include="NJsonSchema" Version="11.4.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="NLog" Version="5.2.8" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
@@ -107,7 +108,7 @@
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
-    <PackageVersion Include="WinUIEx" Version="2.2.0" />
+    <PackageVersion Include="WinUIEx" Version="2.8.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
     <PackageVersion Include="WyHash" Version="1.0.5" />
     <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />
