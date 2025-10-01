@@ -36,6 +36,11 @@
                 SeparatorTemplate="{StaticResource DetailsSeparatorTemplate}"
                 TagTemplate="{StaticResource DetailsTagsTemplate}" />
 
+            <cmdpalUI:HeroImageDataTemplateSelector
+                x:Key="HeroImageDataTemplateSelector"
+                ImageTemplate="{StaticResource HeroImageTemplate}"
+                IconTemplate="{StaticResource HeroIconTemplate}" />
+
             <converters:BoolToVisibilityConverter
                 x:Key="BoolToInvertedVisibilityConverter"
                 FalseValue="Visible"
@@ -167,6 +172,32 @@
                 x:Key="DefaultMarkdownConfig"
                 ImageProvider="{StaticResource ImageProvider}"
                 Themes="{StaticResource DefaultMarkdownThemeConfig}" />
+
+            <!-- HeroImage Templates -->
+            <DataTemplate x:Key="HeroImageTemplate" x:DataType="Microsoft.CommandPalette.Extensions.Toolkit:IconInfo">
+                <cpcontrols:IconBox
+                    x:Name="HeroImageBorder"
+                    MinWidth="200"
+                    MaxWidth="400"
+                    Height="Auto"
+                    Margin="0,0,16,16"
+                    HorizontalAlignment="Left"
+                    AutomationProperties.AccessibilityView="Raw"
+                    SourceKey="{x:Bind Light, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="HeroIconTemplate" x:DataType="Microsoft.CommandPalette.Extensions.Toolkit:IconInfo">
+                <cpcontrols:IconBox
+                    x:Name="HeroIconBorder"
+                    Width="64"
+                    Height="64"
+                    Margin="0,0,16,16"
+                    HorizontalAlignment="Left"
+                    AutomationProperties.AccessibilityView="Raw"
+                    SourceKey="{x:Bind Light, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+            </DataTemplate>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -421,14 +452,12 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <cpcontrols:IconBox
-                            x:Name="HeroImageBorder"
-                            Width="64"
+                        <ContentPresenter
+                            x:Name="HeroImagePresenter"
                             Margin="0,0,16,16"
                             HorizontalAlignment="Left"
-                            AutomationProperties.AccessibilityView="Raw"
-                            SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
+                            Content="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
+                            ContentTemplateSelector="{StaticResource HeroImageDataTemplateSelector}"
                             Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
 
                         <TextBlock
