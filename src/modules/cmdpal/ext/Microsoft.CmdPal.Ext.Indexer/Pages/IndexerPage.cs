@@ -90,7 +90,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
     {
         // {20D04FE0-3AEA-1069-A2D8-08002B30309D} is CLSID for "This PC"
         const string template = "search-ms:query={0}&crumb=location:::{{20D04FE0-3AEA-1069-A2D8-08002B30309D}}";
-        var encodedSearchText = UrlEncoder.Default.Encode(SearchText);
+        var fullSearchText = FullSearchString(SearchText);
+        var encodedSearchText = UrlEncoder.Default.Encode(fullSearchText);
         var command = string.Format(CultureInfo.CurrentCulture, template, encodedSearchText);
         ShellHelpers.OpenInShell(command);
     }
