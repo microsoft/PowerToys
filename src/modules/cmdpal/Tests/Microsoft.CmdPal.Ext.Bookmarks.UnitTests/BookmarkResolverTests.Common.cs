@@ -98,6 +98,27 @@ public partial class BookmarkResolverTests
                 ],
                 [
                     new PlaceholderClassificationCase(
+                        Name: "Not really a valid protocol",
+                        Input: "this is not really a protocol myapp: doit",
+                        ExpectSuccess: true,
+                        ExpectedKind: CommandKind.Unknown,
+                        ExpectedTarget: "this",
+                        ExpectedArguments: "is not really a protocol myapp: doit",
+                        ExpectedLaunch: LaunchMethod.ShellExecute,
+                        ExpectedIsPlaceholder: false),
+                ],
+                [
+                    new PlaceholderClassificationCase(
+                        Name: "Drive",
+                        Input: "C:",
+                        ExpectSuccess: true,
+                        ExpectedKind: CommandKind.Directory,
+                        ExpectedTarget: "C:\\",
+                        ExpectedLaunch: LaunchMethod.ExplorerOpen,
+                        ExpectedIsPlaceholder: false),
+                ],
+                [
+                    new PlaceholderClassificationCase(
                         Name: "Non-existing path with extension",
                         Input: "C:\\this-folder-should-not-exist-12345\\file.txt",
                         ExpectSuccess: true,

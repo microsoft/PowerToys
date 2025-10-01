@@ -104,11 +104,9 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         }
 
         // 1a) We're a placeholder and start look like a protocol scheme (e.g. "myapp:{{placeholder}}")
-        if (isPlaceholder && !string.IsNullOrWhiteSpace(inputUntilFirstPlaceholder) && inputUntilFirstPlaceholder.Contains(':'))
+        if (isPlaceholder && UriHelper.TryGetScheme(inputUntilFirstPlaceholder, out var scheme, out _))
         {
-            var indexOfColon = inputUntilFirstPlaceholder.IndexOf(':');
-            var scheme = inputUntilFirstPlaceholder[..indexOfColon];
-
+            // single letter schemes are probably drive letters, ignore, file and shell protocols are handled elsewhere
             if (scheme.Length > 1 && scheme != Uri.UriSchemeFile && scheme != UriSchemeShell)
             {
                 var isWeb = scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) || scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
@@ -129,13 +127,13 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         // Try to grow head (only for unquoted original) to include spaces until a path exists.
 
         // Find longest unquoted argument string
-        var (a, b) = CommandLineHelper.SplitLongestHeadBeforeQuotedArg(input);
-        if (a == string.Empty)
+        var (longestUnquotedHead, tailAfterLongestUnquotedHead) = CommandLineHelper.SplitLongestHeadBeforeQuotedArg(input);
+        if (longestUnquotedHead == string.Empty)
         {
-            (a, b) = CommandLineHelper.SplitHeadAndArgs(input);
+            (longestUnquotedHead, tailAfterLongestUnquotedHead) = CommandLineHelper.SplitHeadAndArgs(input);
         }
 
-        var (headPath, tailArgs) = ExpandToBestExistingPath(a, b, isPlaceholder, placeholderParser);
+        var (headPath, tailArgs) = ExpandToBestExistingPath(longestUnquotedHead, tailAfterLongestUnquotedHead, isPlaceholder, placeholderParser);
         if (headPath is not null)
         {
             var args = tailArgs ?? string.Empty;
@@ -154,63 +152,57 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                 return true;
             }
 
-            if (File.Exists(headPath) || isPlaceholder)
+            var ext = Path.GetExtension(headPath);
+            if (ShellHelpers.IsExecutableExtension(ext))
             {
-                if (ShellHelpers.IsExecutableFile(headPath))
-                {
-                    result = new Classification(
-                        CommandKind.FileExecutable,
-                        input,
-                        headPath,
-                        args,
-                        LaunchMethod.ShellExecute, // direct exec; or ShellExecute if you want verb support
-                        Path.GetDirectoryName(headPath),
-                        isPlaceholder);
-                }
-                else
-                {
-                    var ext = Path.GetExtension(headPath);
-                    var isShellLink = ext.Equals(".lnk", StringComparison.OrdinalIgnoreCase);
-                    var isUrlLink = ext.Equals(".url", StringComparison.OrdinalIgnoreCase);
-
-                    if (isShellLink || isUrlLink)
-                    {
-                        // In the future we can fetch data out of the link
-                        result = new Classification(
-                            isUrlLink ? CommandKind.InternetShortcut : CommandKind.Shortcut,
-                            input,
-                            headPath,
-                            string.Empty,
-                            LaunchMethod.ShellExecute,
-                            Path.GetDirectoryName(headPath),
-                            isPlaceholder);
-
-                        return true;
-                    }
-                    else
-                    {
-                        result = new Classification(
-                            CommandKind.FileDocument,
-                            input,
-                            headPath,
-                            args,
-                            LaunchMethod.ShellExecute,
-                            Path.GetDirectoryName(headPath),
-                            isPlaceholder);
-                    }
-                }
+                result = new Classification(
+                    CommandKind.FileExecutable,
+                    input,
+                    headPath,
+                    args,
+                    LaunchMethod.ShellExecute, // direct exec; or ShellExecute if you want verb support
+                    Path.GetDirectoryName(headPath),
+                    isPlaceholder);
 
                 return true;
             }
+
+            var isShellLink = ext.Equals(".lnk", StringComparison.OrdinalIgnoreCase);
+            var isUrlLink = ext.Equals(".url", StringComparison.OrdinalIgnoreCase);
+            if (isShellLink || isUrlLink)
+            {
+                // In the future we can fetch data out of the link
+                result = new Classification(
+                    isUrlLink ? CommandKind.InternetShortcut : CommandKind.Shortcut,
+                    input,
+                    headPath,
+                    string.Empty,
+                    LaunchMethod.ShellExecute,
+                    Path.GetDirectoryName(headPath),
+                    isPlaceholder);
+
+                return true;
+            }
+
+            result = new Classification(
+                CommandKind.FileDocument,
+                input,
+                headPath,
+                args,
+                LaunchMethod.ShellExecute,
+                Path.GetDirectoryName(headPath),
+                isPlaceholder);
+
+            return true;
         }
 
-        if (TryGetAumid(a, out var aumid))
+        if (TryGetAumid(longestUnquotedHead, out var aumid))
         {
             result = new Classification(
                 CommandKind.Aumid,
-                a,
+                longestUnquotedHead,
                 aumid,
-                b,
+                tailAfterLongestUnquotedHead,
                 LaunchMethod.ActivateAppId,
                 null,
                 isPlaceholder);
@@ -279,12 +271,14 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         // 3.4) If it looks like a path with ext but missing file, treat as document (Shell will handle assoc / error)
         if (LooksPathy(head) && Path.HasExtension(head))
         {
+            var extension = Path.GetExtension(head);
+
             // if the path extension contains placeholders, we can't assume what it is so, skip it and treat it as unknown
-            var hasSpecificExtension = !isPlaceholder || !Path.GetExtension(head).Contains('{');
+            var hasSpecificExtension = !isPlaceholder || !extension.Contains('{');
             if (hasSpecificExtension)
             {
                 result = new Classification(
-                    ShellHelpers.IsExecutableFile(head) ? CommandKind.FileExecutable : CommandKind.FileDocument,
+                    ShellHelpers.IsExecutableExtension(extension) ? CommandKind.FileExecutable : CommandKind.FileDocument,
                     input,
                     head,
                     tail,
@@ -328,7 +322,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
     private static (string Head, string Tail) SplitHeadAndArgs(string input) => CommandLineHelper.SplitHeadAndArgs(input);
 
     // Finds the best existing path prefix in an *unquoted* input by scanning
-    // whitespace boundaries. Prefers files over directories; for same kind,
+    // whitespace boundaries. Prefers files to directories; for same kind,
     // prefers the longer path.
     // Returns (head, tail) or (null, null) if nothing found.
     private static (string? Head, string? Tail) ExpandToBestExistingPath(string head, string tail, bool containsPlaceholders, IPlaceholderParser placeholderParser)
@@ -388,12 +382,13 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         return (null, null);
     }
 
+    // Attempts to guess if any placeholders in the candidate string are likely not part of a filesystem path.
     private static bool ContainsNonPathPlaceholder(string candidate, IPlaceholderParser placeholderParser)
     {
         placeholderParser.ParsePlaceholders(candidate, out _, out var placeholders);
         foreach (var match in placeholders)
         {
-            var placeholderContext = GetPlaceholderContextInFileSystemPath(candidate, match.Index);
+            var placeholderContext = GuessPlaceholderContextInFileSystemPath(candidate, match.Index);
 
             // If placeholder appears after what looks like a command-line flag/option
             if (placeholderContext.IsAfterFlag)
@@ -411,7 +406,11 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         return false;
     }
 
-    private static PlaceholderContext GetPlaceholderContextInFileSystemPath(string input, int placeholderIndex)
+    // Heuristically determines the context of a placeholder inside a filesystem-like input string.
+    // Sets:
+    //  - IsAfterFlag: true if immediately preceded by a token that looks like a command-line flag prefix (" -", " /", " --").
+    //  - LooksLikePathComponent: true if (a) not after a flag or (b) nearby text shows path separators.
+    private static PlaceholderContext GuessPlaceholderContextInFileSystemPath(string input, int placeholderIndex)
     {
         var beforePlaceholder = input[..placeholderIndex].TrimEnd();
 

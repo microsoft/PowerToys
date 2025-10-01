@@ -12,11 +12,21 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 public static class ShellHelpers
 {
     /// <summary>
-    /// These are the executable file extensions that Windows Shell recognizes. Unline CMD/PowerShell,
+    /// These are the executable file extensions that Windows Shell recognizes. Unlike CMD/PowerShell,
     /// Shell does not use PATHEXT, but has a magic fixed list.
     /// </summary>
     public static string[] ExecutableExtensions { get; } = [".PIF", ".COM", ".EXE", ".BAT", ".CMD"];
 
+    /// <summary>
+    /// Determines whether the specified file name represents an executable file
+    /// by examining its extension against the known list of Windows Shell
+    /// executable extensions (a fixed list that does not honor PATHEXT).
+    /// </summary>
+    /// <param name="fileName">The file name (with or without path) whose extension will be evaluated.</param>
+    /// <returns>
+    /// True if the file name has an extension that matches one of the recognized executable
+    /// extensions; otherwise, false. Returns false for null, empty, or whitespace input.
+    /// </returns>
     public static bool IsExecutableFile(string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))
@@ -25,6 +35,20 @@ public static class ShellHelpers
         }
 
         var fileExtension = Path.GetExtension(fileName);
+        return IsExecutableExtension(fileExtension);
+    }
+
+    /// <summary>
+    /// Determines whether the provided file extension (including the leading dot)
+    /// is one of the Windows Shell recognized executable extensions.
+    /// </summary>
+    /// <param name="fileExtension">The file extension to test. Should include the leading dot (e.g. ".exe").</param>
+    /// <returns>
+    /// True if the extension matches (case-insensitive) one of the known executable
+    /// extensions; false if it does not match or if the input is null/whitespace.
+    /// </returns>
+    public static bool IsExecutableExtension(string fileExtension)
+    {
         if (string.IsNullOrWhiteSpace(fileExtension))
         {
             // Shell won't execute app with a filename without an extension
