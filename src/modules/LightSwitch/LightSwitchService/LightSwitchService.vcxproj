@@ -190,6 +190,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="LightSwitchService.rc" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="LightSwitchSettings.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
