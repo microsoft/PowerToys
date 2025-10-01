@@ -48,6 +48,26 @@ namespace PowerOCR.Helpers
             try
             {
                 Logger.LogDebug("Initializing AI Text Recognizer backend");
+
+                // Guard: require package identity (sparse package) for Windows AI Foundry APIs
+                bool hasIdentity;
+                try
+                {
+                    _ = Windows.ApplicationModel.Package.Current.Id; // accessing triggers exception if no identity
+                    hasIdentity = true;
+                }
+                catch
+                {
+                    hasIdentity = false;
+                }
+
+                if (!hasIdentity)
+                {
+                    Logger.LogWarning("AI Text Recognizer: no package identity detected; skipping AI initialization.");
+                    _usable = false;
+                    return; // _initialized will be set in finally
+                }
+
                 var osVersion = Environment.OSVersion.Version;
                 bool osOk = osVersion.Major >= 10; // Basic gate
                 if (osOk)
