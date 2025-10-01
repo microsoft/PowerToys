@@ -170,20 +170,6 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         }
     }
 
-    public int WeightBoost
-    {
-        get => _providerSettings.FallbackWeightBoost(this);
-        set
-        {
-            if (value != WeightBoost)
-            {
-                _providerSettings.SetFallbackWeightBoost(this, value);
-                Save();
-                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
-            }
-        }
-    }
-
     public TopLevelViewModel(
         CommandItemViewModel item,
         bool isFallback,
@@ -333,9 +319,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void GenerateId()
     {
-        // Use WyHash64 to generate stable ID hashes.
         // manually seeding with 0, so that the hash is stable across launches
         var result = WyHash64.ComputeHash64(_commandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
+
         _generatedId = $"{_commandProviderId}{result}";
     }
 

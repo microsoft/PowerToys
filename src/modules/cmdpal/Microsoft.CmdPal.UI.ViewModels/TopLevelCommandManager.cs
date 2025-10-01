@@ -31,6 +31,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
     private readonly Lock _commandProvidersLock = new();
     private readonly SupersedingAsyncGate _reloadCommandsGate;
+    private readonly SettingsModel _settingsModel;
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
@@ -40,6 +41,8 @@ public partial class TopLevelCommandManager : ObservableObject,
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
+
+        _settingsModel = _serviceProvider.GetService<SettingsModel>()!;
     }
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
@@ -112,12 +115,29 @@ public partial class TopLevelCommandManager : ObservableObject,
                     commands.Add(item);
                 }
 
+                var needToSaveSettings = false;
+                var fallbacks = _settingsModel.FallbackWeights;
+
                 foreach (var item in commandProvider.FallbackItems)
                 {
                     if (item.IsEnabled)
                     {
                         commands.Add(item);
+
+                        var id = IdForTopLevelOrAppItem(item);
+
+                        if (!fallbacks.Contains(id))
+                        {
+                            fallbacks.Add(id);
+                            needToSaveSettings = true;
+                        }
                     }
+                }
+
+                if (needToSaveSettings)
+                {
+                    _settingsModel.FallbackWeights = fallbacks;
+                    SettingsModel.SaveSettings(_settingsModel);
                 }
 
                 return commands;
@@ -130,6 +150,19 @@ public partial class TopLevelCommandManager : ObservableObject,
         commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
 
         return commands;
+    }
+
+    private string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
+    {
+        if (topLevelOrAppItem is TopLevelViewModel topLevel)
+        {
+            return topLevel.Id;
+        }
+        else
+        {
+            // we've got an app here
+            return topLevelOrAppItem.Command?.Id ?? string.Empty;
+        }
     }
 
     // By all accounts, we're already on a background thread (the COM call

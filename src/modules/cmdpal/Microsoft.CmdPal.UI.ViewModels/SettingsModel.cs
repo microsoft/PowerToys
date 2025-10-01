@@ -52,6 +52,8 @@ public partial class SettingsModel : ObservableObject
 
     public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
 
+    public List<string> FallbackWeights { get; set; } = [];
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 

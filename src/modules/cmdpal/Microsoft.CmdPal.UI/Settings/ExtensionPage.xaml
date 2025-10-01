@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.ExtensionPage"
-    x:Name="RootPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
@@ -14,6 +13,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    x:Name="RootPage"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -148,7 +148,7 @@
                                                             Minimum="-1000"
                                                             SmallChange="10"
                                                             SpinButtonPlacementMode="Compact"
-                                                            Value="{x:Bind WeightBoost, Mode=TwoWay}" />
+                                                            Value="0" />
                                                     </controls:SettingsCard>
                                                 </controls:SettingsExpander.Items>
                                             </controls:SettingsExpander>

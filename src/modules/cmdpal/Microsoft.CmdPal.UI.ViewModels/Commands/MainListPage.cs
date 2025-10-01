@@ -33,6 +33,7 @@ public partial class MainListPage : DynamicListPage,
 
     private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
+    private SettingsModel _settings;
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
     private List<Scored<IListItem>>? _fallbackItems;
@@ -70,9 +71,9 @@ public partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
-        settings.SettingsChanged += SettingsChangedHandler;
-        HotReloadSettings(settings);
+        _settings = _serviceProvider.GetService<SettingsModel>()!;
+        _settings.SettingsChanged += SettingsChangedHandler;
+        HotReloadSettings();
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
         IsLoading = true;
@@ -175,7 +176,7 @@ public partial class MainListPage : DynamicListPage,
                                 .OrderByDescending(o => o.Score)
 
                                 // Add fallback items post-sort so they are always at the end of the list
-                                // and eventually ordered based on user preference
+                                // and ordered based on user preference
                                 .Concat(_fallbackItems is not null ? _fallbackItems.Where(w => !string.IsNullOrEmpty(w.Item.Title)) : [])
                                 .Select(s => s.Item)
                                 .ToArray();
@@ -347,8 +348,7 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            List<Scored<IListItem>> scoredFallbacks = [.. ListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], SearchText, ScoreFallbackItem)];
-            _fallbackItems = [.. scoredFallbacks.OrderByDescending(o => o.Score)];
+            _fallbackItems = ScoreFallbackItems(newFallbacks);
 
             if (token.IsCancellationRequested)
             {
@@ -512,17 +512,29 @@ public partial class MainListPage : DynamicListPage,
         return (int)finalScore;
     }
 
-    private int ScoreFallbackItem(string query, IListItem topLevelOrAppItem)
+    private List<Scored<IListItem>> ScoreFallbackItems(IEnumerable<IListItem> newFallbacks)
     {
-        var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
+        var fallbackRanks = _settings.FallbackWeights;
 
-        var topLevelVM = topLevelOrAppItem as TopLevelViewModel;
+        List<Scored<IListItem>> scoredFallbacks = new List<Scored<IListItem>>();
 
-        var fallbackRankings = topLevelVM!.WeightBoost;
+        foreach (var item in newFallbacks)
+        {
+            var id = IdForTopLevelOrAppItem(item);
 
-        var finalScore = fallbackRankings + 1;
+            var position = fallbackRanks.IndexOf(id);
 
-        return (int)finalScore;
+            if (position < 0)
+            {
+                position = fallbackRanks.Count;
+            }
+
+            var score = fallbackRanks.Count - position;
+
+            scoredFallbacks.Add(new Scored<IListItem>() { Item = item, Score = score });
+        }
+
+        return scoredFallbacks.OrderByDescending(o => o.Score).ToList();
     }
 
     public void UpdateHistory(IListItem topLevelOrAppItem)
@@ -551,9 +563,13 @@ public partial class MainListPage : DynamicListPage,
 
     public void Receive(UpdateFallbackItemsMessage message) => RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings(sender);
+    private void SettingsChangedHandler(SettingsModel sender, object? args)
+    {
+        _settings = sender;
+        HotReloadSettings();
+    }
 
-    private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
+    private void HotReloadSettings() => ShowDetails = _settings.ShowAppDetails;
 
     public void Dispose()
     {

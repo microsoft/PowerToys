@@ -157,7 +157,7 @@ public sealed partial class SettingsWindow : WindowEx,
         DispatcherQueue.TryEnqueue(() => Close());
     }
 
-    private void AppTitleBar_PaneToggleRequested(TitleBar sender, object args)
+    private void AppTitleBar_PaneToggleRequested(Microsoft.UI.Xaml.Controls.TitleBar sender, object args)
     {
         NavView.IsPaneOpen = !NavView.IsPaneOpen;
     }
