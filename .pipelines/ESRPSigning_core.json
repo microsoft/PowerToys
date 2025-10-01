@@ -133,6 +133,9 @@
             "PowerToys.ImageResizerContextMenu.dll",
             "ImageResizerContextMenuPackage.msix",
 
+            "PowerToys.LightSwitchModuleInterface.dll",
+            "LightSwitchService\\PowerToys.LightSwitchService.exe",
+
             "PowerToys.KeyboardManager.dll",
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
             "KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
