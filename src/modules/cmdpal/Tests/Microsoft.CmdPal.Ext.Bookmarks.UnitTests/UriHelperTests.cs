@@ -62,12 +62,12 @@ public class UriHelperTests
     [TestMethod]
     public void TryGetScheme_MultipleColons_SplitsOnFirst()
     {
-        const string input = "ms-appx:///page.xaml";
+        const string input = "shell:::{645FF040-5081-101B-9F08-00AA002F954E}";
         var ok = TryGetScheme(input.AsSpan(), out var scheme, out var remainder);
 
         Assert.IsTrue(ok);
-        Assert.AreEqual("ms-appx", scheme);
-        Assert.AreEqual("///page.xaml", remainder);
+        Assert.AreEqual("shell", scheme);
+        Assert.AreEqual("::{645FF040-5081-101B-9F08-00AA002F954E}", remainder);
     }
 
     [TestMethod]

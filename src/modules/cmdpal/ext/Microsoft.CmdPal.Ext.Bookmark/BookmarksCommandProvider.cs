@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -14,6 +15,10 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public sealed partial class BookmarksCommandProvider : CommandProvider
 {
+    private const int LoadStateNotLoaded = 0;
+    private const int LoadStateLoading = 1;
+    private const int LoadStateLoaded = 2;
+
     private readonly IPlaceholderParser _placeholderParser = new PlaceholderParser();
     private readonly IBookmarksManager _bookmarksManager;
     private readonly IBookmarkResolver _commandResolver;
@@ -24,8 +29,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     private ICommandItem[] _commands = [];
     private List<BookmarkListItem> _bookmarks = [];
-    private bool _isLoading;
-    private bool _isLoaded;
+    private int _loadState;
 
     private static string StateJsonPath()
     {
@@ -80,16 +84,27 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands()
     {
-        if (!_isLoaded && !_isLoading)
+        if (Volatile.Read(ref _loadState) != LoadStateLoaded)
         {
-            _isLoading = true;
-            lock (_bookmarksLock)
+            if (Interlocked.CompareExchange(ref _loadState, LoadStateLoading, LoadStateNotLoaded) == LoadStateNotLoaded)
             {
-                _bookmarks = [.. _bookmarksManager.Bookmarks.Select(bookmark => new BookmarkListItem(bookmark, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser))];
-            }
+                try
+                {
+                    lock (_bookmarksLock)
+                    {
+                        _bookmarks = [.. _bookmarksManager.Bookmarks.Select(bookmark => new BookmarkListItem(bookmark, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser))];
+                        _commands = BuildTopLevelCommandsUnsafe();
+                    }
 
-            _isLoaded = true;
-            NotifyChange();
+                    Volatile.Write(ref _loadState, LoadStateLoaded);
+                    RaiseItemsChanged();
+                }
+                catch
+                {
+                    Volatile.Write(ref _loadState, LoadStateNotLoaded);
+                    throw;
+                }
+            }
         }
 
         return _commands;
@@ -97,11 +112,19 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     private void NotifyChange()
     {
+        if (Volatile.Read(ref _loadState) != LoadStateLoaded)
+        {
+            return;
+        }
+
         lock (_bookmarksLock)
         {
-            _commands = [_addNewItem, .. _bookmarks];
+            _commands = BuildTopLevelCommandsUnsafe();
         }
 
         RaiseItemsChanged();
     }
+
+    [Pure]
+    private ICommandItem[] BuildTopLevelCommandsUnsafe() => [_addNewItem, .. _bookmarks];
 }

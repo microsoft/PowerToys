@@ -208,7 +208,7 @@ public static class ThumbnailHelper
     private static nint GetLargestIcon(IntPtr pidl)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
-        NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX);
+        NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX | SHGFI_PIDL);
 
         var hIcon = IntPtr.Zero;
         var iID_IImageList = IID_IImageList;
