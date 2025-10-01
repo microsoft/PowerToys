@@ -41,6 +41,31 @@
                 FalseValue="Visible"
                 TrueValue="Collapsed" />
 
+            <Style
+                x:Key="DetailKeyTextBlockStyle"
+                BasedOn="{StaticResource CaptionTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+
+            <Style
+                x:Key="SeparatorKeyTextBlockStyle"
+                BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+            </Style>
+
+            <Style
+                x:Key="DetailValueTextBlockStyle"
+                BasedOn="{StaticResource BodyTextBlockStyle}"
+                TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+                <Setter Property="TextWrapping" Value="WrapWholeWords" />
+            </Style>
+
             <DataTemplate x:Key="TagTemplate" x:DataType="coreViewModels:TagViewModel">
                 <cpcontrols:Tag
                     HorizontalAlignment="Left"
@@ -68,7 +93,7 @@
                                 Margin="0,3,8,0"
                                 SourceKey="{x:Bind Icon, Mode=OneWay}"
                                 SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-                            <TextBlock Text="{x:Bind Name}" />
+                            <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="{x:Bind Name}" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
@@ -76,20 +101,13 @@
 
             <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="coreViewModels:DetailsLinkViewModel">
                 <StackPanel Orientation="Vertical">
+                    <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <TextBlock
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind Key, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords" />
-                    <TextBlock
-                        FontSize="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        IsTextSelectionEnabled="True"
+                        Style="{StaticResource DetailValueTextBlockStyle}"
                         Text="{x:Bind Text, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords"
                         Visibility="{x:Bind IsText, Mode=OneWay}" />
                     <HyperlinkButton
                         Padding="0"
-                        FontSize="12"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}">
                         <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="Wrap" />
@@ -98,10 +116,7 @@
             </DataTemplate>
             <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="coreViewModels:DetailsCommandsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
-                    <TextBlock
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind Key, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords" />
+                    <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
                         ItemTemplate="{StaticResource CommandTemplate}"
                         ItemsSource="{x:Bind Commands, Mode=OneWay}"
@@ -111,24 +126,20 @@
             <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="coreViewModels:DetailsSeparatorViewModel">
                 <StackPanel Margin="0,8,8,0" Orientation="Vertical">
                     <Border
-                        Margin="8,0,0,0"
-                        BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
+                        Margin="0,0,0,0"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                         BorderThickness="0,0,0,2">
                         <TextBlock
-                            Margin="-8,0,0,8"
-                            FontWeight="SemiBold"
-                            IsTextSelectionEnabled="True"
+                            Margin="0,0,0,0"
+                            Style="{StaticResource SeparatorKeyTextBlockStyle}"
                             Text="{x:Bind Key, Mode=OneWay}"
-                            TextWrapping="WrapWholeWords" />
+                            Visibility="{x:Bind help:BindTransformers.EmptyOrWhitespaceToCollapsed(Key), FallbackValue=Collapsed}" />
                     </Border>
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsTagsTemplate" x:DataType="coreViewModels:DetailsTagsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
-                    <TextBlock
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind Key, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords" />
+                    <TextBlock Style="{StaticResource DetailKeyTextBlockStyle}" Text="{x:Bind Key, Mode=OneWay}" />
                     <ItemsControl
                         ItemTemplate="{StaticResource TagTemplate}"
                         ItemsSource="{x:Bind Tags, Mode=OneWay}"

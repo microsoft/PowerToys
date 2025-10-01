@@ -5,7 +5,7 @@
     <XesUseOneStoreVersioning>true</XesUseOneStoreVersioning>
     <XesBaseYearForStoreVersion>2025</XesBaseYearForStoreVersion>
     <VersionMajor>0</VersionMajor>
-    <VersionMinor>5</VersionMinor>
+    <VersionMinor>6</VersionMinor>
     <VersionInfoProductName>Microsoft Command Palette</VersionInfoProductName>
   </PropertyGroup>
 </Project>
