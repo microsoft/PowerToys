@@ -5,11 +5,25 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
+    <Page.Resources>
+        <tkcontrols:MarkdownThemes
+            x:Key="ReleaseNotesMarkdownThemeConfig"
+            H1FontSize="22"
+            H1FontWeight="SemiBold"
+            H1Margin="0, 36, 0, 8"
+            H2FontSize="16"
+            H2FontWeight="SemiBold"
+            H2Margin="0, 16, 0, 4"
+            H3FontSize="16"
+            H3FontWeight="SemiBold"
+            H3Margin="0, 16, 0, 4"
+            HeadingForeground="{StaticResource TextFillColorPrimaryBrush}" />
+        <tkcontrols:MarkdownConfig x:Key="ReleaseNotesMarkdownConfig" Themes="{StaticResource ReleaseNotesMarkdownThemeConfig}" />
+    </Page.Resources>
 
     <!--  Main layout container  -->
     <Grid>
@@ -163,23 +177,14 @@
                         VerticalAlignment="Center"
                         IsIndeterminate="True"
                         Visibility="Visible" />
-                    <tk7controls:MarkdownTextBlock
+                    <tkcontrols:MarkdownTextBlock
                         x:Name="ReleaseNotesMarkdown"
-                        VerticalAlignment="Top"
-                        Background="Transparent"
-                        Header1FontSize="20"
-                        Header1FontWeight="SemiBold"
-                        Header1Margin="0,0,0,4"
-                        Header3FontSize="16"
-                        Header3FontWeight="SemiBold"
-                        Header4FontSize="16"
-                        Header4FontWeight="SemiBold"
-                        HorizontalRuleMargin="24"
-                        LinkClicked="ReleaseNotesMarkdown_LinkClicked"
-                        ListMargin="-18,4,0,12"
-                        ParagraphMargin="0,0,0,0"
-                        TableMargin="24"
-                        Visibility="Collapsed" />
+                        Config="{StaticResource ReleaseNotesMarkdownConfig}"
+                        UseAutoLinks="True"
+                        UseEmphasisExtras="True"
+                        UseListExtras="True"
+                        UsePipeTables="True"
+                        UseTaskLists="True" />
                 </Grid>
             </ScrollViewer>
         </Grid>

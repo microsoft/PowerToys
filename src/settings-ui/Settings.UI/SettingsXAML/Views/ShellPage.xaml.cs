@@ -605,6 +605,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void CtrlF_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             SearchBox.Focus(FocusState.Programmatic);
+            args.Handled = true; // prevent further processing (e.g., unintended navigation)
         }
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)

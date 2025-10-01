@@ -23,7 +23,7 @@ public partial class CalculatorCommandProvider : CommandProvider
 
     public CalculatorCommandProvider()
     {
-        Id = "Calculator";
+        Id = "com.microsoft.cmdpal.builtin.calculator";
         DisplayName = Resources.calculator_display_name;
         Icon = Icons.CalculatorIcon;
         Settings = ((SettingsManager)settings).Settings;

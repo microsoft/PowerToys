@@ -19,17 +19,17 @@ public partial class ListHelpers
             return 0;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
+        var nameMatchScore = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Title);
 
         // var locNameMatch = StringMatcher.FuzzySearch(query, NameLocalized);
-        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
+        var descriptionMatchScore = FuzzyStringMatcher.ScoreFuzzy(query, listItem.Subtitle);
 
         // var executableNameMatch = StringMatcher.FuzzySearch(query, ExePath);
         // var locExecutableNameMatch = StringMatcher.FuzzySearch(query, ExecutableNameLocalized);
         // var lnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableName);
         // var locLnkResolvedExecutableNameMatch = StringMatcher.FuzzySearch(query, LnkResolvedExecutableNameLocalized);
         // var score = new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, executableNameMatch.Score }.Max();
-        return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
+        return new[] { nameMatchScore, (descriptionMatchScore - 4) / 2, 0 }.Max();
     }
 
     public static IEnumerable<IListItem> FilterList(IEnumerable<IListItem> items, string query)

@@ -6,7 +6,11 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch;
 
-internal sealed class Icons
+internal static class Icons
 {
-    internal static IconInfo WebSearch { get; } = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
+    internal static IconInfo WebSearch { get; } = IconHelpers.FromRelativePaths("Assets\\WebSearch.light.png", "Assets\\WebSearch.dark.png");
+
+    internal static IconInfo Search { get; } = new("\uE721");
+
+    internal static IconInfo History { get; } = new("\uE81C");
 }

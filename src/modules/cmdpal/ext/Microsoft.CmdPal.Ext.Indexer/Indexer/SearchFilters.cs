@@ -18,7 +18,7 @@ internal sealed partial class SearchFilters : Filters
     public override IFilterItem[] GetFilters()
     {
         return [
-            new Filter() { Id = "all", Name = Resources.Indexer_Filter_All },
+            new Filter() { Id = "all", Name = Resources.Indexer_Filter_All, Icon = Icons.FilterIcon },
             new Separator(),
             new Filter() { Id = "folders", Name = Resources.Indexer_Filter_Folders_Only, Icon = Icons.FolderOpenIcon },
             new Filter() { Id = "files", Name = Resources.Indexer_Filter_Files_Only, Icon = Icons.FilesIcon },

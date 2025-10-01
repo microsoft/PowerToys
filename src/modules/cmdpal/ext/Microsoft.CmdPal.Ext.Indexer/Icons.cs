@@ -6,7 +6,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
-internal sealed class Icons
+internal static class Icons
 {
     internal static IconInfo FileExplorerSegoeIcon { get; } = new("\uEC50");
 
@@ -21,4 +21,6 @@ internal sealed class Icons
     internal static IconInfo FolderOpenIcon { get; } = new("\uE838"); // FolderOpen
 
     internal static IconInfo FilesIcon { get; } = new("\uF571"); // PrintAllPages
+
+    internal static IconInfo FilterIcon { get; } = new("\uE71C"); // Filter
 }

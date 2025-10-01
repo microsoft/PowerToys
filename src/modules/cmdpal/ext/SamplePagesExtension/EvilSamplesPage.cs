@@ -219,7 +219,18 @@ public partial class EvilSamplesPage : ListPage
                 }
             ],
         },
-
+        new ListItem(
+            new ToastCommand("Primary command invoked", MessageState.Info) { Name = "H W\r\nE O\r\nL R\r\nL L\r\nO D", Icon = new IconInfo("\uF146") })
+        {
+            Title = "noop third command test",
+            Icon = new IconInfo("\uE712"),  // "More" dots
+        },
+        new ListItem(new EvilDuplicateRequestedShortcut())
+        {
+            Title = "Evil keyboard shortcuts",
+            Subtitle = "Two commands with the same shortcut and more...",
+            Icon = new IconInfo("\uE765"),
+        },
     ];
 
     public EvilSamplesPage()
@@ -412,5 +423,44 @@ internal sealed partial class EvilFastUpdatesPage : DynamicListPage
             IsLoading = false;
             return _greenItems;
         }
+    }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]
+internal sealed partial class EvilDuplicateRequestedShortcut : ListPage
+{
+    private readonly IListItem[] _items =
+    [
+        new ListItem(new NoOpCommand())
+        {
+            Title = "I'm evil!",
+            Subtitle = "I have multiple commands sharing the same keyboard shortcut",
+            MoreCommands = [
+                new CommandContextItem(new AnonymousCommand(() => new ToastStatusMessage("Me too executed").Show())
+                {
+                    Result = CommandResult.KeepOpen(),
+                })
+                {
+                    Title = "Me too",
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
+                },
+                new CommandContextItem(new AnonymousCommand(() => new ToastStatusMessage("Me three executed").Show())
+                {
+                    Result = CommandResult.KeepOpen(),
+                })
+                {
+                    Title = "Me three",
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
+                },
+            ],
+        },
+    ];
+
+    public override IListItem[] GetItems() => _items;
+
+    public EvilDuplicateRequestedShortcut()
+    {
+        Icon = new IconInfo(string.Empty);
+        Name = "Open";
     }
 }
