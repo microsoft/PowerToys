@@ -360,26 +360,7 @@ public sealed partial class ListPage : Page,
         var firstVisibleIndex = firstVisibleIndexNotFound;
         var visibleHeights = new List<double>(itemCount);
 
-        int startIndex;
-        Func<int, bool> condition;
-        Func<int, int> increment;
-
-        if (isPageDown)
-        {
-            startIndex = 0;
-            condition = i => i < itemCount;
-            increment = i => i + 1;
-        }
-        else
-        {
-            startIndex = currentIndex;
-            condition = i => i >= 0;
-            increment = i => i - 1;
-        }
-
-        // Find the first visible index
-        // Collect visible item heights
-        for (var i = startIndex; condition(i); i = increment(i))
+        for (var i = 0; i < itemCount; i++)
         {
             if (ItemView.ContainerFromIndex(i) is FrameworkElement container)
             {
