@@ -14,6 +14,29 @@
 #include <common/version/version.h>
 #include <common/utils/resources.h>
 
+namespace
+{
+    json::JsonValue create_empty_shortcut_array_value()
+    {
+        return json::JsonValue::Parse(L"[]");
+    }
+
+    void ensure_ignored_conflict_properties_shape(json::JsonObject& obj)
+    {
+        if (!json::has(obj, L"ignored_shortcuts", json::JsonValueType::Array))
+        {
+            obj.SetNamedValue(L"ignored_shortcuts", create_empty_shortcut_array_value());
+        }
+    }
+
+    json::JsonObject create_default_ignored_conflict_properties()
+    {
+        json::JsonObject obj;
+        ensure_ignored_conflict_properties_shape(obj);
+        return obj;
+    }
+}
+
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
 static bool show_tray_icon = true;
@@ -23,10 +46,14 @@ static bool download_updates_automatically = true;
 static bool show_whats_new_after_updates = true;
 static bool enable_experimentation = true;
 static bool enable_warnings_elevated_apps = true;
+static json::JsonObject ignored_conflict_properties = create_default_ignored_conflict_properties();
 
 json::JsonObject GeneralSettings::to_json()
 {
     json::JsonObject result;
+
+    auto ignoredProps = ignoredConflictProperties;
+    ensure_ignored_conflict_properties_shape(ignoredProps);
 
     result.SetNamedValue(L"startup", json::value(isStartupEnabled));
     if (!startupDisabledReason.empty())
@@ -53,6 +80,7 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
     result.SetNamedValue(L"powertoys_version", json::value(powerToysVersion));
+    result.SetNamedValue(L"ignored_conflict_properties", json::value(ignoredProps));
 
     return result;
 }
@@ -71,6 +99,17 @@ json::JsonObject load_general_settings()
     show_whats_new_after_updates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation", true);
     enable_warnings_elevated_apps = loaded.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
+
+    if (json::has(loaded, L"ignored_conflict_properties", json::JsonValueType::Object))
+    {
+        ignored_conflict_properties = loaded.GetNamedObject(L"ignored_conflict_properties");
+    }
+    else
+    {
+        ignored_conflict_properties = create_default_ignored_conflict_properties();
+    }
+
+    ensure_ignored_conflict_properties_shape(ignored_conflict_properties);
 
     return loaded;
 }
@@ -91,8 +130,11 @@ GeneralSettings get_general_settings()
         .enableExperimentation = enable_experimentation,
         .theme = settings_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
-        .powerToysVersion = get_product_version()
+        .powerToysVersion = get_product_version(),
+        .ignoredConflictProperties = ignored_conflict_properties
     };
+
+    ensure_ignored_conflict_properties_shape(settings.ignoredConflictProperties);
 
     settings.isStartupEnabled = is_auto_start_task_active_for_this_user();
 
@@ -230,6 +272,12 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         show_tray_icon = general_configs.GetNamedBoolean(L"show_tray_icon");
         // Update tray icon visibility when setting is toggled
         set_tray_icon_visible(show_tray_icon);
+    }
+
+    if (json::has(general_configs, L"ignored_conflict_properties", json::JsonValueType::Object))
+    {
+        ignored_conflict_properties = general_configs.GetNamedObject(L"ignored_conflict_properties");
+        ensure_ignored_conflict_properties_shape(ignored_conflict_properties);
     }
 
     if (save)

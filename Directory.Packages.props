@@ -1,6 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.0-beta" />
@@ -21,11 +22,11 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.2.250402" />
     <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
-    <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
-    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.250703-build.2173" />
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.250910-build.2249" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.12.3" />
     <PackageVersion Include="hyjiacan.pinyin4net" Version="4.1.1" />
     <PackageVersion Include="Interop.Microsoft.Office.Interop.OneNote" Version="1.1.0.2" />
     <PackageVersion Include="LazyCache" Version="2.4.0" />
@@ -37,6 +38,7 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.8" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Windows.CppWinRT" Version="2.0.240111.5" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.8" />
@@ -65,6 +67,7 @@
     <!-- Moq to stay below v4.20 due to behavior change. need to be sure fixed -->
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="MSTest" Version="3.8.3" />
+    <PackageVersion Include="NJsonSchema" Version="11.4.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="NLog" Version="5.2.8" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
@@ -105,7 +108,7 @@
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />
-    <PackageVersion Include="WinUIEx" Version="2.2.0" />
+    <PackageVersion Include="WinUIEx" Version="2.8.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
     <PackageVersion Include="WyHash" Version="1.0.5" />
     <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />

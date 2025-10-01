@@ -50,6 +50,9 @@ parameters:
   - name: enableMsBuildCaching
     type: boolean
     default: false
+  - name: msBuildCacheIsReadOnly
+    type: boolean
+    default: true
   - name: runTests
     type: boolean
     default: true
@@ -154,6 +157,11 @@ jobs:
         $MSBuildCacheParameters += " -reportfileaccesses"
         $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
         $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(LogOutputDirectory)\MSBuildCacheLogs"
+        # Cache read-only policy controlled by parameter
+        $cacheIsReadOnly = "${{ parameters.msBuildCacheIsReadOnly }}"
+        if ($cacheIsReadOnly -eq "True") {
+          $MSBuildCacheParameters += " /p:MSBuildCacheRemoteCacheIsReadOnly=true"
+        }
         Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
         Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
       displayName: Prepare MSBuildCache variables
@@ -262,6 +270,23 @@ jobs:
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  # Build PowerToys.DSC.exe for ARM64 (x64 uses existing binary from previous build)
+  - task: VSBuild@1
+    displayName: Build PowerToys.DSC.exe (x64 for generating manifests)
+    condition: ne(variables['BuildPlatform'], 'x64')
+    inputs:
+      solution: src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj
+      msbuildArgs: /t:Build /m /restore
+      platform: x64
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  # Generate DSC manifests using PowerToys.DSC.exe
+  - pwsh: |-
+      & '.pipelines/generateDscManifests.ps1' -BuildPlatform '$(BuildPlatform)' -BuildConfiguration '$(BuildConfiguration)' -RepoRoot '$(Build.SourcesDirectory)'
+    displayName: Generate DSC manifests
 
   - task: CopyFiles@2
     displayName: Stage SDK/build
