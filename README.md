@@ -157,6 +157,11 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Preserved fallback item icons in Settings by storing initial icon. Thanks @jiripolasek!
  - Fixed breadcrumb margin misalignment (visual polish). Thanks @jiripolasek!
  - Truncated overly long command labels with ellipsis to prevent overflow.
+ - Allowed any image format to be used as an icon for protocol bookmarks. Thanks @jiripolasek!
+ - Added a setting to configure the page transition animation.
+ - Collection of small improvements and nits for Run Commands.
+ - Improved bookmarks performance and experience. Thanks @jiripolasek
+ - Added Ctrl+O shortcut in Clipboard History to open links directly. Thanks @jiripolasek!
 
 ### Command Palette Extensions
  - Replaced localized WebSearch setting keys with stable literals and numeric history count. Thanks @jiripolasek!
