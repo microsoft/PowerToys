@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.PowerToys.Telemetry;
@@ -19,6 +20,7 @@ namespace Microsoft.CmdPal.UI;
 /// or something similar, but this works for now.
 /// </summary>
 internal sealed class TelemetryForwarder :
+    ITelemetryService,
     IRecipient<BeginInvokeMessage>,
     IRecipient<CmdPalInvokeResultMessage>
 {
@@ -36,5 +38,20 @@ internal sealed class TelemetryForwarder :
     public void Receive(BeginInvokeMessage message)
     {
         PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());
+    }
+
+    public void LogRunQuery(string query, int resultCount, ulong durationMs)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalRunQuery(query, resultCount, durationMs));
+    }
+
+    public void LogRunCommand(string command, bool asAdmin, bool success)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalRunCommand(command, asAdmin, success));
+    }
+
+    public void LogOpenUri(string uri, bool isWeb, bool success)
+    {
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalOpenUri(uri, isWeb, success));
     }
 }
