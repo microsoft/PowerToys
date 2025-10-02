@@ -242,8 +242,8 @@ public static class ThumbnailHelper
             }
         }
 
-        // 2) Handle .png files returned by store apps
-        if (iconRef.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+        // 2) Handle image files from a store app
+        if (File.Exists(iconRef))
         {
             try
             {
