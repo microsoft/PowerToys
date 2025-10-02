@@ -24,5 +24,5 @@ internal static class Icons
 
     public static IconInfo UninstallApplicationIcon { get; } = new("\uE74D"); // Uninstall icon
 
-    public static IconInfo GenericAppIcon { get; } = new("\uE737"); // FavIcon
+    public static IconInfo GenericAppIcon { get; } = new("\uE737"); // Favicon
 }
