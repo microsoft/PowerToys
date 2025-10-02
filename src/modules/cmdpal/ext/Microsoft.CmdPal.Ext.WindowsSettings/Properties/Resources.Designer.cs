@@ -1193,7 +1193,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
                 return ResourceManager.GetString("DarkColor", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Dark mode.
         /// </summary>
@@ -2127,15 +2127,6 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         internal static string LightMode {
             get {
                 return ResourceManager.GetString("LightMode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Light Switch.
-        /// </summary>
-        internal static string LightSwitch {
-            get {
-                return ResourceManager.GetString("LightSwitch", resourceCulture);
             }
         }
         

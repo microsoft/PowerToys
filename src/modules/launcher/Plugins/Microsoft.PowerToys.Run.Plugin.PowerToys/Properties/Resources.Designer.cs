@@ -77,7 +77,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
                 return ResourceManager.GetString("Action_Run_As_Administrator", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Color Picker.
         /// </summary>
