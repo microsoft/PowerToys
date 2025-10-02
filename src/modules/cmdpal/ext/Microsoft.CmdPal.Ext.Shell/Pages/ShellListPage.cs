@@ -457,7 +457,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
             // Get all the files in the directory that start with the search text
             // Run this on a background thread to avoid blocking
-            var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath, searchPattern), cancellationToken);
+            var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath), cancellationToken);
 
             // Check for cancellation after file enumeration
             if (cancellationToken.IsCancellationRequested)
