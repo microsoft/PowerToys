@@ -257,7 +257,6 @@ inline HANDLE run_elevated(const std::wstring& file, const std::wstring& params,
         exec_info.nShow = SW_HIDE;
     }
 
-    // failing bc using "runas" with PowerToys.exe already running?
     BOOL result = ShellExecuteExW(&exec_info);
 
     return result  ? exec_info.hProcess : nullptr;

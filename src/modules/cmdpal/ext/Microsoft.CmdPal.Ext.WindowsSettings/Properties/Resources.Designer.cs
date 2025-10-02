@@ -1193,6 +1193,15 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
                 return ResourceManager.GetString("DarkColor", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dark mode.
+        /// </summary>
+        internal static string DarkMode {
+            get {
+                return ResourceManager.GetString("DarkMode", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Data usage.

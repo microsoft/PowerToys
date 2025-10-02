@@ -79,17 +79,6 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Light Switch.
-        /// </summary>
-        internal static string Light_Switch
-        {
-            get
-            {
-                return ResourceManager.GetString("Light_Switch", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to Color Picker.
         /// </summary>
         internal static string Color_Picker {
