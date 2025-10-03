@@ -434,9 +434,11 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
                 return;
             }
 
+            // If the directory we're in changed, then first rebuild the cache
+            // of all the items in the directory, _then_ filter them below.
             if (directoryPath != _currentSubdir)
             {
-                // Get all the files in the directory that start with the search text
+                // Get all the files in the directory.
                 // Run this on a background thread to avoid blocking
                 var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath), cancellationToken);
 
@@ -468,7 +470,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
                 }
 
                 // Add the commands to the list
-                _pathItems.Clear(); // = newPathItems.Values.ToList();
+                _pathItems.Clear();
                 _currentSubdir = directoryPath;
                 _currentPathItems.Clear();
                 foreach ((var k, IListItem v) in newPathItems)
@@ -477,7 +479,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
                 }
             }
 
-            // Filter the items we already had
+            // Filter the items from this directory
             var fuzzyString = searchPattern.TrimEnd('*');
             var newMatchedPathItems = new List<ListItem>();
 
