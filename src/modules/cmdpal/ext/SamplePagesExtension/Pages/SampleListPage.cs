@@ -255,9 +255,9 @@ internal sealed partial class SampleListPage : ListPage
                 throw new ArgumentException("Icons array cannot be empty", nameof(icons));
             }
 
-            this._name = name;
-            this.Name = $"{_name} {DateTimeOffset.UtcNow:hh:mm:ss}";
-            this.Icon = new IconInfo(_icons[_currentIndex]);
+            _name = name;
+            Name = $"{_name} {DateTimeOffset.UtcNow:hh:mm:ss}";
+            Icon = new IconInfo(_icons[_currentIndex]);
 
             // Start timer to change icon and name every 5 seconds
             _timer = new Timer(OnTimerElapsed, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
@@ -273,8 +273,8 @@ internal sealed partial class SampleListPage : ListPage
 
             _currentIndex = nextIndex;
 
-            this.Name = $"{_name} {DateTimeOffset.UtcNow:hh:mm:ss}";
-            this.Icon = new IconInfo(_icons[_currentIndex]);
+            Name = $"{_name} {DateTimeOffset.UtcNow:hh:mm:ss}";
+            Icon = new IconInfo(_icons[_currentIndex]);
         }
 
         public void Dispose()
