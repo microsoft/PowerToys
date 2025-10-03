@@ -157,7 +157,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public async Task TestCacheSameDirectory()
+    public async Task TestCacheBackToSameDirectory()
     {
         // Setup
         var settings = Settings.CreateDefaultSettings();
@@ -211,5 +211,34 @@ public class QueryTests : CommandPaletteUnitTestBase
             var substr = originalSearchText[..i];
             await UpdatePageAndWaitForItems(page, () => { page.SearchText = substr; });
         }
+    }
+
+    [TestMethod]
+    public async Task TestCacheSameDirectorySlashy()
+    {
+        // Setup
+        var settings = Settings.CreateDefaultSettings();
+        var mockHistoryService = CreateMockHistoryService();
+
+        var page = new ShellListPage(settings, mockHistoryService.Object, telemetryService: null);
+
+        // Load up everything in c:\, for the sake of comparing:
+        var filesInC = Directory.EnumerateFileSystemEntries("C:\\");
+        var filesInWindows = Directory.EnumerateFileSystemEntries("C:\\Windows");
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\"; });
+
+        var commandList = page.GetItems();
+        Assert.IsTrue(commandList.Length == filesInC.Count());
+
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows"; });
+        var cWindowsCommandsPre = page.GetItems();
+
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows\\"; });
+        var windowsCommands = page.GetItems();
+        Assert.IsTrue(windowsCommands.Length != cWindowsCommandsPre.Length);
+
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows"; });
+        var cWindowsCommandsPost = page.GetItems();
+        Assert.IsTrue(cWindowsCommandsPre.Length == cWindowsCommandsPost.Length);
     }
 }
