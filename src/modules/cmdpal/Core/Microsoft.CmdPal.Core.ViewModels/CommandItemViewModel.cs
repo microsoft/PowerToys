@@ -321,9 +321,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 break;
 
             case nameof(Title):
-                var modelTitle = model.Title;
-                _itemTitle = modelTitle;
-                _defaultCommandContextItemViewModel?.UpdateTitle(_itemTitle);
+                _itemTitle = model.Title;
                 break;
 
             case nameof(Subtitle):
@@ -401,6 +399,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
                 _itemTitle = model.Title;
+                _defaultCommandContextItemViewModel?.UpdateTitle(model.Command.Name);
                 UpdateProperty(nameof(Title));
                 UpdateProperty(nameof(Name));
                 break;
