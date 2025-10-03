@@ -182,13 +182,13 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "I also have properties",
             },
-            new ListItem(new EverchangingCommand("Cat", "🐈‍⬛", "🐈"))
+            new ListItem(new EverChangingCommand("Cat", "🐈‍⬛", "🐈"))
             {
                 Title = "And I have a commands with changing name and icon",
                 MoreCommands = [
-                    new CommandContextItem(new EverchangingCommand("Water", "🐬", "🐳", "🐟", "🦈")),
-                    new CommandContextItem(new EverchangingCommand("Faces", "😁", "🥺", "😍")),
-                    new CommandContextItem(new EverchangingCommand("Hearts", "♥️", "💚", "💜", "🧡", "💛", "💙")),
+                    new CommandContextItem(new EverChangingCommand("Water", "🐬", "🐳", "🐟", "🦈")),
+                    new CommandContextItem(new EverChangingCommand("Faces", "😁", "🥺", "😍")),
+                    new CommandContextItem(new EverChangingCommand("Hearts", "♥️", "💚", "💜", "🧡", "💛", "💙")),
                 ],
             }
         ];
@@ -240,14 +240,14 @@ internal sealed partial class SampleListPage : ListPage
         };
     }
 
-    internal sealed partial class EverchangingCommand : InvokableCommand, IDisposable
+    internal sealed partial class EverChangingCommand : InvokableCommand, IDisposable
     {
         private readonly string[] _icons;
         private readonly Timer _timer;
         private readonly string _name;
         private int _currentIndex;
 
-        public EverchangingCommand(string name, params string[] icons)
+        public EverChangingCommand(string name, params string[] icons)
         {
             _icons = icons ?? throw new ArgumentNullException(nameof(icons));
             if (_icons.Length == 0)
