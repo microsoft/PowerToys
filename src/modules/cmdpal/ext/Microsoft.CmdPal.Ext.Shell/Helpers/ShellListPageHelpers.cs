@@ -109,7 +109,7 @@ public class ShellListPageHelpers
     /// </summary>
     public static void NormalizeCommandLineAndArgs(string input, out string executable, out string arguments)
     {
-        var normalized = CommandLineNormalizer.NormalizeCommandLine(input);
+        var normalized = CommandLineNormalizer.NormalizeCommandLine(input, allowDirectory: true);
         var segments = normalized.Split('\0', StringSplitOptions.RemoveEmptyEntries);
         executable = string.Empty;
         arguments = string.Empty;
