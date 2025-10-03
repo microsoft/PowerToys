@@ -262,4 +262,24 @@ public class QueryTests : CommandPaletteUnitTestBase
         var commandList = page.GetItems();
         Assert.IsTrue(commandList.Length == filesInProgramFiles.Count());
     }
+
+    [TestMethod]
+    public async Task TestNoWrapSuggestionsWithSpaces()
+    {
+        // Setup
+        var settings = Settings.CreateDefaultSettings();
+        var mockHistoryService = CreateMockHistoryService();
+
+        var page = new ShellListPage(settings, mockHistoryService.Object, telemetryService: null);
+
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Program Files\\"; });
+
+        var commandList = page.GetItems();
+
+        foreach (var item in commandList)
+        {
+            Assert.IsTrue(!string.IsNullOrEmpty(item.TextToSuggest));
+            Assert.IsFalse(item.TextToSuggest.StartsWith('"'));
+        }
+    }
 }
