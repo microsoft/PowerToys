@@ -36,7 +36,7 @@ internal sealed class ImageMetadataProvider : IClipboardMetadataProvider
             result.Add(new DetailsElement
             {
                 Key = "DPI",
-                Data = new DetailsLink($"{metadata.DpiX:F1} x {metadata.DpiY:F1}"),
+                Data = new DetailsLink($"{metadata.DpiX:0.###} x {metadata.DpiY:0.###}"),
             });
 
             if (metadata.StorageSize != null)
