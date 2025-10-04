@@ -22,6 +22,7 @@ using TopToolbar.Providers;
 using TopToolbar.Providers.Configuration;
 using TopToolbar.Providers.External.Mcp;
 using TopToolbar.Services;
+using TopToolbar.Services.Workspaces;
 using TopToolbar.ViewModels;
 using Windows.UI;
 using WinUIEx;
@@ -59,6 +60,7 @@ namespace TopToolbar
         // Profile runtime abstraction (replaces direct file service handling in this window)
         private Services.Profiles.IProfileRuntime _profileRuntime;
         private int _profileRebuildInFlight;
+        private bool _snapshotInProgress;
 
         private delegate IntPtr DpiWndProcDelegate(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
@@ -758,6 +760,9 @@ namespace TopToolbar
             settingsSeparatorContainer.Translation = new System.Numerics.Vector3(0, 0, 2);
             mainStack.Children.Add(settingsSeparatorContainer);
 
+            var snapshotButton = CreateIconButton("\uE114", "Snapshot workspace", async (s, e) => await HandleSnapshotButtonClickAsync(s as Button), "Snapshot");
+            mainStack.Children.Add(snapshotButton);
+
             var settingsButton = CreateIconButton("\uE713", "Toolbar Settings", (s, e) =>
             {
                 var win = new SettingsWindow(_profileRuntime, null);
@@ -765,6 +770,116 @@ namespace TopToolbar
                 win.Activate();
             });
             mainStack.Children.Add(settingsButton);
+        }
+
+        private async System.Threading.Tasks.Task HandleSnapshotButtonClickAsync(Button triggerButton)
+        {
+            if (_snapshotInProgress)
+            {
+                return;
+            }
+
+            if (this.Content is not FrameworkElement rootElement || rootElement.XamlRoot is null)
+            {
+                return;
+            }
+
+            _snapshotInProgress = true;
+            if (triggerButton != null)
+            {
+                triggerButton.IsEnabled = false;
+            }
+
+            try
+            {
+                var workspaceName = await SnapshotPromptWindow.ShowAsync(this).ConfigureAwait(true);
+                if (string.IsNullOrWhiteSpace(workspaceName))
+                {
+                    return;
+                }
+
+                try
+                {
+                    using var runtime = new WorkspacesRuntimeService();
+                    var workspace = await runtime.SnapshotAsync(workspaceName, CancellationToken.None).ConfigureAwait(true);
+                    if (workspace == null)
+                    {
+                        await ShowSimpleMessageAsync(rootElement.XamlRoot, "Snapshot failed", "No eligible windows were detected to capture.");
+                        return;
+                    }
+
+                    await ShowSimpleMessageAsync(rootElement.XamlRoot, "Snapshot saved", $"Workspace \"{workspace.Name}\" has been saved.");
+                    await RefreshWorkspaceGroupAsync();
+                }
+                catch (Exception ex)
+                {
+                    await ShowSimpleMessageAsync(rootElement.XamlRoot, "Snapshot failed", ex.Message);
+                }
+            }
+            finally
+            {
+                if (triggerButton != null)
+                {
+                    triggerButton.IsEnabled = true;
+                }
+
+                _snapshotInProgress = false;
+            }
+        }
+
+        private static async System.Threading.Tasks.Task ShowSimpleMessageAsync(XamlRoot xamlRoot, string title, string message)
+        {
+            if (xamlRoot == null)
+            {
+                return;
+            }
+
+            var dialog = new ContentDialog
+            {
+                XamlRoot = xamlRoot,
+                Title = title ?? string.Empty,
+                Content = new TextBlock
+                {
+                    Text = message ?? string.Empty,
+                    TextWrapping = TextWrapping.Wrap,
+                },
+                CloseButtonText = "Close",
+                DefaultButton = ContentDialogButton.Close,
+            };
+
+            await dialog.ShowAsync();
+        }
+
+        private async System.Threading.Tasks.Task RefreshWorkspaceGroupAsync()
+        {
+            try
+            {
+                var context = new ActionContext();
+                var group = await _providerService.CreateGroupAsync("WorkspaceProvider", context, CancellationToken.None).ConfigureAwait(true);
+                if (group == null)
+                {
+                    return;
+                }
+
+                void Apply()
+                {
+                    try
+                    {
+                        _store.UpsertProviderGroup(group);
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                if (!DispatcherQueue.TryEnqueue(Apply))
+                {
+                    Apply();
+                }
+            }
+            catch
+            {
+            }
         }
 
         private FrameworkElement CreateIconButton(string content, string tooltip, RoutedEventHandler clickHandler, string labelText = "Settings")

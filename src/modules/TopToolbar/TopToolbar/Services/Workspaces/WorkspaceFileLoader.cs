@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json.Serialization;
 
 namespace TopToolbar.Services.Workspaces
 {
@@ -17,7 +17,6 @@ namespace TopToolbar.Services.Workspaces
     {
         private readonly string _workspacesPath;
         private readonly JsonSerializerOptions _serializerOptions;
-        private readonly JsonSerializerOptions _writeSerializerOptions;
         private readonly JsonSerializerOptions _writeSerializerOptions;
 
         public WorkspaceFileLoader(string workspacesPath = null)
@@ -37,11 +36,6 @@ namespace TopToolbar.Services.Workspaces
                 ReadCommentHandling = JsonCommentHandling.Skip,
             };
 
-            _writeSerializerOptions = new JsonSerializerOptions(_serializerOptions)
-            {
-                WriteIndented = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            };
             _writeSerializerOptions = new JsonSerializerOptions(_serializerOptions)
             {
                 WriteIndented = true,

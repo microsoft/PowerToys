@@ -34,7 +34,6 @@ namespace TopToolbar.Services.Workspaces
             _windowTracker = new WindowTracker();
         }
 
-
         public async Task<WorkspaceDefinition> SnapshotAsync(string workspaceName, CancellationToken cancellationToken)
         {
             ObjectDisposedException.ThrowIf(_disposed, nameof(WorkspacesRuntimeService));
@@ -99,6 +98,212 @@ namespace TopToolbar.Services.Workspaces
             return workspace;
         }
 
+        private List<MonitorSnapshot> CaptureMonitorSnapshots()
+        {
+            var snapshots = new List<MonitorSnapshot>();
+
+            try
+            {
+                int index = 0;
+                MonitorEnumProc callback = (IntPtr hMonitor, IntPtr hdcMonitor, ref NativeMonitorRect rect, IntPtr data) =>
+                {
+                    try
+                    {
+                        var info = new MONITORINFOEX
+                        {
+                            CbSize = Marshal.SizeOf<MONITORINFOEX>(),
+                            SzDevice = string.Empty,
+                        };
+
+                        if (!GetMonitorInfo(hMonitor, ref info))
+                        {
+                            return true;
+                        }
+
+                        uint dpiX = 96;
+                        uint dpiY = 96;
+                        try
+                        {
+                            var hr = GetDpiForMonitor(hMonitor, MonitorDpiType.EffectiveDpi, out dpiX, out dpiY);
+                            if (hr != 0)
+                            {
+                                dpiX = dpiY = 96;
+                            }
+                        }
+                        catch
+                        {
+                            dpiX = dpiY = 96;
+                        }
+
+                        var bounds = new MonitorBounds(info.RcMonitor.Left, info.RcMonitor.Top, info.RcMonitor.Right, info.RcMonitor.Bottom);
+                        var definition = new MonitorDefinition
+                        {
+                            Id = string.IsNullOrWhiteSpace(info.SzDevice) ? $"DISPLAY{index}" : info.SzDevice.Trim(),
+                            InstanceId = string.IsNullOrWhiteSpace(info.SzDevice) ? $"DISPLAY{index}" : info.SzDevice.Trim(),
+                            Number = index,
+                            Dpi = (int)dpiX,
+                            DpiAwareRect = new MonitorDefinition.MonitorRect
+                            {
+                                Left = info.RcMonitor.Left,
+                                Top = info.RcMonitor.Top,
+                                Width = info.RcMonitor.Right - info.RcMonitor.Left,
+                                Height = info.RcMonitor.Bottom - info.RcMonitor.Top,
+                            },
+                            DpiUnawareRect = new MonitorDefinition.MonitorRect
+                            {
+                                Left = info.RcMonitor.Left,
+                                Top = info.RcMonitor.Top,
+                                Width = info.RcMonitor.Right - info.RcMonitor.Left,
+                                Height = info.RcMonitor.Bottom - info.RcMonitor.Top,
+                            },
+                        };
+
+                        snapshots.Add(new MonitorSnapshot(definition, bounds));
+                        index++;
+                    }
+                    catch
+                    {
+                    }
+
+                    return true;
+                };
+
+                _ = EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, callback, IntPtr.Zero);
+            }
+            catch
+            {
+            }
+
+            return snapshots;
+        }
+
+        private ApplicationDefinition CreateApplicationDefinitionFromWindow(WindowInfo window, IReadOnlyList<MonitorSnapshot> monitors)
+        {
+            if (window == null)
+            {
+                return null;
+            }
+
+            var bounds = window.Bounds;
+            if (bounds.IsEmpty)
+            {
+                return null;
+            }
+
+            var normalBounds = bounds;
+            var isMinimized = false;
+            var isMaximized = false;
+
+            try
+            {
+                if (NativeWindowHelper.TryGetWindowPlacement(window.Handle, out var placement, out var minimized, out var maximized))
+                {
+                    if (!placement.IsEmpty)
+                    {
+                        normalBounds = placement;
+                    }
+
+                    isMinimized = minimized;
+                    isMaximized = maximized;
+                }
+            }
+            catch
+            {
+            }
+
+            if (normalBounds.IsEmpty)
+            {
+                return null;
+            }
+
+            var position = new ApplicationDefinition.ApplicationPosition
+            {
+                X = normalBounds.Left,
+                Y = normalBounds.Top,
+                Width = normalBounds.Width,
+                Height = normalBounds.Height,
+            };
+
+            if (position.Width <= 0 || position.Height <= 0)
+            {
+                return null;
+            }
+
+            var definition = new ApplicationDefinition
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Name = !string.IsNullOrWhiteSpace(window.ProcessFileName) ? window.ProcessFileName : window.ProcessName,
+                Title = window.Title,
+                Path = window.ProcessPath ?? string.Empty,
+                AppUserModelId = window.AppUserModelId ?? string.Empty,
+                MonitorIndex = FindMonitorIndex(normalBounds, monitors),
+                Minimized = isMinimized,
+                Maximized = isMaximized,
+                Position = position,
+                CommandLineArguments = string.Empty,
+                PackageFullName = string.Empty,
+                PwaAppId = string.Empty,
+                Version = string.Empty,
+                IsElevated = false,
+                CanLaunchElevated = false,
+            };
+
+            if (string.IsNullOrWhiteSpace(definition.Name))
+            {
+                definition.Name = string.Empty;
+            }
+
+            return definition;
+        }
+
+        private static int FindMonitorIndex(WindowBounds bounds, IReadOnlyList<MonitorSnapshot> monitors)
+        {
+            if (monitors == null || monitors.Count == 0)
+            {
+                return 0;
+            }
+
+            var centerX = bounds.Left + (bounds.Width / 2);
+            var centerY = bounds.Top + (bounds.Height / 2);
+
+            var bestIndex = 0;
+            long bestArea = -1;
+
+            for (int i = 0; i < monitors.Count; i++)
+            {
+                var monitor = monitors[i].Bounds;
+                if (centerX >= monitor.Left && centerX < monitor.Right && centerY >= monitor.Top && centerY < monitor.Bottom)
+                {
+                    return i;
+                }
+
+                var area = CalculateIntersectionArea(bounds, monitor);
+                if (area > bestArea)
+                {
+                    bestArea = area;
+                    bestIndex = i;
+                }
+            }
+
+            return bestIndex;
+        }
+
+        private static long CalculateIntersectionArea(WindowBounds window, MonitorBounds monitor)
+        {
+            var left = Math.Max(window.Left, monitor.Left);
+            var top = Math.Max(window.Top, monitor.Top);
+            var right = Math.Min(window.Right, monitor.Right);
+            var bottom = Math.Min(window.Bottom, monitor.Bottom);
+
+            var width = right - left;
+            var height = bottom - top;
+            if (width <= 0 || height <= 0)
+            {
+                return 0;
+            }
+
+            return (long)width * height;
+        }
 
         public async Task<bool> LaunchWorkspaceAsync(string workspaceId, CancellationToken cancellationToken)
         {
@@ -526,7 +731,6 @@ namespace TopToolbar.Services.Workspaces
             AngularDpi = 1,
             RawDpi = 2,
         }
-
 
         private sealed class WorkspaceExecutionContext
         {

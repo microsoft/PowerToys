@@ -6,12 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Threading;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using CommunityToolkit.WinUI.Controls;
+using System.Threading;
 using System.Threading.Tasks;
+
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI; // Colors namespace
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,8 +21,8 @@ using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media; // VisualTreeHelper
 using Microsoft.UI.Xaml.Media.Imaging;
 using TopToolbar.Models;
-using TopToolbar.Services;
 using TopToolbar.Providers;
+using TopToolbar.Services;
 using TopToolbar.ViewModels;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -1259,4 +1260,3 @@ namespace TopToolbar
         // Inline group description editing removed per design update; now always displays single-line text.
     }
 }
-

@@ -206,6 +206,25 @@ namespace TopToolbar.Providers
             }
         }
 
+        internal async Task<WorkspaceDefinition> SnapshotAsync(string workspaceName, CancellationToken cancellationToken)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, nameof(WorkspaceProvider));
+
+            var workspace = await _workspacesService.SnapshotAsync(workspaceName, cancellationToken).ConfigureAwait(false);
+            if (workspace != null)
+            {
+                try
+                {
+                    await ReloadIfChangedAsync().ConfigureAwait(false);
+                }
+                catch
+                {
+                }
+            }
+
+            return workspace;
+        }
+
         public string Id => "WorkspaceProvider";
 
         public Task<ProviderInfo> GetInfoAsync(CancellationToken cancellationToken)
@@ -666,4 +685,3 @@ namespace TopToolbar.Providers
         private sealed record WorkspaceRecord(string Id, string Name);
     }
 }
-
