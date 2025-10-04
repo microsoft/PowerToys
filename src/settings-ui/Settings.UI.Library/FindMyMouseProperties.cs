@@ -58,8 +58,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IncludeWinKey = new BoolProperty(false);
             ActivationShortcut = DefaultActivationShortcut;
             DoNotActivateOnGameMode = new BoolProperty(true);
-            BackgroundColor = new StringProperty("#FF000000"); // ARGB (#AARRGGBB)
-            SpotlightColor = new StringProperty("#FFFFFFFF");
+            BackgroundColor = new StringProperty("#88000000"); // ARGB (#AARRGGBB)
+            SpotlightColor = new StringProperty("#88FFFFFF");
             SpotlightRadius = new IntProperty(100);
             AnimationDurationMs = new IntProperty(500);
             SpotlightInitialZoom = new IntProperty(9);
