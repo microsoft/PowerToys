@@ -1187,4 +1187,3 @@ namespace MouseWithoutBorders.Class
         internal static Settings Values = new Settings();
     }
 }
-
