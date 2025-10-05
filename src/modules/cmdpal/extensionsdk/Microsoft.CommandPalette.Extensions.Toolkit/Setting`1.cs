@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -50,124 +51,137 @@ public abstract class Setting<T> : ISettingsForm
 
     public string ToForm()
     {
-        var controlElement = ToDictionary();
+        var controlElementNode = JsonNode.Parse(JsonSerializer.Serialize(ToDictionary(), JsonSerializationContext.Default.Dictionary)) as JsonObject ?? new JsonObject();
 
         var labelText = Label;
         var descriptionText = Description;
 
-        if (controlElement.TryGetValue("label", out var existingLabel) && string.IsNullOrWhiteSpace(labelText) && existingLabel is string existingLabelText)
+        if (controlElementNode.TryGetPropertyValue("label", out var existingLabelNode) &&
+            string.IsNullOrWhiteSpace(labelText) &&
+            existingLabelNode is not null)
         {
-            labelText = existingLabelText;
+            labelText = existingLabelNode.GetValue<string>();
         }
 
-        if (controlElement.TryGetValue("title", out var existingTitle) && string.IsNullOrWhiteSpace(labelText) && existingTitle is string existingTitleText)
+        if (controlElementNode.TryGetPropertyValue("title", out var existingTitleNode) &&
+            string.IsNullOrWhiteSpace(labelText) &&
+            existingTitleNode is not null)
         {
-            labelText = existingTitleText;
+            labelText = existingTitleNode.GetValue<string>();
         }
 
-        if (controlElement.TryGetValue("label", out var controlDescription) && string.IsNullOrWhiteSpace(descriptionText) && controlDescription is string descriptionFromControl)
+        if (controlElementNode.TryGetPropertyValue("label", out var controlDescriptionNode) &&
+            string.IsNullOrWhiteSpace(descriptionText) &&
+            controlDescriptionNode is not null)
         {
-            descriptionText = descriptionFromControl;
+            descriptionText = controlDescriptionNode.GetValue<string>();
         }
 
         if (!string.IsNullOrWhiteSpace(labelText))
         {
-            controlElement["label"] = labelText;
-            controlElement["labelPosition"] = "hidden";
+            controlElementNode["label"] = labelText;
+            controlElementNode["labelPosition"] = "hidden";
         }
 
-        var labelElements = new List<Dictionary<string, object>>();
+        var labelElements = new JsonArray();
         if (!string.IsNullOrWhiteSpace(labelText))
         {
-            labelElements.Add(new()
+            labelElements.Add(new JsonObject
             {
-                { "type", "TextBlock" },
-                { "text", labelText },
-                { "weight", "Bolder" },
-                { "wrap", true }
+                ["type"] = "TextBlock",
+                ["text"] = labelText,
+                ["wrap"] = true,
+                ["spacing"] = "None"
             });
         }
 
         if (!string.IsNullOrWhiteSpace(descriptionText))
         {
-            labelElements.Add(new()
+            var descriptionBlock = new JsonObject
             {
-                { "type", "TextBlock" },
-                { "text", descriptionText },
-                { "isSubtle", true },
-                { "wrap", true },
-                { "spacing", "None" }
-            });
+                ["type"] = "TextBlock",
+                ["text"] = descriptionText,
+                ["weight"] = "Bolder",
+                ["wrap"] = true
+            };
+
+            descriptionBlock["spacing"] = labelElements.Count > 0 ? "Small" : "None";
+            labelElements.Add(descriptionBlock);
         }
 
-        var bodyElements = new List<object>();
+        var bodyElements = new JsonArray();
 
-        if (controlElement.TryGetValue("type", out var typeValue) && typeValue is string typeString && typeString.Equals("Input.Toggle", StringComparison.OrdinalIgnoreCase))
+        if (controlElementNode.TryGetPropertyValue("type", out var typeNode) &&
+            typeNode is not null &&
+            string.Equals(typeNode.GetValue<string>(), "Input.Toggle", StringComparison.OrdinalIgnoreCase))
         {
-            controlElement["title"] = string.Empty;
+            controlElementNode["title"] = string.Empty;
 
             if (labelElements.Count == 0)
             {
-                bodyElements.Add(controlElement);
+                bodyElements.Add(controlElementNode);
             }
             else
             {
-                bodyElements.Add(new Dictionary<string, object>
+                var columnSet = new JsonObject
                 {
-                    { "type", "ColumnSet" },
-                    { "columns", new List<object>
-                        {
-                            new Dictionary<string, object>
-                            {
-                                { "type", "Column" },
-                                { "width", "auto" },
-                                { "verticalContentAlignment", "Center" },
-                                { "items", new List<object> { controlElement } }
-                            },
-                            new Dictionary<string, object>
-                            {
-                                { "type", "Column" },
-                                { "width", "stretch" },
-                                { "items", labelElements }
-                            }
-                        }
+                    ["type"] = "ColumnSet"
+                };
+
+                columnSet["columns"] = new JsonArray
+                {
+                    new JsonObject
+                    {
+                        ["type"] = "Column",
+                        ["width"] = "auto",
+                        ["verticalContentAlignment"] = "Top",
+                        ["items"] = new JsonArray(controlElementNode)
+                    },
+                    new JsonObject
+                    {
+                        ["type"] = "Column",
+                        ["width"] = "stretch",
+                        ["items"] = labelElements
                     }
-                });
+                };
+
+                bodyElements.Add(columnSet);
             }
         }
         else
         {
-            bodyElements.AddRange(labelElements);
-            bodyElements.Add(controlElement);
+            foreach (var element in labelElements)
+            {
+                if (element is not null)
+                {
+                    bodyElements.Add(element.DeepClone());
+                }
+            }
+
+            bodyElements.Add(controlElementNode);
         }
 
-        var card = new Dictionary<string, object>
+        var card = new JsonObject
         {
-            { "$schema", "http://adaptivecards.io/schemas/adaptive-card.json" },
-            { "type", "AdaptiveCard" },
-            { "version", "1.5" },
-            { "body", bodyElements },
+            ["$schema"] = "http://adaptivecards.io/schemas/adaptive-card.json",
+            ["type"] = "AdaptiveCard",
+            ["version"] = "1.5",
+            ["body"] = bodyElements,
+            ["actions"] = new JsonArray
             {
-                "actions",
-                new List<object>
+                new JsonObject
                 {
-                    new Dictionary<string, object>
+                    ["type"] = "Action.Submit",
+                    ["title"] = "Save",
+                    ["data"] = new JsonObject
                     {
-                        { "type", "Action.Submit" },
-                        { "title", "Save" },
-                        {
-                            "data",
-                            new Dictionary<string, object>
-                            {
-                                { Key, Key }
-                            }
-                        }
+                        [Key] = Key
                     }
                 }
             }
         };
 
-        return JsonSerializer.Serialize(card, _jsonSerializerOptions);
+        return card.ToJsonString(_jsonSerializerOptions);
     }
 
     public abstract void Update(JsonObject payload);
