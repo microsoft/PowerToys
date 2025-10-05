@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -21,49 +22,61 @@ internal sealed class TextFileSystemMetadataProvider : IClipboardMetadataProvide
 
     public bool CanHandle(ClipboardItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+
         if (!item.IsText || string.IsNullOrWhiteSpace(item.Content))
         {
             return false;
         }
 
-        var text = item.Content.Trim();
-
-        return IsPotentialPath(text) && (File.Exists(text) || Directory.Exists(text));
+        var text = PathHelper.Unquote(item.Content);
+        return PathHelper.IsValidFilePath(text);
     }
 
     public IEnumerable<DetailsElement> GetDetails(ClipboardItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+
         var result = new List<DetailsElement>();
         if (!item.IsText || string.IsNullOrWhiteSpace(item.Content))
         {
             return result;
         }
 
-        var path = item.Content.Trim();
+        var path = PathHelper.Unquote(item.Content);
+
+        if (PathHelper.IsSlow(path) || !PathHelper.Exists(path, out var isDirectory))
+        {
+            result.Add(new DetailsElement { Key = "Name", Data = new DetailsLink(Path.GetFileName(path)) });
+            result.Add(new DetailsElement { Key = "Location", Data = new DetailsLink(UrlHelper.NormalizeUrl(path), path) });
+            return result;
+        }
+
         try
         {
-            if (File.Exists(path))
+            if (!isDirectory)
             {
                 var fi = new FileInfo(path);
                 result.Add(new DetailsElement { Key = "Name", Data = new DetailsLink(fi.Name) });
-                result.Add(new DetailsElement { Key = "Path", Data = new DetailsLink(UrlHelper.NormalizeUrl(fi.FullName), fi.FullName) });
+                result.Add(new DetailsElement { Key = "Location", Data = new DetailsLink(UrlHelper.NormalizeUrl(fi.FullName), fi.FullName) });
                 result.Add(new DetailsElement { Key = "Type", Data = new DetailsLink(fi.Extension) });
                 result.Add(new DetailsElement { Key = "Size", Data = new DetailsLink(SizeFormatter.FormatSize(fi.Length)) });
                 result.Add(new DetailsElement { Key = "Modified", Data = new DetailsLink(fi.LastWriteTime.ToString(CultureInfo.CurrentCulture)) });
                 result.Add(new DetailsElement { Key = "Created", Data = new DetailsLink(fi.CreationTime.ToString(CultureInfo.CurrentCulture)) });
             }
-            else if (Directory.Exists(path))
+            else
             {
                 var di = new DirectoryInfo(path);
                 result.Add(new DetailsElement { Key = "Name", Data = new DetailsLink(di.Name) });
-                result.Add(new DetailsElement { Key = "Path", Data = new DetailsLink(UrlHelper.NormalizeUrl(di.FullName), di.FullName) });
+                result.Add(new DetailsElement { Key = "Location", Data = new DetailsLink(UrlHelper.NormalizeUrl(di.FullName), di.FullName) });
                 result.Add(new DetailsElement { Key = "Type", Data = new DetailsLink("Folder") });
                 result.Add(new DetailsElement { Key = "Modified", Data = new DetailsLink(di.LastWriteTime.ToString(CultureInfo.CurrentCulture)) });
                 result.Add(new DetailsElement { Key = "Created", Data = new DetailsLink(di.CreationTime.ToString(CultureInfo.CurrentCulture)) });
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogError("Failed to retrieve file system metadata.", ex);
         }
 
         return result;
@@ -71,14 +84,25 @@ internal sealed class TextFileSystemMetadataProvider : IClipboardMetadataProvide
 
     public IEnumerable<ProviderAction> GetActions(ClipboardItem item)
     {
+        ArgumentNullException.ThrowIfNull(item);
+
         if (!item.IsText || string.IsNullOrWhiteSpace(item.Content))
         {
             yield break;
         }
 
-        var path = item.Content.Trim();
+        var path = PathHelper.Unquote(item.Content);
 
-        if (File.Exists(path))
+        if (PathHelper.IsSlow(path) || !PathHelper.Exists(path, out var isDirectory))
+        {
+            // One anything
+            var open = new CommandContextItem(new OpenFileCommand(path)) { RequestedShortcut = KeyChords.OpenUrl };
+            yield return new ProviderAction(WellKnownActionIds.Open, open);
+
+            yield break;
+        }
+
+        if (!isDirectory)
         {
             // Open file
             var open = new CommandContextItem(new OpenFileCommand(path)) { RequestedShortcut = KeyChords.OpenUrl };
@@ -96,7 +120,7 @@ internal sealed class TextFileSystemMetadataProvider : IClipboardMetadataProvide
             var openConsole = new CommandContextItem(OpenInConsoleCommand.FromFile(path)) { RequestedShortcut = WellKnownKeyChords.OpenInConsole };
             yield return new ProviderAction(WellKnownActionIds.OpenConsole, openConsole);
         }
-        else if (Directory.Exists(path))
+        else
         {
             // Open folder
             var openFolder = new CommandContextItem(new OpenFileCommand(path)) { RequestedShortcut = KeyChords.OpenUrl };
@@ -110,20 +134,5 @@ internal sealed class TextFileSystemMetadataProvider : IClipboardMetadataProvide
             var copy = new CommandContextItem(new CopyPathCommand(path)) { RequestedShortcut = WellKnownKeyChords.CopyFilePath };
             yield return new ProviderAction(WellKnownActionIds.CopyPath, copy);
         }
-    }
-
-    private static bool IsPotentialPath(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return false;
-        }
-
-        if (text.StartsWith(@"\\", StringComparison.Ordinal))
-        {
-            return true;
-        }
-
-        return text.Length >= 2 && char.IsLetter(text[0]) && text[1] == ':';
     }
 }
