@@ -151,6 +151,15 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open URL.
+        /// </summary>
+        public static string open_url_command_name {
+            get {
+                return ResourceManager.GetString("open_url_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Paste.
         /// </summary>
         public static string paste_command_name {
