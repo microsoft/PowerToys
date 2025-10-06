@@ -177,7 +177,7 @@ BEGIN
     CONTROL         "Animate zoom in and zoom out:",IDC_ANIMATE_ZOOM,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,74,116,10
     CONTROL         "Smooth zoomed image:",IDC_SMOOTH_IMAGE,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,88,116,10
     LTEXT           "Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,7,148,246,17
-    LTEXT           "Copy a zoomed screen with Ctrl+C or sve it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,6,34,246,18
+    LTEXT           "Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,6,34,246,18
 END
 
 DRAW DIALOGEX 0, 0, 260, 228
