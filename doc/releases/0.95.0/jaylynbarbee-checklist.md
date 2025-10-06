@@ -278,10 +278,10 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 
 ## [Workspaces](tests-checklist-template-workspaces-section.md)
 * Settings
-   - [ ] 1. Launch the Editor by clicking the button on the settings page.
-   - [ ] 2. Launch the Editor from quick access.
-   - [ ] 3. Launch the Editor by the Activation shortcut.
-   - [ ] 4. Disable the module and verify it won't launch by the shortcut.
+   - [x] 1. Launch the Editor by clicking the button on the settings page.
+   - [x] 2. Launch the Editor from quick access.
+   - [x] 3. Launch the Editor by the Activation shortcut.
+   - [x] 4. Disable the module and verify it won't launch by the shortcut.
 
 * Snapshot tool: try with elevated and non-elevated PT
    * Open non-packaged apps, e.g., VisualStudio, VisualStudioCode.
@@ -291,49 +291,49 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
    * Click `Create Workspace`.
    * Open any other window.
    * Click `Capture`
-   - [ ] 5. Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
-   - [ ] 6. Verify windows are in the correct positions.
-   - [ ] 7. Verify elevated app has the `Admin` box checked (if captured).
+   - [x] 5. Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
+   - [x] 6. Verify windows are in the correct positions.
+   - [x] 7. Verify elevated app has the `Admin` box checked (if captured).
 
 * Editor
-   - [ ] 8. Verify that the new Workspace appears in the list after capturing.
-   - [ ] 9. Verify that the new Workspace doesn't appear after canceling the Capture.
-   - [ ] 10. Verify `Search` filters Workspaces (by workspace name or app name).
-   - [ ] 11. Verify `SortBy` works.
-   - [ ] 12. Verify `SortBy` keeps its value when you close and open the editor again.
-   - [ ] 13. Verify `Remove` removes the Workspace from the list.
-   - [ ] 14. Verify `Edit` opens the Workspace editing page.
-   - [ ] 15. Verify clicking at the Workspace opens the Workspace editing page.
+   - [x] 8. Verify that the new Workspace appears in the list after capturing.
+   - [x] 9. Verify that the new Workspace doesn't appear after canceling the Capture.
+   - [x] 10. Verify `Search` filters Workspaces (by workspace name or app name).
+   - [x] 11. Verify `SortBy` works.
+   - [x] 12. Verify `SortBy` keeps its value when you close and open the editor again.
+   - [x] 13. Verify `Remove` removes the Workspace from the list.
+   - [x] 14. Verify `Edit` opens the Workspace editing page.
+   - [x] 15. Verify clicking at the Workspace opens the Workspace editing page.
    
    * Editing page
-   - [ ] 16. `Remove` an app and verify it disappeared on the preview.
-   - [ ] 17. `Remove` and `Add back` an app, verify it's returned back to the preview.
-   - [ ] 18. Set an app minimized, check the preview.
-   - [ ] 19. Set an app maximized, check the preview.
-   - [ ] 20. Check `Launch as admin` for the app where it's available.
-   - [ ] 21. Add CLI args, e.g. path to the PowerToys.sln file for VisualStudio.
-   - [ ] 22. Manually change the position for the app, check the preview.
-   - [ ] 23. Change the Workspace name.
-   - [ ] 24. Verify `Save` and `Cancel` work as expected. 
-   - [ ] 25. Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
-   - [ ] 26. Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
-   - [ ] 27. Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
-   - [ ] 28. Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
+   - [x] 16. `Remove` an app and verify it disappeared on the preview.
+   - [x] 17. `Remove` and `Add back` an app, verify it's returned back to the preview.
+   - [x] 18. Set an app minimized, check the preview.
+   - [x] 19. Set an app maximized, check the preview.
+   - [x] 20. Check `Launch as admin` for the app where it's available.
+   - [x] 21. Add CLI args, e.g. path to the PowerToys.sln file for VisualStudio.
+   - [x] 22. Manually change the position for the app, check the preview.
+   - [x] 23. Change the Workspace name.
+   - [x] 24. Verify `Save` and `Cancel` work as expected. 
+   - [x] 25. Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
+   - [x] 26. Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
+   - [x] 27. Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
+   - [x] 28. Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
 
 * Launcher
-   - [ ] 29. Click `Launch` in the editor, verify the Workspace apps launching.
-   - [ ] 30. Launch Workspace by a shortcut, verify the Workspace apps launching.
-   - [ ] 31. Verify a window with launching progress is shown while apps are launching and presents the correct launching state (launching, launched, not launched) for every app.
-   - [ ] 32. Click `Cancel launch`, verify launching is stopped at the current state (opened apps will stay opened), and the window is closed.
-   - [ ] 33. Click `Dismiss` and verify apps keep launching, but the LauncherUI window is closed.
+   - [x] 29. Click `Launch` in the editor, verify the Workspace apps launching.
+   - [x] 30. Launch Workspace by a shortcut, verify the Workspace apps launching.
+   - [x] 31. Verify a window with launching progress is shown while apps are launching and presents the correct launching state (launching, launched, not launched) for every app.
+   - [x] 32. Click `Cancel launch`, verify launching is stopped at the current state (opened apps will stay opened), and the window is closed.
+   - [x] 33. Click `Dismiss` and verify apps keep launching, but the LauncherUI window is closed.
    
 * To verify that the launcher works correctly with different apps, try to capture and launch:   
    - [ ] 34. Non-packaged app, e.g., VisualStudio code
-      - [ ] 35. As admin
+      - [ ] 35. As admin (didn't capture??)
       - [ ] 36. With CLI args 
-    - [ ] 37. Packaged app, e.g. Terminal
-      - [ ] 38. As admin
-      - [ ] 39. With CLI args
+    - [x] 37. Packaged app, e.g. Terminal
+      - [x] 38. As admin
+      - [x] 39. With CLI args
 
 * Try to launch the Workspace with a different setup
    - [ ] 40. Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
