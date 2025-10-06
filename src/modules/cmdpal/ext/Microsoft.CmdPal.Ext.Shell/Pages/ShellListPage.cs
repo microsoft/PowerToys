@@ -165,7 +165,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
         try
         {
             // Create a timeout for file system operations (200ms)
-            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(2000000)); // TODO! REVERT ME
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
             using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
             var timeoutToken = combinedCts.Token;
 

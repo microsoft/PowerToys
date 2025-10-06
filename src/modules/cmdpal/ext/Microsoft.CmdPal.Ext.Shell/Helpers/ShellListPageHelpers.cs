@@ -18,7 +18,6 @@ public class ShellListPageHelpers
 
     internal static bool FileExistInPath(string filename, out string fullPath, CancellationToken? token = null)
     {
-        // TODO! remove this method and just use ShellHelpers.FileExistInPath directly
         return ShellHelpers.FileExistInPath(filename, out fullPath, token ?? CancellationToken.None);
     }
 
