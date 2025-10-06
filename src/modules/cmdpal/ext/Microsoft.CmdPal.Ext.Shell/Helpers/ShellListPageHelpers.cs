@@ -2,13 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Shell.Commands;
+using Microsoft.CmdPal.Core.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -16,37 +11,6 @@ namespace Microsoft.CmdPal.Ext.Shell.Helpers;
 
 public class ShellListPageHelpers
 {
-    private static readonly CompositeFormat CmdHasBeenExecutedTimes = System.Text.CompositeFormat.Parse(Properties.Resources.cmd_has_been_executed_times);
-    private readonly ISettingsInterface _settings;
-
-    public ShellListPageHelpers(ISettingsInterface settings)
-    {
-        _settings = settings;
-    }
-
-    private ListItem GetCurrentCmd(string cmd)
-    {
-        var result = new ListItem(new ExecuteItem(cmd, _settings))
-        {
-            Title = cmd,
-            Subtitle = Properties.Resources.cmd_plugin_name + ": " + Properties.Resources.cmd_execute_through_shell,
-            Icon = new IconInfo(string.Empty),
-        };
-
-        return result;
-    }
-
-    public List<CommandContextItem> LoadContextMenus(ListItem listItem)
-    {
-        var resultList = new List<CommandContextItem>
-            {
-                new(new ExecuteItem(listItem.Title, _settings, RunAsType.Administrator)),
-                new(new ExecuteItem(listItem.Title, _settings, RunAsType.OtherUser )),
-            };
-
-        return resultList;
-    }
-
     internal static bool FileExistInPath(string filename)
     {
         return FileExistInPath(filename, out var _);
@@ -58,7 +22,7 @@ public class ShellListPageHelpers
         return ShellHelpers.FileExistInPath(filename, out fullPath, token ?? CancellationToken.None);
     }
 
-    internal static ListItem? ListItemForCommandString(string query, Action<string>? addToHistory)
+    internal static ListItem? ListItemForCommandString(string query, Action<string>? addToHistory, ITelemetryService? telemetryService)
     {
         var li = new ListItem();
 
@@ -100,7 +64,7 @@ public class ShellListPageHelpers
         if (exeExists)
         {
             // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, addToHistory);
+            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, addToHistory, telemetryService);
             li.Command = exeItem.Command;
             li.Title = exeItem.Title;
             li.Subtitle = exeItem.Subtitle;
@@ -109,7 +73,7 @@ public class ShellListPageHelpers
         }
         else if (pathIsDir)
         {
-            var pathItem = new PathListItem(exe, query, addToHistory);
+            var pathItem = new PathListItem(exe, query, addToHistory, telemetryService);
             li.Command = pathItem.Command;
             li.Title = pathItem.Title;
             li.Subtitle = pathItem.Subtitle;
@@ -118,7 +82,7 @@ public class ShellListPageHelpers
         }
         else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
         {
-            li.Command = new OpenUrlWithHistoryCommand(searchText) { Result = CommandResult.Dismiss() };
+            li.Command = new OpenUrlWithHistoryCommand(searchText, addToHistory, telemetryService) { Result = CommandResult.Dismiss() };
             li.Title = searchText;
         }
         else
@@ -157,7 +121,98 @@ public class ShellListPageHelpers
         executable = segments[0];
         if (segments.Length > 1)
         {
-            arguments = string.Join(' ', segments[1..]);
+            arguments = ArgumentBuilder.BuildArguments(segments[1..]);
+        }
+    }
+
+    private static class ArgumentBuilder
+    {
+        internal static string BuildArguments(string[] arguments)
+        {
+            if (arguments.Length <= 0)
+            {
+                return string.Empty;
+            }
+
+            var stringBuilder = new StringBuilder();
+            foreach (var argument in arguments)
+            {
+                AppendArgument(stringBuilder, argument);
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        private static void AppendArgument(StringBuilder stringBuilder, string argument)
+        {
+            if (stringBuilder.Length > 0)
+            {
+                stringBuilder.Append(' ');
+            }
+
+            if (argument.Length == 0 || ShouldBeQuoted(argument))
+            {
+                stringBuilder.Append('\"');
+                var index = 0;
+                while (index < argument.Length)
+                {
+                    var c = argument[index++];
+                    if (c == '\\')
+                    {
+                        var numBackSlash = 1;
+                        while (index < argument.Length && argument[index] == '\\')
+                        {
+                            index++;
+                            numBackSlash++;
+                        }
+
+                        if (index == argument.Length)
+                        {
+                            stringBuilder.Append('\\', numBackSlash * 2);
+                        }
+                        else if (argument[index] == '\"')
+                        {
+                            stringBuilder.Append('\\', (numBackSlash * 2) + 1);
+                            stringBuilder.Append('\"');
+                            index++;
+                        }
+                        else
+                        {
+                            stringBuilder.Append('\\', numBackSlash);
+                        }
+
+                        continue;
+                    }
+
+                    if (c == '\"')
+                    {
+                        stringBuilder.Append('\\');
+                        stringBuilder.Append('\"');
+                        continue;
+                    }
+
+                    stringBuilder.Append(c);
+                }
+
+                stringBuilder.Append('\"');
+            }
+            else
+            {
+                stringBuilder.Append(argument);
+            }
+        }
+
+        private static bool ShouldBeQuoted(string s)
+        {
+            foreach (var c in s)
+            {
+                if (char.IsWhiteSpace(c) || c == '\"')
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
