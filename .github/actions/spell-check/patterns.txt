@@ -264,3 +264,7 @@ St&yle
 # This matches a relative clause where the relative pronoun "that" is omitted.
 # Example: "Gets or sets the window the TitleBar should configure."
 \bthe\s+\w+\s+the\b
+
+# Usernames with numbers
+# 0x6f677548 is user name but user folder causes a flag
+\bx6f677548\b
