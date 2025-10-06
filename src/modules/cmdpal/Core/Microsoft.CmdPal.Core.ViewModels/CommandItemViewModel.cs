@@ -17,7 +17,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     public ExtensionObject<ICommandItem> Model => _commandItemModel;
 
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
-    private CommandContextItemViewModel? _defaultCommandContextItem;
+    private CommandContextItemViewModel? _defaultCommandContextItemViewModel;
 
     internal InitializedState Initialized { get; private set; } = InitializedState.Uninitialized;
 
@@ -43,9 +43,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public string Subtitle { get; private set; } = string.Empty;
 
-    private IconInfoViewModel _listItemIcon = new(null);
+    private IconInfoViewModel _icon = new(null);
 
-    public IconInfoViewModel Icon => _listItemIcon.IsSet ? _listItemIcon : Command.Icon;
+    public IconInfoViewModel Icon => _icon.IsSet ? _icon : Command.Icon;
 
     public CommandViewModel Command { get; private set; }
 
@@ -69,9 +69,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         get
         {
-            List<IContextItemViewModel> l = _defaultCommandContextItem is null ?
+            List<IContextItemViewModel> l = _defaultCommandContextItemViewModel is null ?
                 new() :
-                [_defaultCommandContextItem];
+                [_defaultCommandContextItemViewModel];
 
             l.AddRange(MoreCommands);
             return l;
@@ -136,11 +136,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         Command.InitializeProperties();
 
-        var listIcon = model.Icon;
-        if (listIcon is not null)
+        var icon = model.Icon;
+        if (icon is not null)
         {
-            _listItemIcon = new(listIcon);
-            _listItemIcon.InitializeProperties();
+            _icon = new(icon);
+            _icon.InitializeProperties();
         }
 
         // TODO: Do these need to go into FastInit?
@@ -201,21 +201,19 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         if (!string.IsNullOrEmpty(model.Command?.Name))
         {
-            _defaultCommandContextItem = new(new CommandContextItem(model.Command!), PageContext)
+            _defaultCommandContextItemViewModel = new CommandContextItemViewModel(new CommandContextItem(model.Command!), PageContext)
             {
                 _itemTitle = Name,
                 Subtitle = Subtitle,
                 Command = Command,
 
                 // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
+                // Anything we set manually here must stay in sync with the corresponding properties on CommandItemViewModel.
             };
 
             // Only set the icon on the context item for us if our command didn't
             // have its own icon
-            if (!Command.HasIcon)
-            {
-                _defaultCommandContextItem._listItemIcon = _listItemIcon;
-            }
+            UpdateDefaultContextItemIcon();
         }
 
         Initialized |= InitializedState.SelectionInitialized;
@@ -238,7 +236,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
             MoreCommands = [];
-            _listItemIcon = _errorIcon;
+            _icon = _errorIcon;
             Initialized |= InitializedState.Error;
         }
 
@@ -275,7 +273,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
             MoreCommands = [];
-            _listItemIcon = _errorIcon;
+            _icon = _errorIcon;
             Initialized |= InitializedState.Error;
         }
 
@@ -305,17 +303,18 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         switch (propertyName)
         {
             case nameof(Command):
-                if (Command is not null)
-                {
-                    Command.PropertyChanged -= Command_PropertyChanged;
-                }
-
+                Command.PropertyChanged -= Command_PropertyChanged;
                 Command = new(model.Command, PageContext);
                 Command.InitializeProperties();
 
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
                 _itemTitle = model.Title;
+
+                _defaultCommandContextItemViewModel?.Command = Command;
+                _defaultCommandContextItemViewModel?.UpdateTitle(_itemTitle);
+                UpdateDefaultContextItemIcon();
+
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
                 UpdateProperty(nameof(Icon));
@@ -326,12 +325,22 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 break;
 
             case nameof(Subtitle):
-                this.Subtitle = model.Subtitle;
+                var modelSubtitle = model.Subtitle;
+                this.Subtitle = modelSubtitle;
+                _defaultCommandContextItemViewModel?.Subtitle = modelSubtitle;
                 break;
 
             case nameof(Icon):
-                _listItemIcon = new(model.Icon);
-                _listItemIcon.InitializeProperties();
+                var oldIcon = _icon;
+                _icon = new(model.Icon);
+                _icon.InitializeProperties();
+                if (oldIcon.IsSet || _icon.IsSet)
+                {
+                    UpdateProperty(nameof(Icon));
+                }
+
+                UpdateDefaultContextItemIcon();
+
                 break;
 
             case nameof(model.MoreCommands):
@@ -378,24 +387,47 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     private void Command_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var propertyName = e.PropertyName;
+        var model = _commandItemModel.Unsafe;
+        if (model is null)
+        {
+            return;
+        }
+
         switch (propertyName)
         {
             case nameof(Command.Name):
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
-                var model = _commandItemModel.Unsafe;
-                if (model is not null)
-                {
-                    _itemTitle = model.Title;
-                }
+                _itemTitle = model.Title;
+                UpdateProperty(nameof(Title), nameof(Name));
 
-                UpdateProperty(nameof(Title));
-                UpdateProperty(nameof(Name));
+                _defaultCommandContextItemViewModel?.UpdateTitle(model.Command.Name);
                 break;
+
             case nameof(Command.Icon):
+                UpdateDefaultContextItemIcon();
                 UpdateProperty(nameof(Icon));
                 break;
         }
+    }
+
+    private void UpdateDefaultContextItemIcon()
+    {
+        // Command icon takes precedence over our icon on the primary command
+        _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.IsSet ? Command.Icon : _icon);
+    }
+
+    private void UpdateTitle(string? title)
+    {
+        _itemTitle = title ?? string.Empty;
+        UpdateProperty(nameof(Title));
+    }
+
+    private void UpdateIcon(IIconInfo? iconInfo)
+    {
+        _icon = new(iconInfo);
+        _icon.InitializeProperties();
+        UpdateProperty(nameof(Icon));
     }
 
     protected override void UnsafeCleanup()
@@ -411,10 +443,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         // _listItemIcon.SafeCleanup();
-        _listItemIcon = new(null); // necessary?
+        _icon = new(null); // necessary?
 
-        _defaultCommandContextItem?.SafeCleanup();
-        _defaultCommandContextItem = null;
+        _defaultCommandContextItemViewModel?.SafeCleanup();
+        _defaultCommandContextItemViewModel = null;
 
         Command.PropertyChanged -= Command_PropertyChanged;
         Command.SafeCleanup();
