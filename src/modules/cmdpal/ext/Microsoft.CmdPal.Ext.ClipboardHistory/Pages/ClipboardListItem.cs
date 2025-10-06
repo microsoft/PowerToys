@@ -22,6 +22,7 @@ internal sealed partial class ClipboardListItem : ListItem
     private readonly CommandContextItem _deleteContextMenuItem;
     private readonly CommandContextItem? _pasteCommand;
     private readonly CommandContextItem? _copyCommand;
+    private readonly CommandContextItem? _openUrlCommand;
     private readonly Lazy<Details> _lazyDetails;
 
     public override IDetails? Details
@@ -72,11 +73,26 @@ internal sealed partial class ClipboardListItem : ListItem
 
             _pasteCommand = new CommandContextItem(new PasteCommand(_item, ClipboardFormat.Text, _settingsManager));
             _copyCommand = new CommandContextItem(new CopyCommand(_item, ClipboardFormat.Text));
+
+            // Check if the text content is a valid URL and add OpenUrl command
+            if (UrlHelper.IsValidUrl(_item.Content ?? string.Empty))
+            {
+                var normalizedUrl = UrlHelper.NormalizeUrl(_item.Content ?? string.Empty);
+                _openUrlCommand = new CommandContextItem(new OpenUrlCommand(normalizedUrl))
+                {
+                    RequestedShortcut = KeyChords.OpenUrl,
+                };
+            }
+            else
+            {
+                _openUrlCommand = null;
+            }
         }
         else
         {
             _pasteCommand = null;
             _copyCommand = null;
+            _openUrlCommand = null;
         }
 
         RefreshCommands();
@@ -99,12 +115,7 @@ internal sealed partial class ClipboardListItem : ListItem
         {
             case PrimaryAction.Paste:
                 Command = _pasteCommand?.Command;
-                MoreCommands =
-                [
-                    _copyCommand!,
-                    new Separator(),
-                    _deleteContextMenuItem,
-                ];
+                MoreCommands = BuildMoreCommands(_copyCommand);
 
                 if (_item.IsText)
                 {
@@ -124,12 +135,7 @@ internal sealed partial class ClipboardListItem : ListItem
             case PrimaryAction.Copy:
             default:
                 Command = _copyCommand?.Command;
-                MoreCommands =
-                [
-                    _pasteCommand!,
-                    new Separator(),
-                    _deleteContextMenuItem,
-                ];
+                MoreCommands = BuildMoreCommands(_pasteCommand);
 
                 if (_item.IsText)
                 {
@@ -146,6 +152,26 @@ internal sealed partial class ClipboardListItem : ListItem
 
                 break;
         }
+    }
+
+    private IContextItem[] BuildMoreCommands(CommandContextItem? firstCommand)
+    {
+        var commands = new List<IContextItem>();
+
+        if (firstCommand != null)
+        {
+            commands.Add(firstCommand);
+        }
+
+        if (_openUrlCommand != null)
+        {
+            commands.Add(_openUrlCommand);
+        }
+
+        commands.Add(new Separator());
+        commands.Add(_deleteContextMenuItem);
+
+        return commands.ToArray();
     }
 
     private Details CreateDetails()

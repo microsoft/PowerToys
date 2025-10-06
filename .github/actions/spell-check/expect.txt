@@ -160,6 +160,7 @@ BUILDARCH
 BUILDNUMBER
 buildtransitive
 builttoroam
+BUNDLEINFO
 BVal
 BValue
 byapp
@@ -365,6 +366,7 @@ desktopshorcutinstalled
 DESKTOPVERTRES
 devblogs
 devdocs
+devenv
 devmgmt
 DEVMODE
 DEVMODEW
@@ -821,6 +823,7 @@ killrunner
 kmph
 kvp
 Kybd
+LARGEICON
 lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
@@ -863,6 +866,7 @@ LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
+LOGMSG
 LOGPIXELSX
 LOGPIXELSY
 LOn
@@ -1040,6 +1044,7 @@ MWBEx
 MYICON
 NAMECHANGE
 namespaceanddescendants
+Namotion
 nao
 NCACTIVATE
 ncc
@@ -1077,6 +1082,7 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
+NJson
 NLog
 NLSTEXT
 NMAKE
@@ -1196,8 +1202,10 @@ PACL
 PAINTSTRUCT
 PALETTEWINDOW
 PARENTNOTIFY
+PARENTRELATIVE
 PARENTRELATIVEEDITING
 PARENTRELATIVEFORADDRESSBAR
+PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
@@ -1253,6 +1261,7 @@ pgp
 pguid
 phbm
 phbmp
+phicon
 phwnd
 pici
 pidl
@@ -1261,6 +1270,7 @@ pinfo
 pinvoke
 pipename
 PKBDLLHOOKSTRUCT
+pkgfamily
 plib
 ploc
 ploca
