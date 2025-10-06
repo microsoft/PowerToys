@@ -341,23 +341,23 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 
 ## [Mouse Without Borders](tests-checklist-template-mouse-without-borders-section.md)
  * Install PowerToys on two PCs in the same local network:
-   - [ ] 1. Verify that PowerToys is properly installed on both PCs.
+   - [x] 1. Verify that PowerToys is properly installed on both PCs.
    
  * Setup Connection:
-   - [ ] 2. Open MWB's settings on the first PC and click the "New Key" button. Verify that a new security key is generated.
-   - [ ] 3. Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
-   - [ ] 4. Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
+   - [x] 2. Open MWB's settings on the first PC and click the "New Key" button. Verify that a new security key is generated.
+   - [x] 3. Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
+   - [x] 4. Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
    
  * Verify Connection Status:
-   - [ ] 5. Ensure that the border of the remote PC turns green, indicating a successful connection.
-   - [ ] 6. Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
+   - [x] 5. Ensure that the border of the remote PC turns green, indicating a successful connection.
+   - [x] 6. Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
    
  * Test Remote Mouse/Keyboard Control:
-   - [ ] 7. With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
+   - [x] 7. With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
    - [ ] 8. Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
    
  * Test Remote Control with Elevated Apps:
-   - [ ] 9. Open an elevated app on one of the PCs. Verify that without "Use Service" enabled, PowerToys does not control the elevated app.
+   - [x] 9. Open an elevated app on one of the PCs. Verify that without "Use Service" enabled, PowerToys does not control the elevated app.
    - [ ] 10. Enable "Use Service" in MWB's settings. Verify that PowerToys can now control the elevated app remotely. Verify that MWB processes are running as LocalSystem, while the MWB helper process is running non-elevated.
    - [ ] 11. Toggle "Use Service" again, verify that each time you do that, the MWB processes are restarted.
    - [ ] 12. Run PowerToys elevated on one of the machines, verify that you can control elevated apps remotely now on that machine.
@@ -366,22 +366,23 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
    - [ ] 13. For all combinations of "Use Service"/"Run PowerToys as admin", try enabling/disabling MWB module and verify that it's indeed being toggled using task manager.
    
  * Test Disconnection/Reconnection:
-   - [ ] 14. Disconnect one of the PCs from network. Verify that the machine layout updates to reflect the disconnection. 
-   - [ ] 15. Do the same, but now by exiting PowerToys.
-   - [ ] 16. Start PowerToys again, verify that the PCs are reconnected.
+   - [x] 14. Disconnect one of the PCs from network. Verify that the machine layout updates to reflect the disconnection. 
+   - [x] 15. Do the same, but now by exiting PowerToys.
+   - [x] 16. Start PowerToys again, verify that the PCs are reconnected.
+  ** For the above I have to press refresh connections to see the border. **
   
  * Test Various Local Network Conditions:
    - [ ] 17. Test MWB performance under various network conditions (e.g., low bandwidth, high latency). Verify that the tool maintains a stable connection and functions correctly.
 
  * Clipboard Sharing:
-   - [ ] 18. Copy some text on one PC and verify that the same text can be pasted on another PC.
-   - [ ] 19. Use the screenshot key and Win+Shift+S to take a screenshot on one PC and verify that the screenshot can be pasted on another PC.
-   - [ ] 20. Copy a file in Windows Explorer and verify that the file can be pasted on another PC. Make sure the file size is below 100MB.
-   - [ ] 21. Try to copy multiple files and directories and verify that it's not possible (only the first selected file is being copied).
+   - [x] 18. Copy some text on one PC and verify that the same text can be pasted on another PC.
+   - [x] 19. Use the screenshot key and Win+Shift+S to take a screenshot on one PC and verify that the screenshot can be pasted on another PC.
+   - [x] 20. Copy a file in Windows Explorer and verify that the file can be pasted on another PC. Make sure the file size is below 100MB.
+   - [x] 21. Try to copy multiple files and directories and verify that it's not possible (only the first selected file is being copied).
  
  * Drag and Drop:
-   - [ ] 22. Drag a file from Windows Explorer on one PC, cross the screen border onto another PC, and release it there. Verify that the file is copied to the other PC. Make sure the file size is below 100MB.
-   - [ ] 23. While dragging the file, verify that a corresponding icon is displayed under the mouse cursor.
+   - [x] 22. Drag a file from Windows Explorer on one PC, cross the screen border onto another PC, and release it there. Verify that the file is copied to the other PC. Make sure the file size is below 100MB.
+   - [x] 23. While dragging the file, verify that a corresponding icon is displayed under the mouse cursor.
    - [ ] 24. Without moving the mouse from one PC to the target PC, press CTRL+ALT+F1/2/3/4 hotkey to switch to the target PC directly and verify that file sharing/dropping is not working.
 
  * Lock and Unlock with "Use Service" Enabled:
@@ -390,7 +391,7 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
    - [ ] 27. Disable "Use Service" in MWB's settings, lock the remote PC, move the mouse to it remotely, and try to unlock it. Verify that you can't unlock the remote PC.
 
  * Test Settings:
-   - [ ] 28. Change the rest of available settings on MWB page and verify that each setting works as described.
+   - [x] 28. Change the rest of available settings on MWB page and verify that each setting works as described.
 
 ## [Mouse Utils](tests-checklist-template-mouse-utils-section.md)
 
