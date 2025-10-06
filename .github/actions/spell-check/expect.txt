@@ -25,8 +25,6 @@ ADMINS
 adml
 admx
 advancedpaste
-advancedpasteui
-advancedpasteuishortcut
 advapi
 advfirewall
 AFeature
@@ -44,7 +42,6 @@ ALLINPUT
 Allman
 Allmodule
 ALLOWUNDO
-allpc
 ALLVIEW
 ALPHATYPE
 AModifier
@@ -134,7 +131,6 @@ bla
 BLACKFRAME
 BLENDFUNCTION
 Blockquotes
-blogs
 Blt
 BLURBEHIND
 BLURREGION
@@ -509,7 +505,6 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
 fesf
-fff
 FFFF
 FILEEXPLORER
 fileexploreraddons
@@ -668,11 +663,7 @@ Hostx
 hotfixes
 hotkeycontrol
 HOTKEYF
-hotkeylockmachine
-hotkeyreconnect
 hotkeys
-hotkeyswitch
-hotkeytoggleeasymouse
 hotlight
 hotspot
 HPAINTBUFFER
@@ -731,8 +722,6 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
-imagetotext
-imagetotextshortcut
 imagingdevices
 ime
 imgflip
@@ -861,7 +850,6 @@ localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
-LOCKMACHINE
 LOCKTYPE
 LOGFONT
 LOGFONTW
@@ -924,7 +912,6 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
-MAJORMINOR
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -949,7 +936,6 @@ MDL
 mdtext
 mdtxt
 mdwn
-measuretool
 meme
 memicmp
 MENUITEMINFO
@@ -999,7 +985,6 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
-mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -1044,7 +1029,6 @@ MWBEx
 MYICON
 NAMECHANGE
 namespaceanddescendants
-Namotion
 nao
 NCACTIVATE
 ncc
@@ -1082,7 +1066,6 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
-NJson
 NLog
 NLSTEXT
 NMAKE
@@ -1209,18 +1192,6 @@ PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
-pasteashtmlfile
-pasteashtmlfileshortcut
-pasteasjson
-pasteasjsonshortcut
-pasteasmarkdown
-pasteasmarkdownshortcut
-pasteasplaintext
-pasteasplaintextshortcut
-pasteaspngfile
-pasteaspngfileshortcut
-pasteastxtfile
-pasteastxtfileshortcut
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
@@ -1290,7 +1261,6 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
-powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1341,7 +1311,6 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
-projitems
 PROPERTYKEY
 Propset
 PROPVARIANT
@@ -1433,7 +1402,6 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 reparented
-reparenthotkey
 reparenting
 reportfileaccesses
 requery
@@ -1459,7 +1427,6 @@ RIDEV
 RIGHTSCROLLBAR
 riid
 RKey
-Rns
 RNumber
 rop
 ROUNDSMALL
@@ -1683,7 +1650,6 @@ STYLECHANGED
 STYLECHANGING
 subkeys
 sublang
-Subdomain
 SUBMODULEUPDATE
 subresource
 Superbar
@@ -1754,7 +1720,6 @@ THH
 THICKFRAME
 THISCOMPONENT
 throughs
-thumbnailhotkey
 TILEDWINDOW
 TILLSON
 timedate
@@ -1769,9 +1734,7 @@ tlb
 tlbimp
 tlc
 TNP
-TOGGLEEASYMOUSE
 Toolhelp
-toolkitconverters
 toolwindow
 TOPDOWNDIB
 TOUCHEVENTF
@@ -1783,11 +1746,9 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
-transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
-Tru
 trl
 trx
 tsa
@@ -1823,7 +1784,6 @@ ULONGLONG
 ums
 uncompilable
 UNCPRIORITY
-undefining
 UNDNAME
 UNICODETEXT
 unins
