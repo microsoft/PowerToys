@@ -109,6 +109,7 @@
                     <HyperlinkButton
                         Padding="0"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
+                        Command="{x:Bind NavigateCommand, Mode=OneWay}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}">
                         <TextBlock Text="{x:Bind Text, Mode=OneWay}" TextWrapping="Wrap" />
                     </HyperlinkButton>
