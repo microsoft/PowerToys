@@ -41,6 +41,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
       call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
       call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
+      call move /Y ..\..\..\LightSwitch.wxs.bk ..\..\..\LightSwitch.wxs
       call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
       call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
       call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
@@ -114,6 +115,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="FileLocksmith.wxs" />
     <Compile Include="Hosts.wxs" />
     <Compile Include="ImageResizer.wxs" />
+    <Compile Include="LightSwitch.wxs" />
     <Compile Include="KeyboardManager.wxs" />
     <Compile Include="Peek.wxs" />
     <Compile Include="PowerRename.wxs" />
