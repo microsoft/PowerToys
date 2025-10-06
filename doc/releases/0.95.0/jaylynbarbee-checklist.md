@@ -474,19 +474,19 @@ Mouse Pointer Crosshairs:
 
 Mouse Jump:
   * Enable Mouse Jump. Then:
-    - [ ] 39. Press the activation shortcut and verify the screens preview appears.
+    - [x] 39. Press the activation shortcut and verify the screens preview appears.
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump2")
-    - [ ] 40. Change activation shortcut and verify that new shortcut triggers Mouse Jump.
+    - [x] 40. Change activation shortcut and verify that new shortcut triggers Mouse Jump.
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump3")
-    - [ ] 41. Click around the screen preview and ensure that mouse cursor jumped to clicked location.
+    - [x] 41. Click around the screen preview and ensure that mouse cursor jumped to clicked location.
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump2")
-    - [ ] 42. Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
-    - [ ] 43. Change scaling of screens and confirm that Mouse Jump still works correctly.
+    - [x] 42. Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
+    - [x] 43. Change scaling of screens and confirm that Mouse Jump still works correctly.
     - [ ] 44. Unplug additional monitors and confirm that Mouse Jump still works correctly.
-    - [ ] 45. Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
+    - [x] 45. Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump2")
 
