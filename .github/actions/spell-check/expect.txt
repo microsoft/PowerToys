@@ -514,6 +514,7 @@ FARPROC
 fesf
 fff
 FFFF
+Figma
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
