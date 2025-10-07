@@ -8,6 +8,7 @@ using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
@@ -77,6 +78,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.InitializeComponent();
             this.Loaded += Timeline_Loaded;
             this.IsEnabledChanged += Timeline_IsEnabledChanged;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TimelineAutomationPeer(this);
         }
 
         private void Timeline_Loaded(object sender, RoutedEventArgs e)
