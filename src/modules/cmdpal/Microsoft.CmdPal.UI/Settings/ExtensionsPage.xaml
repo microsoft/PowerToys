@@ -15,8 +15,43 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <converters:BoolNegationConverter x:Key="InvertedBoolConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <!--  ControlFillColorQuarternaryBrush does not exist (yet) in WinUI, only in Windows Visual Library (Figma)  -->
+                <ResourceDictionary x:Key="Default">
+                    <LinearGradientBrush x:Key="CardGradient2Brush" StartPoint="0,0" EndPoint="0.5, 1">
+                        <GradientStop Offset="0" Color="#38C8AEC4" />
+                        <GradientStop Offset="1" Color="#383286EE" />
+                    </LinearGradientBrush>
+                    <ImageSource x:Key="StoreLogo">ms-appx:///Assets/StoreLogo.dark.svg</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <LinearGradientBrush x:Key="CardGradient2Brush" StartPoint="0,0" EndPoint="1, 1">
+                        <!--<GradientStop Offset="0" Color="#E6F0FC" />
+                <GradientStop Offset="0.4" Color="#E6F0FC" />
+                <GradientStop Offset="1" Color="#F0F0F7" />-->
+                        <GradientStop Offset="0.0" Color="#FFF6F9FF" />
+                        <!--  Light cool white  -->
+                        <GradientStop Offset="0.4" Color="#FFEFF5FF" />
+                        <!--  Hinted lavender/blue  -->
+                        <GradientStop Offset="0.7" Color="#FFF7FAFD" />
+                        <!--  Very soft neutral white  -->
+                        <GradientStop Offset="1.0" Color="#FFF5F8FA" />
+                        <!--  Slight bluish-gray tint  -->
+                        <!--  Faint peach glow  -->
+                        <!--  Soft peach  -->
+                    </LinearGradientBrush>
+                    <ImageSource x:Key="StoreLogo">ms-appx:///Assets/StoreLogo.light.svg</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="CardGradient2Brush" Color="Transparent" />
+                    <SolidColorBrush x:Key="CardGradient1Brush" Color="Transparent" />
+                    <ImageSource x:Key="StoreLogo">ms-appx:///Assets/StoreLogo.dark.svg</ImageSource>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+            <converters:BoolNegationConverter x:Key="InvertedBoolConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        </ResourceDictionary>
     </Page.Resources>
 
     <Grid>
@@ -31,15 +66,69 @@
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
+                    <!--  Banner  -->
+                    <Grid
+                        Padding="16"
+                        Background="{ThemeResource CardGradient2Brush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel x:Name="BannerDescriptionPanel" Orientation="Vertical">
+                            <TextBlock x:Uid="Settings_ExtensionsPage_Banner_Header" FontWeight="SemiBold" />
+                            <TextBlock
+                                x:Uid="Settings_ExtensionsPage_Banner_Description"
+                                Grid.Row="1"
+                                MaxWidth="520"
+                                HorizontalAlignment="Left"
+                                TextWrapping="Wrap" />
+                            <HyperlinkButton
+                                x:Uid="Settings_ExtensionsPage_Banner_Hyperlink"
+                                Padding="0"
+                                Content="Learn how to create your own extensions"
+                                NavigateUri="https://learn.microsoft.com/windows/powertoys/command-palette/overview" />
+                        </StackPanel>
+                        <StackPanel
+                            x:Name="ButtonPanel"
+                            Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button x:Uid="Settings_ExtensionsPage_FindExtensions_MicrosoftStore" Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Viewbox Width="16">
+                                        <Image AutomationProperties.AccessibilityView="Raw" Source="{ThemeResource StoreLogo}" />
+                                    </Viewbox>
+                                    <TextBlock Text="Microsoft Store" />
+                                </StackPanel>
+                            </Button>
+                            <!--<Button x:Uid="Settings_ExtensionsPage_FindExtensions_WinGet" Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Viewbox Width="16">
+                                        <Image AutomationProperties.AccessibilityView="Raw" Source="ms-appx:///Assets/WinGet.svg" />
+                                    </Viewbox>
+                                    <TextBlock Text="WinGet" />
+                                </StackPanel>
+                            </Button>-->
+                        </StackPanel>
+                    </Grid>
 
-                    <!--  toolbar 1  -->
-                    <Grid Padding="0,0,0,8">
+                    <!--  Search  -->
+                    <Grid Padding="0,24,0,8" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MaxWidth="320" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
                         <AutoSuggestBox
                             x:Name="SearchBox"
-                            x:Uid="Settings_ExtensionsPage_SearchBox"
-                            Width="320"
-                            MaxWidth="320"
-                            HorizontalAlignment="Left"
+                            x:Uid="Settings_ExtensionsPage_SearchBox_Placeholder"
+                            HorizontalAlignment="Stretch"
                             Text="{x:Bind viewModel.Extensions.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                             <AutoSuggestBox.QueryIcon>
                                 <SymbolIcon Symbol="Find" />
@@ -51,27 +140,18 @@
                                     Modifiers="Control" />
                             </AutoSuggestBox.KeyboardAccelerators>
                         </AutoSuggestBox>
-                    </Grid>
 
-                    <!--  toolbar 2  -->
-                    <Grid Padding="0,8,0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            x:Name="ItemCounterTextBlock"
-                            Grid.Column="0"
-                            VerticalAlignment="Center"
-                            Style="{StaticResource BodyTextBlockStyle}"
-                            Text="{x:Bind viewModel.Extensions.ItemCounterText, Mode=OneWay}" />
-
-                        <!--  Right actions: spinner + label (when reloading) then button  -->
                         <StackPanel
                             Grid.Column="1"
+                            HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Orientation="Horizontal"
                             Spacing="8">
+                            <TextBlock
+                                x:Name="ItemCounterTextBlock"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource BodyTextBlockStyle}"
+                                Text="{x:Bind viewModel.Extensions.ItemCounterText, Mode=OneWay}" />
                             <StackPanel
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal"
@@ -86,11 +166,10 @@
                                     VerticalAlignment="Center"
                                     Style="{StaticResource BodyTextBlockStyle}" />
                             </StackPanel>
-
                             <Button
                                 x:Name="MoreButton"
                                 x:Uid="Settings_ExtensionsPage_More_Button"
-                                VerticalAlignment="Center">
+                                Style="{StaticResource SubtleButtonStyle}">
                                 <Button.Flyout>
                                     <MenuFlyout Placement="BottomEdgeAlignedRight">
                                         <MenuFlyoutItem x:Uid="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem" Command="{x:Bind viewModel.Extensions.ReloadExtensionsCommand}">
@@ -100,7 +179,10 @@
                                         </MenuFlyoutItem>
                                     </MenuFlyout>
                                 </Button.Flyout>
-                                <FontIcon Glyph="&#xE10C;" />
+                                <FontIcon
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontSize="16"
+                                    Glyph="&#xE712;" />
                             </Button>
                         </StackPanel>
                     </Grid>
@@ -121,16 +203,10 @@
                                 TextAlignment="Center" />
                             <TextBlock
                                 x:Uid="Settings_ExtensionsPage_NoResults_Secondary"
-                                Style="{StaticResource BodyTextBlockStyle}"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 TextAlignment="Center" />
-                            <HyperlinkButton
-                                x:Uid="Settings_ExtensionsPage_NoResults_Hyperlink"
-                                Margin="0,16,0,0"
-                                HorizontalAlignment="Center"
-                                Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}" />
                         </StackPanel>
                     </Grid>
-
                     <ItemsRepeater
                         x:Name="ProvidersRepeater"
                         x:Load="{x:Bind viewModel.Extensions.HasResults, Mode=OneWay}"
@@ -163,18 +239,28 @@
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
-
-                    <TextBlock x:Uid="Settings_ExtensionsPage_RelatedItemsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-
-                    <controls:SettingsCard
-                        x:Uid="Settings_ExtensionsPage_ManageExtensions_SettingsCard"
-                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                        Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE719;}"
-                        IsClickEnabled="True" />
-
                 </StackPanel>
             </Grid>
         </ScrollViewer>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LayoutVisualStates">
+                <VisualState x:Name="WideLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="720" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="NarrowLayout">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ButtonPanel.(Grid.Row)" Value="1" />
+                        <Setter Target="BannerDescriptionPanel.(Grid.ColumnSpan)" Value="2" />
+                        <Setter Target="ButtonPanel.(Grid.Column)" Value="0" />
+                        <Setter Target="ButtonPanel.Margin" Value="0,12,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>
