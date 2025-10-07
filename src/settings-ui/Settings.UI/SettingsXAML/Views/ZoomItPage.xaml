@@ -54,6 +54,9 @@
                     <tkcontrols:SettingsCard Name="ZoomItToggleAnimateZoom" x:Uid="ZoomIt_Toggle_AnimateZoom">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AnimateZoom, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItSmoothZoomedImage" x:Uid="ZoomIt_Toggle_SmoothZoomedImage">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.SmoothImage, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard Name="ZoomItSliderInitialMagnification" x:Uid="ZoomIt_Slider_InitialMagnification">
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
