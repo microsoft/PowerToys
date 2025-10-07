@@ -434,66 +434,67 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
                 return;
             }
 
-            if (directoryPath == _currentSubdir)
+            // If the directory we're in changed, then first rebuild the cache
+            // of all the items in the directory, _then_ filter them below.
+            if (directoryPath != _currentSubdir)
             {
-                // Filter the items we already had
-                var fuzzyString = searchPattern.TrimEnd('*');
-                var newMatchedPathItems = new List<ListItem>();
+                // Get all the files in the directory.
+                // Run this on a background thread to avoid blocking
+                var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath), cancellationToken);
 
-                foreach (var kv in _currentPathItems)
+                // Check for cancellation after file enumeration
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    var score = string.IsNullOrEmpty(fuzzyString) ?
-                        1 :
-                        FuzzyStringMatcher.ScoreFuzzy(fuzzyString, kv.Key);
-                    if (score > 0)
-                    {
-                        newMatchedPathItems.Add(kv.Value);
-                    }
+                    return;
                 }
 
-                ListHelpers.InPlaceUpdateList(_pathItems, newMatchedPathItems);
-                return;
+                var searchPathTrailer = trimmed.Remove(0, Math.Min(directoryPath.Length, trimmed.Length));
+                var originalBeginning = originalPath.EndsWith(searchPathTrailer, StringComparison.CurrentCultureIgnoreCase) ?
+                                            originalPath.Remove(originalPath.Length - searchPathTrailer.Length) :
+                                            originalPath;
+
+                if (isDriveRoot)
+                {
+                    originalBeginning = string.Concat(originalBeginning, '\\');
+                }
+
+                // Create a list of commands for each file
+                var newPathItems = files
+                    .Select(f => PathToListItem(f, originalBeginning))
+                    .ToDictionary(item => item.Title, item => item);
+
+                // Final cancellation check before updating results
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                // Add the commands to the list
+                _pathItems.Clear();
+                _currentSubdir = directoryPath;
+                _currentPathItems.Clear();
+                foreach ((var k, IListItem v) in newPathItems)
+                {
+                    _currentPathItems[k] = (ListItem)v;
+                }
             }
 
-            // Get all the files in the directory that start with the search text
-            // Run this on a background thread to avoid blocking
-            var files = await Task.Run(() => Directory.GetFileSystemEntries(directoryPath, searchPattern), cancellationToken);
+            // Filter the items from this directory
+            var fuzzyString = searchPattern.TrimEnd('*');
+            var newMatchedPathItems = new List<ListItem>();
 
-            // Check for cancellation after file enumeration
-            if (cancellationToken.IsCancellationRequested)
+            foreach (var kv in _currentPathItems)
             {
-                return;
+                var score = string.IsNullOrEmpty(fuzzyString) ?
+                    1 :
+                    FuzzyStringMatcher.ScoreFuzzy(fuzzyString, kv.Key);
+                if (score > 0)
+                {
+                    newMatchedPathItems.Add(kv.Value);
+                }
             }
 
-            var searchPathTrailer = trimmed.Remove(0, Math.Min(directoryPath.Length, trimmed.Length));
-            var originalBeginning = originalPath.EndsWith(searchPathTrailer, StringComparison.CurrentCultureIgnoreCase) ?
-                                        originalPath.Remove(originalPath.Length - searchPathTrailer.Length) :
-                                        originalPath;
-
-            if (isDriveRoot)
-            {
-                originalBeginning = string.Concat(originalBeginning, '\\');
-            }
-
-            // Create a list of commands for each file
-            var newPathItems = files
-                .Select(f => PathToListItem(f, originalBeginning))
-                .ToDictionary(item => item.Title, item => item);
-
-            // Final cancellation check before updating results
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-
-            // Add the commands to the list
-            _pathItems = newPathItems.Values.ToList();
-            _currentSubdir = directoryPath;
-            _currentPathItems.Clear();
-            foreach ((var k, IListItem v) in newPathItems)
-            {
-                _currentPathItems[k] = (ListItem)v;
-            }
+            ListHelpers.InPlaceUpdateList(_pathItems, newMatchedPathItems);
         }
         else
         {
