@@ -138,6 +138,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "KBM",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.LightSwitch, new OobePowerToysModule()
+            {
+                ModuleName = "LightSwitch",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.MouseUtils, new OobePowerToysModule()
             {
                 ModuleName = "MouseUtils",
@@ -287,6 +292,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "Run": NavigationFrame.Navigate(typeof(OobeRun)); break;
                     case "ImageResizer": NavigationFrame.Navigate(typeof(OobeImageResizer)); break;
                     case "KBM": NavigationFrame.Navigate(typeof(OobeKBM)); break;
+                    case "LightSwitch": NavigationFrame.Navigate(typeof(OobeLightSwitch)); break;
                     case "PowerRename": NavigationFrame.Navigate(typeof(OobePowerRename)); break;
                     case "QuickAccent": NavigationFrame.Navigate(typeof(OobePowerAccent)); break;
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;

@@ -128,6 +128,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool DisableAnimations
+    {
+        get => _settings.DisableAnimations;
+        set
+        {
+            _settings.DisableAnimations = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsExtensionsViewModel Extensions { get; }

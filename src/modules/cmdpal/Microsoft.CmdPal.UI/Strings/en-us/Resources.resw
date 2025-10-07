@@ -407,6 +407,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Description" xml:space="preserve">
     <value>Choose if Command Palette is visible in the system tray</value>
   </data>
+  <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Header" xml:space="preserve">
+    <value>Disable animations</value>
+  </data>
+  <data name="Settings_GeneralPage_DisableAnimations_SettingsCard.Description" xml:space="preserve">
+    <value>Disable animations when switching between pages</value>
+  </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>
