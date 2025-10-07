@@ -120,7 +120,7 @@
                     </Grid>
 
                     <!--  Search  -->
-                    <Grid Padding="0,36,0,8" ColumnSpacing="8">
+                    <Grid Padding="0,24,0,8" ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" MaxWidth="320" />
                             <ColumnDefinition Width="*" />
