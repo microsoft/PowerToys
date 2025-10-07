@@ -857,6 +857,7 @@ linkid
 LINKOVERLAY
 LINQTo
 listview
+LIVEDRAW
 LIVEZOOM
 LLKH
 llkhf
@@ -1238,6 +1239,7 @@ PATPAINT
 pbc
 pbi
 PBlob
+pbrush
 pcb
 pcch
 pcelt
