@@ -8,6 +8,10 @@ using System.Globalization;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+<<<<<<< HEAD
+=======
+using Microsoft.UI.Xaml.Automation.Peers;
+>>>>>>> jay/ls-ui-update
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
@@ -79,6 +83,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             this.IsEnabledChanged += Timeline_IsEnabledChanged;
         }
 
+<<<<<<< HEAD
+=======
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new TimelineAutomationPeer(this);
+        }
+
+>>>>>>> jay/ls-ui-update
         private void Timeline_Loaded(object sender, RoutedEventArgs e)
         {
             CheckEnabledState();
