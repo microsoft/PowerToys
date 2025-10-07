@@ -2,8 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -181,6 +182,15 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "I also have properties",
             },
+            new ListItem(new EverChangingCommand("Cat", "🐈‍⬛", "🐈"))
+            {
+                Title = "And I have a commands with changing name and icon",
+                MoreCommands = [
+                    new CommandContextItem(new EverChangingCommand("Water", "🐬", "🐳", "🐟", "🦈")),
+                    new CommandContextItem(new EverChangingCommand("Faces", "😁", "🥺", "😍")),
+                    new CommandContextItem(new EverChangingCommand("Hearts", "♥️", "💚", "💜", "🧡", "💛", "💙")),
+                ],
+            }
         ];
     }
 
@@ -228,5 +238,48 @@ internal sealed partial class SampleListPage : ListPage
             { "Secret", 12345 },
             { "hmm?", null },
         };
+    }
+
+    internal sealed partial class EverChangingCommand : InvokableCommand, IDisposable
+    {
+        private readonly string[] _icons;
+        private readonly Timer _timer;
+        private readonly string _name;
+        private int _currentIndex;
+
+        public EverChangingCommand(string name, params string[] icons)
+        {
+            _icons = icons ?? throw new ArgumentNullException(nameof(icons));
+            if (_icons.Length == 0)
+            {
+                throw new ArgumentException("Icons array cannot be empty", nameof(icons));
+            }
+
+            _name = name;
+            Name = $"{_name} {DateTimeOffset.UtcNow:hh:mm:ss}";
+            Icon = new IconInfo(_icons[_currentIndex]);
+
+            // Start timer to change icon and name every 5 seconds
+            _timer = new Timer(OnTimerElapsed, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+        }
+
+        private void OnTimerElapsed(object state)
+        {
+            var nextIndex = (_currentIndex + 1) % _icons.Length;
+            if (nextIndex == _currentIndex && _icons.Length > 1)
+            {
+                nextIndex = (_currentIndex + 1) % _icons.Length;
+            }
+
+            _currentIndex = nextIndex;
+
+            Name = $"{_name} {DateTimeOffset.UtcNow:hh:mm:ss}";
+            Icon = new IconInfo(_icons[_currentIndex]);
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
+        }
     }
 }

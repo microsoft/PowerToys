@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to open {0}.
+        /// </summary>
+        public static string bookmark_toast_failed_open_text {
+            get {
+                return ResourceManager.GetString("bookmark_toast_failed_open_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add bookmark.
         /// </summary>
         public static string bookmarks_add_name {
@@ -88,11 +97,47 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy address.
+        /// </summary>
+        public static string bookmarks_copy_address_name {
+            get {
+                return ResourceManager.GetString("bookmarks_copy_address_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy path.
+        /// </summary>
+        public static string bookmarks_copy_path_name {
+            get {
+                return ResourceManager.GetString("bookmarks_copy_path_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string bookmarks_delete_name {
             get {
                 return ResourceManager.GetString("bookmarks_delete_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete this bookmark?.
+        /// </summary>
+        public static string bookmarks_delete_prompt_message {
+            get {
+                return ResourceManager.GetString("bookmarks_delete_prompt_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete bookmark?.
+        /// </summary>
+        public static string bookmarks_delete_prompt_title {
+            get {
+                return ResourceManager.GetString("bookmarks_delete_prompt_title", resourceCulture);
             }
         }
         
@@ -178,6 +223,15 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to (Refreshing bookmark...).
+        /// </summary>
+        public static string bookmarks_item_refreshing {
+            get {
+                return ResourceManager.GetString("bookmarks_item_refreshing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open in Terminal.
         /// </summary>
         public static string bookmarks_open_in_terminal_name {
@@ -192,6 +246,15 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         public static string bookmarks_required_placeholder {
             get {
                 return ResourceManager.GetString("bookmarks_required_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unpin.
+        /// </summary>
+        public static string bookmarks_unpin_name {
+            get {
+                return ResourceManager.GetString("bookmarks_unpin_name", resourceCulture);
             }
         }
     }
