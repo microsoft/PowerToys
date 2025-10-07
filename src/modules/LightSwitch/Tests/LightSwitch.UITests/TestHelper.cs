@@ -150,11 +150,7 @@ namespace LightSwitch.UITests
             var modeCombobox = testBase.Session.Find<Element>(By.AccessibilityId("ModeSelection_LightSwitch"), 5000);
             Assert.IsNotNull(modeCombobox, "Mode combobox not found.");
 
-<<<<<<< HEAD
-            var neededTabs = 5;
-=======
             var neededTabs = 6;
->>>>>>> jay/ls-ui-update
 
             if (modeCombobox.Text != "Manual")
             {
@@ -171,11 +167,7 @@ namespace LightSwitch.UITests
             Assert.IsNotNull(timeline, "Timeline not found.");
 
             var helpText = timeline.GetAttribute("HelpText");
-<<<<<<< HEAD
-            string originalStartValue = GetHelpTextValue(helpText, "Start");
-=======
             string originalEndValue = GetHelpTextValue(helpText, "End");
->>>>>>> jay/ls-ui-update
 
             for (int i = 0; i < neededTabs; i++)
             {
@@ -187,21 +179,12 @@ namespace LightSwitch.UITests
             testBase.Session.SendKeys(Key.Enter);
 
             helpText = timeline.GetAttribute("HelpText");
-<<<<<<< HEAD
-            string updatedStartValue = GetHelpTextValue(helpText, "Start");
-
-            Assert.AreNotEqual(originalStartValue, updatedStartValue, "Timeline start time should have been updated.");
-
-            helpText = timeline.GetAttribute("HelpText");
-            string originalEndValue = GetHelpTextValue(helpText, "End");
-=======
             string updatedEndValue = GetHelpTextValue(helpText, "End");
 
             Assert.AreNotEqual(originalEndValue, updatedEndValue, "Timeline end time should have been updated.");
 
             helpText = timeline.GetAttribute("HelpText");
             string originalStartValue = GetHelpTextValue(helpText, "Start");
->>>>>>> jay/ls-ui-update
 
             testBase.Session.SendKeys(Key.Tab);
             testBase.Session.SendKeys(Key.Enter);
@@ -209,15 +192,9 @@ namespace LightSwitch.UITests
             testBase.Session.SendKeys(Key.Enter);
 
             helpText = timeline.GetAttribute("HelpText");
-<<<<<<< HEAD
-            string updatedEndValue = GetHelpTextValue(helpText, "End");
-
-            Assert.AreNotEqual(originalEndValue, updatedEndValue, "Timeline end time should have been updated.");
-=======
             string updatedStartValue = GetHelpTextValue(helpText, "Start");
 
             Assert.AreNotEqual(originalStartValue, updatedStartValue, "Timeline start time should have been updated.");
->>>>>>> jay/ls-ui-update
         }
 
         /// <summary>
@@ -282,15 +259,8 @@ namespace LightSwitch.UITests
             // Click the select city button
             var setLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SetLocationButton_LightSwitch"), 5000);
             Assert.IsNotNull(setLocationButton, "Set location button not found.");
-<<<<<<< HEAD
-            setLocationButton.Click();
 
-            var syncLocationButton = testBase.Session.Find<Element>(By.AccessibilityId("SyncLocationButton_LightSwitch"), 5000);
-            Assert.IsNotNull(syncLocationButton, "Sync location button not found.");
-            syncLocationButton.Click(msPostAction: 8000);
-=======
             setLocationButton.Click(msPostAction: 8000);
->>>>>>> jay/ls-ui-update
 
             var latLong = testBase.Session.Find<Element>(By.AccessibilityId("LocationResultText_LightSwitch"), 5000);
             Assert.IsFalse(string.IsNullOrWhiteSpace(latLong.Text));
@@ -332,10 +302,7 @@ namespace LightSwitch.UITests
             string originalStartValue = GetHelpTextValue(helpText, "Start");
 
             sunriseOffset.Click();
-<<<<<<< HEAD
-=======
             testBase.Session.SendKeys(Key.Up);
->>>>>>> jay/ls-ui-update
 
             helpText = timeline.GetAttribute("HelpText");
             string updatedStartValue = GetHelpTextValue(helpText, "Start");
@@ -350,10 +317,7 @@ namespace LightSwitch.UITests
             string originalEndValue = GetHelpTextValue(helpText, "End");
 
             sunsetOffset.Click();
-<<<<<<< HEAD
-=======
             testBase.Session.SendKeys(Key.Up);
->>>>>>> jay/ls-ui-update
 
             helpText = timeline.GetAttribute("HelpText");
             string updatedEndValue = GetHelpTextValue(helpText, "End");
@@ -373,11 +337,6 @@ namespace LightSwitch.UITests
             var scrollViewer = testBase.Session.Find<Element>(By.AccessibilityId("PageScrollViewer"));
             systemCheckbox.EnsureVisible(scrollViewer);
 
-<<<<<<< HEAD
-            // How do I handle when something is off screen?
-            if (!systemCheckbox.Selected)
-            {
-=======
             int neededTabs = 10;
 
             if (!systemCheckbox.Selected)
@@ -387,7 +346,6 @@ namespace LightSwitch.UITests
                     testBase.Session.SendKeys(Key.Tab);
                 }
 
->>>>>>> jay/ls-ui-update
                 systemCheckbox.Click();
             }
 
