@@ -88,6 +88,10 @@
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.DisableAnimations, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  'For Developers' section  -->
 
                     <TextBlock x:Uid="ForDevelopersSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />

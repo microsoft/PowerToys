@@ -360,33 +360,51 @@ public sealed partial class MainWindow : WindowEx,
     private void HideWindow()
     {
         // Cloak our HWND to avoid all animations.
-        Cloak();
+        var cloaked = Cloak();
 
         // Then hide our HWND, to make sure that the OS gives the FG / focus back to another app
         // (there's no way for us to guess what the right hwnd might be, only the OS can do it right)
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
-        // TRICKY: show our HWND again. This will trick XAML into painting our
-        // HWND again, so that we avoid the "flicker" caused by a WinUI3 app
-        // window being first shown
-        // SW_SHOWNA will prevent us for trying to fight the focus back
-        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNA);
+        if (cloaked)
+        {
+            // TRICKY: show our HWND again. This will trick XAML into painting our
+            // HWND again, so that we avoid the "flicker" caused by a WinUI3 app
+            // window being first shown
+            // SW_SHOWNA will prevent us for trying to fight the focus back
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNA);
 
-        // Intentionally leave the window cloaked. So our window is "visible",
-        // but also cloaked, so you can't see it.
+            // Intentionally leave the window cloaked. So our window is "visible",
+            // but also cloaked, so you can't see it.
+
+            // If the window was not cloaked, then leave it hidden.
+            // Sure, it's not ideal, but at least it's not visible.
+        }
     }
 
-    private void Cloak()
+    private bool Cloak()
     {
+        bool wasCloaked;
         unsafe
         {
             BOOL value = true;
-            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            var hr = PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            if (hr.Failed)
+            {
+                Logger.LogWarning($"DWM cloaking of the main window failed. HRESULT: {hr.Value}.");
+            }
+
+            wasCloaked = hr.Succeeded;
         }
 
-        // Because we're only cloaking the window, bury it at the bottom in case something can
-        // see it - e.g. some accessibility helper (note: this also removes the top-most status).
-        PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+        if (wasCloaked)
+        {
+            // Because we're only cloaking the window, bury it at the bottom in case something can
+            // see it - e.g. some accessibility helper (note: this also removes the top-most status).
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_BOTTOM, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+        }
+
+        return wasCloaked;
     }
 
     private void Uncloak()

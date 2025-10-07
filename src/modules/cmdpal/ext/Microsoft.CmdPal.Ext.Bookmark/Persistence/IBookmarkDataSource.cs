@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-namespace Microsoft.CmdPal.Ext.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 
-public interface IBookmarkDataSource
+internal interface IBookmarkDataSource
 {
     string GetBookmarkData();
 
