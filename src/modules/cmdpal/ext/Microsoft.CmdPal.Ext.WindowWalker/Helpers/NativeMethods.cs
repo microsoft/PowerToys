@@ -81,6 +81,14 @@ public static partial class NativeMethods
     [DllImport("user32.dll")]
     public static extern int SendMessage(IntPtr hWnd, int msg, int wParam);
 
+    public const uint WM_GETICON = 0x007F;
+    public static readonly IntPtr ICON_BIG = new IntPtr(1);
+    public static readonly IntPtr ICON_SMALL = new IntPtr(0);
+    public static readonly IntPtr ICON_SMALL2 = new IntPtr(2);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+    public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
     [DllImport("user32.dll")]
     public static extern int SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, IntPtr lParam, int fuFlags, int uTimeout, out int lpdwResult);
 

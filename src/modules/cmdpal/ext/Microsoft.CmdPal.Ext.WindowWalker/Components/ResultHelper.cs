@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
@@ -60,10 +63,42 @@ internal static class ResultHelper
             Title = searchResult.Result.Title,
             Subtitle = GetSubtitle(searchResult.Result),
             Tags = GetTags(searchResult.Result),
+            Icon = ConvertWindowIconToIconInfo(searchResult.Result.GetWindowIcon()),
         };
         item.MoreCommands = ContextMenuHelper.GetContextMenuResults(item).ToArray();
 
         return item;
+    }
+
+    /// <summary>
+    /// Converts a System.Drawing.Icon to Microsoft.CommandPalette.Extensions.IIconInfo
+    /// </summary>
+    /// <param name="icon">The System.Drawing.Icon to convert</param>
+    /// <returns>An IIconInfo representation of the icon</returns>
+    private static IIconInfo? ConvertWindowIconToIconInfo(System.Drawing.Icon? icon)
+    {
+        if (icon == null)
+        {
+            return null;
+        }
+
+        // 아이콘에서 비트맵을 추출하고 이를 IIconInfo로 변환
+        try
+        {
+            using (var bitmap = icon.ToBitmap())
+            using (var memoryStream = new System.IO.MemoryStream())
+            {
+                bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+                IRandomAccessStream randomAccessStream = memoryStream.AsRandomAccessStream();
+
+                return IconInfo.FromStream(randomAccessStream);
+            }
+        }
+        catch (Exception)
+        {
+            // 변환 중 오류 발생 시 기본 아이콘 반환
+            return null;
+        }
     }
 
     /// <summary>

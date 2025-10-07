@@ -6,7 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -353,5 +355,43 @@ internal sealed class Window
 
             return _handlesToProcessCache[hWindow];
         }
+    }
+
+    /// <summary>
+    /// 창 핸들(hWnd)을 사용하여 해당 창의 아이콘을 가져옵니다.
+    /// </summary>
+    /// <param name="hWnd">아이콘을 가져올 창의 핸들</param>
+    /// <returns>성공 시 Icon 객체, 실패 시 null</returns>
+    public Icon? GetWindowIcon()
+    {
+        if (hwnd == IntPtr.Zero)
+        {
+            return null;
+        }
+
+        // 1. WM_GETICON으로 큰 아이콘(ICON_BIG)을 요청합니다.
+        var iconHandle = NativeMethods.SendMessage(hwnd, NativeMethods.WM_GETICON, NativeMethods.ICON_BIG, IntPtr.Zero);
+
+        // 2. 큰 아이콘이 없으면, 작은 아이콘(ICON_SMALL)을 요청합니다.
+        if (iconHandle == IntPtr.Zero)
+        {
+            iconHandle = NativeMethods.SendMessage(hwnd, NativeMethods.WM_GETICON, NativeMethods.ICON_SMALL, IntPtr.Zero);
+        }
+
+        // 3. 작은 아이콘도 없으면, 작은 아이콘2(ICON_SMALL2)를 요청합니다.
+        if (iconHandle == IntPtr.Zero)
+        {
+            iconHandle = NativeMethods.SendMessage(hwnd, NativeMethods.WM_GETICON, NativeMethods.ICON_SMALL2, IntPtr.Zero);
+        }
+
+        // 아이콘 핸들을 찾았다면 Icon 객체로 변환하여 반환합니다.
+        if (iconHandle != IntPtr.Zero)
+        {
+            // FromHandle은 핸들의 복사본을 만들어 Icon 객체를 생성합니다.
+            // 따라서 반환된 Icon 객체는 사용 후 Dispose() 해주어야 합니다.
+            return Icon.FromHandle(iconHandle);
+        }
+
+        return null;
     }
 }
