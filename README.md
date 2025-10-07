@@ -110,15 +110,13 @@ There are [community driven install methods](./doc/unofficialInstallMethods.md) 
 
 For an in-depth look at the latest changes, visit the [Windows Command Line blog](https://aka.ms/powertoys-releaseblog).
 
-**✨ Highlights (top 10)**
+**✨ Highlights**
  - **NEW:** The **Light Switch** utility in PowerToys allows you to automatically switch between light and dark themes in Windows based on the time of day.
  - Command Palette delivered major search performance gains (new fuzzy matcher + smarter fallbacks) improving relevance and speed.
- - Command Palette introduced grid layouts for richer content pages, increasing information density.
- - Quick Accent expanded accented character coverage (Welsh vowels and more) to broaden multilingual typing. Thanks @PesBandi!
- - Peek added optional single Space key activation for faster file preview flow.
+ - Peek can now be used activated using the Space bar!
  - Find My Mouse added transparent spotlight with independent backdrop opacity, boosting focus and accessibility.
+ - Settings now lets you delete shortcuts entirely and ignore conflicts.
  - Mouse Pointer Crosshairs gained orientation options (vertical / horizontal / both) for customizable accessibility. Thanks @mikehall-ms!
- - Environment Variables, File Locksmith, Hosts File Editor and Registry Preview adopted WinUI TitleBar for a consistent modern window chrome.
  - PowerRename fixed enumeration counter skipping ensuring reliable batch renames. Thanks @daverayment!
  - ZoomIt restored legacy draw/snipping behaviors and fixed recording races improving reliability. Thanks @chakrik73!
 
