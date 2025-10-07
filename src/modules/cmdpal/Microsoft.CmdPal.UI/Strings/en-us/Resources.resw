@@ -475,7 +475,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Discover more extensions</value>
   </data>
 	<data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
-    <value>Find more extensions on the Microsoft Store or WinGet or create your own using the</value>
+    <value>Find more extensions on the Microsoft Store or WinGet.</value>
   </data>
 	<data name="Settings_ExtensionsPage_Banner_Hyperlink.Content" xml:space="preserve">
     <value>Learn how to create your own extensions</value>
