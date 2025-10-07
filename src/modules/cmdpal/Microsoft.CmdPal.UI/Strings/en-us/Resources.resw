@@ -456,49 +456,43 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
     <value>Navigated to {0} page</value>
   </data>
-  <data name="Settings_ExtensionsPage_ManageExtensions_SettingsCard.Header" xml:space="preserve">
-    <value>Get more extension in the Microsoft Store</value>
-  </data>
-  <data name="Settings_ExtensionsPage_ManageExtensions_SettingsCard.Description" xml:space="preserve">
-    <value>Opens the Microsoft Store to show available third-party extensions</value>
-  </data>
-  <data name="Settings_ExtensionsPage_RelatedItemsHeader.Text" xml:space="preserve">
-    <value>Related links</value>
-  </data>
-  <data name="Settings_ExtensionsPage_SearchBox.PlaceholderText" xml:space="preserve">
-    <value>Search extensions</value>
-  </data>
   <data name="Settings_ExtensionsPage_NoResults_Primary.Text" xml:space="preserve">
     <value>No extensions found</value>
   </data>
   <data name="Settings_ExtensionsPage_NoResults_Secondary.Text" xml:space="preserve">
     <value>Try a different search term</value>
   </data>
-  <data name="Settings_ExtensionsPage_NoResults_Hyperlink.Content" xml:space="preserve">
-    <value>Browse Microsoft Store for Command Palette extensions</value>
-  </data>
-  <data name="Settings_ExtensionsPage_SearchBox.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Press Ctrl+F to focus the search box</value>
-  </data>
-  <data name="Settings_ExtensionsPage_SearchBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.AcceleratorKey" xml:space="preserve">
-    <value>Ctrl+F</value>
-  </data>
-  <data name="Settings_ExtensionsPage_SearchBox.AccessKey" xml:space="preserve">
-    <value>S</value>
-  </data>
-  <data name="Settings_ExtensionsPage_NoResults_Hyperlink.AccessKey" xml:space="preserve">
-    <value>B</value>
-  </data>
-  <data name="Settings_ExtensionsPage_ManageExtensions_SettingsCard.AccessKey" xml:space="preserve">
-    <value>M</value>
-  </data>
   <data name="Settings_ExtensionsPage_More_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>See more</value>
+    <value>More options</value>
   </data>
   <data name="Settings_ExtensionsPage_More_Reload_MenuFlyoutItem.Text" xml:space="preserve">
-    <value>Reload all extensions</value>
+    <value>Reload extensions</value>
   </data>
   <data name="Settings_ExtensionsPage_Reloading_Text.Text" xml:space="preserve">
-    <value>Reloading extensions…</value>
+    <value>Reloading extensions..</value>
+  </data>
+	<data name="Settings_ExtensionsPage_Banner_Header.Text" xml:space="preserve">
+    <value>Discover more extensions</value>
+  </data>
+	<data name="Settings_ExtensionsPage_Banner_Description.Text" xml:space="preserve">
+    <value>Find more extensions on the Microsoft Store or WinGet or create your own using the</value>
+  </data>
+	<data name="Settings_ExtensionsPage_Banner_Hyperlink.Text" xml:space="preserve">
+    <value>developer docs</value>
+  </data>
+	<data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Find extensions on the Microsoft Store</value>
+  </data>
+	<data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+	<data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Find extensions on WinGet</value>
+  </data>
+	<data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+	<data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>Search extensions..</value>
   </data>
 </root>
