@@ -84,15 +84,16 @@
                         <StackPanel x:Name="BannerDescriptionPanel" Orientation="Vertical">
                             <TextBlock x:Uid="Settings_ExtensionsPage_Banner_Header" FontWeight="SemiBold" />
                             <TextBlock
+                                x:Uid="Settings_ExtensionsPage_Banner_Description"
                                 Grid.Row="1"
                                 MaxWidth="520"
                                 HorizontalAlignment="Left"
-                                TextWrapping="Wrap">
-                                <Run x:Uid="Settings_ExtensionsPage_Banner_Description" />
-                                <Hyperlink NavigateUri="https://learn.microsoft.com/windows/powertoys/command-palette/overview">
-                                    <Run x:Uid="Settings_ExtensionsPage_Banner_Hyperlink" />
-                                </Hyperlink>
-                            </TextBlock>
+                                TextWrapping="Wrap" />
+                            <HyperlinkButton
+                                x:Uid="Settings_ExtensionsPage_Banner_Hyperlink"
+                                Padding="0"
+                                Content="Learn how to create your own extensions"
+                                NavigateUri="https://learn.microsoft.com/windows/powertoys/command-palette/overview" />
                         </StackPanel>
                         <StackPanel
                             x:Name="ButtonPanel"
