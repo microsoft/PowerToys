@@ -14,44 +14,44 @@
 
 ## [Command Palette](tests-checklist-template-command-palette-section.md)
  * Check if Command Palette successfully install/uninstall with PowerToys.
-   - [ ] 1. Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [ ] 2. UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [x] 1. Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
+   - [x] 2. UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
-   - [ ] 3. when PowerToys is running unelevated on start-up
-   - [ ] 4. when PowerToys is running as admin on start-up
-   - [ ] 5. when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] 3. when PowerToys is running unelevated on start-up
+   - [x] 4. when PowerToys is running as admin on start-up
+   - [x] 5. when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] 6. Installed Apps - launch a Win32 application
-   - [ ] 7. Installed Apps - launch a Win32 application as admin
-   - [ ] 8. Installed Apps - launch a packaged application
-   - [ ] 9. Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] 10. File Search - open a file on the disk.
-   - [ ] 11. File Search - find a file and copy file path.
-   - [ ] 12. File Search - find a file and open containing folder.
-   - [ ] 13. Run Commands - execute a command. (e.g. `ping google.com`).
-   - [ ] 14. Windows Walker - Switch to another opening window.
-   - [ ] 15. Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [ ] 16. WinGet - Search and install application through WinGet. (eg. `vscode`)
-   - [ ] 17. Web Search - Search anything by this extension.
-   - [ ] 18. Windows Terminal Profiles - Open profile.
-   - [ ] 19. Windows Terminal Profiles - Open profile as Admin.
-   - [ ] 20. Windows Settings - Open settings from extension.
-   - [ ] 21. Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] 22. Registry - navigate through the registry tree and copy key path.
-   - [ ] 23. Windows Service - start, stop, restart windows service.
-   - [ ] 24. Time And Date - type `now`, `year`, `week` and verify the result is correct. 
-   - [ ] 25. Windows System Command - test `lock`.
-   - [ ] 26. Windows System Command - test `empty recycle bin`.
-   - [ ] 27. Windows System Command - test `shutdown`.
-   - [ ] 28. Windows System Command - Click your network adapter item and paste the result at notepad.
-   - [ ] 29. Bookmark - Add bookmarks to command palette.
-   - [ ] 30. Bookmark - Open your bookmarks (in Command Palette).
- - [ ] 31. Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
+   - [x] 6. Installed Apps - launch a Win32 application
+   - [x] 7. Installed Apps - launch a Win32 application as admin
+   - [x] 8. Installed Apps - launch a packaged application
+   - [x] 9. Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] 10. File Search - open a file on the disk.
+   - [x] 11. File Search - find a file and copy file path.
+   - [x] 12. File Search - find a file and open containing folder.
+   - [x] 13. Run Commands - execute a command. (e.g. `ping google.com`).
+   - [x] 14. Windows Walker - Switch to another opening window.
+   - [x] 15. Windows Walker - Switch to another opening window when powertoys run as admin.
+   - [x] 16. WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [x] 17. Web Search - Search anything by this extension.
+   - [x] 18. Windows Terminal Profiles - Open profile.
+   - [x] 19. Windows Terminal Profiles - Open profile as Admin.
+   - [x] 20. Windows Settings - Open settings from extension.
+   - [x] 21. Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] 22. Registry - navigate through the registry tree and copy key path.
+   - [x] 23. Windows Service - start, stop, restart windows service.
+   - [x] 24. Time And Date - type `now`, `year`, `week` and verify the result is correct. 
+   - [x] 25. Windows System Command - test `lock`.
+   - [x] 26. Windows System Command - test `empty recycle bin`.
+   - [x] 27. Windows System Command - test `shutdown`.
+   - [x] 28. Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [x] 29. Bookmark - Add bookmarks to command palette.
+   - [x] 30. Bookmark - Open your bookmarks (in Command Palette).
+ - [x] 31. Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
  * Test Extensions Manager
-   - [ ] 32. Enable/disable extensions and verify changes are picked up by Command Palette
-   - [ ] 33. Change `Global hot key` and verify changes are picked up by Command Palette
-   - [ ] 34. Change `Alias` and verify changes picked up by Command Palette
-   - [ ] 35. Disable all extensions and verify the warning message is shown (Currently not support).
+   - [x] 32. Enable/disable extensions and verify changes are picked up by Command Palette
+   - [x] 33. Change `Global hot key` and verify changes are picked up by Command Palette
+   - [x] 34. Change `Alias` and verify changes picked up by Command Palette
+   - [x] 35. Disable all extensions and verify the warning message is shown (Currently not support).
 
 ## Environment Variables
  * NOTE: Make backup of USER and SYSTEM Path and TMP variables before testing so you can revert those is something goes wrong!
