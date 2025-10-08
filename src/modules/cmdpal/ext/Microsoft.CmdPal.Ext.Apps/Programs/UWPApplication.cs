@@ -104,7 +104,7 @@ public class UWPApplication : IUWPApplication
                 new OpenFileCommand(Location)
                 {
                     Icon = new("\uE838"),
-                    Name = Resources.open_containing_folder,
+                    Name = Resources.open_location,
                 })
             {
                 RequestedShortcut = KeyChords.OpenFileLocation,

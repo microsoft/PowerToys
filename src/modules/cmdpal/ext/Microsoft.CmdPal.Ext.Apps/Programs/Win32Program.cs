@@ -209,7 +209,7 @@ public class Win32Program : IProgram
         commands.Add(new CommandContextItem(
                     new ShowFileInFolderCommand(FullPath)
                     {
-                        Name = Resources.open_containing_folder,
+                        Name = Resources.open_location,
                     })
         {
             RequestedShortcut = KeyChords.OpenFileLocation,
