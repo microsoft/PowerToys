@@ -3938,7 +3938,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Paste with AI</value>
   </data>
   <data name="AdvancedPaste_BehaviorSettingsGroup.Header" xml:space="preserve">
-    <value>Behavior</value>
+    <value>Activation &amp; behavior</value>
   </data>
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Header" xml:space="preserve">
     <value>Custom format preview</value>

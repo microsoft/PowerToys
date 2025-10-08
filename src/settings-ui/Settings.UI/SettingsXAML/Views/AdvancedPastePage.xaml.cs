@@ -159,32 +159,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private static AdvancedPasteCustomAction GetBoundCustomAction(object sender) => (AdvancedPasteCustomAction)((FrameworkElement)sender).DataContext;
 
-        private void SaveAdvancedAIApiKey_Click(object sender, RoutedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(AdvancedAIApiKeyPasswordBox.Password))
-            {
-                string serviceType = AdvancedAIServiceTypeComboBox.SelectedValue?.ToString() ?? "OpenAI";
-                ViewModel.SaveAdvancedAICredential(serviceType, AdvancedAIApiKeyPasswordBox.Password);
-                AdvancedAIApiKeyPasswordBox.Password = string.Empty;
-
-                // Show success message
-                ShowApiKeySavedMessage("Advanced AI");
-            }
-        }
-
-        private void SavePasteAIApiKey_Click(object sender, RoutedEventArgs e)
-        {
-            if (!string.IsNullOrEmpty(PasteAIApiKeyPasswordBox.Password))
-            {
-                string serviceType = PasteAIServiceTypeComboBox.SelectedValue?.ToString() ?? "OpenAI";
-                ViewModel.SavePasteAICredential(serviceType, PasteAIApiKeyPasswordBox.Password);
-                PasteAIApiKeyPasswordBox.Password = string.Empty;
-
-                // Show success message
-                ShowApiKeySavedMessage("Paste AI");
-            }
-        }
-
         private void BrowsePasteAIModelPath_Click(object sender, RoutedEventArgs e)
         {
             // Use Win32 file dialog to work around FileOpenPicker issues with elevated permissions
@@ -238,11 +212,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             System.Diagnostics.Debug.WriteLine($"{configType} API key saved successfully");
         }
 
-        private void AdvancedAIServiceTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            UpdateAdvancedAIUIVisibility();
-        }
-
         private void PasteAIServiceTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdatePasteAIUIVisibility();
@@ -250,33 +219,79 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void UpdateAdvancedAIUIVisibility()
         {
-            if (AdvancedAIServiceTypeComboBox?.SelectedValue == null)
+            if (AdvancedAIServiceTypeListView?.SelectedValue == null)
             {
                 return;
             }
 
-            string selectedType = AdvancedAIServiceTypeComboBox.SelectedValue.ToString();
+            string selectedType = AdvancedAIServiceTypeListView.SelectedValue.ToString();
             bool isAzureOpenAI = selectedType == "AzureOpenAI";
 
-            AdvancedAIEndpointCard.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
-            AdvancedAIDeploymentCard.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            AdvancedAIEndpointUrlTextBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            AdvancedAIDeploymentNameTextBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void UpdatePasteAIUIVisibility()
         {
-            if (PasteAIServiceTypeComboBox?.SelectedValue == null)
+            if (PasteAIServiceTypeListView?.SelectedValue == null)
             {
                 return;
             }
 
-            string selectedType = PasteAIServiceTypeComboBox.SelectedValue.ToString();
+            string selectedType = PasteAIServiceTypeListView.SelectedValue.ToString();
             bool isAzureOpenAI = selectedType == "AzureOpenAI";
             bool isOnnx = selectedType == "Onnx";
 
-            PasteAIEndpointCard.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIDeploymentCard.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIModelPathCard.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
-            PasteAIApiKeyCard.Visibility = !isOnnx ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIApiKeyPasswordBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIDeploymentNameTextBox.Visibility = isAzureOpenAI ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIModelPanel.Visibility = isOnnx ? Visibility.Visible : Visibility.Collapsed;
+            PasteAIApiKeyPasswordBox.Visibility = !isOnnx ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private async void AdvancedAIProviderConfigureButton_Click(object sender, RoutedEventArgs e)
+        {
+            await AdvancedAIProviderConfigurationDialog.ShowAsync();
+        }
+
+        private void AdvancedAIProviderConfigurationDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            if (!string.IsNullOrEmpty(AdvancedAIApiKeyPasswordBox.Password))
+            {
+                string serviceType = AdvancedAIServiceTypeListView.SelectedValue?.ToString() ?? "OpenAI";
+                ViewModel.SaveAdvancedAICredential(serviceType, AdvancedAIApiKeyPasswordBox.Password);
+                AdvancedAIApiKeyPasswordBox.Password = string.Empty;
+
+                // Show success message
+                ShowApiKeySavedMessage("Advanced AI");
+            }
+        }
+
+        private void PasteAIProviderConfigurationDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            if (!string.IsNullOrEmpty(PasteAIApiKeyPasswordBox.Password))
+            {
+                string serviceType = PasteAIServiceTypeListView.SelectedValue?.ToString() ?? "OpenAI";
+                ViewModel.SavePasteAICredential(serviceType, PasteAIApiKeyPasswordBox.Password);
+                PasteAIApiKeyPasswordBox.Password = string.Empty;
+
+                // Show success message
+                ShowApiKeySavedMessage("Paste AI");
+            }
+        }
+
+        private async void PasteAIProviderConfigureButton_Click(object sender, RoutedEventArgs e)
+        {
+            await PasteAIProviderConfigurationDialog.ShowAsync();
+        }
+
+        private void AdvancedAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateAdvancedAIUIVisibility();
+        }
+
+        private void PasteAIServiceTypeListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdatePasteAIUIVisibility();
         }
     }
 }
