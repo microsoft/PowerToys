@@ -207,7 +207,7 @@ public class Win32Program : IProgram
         });
 
         commands.Add(new CommandContextItem(
-                    new ShowFileInFolderCommand(LnkFilePath)
+                    new ShowFileInFolderCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath)
                     {
                         Name = Resources.open_location,
                     })
