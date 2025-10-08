@@ -320,5 +320,18 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
                 Assert.AreEqual(unweighted, weighted);
             }
         }
+
+        var matches = items.Join(
+            weightedScores,
+            item => item.Id,
+            score => items[weightedScores.IndexOf(score)].Id,
+            (item, score) => new { item.Title, Score = score })
+            .Where(x => x.Score > 0)
+            .OrderByDescending(x => x.Score)
+            .ToList();
+        Assert.AreEqual(3, matches.Count, "There should be three matching items");
+        Assert.AreEqual("Command Prompt", matches[0].Title, "Command Prompt should be the top match");
+        Assert.AreEqual("Visual Studio Code", matches[1].Title, "Visual Studio Code should be the second match");
+        Assert.AreEqual("Run commands", matches[2].Title, "Run commands should be the third match");
     }
 }
