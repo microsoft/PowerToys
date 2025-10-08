@@ -10,6 +10,8 @@ using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -330,7 +332,20 @@ public partial class MainListPage : DynamicListPage,
 
                 if (_includeApps)
                 {
-                    newApps = AllAppsCommandProvider.Page.GetItems().ToList();
+                    var allNewApps = AllAppsCommandProvider.Page.GetItems().ToList();
+
+                    // We need to remove pinned apps from allNewApps so they don't show twice.
+                    var pinnedApps = PinnedAppsManager.Instance.GetPinnedAppIdentifiers();
+
+                    if (pinnedApps.Length > 0)
+                    {
+                        newApps = allNewApps.Where(w =>
+                            pinnedApps.IndexOf(((AppListItem)w).AppIdentifier) < 0);
+                    }
+                    else
+                    {
+                        newApps = allNewApps;
+                    }
                 }
 
                 if (token.IsCancellationRequested)
