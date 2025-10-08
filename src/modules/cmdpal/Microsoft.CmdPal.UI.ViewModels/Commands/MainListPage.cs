@@ -428,7 +428,7 @@ public partial class MainListPage : DynamicListPage,
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
     // fact that we want fallback handlers down-weighted, so that they don't
     // _always_ show up first.
-    private static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem, IRecentCommandsManager history)
+    internal static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem, IRecentCommandsManager history)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))

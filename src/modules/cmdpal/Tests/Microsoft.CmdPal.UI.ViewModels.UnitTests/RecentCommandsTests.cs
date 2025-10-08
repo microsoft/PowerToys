@@ -5,13 +5,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.UnitTestBase;
+using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Foundation;
 using WyHash;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 [TestClass]
-public class RecentCommandsTests : CommandPaletteUnitTestBase
+public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 {
     private static RecentCommandsManager CreateHistory(IList<string>? commandIds = null)
     {
@@ -27,7 +31,7 @@ public class RecentCommandsTests : CommandPaletteUnitTestBase
         return history;
     }
 
-    private static RecentCommandsManager CreateMockHistoryServiceWithCommonCommands()
+    private static RecentCommandsManager CreateBasicHistoryService()
     {
         var commonCommands = new List<string>
         {
@@ -58,7 +62,7 @@ public class RecentCommandsTests : CommandPaletteUnitTestBase
     public void ValidateHistoryWeighting()
     {
         // Setup
-        var history = CreateMockHistoryServiceWithCommonCommands();
+        var history = CreateBasicHistoryService();
 
         // Act
         var shellWeight = history.GetCommandHistoryWeight("com.microsoft.cmdpal.shell");
@@ -75,13 +79,31 @@ public class RecentCommandsTests : CommandPaletteUnitTestBase
         Assert.AreEqual(0, nonExistentWeight, "Non-existent command should have zero weight");
     }
 
-    private sealed record ListItemMock(
+    private sealed partial record ListItemMock(
         string Title,
         string? Subtitle = "",
         string? GivenId = "",
-        string? ProviderId = "")
+        string? ProviderId = "") : IListItem
     {
         public string Id => string.IsNullOrEmpty(GivenId) ? GenerateId() : GivenId;
+
+        public IDetails Details => throw new System.NotImplementedException();
+
+        public string Section => throw new System.NotImplementedException();
+
+        public ITag[] Tags => throw new System.NotImplementedException();
+
+        public string TextToSuggest => throw new System.NotImplementedException();
+
+        public ICommand Command => new NoOpCommand() { Id = Id };
+
+        public IIconInfo Icon => throw new System.NotImplementedException();
+
+        public IContextItem[] MoreCommands => throw new System.NotImplementedException();
+
+#pragma warning disable CS0067
+        public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
+#pragma warning restore CS0067
 
         private string GenerateId()
         {
@@ -226,5 +248,77 @@ public class RecentCommandsTests : CommandPaletteUnitTestBase
         // The 50th item has fallen out of the list now
         var weight50 = history.GetCommandHistoryWeight("id50");
         Assert.AreEqual(0, weight50, "Item 50 should have fallen out of the history list");
+    }
+
+    [TestMethod]
+    public void ValidateSimpleScoring()
+    {
+        // Setup
+        var items = new List<ListItemMock>
+        {
+            new("Command A", "Subtitle A", GivenId: "idA"), // #0  -> bucket 0
+            new("Command B", "Subtitle B", GivenId: "idB"), // #1  -> bucket 0
+            new("Command C", "Subtitle C", GivenId: "idC"), // #2  -> bucket 0
+        };
+
+        var history = CreateHistory(items.Reverse<ListItemMock>().ToList());
+
+        var scoreA = MainListPage.ScoreTopLevelItem("C", items[0], history);
+        var scoreB = MainListPage.ScoreTopLevelItem("C", items[1], history);
+        var scoreC = MainListPage.ScoreTopLevelItem("C", items[2], history);
+
+        // Assert
+        // All of these equally match the query, and they're all in the same bucket,
+        // so they should all have the same score.
+        Assert.AreEqual(scoreA, scoreB, "Items A and B should have the same score");
+        Assert.AreEqual(scoreB, scoreC, "Items B and C should have the same score");
+    }
+
+    private static List<ListItemMock> CreateMockHistoryItems()
+    {
+        var items = new List<ListItemMock>
+        {
+            new("Visual Studio 2022"), // #0  -> bucket 0
+            new("Visual Studio Code"), // #1  -> bucket 0
+            new("Explore Mastodon", GivenId: "social.mastodon.explore"), // #2  -> bucket 0
+            new("Run commands", Subtitle: "Executes commands (e.g. ping, cmd)", GivenId: "com.microsoft.cmdpal.run"), // #3  -> bucket 1
+            new("Windows Settings"), // #4  -> bucket 1
+            new("Command Prompt"), // #5  -> bucket 1
+        };
+        return items;
+    }
+
+    private static RecentCommandsManager CreateMockHistoryService(List<ListItemMock>? items = null)
+    {
+        var history = CreateHistory((items ?? CreateMockHistoryItems()).Reverse<ListItemMock>().ToList());
+        return history;
+    }
+
+    [TestMethod]
+    public void ValidateScoredWeightingSimple()
+    {
+        var items = CreateMockHistoryItems();
+        var emptyHistory = CreateMockHistoryService(new());
+        var history = CreateMockHistoryService(items);
+
+        var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("C", item, emptyHistory)).ToList();
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("C", item, history)).ToList();
+        Assert.AreEqual(unweightedScores.Count, weightedScores.Count, "Both score lists should have the same number of items");
+        for (var i = 0; i < unweightedScores.Count; i++)
+        {
+            var unweighted = unweightedScores[i];
+            var weighted = weightedScores[i];
+            var item = items[i];
+            if (item.Title.Contains('C', System.StringComparison.CurrentCultureIgnoreCase))
+            {
+                Assert.IsTrue(unweighted >= 0, $"Item {item.Title} didn't match the query, so should have a weighted score of zero");
+                Assert.IsTrue(weighted > unweighted, $"Item {item.Title} should have a higher weighted ({weighted}) score than unweighted ({unweighted})");
+            }
+            else
+            {
+                Assert.AreEqual(unweighted, 0, $"Item {item.Title} didn't match the query, so should have a weighted score of zero");
+                Assert.AreEqual(unweighted, weighted);
+            }
+        }
     }
 }
