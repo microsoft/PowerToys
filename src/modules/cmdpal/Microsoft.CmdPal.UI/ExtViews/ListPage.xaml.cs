@@ -63,6 +63,18 @@ public sealed partial class ListPage : Page,
         {
             ViewModel = lvm;
         }
+        else if (e.Parameter is NavigateToPageMessage message)
+        {
+            if (message.CancellationToken.IsCancellationRequested && e.NavigationMode == NavigationMode.New)
+            {
+                return;
+            }
+
+            if (message.Page is ListViewModel lvm2)
+            {
+                ViewModel = lvm2;
+            }
+        }
 
         if (e.NavigationMode == NavigationMode.Back
             || (e.NavigationMode == NavigationMode.New && ItemView.Items.Count > 0))

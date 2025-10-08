@@ -50,6 +50,18 @@ public sealed partial class ContentPage : Page,
         {
             ViewModel = vm;
         }
+        else if (e.Parameter is NavigateToPageMessage message)
+        {
+            if (message.CancellationToken.IsCancellationRequested && e.NavigationMode is NavigationMode.New or NavigationMode.Refresh)
+            {
+                return;
+            }
+
+            if (message.Page is ContentPageViewModel lvm2)
+            {
+                ViewModel = lvm2;
+            }
+        }
 
         if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSelectedListItemMessage>(this))
         {

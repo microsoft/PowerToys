@@ -153,7 +153,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     ContentPageViewModel => typeof(ContentPage),
                     _ => throw new NotSupportedException(),
                 },
-                message.Page,
+                message,
                 message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
@@ -403,6 +403,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         HideDetails();
 
+        ViewModel.CancelNavigation();
+
         // Note: That we restore the VM state below in RootFrame_Navigated call back after this occurs.
         // In the future, we may want to manage the back stack ourselves vs. relying on Frame
         // We could replace Frame with a ContentPresenter, but then have to manage transition animations ourselves.
@@ -461,6 +463,19 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Note, this shortcuts and fights a bit with our LoadPageViewModel above, but we want to better fast display and incrementally load anyway
             // We just need to reconcile our loading systems a bit more in the future.
             ViewModel.CurrentPage = page;
+        }
+        else if (e.Parameter is NavigateToPageMessage message)
+        {
+            if (message.CancellationToken.IsCancellationRequested && e.NavigationMode != Microsoft.UI.Xaml.Navigation.NavigationMode.Back)
+            {
+                return;
+            }
+
+            ViewModel.CurrentPage = message.Page;
+        }
+        else
+        {
+            Console.WriteLine(e.Parameter);
         }
 
         if (e.Content is Page element)
