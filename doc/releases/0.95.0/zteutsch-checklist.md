@@ -92,36 +92,36 @@
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
-   - [ ] 1. verify the README.md Preview Pane shows the correct content
+   - [x] 1. verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] 2. verify Preview Pane works for the SVG files
-   - [ ] 3. verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [x] 2. verify Preview Pane works for the SVG files
+   - [x] 3. verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] 4. verify Preview Pane works for the PDF file
-   - [ ] 5. verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   - [x] 4. verify Preview Pane works for the PDF file
+   - [x] 5. verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] 6. verify Preview Pane works for the gcode file
-   - [ ] 7. verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
+   - [x] 6. verify Preview Pane works for the gcode file
+   - [x] 7. verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] 8. verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   - [x] 8. verify the Icon Preview works for the stl file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\runner
-   - [ ] 9. verify Preview Pane works for source files (shows syntax highlighting)
+   - [x] 9. verify Preview Pane works for source files (shows syntax highlighting)
  * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [ ] 10. verify the README.md Preview Pane doesn't show any content
+   - [x] 10. verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] 11. verify Preview Pane doesn't show the preview for the SVG files
+   - [x] 11. verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [ ] 12. copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [x] 12. copy and paste one of the SVG file and verify the new file show the generic SVG icon
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] 13. verify Preview Pane doesn't show the preview for the PDF file
+   - [x] 13. verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] 14. verify Preview Pane doesn't show the preview for the gcode file
+   - [x] 14. verify Preview Pane doesn't show the preview for the gcode file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] 15. verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   - [x] 15. verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
    * go to PowerToys repo and visit src\runner
-   - [ ] 16. verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+   - [x] 16. verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
 ## File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
