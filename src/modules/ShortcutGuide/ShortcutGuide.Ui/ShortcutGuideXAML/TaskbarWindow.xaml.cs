@@ -30,7 +30,6 @@ namespace ShortcutGuide.ShortcutGuideXAML
 
         public void UpdateTasklistButtons()
         {
-            // TO DO: The DPI calc are all over the place, so it should work fine on 100% but messes up on other scales.
             TasklistButton[] buttons = TasklistPositions.GetButtons();
             double windowsLogoColumnWidth = WindowsLogoColumnWidth.Width.Value;
             double windowHeight = 58;
@@ -48,7 +47,7 @@ namespace ShortcutGuide.ShortcutGuideXAML
                     Width = b.Width / DPI,
                 };
 
-                windowWidth += b.Width / DPI;
+                windowWidth += indicator.Width;
 
                 KeyHolder.Children.Add(indicator);
 
@@ -56,7 +55,7 @@ namespace ShortcutGuide.ShortcutGuideXAML
                 Canvas.SetLeft(indicator, indicatorPos - windowsLogoColumnWidth);
             }
 
-            this.MoveAndResize(xPosition - windowMargin, yPosition, windowWidth, windowHeight);
+            this.MoveAndResize(xPosition - windowMargin, yPosition, windowWidth + (2 * windowMargin), windowHeight);
         }
     }
 }
