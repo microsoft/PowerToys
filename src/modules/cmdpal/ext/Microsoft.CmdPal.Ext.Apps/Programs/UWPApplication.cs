@@ -103,6 +103,7 @@ public class UWPApplication : IUWPApplication
             new CommandContextItem(
                 new OpenFileCommand(Location)
                 {
+                    Icon = new("\uE838"),
                     Name = Resources.open_containing_folder,
                 })
             {
