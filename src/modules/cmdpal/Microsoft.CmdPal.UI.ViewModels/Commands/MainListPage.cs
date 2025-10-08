@@ -160,7 +160,7 @@ public partial class MainListPage : DynamicListPage,
         {
             lock (_tlcManager.TopLevelCommands)
             {
-                List<Scored<IListItem>> limitedApps = new List<Scored<IListItem>>();
+                var limitedApps = new List<Scored<IListItem>>();
 
                 // Fuzzy matching can produce a lot of results, so we want to limit the
                 // number of apps we show at once if it's a large set.
@@ -273,9 +273,9 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            IEnumerable<IListItem> newFilteredItems = Enumerable.Empty<IListItem>();
-            IEnumerable<IListItem> newFallbacks = Enumerable.Empty<IListItem>();
-            IEnumerable<IListItem> newApps = Enumerable.Empty<IListItem>();
+            var newFilteredItems = Enumerable.Empty<IListItem>();
+            var newFallbacks = Enumerable.Empty<IListItem>();
+            var newApps = Enumerable.Empty<IListItem>();
 
             if (_filteredItems is not null)
             {
@@ -339,8 +339,11 @@ public partial class MainListPage : DynamicListPage,
                 }
             }
 
+            var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands!;
+            Func<string, IListItem, int> scoreItem = (a, b) => { return ScoreTopLevelItem(a, b, history); };
+
             // Produce a list of everything that matches the current filter.
-            _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem)];
+            _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, scoreItem)];
 
             if (token.IsCancellationRequested)
             {
@@ -358,7 +361,7 @@ public partial class MainListPage : DynamicListPage,
             // Produce a list of filtered apps with the appropriate limit
             if (newApps.Any())
             {
-                var scoredApps = ListHelpers.FilterListWithScores<IListItem>(newApps, SearchText, ScoreTopLevelItem);
+                var scoredApps = ListHelpers.FilterListWithScores<IListItem>(newApps, SearchText, scoreItem);
 
                 if (token.IsCancellationRequested)
                 {
@@ -425,7 +428,7 @@ public partial class MainListPage : DynamicListPage,
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
     // fact that we want fallback handlers down-weighted, so that they don't
     // _always_ show up first.
-    private int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem)
+    private static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem, IRecentCommandsManager history)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
@@ -504,7 +507,6 @@ public partial class MainListPage : DynamicListPage,
         var finalScore = matchSomething;
         if (matchSomething > 0)
         {
-            var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
             var recentWeightBoost = history.GetCommandHistoryWeight(id);
             finalScore += recentWeightBoost;
         }
@@ -521,7 +523,7 @@ public partial class MainListPage : DynamicListPage,
         AppStateModel.SaveState(state);
     }
 
-    private string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
+    private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
     {
         if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
