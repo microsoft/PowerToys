@@ -357,19 +357,17 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         }
 
         var unweightedMatches = GetMatches(items, unweightedScores).ToList();
-        Assert.AreEqual(4, unweightedMatches.Count, "There should be three matching items");
+        Assert.AreEqual(4, unweightedMatches.Count);
         Assert.AreEqual("Command Prompt", unweightedMatches[0].Title, "Command Prompt should be the top match");
         Assert.AreEqual("Visual Studio Code", unweightedMatches[1].Title, "Visual Studio Code should be the second match");
         Assert.AreEqual("Terminal Canary", unweightedMatches[2].Title);
         Assert.AreEqual("Run commands", unweightedMatches[3].Title);
 
-        // After weighting for usage, Visual Studio Code should be the top match
-        // because it's been used more recently than Command Prompt (code is in
-        // bucket 0, cmd is in bucket 1)
+        // Even after weighting for 1 use, Command Prompt should still be the top match.
         var weightedMatches = GetMatches(items, weightedScores).ToList();
-        Assert.AreEqual(4, weightedMatches.Count, "There should be three matching items");
-        Assert.AreEqual("Visual Studio Code", weightedMatches[0].Title, "Visual Studio should be the top match");
-        Assert.AreEqual("Command Prompt", weightedMatches[1].Title, "Command Prompt should be the second match");
+        Assert.AreEqual(4, weightedMatches.Count);
+        Assert.AreEqual("Command Prompt", weightedMatches[0].Title);
+        Assert.AreEqual("Visual Studio Code", weightedMatches[1].Title);
         Assert.AreEqual("Terminal Canary", weightedMatches[2].Title);
         Assert.AreEqual("Run commands", weightedMatches[3].Title);
     }

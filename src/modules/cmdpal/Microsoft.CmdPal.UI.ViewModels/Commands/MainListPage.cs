@@ -504,7 +504,7 @@ public partial class MainListPage : DynamicListPage,
         // here we add the recent command weight boost
         //
         // Otherwise something like `x` will still match everything you've run before
-        var finalScore = matchSomething;
+        var finalScore = matchSomething * 10;
         if (matchSomething > 0)
         {
             var recentWeightBoost = history.GetCommandHistoryWeight(id);
