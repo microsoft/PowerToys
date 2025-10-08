@@ -299,6 +299,8 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     private sealed record ScoredItem(ListItemMock Item, int Score)
     {
         public string Title => Item.Title;
+
+        public override string ToString() => $"[{Score}]{Title}";
     }
 
     private static IEnumerable<ScoredItem> TieScoresToMatches(List<ListItemMock> items, List<int> scores)
@@ -413,5 +415,30 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         Assert.AreEqual("Terminal Canary", weightedMatches[0].Title, "Terminal should be the top match, title match");
         Assert.AreEqual("Visual Studio Code", weightedMatches[1].Title, "VsCode does fuzzy match, but is less relevant than Terminal");
         Assert.AreEqual("Run commands", weightedMatches[2].Title, "run only matches on the subtitle");
+    }
+
+    [TestMethod]
+    public void ValidateUsageEventuallyHelps()
+    {
+        var items = CreateMockHistoryItems();
+        var emptyHistory = CreateMockHistoryService(new());
+        var history = CreateMockHistoryService(items);
+
+        // We're gonna run this test and keep adding more uses of VS Code till
+        // it breaks past Command Prompt
+        var vsCodeId = items[1].Id;
+        for (var i = 0; i < 10; i++)
+        {
+            history.AddHistoryItem(vsCodeId);
+
+            var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("C", item, history)).ToList();
+            var weightedMatches = GetMatches(items, weightedScores).ToList();
+            Assert.AreEqual(4, weightedMatches.Count);
+
+            var expectedCmdIndex = i < 5 ? 0 : 1;
+            var expectedCodeIndex = i < 5 ? 1 : 0;
+            Assert.AreEqual("Command Prompt", weightedMatches[expectedCmdIndex].Title);
+            Assert.AreEqual("Visual Studio Code", weightedMatches[expectedCodeIndex].Title);
+        }
     }
 }
