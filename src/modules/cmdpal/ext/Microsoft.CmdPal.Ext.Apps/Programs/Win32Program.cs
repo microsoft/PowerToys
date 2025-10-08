@@ -207,7 +207,7 @@ public class Win32Program : IProgram
         });
 
         commands.Add(new CommandContextItem(
-                    new ShowFileInFolderCommand(FullPath)
+                    new ShowFileInFolderCommand(LnkFilePath)
                     {
                         Name = Resources.open_location,
                     })
