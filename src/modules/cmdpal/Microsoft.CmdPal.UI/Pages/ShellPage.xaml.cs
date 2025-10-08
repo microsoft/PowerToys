@@ -95,7 +95,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
         AddHandler(PointerPressedEvent, new PointerEventHandler(ShellPage_OnPointerPressed), true);
 
-        RootFrame.Navigate(typeof(LoadingPage), ViewModel);
+        RootFrame.Navigate(typeof(LoadingPage), new AsyncNavigationRequest(ViewModel, CancellationToken.None));
 
         var pageAnnouncementFormat = ResourceLoaderInstance.GetString("ScreenReader_Announcement_NavigatedToPage0");
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
@@ -153,7 +153,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     ContentPageViewModel => typeof(ContentPage),
                     _ => throw new NotSupportedException(),
                 },
-                message.Page,
+                new AsyncNavigationRequest(message.Page, message.CancellationToken),
                 message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
@@ -403,6 +403,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         HideDetails();
 
+        ViewModel.CancelNavigation();
+
         // Note: That we restore the VM state below in RootFrame_Navigated call back after this occurs.
         // In the future, we may want to manage the back stack ourselves vs. relying on Frame
         // We could replace Frame with a ContentPresenter, but then have to manage transition animations ourselves.
@@ -456,11 +458,32 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // This listens to the root frame to ensure that we also track the content's page VM as well that we passed as a parameter.
         // This is currently used for both forward and backward navigation.
         // As when we go back that we restore ourselves to the proper state within our VM
-        if (e.Parameter is PageViewModel page)
+        if (e.Parameter is AsyncNavigationRequest request)
         {
-            // Note, this shortcuts and fights a bit with our LoadPageViewModel above, but we want to better fast display and incrementally load anyway
-            // We just need to reconcile our loading systems a bit more in the future.
-            ViewModel.CurrentPage = page;
+            if (request.NavigationToken.IsCancellationRequested && e.NavigationMode is not (Microsoft.UI.Xaml.Navigation.NavigationMode.Back or Microsoft.UI.Xaml.Navigation.NavigationMode.Forward))
+            {
+                return;
+            }
+
+            switch (request.TargetViewModel)
+            {
+                case PageViewModel pageViewModel:
+                    ViewModel.CurrentPage = pageViewModel;
+                    break;
+                case ShellViewModel:
+                    // This one is an exception, for now (LoadingPage is tied to ShellViewModel,
+                    // but ShellViewModel is not PageViewModel.
+                    ViewModel.CurrentPage = ViewModel.NullPage;
+                    break;
+                default:
+                    ViewModel.CurrentPage = ViewModel.NullPage;
+                    Logger.LogWarning($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(PageViewModel)}");
+                    break;
+            }
+        }
+        else
+        {
+            Logger.LogWarning("Unrecognized target for shell navigation: " + e.Parameter);
         }
 
         if (e.Content is Page element)
