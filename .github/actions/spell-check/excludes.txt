@@ -121,6 +121,10 @@
 ^src/modules/MouseWithoutBorders/App/Helper/.*\.resx$
 ^src/modules/MouseWithoutBorders/ModuleInterface/generateSecurityDescriptor\.h$
 ^src/modules/peek/Peek.Common/NativeMethods\.txt$
+^src/modules/peek/Peek.UITests/TestAssets/4\.qoi$
+^src/modules/powerrename/PowerRenameUITest/testItems/folder1/testCase2\.txt$
+^src/modules/powerrename/PowerRenameUITest/testItems/folder2/SpecialCase\.txt$
+^src/modules/powerrename/PowerRenameUITest/testItems/testCase1\.txt$
 ^src/modules/previewpane/SvgPreviewHandler/SvgHTMLPreviewGenerator\.cs$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
