@@ -231,6 +231,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 ### ZoomIt
  - Updated resource file to reflect standalone v9.01 and current copyright year. Thanks @foxmsft!
  - Restored legacy draw/snipping behaviors and fixed recording race conditions. Thanks @chakrik73!
+ - Added smooth image option for improved zoom quality using GDI+ for static zoom and Magnifier API for live zoom. Thanks @markrussinovich!
 
  ### Documentation
  - New Microsoft Learn documentation for the Light Switch module.
