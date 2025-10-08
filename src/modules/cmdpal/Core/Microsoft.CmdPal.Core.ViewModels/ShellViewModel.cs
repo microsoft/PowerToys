@@ -69,6 +69,8 @@ public partial class ShellViewModel : ObservableObject,
 
     public bool IsNested => _isNested;
 
+    public PageViewModel NullPage { get; private set; }
+
     public ShellViewModel(
         TaskScheduler scheduler,
         IRootPageService rootPageService,
@@ -80,6 +82,7 @@ public partial class ShellViewModel : ObservableObject,
         _rootPageService = rootPageService;
         _appHostService = appHostService;
 
+        NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
 
         // Register to receive messages

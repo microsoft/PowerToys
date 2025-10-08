@@ -46,22 +46,17 @@ public sealed partial class ContentPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is ContentPageViewModel vm)
+        if (e.Parameter is not AsyncNavigationRequest navigationRequest)
         {
-            ViewModel = vm;
+            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
         }
-        else if (e.Parameter is NavigateToPageMessage message)
-        {
-            if (message.CancellationToken.IsCancellationRequested && e.NavigationMode is NavigationMode.New or NavigationMode.Refresh)
-            {
-                return;
-            }
 
-            if (message.Page is ContentPageViewModel lvm2)
-            {
-                ViewModel = lvm2;
-            }
+        if (navigationRequest.TargetViewModel is not ContentPageViewModel contentPageViewModel)
+        {
+            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ContentPageViewModel)}");
         }
+
+        ViewModel = contentPageViewModel;
 
         if (!WeakReferenceMessenger.Default.IsRegistered<ActivateSelectedListItemMessage>(this))
         {
