@@ -37,6 +37,7 @@ public partial class MainListPage : DynamicListPage,
     private readonly TopLevelCommandManager _tlcManager;
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
+    private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
     private List<Scored<IListItem>>? _fallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
@@ -173,6 +174,7 @@ public partial class MainListPage : DynamicListPage,
 
                 var items = Enumerable.Empty<Scored<IListItem>>()
                                 .Concat(_filteredItems is not null ? _filteredItems : [])
+                                .Concat(_scoredFallbackItems is not null ? _scoredFallbackItems : [])
                                 .Concat(limitedApps)
                                 .OrderByDescending(o => o.Score)
 
@@ -184,6 +186,14 @@ public partial class MainListPage : DynamicListPage,
                 return items;
             }
         }
+    }
+
+    private void ClearResults()
+    {
+        _filteredItems = null;
+        _filteredApps = null;
+        _fallbackItems = null;
+        _scoredFallbackItems = null;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -218,8 +228,7 @@ public partial class MainListPage : DynamicListPage,
                     lock (_tlcManager.TopLevelCommands)
                     {
                         _filteredItemsIncludesApps = _includeApps;
-                        _filteredItems = null;
-                        _filteredApps = null;
+                        ClearResults();
                     }
                 }
 
@@ -246,9 +255,7 @@ public partial class MainListPage : DynamicListPage,
             if (string.IsNullOrEmpty(newSearch))
             {
                 _filteredItemsIncludesApps = _includeApps;
-                _filteredItems = null;
-                _filteredApps = null;
-                _fallbackItems = null;
+                ClearResults();
                 RaiseItemsChanged(commands.Count);
                 return;
             }
@@ -257,17 +264,13 @@ public partial class MainListPage : DynamicListPage,
             // re-use previous results. Reset _filteredItems, and keep er moving.
             if (!newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase))
             {
-                _filteredItems = null;
-                _filteredApps = null;
-                _fallbackItems = null;
+                ClearResults();
             }
 
             // If the internal state has changed, reset _filteredItems to reset the list.
             if (_filteredItemsIncludesApps != _includeApps)
             {
-                _filteredItems = null;
-                _filteredApps = null;
-                _fallbackItems = null;
+                ClearResults();
             }
 
             if (token.IsCancellationRequested)
@@ -278,6 +281,7 @@ public partial class MainListPage : DynamicListPage,
             IEnumerable<IListItem> newFilteredItems = Enumerable.Empty<IListItem>();
             IEnumerable<IListItem> newFallbacks = Enumerable.Empty<IListItem>();
             IEnumerable<IListItem> newApps = Enumerable.Empty<IListItem>();
+            IEnumerable<IListItem> newFallbacksForScoring = Enumerable.Empty<IListItem>();
 
             if (_filteredItems is not null)
             {
@@ -309,14 +313,26 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
+            if (_scoredFallbackItems is not null)
+            {
+                newFallbacksForScoring = _scoredFallbackItems.Select(s => s.Item);
+            }
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
-            if (!newFilteredItems.Any() && !newApps.Any())
+            if (!newFilteredItems.Any() && !newApps.Any() && !newFallbacksForScoring.Any())
             {
                 // We're going to start over with our fallbacks
                 newFallbacks = Enumerable.Empty<IListItem>();
 
-                newFilteredItems = commands.Where(s => !s.IsFallback || _specialFallbacks.Contains(s.CommandProviderId));
+                newFilteredItems = commands.Where(s => !s.IsFallback);
+
+                newFallbacksForScoring = commands.Where(s => s.IsFallback && _specialFallbacks.Contains(s.CommandProviderId));
 
                 // Fallbacks are always included in the list, even if they
                 // don't match the search text. But we don't want to
@@ -356,6 +372,13 @@ public partial class MainListPage : DynamicListPage,
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem)];
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, ScoreTopLevelItem);
 
             if (token.IsCancellationRequested)
             {
