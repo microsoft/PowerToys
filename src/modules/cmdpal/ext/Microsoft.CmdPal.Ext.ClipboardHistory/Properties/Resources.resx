@@ -183,4 +183,7 @@
   <data name="settings_primary_action_copy" xml:space="preserve">
     <value>Copy to Clipboard</value>
   </data>
+  <data name="open_url_command_name" xml:space="preserve">
+    <value>Open URL</value>
+  </data>
 </root>

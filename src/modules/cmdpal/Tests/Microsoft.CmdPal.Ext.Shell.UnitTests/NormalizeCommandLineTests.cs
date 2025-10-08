@@ -23,6 +23,7 @@ public class NormalizeCommandLineTests : CommandPaletteUnitTestBase
     [DataRow("ping bing.com", "c:\\Windows\\system32\\ping.exe", "bing.com")]
     [DataRow("curl bing.com", "c:\\Windows\\system32\\curl.exe", "bing.com")]
     [DataRow("ipconfig /all", "c:\\Windows\\system32\\ipconfig.exe", "/all")]
+    [DataRow("ipconfig a b \"c d\"", "c:\\Windows\\system32\\ipconfig.exe", "a b \"c d\"")]
     public void NormalizeCommandLineSimple(string input, string expectedExe, string expectedArgs = "")
     {
         NormalizeTestCore(input, expectedExe, expectedArgs);
@@ -46,7 +47,7 @@ public class NormalizeCommandLineTests : CommandPaletteUnitTestBase
     [TestMethod]
     [DataRow("cmd --run --test", "C:\\Windows\\System32\\cmd.exe", "--run --test")]
     [DataRow("cmd    --run   --test  ", "C:\\Windows\\System32\\cmd.exe", "--run --test")]
-    [DataRow("cmd \"--run --test\" --pass", "C:\\Windows\\System32\\cmd.exe", "--run --test --pass")]
+    [DataRow("cmd \"--run --test\" --pass", "C:\\Windows\\System32\\cmd.exe", "\"--run --test\" --pass")]
     public void NormalizeArgsWithSpaces(string input, string expectedExe, string expectedArgs = "")
     {
         NormalizeTestCore(input, expectedExe, expectedArgs);

@@ -206,10 +206,13 @@ public partial class ShellViewModel : ObservableObject,
                     .ContinueWith(
                         (Task t) =>
                         {
+                            // When we're done loading the page, then update the command bar to match
                             OnUIThread(() => { WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)); });
-                            WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation));
                         },
                         _scheduler);
+
+                // While we're loading in the background, immediately move to the next page.
+                WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation));
 
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.

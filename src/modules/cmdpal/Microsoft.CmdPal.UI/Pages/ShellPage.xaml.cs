@@ -101,6 +101,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _pageNavigatedAnnouncement = CompositeFormat.Parse(pageAnnouncementFormat);
     }
 
+    /// <summary>
+    /// Gets the default page animation, depending on the settings
+    /// </summary>
+    private NavigationTransitionInfo DefaultPageAnimation
+    {
+        get
+        {
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            return settings.DisableAnimations ? _noAnimation : _slideRightTransition;
+        }
+    }
+
     public void Receive(NavigateBackMessage message)
     {
         var settings = App.Current.Services.GetService<SettingsModel>()!;
@@ -142,7 +154,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     _ => throw new NotSupportedException(),
                 },
                 message.Page,
-                message.WithAnimation ? _slideRightTransition : _noAnimation);
+                message.WithAnimation ? DefaultPageAnimation : _noAnimation);
 
             PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
 
@@ -549,19 +561,25 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private static void ShellPage_OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key == VirtualKey.Left && e.KeyStatus.IsMenuKeyDown)
+        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+                         InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+
+        var onlyAlt = altPressed && !ctrlPressed && !shiftPressed && !winPressed;
+        if (e.Key == VirtualKey.Left && onlyAlt)
         {
             WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
             e.Handled = true;
         }
+        else if (e.Key == VirtualKey.Home && onlyAlt)
+        {
+            WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(WithAnimation: false));
+            e.Handled = true;
+        }
         else
         {
-            var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-            var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-            var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-                             InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
-
             // The CommandBar is responsible for handling all the item keybindings,
             // since the bound context item may need to then show another
             // context menu

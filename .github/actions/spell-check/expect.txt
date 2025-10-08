@@ -3,6 +3,7 @@ abcdefghjkmnpqrstuvxyz
 abgr
 ABlocked
 ABOUTBOX
+ABORTIFHUNG
 Abug
 Acceleratorkeys
 ACCEPTFILES
@@ -77,6 +78,7 @@ appwiz
 appxpackage
 APSTUDIO
 AQS
+Aquadrant
 ARandom
 ARCHITEW
 ARemapped
@@ -366,6 +368,7 @@ desktopshorcutinstalled
 DESKTOPVERTRES
 devblogs
 devdocs
+devenv
 devmgmt
 DEVMODE
 DEVMODEW
@@ -454,6 +457,7 @@ encryptor
 ENDSESSION
 ENSUREVISIBLE
 ENTERSIZEMOVE
+ENTRYW
 ENU
 environmentvariables
 EOAC
@@ -571,6 +575,7 @@ GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
 getfilesiginforedist
+geolocator
 GETHOTKEY
 GETICON
 GETMINMAXINFO
@@ -822,10 +827,12 @@ killrunner
 kmph
 kvp
 Kybd
+LARGEICON
 lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 LCh
+lbl
 lcid
 LCIDTo
 lcl
@@ -844,10 +851,12 @@ LIBID
 LIMITSIZE
 LIMITTEXT
 lindex
+lightswitch
 linkid
 LINKOVERLAY
 LINQTo
 listview
+LIVEDRAW
 LIVEZOOM
 LLKH
 llkhf
@@ -867,10 +876,13 @@ logon
 LOGMSG
 LOGPIXELSX
 LOGPIXELSY
+lng
 LOn
+lon
 longdate
 LONGNAMES
 lowlevel
+lquadrant
 LOWORD
 lparam
 LPBITMAPINFOHEADER
@@ -1200,8 +1212,10 @@ PACL
 PAINTSTRUCT
 PALETTEWINDOW
 PARENTNOTIFY
+PARENTRELATIVE
 PARENTRELATIVEEDITING
 PARENTRELATIVEFORADDRESSBAR
+PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
@@ -1224,6 +1238,7 @@ PATPAINT
 pbc
 pbi
 PBlob
+pbrush
 pcb
 pcch
 pcelt
@@ -1257,6 +1272,7 @@ pgp
 pguid
 phbm
 phbmp
+phicon
 phwnd
 pici
 pidl
@@ -1265,6 +1281,7 @@ pinfo
 pinvoke
 pipename
 PKBDLLHOOKSTRUCT
+pkgfamily
 plib
 ploc
 ploca
@@ -1383,6 +1400,7 @@ quickaccent
 QUNS
 RAII
 RAlt
+RAquadrant
 randi
 rasterization
 Rasterize
@@ -1681,6 +1699,7 @@ Subdomain
 SUBMODULEUPDATE
 subresource
 Superbar
+suntimes
 sut
 svchost
 SVGIn
@@ -1746,6 +1765,7 @@ tgz
 themeresources
 THH
 THICKFRAME
+THEMECHANGED
 THISCOMPONENT
 throughs
 thumbnailhotkey
@@ -1762,6 +1782,7 @@ tkconverters
 tlb
 tlbimp
 tlc
+tmain
 TNP
 TOGGLEEASYMOUSE
 Toolhelp
