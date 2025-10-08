@@ -466,16 +466,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
         else if (e.Parameter is NavigateToPageMessage message)
         {
-            if (message.CancellationToken.IsCancellationRequested && e.NavigationMode != Microsoft.UI.Xaml.Navigation.NavigationMode.Back)
+            if (message.CancellationToken.IsCancellationRequested && e.NavigationMode is not (Microsoft.UI.Xaml.Navigation.NavigationMode.Back or Microsoft.UI.Xaml.Navigation.NavigationMode.Forward))
             {
                 return;
             }
 
             ViewModel.CurrentPage = message.Page;
-        }
-        else
-        {
-            Console.WriteLine(e.Parameter);
         }
 
         if (e.Content is Page element)

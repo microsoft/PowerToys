@@ -65,7 +65,7 @@ public sealed partial class ListPage : Page,
         }
         else if (e.Parameter is NavigateToPageMessage message)
         {
-            if (message.CancellationToken.IsCancellationRequested && e.NavigationMode == NavigationMode.New)
+            if (message.CancellationToken.IsCancellationRequested && e.NavigationMode is NavigationMode.New or NavigationMode.Refresh)
             {
                 return;
             }
