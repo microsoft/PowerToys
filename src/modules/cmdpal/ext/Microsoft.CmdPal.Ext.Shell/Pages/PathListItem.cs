@@ -50,26 +50,7 @@ internal sealed partial class PathListItem : ListItem
         Title = fileName; // Just the name of the file is the Title
         Subtitle = path; // What the user typed is the subtitle
 
-        // NOTE ME:
-        // If there are spaces on originalDir, trim them off, BEFORE combining originalDir and fileName.
-        // THEN add quotes at the end
-
-        // Trim off leading & trailing quote, if there is one
-        var trimmed = originalDir.Trim('"');
-        var originalPath = Path.Combine(trimmed, fileName);
-        var suggestion = originalPath;
-        var hasSpace = originalPath.Contains(' ');
-        if (hasSpace)
-        {
-            // wrap it in quotes
-            suggestion = string.Concat("\"", suggestion, "\"");
-        }
-        else
-        {
-            suggestion = path;
-        }
-
-        TextToSuggest = suggestion;
+        TextToSuggest = path;
 
         MoreCommands = [
             new CommandContextItem(new OpenWithCommand(path)),

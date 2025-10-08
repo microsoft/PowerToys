@@ -197,6 +197,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SmoothImage
+        {
+            get => _zoomItSettings.Properties.SmoothImage.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SmoothImage.Value != value)
+                {
+                    _zoomItSettings.Properties.SmoothImage.Value = value;
+                    OnPropertyChanged(nameof(SmoothImage));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public int ZoominSliderLevel
         {
             get => _zoomItSettings.Properties.ZoominSliderLevel.Value;
