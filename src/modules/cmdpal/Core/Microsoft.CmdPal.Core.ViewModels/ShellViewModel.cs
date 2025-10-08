@@ -46,17 +46,18 @@ public partial class ShellViewModel : ObservableObject,
         set
         {
             var oldValue = _currentPage;
-            _currentPage = value;
-            OnPropertyChanged(nameof(CurrentPage));
-            if (oldValue is IDisposable disposable)
+            if (SetProperty(ref _currentPage, value))
             {
-                try
+                if (oldValue is IDisposable disposable)
                 {
-                    disposable.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    CoreLogger.LogError(ex.ToString());
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreLogger.LogError(ex.ToString());
+                    }
                 }
             }
         }
