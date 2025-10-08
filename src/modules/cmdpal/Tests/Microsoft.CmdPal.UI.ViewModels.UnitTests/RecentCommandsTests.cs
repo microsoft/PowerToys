@@ -285,6 +285,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             new("Run commands", Subtitle: "Executes commands (e.g. ping, cmd)", GivenId: "com.microsoft.cmdpal.run"), // #3  -> bucket 1
             new("Windows Settings"), // #4  -> bucket 1
             new("Command Prompt"), // #5  -> bucket 1
+            new("Terminal Canary"), // #6  -> bucket 1
         };
         return items;
     }
@@ -356,18 +357,63 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         }
 
         var unweightedMatches = GetMatches(items, unweightedScores).ToList();
-        Assert.AreEqual(3, unweightedMatches.Count, "There should be three matching items");
+        Assert.AreEqual(4, unweightedMatches.Count, "There should be three matching items");
         Assert.AreEqual("Command Prompt", unweightedMatches[0].Title, "Command Prompt should be the top match");
         Assert.AreEqual("Visual Studio Code", unweightedMatches[1].Title, "Visual Studio Code should be the second match");
-        Assert.AreEqual("Run commands", unweightedMatches[2].Title, "Run commands should be the third match");
+        Assert.AreEqual("Terminal Canary", unweightedMatches[2].Title);
+        Assert.AreEqual("Run commands", unweightedMatches[3].Title);
 
         // After weighting for usage, Visual Studio Code should be the top match
         // because it's been used more recently than Command Prompt (code is in
         // bucket 0, cmd is in bucket 1)
         var weightedMatches = GetMatches(items, weightedScores).ToList();
-        Assert.AreEqual(3, weightedMatches.Count, "There should be three matching items");
+        Assert.AreEqual(4, weightedMatches.Count, "There should be three matching items");
         Assert.AreEqual("Visual Studio Code", weightedMatches[0].Title, "Visual Studio should be the top match");
         Assert.AreEqual("Command Prompt", weightedMatches[1].Title, "Command Prompt should be the second match");
-        Assert.AreEqual("Run commands", weightedMatches[2].Title, "Run commands should be the third match");
+        Assert.AreEqual("Terminal Canary", weightedMatches[2].Title);
+        Assert.AreEqual("Run commands", weightedMatches[3].Title);
+    }
+
+    [TestMethod]
+    public void ValidateTitlesAreMoreImportantThanHistory()
+    {
+        var items = CreateMockHistoryItems();
+        var emptyHistory = CreateMockHistoryService(new());
+        var history = CreateMockHistoryService(items);
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("te", item, history)).ToList();
+        var weightedMatches = GetMatches(items, weightedScores).ToList();
+
+        Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
+
+        // Terminal is in bucket 1, VS Code is in bucket 0, but Terminal matches
+        // the title better
+        Assert.AreEqual("Terminal Canary", weightedMatches[0].Title, "Terminal should be the top match, title match");
+        Assert.AreEqual("Visual Studio Code", weightedMatches[1].Title, "VsCode does fuzzy match, but is less relevant than Terminal");
+        Assert.AreEqual("Run commands", weightedMatches[2].Title, "run only matches on the subtitle");
+    }
+
+    [TestMethod]
+    public void ValidateTitlesAreMoreImportantThanUsage()
+    {
+        var items = CreateMockHistoryItems();
+        var emptyHistory = CreateMockHistoryService(new());
+        var history = CreateMockHistoryService(items);
+
+        // Add extra uses of VS Code to try and push it above Terminal
+        for (var i = 0; i < 10; i++)
+        {
+            history.AddHistoryItem(items[1].Id);
+        }
+
+        var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem("te", item, history)).ToList();
+        var weightedMatches = GetMatches(items, weightedScores).ToList();
+
+        Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
+
+        // Terminal is in bucket 1, VS Code is in bucket 0, but Terminal matches
+        // the title better
+        Assert.AreEqual("Terminal Canary", weightedMatches[0].Title, "Terminal should be the top match, title match");
+        Assert.AreEqual("Visual Studio Code", weightedMatches[1].Title, "VsCode does fuzzy match, but is less relevant than Terminal");
+        Assert.AreEqual("Run commands", weightedMatches[2].Title, "run only matches on the subtitle");
     }
 }
