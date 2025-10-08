@@ -3,6 +3,7 @@ abcdefghjkmnpqrstuvxyz
 abgr
 ABlocked
 ABOUTBOX
+ABORTIFHUNG
 Abug
 Acceleratorkeys
 ACCEPTFILES
@@ -74,6 +75,7 @@ appwiz
 appxpackage
 APSTUDIO
 AQS
+Aquadrant
 ARandom
 ARCHITEW
 ARemapped
@@ -451,6 +453,7 @@ encryptor
 ENDSESSION
 ENSUREVISIBLE
 ENTERSIZEMOVE
+ENTRYW
 ENU
 environmentvariables
 EOAC
@@ -567,6 +570,7 @@ GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
 getfilesiginforedist
+geolocator
 GETHOTKEY
 GETICON
 GETMINMAXINFO
@@ -817,6 +821,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 LCh
+lbl
 lcid
 LCIDTo
 lcl
@@ -835,10 +840,12 @@ LIBID
 LIMITSIZE
 LIMITTEXT
 lindex
+lightswitch
 linkid
 LINKOVERLAY
 LINQTo
 listview
+LIVEDRAW
 LIVEZOOM
 LLKH
 llkhf
@@ -857,10 +864,13 @@ logon
 LOGMSG
 LOGPIXELSX
 LOGPIXELSY
+lng
 LOn
+lon
 longdate
 LONGNAMES
 lowlevel
+lquadrant
 LOWORD
 lparam
 LPBITMAPINFOHEADER
@@ -1199,6 +1209,7 @@ PATPAINT
 pbc
 pbi
 PBlob
+pbrush
 pcb
 pcch
 pcelt
@@ -1358,6 +1369,7 @@ quickaccent
 QUNS
 RAII
 RAlt
+RAquadrant
 randi
 rasterization
 Rasterize
@@ -1653,6 +1665,7 @@ sublang
 SUBMODULEUPDATE
 subresource
 Superbar
+suntimes
 sut
 svchost
 SVGIn
@@ -1718,6 +1731,7 @@ tgz
 themeresources
 THH
 THICKFRAME
+THEMECHANGED
 THISCOMPONENT
 throughs
 TILEDWINDOW
@@ -1733,6 +1747,7 @@ tkconverters
 tlb
 tlbimp
 tlc
+tmain
 TNP
 Toolhelp
 toolwindow

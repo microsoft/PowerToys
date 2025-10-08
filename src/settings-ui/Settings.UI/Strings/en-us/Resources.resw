@@ -2893,7 +2893,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Crosshairs fixed length (px)</value>
     <comment>px = pixels</comment>
   </data>
-	<data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation" xml:space="preserve">
+	<data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation.Header" xml:space="preserve">
     <value>Crosshairs orientation</value>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs_CrosshairsOrientation_Both.Content" xml:space="preserve">
@@ -3161,19 +3161,19 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
     <value>You'll be asked to confirm before files are moved to the Recycle Bin</value>
   </data>
-	<data name="Peek_ActivationMethod.Header" xml:space="preserve">
+  <data name="Peek_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
   </data>
-	<data name="Peek_ActivationMethod.Description" xml:space="preserve">
+  <data name="Peek_ActivationMethod.Description" xml:space="preserve">
     <value>Use a shortcut or press the Spacebar when a file is selected</value>
-	<comment>Spacebar is a physical keyboard key</comment>
+    <comment>Spacebar is a physical keyboard key</comment>
   </data>
-	<data name="Peek_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
+  <data name="Peek_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
     <value>Custom shortcut</value>
   </data>
-	<data name="Peek_ActivationMethod_SpaceBar.Content" xml:space="preserve">
+  <data name="Peek_ActivationMethod_SpaceBar.Content" xml:space="preserve">
     <value>Spacebar</value>
-  </data>	
+  </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable rounded corners when a window is snapped</value>
   </data>
@@ -3260,6 +3260,15 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
     <value>Pin a window</value>
+  </data>
+  <data name="LightSwitch_ThemeToggle_Shortcut.Header" xml:space="preserve">
+    <value>Theme toggle shortcut</value>
+  </data>
+  <data name="LightSwitch_ThemeToggle_Shortcut.Description" xml:space="preserve">
+    <value>Switch between light and dark mode</value>
+  </data>
+  <data name="LightSwitch_ForceDarkMode" xml:space="preserve">
+    <value>Toggle theme</value>
   </data>
   <data name="ColorPicker_ShortDescription" xml:space="preserve">
     <value>Pick a color</value>
@@ -4653,6 +4662,9 @@ Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or s
   <data name="ZoomIt_Toggle_AnimateZoom.Header" xml:space="preserve">
     <value>Animate zoom in and zoom out</value>
   </data>
+  <data name="ZoomIt_Toggle_SmoothZoomedImage.Header" xml:space="preserve">
+    <value>Smooth zoomed image</value>
+  </data>  
   <data name="ZoomIt_Slider_InitialMagnification.Header" xml:space="preserve">
     <value>Specify the initial level of magnification when zooming in</value>
   </data>
@@ -5224,6 +5236,117 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
+  <data name="Shell_LightSwitch.Content" xml:space="preserve">
+    <value>Light Switch</value>
+  </data>
+  <data name="LightSwitch_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Light Switch</value>
+  </data>
+  <data name="LightSwitch.ModuleDescription" xml:space="preserve">
+    <value>Easily switch between light and dark mode - on a schedule, automatically, or with a shortcut.</value>
+  </data>
+  <data name="LightSwitch.ModuleTitle" xml:space="preserve">
+    <value>Light Switch</value>
+  </data>
+  <data name="LearnMore_LightSwitch.Text" xml:space="preserve">
+    <value>Learn more about Light Switch</value>
+  </data>
+  <data name="LightSwitch_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="LightSwitch_EnableSettingsCard.Header" xml:space="preserve">
+    <value>Enable Light Switch</value>
+  </data>
+  <data name="LightSwitch_ShortcutsSettingsGroup.Header" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="LightSwitch_ScheduleSettingsGroup.Header" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="LightSwitch_ModeSettingsExpander.Header" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="LightSwitch_ModeSettingsExpander.Description" xml:space="preserve">
+    <value>Determine when dark mode should be turned on</value>
+  </data>
+  <data name="LightSwitch_ModeManual.Content" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="LightSwitch_ModeSunsetToSunrise.Content" xml:space="preserve">
+    <value>Sunset to sunrise</value>
+  </data>
+  <data name="LightSwitch_TurnOnDarkMode.Header" xml:space="preserve">
+    <value>Turn on dark mode</value>
+  </data>
+  <data name="LightSwitch_TurnOffDarkMode.Header" xml:space="preserve">
+    <value>Turn off dark mode</value>
+  </data>
+  <data name="LightSwitch_LocationSettingsCard.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="LightSwitch_LocationSettingsCard.Description" xml:space="preserve">
+    <value>Used to automatically calculate accurate sunrise and sunset times</value>
+  </data>
+  <data name="LightSwitch_OffsetSettingsCard.Header" xml:space="preserve">
+    <value>Offset (in minutes)</value>
+  </data>
+  <data name="LightSwitch_OffsetSettingsCard.Description" xml:space="preserve">
+    <value>Adjust the trigger time by starting earlier or later</value>
+  </data>
+  <data name="LightSwitch_LocationWarningBar.Title" xml:space="preserve">
+    <value>Location required</value>
+  </data>
+  <data name="LightSwitch_LocationWarningBar.Message" xml:space="preserve">
+    <value>Sync your location so Light Switch can calculate the correct sunrise- and sunset times</value>
+  </data>
+  <data name="LightSwitch_ApplyDarkModeExpander.Header" xml:space="preserve">
+    <value>Apply dark mode to</value>
+  </data>
+  <data name="LightSwitch_ApplyDarkModeExpander.Description" xml:space="preserve">
+    <value>Pick which parts of your PC should follow Light Switch</value>
+  </data>
+  <data name="LightSwitch_SystemCheckbox.Header" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="LightSwitch_SystemCheckbox.Description" xml:space="preserve">
+    <value>Taskbar, Start, and other system UI</value>
+  </data>
+  <data name="LightSwitch_AppsCheckbox.Header" xml:space="preserve">
+    <value>Apps</value>
+  </data>
+  <data name="LightSwitch_AppsCheckbox.Description" xml:space="preserve">
+    <value>Supported applications</value>
+  </data>
+  <data name="LightSwitch_LocationDialog.Title" xml:space="preserve">
+    <value>Select a location</value>
+  </data>
+  <data name="LightSwitch_LocationDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="LightSwitch_LocationDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="LightSwitch_GetCurrentLocation.Text" xml:space="preserve">
+    <value>Get current location</value>
+  </data>
+  <data name="LightSwitch_LocationDialog_Description.Text" xml:space="preserve">
+    <value>To calculate the sunrise and sunset, Light Switch needs a location.</value>
+  </data>
+  <data name="LightSwitch_SunriseText.Text" xml:space="preserve">
+    <value>Sunrise</value>
+  </data>
+  <data name="LightSwitch_SunsetText.Text" xml:space="preserve">
+    <value>Sunset</value>
+  </data>
+  <data name="LightSwitch_LocationTooltip.Text" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="LightSwitch_SunriseTooltip.Text" xml:space="preserve">
+    <value>Sunrise</value>
+  </data>
+  <data name="LightSwitch_SunsetTooltip.Text" xml:space="preserve">
+    <value>Sunset</value>
+  </data>
   <data name="Close_NavViewItem.Content" xml:space="preserve">
     <value>Close PowerToys</value>
     <comment>Don't loc "PowerToys"</comment>
@@ -5320,6 +5443,22 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="UtilitiesHeader.Title" xml:space="preserve">
     <value>Utilities</value>
+  </data>
+  <data name="Oobe_LightSwitch.Title" xml:space="preserve">
+    <value>Light Switch</value>
+    <comment>Product name. Do not localize this string</comment>
+  </data>
+  <data name="Oobe_LightSwitch.Description" xml:space="preserve">
+    <value>Light Switch automatically manages your Windows light and dark mode based on schedules, sunrise/sunset times, or manual control. Keep your system theme synchronized with your preferences and daily rhythm.</value>
+    <comment>Light Switch is a product name, do not localize</comment>
+  </data>
+  <data name="Oobe_LightSwitch_HowToUse.Text" xml:space="preserve">
+    <value>Open **PowerToys Settings** and enable Light Switch to set up automatic theme switching</value>
+    <comment>Light Switch is a product name, do not localize</comment>
+  </data>
+  <data name="Oobe_LightSwitch_TipsAndTricks.Text" xml:space="preserve">
+    <value>Use the **keyboard shortcut** to instantly toggle between light and dark modes, or set up **sunrise/sunset automation** for natural theme transitions.</value>
+    <comment>Light Switch is a product name, do not localize</comment>
   </data>
   <data name="DismissConflictBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Dismiss</value>

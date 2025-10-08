@@ -63,16 +63,17 @@ public partial class CommandItem : BaseObservable, ICommandItem
             }
 
             OnPropertyChanged(nameof(Command));
-            if (string.IsNullOrWhiteSpace(_title))
+            if (string.IsNullOrEmpty(_title))
             {
                 OnPropertyChanged(nameof(Title));
             }
         }
     }
 
-    private static void OnCommandPropertyChanged(CommandItem instance, object source, IPropChangedEventArgs args)
+    private void OnCommandPropertyChanged(CommandItem instance, object source, IPropChangedEventArgs args)
     {
-        if (args.PropertyName == nameof(ICommand.Name))
+        // command's name affects Title only if Title wasn't explicitly set
+        if (args.PropertyName == nameof(ICommand.Name) && string.IsNullOrEmpty(_title))
         {
             instance.OnPropertyChanged(nameof(Title));
         }
@@ -98,13 +99,11 @@ public partial class CommandItem : BaseObservable, ICommandItem
     public CommandItem(ICommand command)
     {
         Command = command;
-        Title = command.Name;
     }
 
     public CommandItem(ICommandItem other)
     {
         Command = other.Command;
-        Title = other.Title;
         Subtitle = other.Subtitle;
         Icon = (IconInfo?)other.Icon;
         MoreCommands = other.MoreCommands;
