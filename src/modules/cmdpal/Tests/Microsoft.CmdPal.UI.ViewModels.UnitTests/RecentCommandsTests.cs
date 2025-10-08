@@ -77,7 +77,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         Assert.IsTrue(vsWeight > windowWalkerWeight, "Visual Studio should be weighted higher than Window Walker, because recency");
         Assert.AreEqual(reloadWeight, vsWeight, "both reload and VS were used in the last three commands, same weight");
         Assert.IsTrue(shellWeight > vsWeight, "VS and run were both used in the last 3, but shell has 2 more frequency");
-        Assert.AreEqual(0, nonExistentWeight, "Non-existent command should have zero weight");
+        Assert.AreEqual(0, nonExistentWeight, "Nonexistent command should have zero weight");
     }
 
     private sealed partial record ListItemMock(
