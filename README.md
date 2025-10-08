@@ -214,7 +214,7 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 
 ### Documentation
 
- - Adds docs for building the installer locally and testing winget installs.
+ - Added docs for building the installer locally and testing winget installs.
  - Fixed a broken style guide link in developer documentation. Thanks [@denizmaral](https://github.com/denizmaral)!
 
 ### Development
