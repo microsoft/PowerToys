@@ -5,7 +5,7 @@
 namespace Microsoft.CmdPal.Core.ViewModels;
 
 /// <summary>
-/// Encapsulates an navigation request within Command Palette view models.
+/// Encapsulates a navigation request within Command Palette view models.
 /// </summary>
 /// <param name="TargetViewModel">A view model that should be navigated to.</param>
 /// <param name="NavigationToken"> A <see cref="CancellationToken"/> that can be used to cancel the pending navigation.</param>
