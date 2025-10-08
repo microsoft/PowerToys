@@ -1,5 +1,10 @@
 # See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-patterns
 
+# marker to ignore all code on line
+^.*/\* #no-spell-check-line \*/.*$
+# marker for ignoring a comment to the end of the line
+// #no-spell-check.*$
+
 # Gaelic
 Gàidhlig
 
@@ -264,3 +269,7 @@ St&yle
 # This matches a relative clause where the relative pronoun "that" is omitted.
 # Example: "Gets or sets the window the TitleBar should configure."
 \bthe\s+\w+\s+the\b
+
+# Usernames with numbers
+# 0x6f677548 is user name but user folder causes a flag
+\bx6f677548\b
