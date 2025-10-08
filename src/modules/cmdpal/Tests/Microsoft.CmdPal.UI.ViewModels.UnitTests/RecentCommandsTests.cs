@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.UnitTestBase;
@@ -294,6 +295,39 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         return history;
     }
 
+    private sealed record ScoredItem(ListItemMock Item, int Score)
+    {
+        public string Title => Item.Title;
+    }
+
+    private static IEnumerable<ScoredItem> TieScoresToMatches(List<ListItemMock> items, List<int> scores)
+    {
+        if (items.Count != scores.Count)
+        {
+            throw new ArgumentException("Items and scores must have the same number of elements");
+        }
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            yield return new ScoredItem(items[i], scores[i]);
+        }
+    }
+
+    private static IEnumerable<ScoredItem> GetMatches(IEnumerable<ScoredItem> scoredItems)
+    {
+        var matches = scoredItems
+            .Where(x => x.Score > 0)
+            .OrderByDescending(x => x.Score)
+            .ToList();
+
+        return matches;
+    }
+
+    private static IEnumerable<ScoredItem> GetMatches(List<ListItemMock> items, List<int> scores)
+    {
+        return GetMatches(TieScoresToMatches(items, scores));
+    }
+
     [TestMethod]
     public void ValidateScoredWeightingSimple()
     {
@@ -321,17 +355,19 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             }
         }
 
-        var matches = items.Join(
-            weightedScores,
-            item => item.Id,
-            score => items[weightedScores.IndexOf(score)].Id,
-            (item, score) => new { item.Title, Score = score })
-            .Where(x => x.Score > 0)
-            .OrderByDescending(x => x.Score)
-            .ToList();
-        Assert.AreEqual(3, matches.Count, "There should be three matching items");
-        Assert.AreEqual("Command Prompt", matches[0].Title, "Command Prompt should be the top match");
-        Assert.AreEqual("Visual Studio Code", matches[1].Title, "Visual Studio Code should be the second match");
-        Assert.AreEqual("Run commands", matches[2].Title, "Run commands should be the third match");
+        var unweightedMatches = GetMatches(items, unweightedScores).ToList();
+        Assert.AreEqual(3, unweightedMatches.Count, "There should be three matching items");
+        Assert.AreEqual("Command Prompt", unweightedMatches[0].Title, "Command Prompt should be the top match");
+        Assert.AreEqual("Visual Studio Code", unweightedMatches[1].Title, "Visual Studio Code should be the second match");
+        Assert.AreEqual("Run commands", unweightedMatches[2].Title, "Run commands should be the third match");
+
+        // After weighting for usage, Visual Studio Code should be the top match
+        // because it's been used more recently than Command Prompt (code is in
+        // bucket 0, cmd is in bucket 1)
+        var weightedMatches = GetMatches(items, weightedScores).ToList();
+        Assert.AreEqual(3, weightedMatches.Count, "There should be three matching items");
+        Assert.AreEqual("Visual Studio Code", weightedMatches[0].Title, "Visual Studio should be the top match");
+        Assert.AreEqual("Command Prompt", weightedMatches[1].Title, "Command Prompt should be the second match");
+        Assert.AreEqual("Run commands", weightedMatches[2].Title, "Run commands should be the third match");
     }
 }
