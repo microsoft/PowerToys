@@ -8,6 +8,9 @@
 #include <string>
 #include <LightSwitchSettings.h>
 #include <common/utils/gpo.h>
+#include <logger/logger_settings.h>
+#include <logger/logger.h>
+#include <utils/logger_helper.h>
 
 SERVICE_STATUS g_ServiceStatus = {};
 SERVICE_STATUS_HANDLE g_StatusHandle = nullptr;
@@ -34,6 +37,8 @@ int _tmain(int argc, TCHAR* argv[])
     // Try to connect to SCM
     wchar_t serviceName[] = L"LightSwitchService";
     SERVICE_TABLE_ENTRYW table[] = { { serviceName, ServiceMain }, { nullptr, nullptr } };
+
+    LoggerHelpers::init_logger(L"LightSwitch", L"Service", LogSettings::lightSwitchLoggerName);
 
     if (!StartServiceCtrlDispatcherW(table))
     {
@@ -106,6 +111,7 @@ VOID WINAPI ServiceCtrlHandler(DWORD dwCtrl)
         SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
 
         // Signal the service to stop
+        Logger::info(L"[LightSwitchService] Stop requested, signaling worker thread to exit.");
         SetEvent(g_ServiceStopEvent);
         break;
 
@@ -126,13 +132,21 @@ static void update_sun_times(auto& settings)
 
     int newLightTime = newTimes.sunriseHour * 60 + newTimes.sunriseMinute;
     int newDarkTime = newTimes.sunsetHour * 60 + newTimes.sunsetMinute;
+    try
+    {
+        auto values = PowerToysSettings::PowerToyValues::load_from_settings_file(L"LightSwitch");
+        values.add_property(L"lightTime", newLightTime);
+        values.add_property(L"darkTime", newDarkTime);
+        values.save_to_settings_file();
 
-    auto values = PowerToysSettings::PowerToyValues::load_from_settings_file(L"LightSwitch");
-    values.add_property(L"lightTime", newLightTime);
-    values.add_property(L"darkTime", newDarkTime);
-    values.save_to_settings_file();
-
-    OutputDebugString(L"[LightSwitchService] Updated sun times and saved to config.\n");
+        Logger::info(L"[LightSwitchService] Updated sun times and saved to config.");
+    }
+    catch (const std::exception& e)
+    {
+        std::wstring wmsg(e.what(), e.what() + strlen(e.what()));
+        Logger::error(L"[LightSwitchService] Exception during sun time update: {}", wmsg);
+    }
+    
 }
 
 DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
@@ -142,7 +156,8 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
     if (parentPid)
         hParent = OpenProcess(SYNCHRONIZE, FALSE, parentPid);
 
-    OutputDebugString(L"[LightSwitchService] Worker thread starting...\n");
+    Logger::info(L"[LightSwitchService] Worker thread starting...");
+    Logger::info(L"[LightSwitchService] Parent PID: {}", parentPid);
 
     // Initialize settings system
     LightSwitchSettings::instance().InitFileWatcher();
@@ -214,19 +229,19 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             update_sun_times(settings);
             g_lastUpdatedDay = st.wDay;
 
-            OutputDebugString(L"[LightSwitchService] Recalculated sun times at new day boundary.\n");
+            Logger::info(L"[LightSwitchService] Recalculated sun times at new day boundary.");
         }
 
         wchar_t msg[160];
         swprintf_s(msg,
-                   L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d\n",
+                   L"[LightSwitchService] now=%02d:%02d | light=%02d:%02d | dark=%02d:%02d",
                    st.wHour,
                    st.wMinute,
                    settings.lightTime / 60,
                    settings.lightTime % 60,
                    settings.darkTime / 60,
                    settings.darkTime % 60);
-        OutputDebugString(msg);
+        Logger::info(msg);
 
         // --- Manual override check ---
         bool manualOverrideActive = false;
@@ -242,11 +257,11 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
                 nowMinutes == (settings.darkTime + settings.sunset_offset) % 1440)
             {
                 ResetEvent(hManualOverride);
-                OutputDebugString(L"[LightSwitchService] Manual override cleared at boundary\n");
+                Logger::info(L"[LightSwitchService] Manual override cleared at boundary\n");
             }
             else
             {
-                OutputDebugString(L"[LightSwitchService] Skipping schedule due to manual override\n");
+                Logger::info(L"[LightSwitchService] Skipping schedule due to manual override\n");
                 goto sleep_until_next_minute;
             }
         }
@@ -261,10 +276,17 @@ DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
             msToNextMinute = 50;
 
         DWORD wait = WaitForMultipleObjects(count, waits, FALSE, msToNextMinute);
-        if (wait == WAIT_OBJECT_0) // stop event
+        if (wait == WAIT_OBJECT_0)
+        {
+            Logger::info(L"[LightSwitchService] Stop event triggered — exiting worker loop.");
             break;
-        if (hParent && wait == WAIT_OBJECT_0 + 1) // parent exited
+        }
+        if (hParent && wait == WAIT_OBJECT_0 + 1) // parent process exited
+        {
+            Logger::info(L"[LightSwitchService] Parent process exited — stopping service.");
             break;
+        }
+
     }
 
     if (hManualOverride)
@@ -282,8 +304,8 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
         wchar_t msg[160];
         swprintf_s(
             msg,
-            L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.\n");
-        OutputDebugString(msg);
+            L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        Logger::info(msg);
         return 0;
     }
 
