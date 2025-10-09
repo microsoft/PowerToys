@@ -460,7 +460,7 @@ public:
             }
             else if (hotkeyId == 0)
             {
-                // get current will return true if in light mode, otherwise false
+                // get current will return true if in light mode; otherwise false
                 Logger::info(L"[Light Switch] Hotkey triggered: Toggle Theme");
                 if (g_settings.m_changeSystem)
                 {
