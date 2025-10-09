@@ -271,6 +271,23 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  # Build PowerToys.DSC.exe for ARM64 (x64 uses existing binary from previous build)
+  - task: VSBuild@1
+    displayName: Build PowerToys.DSC.exe (x64 for generating manifests)
+    condition: ne(variables['BuildPlatform'], 'x64')
+    inputs:
+      solution: src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj
+      msbuildArgs: /t:Build /m /restore
+      platform: x64
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+
+  # Generate DSC manifests using PowerToys.DSC.exe
+  - pwsh: |-
+      & '.pipelines/generateDscManifests.ps1' -BuildPlatform '$(BuildPlatform)' -BuildConfiguration '$(BuildConfiguration)' -RepoRoot '$(Build.SourcesDirectory)'
+    displayName: Generate DSC manifests
+
   - task: CopyFiles@2
     displayName: Stage SDK/build
     inputs:

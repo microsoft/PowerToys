@@ -6,11 +6,14 @@
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     x:Name="LayoutRoot"
     d:DesignHeight="300"
     d:DesignWidth="400"
     mc:Ignorable="d">
-
+    <UserControl.Resources>
+        <converters:BoolToKeyVisualStateConverter x:Key="BoolToKeyVisualStateConverter" />
+    </UserControl.Resources>
     <Grid HorizontalAlignment="Right">
         <Button
             x:Name="EditButton"
@@ -40,8 +43,8 @@
                                 Content="{Binding}"
                                 CornerRadius="{StaticResource ControlCornerRadius}"
                                 FontWeight="SemiBold"
-                                IsInvalid="{Binding ElementName=LayoutRoot, Path=HasConflict}"
                                 IsTabStop="False"
+                                State="{Binding ElementName=LayoutRoot, Path=KeyVisualShouldShowConflict, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Warning}"
                                 Style="{StaticResource AccentKeyVisualStyle}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -49,6 +52,7 @@
                 <StackPanel
                     x:Name="PlaceholderPanel"
                     Padding="8,4"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="{StaticResource ControlCornerRadius}"
                     Orientation="Horizontal"
@@ -62,13 +66,15 @@
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
-                <FontIcon
+                <controls:IsEnabledTextBlock
                     Margin="0,0,4,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
                     AutomationProperties.Name=""
                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                     FontSize="14"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Glyph="&#xE70F;" />
+                    Text="&#xE70F;" />
             </StackPanel>
         </Button>
         <VisualStateManager.VisualStateGroups>

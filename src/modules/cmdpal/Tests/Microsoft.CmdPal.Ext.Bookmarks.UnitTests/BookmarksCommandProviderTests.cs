@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CmdPal.Ext.Bookmarks;
+using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
@@ -16,8 +16,8 @@ public class BookmarksCommandProviderTests
     public void ProviderHasCorrectId()
     {
         // Setup
-        var mockDataSource = new MockBookmarkDataSource();
-        var provider = new BookmarksCommandProvider(mockDataSource);
+        var mockBookmarkManager = new MockBookmarkManager();
+        var provider = new BookmarksCommandProvider(mockBookmarkManager);
 
         // Assert
         Assert.AreEqual("Bookmarks", provider.Id);
@@ -27,8 +27,8 @@ public class BookmarksCommandProviderTests
     public void ProviderHasDisplayName()
     {
         // Setup
-        var mockDataSource = new MockBookmarkDataSource();
-        var provider = new BookmarksCommandProvider(mockDataSource);
+        var mockBookmarkManager = new MockBookmarkManager();
+        var provider = new BookmarksCommandProvider(mockBookmarkManager);
 
         // Assert
         Assert.IsNotNull(provider.DisplayName);
@@ -39,7 +39,8 @@ public class BookmarksCommandProviderTests
     public void ProviderHasIcon()
     {
         // Setup
-        var provider = new BookmarksCommandProvider();
+        var mockBookmarkManager = new MockBookmarkManager();
+        var provider = new BookmarksCommandProvider(mockBookmarkManager);
 
         // Assert
         Assert.IsNotNull(provider.Icon);
@@ -49,7 +50,8 @@ public class BookmarksCommandProviderTests
     public void TopLevelCommandsNotEmpty()
     {
         // Setup
-        var provider = new BookmarksCommandProvider();
+        var mockBookmarkManager = new MockBookmarkManager();
+        var provider = new BookmarksCommandProvider(mockBookmarkManager);
 
         // Act
         var commands = provider.TopLevelCommands();
@@ -60,47 +62,40 @@ public class BookmarksCommandProviderTests
     }
 
     [TestMethod]
-    public void ProviderWithMockData_LoadsBookmarksCorrectly()
+    [Timeout(5000)]
+    public async Task ProviderWithMockData_LoadsBookmarksCorrectly()
     {
         // Arrange
-        var jsonData = @"{
-            ""Data"": [
-                {
-                    ""Name"": ""Test Bookmark"",
-                    ""Bookmark"": ""https://test.com""
-                },
-                {
-                    ""Name"": ""Another Bookmark"",
-                    ""Bookmark"": ""https://another.com""
-                }
-            ]
-        }";
-
-        var dataSource = new MockBookmarkDataSource(jsonData);
-        var provider = new BookmarksCommandProvider(dataSource);
+        var mockBookmarkManager = new MockBookmarkManager(
+            new BookmarkData("Test Bookmark", "http://test.com"),
+            new BookmarkData("Another Bookmark", "http://another.com"));
+        var provider = new BookmarksCommandProvider(mockBookmarkManager);
 
         // Act
         var commands = provider.TopLevelCommands();
 
         // Assert
-        Assert.IsNotNull(commands);
-
-        var addCommand = commands.Where(c => c.Title.Contains("Add bookmark")).FirstOrDefault();
-        var testBookmark = commands.Where(c => c.Title.Contains("Test Bookmark")).FirstOrDefault();
+        Assert.IsNotNull(commands, "commands != null");
 
         // Should have three commands：Add + two custom bookmarks
         Assert.AreEqual(3, commands.Length);
 
-        Assert.IsNotNull(addCommand);
-        Assert.IsNotNull(testBookmark);
+        // Wait until all BookmarkListItem commands are initialized
+        await Task.WhenAll(commands.OfType<Pages.BookmarkListItem>().Select(t => t.IsInitialized));
+
+        var addCommand = commands.FirstOrDefault(c => c.Title.Contains("Add bookmark"));
+        var testBookmark = commands.FirstOrDefault(c => c.Title.Contains("Test Bookmark"));
+
+        Assert.IsNotNull(addCommand, "addCommand != null");
+        Assert.IsNotNull(testBookmark, "testBookmark != null");
     }
 
     [TestMethod]
     public void ProviderWithEmptyData_HasOnlyAddCommand()
     {
         // Arrange
-        var dataSource = new MockBookmarkDataSource(@"{ ""Data"": [] }");
-        var provider = new BookmarksCommandProvider(dataSource);
+        var mockBookmarkManager = new MockBookmarkManager();
+        var provider = new BookmarksCommandProvider(mockBookmarkManager);
 
         // Act
         var commands = provider.TopLevelCommands();
@@ -111,7 +106,7 @@ public class BookmarksCommandProviderTests
         // Only have Add command
         Assert.AreEqual(1, commands.Length);
 
-        var addCommand = commands.Where(c => c.Title.Contains("Add bookmark")).FirstOrDefault();
+        var addCommand = commands.FirstOrDefault(c => c.Title.Contains("Add bookmark"));
         Assert.IsNotNull(addCommand);
     }
 
@@ -120,7 +115,7 @@ public class BookmarksCommandProviderTests
     {
         // Arrange
         var dataSource = new MockBookmarkDataSource("invalid json");
-        var provider = new BookmarksCommandProvider(dataSource);
+        var provider = new BookmarksCommandProvider(new MockBookmarkManager());
 
         // Act
         var commands = provider.TopLevelCommands();
@@ -131,7 +126,7 @@ public class BookmarksCommandProviderTests
         // Only have one command. Will ignore json parse error.
         Assert.AreEqual(1, commands.Length);
 
-        var addCommand = commands.Where(c => c.Title.Contains("Add bookmark")).FirstOrDefault();
+        var addCommand = commands.FirstOrDefault(c => c.Title.Contains("Add bookmark"));
         Assert.IsNotNull(addCommand);
     }
 }
