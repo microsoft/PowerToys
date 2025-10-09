@@ -1964,6 +1964,7 @@ WMI
 WMICIM
 wmimgmt
 wmp
+wmsg
 WMSYSCOMMAND
 wnd
 WNDCLASS
