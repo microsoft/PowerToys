@@ -1055,8 +1055,8 @@ namespace MouseWithoutBorders.Class
 
                     if (machineId == 0)
                     {
-                        var newMachineId = Common.Ran.Next();
-                        _properties.MachineID.Value = newMachineId;
+                        _properties.MachineID.Value = Common.Ran.Next();
+                        machineId = _properties.MachineID.Value;
                     }
                 }
 
