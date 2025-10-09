@@ -405,6 +405,39 @@
   <data name="RandomizerCheatSheet_Uuid" xml:space="preserve">
     <value>Random UUID according to v4 specification.</value>
   </data>
+  <data name="ExifCheatSheet_Title.Text" xml:space="preserve">
+    <value>Replace using EXIF metadata</value>
+  </data>
+  <data name="ExifCheatSheet_CameraMake" xml:space="preserve">
+    <value>Camera manufacturer from EXIF data</value>
+  </data>
+  <data name="ExifCheatSheet_CameraModel" xml:space="preserve">
+    <value>Camera model from EXIF data</value>
+  </data>
+  <data name="ExifCheatSheet_LensModel" xml:space="preserve">
+    <value>Lens model from EXIF data</value>
+  </data>
+  <data name="ExifCheatSheet_FNumber" xml:space="preserve">
+    <value>F-number (aperture) from EXIF data</value>
+  </data>
+  <data name="ExifCheatSheet_ISO" xml:space="preserve">
+    <value>ISO sensitivity from EXIF data</value>
+  </data>
+  <data name="ExifCheatSheet_ExposureTime" xml:space="preserve">
+    <value>Exposure time (shutter speed) from EXIF data</value>
+  </data>
+  <data name="ExifCheatSheet_FocalLength" xml:space="preserve">
+    <value>Focal length from EXIF data</value>
+  </data>
+  <data name="ExifCheatSheet_ExifDateTaken" xml:space="preserve">
+    <value>Date photo was taken from EXIF data</value>
+  </data>
+  <data name="ExifCheatSheet_ImageWidth" xml:space="preserve">
+    <value>Image width in pixels from EXIF data</value>
+  </data>
+  <data name="ExifCheatSheet_ImageHeight" xml:space="preserve">
+    <value>Image height in pixels from EXIF data</value>
+  </data>
   <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Random string features</value>
   </data>
