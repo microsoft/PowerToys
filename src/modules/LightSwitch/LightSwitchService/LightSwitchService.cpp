@@ -143,7 +143,8 @@ static void update_sun_times(auto& settings)
     }
     catch (const std::exception& e)
     {
-        Logger::error(L"[LightSwitchService] Exception during sun time update: {}", utf8_to_wstring(e.what()));
+        std::wstring wmsg(e.what(), e.what() + strlen(e.what()));
+        Logger::error(L"[LightSwitchService] Exception during sun time update: {}", wmsg);
     }
     
 }

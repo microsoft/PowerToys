@@ -53,7 +53,6 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <!-- ✅ include common, logger, utils, spdlog -->
       <AdditionalIncludeDirectories>
         ./../;
         ..\..\..\common;
