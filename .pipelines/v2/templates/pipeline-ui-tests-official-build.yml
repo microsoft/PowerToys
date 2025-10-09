@@ -27,6 +27,7 @@ stages:
               name: SHINE-INT-L
             ${{ else }}:
               name: SHINE-OSS-L
+            image: SHINE-VS17-Latest-2025
           buildPlatforms:
             - ${{ parameters.platform }}
           uiTestModules: ${{ parameters.uiTestModules }}
