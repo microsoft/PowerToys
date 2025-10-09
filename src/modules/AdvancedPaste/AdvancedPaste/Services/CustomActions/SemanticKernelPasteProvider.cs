@@ -6,6 +6,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Models;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -14,21 +15,26 @@ namespace AdvancedPaste.Services.CustomActions
     public sealed class SemanticKernelPasteProvider : IPasteAIProvider
     {
         private readonly PasteAIConfig _config;
-        private readonly string _providerType;
+        private readonly AIServiceType _serviceType;
+        private readonly string _providerKey;
 
         public SemanticKernelPasteProvider(PasteAIConfig config)
         {
             ArgumentNullException.ThrowIfNull(config);
             _config = config;
-            _providerType = NormalizeProviderType(config.ProviderType);
-            _config.ProviderType = _providerType;
+            _serviceType = config.ProviderType;
+            if (_serviceType == AIServiceType.Unknown)
+            {
+                _serviceType = AIServiceType.OpenAI;
+                _config.ProviderType = _serviceType;
+            }
+
+            _providerKey = _serviceType.ToNormalizedKey();
         }
 
-        public string ProviderName => _providerType;
+        public string ProviderName => _providerKey;
 
-        public string DisplayName => string.IsNullOrEmpty(_config?.Model) ? _providerType : _config.Model;
-
-        public bool IsLocal => _config?.IsLocal ?? false;
+        public string DisplayName => string.IsNullOrEmpty(_config?.Model) ? _providerKey : _config.Model;
 
         public Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 
@@ -76,13 +82,13 @@ namespace AdvancedPaste.Services.CustomActions
         {
             var kernelBuilder = Kernel.CreateBuilder();
 
-            switch (_providerType)
+            switch (_serviceType)
             {
-                case "openai":
+                case AIServiceType.OpenAI:
                     kernelBuilder.AddOpenAIChatCompletion(_config.Model, _config.ApiKey, serviceId: _config.Model);
                     break;
 
-                case "azureopenai":
+                case AIServiceType.AzureOpenAI:
                     var deploymentName = string.IsNullOrWhiteSpace(_config.DeploymentName) ? _config.Model : _config.DeploymentName;
                     kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, _config.Endpoint, _config.ApiKey, serviceId: _config.Model);
                     break;
@@ -92,22 +98,6 @@ namespace AdvancedPaste.Services.CustomActions
             }
 
             return kernelBuilder.Build();
-        }
-
-        private static string NormalizeProviderType(string providerType)
-        {
-            if (string.IsNullOrWhiteSpace(providerType))
-            {
-                return "openai";
-            }
-
-            var normalized = providerType.Trim().ToLowerInvariant();
-
-            return normalized switch
-            {
-                "azure" => "azureopenai",
-                _ => normalized,
-            };
         }
     }
 }

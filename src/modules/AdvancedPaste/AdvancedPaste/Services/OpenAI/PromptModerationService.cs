@@ -14,17 +14,18 @@ using OpenAI.Moderations;
 
 namespace AdvancedPaste.Services.OpenAI;
 
-public sealed class PromptModerationService(IAdvancedAICredentialsProvider aiCredentialsProvider) : IPromptModerationService
+public sealed class PromptModerationService(IAICredentialsProvider aiCredentialsProvider) : IPromptModerationService
 {
     private const string ModelName = "omni-moderation-latest";
 
-    private readonly IAdvancedAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
+    private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
 
     public async Task ValidateAsync(string fullPrompt, CancellationToken cancellationToken)
     {
         try
         {
-            ModerationClient moderationClient = new(ModelName, _aiCredentialsProvider.Key);
+            var apiKey = _aiCredentialsProvider.GetKey(AICredentialScope.AdvancedAI);
+            ModerationClient moderationClient = new(ModelName, apiKey);
             var moderationClientResult = await moderationClient.ClassifyTextAsync(fullPrompt, cancellationToken);
             var moderationResult = moderationClientResult.Value;
 

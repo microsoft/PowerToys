@@ -29,19 +29,19 @@ namespace AdvancedPaste.Services.CustomActions
 
         private readonly IPromptModerationService _promptModerationService;
         private readonly IPasteAIProviderFactory _providerFactory;
-        private readonly IPasteAICredentialsProvider _aiCredentialsProvider;
+        private readonly IAICredentialsProvider _credentialsProvider;
         private readonly IUserSettings _userSettings;
 
-        public CustomActionTransformService(IPromptModerationService promptModerationService, IPasteAIProviderFactory providerFactory, IPasteAICredentialsProvider aiCredentialsProvider, IUserSettings userSettings)
+        public CustomActionTransformService(IPromptModerationService promptModerationService, IPasteAIProviderFactory providerFactory, IAICredentialsProvider credentialsProvider, IUserSettings userSettings)
         {
             ArgumentNullException.ThrowIfNull(promptModerationService);
             ArgumentNullException.ThrowIfNull(providerFactory);
-            ArgumentNullException.ThrowIfNull(aiCredentialsProvider);
+            ArgumentNullException.ThrowIfNull(credentialsProvider);
             ArgumentNullException.ThrowIfNull(userSettings);
 
             _promptModerationService = promptModerationService;
             _providerFactory = providerFactory;
-            _aiCredentialsProvider = aiCredentialsProvider;
+            _credentialsProvider = credentialsProvider;
             _userSettings = userSettings;
         }
 
@@ -166,30 +166,36 @@ namespace AdvancedPaste.Services.CustomActions
         private CustomActionTransformContext CreateTransformContext(string prompt, string inputText)
         {
             var pasteConfig = _userSettings?.PasteAIConfiguration ?? new PasteAIConfiguration();
-            var providerType = NormalizeProviderType(pasteConfig.ServiceType);
+            var serviceType = pasteConfig.ServiceTypeKind;
+            if (serviceType == AIServiceType.Unknown)
+            {
+                serviceType = AIServiceType.OpenAI;
+            }
+
             var executionSettings = CreateExecutionSettings(pasteConfig);
-            var usageExtractor = GetUsageExtractor(providerType);
+            var usageExtractor = GetUsageExtractor(serviceType);
             var systemPrompt = ExtractSystemPrompt(pasteConfig);
-            var requiresApiKey = RequiresApiKey(providerType);
+            var requiresApiKey = RequiresApiKey(serviceType);
+            var apiKey = string.Empty;
 
             if (requiresApiKey)
             {
-                _aiCredentialsProvider.Refresh();
+                _credentialsProvider.Refresh(AICredentialScope.PasteAI);
+                apiKey = _credentialsProvider.GetKey(AICredentialScope.PasteAI);
             }
 
-            var modelName = ResolveModelName(pasteConfig, providerType);
-            var modelId = ResolveModelIdentifier(pasteConfig, providerType, modelName);
-            var isLocal = IsLocalProvider(providerType);
+            var modelName = ResolveModelName(pasteConfig, serviceType);
+            var modelId = ResolveModelIdentifier(pasteConfig, serviceType, modelName);
+            var isLocal = IsLocalProvider(serviceType);
             var providerConfig = new PasteAIConfig
             {
-                ProviderType = providerType,
-                ApiKey = requiresApiKey ? _aiCredentialsProvider.Key : string.Empty,
+                ProviderType = serviceType,
+                ApiKey = apiKey,
                 Model = modelName,
                 Endpoint = pasteConfig.EndpointUrl,
                 DeploymentName = pasteConfig.DeploymentName,
                 LocalModelPath = isLocal ? pasteConfig.ModelPath : null,
                 ModelPath = isLocal ? null : pasteConfig.ModelPath,
-                IsLocal = isLocal,
                 ExecutionSettings = executionSettings,
                 UsageExtractor = usageExtractor,
                 SystemPrompt = systemPrompt,
@@ -207,30 +213,9 @@ namespace AdvancedPaste.Services.CustomActions
             };
         }
 
-        private static string NormalizeProviderType(string serviceType)
+        private static bool RequiresApiKey(AIServiceType serviceType)
         {
-            if (string.IsNullOrWhiteSpace(serviceType))
-            {
-                return "openai";
-            }
-
-            var normalized = serviceType.Trim().ToLowerInvariant();
-
-            return normalized switch
-            {
-                "azure" => "azureopenai",
-                _ => normalized,
-            };
-        }
-
-        private static bool RequiresApiKey(string providerType)
-        {
-            return providerType is not ("local" or "onnx");
-        }
-
-        private static bool IsLocalProvider(string providerType)
-        {
-            return providerType is "local" or "onnx";
+            return serviceType is not AIServiceType.Onnx;
         }
 
         private static OpenAIPromptExecutionSettings CreateExecutionSettings(PasteAIConfiguration config)
@@ -243,14 +228,14 @@ namespace AdvancedPaste.Services.CustomActions
             };
         }
 
-        private static string ResolveModelName(PasteAIConfiguration config, string providerType)
+        private static string ResolveModelName(PasteAIConfiguration config, AIServiceType serviceType)
         {
             if (!string.IsNullOrWhiteSpace(config.ModelName))
             {
                 return config.ModelName;
             }
 
-            if (providerType == "azureopenai" && !string.IsNullOrWhiteSpace(config.DeploymentName))
+            if (serviceType == AIServiceType.AzureOpenAI && !string.IsNullOrWhiteSpace(config.DeploymentName))
             {
                 return config.DeploymentName;
             }
@@ -258,9 +243,9 @@ namespace AdvancedPaste.Services.CustomActions
             return "gpt-3.5-turbo";
         }
 
-        private static string ResolveModelIdentifier(PasteAIConfiguration config, string providerType, string resolvedModelName)
+        private static string ResolveModelIdentifier(PasteAIConfiguration config, AIServiceType serviceType, string resolvedModelName)
         {
-            if (providerType == "azureopenai")
+            if (serviceType == AIServiceType.AzureOpenAI)
             {
                 return string.IsNullOrWhiteSpace(config.DeploymentName) ? resolvedModelName : config.DeploymentName;
             }
@@ -268,11 +253,11 @@ namespace AdvancedPaste.Services.CustomActions
             return resolvedModelName;
         }
 
-        private static Func<ChatMessageContent, AIServiceUsage> GetUsageExtractor(string providerType)
+        private static Func<ChatMessageContent, AIServiceUsage> GetUsageExtractor(AIServiceType serviceType)
         {
-            return providerType switch
+            return serviceType switch
             {
-                "openai" or "azureopenai" => AIServiceUsageHelper.GetOpenAIServiceUsage,
+                AIServiceType.OpenAI or AIServiceType.AzureOpenAI => AIServiceUsageHelper.GetOpenAIServiceUsage,
                 _ => null,
             };
         }
@@ -285,6 +270,11 @@ namespace AdvancedPaste.Services.CustomActions
             }
 
             return string.IsNullOrWhiteSpace(config.SystemPrompt) ? null : config.SystemPrompt;
+        }
+
+        private static bool IsLocalProvider(AIServiceType serviceType)
+        {
+            return serviceType == AIServiceType.Onnx;
         }
     }
 }

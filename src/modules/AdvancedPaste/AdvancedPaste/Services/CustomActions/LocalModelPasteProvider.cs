@@ -23,8 +23,6 @@ namespace AdvancedPaste.Services.CustomActions
 
         public string DisplayName => "Local Model";
 
-        public bool IsLocal => true;
-
         public Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 
         public Task<PasteAIProviderResult> ProcessPasteAsync(PasteAIRequest request, CancellationToken cancellationToken, IProgress<double> progress)

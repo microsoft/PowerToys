@@ -4,6 +4,7 @@
 
 using System;
 using AdvancedPaste.Models;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -11,7 +12,7 @@ namespace AdvancedPaste.Services.CustomActions
 {
     public class PasteAIConfig
     {
-        public string ProviderType { get; set; }
+        public AIServiceType ProviderType { get; set; }
 
         public string Model { get; set; }
 
@@ -24,8 +25,6 @@ namespace AdvancedPaste.Services.CustomActions
         public string LocalModelPath { get; set; }
 
         public string ModelPath { get; set; }
-
-        public bool IsLocal { get; set; }
 
         public PromptExecutionSettings ExecutionSettings { get; set; }
 

@@ -14,8 +14,6 @@ namespace AdvancedPaste.Services.CustomActions
 
         string DisplayName { get; }
 
-        bool IsLocal { get; }
-
         Task<bool> IsAvailableAsync(CancellationToken cancellationToken);
 
         Task<PasteAIProviderResult> ProcessPasteAsync(PasteAIRequest request, CancellationToken cancellationToken, IProgress<double> progress);

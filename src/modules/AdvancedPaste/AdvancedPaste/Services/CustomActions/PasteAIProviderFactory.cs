@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace AdvancedPaste.Services.CustomActions
 {
@@ -12,44 +14,33 @@ namespace AdvancedPaste.Services.CustomActions
         {
             ArgumentNullException.ThrowIfNull(config);
 
-            var providerType = NormalizeProviderType(config.ProviderType);
-            config.ProviderType = providerType;
+            var serviceType = config.ProviderType;
+            if (serviceType == AIServiceType.Unknown)
+            {
+                serviceType = AIServiceType.OpenAI;
+                config.ProviderType = serviceType;
+            }
 
-            if (IsSupportedBySemanticKernel(providerType))
+            if (IsSupportedBySemanticKernel(serviceType))
             {
                 return new SemanticKernelPasteProvider(config);
             }
 
-            return providerType switch
+            return serviceType switch
             {
-                "local" or "onnx" => new LocalModelPasteProvider(config.LocalModelPath ?? config.ModelPath),
+                AIServiceType.ML => new LocalModelPasteProvider(config.LocalModelPath ?? config.ModelPath),
                 _ => throw new NotSupportedException($"Provider {config.ProviderType} not supported"),
             };
         }
 
-        private static bool IsSupportedBySemanticKernel(string providerType)
-        {
-            return providerType switch
-            {
-                "openai" or "azureopenai" => true,
-                _ => false,
-            };
-        }
+        private static readonly HashSet<AIServiceType> SupportedProviders =
+        [
+            AIServiceType.OpenAI,
+            AIServiceType.AzureOpenAI,
+            AIServiceType.Onnx,
+        ];
 
-        private static string NormalizeProviderType(string providerType)
-        {
-            if (string.IsNullOrWhiteSpace(providerType))
-            {
-                return "openai";
-            }
-
-            var normalized = providerType.Trim().ToLowerInvariant();
-
-            return normalized switch
-            {
-                "azure" => "azureopenai",
-                _ => normalized,
-            };
-        }
+        private static bool IsSupportedBySemanticKernel(AIServiceType providerType)
+            => SupportedProviders.Contains(providerType);
     }
 }

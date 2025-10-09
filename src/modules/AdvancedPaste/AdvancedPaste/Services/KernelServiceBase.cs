@@ -180,6 +180,8 @@ public abstract class KernelServiceBase(
         return ([], AIServiceUsage.None);
     }
 
+    protected IUserSettings UserSettings => _userSettings;
+
     private void LogResult(bool cacheUsed, bool isSavedQuery, IEnumerable<ActionChainItem> actionChain, AIServiceUsage usage)
     {
         AdvancedPasteSemanticKernelFormatEvent telemetryEvent = new(cacheUsed, isSavedQuery, usage.PromptTokens, usage.CompletionTokens, AdvancedAIModelName, AdvancedPasteSemanticKernelFormatEvent.FormatActionChain(actionChain));

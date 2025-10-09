@@ -4,7 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using AdvancedPaste.Settings;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.Security.Credentials;
 
 namespace AdvancedPaste.Services;
@@ -15,185 +16,147 @@ namespace AdvancedPaste.Services;
 /// </summary>
 public sealed class EnhancedVaultCredentialsProvider : IAICredentialsProvider
 {
-    private readonly string _serviceType;
-    private readonly (string Resource, string Username)[] _credentialEntries;
-    private readonly (string Resource, string Username) _primaryEntry;
-
-    public EnhancedVaultCredentialsProvider(string serviceType, string credentialScope)
+    private sealed class CredentialSlot
     {
-        _serviceType = string.IsNullOrWhiteSpace(serviceType) ? "OpenAI" : serviceType;
-        ArgumentException.ThrowIfNullOrWhiteSpace(credentialScope);
+        public AIServiceType ServiceType { get; set; } = AIServiceType.Unknown;
 
-        _credentialEntries = BuildCredentialEntries(_serviceType, credentialScope).ToArray();
-        _primaryEntry = _credentialEntries.FirstOrDefault();
+        public (string Resource, string Username)? Entry { get; set; }
 
-        Key = LoadKey();
+        public string Key { get; set; } = string.Empty;
     }
 
-    public string Key { get; private set; }
+    private readonly IUserSettings _userSettings;
+    private readonly Dictionary<AICredentialScope, CredentialSlot> _slots;
+    private readonly object _syncRoot = new();
 
-    public bool IsConfigured => !string.IsNullOrEmpty(Key);
-
-    public bool Refresh()
+    public EnhancedVaultCredentialsProvider(IUserSettings userSettings)
     {
-        var oldKey = Key;
-        Key = LoadKey();
-        return oldKey != Key;
+        _userSettings = userSettings ?? throw new ArgumentNullException(nameof(userSettings));
+
+        _slots = new Dictionary<AICredentialScope, CredentialSlot>
+        {
+            [AICredentialScope.PasteAI] = new CredentialSlot(),
+            [AICredentialScope.AdvancedAI] = new CredentialSlot(),
+        };
+
+        Refresh(AICredentialScope.PasteAI);
+        Refresh(AICredentialScope.AdvancedAI);
     }
 
-    private string LoadKey()
+    public string GetKey(AICredentialScope scope)
     {
-        if (_credentialEntries.Length == 0)
+        lock (_syncRoot)
+        {
+            UpdateSlot(scope, forceRefresh: false);
+            return _slots[scope].Key;
+        }
+    }
+
+    public bool IsConfigured(AICredentialScope scope)
+    {
+        return !string.IsNullOrEmpty(GetKey(scope));
+    }
+
+    public bool Refresh(AICredentialScope scope)
+    {
+        lock (_syncRoot)
+        {
+            return UpdateSlot(scope, forceRefresh: true);
+        }
+    }
+
+    private bool UpdateSlot(AICredentialScope scope, bool forceRefresh)
+    {
+        var slot = _slots[scope];
+        var desiredServiceType = NormalizeServiceType(ResolveServiceType(scope));
+
+        var hasChanged = false;
+
+        if (slot.ServiceType != desiredServiceType)
+        {
+            slot.ServiceType = desiredServiceType;
+            slot.Entry = BuildCredentialEntry(desiredServiceType, scope);
+            forceRefresh = true;
+            hasChanged = true;
+        }
+
+        if (!forceRefresh)
+        {
+            return hasChanged;
+        }
+
+        var newKey = LoadKey(slot.Entry);
+        if (!string.Equals(slot.Key, newKey, StringComparison.Ordinal))
+        {
+            slot.Key = newKey;
+            hasChanged = true;
+        }
+
+        return hasChanged;
+    }
+
+    private AIServiceType ResolveServiceType(AICredentialScope scope)
+    {
+        return scope switch
+        {
+            AICredentialScope.AdvancedAI => _userSettings.AdvancedAIConfiguration?.ServiceTypeKind ?? AIServiceType.OpenAI,
+            AICredentialScope.PasteAI => _userSettings.PasteAIConfiguration?.ServiceTypeKind ?? AIServiceType.OpenAI,
+            _ => AIServiceType.OpenAI,
+        };
+    }
+
+    private static AIServiceType NormalizeServiceType(AIServiceType serviceType)
+    {
+        return serviceType == AIServiceType.Unknown ? AIServiceType.OpenAI : serviceType;
+    }
+
+    private static string LoadKey((string Resource, string Username)? entry)
+    {
+        if (entry is null)
         {
             return string.Empty;
         }
 
-        var vault = new PasswordVault();
-
-        foreach (var entry in _credentialEntries)
-        {
-            try
-            {
-                var credential = vault.Retrieve(entry.Resource, entry.Username);
-                if (!string.IsNullOrEmpty(credential?.Password))
-                {
-                    return credential.Password;
-                }
-            }
-            catch (Exception)
-            {
-                // Ignore and try next mapping
-            }
-        }
-
-        return string.Empty;
-    }
-
-    /// <summary>
-    /// Save credentials to the vault (for use by settings UI)
-    /// </summary>
-    public void SaveKey(string key)
-    {
         try
         {
-            var vault = new PasswordVault();
-
-            RemoveExistingCredentials(vault);
-
-            if (_primaryEntry != default && !string.IsNullOrWhiteSpace(key))
-            {
-                vault.Add(new PasswordCredential(_primaryEntry.Resource, _primaryEntry.Username, key));
-            }
-
-            Key = key ?? string.Empty;
+            var credential = new PasswordVault().Retrieve(entry.Value.Resource, entry.Value.Username);
+            return credential?.Password ?? string.Empty;
         }
         catch (Exception)
         {
-            // Handle gracefully - credential might not be saveable in some environments
+            return string.Empty;
         }
     }
 
-    private void RemoveExistingCredentials(PasswordVault vault)
+    private static (string Resource, string Username)? BuildCredentialEntry(AIServiceType serviceType, AICredentialScope scope)
     {
-        if (_credentialEntries.Length == 0)
+        return scope switch
         {
-            return;
-        }
-
-        foreach (var entry in _credentialEntries)
-        {
-            try
-            {
-                var existing = vault.Retrieve(entry.Resource, entry.Username);
-                if (existing != null)
-                {
-                    vault.Remove(existing);
-                }
-            }
-            catch
-            {
-                // Ignore if not found
-            }
-        }
-    }
-
-    private static IEnumerable<(string Resource, string Username)> BuildCredentialEntries(string serviceType, string credentialScope)
-    {
-        string normalizedScope = credentialScope.Trim().ToLowerInvariant();
-        string normalizedType = NormalizeServiceType(serviceType);
-
-        var entries = new List<(string Resource, string Username)>();
-
-        // Primary mappings align with settings UI save logic
-        if (normalizedScope == "advancedai")
-        {
-            entries.AddRange(GetAdvancedAiEntries(normalizedType));
-        }
-        else
-        {
-            entries.AddRange(GetPasteAiEntries(normalizedType));
-        }
-
-        // Backward compatibility with previous credential naming
-        entries.AddRange(GetFallbackEntries(normalizedType));
-
-        // Ensure distinct entries preserving order
-        return entries.Distinct();
-    }
-
-    private static IEnumerable<(string Resource, string Username)> GetAdvancedAiEntries(string normalizedType)
-    {
-        return normalizedType switch
-        {
-            "openai" => new[] { ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_AdvancedAI_OpenAI") },
-            "azureopenai" => new[] { ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_AdvancedAI_AzureOpenAI") },
-            _ => new[] { ($"https://ai-service/advanced/{normalizedType}", $"PowerToys_AdvancedPaste_AdvancedAI_{normalizedType.ToUpperInvariant()}") },
+            AICredentialScope.AdvancedAI => GetAdvancedAiEntry(serviceType),
+            AICredentialScope.PasteAI => GetPasteAiEntry(serviceType),
+            _ => null,
         };
     }
 
-    private static IEnumerable<(string Resource, string Username)> GetPasteAiEntries(string normalizedType)
+    private static (string Resource, string Username)? GetAdvancedAiEntry(AIServiceType serviceType)
     {
-        return normalizedType switch
+        var normalizedKey = serviceType.ToNormalizedKey();
+
+        return serviceType switch
         {
-            "openai" => new[] { ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_PasteAI_OpenAI") },
-            "azureopenai" => new[] { ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_PasteAI_AzureOpenAI") },
-            "onnx" => Array.Empty<(string, string)>(),
-            _ => new[] { ($"https://ai-service/paste/{normalizedType}", $"PowerToys_AdvancedPaste_PasteAI_{normalizedType.ToUpperInvariant()}") },
+            AIServiceType.OpenAI => ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_AdvancedAI_OpenAI"),
+            AIServiceType.AzureOpenAI => ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_AdvancedAI_AzureOpenAI"),
+            _ => null,
         };
     }
 
-    private static IEnumerable<(string Resource, string Username)> GetFallbackEntries(string normalizedType)
+    private static (string Resource, string Username)? GetPasteAiEntry(AIServiceType serviceType)
     {
-        return normalizedType switch
+        return serviceType switch
         {
-            "openai" => new[]
-            {
-                ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey"),
-                ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_openaiKey"),
-            },
-            "azureopenai" => new[]
-            {
-                ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_AzureOpenAIKey"),
-                ("https://portal.azure.com/openai", "PowerToys_AdvancedPaste_AzureOpenAIKey"),
-                ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_azureopenaiKey"),
-            },
-            _ => Array.Empty<(string, string)>(),
-        };
-    }
-
-    private static string NormalizeServiceType(string serviceType)
-    {
-        if (string.IsNullOrWhiteSpace(serviceType))
-        {
-            return "openai";
-        }
-
-        var normalized = serviceType.Trim().ToLowerInvariant();
-
-        return normalized switch
-        {
-            "azure" => "azureopenai",
-            _ => normalized,
+            AIServiceType.OpenAI => ("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_PasteAI_OpenAI"),
+            AIServiceType.AzureOpenAI => ("https://azure.microsoft.com/products/ai-services/openai-service", "PowerToys_AdvancedPaste_PasteAI_AzureOpenAI"),
+            _ => null,
         };
     }
 }
