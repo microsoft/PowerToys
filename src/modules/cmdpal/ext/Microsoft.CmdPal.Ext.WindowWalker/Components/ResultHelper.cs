@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
@@ -63,42 +64,40 @@ internal static class ResultHelper
             Title = searchResult.Result.Title,
             Subtitle = GetSubtitle(searchResult.Result),
             Tags = GetTags(searchResult.Result),
-            Icon = ConvertWindowIconToIconInfo(searchResult.Result.GetWindowIcon()),
+            Icon = GetIconForWindow(searchResult.Result),
         };
         item.MoreCommands = ContextMenuHelper.GetContextMenuResults(item).ToArray();
 
         return item;
     }
 
-    /// <summary>
-    /// Converts a System.Drawing.Icon to Microsoft.CommandPalette.Extensions.IIconInfo
-    /// </summary>
-    /// <param name="icon">The System.Drawing.Icon to convert</param>
-    /// <returns>An IIconInfo representation of the icon</returns>
-    private static IIconInfo? ConvertWindowIconToIconInfo(System.Drawing.Icon? icon)
+    private static IIconInfo? GetIconForWindow(Window window)
     {
-        if (icon == null)
-        {
-            return null;
-        }
-
-        // 아이콘에서 비트맵을 추출하고 이를 IIconInfo로 변환
         try
         {
-            using (var bitmap = icon.ToBitmap())
-            using (var memoryStream = new System.IO.MemoryStream())
+            var icon = window.GetWindowIcon();
+            if (icon != null)
             {
-                bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-                IRandomAccessStream randomAccessStream = memoryStream.AsRandomAccessStream();
+                using var bitmap = icon.ToBitmap();
+                using var memStream = new MemoryStream();
+                bitmap.Save(memStream, System.Drawing.Imaging.ImageFormat.Png);
 
-                return IconInfo.FromStream(randomAccessStream);
+                var raStream = new InMemoryRandomAccessStream();
+                using var outputStream = raStream.GetOutputStreamAt(0);
+                using var dataWriter = new DataWriter(outputStream);
+                dataWriter.WriteBytes(memStream.ToArray());
+                dataWriter.StoreAsync().AsTask().Wait();
+                dataWriter.FlushAsync().AsTask().Wait();
+
+                return IconInfo.FromStream(raStream);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // 변환 중 오류 발생 시 기본 아이콘 반환
-            return null;
+            Debug.WriteLine($"Failed to get icon: {ex.Message}");
         }
+
+        return null;
     }
 
     /// <summary>
