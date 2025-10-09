@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ImageResizerContextMenu.base.rc ImageResizerContextMenu.rc" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted ..\..\..\..\tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ImageResizerContextMenu.base.rc ImageResizerContextMenu.rc" />
   </Target>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>
@@ -33,7 +33,7 @@
   <PropertyGroup>
     <TargetName>PowerToys.ImageResizerContextMenu</TargetName>
     <!-- Needs a different int dir to avoid conflicts in msix creation. -->
-    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
+    <IntDir>..\..\..\..\$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
     <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
