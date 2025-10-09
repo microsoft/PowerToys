@@ -35,10 +35,10 @@ public partial class MainListPage : DynamicListPage,
 
     private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
-    private List<Scored<IListItem>>? _filteredItems;
+    private IEnumerable<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
     private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
-    private List<Scored<IListItem>>? _fallbackItems;
+    private IEnumerable<Scored<IListItem>>? _fallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
@@ -281,7 +281,6 @@ public partial class MainListPage : DynamicListPage,
             IEnumerable<IListItem> newFilteredItems = Enumerable.Empty<IListItem>();
             IEnumerable<IListItem> newFallbacks = Enumerable.Empty<IListItem>();
             IEnumerable<IListItem> newApps = Enumerable.Empty<IListItem>();
-            IEnumerable<IListItem> newFallbacksForScoring = Enumerable.Empty<IListItem>();
 
             if (_filteredItems is not null)
             {
@@ -313,26 +312,14 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            if (_scoredFallbackItems is not null)
-            {
-                newFallbacksForScoring = _scoredFallbackItems.Select(s => s.Item);
-            }
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
             // If we don't have any previous filter results to work with, start
             // with a list of all our commands & apps.
-            if (!newFilteredItems.Any() && !newApps.Any() && !newFallbacksForScoring.Any())
+            if (!newFilteredItems.Any() && !newApps.Any())
             {
                 // We're going to start over with our fallbacks
                 newFallbacks = Enumerable.Empty<IListItem>();
 
                 newFilteredItems = commands.Where(s => !s.IsFallback);
-
-                newFallbacksForScoring = commands.Where(s => s.IsFallback && _specialFallbacks.Contains(s.CommandProviderId));
 
                 // Fallbacks are always included in the list, even if they
                 // don't match the search text. But we don't want to
@@ -372,6 +359,13 @@ public partial class MainListPage : DynamicListPage,
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, ScoreTopLevelItem)];
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && _specialFallbacks.Contains(s.CommandProviderId));
 
             if (token.IsCancellationRequested)
             {
