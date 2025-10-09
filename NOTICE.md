@@ -1509,7 +1509,6 @@ SOFTWARE.
 - CommunityToolkit.WinUI.Converters
 - CommunityToolkit.WinUI.Extensions
 - CommunityToolkit.WinUI.UI.Controls.DataGrid
-- CommunityToolkit.WinUI.UI.Controls.Markdown
 - ControlzEx
 - HelixToolkit
 - HelixToolkit.Core.Wpf
@@ -1522,6 +1521,7 @@ SOFTWARE.
 - ModernWpfUI
 - Moq
 - MSTest
+- NJsonSchema
 - NLog
 - NLog.Extensions.Logging
 - NLog.Schema

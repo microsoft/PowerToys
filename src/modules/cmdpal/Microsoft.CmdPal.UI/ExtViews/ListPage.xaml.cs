@@ -6,6 +6,7 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Core.ViewModels.Commands;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -29,7 +30,7 @@ public sealed partial class ListPage : Page,
 {
     private InputSource _lastInputSource;
 
-    private ListViewModel? ViewModel
+    internal ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
         set => SetValue(ViewModelProperty, value);
@@ -58,10 +59,17 @@ public sealed partial class ListPage : Page,
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is ListViewModel lvm)
+        if (e.Parameter is not AsyncNavigationRequest navigationRequest)
         {
-            ViewModel = lvm;
+            throw new InvalidOperationException($"Invalid navigation parameter: {nameof(e.Parameter)} must be {nameof(AsyncNavigationRequest)}");
         }
+
+        if (navigationRequest.TargetViewModel is not ListViewModel listViewModel)
+        {
+            throw new InvalidOperationException($"Invalid navigation target: AsyncNavigationRequest.{nameof(AsyncNavigationRequest.TargetViewModel)} must be {nameof(ListViewModel)}");
+        }
+
+        ViewModel = listViewModel;
 
         if (e.NavigationMode == NavigationMode.Back
             || (e.NavigationMode == NavigationMode.New && ItemView.Items.Count > 0))
@@ -385,8 +393,6 @@ public sealed partial class ListPage : Page,
         {
             ItemView.SelectedItem = item;
         }
-
-        ViewModel?.UpdateSelectedItemCommand.Execute(item);
 
         if (!e.TryGetPosition(element, out var pos))
         {

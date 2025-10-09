@@ -147,7 +147,46 @@ Result:
 
 \*literally\*
 
+## Tables
+
+### Pipe table
+
+[Markdig - Pipe Table specs](https://github.com/xoofx/markdig/blob/master/src/Markdig.Tests/Specs/PipeTableSpecs.md)
+
+| Right | Left | Default | Center |
+|------:|:-----|---------|:------:|
+|   12  |  12  |    12   |    12  |
+|  123  |  123 |   123   |   123  |
+|    1  |    1 |     1   |     1  |
+
+### HTML table
+
+<table>
+<thead>
+<tr>
+<th style=""text-align: left;"">a</th>
+<th style=""text-align: center;"">b</th>
+<th style=""text-align: right;"">c</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style=""text-align: left;"">0</td>
+<td style=""text-align: center;"">1</td>
+<td style=""text-align: right;"">2</td>
+</tr>
+<tr>
+<td style=""text-align: left;"">3</td>
+<td style=""text-align: center;"">4</td>
+<td style=""text-align: right;"">5</td>
+</tr>
+</tbody>
+</table>
+
+
 ## Advanced Markdown
+
+[Markdig - emphasis extensions](https://github.com/xoofx/markdig/blob/master/src/Markdig.Tests/Specs/EmphasisExtraSpecs.md)
 
 Note: Some syntax which is not standard to native Markdown. They're extensions of the language.
 
