@@ -21,7 +21,7 @@ Welcome to the PowerToys developer documentation. This documentation provides in
 
 - [Coding Guidelines](development/guidelines.md) - Development guidelines and best practices
 - [Coding Style](development/style.md) - Code formatting and style conventions
-- [UI Testing](development/ui-tests.md) - How to write UI tests for PowerToys
+- [UI Testing](UITests.md) - How to write UI tests for PowerToys
 - [Debugging](development/debugging.md) - Techniques for debugging PowerToys
 
 ## Tools
