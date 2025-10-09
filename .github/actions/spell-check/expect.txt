@@ -916,7 +916,6 @@ luid
 LUMA
 lusrmgr
 LVal
-lvm
 LWA
 lwin
 LZero
