@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Threading.Channels;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
@@ -265,8 +266,8 @@ public partial class MainListPage : DynamicListPage,
 
             // start update of fallbacks; update special fallbacks separately,
             // so they can finish faster
-            UpdateFallbacks(SearchText, specialFallbacks, token);
-            UpdateFallbacks(SearchText, commonFallbacks, token);
+            _ = UpdateFallbacksAsync(SearchText, specialFallbacks, token);
+            _ = UpdateFallbacksAsync(SearchText, commonFallbacks, token);
 
             if (token.IsCancellationRequested)
             {
@@ -438,35 +439,179 @@ public partial class MainListPage : DynamicListPage,
         }
     }
 
-    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands, CancellationToken token)
+    private Task UpdateFallbacksAsync(string newSearch, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
     {
-        _ = Task.Run(
-            () =>
-        {
-            var needsToUpdate = false;
+        const int channelCapacity = 100;
+        const int itemTimeoutMs = 200;
+        const int initialWorkerCount = 2;
+        var updateInterval = TimeSpan.FromMilliseconds(150);
 
-            foreach (var command in commands)
+        return Task.Run(
+            async () =>
             {
-                if (token.IsCancellationRequested)
+                var sw = Stopwatch.StartNew();
+                var hasChangesFlag = 0;
+
+                // Timer thread will trigger updates in constant intervals, so the user gets continuous updates
+                using var timerCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+                var timerTask = Task.Run(
+                    async () =>
+                    {
+                        try
+                        {
+                            using var timer = new PeriodicTimer(updateInterval);
+                            while (await timer.WaitForNextTickAsync(timerCts.Token).ConfigureAwait(false))
+                            {
+                                if (Interlocked.CompareExchange(ref hasChangesFlag, 0, 1) == 1)
+                                {
+                                    RaiseItemsChanged();
+                                    Logger.LogDebug($"UI update at {sw.ElapsedMilliseconds}ms");
+                                }
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // we're done
+                        }
+                    },
+                    timerCts.Token);
+
+                // producer will pump commands into a channel, and have multiple workers pull from it
+                var channel = Channel.CreateBounded<TopLevelViewModel>(
+                    new BoundedChannelOptions(channelCapacity) { FullMode = BoundedChannelFullMode.Wait });
+
+                var producerTask = Task.Run(
+                    async () =>
+                    {
+                        try
+                        {
+                            foreach (var command in commands)
+                            {
+                                await channel.Writer.WriteAsync(command, cancellationToken).ConfigureAwait(false);
+                            }
+                        }
+                        finally
+                        {
+                            channel.Writer.TryComplete();
+                        }
+                    },
+                    cancellationToken);
+
+                // Start with a few workers, and then spawn more if any of them
+                // take too long on an item.
+                var workers = new List<Task>();
+                var workersLock = new object();
+                var activeWorkerCount = 0;
+                var nextWorkerId = 0;
+                var maxWorkers = Math.Max(1, Environment.ProcessorCount - 1);
+
+                // Start with multiple workers
+                lock (workersLock)
                 {
-                    return;
+                    var startingWorkers = Math.Min(initialWorkerCount, maxWorkers);
+                    for (var i = 1; i <= startingWorkers; i++)
+                    {
+                        nextWorkerId = i;
+                        activeWorkerCount++;
+                        workers.Add(SpawnWorker(i));
+                    }
+
+                    Logger.LogDebug($"Starting with {startingWorkers} workers");
                 }
 
-                var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
-                needsToUpdate = needsToUpdate || changedVisibility;
-            }
+                // Let's start: fill the channel with commands
+                await producerTask.ConfigureAwait(false);
 
-            if (needsToUpdate)
-            {
-                if (token.IsCancellationRequested)
+                // Wait for all the workers to finish
+                while (true)
                 {
-                    return;
+                    Task[] snapshot;
+                    lock (workersLock)
+                    {
+                        snapshot = workers.ToArray();
+                    }
+
+                    await Task.WhenAll(snapshot).ConfigureAwait(false);
+
+                    lock (workersLock)
+                    {
+                        // If no new workers were added while we were waiting, we're done
+                        if (workers.Count == snapshot.Length)
+                        {
+                            break;
+                        }
+                    }
                 }
 
-                RaiseItemsChanged();
-            }
-        },
-            token);
+                await timerCts.CancelAsync();
+                try
+                {
+                    await timerTask.WaitAsync(TimeSpan.FromMilliseconds(100)).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                if (Volatile.Read(ref hasChangesFlag) == 1)
+                {
+                    RaiseItemsChanged();
+                }
+
+                sw.Stop();
+                Logger.LogDebug($"UpdateFallbacks completed in {sw.ElapsedMilliseconds}ms ({nextWorkerId} workers spawned)");
+                return;
+
+                Task SpawnWorker(int id) =>
+                    Task.Run(
+                        async () =>
+                        {
+                            try
+                            {
+                                await foreach (var command in channel.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+                                {
+                                    var taskSw = Stopwatch.StartNew();
+                                    var changed = command.SafeUpdateFallbackTextSynchronous(newSearch);
+                                    var elapsed = taskSw.ElapsedMilliseconds;
+
+                                    Logger.LogTrace($"Worker {id}: '{command.Title}' in {elapsed}ms");
+
+                                    if (changed)
+                                    {
+                                        Interlocked.Exchange(ref hasChangesFlag, 1);
+                                    }
+
+                                    if (elapsed > itemTimeoutMs)
+                                    {
+                                        lock (workersLock)
+                                        {
+                                            if (activeWorkerCount < maxWorkers)
+                                            {
+                                                nextWorkerId++;
+                                                activeWorkerCount++;
+                                                Logger.LogDebug($"Spawning worker {nextWorkerId} ({activeWorkerCount}/{maxWorkers} active)");
+                                                workers.Add(SpawnWorker(nextWorkerId));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                Logger.LogDebug($"Worker {id} cancelled");
+                            }
+                            finally
+                            {
+                                lock (workersLock)
+                                {
+                                    activeWorkerCount--;
+                                }
+                            }
+                        },
+                        cancellationToken);
+            },
+            cancellationToken);
     }
 
     private bool ActuallyLoading()
