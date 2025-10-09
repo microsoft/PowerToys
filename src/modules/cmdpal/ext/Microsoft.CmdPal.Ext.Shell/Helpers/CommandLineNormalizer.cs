@@ -51,7 +51,7 @@ public static class CommandLineNormalizer
     ///
     /// The resulting strings are used for comparisons in profile matching.
     /// </remarks>
-    public static string NormalizeCommandLine(string commandLine)
+    public static string NormalizeCommandLine(string commandLine, bool allowDirectory)
     {
         if (string.IsNullOrEmpty(commandLine))
         {
@@ -79,7 +79,7 @@ public static class CommandLineNormalizer
         // The given commandLine should start with an executable name or path.
         // This loop tries to resolve relative paths, as well as executable names in %PATH%
         // into absolute paths and normalizes them.
-        var executablePath = ResolveExecutablePath(argv, ref startOfArguments);
+        var executablePath = ResolveExecutablePath(argv, allowDirectory, ref startOfArguments);
 
         // We've (hopefully) finished resolving the path to the executable.
         // We're now going to append all remaining arguments to the resulting string.
@@ -163,7 +163,7 @@ public static class CommandLineNormalizer
     /// Resolves the executable path from the command line arguments.
     /// Handles cases where the path contains spaces and was split during parsing.
     /// </summary>
-    private static string ResolveExecutablePath(string[] argv, ref int startOfArguments)
+    private static string ResolveExecutablePath(string[] argv, bool allowDirectory, ref int startOfArguments)
     {
         if (argv.Length == 0)
         {
@@ -183,7 +183,7 @@ public static class CommandLineNormalizer
             }
 
             var candidatePath = pathBuilder.ToString();
-            var resolvedPath = TryResolveExecutable(candidatePath);
+            var resolvedPath = TryResolveExecutable(candidatePath, allowDirectory);
 
             if (!string.IsNullOrEmpty(resolvedPath))
             {
@@ -200,7 +200,7 @@ public static class CommandLineNormalizer
     /// <summary>
     /// Attempts to resolve an executable path using SearchPathW.
     /// </summary>
-    private static string TryResolveExecutable(string executableName)
+    private static string TryResolveExecutable(string executableName, bool allowDirectory)
     {
         var buffer = new char[MAX_PATH];
 
@@ -234,11 +234,15 @@ public static class CommandLineNormalizer
 
             var resolvedPath = new string(buffer, 0, (int)result);
 
-            // Verify the resolved path exists and is not a directory
+            // Verify the resolved path exists...
             var attributes = PInvoke.GetFileAttributes(resolvedPath);
 
+            // ... and if we don't want to allow directories, reject paths that are dirs
+            var rejectDirectory = !allowDirectory &&
+                 (attributes & (uint)FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_DIRECTORY) != 0;
+
             return attributes == INVALID_FILE_ATTRIBUTES ||
-                   (attributes & (uint)FILE_FLAGS_AND_ATTRIBUTES.FILE_ATTRIBUTE_DIRECTORY) != 0 ?
+                   rejectDirectory ?
                     string.Empty :
                     resolvedPath;
         }

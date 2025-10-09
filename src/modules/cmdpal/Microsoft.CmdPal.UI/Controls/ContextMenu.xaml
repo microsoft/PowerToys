@@ -31,7 +31,7 @@
 
             <!--  Template for context items in the context item menu  -->
             <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Title}">
+                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
@@ -42,7 +42,7 @@
                         Height="16"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
-                        SourceKey="{x:Bind Icon}"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
                         x:Name="TitleTextBlock"
@@ -51,11 +51,11 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         MaxLines="1"
-                        Text="{x:Bind Title}"
+                        Text="{x:Bind Title, Mode=OneWay}"
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ToolTip Content="{x:Bind Title, Mode=OneWay}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </ToolTipService.ToolTip>
                     </TextBlock>
                     <TextBlock
@@ -65,13 +65,13 @@
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind RequestedShortcut, Converter={StaticResource KeyChordToStringConverter}}" />
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
 
             <!--  Template for context items flagged as critical  -->
             <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="coreViewModels:CommandContextItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Title}">
+                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
@@ -83,7 +83,7 @@
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                        SourceKey="{x:Bind Icon}"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
                         x:Name="TitleTextBlock"
@@ -93,11 +93,11 @@
                         VerticalAlignment="Center"
                         MaxLines="1"
                         Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
-                        Text="{x:Bind Title}"
+                        Text="{x:Bind Title, Mode=OneWay}"
                         TextTrimming="WordEllipsis"
                         TextWrapping="NoWrap">
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind Title}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ToolTip Content="{x:Bind Title, Mode=OneWay}" Visibility="{Binding IsTextTrimmed, ElementName=TitleTextBlock, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                         </ToolTipService.ToolTip>
                     </TextBlock>
                     <TextBlock
@@ -106,7 +106,7 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
-                        Text="{x:Bind RequestedShortcut, Converter={StaticResource KeyChordToStringConverter}}" />
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
 

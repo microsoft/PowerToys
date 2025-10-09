@@ -3,6 +3,7 @@ abcdefghjkmnpqrstuvxyz
 abgr
 ABlocked
 ABOUTBOX
+ABORTIFHUNG
 Abug
 Acceleratorkeys
 ACCEPTFILES
@@ -25,8 +26,6 @@ ADMINS
 adml
 admx
 advancedpaste
-advancedpasteui
-advancedpasteuishortcut
 advapi
 advfirewall
 AFeature
@@ -44,7 +43,6 @@ ALLINPUT
 Allman
 Allmodule
 ALLOWUNDO
-allpc
 ALLVIEW
 ALPHATYPE
 AModifier
@@ -77,6 +75,7 @@ appwiz
 appxpackage
 APSTUDIO
 AQS
+Aquadrant
 ARandom
 ARCHITEW
 ARemapped
@@ -134,7 +133,6 @@ bla
 BLACKFRAME
 BLENDFUNCTION
 Blockquotes
-blogs
 Blt
 BLURBEHIND
 BLURREGION
@@ -455,6 +453,7 @@ encryptor
 ENDSESSION
 ENSUREVISIBLE
 ENTERSIZEMOVE
+ENTRYW
 ENU
 environmentvariables
 EOAC
@@ -509,7 +508,6 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
 fesf
-fff
 FFFF
 FILEEXPLORER
 fileexploreraddons
@@ -572,6 +570,7 @@ GETDESKWALLPAPER
 GETDLGCODE
 GETDPISCALEDSIZE
 getfilesiginforedist
+geolocator
 GETHOTKEY
 GETICON
 GETMINMAXINFO
@@ -668,11 +667,7 @@ Hostx
 hotfixes
 hotkeycontrol
 HOTKEYF
-hotkeylockmachine
-hotkeyreconnect
 hotkeys
-hotkeyswitch
-hotkeytoggleeasymouse
 hotlight
 hotspot
 HPAINTBUFFER
@@ -731,8 +726,6 @@ IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
 imageresizerinput
 imageresizersettings
-imagetotext
-imagetotextshortcut
 imagingdevices
 ime
 imgflip
@@ -828,6 +821,7 @@ lastcodeanalysissucceeded
 LASTEXITCODE
 LAYOUTRTL
 LCh
+lbl
 lcid
 LCIDTo
 lcl
@@ -846,10 +840,12 @@ LIBID
 LIMITSIZE
 LIMITTEXT
 lindex
+lightswitch
 linkid
 LINKOVERLAY
 LINQTo
 listview
+LIVEDRAW
 LIVEZOOM
 LLKH
 llkhf
@@ -861,7 +857,6 @@ localappdata
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
-LOCKMACHINE
 LOCKTYPE
 LOGFONT
 LOGFONTW
@@ -869,10 +864,12 @@ logon
 LOGMSG
 LOGPIXELSX
 LOGPIXELSY
-LOn
+lng
+lon
 longdate
 LONGNAMES
 lowlevel
+lquadrant
 LOWORD
 lparam
 LPBITMAPINFOHEADER
@@ -924,7 +921,6 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
-MAJORMINOR
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -949,7 +945,6 @@ MDL
 mdtext
 mdtxt
 mdwn
-measuretool
 meme
 memicmp
 MENUITEMINFO
@@ -999,7 +994,6 @@ MOUSEHWHEEL
 MOUSEINPUT
 mousejump
 mousepointer
-mousepointercrosshairs
 mouseutils
 MOVESIZEEND
 MOVESIZESTART
@@ -1044,7 +1038,6 @@ MWBEx
 MYICON
 NAMECHANGE
 namespaceanddescendants
-Namotion
 nao
 NCACTIVATE
 ncc
@@ -1082,7 +1075,6 @@ NEWPLUSSHELLEXTENSIONWIN
 newrow
 nicksnettravels
 NIF
-NJson
 NLog
 NLSTEXT
 NMAKE
@@ -1209,18 +1201,6 @@ PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
 PARTIALCONFIRMATIONDIALOGTITLE
-pasteashtmlfile
-pasteashtmlfileshortcut
-pasteasjson
-pasteasjsonshortcut
-pasteasmarkdown
-pasteasmarkdownshortcut
-pasteasplaintext
-pasteasplaintextshortcut
-pasteaspngfile
-pasteaspngfileshortcut
-pasteastxtfile
-pasteastxtfileshortcut
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
@@ -1228,6 +1208,7 @@ PATPAINT
 pbc
 pbi
 PBlob
+pbrush
 pcb
 pcch
 pcelt
@@ -1290,7 +1271,6 @@ Pomodoro
 Popups
 POPUPWINDOW
 POSITIONITEM
-powerocr
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1341,7 +1321,6 @@ PRODUCTVERSION
 Progman
 programdata
 projectname
-projitems
 PROPERTYKEY
 Propset
 PROPVARIANT
@@ -1389,6 +1368,7 @@ quickaccent
 QUNS
 RAII
 RAlt
+RAquadrant
 randi
 rasterization
 Rasterize
@@ -1433,7 +1413,6 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 reparented
-reparenthotkey
 reparenting
 reportfileaccesses
 requery
@@ -1459,7 +1438,6 @@ RIDEV
 RIGHTSCROLLBAR
 riid
 RKey
-Rns
 RNumber
 rop
 ROUNDSMALL
@@ -1683,10 +1661,10 @@ STYLECHANGED
 STYLECHANGING
 subkeys
 sublang
-Subdomain
 SUBMODULEUPDATE
 subresource
 Superbar
+suntimes
 sut
 svchost
 SVGIn
@@ -1752,9 +1730,9 @@ tgz
 themeresources
 THH
 THICKFRAME
+THEMECHANGED
 THISCOMPONENT
 throughs
-thumbnailhotkey
 TILEDWINDOW
 TILLSON
 timedate
@@ -1768,10 +1746,9 @@ tkconverters
 tlb
 tlbimp
 tlc
+tmain
 TNP
-TOGGLEEASYMOUSE
 Toolhelp
-toolkitconverters
 toolwindow
 TOPDOWNDIB
 TOUCHEVENTF
@@ -1783,11 +1760,9 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
-transcodetomp
 transicc
 TRAYMOUSEMESSAGE
 triaging
-Tru
 trl
 trx
 tsa
@@ -1823,7 +1798,6 @@ ULONGLONG
 ums
 uncompilable
 UNCPRIORITY
-undefining
 UNDNAME
 UNICODETEXT
 unins
