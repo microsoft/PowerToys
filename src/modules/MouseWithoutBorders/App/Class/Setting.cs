@@ -1057,11 +1057,6 @@ namespace MouseWithoutBorders.Class
                     {
                         var newMachineId = Common.Ran.Next();
                         _properties.MachineID.Value = newMachineId;
-                        machineId = newMachineId;
-                        if (!PauseInstantSaving)
-                        {
-                            SaveSettings();
-                        }
                     }
                 }
 
@@ -1073,11 +1068,6 @@ namespace MouseWithoutBorders.Class
                 lock (_loadingSettingsLock)
                 {
                     _properties.MachineID.Value = value;
-                    machineId = value;
-                    if (!PauseInstantSaving)
-                    {
-                        SaveSettings();
-                    }
                 }
             }
         }
