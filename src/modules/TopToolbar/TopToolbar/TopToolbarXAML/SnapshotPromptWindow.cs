@@ -4,20 +4,21 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.Graphics;
+using Windows.UI;
 using WinUIEx;
 
 namespace TopToolbar
 {
     internal sealed class SnapshotPromptWindow : WindowEx
     {
-        private const int WindowWidth = 420;
-        private const int WindowHeight = 220;
+        private const int WindowWidth = 360;
+        private const int WindowHeight = 230;
 
         private readonly TaskCompletionSource<string> _resultSource = new();
         private readonly TextBox _nameBox;
@@ -26,30 +27,63 @@ namespace TopToolbar
 
         private SnapshotPromptWindow()
         {
-            Title = "Create workspace snapshot";
-            IsTitleBarVisible = true;
+            Title = string.Empty;
+            IsTitleBarVisible = false;
+            ExtendsContentIntoTitleBar = true;
+            SystemBackdrop = new TransparentTintBackdrop(Color.FromArgb(0, 0, 0, 0));
+
+            if (AppWindow?.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsResizable = false;
+            }
 
             var root = new Grid
             {
-                Padding = new Thickness(24),
+                Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
             };
+
+            var chromeBorder = new Border
+            {
+                CornerRadius = new CornerRadius(18),
+                Padding = new Thickness(22, 18, 22, 24),
+                BorderThickness = new Thickness(1),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF)),
+                Background = new LinearGradientBrush
+                {
+                    StartPoint = new Windows.Foundation.Point(0, 0),
+                    EndPoint = new Windows.Foundation.Point(0, 1),
+                    GradientStops =
+                    {
+                        new GradientStop { Color = Color.FromArgb(0xF0, 0x25, 0x28, 0x32), Offset = 0 },
+                        new GradientStop { Color = Color.FromArgb(0xF0, 0x1C, 0x1E, 0x27), Offset = 1 },
+                    },
+                },
+            };
+            root.Children.Add(chromeBorder);
 
             var stack = new StackPanel
             {
-                Spacing = 16,
+                Spacing = 12,
             };
-            root.Children.Add(stack);
+            chromeBorder.Child = stack;
 
             stack.Children.Add(new TextBlock
             {
-                Text = "Enter a name for the new workspace snapshot.",
-                TextWrapping = TextWrapping.Wrap,
+                Text = "Workspace name",
+                Margin = new Thickness(0, 0, 0, 2),
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                FontSize = 13,
+                Foreground = new SolidColorBrush(Color.FromArgb(0xFF, 0xF3, 0xF3, 0xF3)),
             });
 
             _nameBox = new TextBox
             {
                 PlaceholderText = "Workspace name",
-                MinWidth = 260,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                FontSize = 13,
+                MinWidth = 220,
             };
             _nameBox.TextChanged += (_, __) => OnNameChanged();
             _nameBox.KeyDown += OnNameBoxKeyDown;
@@ -57,9 +91,10 @@ namespace TopToolbar
 
             _errorText = new TextBlock
             {
-                Foreground = new SolidColorBrush(Colors.Red),
+                Foreground = new SolidColorBrush(Color.FromArgb(0xFF, 0xFF, 0x64, 0x64)),
                 Visibility = Visibility.Collapsed,
                 TextWrapping = TextWrapping.Wrap,
+                FontSize = 12,
             };
             stack.Children.Add(_errorText);
 
@@ -67,13 +102,18 @@ namespace TopToolbar
             {
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Right,
-                Spacing = 8,
+                Spacing = 12,
             };
 
             var cancelButton = new Button
             {
                 Content = "Cancel",
                 MinWidth = 88,
+                FontSize = 12,
+                Background = new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF)),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(8),
             };
             cancelButton.Click += (_, __) => Cancel();
 
@@ -81,7 +121,13 @@ namespace TopToolbar
             {
                 Content = "Save",
                 MinWidth = 88,
+                FontSize = 12,
                 IsEnabled = false,
+                Background = new SolidColorBrush(Color.FromArgb(0xFF, 0x38, 0x8B, 0xFF)),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(0x80, 0x38, 0x8B, 0xFF)),
+                BorderThickness = new Thickness(0),
+                CornerRadius = new CornerRadius(8),
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.White),
             };
             _saveButton.Click += (_, __) => Confirm();
 
@@ -98,6 +144,7 @@ namespace TopToolbar
                     _ = _nameBox.Focus(FocusState.Programmatic);
                 }
             };
+
             Closed += (_, __) =>
             {
                 if (!_resultSource.Task.IsCompleted)
@@ -117,7 +164,7 @@ namespace TopToolbar
             _saveButton.IsEnabled = !string.IsNullOrWhiteSpace(_nameBox.Text);
         }
 
-        private void OnNameBoxKeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        private void OnNameBoxKeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
@@ -154,23 +201,21 @@ namespace TopToolbar
         public static async Task<string> ShowAsync(WindowEx owner)
         {
             var window = new SnapshotPromptWindow();
+            window.AppWindow.Resize(new SizeInt32(WindowWidth, WindowHeight));
 
-            if (owner != null)
+            try
             {
-                try
-                {
-                    var ownerPosition = owner.AppWindow.Position;
-                    var ownerSize = owner.AppWindow.Size;
-                    var desiredSize = new SizeInt32(WindowWidth, WindowHeight);
-                    window.AppWindow.Resize(desiredSize);
+                var displayArea = owner != null
+                    ? DisplayArea.GetFromWindowId(owner.AppWindow.Id, DisplayAreaFallback.Primary)
+                    : DisplayArea.GetFromWindowId(window.AppWindow.Id, DisplayAreaFallback.Primary);
 
-                    var offsetX = ownerPosition.X + Math.Max(0, (ownerSize.Width - desiredSize.Width) / 2);
-                    var offsetY = ownerPosition.Y + Math.Max(0, (ownerSize.Height - desiredSize.Height) / 2);
-                    window.AppWindow.Move(new PointInt32(offsetX, offsetY));
-                }
-                catch
-                {
-                }
+                var workArea = displayArea.WorkArea;
+                var offsetX = workArea.X + Math.Max(0, (workArea.Width - WindowWidth) / 2);
+                var offsetY = workArea.Y + Math.Max(0, (workArea.Height - WindowHeight) / 2);
+                window.AppWindow.Move(new PointInt32(offsetX, offsetY));
+            }
+            catch
+            {
             }
 
             window.Activate();

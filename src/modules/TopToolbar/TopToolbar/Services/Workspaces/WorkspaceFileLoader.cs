@@ -22,13 +22,15 @@ namespace TopToolbar.Services.Workspaces
         public WorkspaceFileLoader(string workspacesPath = null)
         {
             _workspacesPath = string.IsNullOrWhiteSpace(workspacesPath)
-                ? Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Microsoft",
-                    "PowerToys",
-                    "Workspaces",
-                    "workspaces.json")
+                ? WorkspaceStoragePaths.GetDefaultWorkspacesPath()
                 : workspacesPath;
+
+            if (string.IsNullOrWhiteSpace(workspacesPath))
+            {
+                TryMigrateLegacyWorkspacesFile();
+            }
+
+            EnsureStorageDirectoryExists();
 
             _serializerOptions = new JsonSerializerOptions
             {
@@ -119,6 +121,55 @@ namespace TopToolbar.Services.Workspaces
             catch (IOException)
             {
                 return null;
+            }
+        }
+
+        private void TryMigrateLegacyWorkspacesFile()
+        {
+            try
+            {
+                var legacyPath = WorkspaceStoragePaths.GetLegacyPowerToysPath();
+                if (string.Equals(legacyPath, _workspacesPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                if (!File.Exists(legacyPath) || File.Exists(_workspacesPath))
+                {
+                    return;
+                }
+
+                var directory = Path.GetDirectoryName(_workspacesPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                File.Copy(legacyPath, _workspacesPath, overwrite: false);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
+            catch
+            {
+            }
+        }
+
+        private void EnsureStorageDirectoryExists()
+        {
+            try
+            {
+                var directory = Path.GetDirectoryName(_workspacesPath);
+                if (!string.IsNullOrWhiteSpace(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+            }
+            catch
+            {
             }
         }
     }

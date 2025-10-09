@@ -43,7 +43,7 @@ namespace TopToolbar.Providers
         public WorkspaceProvider(string workspacesPath = null, ProfileFileService profileFileService = null)
         {
             _workspacesPath = string.IsNullOrWhiteSpace(workspacesPath)
-                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Workspaces", "workspaces.json")
+                ? WorkspaceStoragePaths.GetDefaultWorkspacesPath()
                 : workspacesPath;
             _workspacesService = new WorkspacesRuntimeService(_workspacesPath);
             _profileFileService = profileFileService ?? new ProfileFileService();
