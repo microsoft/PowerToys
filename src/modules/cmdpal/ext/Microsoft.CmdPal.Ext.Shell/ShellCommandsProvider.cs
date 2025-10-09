@@ -19,19 +19,21 @@ public partial class ShellCommandsProvider : CommandProvider
     private readonly ShellListPage _shellListPage;
     private readonly FallbackCommandItem _fallbackItem;
     private readonly IRunHistoryService _historyService;
+    private readonly ITelemetryService _telemetryService;
 
-    public ShellCommandsProvider(IRunHistoryService runHistoryService)
+    public ShellCommandsProvider(IRunHistoryService runHistoryService, ITelemetryService telemetryService)
     {
         _historyService = runHistoryService;
+        _telemetryService = telemetryService;
 
         Id = "com.microsoft.cmdpal.builtin.run";
         DisplayName = Resources.cmd_plugin_name;
         Icon = Icons.RunV2Icon;
         Settings = _settingsManager.Settings;
 
-        _shellListPage = new ShellListPage(_settingsManager, _historyService);
+        _shellListPage = new ShellListPage(_settingsManager, _historyService, _telemetryService);
 
-        _fallbackItem = new FallbackExecuteItem(_settingsManager, _shellListPage.AddToHistory);
+        _fallbackItem = new FallbackExecuteItem(_settingsManager, _shellListPage.AddToHistory, _telemetryService);
 
         _shellPageItem = new CommandItem(_shellListPage)
         {

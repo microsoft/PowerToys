@@ -4,6 +4,4 @@
 
 namespace Microsoft.CmdPal.Core.ViewModels.Messages;
 
-public record NavigateToPageMessage(PageViewModel Page, bool WithAnimation)
-{
-}
+public record NavigateToPageMessage(PageViewModel Page, bool WithAnimation, CancellationToken CancellationToken);

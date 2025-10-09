@@ -5,34 +5,51 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ManagedCommon;
+using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 internal sealed partial class AppListItem : ListItem
 {
-    private readonly AppItem _app;
     private static readonly Tag _appTag = new("App");
 
+    private readonly AppCommand _appCommand;
+    private readonly AppItem _app;
     private readonly Lazy<Details> _details;
-    private readonly Lazy<IconInfo> _icon;
+    private readonly Lazy<Task<IconInfo?>> _iconLoadTask;
+
+    private InterlockedBoolean _isLoadingIcon;
 
     public override IDetails? Details { get => _details.Value; set => base.Details = value; }
 
-    public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
+    public override IIconInfo? Icon
+    {
+        get
+        {
+            if (_isLoadingIcon.Set())
+            {
+                _ = LoadIconAsync();
+            }
+
+            return base.Icon;
+        }
+        set => base.Icon = value;
+    }
 
     public string AppIdentifier => _app.AppIdentifier;
 
     public AppListItem(AppItem app, bool useThumbnails, bool isPinned)
-        : base(new AppCommand(app))
     {
+        Command = _appCommand = new AppCommand(app);
         _app = app;
         Title = app.Name;
         Subtitle = app.Subtitle;
         Tags = [_appTag];
+        Icon = Icons.GenericAppIcon;
 
         MoreCommands = AddPinCommands(_app.Commands!, isPinned);
 
@@ -43,12 +60,19 @@ internal sealed partial class AppListItem : ListItem
             return t.Result;
         });
 
-        _icon = new Lazy<IconInfo>(() =>
+        _iconLoadTask = new Lazy<Task<IconInfo?>>(async () => await FetchIcon(useThumbnails));
+    }
+
+    private async Task LoadIconAsync()
+    {
+        try
         {
-            var t = FetchIcon(useThumbnails);
-            t.Wait();
-            return t.Result;
-        });
+            Icon = _appCommand.Icon = await _iconLoadTask.Value ?? Icons.GenericAppIcon;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to load icon for {AppIdentifier}\n{ex}");
+        }
     }
 
     private async Task<Details> BuildDetails()
@@ -87,12 +111,12 @@ internal sealed partial class AppListItem : ListItem
         return new Details()
         {
             Title = this.Title,
-            HeroImage = heroImage ?? this.Icon ?? new IconInfo(string.Empty),
+            HeroImage = heroImage ?? this.Icon ?? Icons.GenericAppIcon,
             Metadata = metadata.ToArray(),
         };
     }
 
-    public async Task<IconInfo> FetchIcon(bool useThumbnails)
+    private async Task<IconInfo> FetchIcon(bool useThumbnails)
     {
         IconInfo? icon = null;
         if (_app.IsPackaged)
@@ -108,12 +132,12 @@ internal sealed partial class AppListItem : ListItem
                 var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath);
                 if (stream is not null)
                 {
-                    var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                    icon = new IconInfo(data, data);
+                    icon = IconInfo.FromStream(stream);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogDebug($"Failed to load icon for {AppIdentifier}:\n{ex}");
             }
 
             icon = icon ?? new IconInfo(_app.IcoPath);
