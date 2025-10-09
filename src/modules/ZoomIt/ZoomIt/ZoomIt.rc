@@ -2,6 +2,13 @@
 //
 #include "resource.h"
 
+// version.h and branding.h are different in the Sysinternals repository,
+// keep the includes as such, here.
+// From $(MSBuildThisFileDirectory)..\..\..\common\version
+#include "version.h"
+// From $(MSBuildThisFileDirectory)PowerToys
+#include "branding.h"
+
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -68,8 +75,8 @@ APPICON                 ICON                    "appicon.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 9,10,0,0
- PRODUCTVERSION 9,10,0,0
+ FILEVERSION FILE_VERSION
+ PRODUCTVERSION PRODUCT_VERSION
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -84,14 +91,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Microsoft Corporation"
-            VALUE "FileDescription", "Sysinternals Screen Magnifier"
-            VALUE "FileVersion", "9.10"
-            VALUE "InternalName", "ZoomIt"
-            VALUE "LegalCopyright", "Copyright (C) Microsoft Corporation. All rights reserved."
-            VALUE "OriginalFilename", "PowerToys.ZoomIt.exe"
-            VALUE "ProductName", "PowerToys Sysinternals ZoomIt"
-            VALUE "ProductVersion", "9.10"
+            VALUE "CompanyName", COMPANY_NAME
+            VALUE "FileDescription", FILE_DESCRIPTION
+            VALUE "FileVersion", FILE_VERSION_STRING
+            VALUE "InternalName", INTERNAL_NAME
+            VALUE "LegalCopyright", COPYRIGHT_NOTE
+            VALUE "OriginalFilename", ORIGINAL_FILENAME
+            VALUE "ProductName", ZOOMIT_PRODUCT_NAME
+            VALUE "ProductVersion", PRODUCT_VERSION_STRING
         END
     END
     BLOCK "VarFileInfo"
@@ -114,8 +121,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,166,306,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,223,306,50,14
-    LTEXT           "ZoomIt v9.01",IDC_VERSION,42,7,73,10
-    LTEXT           "Copyright ï¿½ 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,231,8
+    LTEXT           "ZoomIt v9.10",IDC_VERSION,42,7,73,10
+    LTEXT           "Copyright © 2006-2025 Mark Russinovich",IDC_COPYRIGHT,42,17,231,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
     ICON            "APPICON",IDC_STATIC,12,9,20,20

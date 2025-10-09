@@ -207,7 +207,10 @@ public class Win32Program : IProgram
         });
 
         commands.Add(new CommandContextItem(
-                    new OpenFileCommand(ParentDirectory))
+                    new ShowFileInFolderCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath)
+                    {
+                        Name = Resources.open_location,
+                    })
         {
             RequestedShortcut = KeyChords.OpenFileLocation,
         });
