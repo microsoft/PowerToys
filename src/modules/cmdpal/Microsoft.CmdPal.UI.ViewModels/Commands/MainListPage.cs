@@ -35,10 +35,10 @@ public partial class MainListPage : DynamicListPage,
 
     private readonly IServiceProvider _serviceProvider;
     private readonly TopLevelCommandManager _tlcManager;
-    private IEnumerable<Scored<IListItem>>? _filteredItems;
+    private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
     private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
-    private IEnumerable<Scored<IListItem>>? _fallbackItems;
+    private List<Scored<IListItem>>? _fallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
@@ -375,7 +375,7 @@ public partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, ScoreTopLevelItem);
+            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem);
 
             if (token.IsCancellationRequested)
             {
