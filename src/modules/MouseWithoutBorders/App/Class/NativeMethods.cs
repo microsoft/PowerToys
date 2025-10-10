@@ -556,6 +556,7 @@ namespace MouseWithoutBorders.Class
             XDOWN = 0x0080,
             XUP = 0x0100,
             WHEEL = 0x0800,
+            HWHEEL = 0x01000,
             VIRTUALDESK = 0x4000,
             ABSOLUTE = 0x8000,
         }
