@@ -10,6 +10,8 @@ using ManagedCommon;
 using Microsoft.CmdPal.Core.Common.Helpers;
 using Microsoft.CmdPal.Core.ViewModels.Messages;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -36,6 +38,7 @@ public partial class MainListPage : DynamicListPage,
     private List<Scored<IListItem>>? _filteredItems;
     private List<Scored<IListItem>>? _filteredApps;
     private List<Scored<IListItem>>? _fallbackItems;
+    private IEnumerable<Scored<IListItem>>? _scoredFallbackItems;
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
     private int _appResultLimit = 10;
@@ -171,6 +174,7 @@ public partial class MainListPage : DynamicListPage,
 
                 var items = Enumerable.Empty<Scored<IListItem>>()
                                 .Concat(_filteredItems is not null ? _filteredItems : [])
+                                .Concat(_scoredFallbackItems is not null ? _scoredFallbackItems : [])
                                 .Concat(limitedApps)
                                 .OrderByDescending(o => o.Score)
 
@@ -182,6 +186,14 @@ public partial class MainListPage : DynamicListPage,
                 return items;
             }
         }
+    }
+
+    private void ClearResults()
+    {
+        _filteredItems = null;
+        _filteredApps = null;
+        _fallbackItems = null;
+        _scoredFallbackItems = null;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -216,8 +228,7 @@ public partial class MainListPage : DynamicListPage,
                     lock (_tlcManager.TopLevelCommands)
                     {
                         _filteredItemsIncludesApps = _includeApps;
-                        _filteredItems = null;
-                        _filteredApps = null;
+                        ClearResults();
                     }
                 }
 
@@ -244,9 +255,7 @@ public partial class MainListPage : DynamicListPage,
             if (string.IsNullOrEmpty(newSearch))
             {
                 _filteredItemsIncludesApps = _includeApps;
-                _filteredItems = null;
-                _filteredApps = null;
-                _fallbackItems = null;
+                ClearResults();
                 RaiseItemsChanged(commands.Count);
                 return;
             }
@@ -255,17 +264,13 @@ public partial class MainListPage : DynamicListPage,
             // re-use previous results. Reset _filteredItems, and keep er moving.
             if (!newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase))
             {
-                _filteredItems = null;
-                _filteredApps = null;
-                _fallbackItems = null;
+                ClearResults();
             }
 
             // If the internal state has changed, reset _filteredItems to reset the list.
             if (_filteredItemsIncludesApps != _includeApps)
             {
-                _filteredItems = null;
-                _filteredApps = null;
-                _fallbackItems = null;
+                ClearResults();
             }
 
             if (token.IsCancellationRequested)
@@ -314,7 +319,7 @@ public partial class MainListPage : DynamicListPage,
                 // We're going to start over with our fallbacks
                 newFallbacks = Enumerable.Empty<IListItem>();
 
-                newFilteredItems = commands.Where(s => !s.IsFallback || _specialFallbacks.Contains(s.CommandProviderId));
+                newFilteredItems = commands.Where(s => !s.IsFallback);
 
                 // Fallbacks are always included in the list, even if they
                 // don't match the search text. But we don't want to
@@ -330,7 +335,20 @@ public partial class MainListPage : DynamicListPage,
 
                 if (_includeApps)
                 {
-                    newApps = AllAppsCommandProvider.Page.GetItems().ToList();
+                    var allNewApps = AllAppsCommandProvider.Page.GetItems().ToList();
+
+                    // We need to remove pinned apps from allNewApps so they don't show twice.
+                    var pinnedApps = PinnedAppsManager.Instance.GetPinnedAppIdentifiers();
+
+                    if (pinnedApps.Length > 0)
+                    {
+                        newApps = allNewApps.Where(w =>
+                            pinnedApps.IndexOf(((AppListItem)w).AppIdentifier) < 0);
+                    }
+                    else
+                    {
+                        newApps = allNewApps;
+                    }
                 }
 
                 if (token.IsCancellationRequested)
@@ -344,6 +362,20 @@ public partial class MainListPage : DynamicListPage,
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = [.. ListHelpers.FilterListWithScores<IListItem>(newFilteredItems ?? [], SearchText, scoreItem)];
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && _specialFallbacks.Contains(s.CommandProviderId));
+
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            _scoredFallbackItems = ListHelpers.FilterListWithScores<IListItem>(newFallbacksForScoring ?? [], SearchText, scoreItem);
 
             if (token.IsCancellationRequested)
             {

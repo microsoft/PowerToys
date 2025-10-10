@@ -16,7 +16,6 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     private readonly Action<string>? _addToHistory;
     private readonly ITelemetryService _telemetryService;
     private CancellationTokenSource? _cancellationTokenSource;
-    private Task? _currentUpdateTask;
 
     public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory, ITelemetryService telemetryService)
         : base(
@@ -40,44 +39,22 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
 
         try
         {
-            // Save the latest update task
-            _currentUpdateTask = DoUpdateQueryAsync(query, cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // DO NOTHING HERE
-            return;
+            DoUpdateQuery(query, cancellationToken);
         }
         catch (Exception)
         {
             // Handle other exceptions
             return;
         }
-
-        // Await the task to ensure only the latest one gets processed
-        _ = ProcessUpdateResultsAsync(_currentUpdateTask);
     }
 
-    private async Task ProcessUpdateResultsAsync(Task updateTask)
-    {
-        try
-        {
-            await updateTask;
-        }
-        catch (OperationCanceledException)
-        {
-            // Handle cancellation gracefully
-        }
-        catch (Exception)
-        {
-            // Handle other exceptions
-        }
-    }
-
-    private async Task DoUpdateQueryAsync(string query, CancellationToken cancellationToken)
+    private void DoUpdateQuery(string query, CancellationToken cancellationToken)
     {
         // Check for cancellation at the start
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         var searchText = query.Trim();
         Expand(ref searchText);
@@ -105,22 +82,8 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
             var timeoutToken = combinedCts.Token;
 
-            // Use Task.Run with timeout for file system operations
-            var fileSystemTask = Task.Run(
-                () =>
-                {
-                    exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath);
-                    pathIsDir = Directory.Exists(exe);
-                },
-                CancellationToken.None);
-
-            // Wait for either completion or timeout
-            await fileSystemTask.WaitAsync(timeoutToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            // Main cancellation token was cancelled, re-throw
-            throw;
+            exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath, cancellationToken);
+            pathIsDir = Directory.Exists(exe);
         }
         catch (TimeoutException)
         {
@@ -139,7 +102,10 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
 
         // Check for cancellation before updating UI properties
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         if (exeExists)
         {
@@ -172,7 +138,10 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
 
         // Final cancellation check
-        cancellationToken.ThrowIfCancellationRequested();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
     }
 
     public void Dispose()
