@@ -916,7 +916,6 @@ luid
 LUMA
 lusrmgr
 LVal
-lvm
 LWA
 lwin
 LZero
@@ -1964,6 +1963,7 @@ WMI
 WMICIM
 wmimgmt
 wmp
+wmsg
 WMSYSCOMMAND
 wnd
 WNDCLASS
