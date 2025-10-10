@@ -23,7 +23,7 @@ internal sealed class WindowProcess
     /// <summary>
     /// An indicator if the window belongs to an 'Universal Windows Platform (UWP)' process
     /// </summary>
-    private readonly bool _isUwpApp;
+    private readonly bool _isUwpAppFrameHost;
 
     /// <summary>
     /// Gets the id of the process
@@ -42,7 +42,8 @@ internal sealed class WindowProcess
         {
             try
             {
-                return Process.GetProcessById((int)ProcessID).Responding;
+                // Process.Responding doesn't work on UWP apps
+                return ProcessType.Kind == ProcessPackagingKind.UwpApp || Process.GetProcessById((int)ProcessID).Responding;
             }
             catch (InvalidOperationException)
             {
@@ -76,7 +77,7 @@ internal sealed class WindowProcess
     /// <summary>
     /// Gets a value indicating whether the window belongs to an 'Universal Windows Platform (UWP)' process
     /// </summary>
-    internal bool IsUwpApp => _isUwpApp;
+    public bool IsUwpAppFrameHost => _isUwpAppFrameHost;
 
     /// <summary>
     /// Gets a value indicating whether this is the shell process or not
@@ -134,8 +135,11 @@ internal sealed class WindowProcess
     internal WindowProcess(uint pid, uint tid, string name)
     {
         UpdateProcessInfo(pid, tid, name);
-        _isUwpApp = string.Equals(Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase);
+        ProcessType = ProcessPackagingInspector.Inspect((int)pid);
+        _isUwpAppFrameHost = string.Equals(Name, "ApplicationFrameHost.exe", StringComparison.OrdinalIgnoreCase);
     }
+
+    public ProcessPackagingInfo ProcessType { get; private set; }
 
     /// <summary>
     /// Updates the process information of the <see cref="WindowProcess"/> instance.

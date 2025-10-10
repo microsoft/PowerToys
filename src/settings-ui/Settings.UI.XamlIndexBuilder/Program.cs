@@ -181,8 +181,6 @@ namespace Microsoft.PowerToys.Tools.XamlIndexBuilder
                 // Define namespaces
                 XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
                 XNamespace controls = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
-                XNamespace labs = "using:CommunityToolkit.Labs.WinUI";
-                XNamespace winui = "using:CommunityToolkit.WinUI.UI.Controls";
 
                 // Extract SettingsPageControl elements
                 var settingsPageElements = doc.Descendants()

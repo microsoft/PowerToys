@@ -55,7 +55,10 @@ public static class TypedEventHandlerExtensions
             .OfType<TypedEventHandler<S, R>>()
             .Select(invocationDelegate =>
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return Task.FromCanceled(cancellationToken);
+                }
 
                 invocationDelegate(sender, eventArgs);
 
