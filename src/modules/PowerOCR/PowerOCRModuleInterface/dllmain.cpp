@@ -122,7 +122,7 @@ private:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-        sei.lpFile = L"PowerToys.PowerOCR.exe";
+        sei.lpFile = L"shell:AppsFolder\\Microsoft.PowerToys.SparseApp_djwsxzxb4ksa8!PowerToys.OCR";;
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))

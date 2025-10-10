@@ -25,10 +25,9 @@ Shared::Trace::ETWTrace trace(L"ImageResizerContextMenu");
 
 #define BUFSIZE 4096 * 4
 
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-                     )
+BOOL APIENTRY DllMain(HMODULE hModule,
+                      DWORD ul_reason_for_call,
+                      LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
     {
@@ -78,7 +77,8 @@ public:
 
     IFACEMETHODIMP GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL okToBeSlow, _Out_ EXPCMDSTATE* cmdState)
     {
-        if (nullptr == selection) {
+        if (nullptr == selection)
+        {
             // We've observed that it's possible that a null gets passed instead of an empty array. Just don't show the context menu in this case.
             *cmdState = ECS_HIDDEN;
             return S_OK;
@@ -95,10 +95,11 @@ public:
 #pragma warning(suppress : 26812)
         PERCEIVED type;
         PERCEIVEDFLAG flag;
-        IShellItem* shellItem=nullptr;
+        IShellItem* shellItem = nullptr;
         //Check extension of first item in the list (the item which is right-clicked on)
-        HRESULT getItemResult  = selection->GetItemAt(0, &shellItem);
-        if (S_OK != getItemResult || nullptr == shellItem) {
+        HRESULT getItemResult = selection->GetItemAt(0, &shellItem);
+        if (S_OK != getItemResult || nullptr == shellItem)
+        {
             // Some safeguards to avoid runtime errors.
             *cmdState = ECS_HIDDEN;
             return S_OK;
@@ -230,7 +231,7 @@ private:
             auto val = get_last_error_message(GetLastError());
             Logger::warn(L"UuidCreate cannot create guid. {}", val.has_value() ? val.value() : L"");
         }
-        else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(& uuid_chars)) != RPC_S_OK)
+        else if (UuidToString(&temp_uuid, reinterpret_cast<RPC_WSTR*>(&uuid_chars)) != RPC_S_OK)
         {
             auto val = get_last_error_message(GetLastError());
             Logger::warn(L"UuidToString cannot convert to string. {}", val.has_value() ? val.value() : L"");
@@ -243,7 +244,29 @@ private:
             uuid_chars = nullptr;
         }
         create_pipe_thread = std::thread(&ImageResizerContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);
-        RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst));
+
+        std::wstring aumidTarget =
+            L"shell:AppsFolder\\Microsoft.PowerToys.SparseApp_djwsxzxb4ksa8!PowerToys.ImageResizerUI"; // PFN!AppId
+        std::wstring args = L"--pipe \"" + pipe_name + L"\"";
+
+        // Use ShellExecuteEx so you get a process handle:
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI;
+        sei.lpVerb = L"open";
+        sei.lpFile = aumidTarget.c_str();
+        sei.lpParameters = args.c_str();
+        sei.nShow = SW_SHOWNORMAL;
+
+        if (ShellExecuteExW(&sei))
+        {
+            Logger::trace(L"Started ImageResizer (sparse) with pipe {}", pipe_name);
+        }
+        else
+        {
+            Logger::error(L"Failed to start ImageResizer (sparse). {}", get_last_error_or_default(GetLastError()));
+        }
+        // RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst));
+
         create_pipe_thread.join();
 
         if (hPipe != INVALID_HANDLE_VALUE)
@@ -285,10 +308,9 @@ private:
 };
 
 CoCreatableClass(ImageResizerContextMenuCommand)
-CoCreatableClassWrlCreatorMapInclude(ImageResizerContextMenuCommand)
+    CoCreatableClassWrlCreatorMapInclude(ImageResizerContextMenuCommand)
 
-
-STDAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ IActivationFactory** factory)
+        STDAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ IActivationFactory** factory)
 {
     return Module<ModuleType::InProc>::GetModule().GetActivationFactory(activatableClassId, factory);
 }
