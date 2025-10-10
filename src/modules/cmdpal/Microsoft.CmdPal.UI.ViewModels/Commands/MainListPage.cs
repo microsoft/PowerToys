@@ -443,6 +443,7 @@ public partial class MainListPage : DynamicListPage,
     {
         const int channelCapacity = 100;
         const int itemTimeoutMs = 200;
+        const int ultraSlowTimeoutMs = 1000;
         const int initialWorkerCount = 2;
         var updateInterval = TimeSpan.FromMilliseconds(150);
 
@@ -575,7 +576,13 @@ public partial class MainListPage : DynamicListPage,
                                     var changed = command.SafeUpdateFallbackTextSynchronous(newSearch);
                                     var elapsed = taskSw.ElapsedMilliseconds;
 
-                                    Logger.LogTrace($"Worker {id}: '{command.Title}' in {elapsed}ms");
+                                    var tail = elapsed > itemTimeoutMs ? " (slow)" : string.Empty;
+                                    if (elapsed > ultraSlowTimeoutMs)
+                                    {
+                                        tail += " <---------------- (ultra slow)";
+                                    }
+
+                                    Logger.LogTrace($"Worker {id}: command id '{command.Id}' for '{command.Title}' in {elapsed} ms {tail}");
 
                                     if (changed)
                                     {
