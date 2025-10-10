@@ -24,13 +24,15 @@ using Windows.Storage;
 
 namespace Peek.FilePreviewer.Previewers.MediaPreviewer
 {
-    public partial class AudioPreviewer : ObservableObject, IAudioPreviewer
+    public partial class AudioPreviewer : ObservableObject, IDisposable, IAudioPreviewer
     {
+        private MediaSource? _mediaSource;
+
         [ObservableProperty]
         private PreviewState _state;
 
         [ObservableProperty]
-        private AudioPreviewData _preview;
+        private AudioPreviewData? _preview;
 
         private IFileSystemItem Item { get; }
 
@@ -40,7 +42,6 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
         {
             Item = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
-            Preview = new AudioPreviewData();
         }
 
         public async Task CopyAsync()
@@ -63,19 +64,23 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
         {
             State = PreviewState.Loading;
 
+            Preview = new AudioPreviewData();
+
             var thumbnailTask = LoadThumbnailAsync(cancellationToken);
             var sourceTask = LoadSourceAsync(cancellationToken);
             var metadataTask = LoadMetadataAsync(cancellationToken);
 
             await Task.WhenAll(thumbnailTask, sourceTask, metadataTask);
 
-            if (!thumbnailTask.Result || !sourceTask.Result || !metadataTask.Result)
+            if (sourceTask.Result && metadataTask.Result)
             {
-                State = PreviewState.Error;
+                State = PreviewState.Loaded;
             }
             else
             {
-                State = PreviewState.Loaded;
+                // Release all resources on error.
+                Unload();
+                State = PreviewState.Error;
             }
         }
 
@@ -88,12 +93,15 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var thumbnail = await ThumbnailHelper.GetThumbnailAsync(Item.Path, cancellationToken)
-                        ?? await ThumbnailHelper.GetIconAsync(Item.Path, cancellationToken);
+                    if (Preview != null)
+                    {
+                        var thumbnail = await ThumbnailHelper.GetThumbnailAsync(Item.Path, cancellationToken)
+                            ?? await ThumbnailHelper.GetIconAsync(Item.Path, cancellationToken);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                    Preview.Thumbnail = thumbnail ?? new SvgImageSource(new Uri("ms-appx:///Assets/Peek/DefaultFileIcon.svg"));
+                        Preview.Thumbnail = thumbnail ?? new SvgImageSource(new Uri("ms-appx:///Assets/Peek/DefaultFileIcon.svg"));
+                    }
                 });
             });
         }
@@ -110,7 +118,11 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    Preview.MediaSource = MediaSource.CreateFromStorageFile(storageFile);
+                    if (Preview != null)
+                    {
+                        _mediaSource = MediaSource.CreateFromStorageFile(storageFile);
+                        Preview.MediaSource = _mediaSource;
+                    }
                 });
             });
         }
@@ -123,6 +135,11 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
 
                 await Dispatcher.RunOnUiThread(() =>
                 {
+                    if (Preview == null)
+                    {
+                        return;
+                    }
+
                     cancellationToken.ThrowIfCancellationRequested();
                     Preview.Title = PropertyStoreHelper.TryGetStringProperty(Item.Path, PropertyKey.MusicTitle)
                         ?? Item.Name[..^Item.Extension.Length];
@@ -158,6 +175,22 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
         public static bool IsItemSupported(IFileSystemItem item)
         {
             return _supportedFileTypes.Contains(item.Extension);
+        }
+
+        public void Dispose()
+        {
+            Unload();
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Explicitly unloads the preview and releases file resources.
+        /// </summary>
+        public void Unload()
+        {
+            _mediaSource?.Dispose();
+            _mediaSource = null;
+            Preview = null;
         }
 
         private static readonly HashSet<string> _supportedFileTypes = new()
