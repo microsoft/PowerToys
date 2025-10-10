@@ -245,7 +245,7 @@ public partial class MainListPage : DynamicListPage,
         var commands = _tlcManager.TopLevelCommands;
         lock (commands)
         {
-            _ = UpdateFallbacksAsync(SearchText, commands.ToImmutableArray(), token);
+            _ = UpdateFallbacksAsync(SearchText, commands.Where(t => t.IsFallback).ToImmutableArray(), token);
 
             if (token.IsCancellationRequested)
             {
