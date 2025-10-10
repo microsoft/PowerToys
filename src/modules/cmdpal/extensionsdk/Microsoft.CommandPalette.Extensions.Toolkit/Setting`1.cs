@@ -90,6 +90,7 @@ public abstract class Setting<T> : ISettingsForm
             {
                 ["type"] = "TextBlock",
                 ["text"] = labelText,
+                ["weight"] = "Bolder",
                 ["wrap"] = true,
                 ["spacing"] = "None"
             });
@@ -101,8 +102,9 @@ public abstract class Setting<T> : ISettingsForm
             {
                 ["type"] = "TextBlock",
                 ["text"] = descriptionText,
-                ["weight"] = "Bolder",
-                ["wrap"] = true
+                ["isSubtle"] = true,
+                ["wrap"] = true,
+                ["size"] = "Small"
             };
 
             descriptionBlock["spacing"] = labelElements.Count > 0 ? "Small" : "None";
@@ -134,7 +136,7 @@ public abstract class Setting<T> : ISettingsForm
                     {
                         ["type"] = "Column",
                         ["width"] = "auto",
-                        ["verticalContentAlignment"] = "Top",
+                        ["verticalContentAlignment"] = "Center",
                         ["items"] = new JsonArray(controlElementNode)
                     },
                     new JsonObject

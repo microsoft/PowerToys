@@ -42,33 +42,60 @@ public sealed partial class Settings : ICommandSettings
             .Where(s => s is ISettingsForm)
             .Select(s => s as ISettingsForm)
             .Where(s => s is not null)
-            .Select(s => s!);
+            .Select(s => s!)
+            .ToList();
 
-        var bodies = string.Join(",", settings
-            .Select(s => JsonSerializer.Serialize(s.ToDictionary(), JsonSerializationContext.Default.Dictionary)));
+        var bodyElements = new JsonArray();
 
-        var datas = string.Join(",", settings.Select(s => s.ToDataIdentifier()));
+        foreach (var setting in settings)
+        {
+            var formJson = setting.ToForm();
+            if (string.IsNullOrWhiteSpace(formJson))
+            {
+                continue;
+            }
 
-        var json = $$"""
-{
-  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-  "type": "AdaptiveCard",
-  "version": "1.5",
-  "body": [
-      {{bodies}}
-  ],
-  "actions": [
-    {
-      "type": "Action.Submit",
-      "title": "Save",
-      "data": {
-        {{datas}}
-      }
-    }
-  ]
-}
-""";
-        return json;
+            var formNode = JsonNode.Parse(formJson) as JsonObject;
+            var body = formNode?["body"] as JsonArray;
+            if (body is null)
+            {
+                continue;
+            }
+
+            foreach (var element in body)
+            {
+                if (element is not null)
+                {
+                    bodyElements.Add(element.DeepClone());
+                }
+            }
+        }
+
+        var dataIdentifiers = string.Join(",", settings.Select(s => s.ToDataIdentifier()));
+        var dataNode = new JsonObject();
+        if (!string.IsNullOrWhiteSpace(dataIdentifiers))
+        {
+            dataNode = JsonNode.Parse($"{{{dataIdentifiers}}}")?.AsObject() ?? new JsonObject();
+        }
+
+        var card = new JsonObject
+        {
+            ["$schema"] = "http://adaptivecards.io/schemas/adaptive-card.json",
+            ["type"] = "AdaptiveCard",
+            ["version"] = "1.5",
+            ["body"] = bodyElements,
+            ["actions"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["type"] = "Action.Submit",
+                    ["title"] = "Save",
+                    ["data"] = dataNode
+                }
+            }
+        };
+
+        return card.ToJsonString(_jsonSerializerOptions);
     }
 
     public string ToJson()
