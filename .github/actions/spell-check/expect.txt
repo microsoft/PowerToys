@@ -509,6 +509,7 @@ FANCYZONESEDITOR
 FARPROC
 fesf
 FFFF
+Figma
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
