@@ -244,7 +244,36 @@ public partial class MainListPage : DynamicListPage,
         var commands = _tlcManager.TopLevelCommands;
         lock (commands)
         {
-            UpdateFallbacks(SearchText, commands.ToImmutableArray(), token);
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            // prefilter fallbacks
+            var specialFallbacks = new List<TopLevelViewModel>(_specialFallbacks.Length);
+            var commonFallbacks = new List<TopLevelViewModel>();
+
+            foreach (var s in commands)
+            {
+                if (!s.IsFallback)
+                {
+                    continue;
+                }
+
+                if (_specialFallbacks.Contains(s.CommandProviderId))
+                {
+                    specialFallbacks.Add(s);
+                }
+                else
+                {
+                    commonFallbacks.Add(s);
+                }
+            }
+
+            // start update of fallbacks; update special fallbacks separately,
+            // so they can finish faster
+            UpdateFallbacks(SearchText, specialFallbacks, token);
+            UpdateFallbacks(SearchText, commonFallbacks, token);
 
             if (token.IsCancellationRequested)
             {
@@ -316,15 +345,12 @@ public partial class MainListPage : DynamicListPage,
             // with a list of all our commands & apps.
             if (!newFilteredItems.Any() && !newApps.Any())
             {
-                // We're going to start over with our fallbacks
-                newFallbacks = Enumerable.Empty<IListItem>();
-
                 newFilteredItems = commands.Where(s => !s.IsFallback);
 
                 // Fallbacks are always included in the list, even if they
                 // don't match the search text. But we don't want to
                 // consider them when filtering the list.
-                newFallbacks = commands.Where(s => s.IsFallback && !_specialFallbacks.Contains(s.CommandProviderId));
+                newFallbacks = commonFallbacks;
 
                 if (token.IsCancellationRequested)
                 {
