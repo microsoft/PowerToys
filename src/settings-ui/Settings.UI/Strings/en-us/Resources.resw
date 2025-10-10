@@ -627,16 +627,16 @@ opera.exe</value>
     <value>Enable Paste with AI</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Header" xml:space="preserve">
-    <value>Clipboard history</value>
+    <value>Access Clipboard History</value>
   </data>
   <data name="AdvancedPaste_Clipboard_History_Enabled_SettingsCard.Description" xml:space="preserve">
-    <value>Save multiple items to your clipboard. This is an OS feature.</value>
+    <value>Clipboard History shows a list of previously copied items.</value>
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
   </data>
   <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
-    <value>Additional actions</value>
+    <value>Custom actions</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current key remappings</value>
@@ -4479,9 +4479,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_EnableAIDialog_NoteAICreditsErrorText.Text" xml:space="preserve">
     <value>If you do not have credits you will see an 'API key quota exceeded' error</value>
   </data>
-  <data name="AdvancedPaste_CloseAfterLosingFocus.Header" xml:space="preserve">
-    <value>Automatically close the AdvancedPaste window after it loses focus</value>
-    <comment>AdvancedPaste is a product name, do not loc</comment>
+  <data name="AdvancedPaste_CloseAfterLosingFocus.Content" xml:space="preserve">
+    <value>Automatically close the Advanced Paste window after it loses focus</value>
+    <comment>Advanced Paste is a product name, do not loc</comment>
   </data>
   <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
     <value>The Command Not Found module is disabled by your organization.</value>

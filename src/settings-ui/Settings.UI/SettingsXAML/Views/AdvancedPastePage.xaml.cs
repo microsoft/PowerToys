@@ -145,11 +145,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (existingCustomAction == null)
             {
+                /* TO DO: Re-enable with SettingsExpander, not a P0 though
                 ViewModel.AddCustomAction(dialogCustomAction);
 
-                var element = (ContentPresenter)CustomActions.ContainerFromIndex(CustomActions.Items.Count - 1);
+                var element = (ContentPresenter)AdvancedPasteUIActions.ContainerFromIndex(CustomActions.Items.Count - 1);
                 element.StartBringIntoView(new BringIntoViewOptions { VerticalOffset = -60, AnimationDesired = true });
-                element.Focus(FocusState.Programmatic);
+                element.Focus(FocusState.Programmatic); */
             }
             else
             {
