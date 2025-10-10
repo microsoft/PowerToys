@@ -3304,7 +3304,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescription.Text" xml:space="preserve">
-    <value>This feature allows you to format your clipboard content with the power of AI. An OpenAI API key is required.</value>
+    <value>Transform your clipboard content with the power of AI. An cloud or local endpoint is required.</value>
   </data>
   <data name="AdvancedPaste_EnableAISettingsCardDescriptionLearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
@@ -3947,10 +3947,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Preview the output of AI formats and Image to text before pasting</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Header" xml:space="preserve">
-    <value>Enable advanced AI</value>
+    <value>Advanced AI</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
-    <value>Add advanced capabilities when using 'Paste with AI' including the power to 'chain' multiple transformations together and work with images and files. This feature may consume more API credits when used.</value>
+    <value>Supports advanced workflows by chaining transformations and working with files and images. May use additional API credits.</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>

@@ -21,9 +21,11 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
+		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.svg" />
 		<None Remove="Assets\Settings\Icons\Models\Onnx.svg" />
 		<None Remove="Assets\Settings\Icons\Models\OpenAI.dark.svg" />
 		<None Remove="Assets\Settings\Icons\Models\OpenAI.light.svg" />
+		<None Remove="Assets\Settings\Icons\Models\WindowsML.svg" />
 		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
 		<None Remove="Assets\Settings\Modules\LightSwitch.png" />

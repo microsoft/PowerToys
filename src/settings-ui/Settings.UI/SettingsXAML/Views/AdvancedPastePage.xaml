@@ -28,6 +28,39 @@
                     <ImageSource x:Key="OpenAIIconImage">ms-appx:///Assets/Settings/Icons/Models/OpenAI.light.svg</ImageSource>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
+            <Style x:Name="ModelHeaderStyle" TargetType="ListViewHeaderItem">
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Setter Property="Margin" Value="0,0,0,4" />
+                <Setter Property="Padding" Value="16,12,12,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalContentAlignment" Value="Top" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewHeaderItem">
+                            <StackPanel
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <ContentPresenter
+                                    x:Name="ContentPresenter"
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    ContentTransitions="{TemplateBinding ContentTransitions}"
+                                    Foreground="{TemplateBinding Foreground}" />
+                            </StackPanel>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
             <DataTemplate x:Key="AdditionalActionTemplate" x:DataType="models:AdvancedPasteAdditionalAction">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <controls:ShortcutControl
@@ -96,11 +129,14 @@
                                 </StackPanel>
                             </tkcontrols:SettingsExpander.Description>
                             <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard
-                                    Description="Provider"
-                                    Header="{x:Bind ViewModel.PasteAIConfiguration.ServiceType, Mode=OneWay}"
-                                    IsEnabled="{x:Bind ViewModel.IsOpenAIEnabled, Mode=OneWay}">
-                                    <Button Click="PasteAIProviderConfigureButton_Click" Content="Configure" />
+                                <tkcontrols:SettingsCard Description="Choose which cloud or local model to use" Header="Model provider">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{x:Bind ViewModel.PasteAIConfiguration.ServiceType, Mode=OneWay}" />
+                                        <Button Click="PasteAIProviderConfigureButton_Click" Content="Configure" />
+                                    </StackPanel>
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
@@ -115,10 +151,16 @@
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
-                                    Description="Provider"
-                                    Header="{x:Bind ViewModel.AdvancedAIConfiguration.ServiceType, Mode=OneWay}"
+                                    Description="Choose which cloud or local model to use"
+                                    Header="Model provider"
                                     IsEnabled="{x:Bind ViewModel.IsAdvancedAIEnabled, Mode=OneWay}">
-                                    <Button Click="AdvancedAIProviderConfigureButton_Click" Content="Configure" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{x:Bind ViewModel.AdvancedAIConfiguration.ServiceType, Mode=OneWay}" />
+                                        <Button Click="AdvancedAIProviderConfigureButton_Click" Content="Configure" />
+                                    </StackPanel>
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
@@ -487,20 +529,43 @@
                 <ListView
                     x:Name="AdvancedAIServiceTypeListView"
                     Grid.Row="1"
-                    Margin="0,16,0,0"
+                    Margin="0,4,0,0"
                     SelectedValue="{x:Bind ViewModel.AdvancedAIConfiguration.ServiceType, Mode=TwoWay}"
                     SelectedValuePath="Tag"
                     SelectionChanged="AdvancedAIServiceTypeListView_SelectionChanged">
+                    <ListViewHeaderItem
+                        Content="Cloud models"
+                        IsEnabled="False"
+                        IsHitTestVisible="False"
+                        Style="{StaticResource ModelHeaderStyle}" />
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="OpenAI">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="20" Source="{ThemeResource OpenAIIconImage}" />
+                            <Image Width="16" Source="{ThemeResource OpenAIIconImage}" />
                             <TextBlock Text="OpenAI" />
                         </StackPanel>
                     </ListViewItem>
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="AzureOpenAI">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <Image Width="20" Source="/Assets/Settings/Icons/Models/Azure.svg" />
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/Azure.svg" />
                             <TextBlock Text="Azure OpenAI" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewHeaderItem
+                        Margin="0,12,0,0"
+                        Content="Local models"
+                        IsEnabled="False"
+                        IsHitTestVisible="False"
+                        Style="{StaticResource ModelHeaderStyle}" />
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="FoundryLocal">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/FoundryLocal.svg" />
+                            <TextBlock Text="Foundry Local" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="WindowsML">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/WindowsML.svg" />
+                            <TextBlock Text="Windows ML" />
                         </StackPanel>
                     </ListViewItem>
                 </ListView>
@@ -583,10 +648,15 @@
                 <ListView
                     x:Name="PasteAIServiceTypeListView"
                     Grid.Row="1"
-                    Margin="0,16,0,0"
+                    Margin="0,4,0,0"
                     SelectedValue="{x:Bind ViewModel.PasteAIConfiguration.ServiceType, Mode=TwoWay}"
                     SelectedValuePath="Tag"
                     SelectionChanged="PasteAIServiceTypeListView_SelectionChanged">
+                    <ListViewHeaderItem
+                        Content="Cloud models"
+                        IsEnabled="False"
+                        IsHitTestVisible="False"
+                        Style="{StaticResource ModelHeaderStyle}" />
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="OpenAI">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <Image Width="20" Source="{ThemeResource OpenAIIconImage}" />
@@ -599,10 +669,28 @@
                             <TextBlock Text="Azure OpenAI" />
                         </StackPanel>
                     </ListViewItem>
+                    <ListViewHeaderItem
+                        Margin="0,12,0,0"
+                        Content="Local models"
+                        IsEnabled="False"
+                        IsHitTestVisible="False"
+                        Style="{StaticResource ModelHeaderStyle}" />
                     <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="Onnx">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <Image Width="20" Source="/Assets/Settings/Icons/Models/Onnx.svg" />
                             <TextBlock Text="Onnx" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="FoundryLocal">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/FoundryLocal.svg" />
+                            <TextBlock Text="Foundry Local" />
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Style="{StaticResource DefaultListViewItemStyle}" Tag="WindowsML">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Image Width="16" Source="/Assets/Settings/Icons/Models/WindowsML.svg" />
+                            <TextBlock Text="Windows ML" />
                         </StackPanel>
                     </ListViewItem>
                 </ListView>
