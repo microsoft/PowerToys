@@ -116,63 +116,63 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Peek can now be used activated using the Space bar!
  - Find My Mouse added transparent spotlight with independent backdrop opacity, boosting focus and accessibility.
  - Settings now lets you delete shortcuts entirely and ignore conflicts.
- - Mouse Pointer Crosshairs gained orientation options (vertical / horizontal / both) for customizable accessibility. Thanks @mikehall-ms!
- - PowerRename fixed enumeration counter skipping ensuring reliable batch renames. Thanks @daverayment!
- - ZoomIt restored legacy draw/snipping behaviors and fixed recording races improving reliability. Thanks @chakrik73!
+ - Mouse Pointer Crosshairs gained orientation options (vertical / horizontal / both) for customizable accessibility. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+ - PowerRename fixed enumeration counter skipping ensuring reliable batch renames. Thanks [@daverayment](https://github.com/daverayment)!
+ - ZoomIt restored legacy draw/snipping behaviors and fixed recording races improving reliability. Thanks [@chakrik73](https://github.com/chakrik73)!
 
 ### Command Palette
  - Reorganized core projects and introduced CoreLogger to reduce dependencies.
- - Applied conditional margin for icon-only tags to tighten layout. Thanks @samrueby!
- - Added setting to choose Clipboard History primary action (Paste vs Copy). Thanks @jiripolasek!
- - Prevented false "Unresponsive" flags for UWP apps in Window Walker. Thanks @jiripolasek!
- - Hardened activation flow for x-cmdpal:// links with synchronous handling + timeout. Thanks @jiripolasek!
+ - Applied conditional margin for icon-only tags to tighten layout. Thanks [@samrueby](https://github.com/samrueby)!
+ - Added setting to choose Clipboard History primary action (Paste vs Copy). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Prevented false "Unresponsive" flags for UWP apps in Window Walker. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Hardened activation flow for x-cmdpal:// links with synchronous handling + timeout. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Enabled AOT by default for performance while simplifying publish configs.
- - Cleaned and codified .editorconfig without behavior change. Thanks @jiripolasek!
- - Replaced service state color dots with play/pause/stop icons for accessibility. Thanks @samrueby!
- - Fixed filter dropdown sync and crash by binding SelectedValue and raising UI-thread notifications. Thanks @jiripolasek!
- - Ensured long links wrap correctly in details view. Thanks @michaeljolley!
- - Removed animation + enforced min width on filter dropdown for clarity. Thanks @jiripolasek!
- - Restored focus to More button after ESC closes context menu improving keyboard flow. Thanks @chatasweetie!
- - Marked main and toast windows as tool windows to keep them out of Alt+Tab while preserving style. Thanks @jiripolasek!
- - Fixed AOT template + theming issues for filter separators. Thanks @jiripolasek!
- - Introduced grid layouts (small/medium/gallery) for richer page presentation. Thanks @michaeljolley!
- - Materialized result lists to avoid rescoring overhead. Thanks @michaeljolley!
+ - Cleaned and codified .editorconfig without behavior change. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Replaced service state color dots with play/pause/stop icons for accessibility. Thanks [@samrueby](https://github.com/samrueby)!
+ - Fixed filter dropdown sync and crash by binding SelectedValue and raising UI-thread notifications. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Ensured long links wrap correctly in details view.
+ - Removed animation + enforced min width on filter dropdown for clarity. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Restored focus to More button after ESC closes context menu improving keyboard flow.
+ - Marked main and toast windows as tool windows to keep them out of Alt+Tab while preserving style. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixed AOT template + theming issues for filter separators. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Introduced grid layouts (small/medium/gallery) for richer page presentation.
+ - Materialized result lists to avoid rescoring overhead.
  - Disabled problematic selection TextToSuggest behind env flag.
- - Resolved AOT warning by making IconMarginConverter partial. Thanks @samrueby!
- - Major search performance improvements (new fuzzy matcher, smarter fallbacks, fewer exceptions). Thanks @michaeljolley!
- - Added context menu "Show Details" command when details pane hidden. Thanks @michaeljolley!
- - Reduced window flicker by avoiding unnecessary cloaking. Thanks @jiripolasek!
- - Restored EmptyContent rendering for blank states. Thanks @DevLGuilherme!
- - Saved new state even if prior app state file corrupt (better resilience). Thanks @jiripolasek!
- - Migrated settings window to WinUI TitleBar control. Thanks @jiripolasek!
- - Prevented crash on duplicate keybindings and simplified matching. Thanks @jiripolasek!
- - Centralized fullscreen ignore-hotkey logic for summon handling. Thanks @jiripolasek!
- - Hid search box on content pages; improved focus and a11y; added Home title. Thanks @jiripolasek!
- - Synced generated resource comment to eliminate noisy diffs. Thanks @jiripolasek!
+ - Resolved AOT warning by making IconMarginConverter partial. Thanks [@samrueby](https://github.com/samrueby)!
+ - Major search performance improvements (new fuzzy matcher, smarter fallbacks, fewer exceptions).
+ - Added context menu "Show Details" command when details pane hidden.
+ - Reduced window flicker by avoiding unnecessary cloaking. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Restored EmptyContent rendering for blank states. Thanks [@DevLGuilherme](https://github.com/DevLGuilherme)!
+ - Saved new state even if prior app state file corrupt (better resilience). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Migrated settings window to WinUI TitleBar control. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Prevented crash on duplicate keybindings and simplified matching. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Centralized fullscreen ignore-hotkey logic for summon handling. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Hid search box on content pages; improved focus and a11y; added Home title. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Synced generated resource comment to eliminate noisy diffs. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Blocked Ctrl+I from inserting stray tab in search box.
- - Logged HRESULT codes in error logs for deeper diagnostics. Thanks @jiripolasek!
- - Advanced font/emoji icon classification & alignment improvements. Thanks @jiripolasek!
- - Preserved fallback item icons in Settings by storing initial icon. Thanks @jiripolasek!
- - Fixed breadcrumb margin misalignment (visual polish). Thanks @jiripolasek!
- - Truncated overly long command labels with ellipsis to prevent overflow. Thanks @michaeljolley!
+ - Logged HRESULT codes in error logs for deeper diagnostics. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Advanced font/emoji icon classification & alignment improvements. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Preserved fallback item icons in Settings by storing initial icon. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Fixed breadcrumb margin misalignment (visual polish). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Truncated overly long command labels with ellipsis to prevent overflow.
 
 ### Command Palette Extensions
- - Replaced localized WebSearch setting keys with stable literals and numeric history count. Thanks @jiripolasek!
- - Enabled advanced markdown tables and emphasis extensions. Thanks @jiripolasek!
- - Added actionable empty-state hints for File Search (search PC / open indexing settings). Thanks @jiripolasek!
- - Ensured all WinGet extension assets copy reliably to output. Thanks @jiripolasek!
+ - Replaced localized WebSearch setting keys with stable literals and numeric history count. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Enabled advanced markdown tables and emphasis extensions. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added actionable empty-state hints for File Search (search PC / open indexing settings). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Ensured all WinGet extension assets copy reliably to output. Thanks [@jiripolasek](https://github.com/jiripolasek)!
  - Improved Run command line parsing for paths with spaces; sped up related tests.
- - Updated WebSearch extension icon set for clarity and contrast. Thanks @jiripolasek!
- - Added Terminal profile sort order setting including MRU tracking. Thanks @jiripolasek!
- - Added Uninstall Application command (UWP direct, Win32 via Settings). Thanks @mKpwnz!
+ - Updated WebSearch extension icon set for clarity and contrast. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added Terminal profile sort order setting including MRU tracking. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added Uninstall Application command (UWP direct, Win32 via Settings). Thanks [@mKpwnz](https://github.com/mKpwnz)!
  - Deferred WinGet details loading and added timing logs.
- - Removed LINQ from All Apps extension for performance. Thanks @michaeljolley!
- - Added standardized key chord system + shortcuts to File Search commands. Thanks @jiripolasek!
- - Added Terminal channel filter & remembered selection option. Thanks @jiripolasek!
- - Enabled loading local/data/app images in markdown with sizing hints. Thanks @jiripolasek!
- - Added external extension reload via x-cmdpal://reload (configurable). Thanks @jiripolasek!
- - Instant WebSearch history updates with in-memory store & events. Thanks @jiripolasek!
- - Added keep-after-paste option and safe delete with confirmation for Clipboard History. Thanks @jiripolasek!
+ - Removed LINQ from All Apps extension for performance.
+ - Added standardized key chord system + shortcuts to File Search commands. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added Terminal channel filter & remembered selection option. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Enabled loading local/data/app images in markdown with sizing hints. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added external extension reload via x-cmdpal://reload (configurable). Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Instant WebSearch history updates with in-memory store & events. Thanks [@jiripolasek](https://github.com/jiripolasek)!
+ - Added keep-after-paste option and safe delete with confirmation for Clipboard History. Thanks [@jiripolasek](https://github.com/jiripolasek)!
 
 ### Environment Variables
  - Replaced custom window chrome with WinUI TitleBar for cleaner, maintainable Environment Variables UI.
@@ -194,20 +194,20 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Supports filtering changes for Apps and/or System Theme.
 
 ### Mouse Pointer Crosshairs
- - Added Esc key to cancel active gliding cursor sequence. Thanks @mikehall-ms!
- - Added orientation option (vertical / horizontal / both) for crosshairs customization. Thanks @mikehall-ms!
+ - Added Esc key to cancel active gliding cursor sequence. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
+ - Added orientation option (vertical / horizontal / both) for crosshairs customization. Thanks [@mikehall-ms](https://github.com/mikehall-ms)!
 
 ### Mouse Without Borders
- - Continued Common class refactor (part 5/7) by extracting clipboard and init/cleanup logic into focused classes. Thanks @mikeclayton!
+ - Continued Common class refactor (part 5/7) by extracting clipboard and init/cleanup logic into focused classes. Thanks [@mikeclayton](https://github.com/mikeclayton)!
 
 ### Peek
  - Added optional single Space key activation with context-aware eligibility and telemetry.
 
 ### PowerRename
- - Fixed enumeration counter skipping when regex replacement equals original filename (counters now advance reliably). Thanks @daverayment!
+ - Fixed enumeration counter skipping when regex replacement equals original filename (counters now advance reliably). Thanks [@daverayment](https://github.com/daverayment)!
 
 ### Quick Accent
- - Expanded Welsh layout with acute, grave, and dieresis variants for vowels (consistent ordering). Thanks @PesBandi!
+ - Expanded Welsh layout with acute, grave, and dieresis variants for vowels (consistent ordering). Thanks [@PesBandi](https://github.com/PesBandi)!
 
 ### Registry Preview
  - Migrated to native TitleBar and AppWindow APIs for cleaner window chrome.
@@ -222,8 +222,8 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
  - Improved search results page accessibility and conditional module grouping.
 
 ### ZoomIt
- - Updated resource file to reflect standalone v9.01 and current copyright year. Thanks @foxmsft!
- - Restored legacy draw/snipping behaviors and fixed recording race conditions. Thanks @chakrik73!
+ - Updated resource file to reflect standalone v9.01 and current copyright year. Thanks [@foxmsft](https://github.com/foxmsft)!
+ - Restored legacy draw/snipping behaviors and fixed recording race conditions. Thanks [@chakrik73](https://github.com/chakrik73)!
 
  ### Documentation
  - New Microsoft Learn documentation for the Light Switch module.
@@ -234,12 +234,12 @@ For an in-depth look at the latest changes, visit the [Windows Command Line blog
 - Fixed spellchecker dictionary entry (advapi) to eliminate false error. 
 - Added VS Code development guide and launch configs to streamline cross-editor workflows. 
 - Upgraded Windows App SDK and related dependencies to 1.8 for newer platform features. 
-- Rewrote YAML comment to resolve new spellchecker forbidden pattern. Thanks @jiripolasek! 
+- Rewrote YAML comment to resolve new spellchecker forbidden pattern. Thanks [@jiripolasek](https://github.com/jiripolasek)! 
 - Corrected solution structure by returning misplaced Common project, reducing build confusion. 
 - Modernized build scripts with shared helpers and VS environment autodetection for simpler CLI builds. 
 - Standardized build scripts and platform detection to improve reliability and reuse. 
 - Added missing Command Palette version bump to align module release cadence. 
-- Added EXECUTEDEFAULT term to dictionary to prevent regression build failures. Thanks @jiripolasek! 
+- Added EXECUTEDEFAULT term to dictionary to prevent regression build failures. Thanks [@jiripolasek](https://github.com/jiripolasek)! 
 - Introduced nightly pre-warm pipeline and configurable MSBuild cache mode to improve CI performance. 
 - Resolved CI forbidden pattern spelling complaint to keep pipelines green. 
 - Added AI contributor instruction set to clarify code area expectations. 
