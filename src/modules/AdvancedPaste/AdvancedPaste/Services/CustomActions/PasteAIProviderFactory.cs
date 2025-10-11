@@ -10,6 +10,14 @@ namespace AdvancedPaste.Services.CustomActions
 {
     public sealed class PasteAIProviderFactory : IPasteAIProviderFactory
     {
+        private static readonly IReadOnlyList<PasteAIProviderRegistration> ProviderRegistrations = new[]
+        {
+            SemanticKernelPasteProvider.Registration,
+            LocalModelPasteProvider.Registration,
+        };
+
+        private static readonly IReadOnlyDictionary<AIServiceType, Func<PasteAIConfig, IPasteAIProvider>> ProviderFactories = CreateProviderFactories();
+
         public IPasteAIProvider CreateProvider(PasteAIConfig config)
         {
             ArgumentNullException.ThrowIfNull(config);
@@ -21,26 +29,32 @@ namespace AdvancedPaste.Services.CustomActions
                 config.ProviderType = serviceType;
             }
 
-            if (IsSupportedBySemanticKernel(serviceType))
+            if (!ProviderFactories.TryGetValue(serviceType, out var factory))
             {
-                return new SemanticKernelPasteProvider(config);
+                throw new NotSupportedException($"Provider {config.ProviderType} not supported");
             }
 
-            return serviceType switch
-            {
-                AIServiceType.ML => new LocalModelPasteProvider(config.LocalModelPath ?? config.ModelPath),
-                _ => throw new NotSupportedException($"Provider {config.ProviderType} not supported"),
-            };
+            return factory(config);
         }
 
-        private static readonly HashSet<AIServiceType> SupportedProviders =
-        [
-            AIServiceType.OpenAI,
-            AIServiceType.AzureOpenAI,
-            AIServiceType.Onnx,
-        ];
+        private static IReadOnlyDictionary<AIServiceType, Func<PasteAIConfig, IPasteAIProvider>> CreateProviderFactories()
+        {
+            var map = new Dictionary<AIServiceType, Func<PasteAIConfig, IPasteAIProvider>>();
 
-        private static bool IsSupportedBySemanticKernel(AIServiceType providerType)
-            => SupportedProviders.Contains(providerType);
+            foreach (var registration in ProviderRegistrations)
+            {
+                Register(map, registration.SupportedTypes, registration.Factory);
+            }
+
+            return map;
+        }
+
+        private static void Register(Dictionary<AIServiceType, Func<PasteAIConfig, IPasteAIProvider>> map, IReadOnlyCollection<AIServiceType> types, Func<PasteAIConfig, IPasteAIProvider> factory)
+        {
+            foreach (var type in types)
+            {
+                map[type] = factory;
+            }
+        }
     }
 }

@@ -3,33 +3,41 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Models;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace AdvancedPaste.Services.CustomActions
 {
     public sealed class LocalModelPasteProvider : IPasteAIProvider
     {
-        private readonly string _localModelPath;
-
-        public LocalModelPasteProvider(string localModelPath)
+        private static readonly IReadOnlyCollection<AIServiceType> SupportedTypes = new[]
         {
-            _localModelPath = localModelPath;
+            AIServiceType.Onnx,
+            AIServiceType.ML,
+        };
+
+        public static PasteAIProviderRegistration Registration { get; } = new(SupportedTypes, config => new LocalModelPasteProvider(config));
+
+        private readonly PasteAIConfig _config;
+
+        public LocalModelPasteProvider(PasteAIConfig config)
+        {
+            _config = config ?? throw new ArgumentNullException(nameof(config));
         }
-
-        public string ProviderName => "local";
-
-        public string DisplayName => "Local Model";
 
         public Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 
-        public Task<PasteAIProviderResult> ProcessPasteAsync(PasteAIRequest request, CancellationToken cancellationToken, IProgress<double> progress)
+        public Task<string> ProcessPasteAsync(PasteAIRequest request, CancellationToken cancellationToken, IProgress<double> progress)
         {
-            // TODO: Implement local model inference logic
-            var content = request?.ChatHistory?.LastOrDefault()?.Content ?? string.Empty;
-            return Task.FromResult(new PasteAIProviderResult(content, AIServiceUsage.None));
+            ArgumentNullException.ThrowIfNull(request);
+
+            // TODO: Implement local model inference logic using _config.LocalModelPath/_config.ModelPath
+            var content = request.InputText ?? string.Empty;
+            request.Usage = AIServiceUsage.None;
+            return Task.FromResult(content);
         }
     }
 }

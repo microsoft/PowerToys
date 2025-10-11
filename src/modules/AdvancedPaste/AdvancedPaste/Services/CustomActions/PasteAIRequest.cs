@@ -2,21 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using AdvancedPaste.Models;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace AdvancedPaste.Services.CustomActions
 {
     public sealed class PasteAIRequest
     {
-        public ChatHistory ChatHistory { get; set; }
+        public string Prompt { get; init; }
 
-        public PromptExecutionSettings ExecutionSettings { get; set; }
+        public string InputText { get; init; }
 
-        public string ModelId { get; set; }
+        public string SystemPrompt { get; init; }
 
-        public Func<ChatMessageContent, AIServiceUsage> UsageExtractor { get; set; }
+        public AIServiceUsage Usage { get; set; } = AIServiceUsage.None;
     }
 }

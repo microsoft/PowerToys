@@ -16,7 +16,7 @@ namespace AdvancedPaste.Services;
 
 public sealed class AdvancedAIKernelService : KernelServiceBase
 {
-    private readonly IAICredentialsProvider _credentialsProvider;
+    private readonly IAICredentialsProvider credentialsProvider;
 
     public AdvancedAIKernelService(
         IAICredentialsProvider credentialsProvider,
@@ -28,7 +28,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
     {
         ArgumentNullException.ThrowIfNull(credentialsProvider);
 
-        _credentialsProvider = credentialsProvider;
+        this.credentialsProvider = credentialsProvider;
     }
 
     protected override string AdvancedAIModelName => GetModelName();
@@ -44,10 +44,10 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
     {
         ArgumentNullException.ThrowIfNull(kernelBuilder);
 
-        var config = GetConfiguration();
+        var config = this.GetConfiguration();
         var serviceType = config.ServiceTypeKind;
         var modelName = GetModelName(config);
-        var apiKey = _credentialsProvider.GetKey(AICredentialScope.AdvancedAI);
+        var apiKey = this.credentialsProvider.GetKey(AICredentialScope.AdvancedAI);
 
         switch (serviceType)
         {
@@ -71,7 +71,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     private AdvancedAIConfiguration GetConfiguration()
     {
-        var config = UserSettings?.AdvancedAIConfiguration;
+        var config = this.UserSettings?.AdvancedAIConfiguration;
         if (config is null)
         {
             return new AdvancedAIConfiguration();
@@ -82,7 +82,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     private string GetModelName()
     {
-        return GetModelName(GetConfiguration());
+        return GetModelName(this.GetConfiguration());
     }
 
     private static string GetModelName(AdvancedAIConfiguration config)
