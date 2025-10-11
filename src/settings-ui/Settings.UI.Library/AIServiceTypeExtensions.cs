@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 "openai" => AIServiceType.OpenAI,
                 "azureopenai" or "azure" => AIServiceType.AzureOpenAI,
                 "onnx" => AIServiceType.Onnx,
+                "foundrylocal" or "foundry" or "fl" => AIServiceType.FoundryLocal,
                 _ => AIServiceType.Unknown,
             };
         }
@@ -39,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 AIServiceType.OpenAI => "OpenAI",
                 AIServiceType.AzureOpenAI => "AzureOpenAI",
                 AIServiceType.Onnx => "Onnx",
+                AIServiceType.FoundryLocal => "FoundryLocal",
                 AIServiceType.Unknown => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, "Unsupported AI service type."),
             };
@@ -54,6 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 AIServiceType.OpenAI => "openai",
                 AIServiceType.AzureOpenAI => "azureopenai",
                 AIServiceType.Onnx => "onnx",
+                AIServiceType.FoundryLocal => "foundrylocal",
                 _ => string.Empty,
             };
         }

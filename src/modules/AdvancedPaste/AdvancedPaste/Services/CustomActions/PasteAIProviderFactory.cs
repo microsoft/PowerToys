@@ -29,6 +29,7 @@ namespace AdvancedPaste.Services.CustomActions
             return serviceType switch
             {
                 AIServiceType.ML => new LocalModelPasteProvider(config.LocalModelPath ?? config.ModelPath),
+                AIServiceType.FoundryLocal => new FoundryLocalPasteProvider(config),
                 _ => throw new NotSupportedException($"Provider {config.ProviderType} not supported"),
             };
         }

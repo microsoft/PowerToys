@@ -8,12 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
-using AdvancedPaste.Services;
 using AdvancedPaste.Settings;
-using AdvancedPaste.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Telemetry;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -215,7 +212,7 @@ namespace AdvancedPaste.Services.CustomActions
 
         private static bool RequiresApiKey(AIServiceType serviceType)
         {
-            return serviceType is not AIServiceType.Onnx;
+            return serviceType is not (AIServiceType.Onnx or AIServiceType.FoundryLocal);
         }
 
         private static OpenAIPromptExecutionSettings CreateExecutionSettings(PasteAIConfiguration config)
@@ -250,6 +247,14 @@ namespace AdvancedPaste.Services.CustomActions
                 return string.IsNullOrWhiteSpace(config.DeploymentName) ? resolvedModelName : config.DeploymentName;
             }
 
+            if (serviceType == AIServiceType.FoundryLocal && !string.IsNullOrWhiteSpace(resolvedModelName))
+            {
+                const string FoundryUrlPrefix = "fl://";
+                return resolvedModelName.StartsWith(FoundryUrlPrefix, StringComparison.OrdinalIgnoreCase)
+                    ? resolvedModelName
+                    : $"{FoundryUrlPrefix}{resolvedModelName}";
+            }
+
             return resolvedModelName;
         }
 
@@ -257,7 +262,7 @@ namespace AdvancedPaste.Services.CustomActions
         {
             return serviceType switch
             {
-                AIServiceType.OpenAI or AIServiceType.AzureOpenAI => AIServiceUsageHelper.GetOpenAIServiceUsage,
+                AIServiceType.OpenAI or AIServiceType.AzureOpenAI or AIServiceType.FoundryLocal => AIServiceUsageHelper.GetOpenAIServiceUsage,
                 _ => null,
             };
         }
@@ -274,7 +279,7 @@ namespace AdvancedPaste.Services.CustomActions
 
         private static bool IsLocalProvider(AIServiceType serviceType)
         {
-            return serviceType == AIServiceType.Onnx;
+            return serviceType is AIServiceType.Onnx or AIServiceType.FoundryLocal;
         }
     }
 }
